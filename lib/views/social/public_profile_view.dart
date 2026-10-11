@@ -139,11 +139,11 @@ class _PublicProfileContent extends StatelessWidget {
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
             _ProfileHeader(profile: profile),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             PublicProfileFriendButton(
               profile: profile,
               isSearchable: vm.isSearchable,
@@ -152,9 +152,9 @@ class _PublicProfileContent extends StatelessWidget {
                   .read<UnifiedFriendsService>()
                   .isInitialized,
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             _ProfileStats(profile: profile),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             _PublicRecipesSection(
               recipes: vm.publicRecipes,
               hasRecipes: vm.hasPublicRecipes,
@@ -211,7 +211,7 @@ class _ProfileHeader extends StatelessWidget {
             displayName: profile.displayName,
             size: ImageSize.extraLarge,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             profile.displayName,
             style: AppTextStyles.headlineMedium,
@@ -219,7 +219,7 @@ class _ProfileHeader extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               profile.bio!,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -231,7 +231,7 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ],
           if (profile.cookingSkillLevel != null) ...[
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             _CookingSkillBadge(level: profile.cookingSkillLevel!),
           ],
         ],
@@ -278,7 +278,7 @@ class _ProfileStats extends StatelessWidget {
               style: AppTextStyles.cardTitle,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -326,7 +326,7 @@ class _PublicRecipesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeading(context.l10n.publicProfilePublicRecipes),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         ...recipes.map(
           (recipe) => _PublicRecipeCard(
             key: ValueKey(recipe.id),
@@ -348,7 +348,7 @@ class _PublicRecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: CardContent(
         padding: EdgeInsets.zero,
         child: Semantics(
@@ -363,7 +363,7 @@ class _PublicRecipeCard extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              padding: const EdgeInsets.all(AppDimensions.space8),
               child: Row(
                 children: [
                   // Recipe image or placeholder
@@ -388,7 +388,7 @@ class _PublicRecipeCard extends StatelessWidget {
                           : _imagePlaceholder(cs),
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingM),
+                  const SizedBox(width: AppDimensions.space8),
                   // Title and meal type
                   Expanded(
                     child: Column(
@@ -401,7 +401,7 @@ class _PublicRecipeCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (recipe.mealType.isNotEmpty) ...[
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             recipe.mealType,
                             style: AppTextStyles.bodySmall.copyWith(

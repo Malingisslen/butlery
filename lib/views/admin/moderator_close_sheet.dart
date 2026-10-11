@@ -41,23 +41,23 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
     final choices = ModerationMotivation.choicesFor(widget.decision);
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
-        AppDimensions.paddingM,
+        AppDimensions.space12,
         0,
-        AppDimensions.paddingM,
-        AppDimensions.paddingM + MediaQuery.viewInsetsOf(context).bottom,
+        AppDimensions.space12,
+        AppDimensions.space12 + MediaQuery.viewInsetsOf(context).bottom,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(l10n.moderatorCloseSheetTitle, style: AppTextStyles.titleMedium),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.moderatorCloseSheetDecision(headline),
             style: AppTextStyles.bodySmall.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(l10n.moderatorCloseChoose, style: AppTextStyles.overline),
           RadioGroup<ModerationMotivation>(
             groupValue: _selected,
@@ -79,9 +79,9 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             color: cs.secondaryContainer,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +103,7 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           FilledButton(
             onPressed: () => Navigator.pop(context, _selected),
             child: Text(l10n.moderatorCloseSheetTitle),

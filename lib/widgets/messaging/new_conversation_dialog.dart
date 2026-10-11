@@ -120,21 +120,21 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             // Quick action button for group creation
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+              margin: const EdgeInsets.only(bottom: AppDimensions.space12),
               child: OutlinedButton.icon(
                 onPressed: _navigateToGroupCreation,
                 icon: const ButleryIcon(ButleryIcons.usersPlus),
                 label: Text(context.l10n.conversationCreateGroup),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.paddingM,
+                    vertical: AppDimensions.space12,
                   ),
                 ),
               ),
             ),
 
             const Divider(),
-            const SizedBox(height: AppDimensions.paddingS),
+            const SizedBox(height: AppDimensions.space8),
 
             // Or select friend for direct chat
             Align(
@@ -146,10 +146,10 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.space12),
 
             _buildSearchField(),
-            const SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.space12),
 
             Expanded(
               child: _buildFriendsList(),
@@ -201,14 +201,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               size: AppDimensions.iconSizeXxl,
               color: cs.error,
             ),
-            const SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               context.l10n.errorGeneric,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.space12),
             TextButton.icon(
               onPressed: () {
                 setState(() => _hasError = false);
@@ -232,14 +232,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               size: AppDimensions.iconSizeXxl,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               context.l10n.conversationNoFriendsYet,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingS),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,

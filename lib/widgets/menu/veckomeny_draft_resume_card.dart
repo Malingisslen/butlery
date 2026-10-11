@@ -60,7 +60,7 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
 
     return Container(
       key: const ValueKey('veckomeny-draft-resume-card'),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -80,13 +80,13 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
                 style: AppTextStyles.titleMedium.copyWith(color: onInk),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var day = 0; day < _days; day++) ...[
-                    if (day > 0) const SizedBox(width: AppDimensions.spacingXs),
+                    if (day > 0) const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: _DayCell(day: day, name: days[day]),
                     ),
@@ -94,17 +94,17 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               meta,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppModeColors.textSecondaryOnInk(),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingSm,
+              spacing: AppDimensions.space8,
+              runSpacing: AppDimensions.space8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 KeyedSubtree(
@@ -168,7 +168,7 @@ class _DayCell extends StatelessWidget {
     );
     final cell = Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingSm - 2,
+        vertical: AppDimensions.space8 - 2,
         horizontal: 2,
       ),
       child: Column(
@@ -176,7 +176,7 @@ class _DayCell extends StatelessWidget {
           Text(
             weekday,
             textAlign: TextAlign.center,
-            style: style.copyWith(color: onInk, fontWeight: FontWeight.w700),
+            style: style.copyWith(color: onInk),
           ),
           Text(
             empty ? '–' : name!,

@@ -37,8 +37,8 @@ class ButleryListSection extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.only(
-            top: AppDimensions.spacingMd,
-            bottom: heading == null ? 0 : AppDimensions.spacingXs,
+            top: AppDimensions.space16,
+            bottom: heading == null ? 0 : AppDimensions.space4,
           ),
           child: heading == null
               ? null
@@ -185,13 +185,13 @@ class ButleryListRow extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingSm + 2,
+          vertical: AppDimensions.space8 + 2,
         ),
         child: Row(
           children: [
             if (leading != null) ...[
               ExcludeSemantics(child: ButleryIcon(leading!, color: mutedText)),
-              const SizedBox(width: AppDimensions.spacingL),
+              const SizedBox(width: AppDimensions.space12),
             ],
             Expanded(
               child: Column(
@@ -214,7 +214,7 @@ class ButleryListRow extends StatelessWidget {
               ),
             ),
             if (value != null) ...[
-              const SizedBox(width: AppDimensions.spacingL),
+              const SizedBox(width: AppDimensions.space12),
               // At most 45 % of the row, so the label keeps its room and
               // every chevron stays at the end.
               ConstrainedBox(
@@ -232,15 +232,15 @@ class ButleryListRow extends StatelessWidget {
               ),
             ],
             if (trailing != null) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               ExcludeSemantics(child: trailing!),
             ],
             if (count > 0) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               ExcludeSemantics(child: SaffronCount(count: count)),
             ],
             if (toggle) ...[
-              const SizedBox(width: AppDimensions.spacingL),
+              const SizedBox(width: AppDimensions.space12),
               // The row carries the switch's meaning; the switch is drawn.
               ExcludeSemantics(
                 child: Switch(
@@ -249,7 +249,7 @@ class ButleryListRow extends StatelessWidget {
                 ),
               ),
             ] else if (!info) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               const ButleryChevron(),
             ],
           ],

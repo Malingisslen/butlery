@@ -35,8 +35,8 @@ class ReplyBanner extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -66,7 +66,7 @@ class ReplyBanner extends StatelessWidget {
                 // Sender name
                 Text(
                   context.l10n.messagingReplyingTo(message.senderDisplayName),
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: context.modeColors.success,
                   ),
                   maxLines: 1,

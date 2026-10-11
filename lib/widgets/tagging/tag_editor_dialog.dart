@@ -141,7 +141,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
           maxHeight: AppDimensions.dialogMaxHeightMedium,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +152,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ButleryIcon(
                     ButleryIcons.tag,
                     color: cs.onPrimaryContainer,
-                    size: AppDimensions.iconSizeAction,
+                    size: AppDimensions.iconSizeM,
                   ),
-                  const SizedBox(width: AppDimensions.spacingM),
+                  const SizedBox(width: AppDimensions.space8),
                   Semantics(
                     header: true,
                     child: Text(
@@ -170,7 +170,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ),
                 ],
               ),
-              const Divider(height: AppDimensions.spacingXl),
+              const Divider(height: AppDimensions.space32),
 
               // Tags list
               Flexible(
@@ -195,7 +195,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               .map((tag) => _buildTagChip(tag))
                               .toList(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingL),
+                        const SizedBox(height: AppDimensions.space12),
                       ],
 
                       // Removed tags section (can be restored)
@@ -217,7 +217,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               .map((tag) => _buildRemovedTagChip(tag))
                               .toList(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingL),
+                        const SizedBox(height: AppDimensions.space12),
                       ],
 
                       // Add new tag
@@ -246,8 +246,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                       hintText: context.l10n.tagWriteTagHint,
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                            horizontal: AppDimensions.paddingM,
-                                            vertical: AppDimensions.paddingS,
+                                            horizontal: AppDimensions.space12,
+                                            vertical: AppDimensions.space8,
                                           ),
                                     ),
                                     validator: (value) {
@@ -283,16 +283,16 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
               const Divider(),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
 
               // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   const DialogCancelButton(),
-                  const SizedBox(width: AppDimensions.spacingM),
+                  const SizedBox(width: AppDimensions.space8),
                   FilledButton(
                     onPressed: _save,
                     style: const ButtonStyle(

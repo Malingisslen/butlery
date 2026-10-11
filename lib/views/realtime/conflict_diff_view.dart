@@ -233,7 +233,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
   Widget _buildNoChanges(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Text(
           context.l10n.conflictDiffNoChanges,
           textAlign: TextAlign.center,
@@ -247,10 +247,10 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
   Widget _buildDiffList() {
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: _diff.changedFields.length,
       separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
       itemBuilder: (context, index) =>
           ConflictDiffFieldCard(field: _diff.changedFields[index]),
     );
@@ -264,7 +264,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -288,13 +288,13 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
                   child: Text(context.l10n.conflictDiffKeepMine),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               OutlinedButton(
                 key: const ValueKey('conflictDiff.acceptTheirs'),
                 onPressed: _saving ? null : _acceptTheirs,
                 child: Text(context.l10n.conflictDiffUseTheirs),
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               TextButton(
                 key: const ValueKey('conflictDiff.closeWithoutOverwrite'),
                 onPressed: _saving ? null : _closeWithoutOverwrite,
@@ -318,7 +318,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: SizedBox(
             width: double.infinity,
             child: BusyButtonSemantics(
@@ -372,18 +372,17 @@ class ConflictDiffFieldCard extends StatelessWidget {
         color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
       ),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             field.fieldKey,
             style: AppTextStyles.contentLabel.copyWith(
-              fontWeight: FontWeight.w600,
               color: cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _ValueRow(
             label: localLabel ?? context.l10n.conflictDiffLocalLabel,
             text: field.localText,
@@ -392,7 +391,7 @@ class ConflictDiffFieldCard extends StatelessWidget {
             background: butlery.surfaceTintSuccess,
             textColor: cs.onSurface,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _ValueRow(
             label: remoteLabel ?? context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
@@ -438,7 +437,7 @@ class _ValueRow extends StatelessWidget {
           ),
         ),
       ),
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -446,7 +445,7 @@ class _ValueRow extends StatelessWidget {
             label,
             style: AppTextStyles.captionText.copyWith(color: labelColor),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             value == null || value.isEmpty
                 ? context.l10n.conflictDiffEmptyValue

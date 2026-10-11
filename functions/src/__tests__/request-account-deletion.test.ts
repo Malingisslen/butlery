@@ -30,7 +30,14 @@ if (!admin.apps.length) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { runAccountDeletionWithDeps } = require("../account/request-account-deletion");
+const {
+  runAccountDeletionWithDeps,
+  assertRecentSignIn,
+  requestAccountDeletion,
+  REAUTH_MAX_AGE_SECONDS,
+} = require("../account/request-account-deletion");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { scheduleAccountDeletion } = require("../account/account-deletion-schedule");
 
 /** Hand-rolled fake collection — every method returns an empty snapshot so
  * the cascade walks the full step list without doing real I/O. Records the
@@ -1017,6 +1024,132 @@ test("2026-09-18: a report the erased user FILED in a CLOSED case retains nothin
     throw new Error(
       `a closed case must retain nothing, got ${JSON.stringify(result.retained)}`,
     );
+  }
+});
+
+// ---- BUT-920: the recent-sign-in gate and guests ----
+
+const NOW_SEC = 1_800_000_000;
+
+function signInRefusal(
+  provider: string | undefined,
+  authTime: number | undefined,
+  linkedProviders = 0,
+): { code?: string; message?: string; details?: { code?: string } } | null {
+  const token: Record<string, unknown> = {};
+  if (provider !== undefined) token.firebase = { sign_in_provider: provider };
+  if (authTime !== undefined) token.auth_time = authTime;
+  try {
+    assertRecentSignIn({ uid: "u", token }, NOW_SEC, linkedProviders);
+    return null;
+  } catch (err) {
+    return err as { code?: string; message?: string; details?: { code?: string } };
+  }
+}
+
+test("BUT-920: a guest's token older than the re-auth window is accepted", async () => {
+  const e = signInRefusal("anonymous", NOW_SEC - 30 * 24 * 60 * 60);
+  if (e !== null) throw new Error(`guest refused: ${e.code} ${e.message}`);
+});
+
+test("BUT-920: an anonymous token for an account that has since linked a provider is refused requires-recent-login", async () => {
+  const e = signInRefusal("anonymous", NOW_SEC - REAUTH_MAX_AGE_SECONDS - 1, 1);
+  if (e?.code !== "failed-precondition" || e.details?.code !== "requires-recent-login") {
+    throw new Error(`expected requires-recent-login, got ${JSON.stringify(e)}`);
+  }
+});
+
+test("BUT-920: a password token older than the re-auth window is still refused requires-recent-login", async () => {
+  const e = signInRefusal("password", NOW_SEC - REAUTH_MAX_AGE_SECONDS - 1);
+  if (e?.code !== "failed-precondition" || e.details?.code !== "requires-recent-login") {
+    throw new Error(`expected requires-recent-login, got ${JSON.stringify(e)}`);
+  }
+  const fresh = signInRefusal("password", NOW_SEC - REAUTH_MAX_AGE_SECONDS);
+  if (fresh !== null) throw new Error(`a token exactly at the window must pass, got ${fresh.message}`);
+});
+
+test("BUT-920: the exemption is the anonymous provider only", async () => {
+  for (const provider of ["google.com", "apple.com", "custom", undefined]) {
+    const e = signInRefusal(provider, NOW_SEC - REAUTH_MAX_AGE_SECONDS - 1);
+    if (e?.details?.code !== "requires-recent-login") {
+      throw new Error(`${provider}: expected requires-recent-login, got ${JSON.stringify(e)}`);
+    }
+  }
+  const missing = signInRefusal("password", undefined);
+  if (missing?.code !== "unauthenticated") {
+    throw new Error(`a non-guest without auth_time must be refused, got ${JSON.stringify(missing)}`);
+  }
+});
+
+test("BUT-920: the callable refuses a stale password token before any read", async () => {
+  let caught: { code?: string; details?: { code?: string } } | null = null;
+  try {
+    await requestAccountDeletion.run({
+      auth: {
+        uid: "u",
+        token: {
+          firebase: { sign_in_provider: "password" },
+          auth_time: Math.floor(Date.now() / 1000) - REAUTH_MAX_AGE_SECONDS - 60,
+        },
+      },
+      data: {},
+    });
+  } catch (err) {
+    caught = err as { code?: string; details?: { code?: string } };
+  }
+  if (caught?.details?.code !== "requires-recent-login") {
+    throw new Error(`expected requires-recent-login, got ${JSON.stringify(caught)}`);
+  }
+});
+
+// The accepting branch goes on to the cascade on the module's real Firestore,
+// so the callable's use of the gate is pinned on source.
+test("BUT-920: the callable passes its caller to assertRecentSignIn before resolving the reason", async () => {
+  const src = fs
+    .readFileSync(path.resolve(__dirname, "..", "account", "request-account-deletion.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+  const call = "assertRecentSignIn(request.auth, Math.floor(Date.now() / 1000), linkedProviders);";
+  const lookup = "(await admin.auth().getUser(request.auth.uid)).providerData.length";
+  if (src.split(lookup).length - 1 !== 1 || src.indexOf(lookup) > src.indexOf(call)) {
+    throw new Error("the guest exemption must be confirmed against the Auth record before the gate");
+  }
+  if (src.split(call).length - 1 !== 1) throw new Error(`expected exactly one ${call}`);
+  const reasonAt = src.indexOf("await resolveDeletionReason(db");
+  if (reasonAt < 0 || src.indexOf(call) > reasonAt) {
+    throw new Error("assertRecentSignIn must run before the reason is resolved");
+  }
+});
+
+async function scheduleRefusal(
+  provider: string,
+  authTime: number,
+): Promise<{ code?: string; message?: string; details?: { code?: string } } | null> {
+  try {
+    await scheduleAccountDeletion.run({
+      auth: { uid: "u", token: { firebase: { sign_in_provider: provider }, auth_time: authTime } },
+      data: {},
+    });
+    return null;
+  } catch (err) {
+    return err as { code?: string; message?: string; details?: { code?: string } };
+  }
+}
+
+test("BUT-920: scheduleAccountDeletion refuses a guest, fresh token or stale, before any read", async () => {
+  const nowSec = Math.floor(Date.now() / 1000);
+  for (const authTime of [nowSec, nowSec - REAUTH_MAX_AGE_SECONDS - 60]) {
+    const e = await scheduleRefusal("anonymous", authTime);
+    if (e?.code !== "failed-precondition" || e.details?.code !== "guest-use-immediate-deletion") {
+      throw new Error(`auth_time ${authTime}: expected guest-use-immediate-deletion, got ${JSON.stringify(e)}`);
+    }
+  }
+});
+
+test("BUT-920 control: scheduleAccountDeletion still meets a stale password token with requires-recent-login", async () => {
+  const e = await scheduleRefusal("password", Math.floor(Date.now() / 1000) - REAUTH_MAX_AGE_SECONDS - 60);
+  if (e?.details?.code !== "requires-recent-login") {
+    throw new Error(`expected requires-recent-login, got ${JSON.stringify(e)}`);
   }
 });
 

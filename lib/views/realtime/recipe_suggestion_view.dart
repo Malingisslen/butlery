@@ -196,13 +196,13 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
               ? l.recipeSuggestionIntroMineUpdated(keptUntil)
               : l.recipeSuggestionIntroMine(keptUntil));
     return ListView(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       children: [
         Text(
           intro,
           style: AppTextStyles.contentLabel.copyWith(color: cs.onSurface),
         ),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
         if (diff.isEmpty)
           Text(
             l.recipeSuggestionNoChanges,
@@ -221,7 +221,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
               localLabel: l.recipeSuggestionSuggestedLabel,
               remoteLabel: l.recipeSuggestionCurrentLabel,
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
           ],
       ],
     );
@@ -254,7 +254,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -269,7 +269,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
                     ? PlateLineButton.ignore
                     : () => _decide(_Decision.accept),
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               BusyButtonSemantics(
                 busy: dismissing,
                 name: l.recipeSuggestionDismiss,

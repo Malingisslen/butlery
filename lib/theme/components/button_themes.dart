@@ -187,8 +187,8 @@ class ButtonThemes {
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            horizontal: AppDimensions.space24,
+            vertical: (AppDimensions.space8 + AppDimensions.space4),
           ),
         ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
@@ -214,8 +214,8 @@ class ButtonThemes {
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            horizontal: AppDimensions.space24,
+            vertical: (AppDimensions.space8 + AppDimensions.space4),
           ),
         ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
@@ -249,8 +249,8 @@ class ButtonThemes {
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            horizontal: AppDimensions.space24,
+            vertical: (AppDimensions.space8 + AppDimensions.space4),
           ),
         ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
@@ -282,8 +282,8 @@ class ButtonThemes {
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            horizontal: AppDimensions.space16,
+            vertical: (AppDimensions.space8 + AppDimensions.space4),
           ),
         ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
@@ -341,8 +341,8 @@ class ButtonThemes {
         disabledForegroundColor: _filledDisabledForeground(cs),
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -408,8 +408,8 @@ class ButtonThemes {
       ),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          horizontal: AppDimensions.space24,
+          vertical: (AppDimensions.space8 + AppDimensions.space4),
         ),
       ),
       textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
@@ -421,8 +421,8 @@ class ButtonThemes {
     foregroundColor: _unfilledForeground(cs),
     disabledForegroundColor: AppModeColors.textDisabled(cs.brightness),
     padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM,
+      horizontal: AppDimensions.space16,
+      vertical: AppDimensions.space12,
     ),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -446,8 +446,8 @@ class ButtonThemes {
         ),
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -468,8 +468,8 @@ class ButtonThemes {
         disabledForegroundColor: _filledDisabledForeground(cs),
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -483,8 +483,8 @@ class ButtonThemes {
         disabledForegroundColor: _outlinedDisabledForeground(cs),
         backgroundColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -526,8 +526,8 @@ class ButtonThemes {
         disabledForegroundColor: _outlinedDisabledForeground(cs),
         backgroundColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -548,7 +548,7 @@ class ButtonThemes {
         shadowColor: cs.shadow,
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space16,
-          vertical: AppDimensions.paddingM,
+          vertical: AppDimensions.space12,
         ),
         // An extended create button is the round plus stretched to fit its
         // label: a pill (tokens.json space.radius.pill; Komponentark v1:665).

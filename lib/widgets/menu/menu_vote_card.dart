@@ -70,7 +70,7 @@ class MenuVoteCard extends StatelessWidget {
           _closesIn(context),
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         for (final option in vote.alternatives)
           _OptionRow(
             option: option,
@@ -223,7 +223,7 @@ class MenuVoteCard extends StatelessWidget {
               color: context.modeColors.success,
               size: AppDimensions.iconSizeL,
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +271,7 @@ class _CardFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     child: Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: children,
@@ -375,7 +375,7 @@ class _OptionRow extends StatelessWidget {
                   color: isSelected ? cs.primaryContainer : cs.surface,
                 ),
                 child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  padding: const EdgeInsets.all(AppDimensions.space12),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: isSelected ? cs.onSurface : cs.outlineVariant,
@@ -404,7 +404,7 @@ class _OptionRow extends StatelessWidget {
                             color: cs.onSurfaceVariant,
                           ),
                         ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       // The share of the votes as the determinate plate
                       // line. The count below says the number, so the line
                       // is not read out on its own.

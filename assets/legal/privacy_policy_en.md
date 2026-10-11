@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 11, 2026
-**Version:** 1.12.0
+**Version:** 1.13.0
 
 ---
 
@@ -48,6 +48,12 @@ We collect the following types of personal data when you use Butlery:
 ### 3.3 Information from third parties
 
 - **Imported recipes:** Recipes you import from external websites
+
+### 3.4 If you try Butlery as a guest
+
+If you try Butlery without an account, we create a temporary guest account with no email address. What you save as a guest (recipes, menus, shopping lists, pantry and allergies) and your birth year and acceptance of the terms are stored the same way as for a regular account. We also count how many AI imports the guest account has made, because a guest can import three recipes with AI.
+
+As a guest you cannot share, publish, chat, add friends or report content. If you create an account, everything you saved comes with you. If you sign out as a guest, the guest account and everything in it is deleted immediately. If you do not use the guest account for 30 days, it and everything in it is deleted automatically.
 
 ---
 
@@ -227,6 +233,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
+| Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |

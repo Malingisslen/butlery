@@ -76,7 +76,7 @@ class _CookbookRecipePickerSheetState extends State<CookbookRecipePickerSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Text(
                 l10n.cookbookAddRecipes,
                 style: AppTextStyles.titleLarge,
@@ -84,7 +84,7 @@ class _CookbookRecipePickerSheetState extends State<CookbookRecipePickerSheet> {
             ),
             if (candidates.isEmpty)
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Text(l10n.cookbookPickerEmpty),
               )
             else
@@ -108,7 +108,7 @@ class _CookbookRecipePickerSheetState extends State<CookbookRecipePickerSheet> {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: KeyedSubtree(
                 key: CookbookRecipePickerSheet.confirmKey,
                 child: ActionButtons.primaryButton(

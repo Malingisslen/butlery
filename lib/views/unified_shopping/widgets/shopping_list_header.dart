@@ -33,7 +33,7 @@ class ShoppingListHeader {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         boxShadow: AppShadows.subtle,
@@ -125,13 +125,13 @@ class ShoppingListHeader {
               semanticLabel: context.l10n.shoppingRenameList,
               // text.primary itself, never faded (tokens.json:40-53).
               color: cs.onSurface,
-              iconSize: AppDimensions.iconSizeAction,
+              iconSize: AppDimensions.iconSizeM,
             ),
           ),
 
           // Convert button - show when user owns the list
           if (onConvertList != null) ...[
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             DecoratedBox(
               decoration: BoxDecoration(
                 color: cs.surface,
@@ -147,12 +147,12 @@ class ShoppingListHeader {
                     ? context.l10n.shoppingConvertToCollaborative
                     : context.l10n.shoppingConvertToPersonal,
                 color: cs.onSurface,
-                iconSize: AppDimensions.iconSizeAction,
+                iconSize: AppDimensions.iconSizeM,
               ),
             ),
           ],
 
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
 
           // Delete button
           DecoratedBox(
@@ -167,7 +167,7 @@ class ShoppingListHeader {
               semanticLabel: context.l10n.shoppingDeleteList,
               // text.primary itself, never faded (tokens.json:40-53).
               color: cs.onSurface,
-              iconSize: AppDimensions.iconSizeAction,
+              iconSize: AppDimensions.iconSizeM,
             ),
           ),
         ],
@@ -273,7 +273,7 @@ class ShoppingListHeader {
                   if (permissionText != null) ...[
                     Text(
                       ' • $permissionText',
-                      style: AppTextStyles.metadataEmphasized.copyWith(
+                      style: AppTextStyles.labelMedium.copyWith(
                         color: permissionTextColor ?? sharingColor,
                       ),
                     ),

@@ -66,7 +66,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Row(
                 children: [
                   Expanded(
@@ -117,7 +117,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -145,7 +145,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
     return Container(
       key: ValueKey(category),
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
+        horizontal: AppDimensions.space16,
         vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(

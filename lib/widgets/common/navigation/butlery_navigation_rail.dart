@@ -69,7 +69,7 @@ class ButleryNavigationRail extends StatelessWidget {
               width: width,
               child: Column(
                 children: [
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   Semantics(
                     sortKey: const OrdinalSortKey(0),
                     child: ButleryAddButton(
@@ -83,7 +83,7 @@ class ButleryNavigationRail extends StatelessWidget {
                     width: AppDimensions.minTouchTarget,
                     height: 1,
                     margin: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingMd,
+                      vertical: AppDimensions.space16,
                     ),
                     color: ink.divider,
                   ),
@@ -94,7 +94,7 @@ class ButleryNavigationRail extends StatelessWidget {
                           for (var i = 0; i < last; i++) entry(i),
                           const Spacer(),
                           if (last >= 0) entry(last),
-                          const SizedBox(height: AppDimensions.spacingMd),
+                          const SizedBox(height: AppDimensions.space16),
                         ],
                       ),
                     ),
@@ -163,14 +163,14 @@ class _RailTab extends StatelessWidget {
                       if (isSelected)
                         PositionedDirectional(
                           start: 0,
-                          top: AppDimensions.spacingSm,
-                          bottom: AppDimensions.spacingSm,
+                          top: AppDimensions.space8,
+                          bottom: AppDimensions.space8,
                           width: _stripWidth,
                           child: ColoredBox(color: ink.marker),
                         ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingSm,
+                          vertical: AppDimensions.space8,
                         ),
                         child: Center(
                           child: Column(
@@ -181,7 +181,7 @@ class _RailTab extends StatelessWidget {
                                 badgeCount: item.badgeCount,
                                 color: color,
                               ),
-                              const SizedBox(height: AppDimensions.spacingXs),
+                              const SizedBox(height: AppDimensions.space4),
                               Text(
                                 item.label,
                                 style: AppTextStyles.navLabel.copyWith(

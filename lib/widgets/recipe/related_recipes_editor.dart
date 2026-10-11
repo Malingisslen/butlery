@@ -58,7 +58,7 @@ class RelatedRecipesEditor extends StatelessWidget {
             color: cs.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
 
         // Chips for currently linked recipes
         if (relatedRecipes.isNotEmpty) ...[
@@ -159,13 +159,13 @@ class _RelatedChip extends StatelessWidget {
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 start: AppDimensions.space4,
-                end: AppDimensions.spacingXs,
-                top: AppDimensions.spacingXs,
-                bottom: AppDimensions.spacingXs,
+                end: AppDimensions.space4,
+                top: AppDimensions.space4,
+                bottom: AppDimensions.space4,
               ),
               child: Text(
                 title,
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurface,
                 ),
               ),
@@ -181,10 +181,10 @@ class _RelatedChip extends StatelessWidget {
                     onTap: onRemove,
                     child: Padding(
                       padding: const EdgeInsetsDirectional.only(
-                        start: AppDimensions.spacingXs,
+                        start: AppDimensions.space4,
                         end: AppDimensions.space4,
-                        top: AppDimensions.spacingXs,
-                        bottom: AppDimensions.spacingXs,
+                        top: AppDimensions.space4,
+                        bottom: AppDimensions.space4,
                       ),
                       child: ButleryIcon(
                         ButleryIcons.x,

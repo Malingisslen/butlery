@@ -153,21 +153,21 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       children: [
         if (_hasEffectiveTags) ...[
           _buildTags(context),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
         if (_hasPersonalTags) ...[
           _PersonalTagsSection(
             tagIds: viewModel.recipe.personalTagIds!,
             tagNames: personalTagNames!,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
         if (recipe.imageUrls.isNotEmpty) ...[
           _buildImageCarousel(context),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
         ],
         _buildIngredientsSection(context),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         _buildInstructionsSection(context),
         // BUT-1057: Related-recipe sections — hidden when empty. Lists are
         // resolved in the viewmodel; the sections are purely presentational.
@@ -185,7 +185,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
+            horizontal: AppDimensions.space16,
           ),
           child: Semantics(
             header: true,
@@ -209,7 +209,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         Divider(color: cs.surfaceContainerHigh),
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
+            horizontal: AppDimensions.space16,
           ),
           child: Semantics(
             header: true,
@@ -229,15 +229,15 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Portion scaler controls with background band
           Container(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.paddingM,
-              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.space12,
+              horizontal: AppDimensions.space16,
             ),
             decoration: BoxDecoration(
               color: cs.surfaceContainerHigh,
@@ -285,12 +285,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       header: true,
       child: Padding(
         padding: const EdgeInsets.only(
-          top: AppDimensions.paddingM,
+          top: AppDimensions.space12,
           bottom: AppDimensions.space4,
         ),
         child: Container(
           padding: const EdgeInsetsDirectional.only(
-            bottom: AppDimensions.spacingXs,
+            bottom: AppDimensions.space4,
           ),
           decoration: BoxDecoration(
             border: Border(
@@ -301,7 +301,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             label.toUpperCase(),
             style: AppTextStyles.titleSmall.copyWith(
               color: cs.onSurface,
-              fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
           ),
@@ -355,22 +354,21 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                               : parsed.quantity > 0
                               ? _formatQuantity(parsed.quantity)
                               : '',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: AppTextStyles.bodyBold.copyWith(
                             color: cs.onSurface,
-                            fontWeight: FontWeight.w600,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                           textAlign: TextAlign.end,
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingXl),
+                      const SizedBox(width: AppDimensions.space32),
                       Expanded(
                         child: Row(
                           children: [
                             if (isAllergen)
                               Padding(
                                 padding: const EdgeInsetsDirectional.only(
-                                  end: AppDimensions.spacingXs,
+                                  end: AppDimensions.space4,
                                 ),
                                 child: ButleryIcon(
                                   ButleryIcons.triangleAlert,
@@ -411,7 +409,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final instructions = viewModel.recipe.instructions;
     if (instructions.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Text(
           context.l10n.recipeNoInstructions,
           style: AppTextStyles.bodyMedium.copyWith(
@@ -423,7 +421,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       // BUT-951: instructions via ListView.builder, mirrors ingredients change.
       child: ListView.builder(
         shrinkWrap: true,
@@ -446,7 +444,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
     return Padding(
       padding: EdgeInsets.only(
-        bottom: index < instructions.length - 1 ? AppDimensions.spacingMd : 0,
+        bottom: index < instructions.length - 1 ? AppDimensions.space16 : 0,
       ),
       child: Semantics(
         label: context.l10n.a11yToggleStepDone,
@@ -459,13 +457,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             borderRadius: BorderRadius.zero,
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingXs,
+                vertical: AppDimensions.space4,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildStepCheckbox(context, index + 1, isCompleted),
-                  const SizedBox(width: AppDimensions.spacingMd),
+                  const SizedBox(width: AppDimensions.space16),
                   Expanded(
                     // BUT-604: duration phrases render as inline tappable
                     // chips that open the step-timer sheet — same affordance
@@ -550,9 +548,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               )
             : Text(
                 '$stepNumber',
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMediumBold.copyWith(
                   color: cs.onSurface,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
       ),
@@ -638,7 +635,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
@@ -651,16 +648,16 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               ButleryIcon(
                 ButleryIcons.tag,
                 color: cs.onSurface,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 context.l10n.recipeTags,
                 style: AppTextStyles.titleMedium,
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Wrap(
             spacing: AppDimensions.space4,
             runSpacing: AppDimensions.space4,
@@ -670,7 +667,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               return Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
                 decoration: BoxDecoration(
                   color: cs.surface,
@@ -681,9 +678,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 ),
                 child: Text(
                   displayName,
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: cs.onSurface,
-                    fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               );
@@ -708,15 +704,15 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Row(
               children: [
                 ButleryIcon(
                   ButleryIcons.image,
                   color: cs.onSurface,
-                  size: AppDimensions.iconSizeAction,
+                  size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
                 Text(
                   context.l10n.recipeImagesTitle,
                   style: AppTextStyles.titleMedium,
@@ -806,7 +802,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
@@ -820,9 +816,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               ButleryIcon(
                 ButleryIcons.tag,
                 color: cs.onSurface,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Text(
                   context.l10n.recipePersonalTags,
@@ -853,7 +849,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           // Tags
           Wrap(
             spacing: AppDimensions.space4,
@@ -881,7 +877,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -889,7 +885,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       ),
       child: Text(
         name,
-        style: AppTextStyles.metadataEmphasized.copyWith(
+        style: AppTextStyles.labelMedium.copyWith(
           color: cs.onSurface,
         ),
       ),
@@ -918,7 +914,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space4,
-                vertical: AppDimensions.spacingXs,
+                vertical: AppDimensions.space4,
               ),
               decoration: BoxDecoration(
                 color: cs.surface,
@@ -926,7 +922,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               ),
               child: Text(
                 context.l10n.commonMoreCount(count),
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: AppModeColors.textSecondaryOnRaised(cs.brightness),
                 ),
               ),

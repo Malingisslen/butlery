@@ -126,7 +126,7 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.consentRenewalSinceVersion(consent.consentVersion, date)),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           for (final change in changes) ...[
             Builder(
               builder: (context) {
@@ -149,16 +149,16 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
                 );
               },
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
           ],
           Text(l10n.consentRenewalUnchanged(unchanged)),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             l10n.consentRenewalNotNowNote,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
           if (_failed) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               l10n.consentRenewalSaveFailed,
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),

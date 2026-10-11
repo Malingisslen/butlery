@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:dde1d72a0fc26173bef72ac088f6ff69be7929dd18f9e1218f375f08e582fdab (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:0ed40d513d789b85c8172112126e444e3f9717cfe36d5b84c85ac9048639d579 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -211,7 +211,6 @@ class AppTextStyles {
   static TextStyle get appBarTitle => headlineSmall;
   static TextStyle get headerTitle => headlineSmall;
   static TextStyle get mainViewTitle => headlineBold;
-  static TextStyle get sectionTitleStyle => sectionHeader;
   static TextStyle get emptyStateBody => bodyMedium;
   static TextStyle get bodyMediumMuted => bodyMedium;
   static TextStyle get titleMediumMuted => titleMedium;
@@ -253,6 +252,14 @@ class AppTextStyles {
       bodyMedium.copyWith(fontWeight: FontWeight.w700);
   static TextStyle get bodyLargeBold =>
       bodyLarge.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get bodySmallBold =>
+      bodySmall.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get labelMediumBold =>
+      labelMedium.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get titleLargeBold =>
+      titleLarge.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get captionBold =>
+      captionBase.copyWith(fontWeight: FontWeight.w700);
   static TextStyle get bodyMediumError =>
       bodyMedium.copyWith(color: AppColors.error);
   static TextStyle get bodyMediumSuccess =>
@@ -270,8 +277,6 @@ class AppTextStyles {
       labelLarge.copyWith(color: AppColors.textOnPrimary);
   static TextStyle get headerCountBadge =>
       labelMedium.copyWith(color: AppColors.rustLight);
-  static TextStyle get sectionLabel =>
-      overline.copyWith(color: AppColors.onWarningContainer);
   static TextStyle get subpageTitle =>
       labelLarge.copyWith(fontWeight: FontWeight.w700);
 

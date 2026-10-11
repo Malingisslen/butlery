@@ -63,7 +63,7 @@ class DecisionListScaffold extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.symmetric(
           horizontal: ButleryTopBar.sideMargin(context),
-          vertical: AppDimensions.spacingSm,
+          vertical: AppDimensions.space8,
         ),
         children: [ButleryListSection(rows: rows)],
       ),

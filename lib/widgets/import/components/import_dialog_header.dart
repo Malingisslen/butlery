@@ -25,9 +25,9 @@ class ImportDialogHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.space16,
-        AppDimensions.spacingMd,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingSm,
+        AppDimensions.space16,
+        AppDimensions.space8,
+        AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         border: Border(

@@ -91,8 +91,8 @@ class _CookSnapPhotoCarouselState extends State<CookSnapPhotoCarousel> {
                   _photo(context, urls[index], index: index),
             ),
             Positioned(
-              top: AppDimensions.spacingXs,
-              right: AppDimensions.spacingXs,
+              top: AppDimensions.space4,
+              right: AppDimensions.space4,
               child: ExcludeSemantics(
                 child: _CounterBadge(current: _index + 1, total: urls.length),
               ),
@@ -143,7 +143,7 @@ class _CounterBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space4,
         vertical: 2,
       ),
       color: context.modeColors.overlayPaperCard,
@@ -151,7 +151,6 @@ class _CounterBadge extends StatelessWidget {
         context.l10n.cookSnapPhotoCounter(current, total),
         style: AppTextStyles.labelSmall.copyWith(
           color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );

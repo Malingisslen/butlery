@@ -211,7 +211,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget _buildInfoBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
@@ -222,7 +222,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             color: context.modeColors.info,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingL),
+          const SizedBox(width: AppDimensions.space12),
           Expanded(
             child: Text(
               context.l10n.privacyGdprCompliant,

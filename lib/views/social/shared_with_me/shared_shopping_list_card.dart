@@ -54,7 +54,7 @@ class SharedShoppingListCard {
               _showShoppingListPreview(context, viewModel, sharedShoppingList);
             },
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
                 border: !isRead
@@ -145,7 +145,7 @@ class SharedShoppingListCard {
                 style: AppTextStyles.titleMedium,
               ),
               if (sharedShoppingList.listDescription?.isNotEmpty == true) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   sharedShoppingList.listDescription!,
                   style: AppTextStyles.bodySmall,
@@ -153,7 +153,7 @@ class SharedShoppingListCard {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               // Item summary preview
               Text(
                 sharedShoppingList.itemCountText,
@@ -164,7 +164,7 @@ class SharedShoppingListCard {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Row(
                 children: [
                   ButleryIcon(
@@ -172,7 +172,7 @@ class SharedShoppingListCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     sharedShoppingList.itemCountText,
                     style: AppTextStyles.bodySmall,
@@ -183,7 +183,7 @@ class SharedShoppingListCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     sharedShoppingList.originalOwnerDisplayName,
                     style: AppTextStyles.bodySmall,
@@ -294,7 +294,7 @@ class SharedShoppingListCard {
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -302,7 +302,7 @@ class SharedShoppingListCard {
                 sharedShoppingList.listName,
                 style: AppTextStyles.headlineSmall,
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 sharedShoppingList.sharingContextText,
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -322,7 +322,7 @@ class SharedShoppingListCard {
           child: ListView.builder(
             controller: scrollController,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
+              horizontal: AppDimensions.space16,
             ),
             itemCount: 1,
             itemBuilder: (context, index) {
@@ -345,7 +345,7 @@ class SharedShoppingListCard {
 
         // Action buttons
         Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Row(
             children: [
               Expanded(
@@ -355,7 +355,7 @@ class SharedShoppingListCard {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: ActionButtons.primaryButton(
                   context,

@@ -95,7 +95,7 @@ class FriendRequestsHeaderBuilder {
                         ButleryIcons.circleCheck,
                         color: context.modeColors.success,
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Text(
                         context.l10n.socialAcceptCount(selectedIncoming.length),
                       ),
@@ -110,7 +110,7 @@ class FriendRequestsHeaderBuilder {
                         ButleryIcons.x,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Text(
                         context.l10n.socialDeclineCount(
                           selectedIncoming.length,
@@ -141,8 +141,8 @@ class FriendRequestsHeaderBuilder {
     final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      margin: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
+      margin: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -242,7 +242,7 @@ class IncomingRequestsTabBuilder {
           if (selectedIncoming.isNotEmpty)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
@@ -272,7 +272,7 @@ class IncomingRequestsTabBuilder {
           // Requests list
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               itemCount: viewModel.incomingRequests.length,
               separatorBuilder: (context, index) =>
                   const SizedBox(height: AppDimensions.space4),
@@ -334,7 +334,7 @@ class SentRequestsTabBuilder {
           if (selectedSent.isNotEmpty)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
@@ -362,7 +362,7 @@ class SentRequestsTabBuilder {
           // Requests list
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               itemCount: viewModel.sentRequests.length,
               separatorBuilder: (context, index) =>
                   const SizedBox(height: AppDimensions.space4),

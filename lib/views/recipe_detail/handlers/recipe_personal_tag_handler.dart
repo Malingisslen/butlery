@@ -166,8 +166,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
   Widget _buildTagWrap(Iterable<PersonalTag> tagsToShow) {
     return Wrap(
-      spacing: AppDimensions.spacingSm,
-      runSpacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space8,
+      runSpacing: AppDimensions.space8,
       children: tagsToShow
           .map(
             (tag) => _QuickTagChip(
@@ -222,11 +222,11 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              padding: const EdgeInsets.all(AppDimensions.space24),
               child: Row(
                 children: [
                   const ButleryIcon(ButleryIcons.tag),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Text(
                       context.l10n.taggingPersonalTags,
@@ -237,7 +237,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                     onPressed: _cancel,
                     child: Text(context.l10n.commonCancel),
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   FilledButton(
                     onPressed: _save,
                     child: Text(context.l10n.commonSave),
@@ -274,14 +274,14 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
     return ListView(
       controller: scrollController,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.space24),
       children: [
         // Selected count
         if (_selectedTagIds.isNotEmpty) ...[
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space8,
             ),
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
@@ -293,7 +293,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                   ButleryIcons.circleCheck,
                   size: AppDimensions.iconSize18,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Text(
                   context.l10n.taggingTagsSelected(_selectedTagIds.length),
                   style: AppTextStyles.contentLabel.copyWith(
@@ -311,7 +311,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
         ],
 
         // Suggested tags section
@@ -320,14 +320,14 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             context.l10n.tagSuggested,
             style: AppTextStyles.labelLarge,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildTagWrap(tags.where((tag) => _suggestedTagIds.contains(tag.id))),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.tagAll,
             style: AppTextStyles.labelLarge,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
 
         // All tags (excluding suggested if suggestions shown)
@@ -337,7 +337,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 _suggestedTagIds.isEmpty || !_suggestedTagIds.contains(tag.id),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Manage tags link
         Center(
@@ -350,7 +350,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             label: Text(context.l10n.taggingManageTags),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
       ],
     );
   }
@@ -360,7 +360,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: const EdgeInsets.all(AppDimensions.space32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -368,14 +368,14 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               ButleryIcons.tag,
               size: 64,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               context.l10n.taggingNoPersonalTags,
               style: AppTextStyles.titleMedium.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.taggingCreateTagsToOrganize,
               style: AppTextStyles.bodySmall.copyWith(
@@ -383,7 +383,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             FilledButton.icon(
               onPressed: _navigateToManageTags,
               icon: const ButleryIcon(ButleryIcons.plus),

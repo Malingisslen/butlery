@@ -94,7 +94,6 @@ class PresenceOverview extends StatelessWidget {
                             summary,
                             style: AppTextStyles.labelMedium.copyWith(
                               color: cs.onSurface,
-                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

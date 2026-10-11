@@ -5,7 +5,6 @@ import 'dart:async';
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
@@ -15,9 +14,9 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
-import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+import 'package:butlery/services/onboarding/starter_recipe_seeder.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
@@ -421,63 +420,19 @@ class OnboardingViewModel extends BaseViewModel {
   /// Seeds starter recipes so new users don't see an empty app.
   ///
   /// Awaited from [completeOnboarding] so the onboarding spinner reflects
-  /// the true wait. Per-recipe failures are tolerated (logged + counted);
-  /// when at least one fails, a typed analytics event surfaces the partial
-  /// failure for observability. Outer infrastructure errors (e.g. service
-  /// not registered in tests) are swallowed — onboarding must not fail
-  /// because seeding can't run.
+  /// the true wait. [StarterRecipeSeeder] tolerates per-recipe failures and
+  /// never throws; an infrastructure error here (e.g. the recipe service not
+  /// registered in tests) degrades to zero seeded, because onboarding must
+  /// not fail because seeding can't run.
   ///
   /// Returns the persisted ids of the recipes that seeded successfully, in
-  /// seed order — BUT-930 needs these to build the sample menu plan. The
-  /// id is taken from [UnifiedRecipeService.createPersonalRecipe]'s return
-  /// (the service mints a fresh id; the seed's own id is not the stored one).
+  /// seed order — BUT-930 needs these to build the sample menu plan.
   Future<List<String>> _seedStarterRecipes() async {
     try {
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final seeds = RecipeSeeds.allRecipes;
-      final seededIds = <String>[];
-
-      for (final seed in seeds) {
-        try {
-          final id = await recipeService.createPersonalRecipe(
-            title: seed.core.title,
-            description: seed.core.description,
-            ingredients: seed.core.ingredients,
-            instructions: seed.core.instructions,
-            mealType: seed.core.mealType,
-            portions: seed.core.portions,
-            timeMinutes: seed.core.timeMinutes,
-            sourceUrl: 'Butlerys startrecept',
-          );
-          if (id != null) seededIds.add(id);
-        } catch (e) {
-          AppLogger.warning('Failed to seed recipe "${seed.core.title}": $e');
-        }
-      }
-
-      final seeded = seededIds.length;
-      _analytics?.logEvent(
-        name: AnalyticsEvents.onboardingRecipesSeeded,
-        parameters: {'count': seeded, 'attempted': seeds.length},
-      );
-      final failed = seeds.length - seeded;
-      if (failed > 0) {
-        _analytics?.logEvent(
-          name: AnalyticsEvents.onboardingRecipesSeedFailed,
-          parameters: {'failed': failed, 'attempted': seeds.length},
-        );
-      }
-      AppLogger.info('Seeded $seeded/${seeds.length} starter recipes');
-
-      // BUT-618: stamp `first_recipe_source = 'seed'` if this is the user's
-      // first recipe surface. Dedupe is handled inside the helper.
-      final userService = ServiceLocator.tryGet<UserService>();
-      await FirstRecipeSourceMilestone.setIfFirstRecipe(
+      return await StarterRecipeSeeder(
+        recipeService: ServiceLocator.get<UnifiedRecipeService>(),
         analytics: _analytics,
-        userId: userService?.currentUserId,
-        source: 'seed',
-      );
-      return seededIds;
+      ).seed(uid: ServiceLocator.tryGet<UserService>()?.currentUserId);
     } catch (e) {
       AppLogger.warning('Failed to seed starter recipes: $e');
       return const [];

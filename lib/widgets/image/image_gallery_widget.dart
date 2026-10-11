@@ -33,8 +33,8 @@ class ImageGalleryWidget extends StatefulWidget {
     this.onAddImage,
     this.showAddButton = false,
     this.crossAxisCount = 3,
-    this.crossAxisSpacing = AppDimensions.spacingSm,
-    this.mainAxisSpacing = AppDimensions.spacingSm,
+    this.crossAxisSpacing = AppDimensions.space8,
+    this.mainAxisSpacing = AppDimensions.space8,
     this.childAspectRatio = 1.0,
   });
 
@@ -49,8 +49,8 @@ class ImageGalleryWidget extends StatefulWidget {
     Function()? onAddImage,
     bool showAddButton = false,
     int crossAxisCount = 3,
-    double crossAxisSpacing = AppDimensions.spacingSm,
-    double mainAxisSpacing = AppDimensions.spacingSm,
+    double crossAxisSpacing = AppDimensions.space8,
+    double mainAxisSpacing = AppDimensions.space8,
     double childAspectRatio = 1.0,
   }) {
     return ImageGalleryWidget(
@@ -143,7 +143,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               color: AppModeColors.textDisabled(Theme.of(context).brightness),
             ),
             const SizedBox(
-              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              height: (AppDimensions.space8 + AppDimensions.space4),
             ),
             Text(
               context.l10n.imageNoImagesYet,
@@ -151,7 +151,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -169,7 +169,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.primary,
         borderRadius: const BorderRadius.vertical(
@@ -182,7 +182,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             ButleryIcons.circleCheck,
             color: cs.onPrimary,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Text(
             context.l10n.imageCountSelected(_selectedImages.length),
             style: AppTextStyles.contentTitle.copyWith(
@@ -236,7 +236,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                     size: AppDimensions.iconSizeXl,
                     color: cs.onSurface,
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     context.l10n.commonAdd,
                     style: AppTextStyles.bodySmall.copyWith(
@@ -308,8 +308,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         // Selection indicator
         if (_isSelectionMode)
           Positioned(
-            top: AppDimensions.spacingSm,
-            right: AppDimensions.spacingSm,
+            top: AppDimensions.space8,
+            right: AppDimensions.space8,
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
@@ -409,8 +409,8 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
     this.onImageTap,
     this.onImageLongPress,
     this.crossAxisCount = 2,
-    this.crossAxisSpacing = AppDimensions.spacingSm,
-    this.mainAxisSpacing = AppDimensions.spacingSm,
+    this.crossAxisSpacing = AppDimensions.space8,
+    this.mainAxisSpacing = AppDimensions.space8,
   });
 
   @override
@@ -436,7 +436,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
                 color: AppModeColors.textDisabled(Theme.of(context).brightness),
               ),
               const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                height: (AppDimensions.space8 + AppDimensions.space4),
               ),
               Text(
                 context.l10n.imageNoImagesToDisplay,

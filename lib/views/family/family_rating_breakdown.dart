@@ -164,7 +164,6 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             value,
             style: AppTextStyles.labelSmall.copyWith(
               color: cs.onPrimary,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -199,9 +198,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             children: [
               Text(
                 l10n.familyRatingAverageLabel,
-                style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodySmall,
               ),
               Text(
                 l10n.familyRatingCount(vm.familyCount),
@@ -259,9 +256,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                             Flexible(
                               child: Text(
                                 row.member.displayName,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppTextStyles.bodyBold,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -269,9 +264,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                               const SizedBox(width: AppDimensions.space4),
                               Text(
                                 l10n.familyRatingYou,
-                                style: AppTextStyles.captionText.copyWith(
+                                style: AppTextStyles.captionBold.copyWith(
                                   color: cs.onSurface,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -337,8 +331,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                 children: [
                   Text(
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w700,
+                    style: AppTextStyles.bodyBold.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
@@ -413,9 +406,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(width: AppDimensions.space8),
             Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyBold,
             ),
           ],
         ),

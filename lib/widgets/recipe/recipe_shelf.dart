@@ -3,10 +3,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 
 class RecipeShelf extends StatelessWidget {
   final String title;
@@ -31,22 +31,17 @@ class RecipeShelf extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
-          child: Text(
-            title,
-            style: AppTextStyles.sectionLabel.copyWith(
-              color: context.modeColors.onWarningContainer,
-            ),
-          ),
+          child: SectionHeading(title),
         ),
         SizedBox(
-          height: AppDimensions.thumbnailLargeSize + AppDimensions.spacingSm,
+          height: AppDimensions.thumbnailLargeSize + AppDimensions.space8,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
+              horizontal: AppDimensions.space16,
             ),
             itemCount: recipes.length,
             itemBuilder: (context, index) {
@@ -58,7 +53,7 @@ class RecipeShelf extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Divider(
           height: 1,
           color: cs.outlineVariant,
@@ -85,16 +80,15 @@ class _ShelfCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
+          width: AppDimensions.imageSizeThumbnail + AppDimensions.space16,
           margin: const EdgeInsetsDirectional.only(
-            end: AppDimensions.spacingSm,
+            end: AppDimensions.space8,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width:
-                    AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
+                width: AppDimensions.imageSizeThumbnail + AppDimensions.space16,
                 height: AppDimensions.imageSizeThumbnail,
                 color: cs.surfaceContainerHighest,
                 child: thumbnail != null
@@ -108,7 +102,7 @@ class _ShelfCard extends StatelessWidget {
                         letterSize: AppDimensions.imageSizeThumbnail * 0.35,
                       ),
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 recipe.title,
                 style: AppTextStyles.labelSmall.copyWith(

@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.12.0
+**Version:** 1.13.0
 
 ---
 
@@ -48,6 +48,12 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 ### 3.3 Information från tredje part
 
 - **Importerade recept:** Recept du importerar från externa webbplatser
+
+### 3.4 Om du provar som gäst
+
+Om du provar Butlery utan konto skapar vi ett tillfälligt gästkonto utan e-postadress. Det du sparar som gäst (recept, menyer, inköpslistor, skafferi och allergier) och ditt födelseår och godkännande av villkoren sparas på samma sätt som för ett vanligt konto. Vi räknar också hur många AI-importer gästkontot har gjort, eftersom en gäst kan importera tre recept med AI.
+
+Som gäst kan du inte dela, publicera, chatta, lägga till vänner eller anmäla innehåll. Skapar du ett konto följer allt du sparat med. Loggar du ut som gäst raderas gästkontot och allt i det direkt. Använder du inte gästkontot på 30 dagar raderas det och allt i det automatiskt.
 
 ---
 
@@ -228,6 +234,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
+| Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |

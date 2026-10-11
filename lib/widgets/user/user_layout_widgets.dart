@@ -46,7 +46,7 @@ class UserLayoutWidgets {
       children: [
         userName(displayName: displayName, style: nameStyle),
         if (email != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           userEmail(email: email, style: emailStyle),
         ],
       ],

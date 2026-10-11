@@ -128,7 +128,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                   : null,
                             ),
 
-                            const SizedBox(height: AppDimensions.paddingL),
+                            const SizedBox(height: AppDimensions.space16),
 
                             // Tagg-filter
                             if (allTags.isNotEmpty) ...[
@@ -150,7 +150,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                   );
                                 }).toList(),
                               ),
-                              const SizedBox(height: AppDimensions.paddingL),
+                              const SizedBox(height: AppDimensions.space16),
                             ],
 
                             // Tids-filter
@@ -169,7 +169,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       viewModel.timeFilter != TimeFilter.all)
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingL,
+                        horizontal: AppDimensions.space12,
                         vertical: AppDimensions.space4,
                       ),
                       child: _buildAdvancedStats(context, viewModel),
@@ -310,14 +310,14 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingXs,
+            vertical: AppDimensions.space4,
           ),
           child: ContentCard(
             key: ValueKey(recipe.id),
             item: recipe,
             type: ContentCardType.recipe,
             margin: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
+              horizontal: AppDimensions.space16,
             ),
             onTap: () => Navigator.pushNamed(
               context,

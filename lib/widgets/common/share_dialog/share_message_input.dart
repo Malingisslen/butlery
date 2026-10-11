@@ -30,7 +30,7 @@ class ShareMessageInput {
             style: AppTextStyles.bodyLarge,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
     );
   }

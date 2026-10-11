@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_detail_view.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
@@ -68,14 +69,9 @@ class CookbookShelf extends StatelessWidget {
       key: shelfKey,
       slivers: [
         SliverPadding(
-          padding: padding.copyWith(bottom: AppDimensions.spacingSm),
+          padding: padding.copyWith(bottom: AppDimensions.space8),
           sliver: SliverToBoxAdapter(
-            child: Text(
-              l10n.cookbookShelfCount(books.length),
-              style: AppTextStyles.sectionLabel.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+            child: SectionHeading(l10n.cookbookShelfCount(books.length)),
           ),
         ),
         SliverPadding(
@@ -84,8 +80,8 @@ class CookbookShelf extends StatelessWidget {
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: maxBookWidth,
               childAspectRatio: bookAspectRatio,
-              mainAxisSpacing: AppDimensions.spacingMd,
-              crossAxisSpacing: AppDimensions.spacingMd,
+              mainAxisSpacing: AppDimensions.space16,
+              crossAxisSpacing: AppDimensions.space16,
             ),
             delegate: SliverChildListDelegate([
               for (final book in books) _ShelfBook(tag: book),
@@ -144,12 +140,12 @@ class _AddTile extends StatelessWidget {
             decoration: BoxDecoration(border: Border.all(color: cs.outline)),
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                padding: const EdgeInsets.all(AppDimensions.space8),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ButleryIcon(ButleryIcons.plus, color: cs.onSurfaceVariant),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       context.l10n.cookbookMakeFromTag,
                       textAlign: TextAlign.center,
@@ -216,7 +212,7 @@ class _TagChooser extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Text(
                 l10n.cookbookChooseTagTitle,
                 style: AppTextStyles.titleLarge,
@@ -224,7 +220,7 @@ class _TagChooser extends StatelessWidget {
             ),
             if (tags.isEmpty)
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Text(l10n.cookbookAllTagsAreCookbooks),
               )
             else

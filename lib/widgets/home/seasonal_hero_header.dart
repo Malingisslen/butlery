@@ -59,10 +59,10 @@ class SeasonalHeroHeader extends StatelessWidget {
             padding: AppDimensions.responsiveContentPadding(context),
             child: Container(
               padding: const EdgeInsets.fromLTRB(
-                AppDimensions.spacingMd,
-                AppDimensions.spacingSm,
-                AppDimensions.spacingSm,
-                AppDimensions.spacingSm,
+                AppDimensions.space16,
+                AppDimensions.space8,
+                AppDimensions.space8,
+                AppDimensions.space8,
               ),
               decoration: BoxDecoration(
                 border: Border(
@@ -76,7 +76,7 @@ class SeasonalHeroHeader extends StatelessWidget {
                     type: month.vegetableType,
                     size: 28,
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +103,7 @@ class SeasonalHeroHeader extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.seasonalHeroRecipeCount(matchCount),
                     style: AppTextStyles.labelSmall.copyWith(

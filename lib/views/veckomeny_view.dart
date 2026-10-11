@@ -464,7 +464,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return Padding(
       padding: AppDimensions.responsiveHorizontalPadding(
         context,
-      ).add(const EdgeInsets.only(top: AppDimensions.spacingSm)),
+      ).add(const EdgeInsets.only(top: AppDimensions.space8)),
       child: VeckomenyDraftResumeCard(
         draft: draft,
         now: clock.now(),
@@ -770,7 +770,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       child: Row(
         children: [
           ButleryIcon(icon, size: AppDimensions.iconSizeM),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Flexible(child: Text(label)),
         ],
       ),
@@ -859,17 +859,17 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                             SizedBox(
                               height: LayoutComponents.valueFor(
                                 context: context,
-                                mobile: AppDimensions.spacingL,
-                                tablet: AppDimensions.spacingXl,
-                                desktop: AppDimensions.spacingXl,
+                                mobile: AppDimensions.space12,
+                                tablet: AppDimensions.space32,
+                                desktop: AppDimensions.space32,
                               ),
                             ),
                             _buildGenerateButton(context, viewModel),
                             SizedBox(
                               height: LayoutComponents.valueFor(
                                 context: context,
-                                mobile: AppDimensions.spacingXl,
-                                tablet: AppDimensions.spacingXl * 1.5,
+                                mobile: AppDimensions.space32,
+                                tablet: AppDimensions.space32 * 1.5,
                                 desktop: AppDimensions.spacingXxl,
                               ),
                             ),
@@ -895,7 +895,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const VeckomenyGeneratingOverlay(),
-                            const SizedBox(height: AppDimensions.spacingMd),
+                            const SizedBox(height: AppDimensions.space16),
                             VeckomenyPlanningCancelFooter(
                               onCancel: _cancelPlanning,
                             ),
@@ -920,7 +920,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                               !viewModel.hasError)
                             Padding(
                               padding: const EdgeInsets.only(
-                                bottom: AppDimensions.spacingSm,
+                                bottom: AppDimensions.space8,
                               ),
                               child: VeckomenyPartialResult(
                                 outcome: viewModel.partialOutcome!,
@@ -1049,14 +1049,14 @@ class VeckomenyNoMatch extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
           ],
           OutlinedButton(
             key: editPromptKey,
             onPressed: onEditPrompt,
             child: Text(l.menuNoMatchEditPrompt),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           OutlinedButton(
             key: planYourselfKey,
             onPressed: onPlanYourself,

@@ -163,16 +163,16 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
             Expanded(
               child: ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                padding: const EdgeInsets.all(AppDimensions.space24),
                 children: [
                   _buildNameField(),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   _buildMatchModeSelector(),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   _buildConditionsHeader(),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   _buildConditionsList(),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   _buildEnabledSwitch(),
                   const SizedBox(height: AppDimensions.spacingXxl),
                 ],
@@ -186,7 +186,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.space24),
       child: Row(
         children: [
           Expanded(
@@ -204,7 +204,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
               child: Text(context.l10n.commonCancel),
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Flexible(
             fit: FlexFit.loose,
             child: FilledButton(
@@ -239,7 +239,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(context.l10n.ruleMatchModeLabel, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         SegmentedButton<MatchMode>(
           segments: [
             ButtonSegment(
@@ -284,7 +284,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
     return Column(
       children: List.generate(_conditions.length, (index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space8),
           child: RuleConditionCard(
             key: ValueKey('condition_$index'),
             condition: _conditions[index],

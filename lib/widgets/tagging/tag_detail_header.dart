@@ -25,7 +25,7 @@ class TagDetailHeader extends StatelessWidget {
     final style = AppTextStyles.captionBase.copyWith(color: muted);
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(top: AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

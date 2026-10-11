@@ -94,7 +94,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       child: Row(
         children: [
           ButleryIcon(icon),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Text(label),
         ],
       ),
@@ -107,7 +107,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
@@ -120,7 +120,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       child: Row(
         children: [
           Expanded(child: _buildItemInput(context)),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           // Flexible(loose) keeps the button at its natural width (visually
           // identical to a plain non-flex child) while routing it through the
           // flex-child layout path. A bare FilledButton.icon as a NON-flex Row
@@ -138,7 +138,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildReadOnlySection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
@@ -155,7 +155,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Text(
             context.l10n.collaborativeViewOnly,
             style: AppTextStyles.titleMedium.copyWith(
@@ -268,7 +268,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
 
   Widget _buildShareSheet(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +277,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             context.l10n.collaborativeShareList,
             style: AppTextStyles.headlineSmall,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           ListTile(
             leading: const ButleryIcon(ButleryIcons.link),
             title: Text(context.l10n.collaborativeCopyLink),
@@ -305,7 +305,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
               _shareViaEmail(context);
             },
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           SizedBox(
             width: double.infinity,
             child: TextButton(

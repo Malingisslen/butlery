@@ -23,7 +23,7 @@ class AuthFormCard extends StatelessWidget {
         constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
         child: Card(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: child,
           ),
         ),
@@ -84,7 +84,7 @@ class BottomActionContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: backgroundColor ?? Theme.of(context).colorScheme.surface,
         border: Border(
@@ -114,13 +114,13 @@ class CardContent extends StatelessWidget {
   const CardContent.standard({
     super.key,
     required this.child,
-  }) : padding = const EdgeInsets.all(AppDimensions.spacingL);
+  }) : padding = const EdgeInsets.all(AppDimensions.space12);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space12),
         child: child,
       ),
     );
@@ -150,7 +150,7 @@ class CategoryHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color:

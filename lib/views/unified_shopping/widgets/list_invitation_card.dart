@@ -37,12 +37,12 @@ class ListInvitationCard extends StatelessWidget {
         : l10n.listInvitationMetaEdit(senderName);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppDimensions.paddingL,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingSm,
+        AppDimensions.space16,
+        AppDimensions.space8,
+        AppDimensions.space8,
+        AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -57,7 +57,7 @@ class ListInvitationCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+                  padding: const EdgeInsets.only(top: AppDimensions.space8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -65,7 +65,7 @@ class ListInvitationCard extends StatelessWidget {
                         invitation.listName.orEmpty(),
                         style: AppTextStyles.titleBold,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         meta,
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -86,7 +86,7 @@ class ListInvitationCard extends StatelessWidget {
           Align(
             alignment: AlignmentDirectional.centerEnd,
             child: Wrap(
-              spacing: AppDimensions.spacingSm,
+              spacing: AppDimensions.space8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ActionButtons.textButton(

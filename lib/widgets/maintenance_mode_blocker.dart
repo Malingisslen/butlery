@@ -53,7 +53,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingXl),
+              padding: const EdgeInsets.all(AppDimensions.space32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -62,7 +62,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
                     size: AppDimensions.iconSizeHero,
                     color: cs.onPrimary,
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   Text(
                     context.l10n.maintenanceModeTitle,
                     style: AppTextStyles.headlineMedium.copyWith(
@@ -70,7 +70,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   Text(
                     displayMessage,
                     style: AppTextStyles.bodyLarge.copyWith(

@@ -58,25 +58,25 @@ class OnboardingDietaryPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingDietaryTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.onboardingDietaryDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           ..._dietaryKeys.map((key) {
             final isSelected = viewModel.isDietaryPrefSelected(key);
             return Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+              padding: const EdgeInsets.only(bottom: AppDimensions.space8),
               child: _DietaryToggleCard(
                 label: _dietaryLabel(context, key),
                 description: _dietaryDescription(context, key),
@@ -85,7 +85,7 @@ class OnboardingDietaryPage extends StatelessWidget {
               ),
             );
           }),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
         ],
       ),
     );
@@ -132,7 +132,7 @@ class _DietaryToggleCard extends StatelessWidget {
               width: isSelected ? 1.5 : 1,
             ),
           ),
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Row(
             children: [
               Expanded(
@@ -145,7 +145,7 @@ class _DietaryToggleCard extends StatelessWidget {
                         color: cs.onSurface,
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       description,
                       style: AppTextStyles.bodySmall.copyWith(

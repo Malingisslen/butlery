@@ -355,12 +355,12 @@ void main() {
         tester.getTopLeft(right).dx - tester.getTopRight(left).dx;
     expect(
       gap(find.byIcon(ButleryIcons.clock), find.text('30 min')),
-      AppDimensions.spacingXs,
+      AppDimensions.space4,
     );
-    expect(gap(find.text('30 min'), find.text('•')), AppDimensions.spacingM);
+    expect(gap(find.text('30 min'), find.text('•')), AppDimensions.space8);
     expect(
       gap(find.text('•'), find.byIcon(ButleryIcons.users)),
-      AppDimensions.spacingM,
+      AppDimensions.space8,
     );
   });
 

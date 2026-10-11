@@ -95,11 +95,11 @@ class ShoppingListCard extends StatelessWidget {
           _buildListMetadata(context),
         ],
         if (showPreview) ...[
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildListPreview(context),
         ],
         if (showSharingStatus) ...[
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildSharingStatus(context),
         ],
       ],
@@ -115,7 +115,7 @@ class ShoppingListCard extends StatelessWidget {
             children: [
               _buildListHeader(context),
               if (showMetadata) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 _buildListMetadata(context),
               ],
             ],
@@ -133,7 +133,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         _buildListHeader(context),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           _buildListMetadata(context),
         ],
         const SizedBox(height: AppDimensions.space4),
@@ -197,7 +197,7 @@ class ShoppingListCard extends StatelessWidget {
 
     return Text(
       metadata.join(' \u2022 '),
-      style: AppTextStyles.metadataEmphasized,
+      style: AppTextStyles.labelMedium,
     );
   }
 
@@ -207,7 +207,7 @@ class ShoppingListCard extends StatelessWidget {
 
     if (items.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingM),
+        padding: const EdgeInsets.all(AppDimensions.space8),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -222,7 +222,7 @@ class ShoppingListCard extends StatelessWidget {
             const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.shoppingCardNoItems,
-              style: AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.labelMedium,
             ),
           ],
         ),
@@ -234,14 +234,14 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         Text(
           context.l10n.shoppingCardItemsOnList,
-          style: AppTextStyles.labelMediumMuted,
+          style: AppTextStyles.labelMedium,
         ),
         const SizedBox(height: AppDimensions.space4),
         ...items
             .take(4)
             .map(
               (item) => Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space4),
                 child: Row(
                   children: [
                     ButleryIcon(
@@ -275,10 +275,10 @@ class ShoppingListCard extends StatelessWidget {
             ),
         if (items.length > 4)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: Text(
               context.l10n.shoppingCardMoreItems(items.length - 4),
-              style: AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.labelMedium,
             ),
           ),
       ],
@@ -296,7 +296,7 @@ class ShoppingListCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
+        horizontal: AppDimensions.space8,
         vertical: AppDimensions.space4,
       ),
       // A neutral info chip: the raised surface with no border (B83-2).
@@ -334,7 +334,7 @@ class ShoppingListCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+      padding: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: cs.primary,
         shape: BoxShape.circle,
@@ -367,7 +367,7 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: isComplete ? bc.surfaceTintSuccess : bc.surfaceTintWarning,
@@ -381,7 +381,7 @@ class ShoppingListCard extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: onColor,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             isComplete
                 ? context.l10n.shoppingCardComplete
@@ -453,7 +453,7 @@ class ShoppingListCard extends StatelessWidget {
   EdgeInsets _getDefaultMargin() {
     switch (style) {
       case ShoppingListCardStyle.compact:
-        return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
+        return const EdgeInsets.only(bottom: AppDimensions.space4);
       case ShoppingListCardStyle.grid:
         return const EdgeInsets.all(AppDimensions.space4);
       case ShoppingListCardStyle.detailed:

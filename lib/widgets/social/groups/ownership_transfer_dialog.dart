@@ -48,12 +48,12 @@ class OwnershipTransferDialog extends StatelessWidget {
           Text(
             context.l10n.groupTransferOwnershipMessage(group.name),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             context.l10n.groupSelectNewOwner,
             style: AppTextStyles.bodyBold,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           // List of available members
           ...availableMembers.map(
             (member) => ListTile(

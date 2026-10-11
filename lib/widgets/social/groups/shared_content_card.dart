@@ -72,7 +72,7 @@ class SharedContentCard extends StatelessWidget {
     timeago.setLocaleMessages('sv', timeago.SvMessages());
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Semantics(
         label: '${context.l10n.groupSharedContent}: ${item.title}',
         button: true,
@@ -80,7 +80,7 @@ class SharedContentCard extends StatelessWidget {
           onTap: onView,
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -88,7 +88,7 @@ class SharedContentCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingS),
+                      padding: const EdgeInsets.all(AppDimensions.space8),
                       decoration: BoxDecoration(
                         color: cs.surface,
                         borderRadius: BorderRadius.circular(
@@ -101,7 +101,7 @@ class SharedContentCard extends StatelessWidget {
                         size: AppDimensions.iconSizeM,
                       ),
                     ),
-                    const SizedBox(width: AppDimensions.spacingM),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +112,7 @@ class SharedContentCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             _getTypeLabel(context, item.type),
                             style: AppTextStyles.labelLarge.copyWith(
@@ -124,7 +124,7 @@ class SharedContentCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
 
                 // Shared by info
                 Row(
@@ -166,7 +166,7 @@ class SharedContentCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
 
                 // Action buttons
                 Row(

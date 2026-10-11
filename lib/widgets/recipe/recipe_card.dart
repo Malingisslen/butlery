@@ -184,7 +184,7 @@ class RecipeCard extends StatelessWidget {
               padding ??
               const EdgeInsets.fromLTRB(
                 AppDimensions.space12,
-                AppDimensions.spacingSm,
+                AppDimensions.space8,
                 AppDimensions.space12,
                 AppDimensions.space12,
               ),
@@ -193,13 +193,13 @@ class RecipeCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (!_hasPhoto) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 _buildInitialPlate(),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
               ],
               _buildTitle(context, reserveTwoLines: true),
               if (showMetadata && _hasAnyMetadata) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 _buildMetadataRow(context),
               ],
               // BUT-1895: allergen information must not depend on which view toggle
@@ -237,7 +237,7 @@ class RecipeCard extends StatelessWidget {
               // Diet keeps its word in the DETAILED layout, which is full-width and
               // has the room. The compact layout draws neither badge row at all.
               if (showAllergenBadges && _allergenBadges.isNotEmpty) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 CompactAllergenRow(
                   tagResult: recipe.tagResult!,
                   userPrefs: userAllergenPrefs,
@@ -245,7 +245,7 @@ class RecipeCard extends StatelessWidget {
                 ),
               ],
               if (_showUnassessedIndicator) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 _buildUnassessedIndicator(context),
               ],
             ],
@@ -264,7 +264,7 @@ class RecipeCard extends StatelessWidget {
             // The same inset at rest and chosen, so a row does not move when
             // it is selected and its box and border appear around it.
             const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingSm,
+              vertical: AppDimensions.space8,
               horizontal: AppDimensions.space12,
             ),
         child: Row(
@@ -318,7 +318,7 @@ class RecipeCard extends StatelessWidget {
                   if (!_isCompact &&
                       showAllergenBadges &&
                       _allergenBadges.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     CompactAllergenRow(
                       tagResult: recipe.tagResult!,
                       userPrefs: userAllergenPrefs,
@@ -326,20 +326,20 @@ class RecipeCard extends StatelessWidget {
                     ),
                   ],
                   if (!_isCompact && _showUnassessedIndicator) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     _buildUnassessedIndicator(context),
                   ],
-                  // spacingSm, not spacingXs. The gap BETWEEN the two badge rows has to be
+                  // space8, not space4. The gap BETWEEN the two badge rows has to be
                   // strictly greater than the `runSpacing` INSIDE either of them, or a
                   // wrapped row is indistinguishable from the next row. Both rows use
-                  // `runSpacing: spacingXs`, so an inter-row gap of spacingXs collapses
+                  // `runSpacing: space4`, so an inter-row gap of space4 collapses
                   // the distinction the moment the allergen row wraps — which it does at
                   // the 1.5-2x text scale this codebase designs for (BUT-547), not at 1x.
                   // Raised on the Creative Director's condition, 2026-08-18.
                   if (!_isCompact &&
                       showDietaryBadges &&
                       _dietaryBadges.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     CompactDietaryRow(
                       tagResult: recipe.tagResult!,
                       userPrefs: userDietaryPrefs,
@@ -347,14 +347,14 @@ class RecipeCard extends StatelessWidget {
                     ),
                   ],
                   if (!_isCompact && _showUntaggedIndicator) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     _buildUntaggedIndicator(context),
                   ],
                 ],
               ),
             ),
             if (onTap != null) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               const ButleryChevron(),
             ],
           ],
@@ -455,8 +455,8 @@ class RecipeCard extends StatelessWidget {
     // Wrap so the badge flows to a new line instead of overflowing at 2x
     // text scaling (BUT-547 / WCAG 1.4.4).
     return Wrap(
-      spacing: AppDimensions.spacingSm,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space8,
+      runSpacing: AppDimensions.space4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [line, _buildMatchBadge(context, matchPercent!)],
     );
@@ -637,7 +637,7 @@ class RecipeCard extends StatelessWidget {
               size: AppDimensions.iconSize14,
               color: noticeFg,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(
@@ -710,7 +710,7 @@ class RecipeCard extends StatelessWidget {
               size: AppDimensions.iconSize14,
               color: secondary,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
             // icon and the sentence need about 254, so unconstrained it

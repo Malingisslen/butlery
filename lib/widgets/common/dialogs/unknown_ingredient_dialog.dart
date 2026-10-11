@@ -103,31 +103,31 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                 _current.name,
                 style: AppTextStyles.headlineBold,
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               Text(
                 context.l10n.dialogUnknownIngredientDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Common allergen toggles
               Text(
                 context.l10n.dialogContainsAllergens,
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               _buildAllergenSection(),
 
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Dietary properties
               Text(
                 context.l10n.dialogDietaryProperties,
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               _buildDietarySection(),
             ],
           ),

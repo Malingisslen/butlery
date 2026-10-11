@@ -74,7 +74,7 @@ class _MenuPreviewDishList extends StatelessWidget {
     if (menuContent.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: StateWidget.empty(
             title: context.l10n.menuNoRecipesInMenu,
             icon: ButleryIcons.utensils,
@@ -94,7 +94,7 @@ class _MenuPreviewDishList extends StatelessWidget {
             AppDimensions.space4,
             AppDimensions.space4,
             AppDimensions.space4,
-            index == categories.length - 1 ? AppDimensions.spacingL : 0,
+            index == categories.length - 1 ? AppDimensions.space12 : 0,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +109,7 @@ class _MenuPreviewDishList extends StatelessWidget {
                 ContentCard.compactRecipe(
                   recipe: recipe,
                   margin: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingMd,
+                    horizontal: AppDimensions.space16,
                   ),
                   onTap: () => Navigator.pushNamed(
                     context,
@@ -145,7 +145,7 @@ class _MenuPreviewDishList extends StatelessWidget {
                           }
                         : null,
                   ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
               ],
             ],
           ),

@@ -82,7 +82,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 context.l10n.recipeSharingStatus,
                 style: Theme.of(
@@ -105,7 +105,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
 
           // Shared friends
           if (sharedMemberIds.isNotEmpty) ...[
@@ -115,7 +115,7 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
                 context,
               ).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             ...sharedMemberIds.map((userId) {
               final friend = _friendsService.friends
                   .where((f) => f.uid == userId)
@@ -137,14 +137,14 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
           // Shared groups
           if (categoryIds.isNotEmpty) ...[
             if (sharedMemberIds.isNotEmpty)
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.recipeSharingGroups,
               style: Theme.of(
                 context,
               ).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             ...categoryIds.map((groupId) {
               final group = _friendsService.categoriesList
                   .where((c) => c.id == groupId)
@@ -299,7 +299,7 @@ class _ShareeRow extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(name, style: Theme.of(context).textTheme.bodyMedium),
           ),

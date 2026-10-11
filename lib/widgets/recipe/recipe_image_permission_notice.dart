@@ -28,7 +28,7 @@ class RecipeImagePermissionNotice extends StatelessWidget {
         final l10n = context.l10n;
         final camera = notice.source == ImageSource.camera;
         return Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingM),
+          padding: const EdgeInsets.only(top: AppDimensions.space8),
           child: MediaPermissionNoticeCard(
             source: notice.source,
             outcome: notice.outcome,

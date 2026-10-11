@@ -250,8 +250,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         subtitle: context.l10n.shoppingEmptyBody,
         customAction: Wrap(
           alignment: WrapAlignment.center,
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
           children: [
             HeroButton(
               key: const ValueKey('shopping-empty-from-week-menu'),
@@ -337,15 +337,15 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
       // Empty categories toggle (collapsed by default)
       if (emptyCategories.isNotEmpty) ...[
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         _buildEmptyCategoriesToggle(context, emptyCategories),
       ],
 
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
         _buildCompletedItemsHeader(context, viewModel),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         ...completedSections,
       ],
 
@@ -355,7 +355,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     ];
 
     return ListView.builder(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: widgets.length,
       itemBuilder: (context, index) => widgets[index],
     );
@@ -434,8 +434,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     minHeight: AppDimensions.minTouchTarget,
                   ),
                   padding: const EdgeInsets.only(
-                    top: AppDimensions.spacingMd,
-                    bottom: AppDimensions.spacingXs,
+                    top: AppDimensions.space16,
+                    bottom: AppDimensions.space4,
                   ),
                   decoration: BoxDecoration(
                     color: isDragOver ? cs.surfaceContainerHighest : null,
@@ -462,7 +462,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Text(
                         progress != null
                             ? context.l10n.shoppingCategoryProgress(
@@ -475,7 +475,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.space4),
                       ButleryIcon(
                         isCollapsed
                             ? ButleryIcons.chevronDown
@@ -511,7 +511,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             );
           }),
 
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
       ],
     );
   }
@@ -568,7 +568,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Text(
                   context.l10n.shoppingOtherCategories,
                   style: AppTextStyles.labelMedium.copyWith(
@@ -580,7 +580,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           ),
         ),
         if (_showEmptyCategories) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           ...emptyCategories.map(
             (category) => _buildEmptyCategoryDropTarget(
               context,
@@ -628,10 +628,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             minHeight: AppDimensions.minTouchTarget,
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          margin: const EdgeInsets.only(bottom: AppDimensions.space4),
           decoration: BoxDecoration(
             color: isDragOver
                 ? categoryColor.withValues(alpha: AppOpacity.onPaper20)
@@ -654,7 +654,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 ShoppingCategory.displayName(category),
                 style: AppTextStyles.labelSmall.copyWith(

@@ -59,7 +59,7 @@ class _EditableMenuItemsPreviewDialogState
                       size: AppDimensions.iconSizeXxl,
                       color: Theme.of(context).colorScheme.outline,
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.space8),
                     Text(
                       context.l10n.shoppingNoItemsSelected,
                       style: AppTextStyles.bodyLarge,
@@ -80,7 +80,7 @@ class _EditableMenuItemsPreviewDialogState
                   final item = _editableItems[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingXs,
+                      vertical: AppDimensions.space4,
                     ),
                     child: ListTile(
                       dense: true,
@@ -103,7 +103,7 @@ class _EditableMenuItemsPreviewDialogState
                         icon: ButleryIcon(
                           ButleryIcons.trash2,
                           color: Theme.of(context).colorScheme.error,
-                          size: AppDimensions.iconSizeAction,
+                          size: AppDimensions.iconSizeM,
                         ),
                         onPressed: () => _removeItem(index),
                         tooltip: context.l10n.shoppingRemoveItem,

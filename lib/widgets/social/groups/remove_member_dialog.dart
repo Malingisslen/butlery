@@ -81,7 +81,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
           ),
         ),
 
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Warning message
         WarningDisplayWidget(

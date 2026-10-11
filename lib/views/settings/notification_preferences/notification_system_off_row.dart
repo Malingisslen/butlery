@@ -19,8 +19,8 @@ class NotificationSystemOffRow extends StatelessWidget {
     return Container(
       key: const ValueKey('notification-system-off-row'),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: cs.error, width: 1.5),
@@ -39,13 +39,12 @@ class NotificationSystemOffRow extends StatelessWidget {
                   size: AppDimensions.iconSizeS,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Text(
                   l10n.notifSystemOffRow,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: cs.error,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

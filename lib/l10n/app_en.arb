@@ -15081,6 +15081,78 @@
   "@llmGuestCapacity": {
     "description": "LLM error: the global daily guest ceiling is reached (BUT-920)"
   },
+  "guestTryWithoutAccount": "Try without an account",
+  "@guestTryWithoutAccount": {
+    "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
+  },
+  "guestStartBody": "The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.",
+  "@guestStartBody": {
+    "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
+  },
+  "guestStartPreparing": "Getting your guest account ready",
+  "@guestStartPreparing": {
+    "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
+  },
+  "guestStartFailed": "The guest account could not be created",
+  "@guestStartFailed": {
+    "description": "Guest start: failure snackbar when sign-in or the age check failed (BUT-920)"
+  },
+  "guestUpgradeBody": "Everything you did as a guest comes with you to the account.",
+  "@guestUpgradeBody": {
+    "description": "Guest upgrade screen: lead text above the name, e-mail and password fields (BUT-920)"
+  },
+  "guestUpgradeDone": "The account is created. An e-mail with a link to confirm the address has been sent.",
+  "@guestUpgradeDone": {
+    "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeFinishFailed": "The account is created but could not be finished. Try again.",
+  "@guestUpgradeFinishFailed": {
+    "description": "Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)"
+  },
+  "guestSignInInstead": "Sign in instead",
+  "@guestSignInInstead": {
+    "description": "Guest upgrade: action shown when the e-mail already has an account (BUT-920)"
+  },
+  "guestSignInInsteadTitle": "Sign in instead?",
+  "@guestSignInInsteadTitle": {
+    "description": "Guest upgrade: title of the confirmation before the guest account is erased to sign in to another account (BUT-920)"
+  },
+  "guestSignInInsteadBody": "Your guest account and everything you saved will be deleted. What you did as a guest does not come with you to the account you sign in to.",
+  "@guestSignInInsteadBody": {
+    "description": "Guest upgrade: body of the confirmation before signing in instead (BUT-920)"
+  },
+  "guestSignInInsteadConfirm": "Delete and sign in",
+  "@guestSignInInsteadConfirm": {
+    "description": "Guest upgrade: destructive button that erases the guest and opens sign-in (BUT-920)"
+  },
+  "guestLogoutTitle": "Sign out as a guest?",
+  "@guestLogoutTitle": {
+    "description": "Guest sign-out: title of the warning before the guest account is erased (BUT-920)"
+  },
+  "guestLogoutBody": "Your guest account and everything you saved will be deleted.",
+  "@guestLogoutBody": {
+    "description": "Guest sign-out: body of the warning before the guest account is erased (BUT-920)"
+  },
+  "guestLogoutConfirm": "Sign out and delete",
+  "@guestLogoutConfirm": {
+    "description": "Guest sign-out: destructive button (BUT-920)"
+  },
+  "guestErasing": "Deleting the guest account",
+  "@guestErasing": {
+    "description": "Guest erasure: waiting text while the guest account is erased (BUT-920)"
+  },
+  "guestEraseFailed": "The guest account could not be deleted. You are still signed in.",
+  "@guestEraseFailed": {
+    "description": "Guest erasure: failure snackbar; nothing was erased (BUT-920)"
+  },
+  "guestDeleteTitle": "Delete the guest account?",
+  "@guestDeleteTitle": {
+    "description": "Guest account deletion: confirm dialog title; the body reuses guestLogoutBody (BUT-920)"
+  },
+  "guestDeleteConfirm": "Delete",
+  "@guestDeleteConfirm": {
+    "description": "Guest account deletion: destructive button (BUT-920)"
+  },
   "motivationRemovedCopyright": "The content was copied from someone else without permission or a source, which breaks the copyright rules.",
   "@motivationRemovedCopyright": {
     "description": "BUT-2353: motivation text, key removed_copyright"

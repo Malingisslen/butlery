@@ -131,7 +131,7 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
           child: availableTargets.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    padding: const EdgeInsets.all(AppDimensions.space16),
                     child: Text(
                       context.l10n.socialNoFriendsYet,
                       style: AppTextStyles.bodyMedium,

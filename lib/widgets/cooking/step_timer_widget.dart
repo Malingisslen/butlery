@@ -173,7 +173,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -184,7 +184,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
               isExpired: isExpired,
             ),
             if (widget.sourcePhrase != null) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               Text(
                 context.l10n.timerDurationHint(widget.sourcePhrase!),
                 textAlign: TextAlign.center,
@@ -194,7 +194,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
                 ),
               ),
             ],
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             _TimerControls(
               isRunning: isRunning,
               isPaused: isPaused,
@@ -237,8 +237,8 @@ class _TimerDisplay extends StatelessWidget {
           // Square — no BorderRadius per design system.
           color: Color.lerp(cs.surface, starGold, pulseAlpha),
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingLg,
-            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.space24,
+            horizontal: AppDimensions.space16,
           ),
           alignment: Alignment.center,
           child: Text(

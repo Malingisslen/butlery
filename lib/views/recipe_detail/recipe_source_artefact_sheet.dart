@@ -41,7 +41,7 @@ void showSourceArtefactSheet({
       minChildSize: 0.3,
       maxChildSize: 0.9,
       builder: (ctx, scrollController) => Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,19 +49,19 @@ void showSourceArtefactSheet({
               ctx.l10n.recipeSourceSheetTitle,
               style: AppTextStyles.titleBold,
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               '${_sourceTypeLabel(ctx, artefact.type)} · '
               '${ctx.l10n.recipeSourceCapturedAt(ContextualTimeFormatter.standard(artefact.fetchedAt))}',
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
             if (isStale) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               _StaleSourceBanner(message: ctx.l10n.recipeSourceStaleBanner),
             ],
-            const Divider(height: AppDimensions.spacingLg),
+            const Divider(height: AppDimensions.space24),
             Expanded(
               child: SingleChildScrollView(
                 controller: scrollController,
@@ -71,7 +71,7 @@ void showSourceArtefactSheet({
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -119,7 +119,7 @@ class _StaleSourceBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final warning = context.modeColors.warning;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: warning.withValues(alpha: AppOpacity.onPaper10),
         border: Border(left: BorderSide(color: warning, width: 3)),
@@ -132,7 +132,7 @@ class _StaleSourceBanner extends StatelessWidget {
             size: AppDimensions.iconSizeM,
             color: warning,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(message, style: AppTextStyles.bodyMedium),
           ),

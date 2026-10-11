@@ -1736,6 +1736,20 @@ void main() {
 
         await expectLater(authService.reloadUser(), completes);
       });
+
+      // BUT-920: linking an e-mail to a guest keeps the uid, so no auth event
+      // follows; the guest band only goes when this tells its listeners.
+      test('tells listeners even when the reload fails', () async {
+        when(
+          () => mockAuthRepository.reloadCurrentUser(),
+        ).thenAnswer((_) async => throw Exception('network'));
+        var notified = 0;
+        authService.addListener(() => notified++);
+
+        await authService.reloadUser();
+
+        expect(notified, 1);
+      });
     });
 
     group('deleteAccount unexpected-error path', () {

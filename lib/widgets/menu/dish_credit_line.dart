@@ -58,7 +58,7 @@ class DishCreditLine extends StatelessWidget {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingSm,
+                          horizontal: AppDimensions.space8,
                         ),
                         child: Row(
                           children: [
@@ -72,7 +72,7 @@ class DishCreditLine extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: AppDimensions.spacingXs),
+                            const SizedBox(width: AppDimensions.space4),
                             ButleryIcon(
                               ButleryIcons.chevronRight,
                               color: color,
@@ -100,7 +100,7 @@ class DishCreditLine extends StatelessWidget {
         if (notMine != null)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space4,
             ),
             child: TextButton(
               onPressed: notMine,

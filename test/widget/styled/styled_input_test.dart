@@ -735,11 +735,11 @@ void main() {
 
       // Should have spacing after label and at bottom
       expect(
-        spacingBoxes.any((box) => box.height == AppDimensions.spacingSm),
+        spacingBoxes.any((box) => box.height == AppDimensions.space8),
         isTrue,
       );
       expect(
-        spacingBoxes.any((box) => box.height == AppDimensions.spacingMd),
+        spacingBoxes.any((box) => box.height == AppDimensions.space16),
         isTrue,
       );
     });

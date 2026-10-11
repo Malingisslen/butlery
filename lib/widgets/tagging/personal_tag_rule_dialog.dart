@@ -351,7 +351,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           maxHeight: AppDimensions.dialogMaxHeightLarge,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -359,34 +359,34 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHeader(),
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 Flexible(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildNameField(),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         _buildTagSelector(),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         _buildMatchModeSelector(),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         _buildConditionsSection(),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         _buildEnabledSwitch(),
                         if (widget.showApplyToExisting) ...[
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                           _buildApplyToExistingSection(),
                         ],
                         if (_error != null) ...[
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                           _buildError(),
                         ],
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 _buildActions(),
               ],
             ),
@@ -460,7 +460,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Text(tag.name),
                 ],
               ),
@@ -601,7 +601,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget _buildError() {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -638,7 +638,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         DialogCancelButton(enabled: !_isSaving),
-        const SizedBox(width: AppDimensions.spacingM),
+        const SizedBox(width: AppDimensions.space8),
         // Busy: the button keeps its name and colours and gets the plate
         // line along its bottom edge (Komponentark v1:365, :372;
         // produktregler.md:902), never a spinner (B-18).
@@ -689,7 +689,7 @@ class _ConditionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -739,13 +739,13 @@ class _ConditionRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               // Operator dropdown (filtered by condition type)
               Expanded(
                 flex: 2,
                 child: _buildOperatorDropdown(context),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               // Delete button
               if (canDelete)
                 IconButton(
@@ -762,7 +762,7 @@ class _ConditionRow extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           // Value field - dropdown for property, text field for others
           if (condition.type == ConditionType.property)
             _buildPropertyDropdown(context)
@@ -894,9 +894,7 @@ class _ConditionRow extends StatelessWidget {
           child: e.isHeader
               ? Text(
                   _categoryLabel(context, e.categoryId!),
-                  style: AppTextStyles.badgeLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.labelMediumBold,
                 )
               : e.isRetired
               ? Text(

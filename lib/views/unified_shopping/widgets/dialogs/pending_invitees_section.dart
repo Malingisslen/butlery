@@ -88,7 +88,7 @@ class _PendingInviteesSectionState extends State<PendingInviteesSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.listInvitePendingHeading, style: AppTextStyles.titleMedium),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 132),
           child: ListView(

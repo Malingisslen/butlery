@@ -83,8 +83,8 @@ class WeekNavHeader extends StatelessWidget {
     ];
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
@@ -182,8 +182,8 @@ class SelectionActionBar extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
@@ -297,8 +297,8 @@ class OverflowTray extends StatelessWidget {
     ].join(' ');
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: PartialOutcome(
         title: l.weeklyMenuOverflowPlacedCount(placedCount, totalCount),
@@ -377,7 +377,7 @@ class _OverflowChip extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Flexible(
             child: Text(
               recipe.title,

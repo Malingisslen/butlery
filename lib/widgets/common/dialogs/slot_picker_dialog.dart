@@ -229,7 +229,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
             child: Column(
               children: [
                 Container(
-                  margin: const EdgeInsets.only(top: AppDimensions.paddingM),
+                  margin: const EdgeInsets.only(top: AppDimensions.space12),
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
@@ -257,10 +257,10 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     final weekLabel = _formatWeekLabel(_visibleWeekStart);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingMd,
+        AppDimensions.space24,
+        AppDimensions.space24,
+        AppDimensions.space8,
+        AppDimensions.space16,
       ),
       // The week stepper has its own row: beside the title on a 360 dp phone
       // it squeezed the title to a column of single words.
@@ -269,7 +269,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           Row(
             children: [
               const ButleryIcon(ButleryIcons.calendar),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Text(
                   context.l10n.slotPickerDialogTitle,
@@ -318,13 +318,13 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     final plan = _plan!;
     return SingleChildScrollView(
       controller: scrollController,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.space24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final slot in MealSlot.values) ...[
             _buildSlotRow(plan, slot),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
           ],
         ],
       ),
@@ -340,13 +340,13 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           slot.displayLabel,
           style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             for (final day in DayOfWeek.values) ...[
               Expanded(child: _buildCell(plan, day, slot)),
               if (day != DayOfWeek.sun)
-                const SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.space4),
             ],
           ],
         ),
@@ -388,7 +388,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                     : cs.surface,
               ),
               child: Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                padding: const EdgeInsets.all(AppDimensions.space4),
                 decoration: BoxDecoration(
                   // A chosen slot is surface.selected with a 1.5 px text.primary
                   // border; an occupied one surface.raised with border.control.
@@ -470,10 +470,10 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.spacingLg,
-          AppDimensions.spacingSm,
-          AppDimensions.spacingLg,
-          AppDimensions.spacingMd,
+          AppDimensions.space24,
+          AppDimensions.space8,
+          AppDimensions.space24,
+          AppDimensions.space16,
         ),
         child: SizedBox(
           width: double.infinity,

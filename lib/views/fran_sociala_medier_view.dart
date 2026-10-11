@@ -26,6 +26,7 @@ import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -41,11 +42,32 @@ class FranSocialaMedierView extends StatefulWidget {
   /// quality signal isn't dropped at the handoff. Null for non-OCR entry.
   final double? ocrConfidence;
 
+  /// True when the photo import hands its OCR text over: the guest's
+  /// import count already holds that import (BUT-920).
+  final bool continuesImport;
+
   const FranSocialaMedierView({
     super.key,
     this.initialText,
     this.ocrConfidence,
+    this.continuesImport = false,
   });
+
+  /// Shared text arrives as a String; the photo import hands over its OCR
+  /// text and confidence.
+  factory FranSocialaMedierView.fromRouteArguments(Object? arguments) {
+    if (arguments is Map<String, dynamic>) {
+      return FranSocialaMedierView(
+        initialText: arguments['text'] as String?,
+        // BUT-928: overall OCR confidence from the photo-import preview.
+        ocrConfidence: arguments['ocrConfidence'] as double?,
+        continuesImport: true,
+      );
+    }
+    return FranSocialaMedierView(
+      initialText: arguments is String ? arguments : null,
+    );
+  }
 
   @override
   State<FranSocialaMedierView> createState() => _FranSocialaMedierViewState();
@@ -70,9 +92,14 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: _FranSocialaMedierViewContent(
-        initialText: widget.initialText,
-        ocrConfidence: widget.ocrConfidence,
+      // A pasted link reaches the AI structuring, which a guest's import
+      // count covers; pasted text alone is parsed on the device.
+      child: GuestImportLimitListener(
+        startsImport: !widget.continuesImport,
+        child: _FranSocialaMedierViewContent(
+          initialText: widget.initialText,
+          ocrConfidence: widget.ocrConfidence,
+        ),
       ),
     );
   }
@@ -310,12 +337,12 @@ class _FranSocialaMedierViewContentState
               children: [
                 // Instruktionstext
                 _buildInstructions(context),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // Show if recipe comes from URL
                 if (viewModel.sourceUrl != null) ...[
                   SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                 ],
 
                 // BUT-928: same green/orange/red badge as the photo-import
@@ -328,12 +355,12 @@ class _FranSocialaMedierViewContentState
                       confidence: widget.ocrConfidence!,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                 ],
 
                 // Text field for recipe
                 _buildTextInput(context, viewModel),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                 UtilityComponents.primaryButton(
@@ -350,7 +377,7 @@ class _FranSocialaMedierViewContentState
 
                 // Error message
                 if (viewModel.hasError) ...[
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                   StateWidget.error(
                     message: viewModel.error!,
                     preserved: context.l10n.errorPreservedLink,
@@ -367,7 +394,7 @@ class _FranSocialaMedierViewContentState
   Widget _buildInstructions(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -392,7 +419,7 @@ class _FranSocialaMedierViewContentState
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.importTipsContent,
             style: AppTextStyles.bodySmall,

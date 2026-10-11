@@ -65,7 +65,7 @@ abstract final class RecipeDetailSharedWidgets {
       // in `recipeSourceFrom` — the raw value already reads as a sentence, and
       // that wrapper is what produced "Från ".
       return Padding(
-        padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+        padding: const EdgeInsets.only(top: AppDimensions.space4),
         child: Text(
           url,
           style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
@@ -74,7 +74,7 @@ abstract final class RecipeDetailSharedWidgets {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       child: ButleryLink(
         onTap: () => launchSourceUrl(context, url),
         child: Row(
@@ -153,7 +153,7 @@ abstract final class RecipeDetailSharedWidgets {
             ),
           ),
           buildSourceRow(context, recipe),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           RecipeDetailMetadata(
             viewModel: viewModel,
             currentPortions: actions.currentPortions,
@@ -176,7 +176,7 @@ abstract final class RecipeDetailSharedWidgets {
                 return const SizedBox.shrink();
               }
               return Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+                padding: const EdgeInsets.only(top: AppDimensions.space8),
                 child: TagResultDisplay(
                   tagResult: tagResult,
                   userAllergenPrefs: allergenPrefs.trackedAllergens,
@@ -192,7 +192,7 @@ abstract final class RecipeDetailSharedWidgets {
           ),
           if (recipe.description.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
               child: Text(
                 recipe.description,
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -225,7 +225,7 @@ abstract final class RecipeDetailSharedWidgets {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingL),
+          const SizedBox(width: AppDimensions.space12),
           Expanded(child: Divider(height: 1, color: cs.outlineVariant)),
         ],
       ),
@@ -238,7 +238,7 @@ abstract final class RecipeDetailSharedWidgets {
           ),
         ),
       ],
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
     ];
   }
 
@@ -258,8 +258,8 @@ abstract final class RecipeDetailSharedWidgets {
       },
     );
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space16),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
         border: Border.all(
@@ -276,7 +276,7 @@ abstract final class RecipeDetailSharedWidgets {
                 size: AppDimensions.iconSize18,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               // Flexible: the title must wrap at narrow widths (BUT-1230 —
               // an unbounded Text here overflowed the Row at <=420px).
               Flexible(
@@ -289,14 +289,14 @@ abstract final class RecipeDetailSharedWidgets {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             missingLabels.join(', '),
             style: AppTextStyles.bodySmall.copyWith(
               color: cs.onPrimaryContainer,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Align(
             alignment: AlignmentDirectional.centerEnd,
             child: TextButton(

@@ -331,7 +331,7 @@ void main() {
               w is Padding &&
               w.padding ==
                   const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
+                    horizontal: AppDimensions.space12,
                   ),
         );
         expect(hostedPaddings, findsAtLeastNWidgets(1));
@@ -373,8 +373,8 @@ void main() {
         );
 
         final wrap = tester.widget<Wrap>(find.byType(Wrap));
-        expect(wrap.spacing, equals(AppDimensions.spacingXs));
-        expect(wrap.runSpacing, equals(AppDimensions.spacingXs));
+        expect(wrap.spacing, equals(AppDimensions.space4));
+        expect(wrap.runSpacing, equals(AppDimensions.space4));
       });
 
       testWidgets('should have spacing between title and chips', (
@@ -396,8 +396,8 @@ void main() {
         final sizedBoxes = tester
             .widgetList<SizedBox>(find.byType(SizedBox))
             .toList();
-        expect(sizedBoxes[0].height, equals(AppDimensions.spacingM));
-        expect(sizedBoxes[1].height, equals(AppDimensions.spacingXs));
+        expect(sizedBoxes[0].height, equals(AppDimensions.space8));
+        expect(sizedBoxes[1].height, equals(AppDimensions.space4));
       });
     });
 
@@ -632,7 +632,7 @@ void main() {
         final sizedBox = row.children[1] as SizedBox;
         expect(
           sizedBox.height,
-          equals(AppDimensions.spacingXs),
+          equals(AppDimensions.space4),
         ); // BUG: Should be width
       });
     });

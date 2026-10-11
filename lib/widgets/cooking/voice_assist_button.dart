@@ -125,7 +125,7 @@ class _VoiceAssistButtonState extends State<VoiceAssistButton>
             if (showWindowHint)
               Padding(
                 padding: const EdgeInsets.only(
-                  bottom: AppDimensions.spacingXs,
+                  bottom: AppDimensions.space4,
                 ),
                 child: Text(
                   context.l10n.voiceAssistWindowHint,

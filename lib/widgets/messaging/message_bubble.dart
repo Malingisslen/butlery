@@ -191,8 +191,8 @@ class _MessageBubbleState extends State<MessageBubble>
                 offset: _swipeAnimation.value,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingM,
-                    vertical: AppDimensions.spacingXs,
+                    horizontal: AppDimensions.space12,
+                    vertical: AppDimensions.space4,
                   ),
                   child: Stack(
                     alignment: _isFromCurrentUser
@@ -223,7 +223,7 @@ class _MessageBubbleState extends State<MessageBubble>
                         children: [
                           if (!_isFromCurrentUser && widget.showAvatar) ...[
                             _buildAvatar(context),
-                            const SizedBox(width: AppDimensions.paddingS),
+                            const SizedBox(width: AppDimensions.space8),
                           ],
                           Flexible(
                             child: Column(
@@ -240,7 +240,7 @@ class _MessageBubbleState extends State<MessageBubble>
                             ),
                           ),
                           if (_isFromCurrentUser && widget.showAvatar) ...[
-                            const SizedBox(width: AppDimensions.paddingS),
+                            const SizedBox(width: AppDimensions.space8),
                             _buildAvatar(context),
                           ],
                         ],
@@ -340,8 +340,8 @@ class _MessageBubbleState extends State<MessageBubble>
   Widget _buildSenderName(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-        start: AppDimensions.paddingS,
-        bottom: AppDimensions.spacingXs,
+        start: AppDimensions.space8,
+        bottom: AppDimensions.space4,
       ),
       child: Text(
         widget.message.senderDisplayName,
@@ -361,7 +361,7 @@ class _MessageBubbleState extends State<MessageBubble>
         // Reaction picker overlay
         if (_showReactionPicker && widget.onReactionToggle != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(bottom: AppDimensions.space4),
             child: EmojiReactionPicker(
               onReactionSelected: (emoji) {
                 widget.onReactionToggle?.call(emoji);
@@ -464,8 +464,8 @@ class _MessageBubbleState extends State<MessageBubble>
       hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space8,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

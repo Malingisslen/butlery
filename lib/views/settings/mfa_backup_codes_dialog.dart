@@ -69,9 +69,9 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.mfaBackupCodesBody),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             color: cs.surfaceContainerHighest,
             child: SelectableText(
               widget.codes.join('\n'),
@@ -83,7 +83,7 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           TextButton.icon(
             onPressed: () {
               copyMfaSecret(widget.codes.join('\n'));

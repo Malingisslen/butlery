@@ -316,9 +316,8 @@ class _DinerRatingRow extends StatelessWidget {
                 const SizedBox(height: AppDimensions.space4),
                 Text(
                   _tag(context),
-                  style: AppTextStyles.captionText.copyWith(
+                  style: AppTextStyles.captionBold.copyWith(
                     color: cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space8),
@@ -363,9 +362,8 @@ class _YouBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTextStyles.captionText.copyWith(
+        style: AppTextStyles.captionBold.copyWith(
           color: cs.onSurface,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );

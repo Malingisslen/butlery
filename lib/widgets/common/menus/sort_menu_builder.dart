@@ -102,7 +102,7 @@ class SortMenuBuilder {
           ),
           const SizedBox(width: AppDimensions.space4),
           Flexible(child: Text(label)),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           if (isSelected)
             ButleryIcon(
               sortAscending ? ButleryIcons.arrowUp : ButleryIcons.arrowDown,

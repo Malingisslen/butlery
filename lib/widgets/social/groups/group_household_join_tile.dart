@@ -138,7 +138,7 @@ class _GroupHouseholdJoinTileState extends State<GroupHouseholdJoinTile> {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingL),
+      padding: const EdgeInsets.only(top: AppDimensions.space12),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: ButleryIcon(

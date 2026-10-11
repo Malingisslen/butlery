@@ -28,7 +28,7 @@ class ShareModeSelection {
           context.l10n.shareMethod,
           style: AppTextStyles.titleBold,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Column(
           children: [
             // Static Copy Option
@@ -61,7 +61,7 @@ class ShareModeSelection {
                               : null,
                         ),
                         child: Container(
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
+                          padding: const EdgeInsets.all(AppDimensions.space16),
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: selectedMode == ShareMode.staticCopy
@@ -82,7 +82,7 @@ class ShareModeSelection {
                                     ? Theme.of(context).colorScheme.onSurface
                                     : null,
                               ),
-                              const SizedBox(width: AppDimensions.spacingM),
+                              const SizedBox(width: AppDimensions.space8),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +92,7 @@ class ShareModeSelection {
                                       style: AppTextStyles.contentTitle,
                                     ),
                                     const SizedBox(
-                                      height: AppDimensions.spacingXs,
+                                      height: AppDimensions.space4,
                                     ),
                                     Text(
                                       context.l10n.shareStaticCopyDescription,
@@ -143,7 +143,7 @@ class ShareModeSelection {
                             : null,
                       ),
                       child: Container(
-                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        padding: const EdgeInsets.all(AppDimensions.space16),
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: selectedMode == ShareMode.realtime
@@ -164,7 +164,7 @@ class ShareModeSelection {
                                   ? Theme.of(context).colorScheme.onSurface
                                   : null,
                             ),
-                            const SizedBox(width: AppDimensions.spacingM),
+                            const SizedBox(width: AppDimensions.space8),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +174,7 @@ class ShareModeSelection {
                                     style: AppTextStyles.contentTitle,
                                   ),
                                   const SizedBox(
-                                    height: AppDimensions.spacingXs,
+                                    height: AppDimensions.space4,
                                   ),
                                   Text(
                                     contentType == ShareContentType.shoppingList
@@ -203,7 +203,7 @@ class ShareModeSelection {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
     );
   }

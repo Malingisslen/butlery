@@ -121,7 +121,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
+          padding: const EdgeInsets.only(top: AppDimensions.space32),
           child: ButleryIcon(
             ButleryIcons.arrowUp,
             size: AppDimensions.iconSizeXl,
@@ -358,7 +358,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Text(
                   sheetContext.l10n.weeklyMenuMoveSheetTitle,
                   style: AppTextStyles.titleSmall.copyWith(

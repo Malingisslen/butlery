@@ -157,7 +157,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             onCancelAllActive: widget.onCancelAllActive,
             onClearAllFailed: widget.onClearAllFailed,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           mainContent,
         ],
       );

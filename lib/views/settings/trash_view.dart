@@ -102,11 +102,11 @@ class _TrashContent extends StatelessWidget {
         padding: EdgeInsetsDirectional.only(
           start: margin,
           end: margin,
-          bottom: AppDimensions.spacingLg,
+          bottom: AppDimensions.space24,
         ),
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+            padding: const EdgeInsets.only(top: AppDimensions.space16),
             child: Text(
               l10n.trashIntro(TrashItem.keptFor.inDays),
               style: AppTextStyles.bodyMedium.copyWith(

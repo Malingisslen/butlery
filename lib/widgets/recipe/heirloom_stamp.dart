@@ -47,7 +47,7 @@ class HeirloomStamp extends StatelessWidget {
         margin: const EdgeInsets.all(AppDimensions.space4),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space4,
-          vertical: AppDimensions.spacingXs,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: cs.secondary,
@@ -57,7 +57,6 @@ class HeirloomStamp extends StatelessWidget {
           label,
           style: AppTextStyles.badgeLarge.copyWith(
             color: cs.surface,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

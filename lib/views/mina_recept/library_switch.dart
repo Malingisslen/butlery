@@ -28,7 +28,7 @@ class LibrarySwitch extends StatelessWidget {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
         side,
-        AppDimensions.spacingSm,
+        AppDimensions.space8,
         side,
         0,
       ),
@@ -45,8 +45,8 @@ class LibrarySwitch extends StatelessWidget {
               width: double.infinity,
               child: Wrap(
                 key: switchKey,
-                spacing: AppDimensions.spacingSm,
-                runSpacing: AppDimensions.spacingXs,
+                spacing: AppDimensions.space8,
+                runSpacing: AppDimensions.space4,
                 children: [
                   for (final (value, label) in choices)
                     PressFill(
@@ -107,5 +107,5 @@ class LibrarySwitch extends StatelessWidget {
   }
 
   /// Room a label needs beside it for the segment's padding and border.
-  static const double segmentPadding = 2 * AppDimensions.spacingLg;
+  static const double segmentPadding = 2 * AppDimensions.space24;
 }

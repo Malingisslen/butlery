@@ -26,14 +26,14 @@ class ShareTargetSelection {
           context.l10n.shareSelectRecipients,
           style: AppTextStyles.titleBold,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Search field
         ButlerySearchBox(
           hintText: context.l10n.shareSearchFriends,
           onChanged: onSearchChanged,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Friends list
         Container(
@@ -53,7 +53,7 @@ class ShareTargetSelection {
           ),
         ),
 
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
     );
   }
@@ -83,7 +83,7 @@ class ShareTargetSelection {
               size: AppDimensions.iconSizeXxl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               searchQuery.isEmpty
                   ? context.l10n.shareNoFriendsAvailable
@@ -98,7 +98,7 @@ class ShareTargetSelection {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
         color: Theme.of(context).colorScheme.outlineVariant,
