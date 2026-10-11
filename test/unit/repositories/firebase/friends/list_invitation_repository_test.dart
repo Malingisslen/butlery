@@ -1,6 +1,5 @@
 /// ListInvitationRepository: the two callables' answers, the recipient's
-/// stream, and decline and revoke on the `social_requests` row. Only the
-/// Cloud Functions client is mocked; the rows live in a fake Firestore.
+/// stream, and decline and revoke on the `social_requests` row.
 library;
 
 import 'package:clock/clock.dart';

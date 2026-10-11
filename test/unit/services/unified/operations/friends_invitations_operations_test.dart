@@ -4,6 +4,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/repositories/firebase/friends/list_invitation_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../test_support/base_unit_test.dart';
@@ -16,6 +17,9 @@ class _MockFriendsRepository extends Mock
 
 class _MockCategoryRepository extends Mock
     implements FriendCategoryRepository {}
+
+class _MockListInvitationRepository extends Mock
+    implements ListInvitationRepository {}
 
 void main() {
   group('FriendsInvitationsOperations', () {
@@ -95,6 +99,27 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('listInvitations', () {
+      test('is built on first use from the friends repository and the '
+          'signed-in user', () async {
+        final listRepo = _MockListInvitationRepository();
+        when(() => mockFriendsRepository.listInvitations).thenReturn(listRepo);
+        when(
+          () => listRepo.receivedListInvitationsStream(any()),
+        ).thenAnswer((_) => const Stream.empty());
+        verifyNever(() => mockFriendsRepository.listInvitations);
+
+        await operations.listInvitations.pendingReceived.toList();
+
+        verify(() => mockFriendsRepository.listInvitations).called(1);
+        verify(
+          () => listRepo.receivedListInvitationsStream(
+            mockParentService.currentUserId!,
+          ),
+        ).called(1);
+      });
     });
 
     group('Email Invitations', () {
