@@ -14,6 +14,8 @@
  *   - Member: no-op update (only updatedAt) is allowed.
  *   - Member: cannot rewrite `ownerId` (BUT-2321).
  *   - Owner: create only with `ownerId` == the path uid (BUT-2321).
+ *   - Owner: cannot recreate a group id `handOverGroup` moved away
+ *     (`group_moves` tombstone); clients cannot read or write `group_moves`.
  *   - Owner: cannot rewrite `ownerId` on update; a handover moves the
  *     document server-side instead (BUT-2321, `handOverGroup`).
  *
@@ -323,6 +325,35 @@ test("owner CANNOT create a group without ownerId", async () => {
 test("stranger CANNOT create a group under another user's account", async () => {
   await ensureCreateTargetAbsent();
   await assertFails(createAs(STRANGER_UID, validCategoryBody()));
+});
+
+// OC5: differs from OC1 only in a tombstone existing for the id. An app from
+// before BUT-2326 saves an owner edit with `set()`, which on a moved group is
+// a create of the same id under the old owner.
+test("owner CANNOT recreate a group id that was handed over", async () => {
+  await ensureCreateTargetAbsent();
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`group_moves/${CREATE_CATEGORY_ID}`)
+      .set({ movedAt: new Date() });
+  });
+  try {
+    await assertFails(createAs(OWNER_UID, validCategoryBody()));
+  } finally {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`group_moves/${CREATE_CATEGORY_ID}`).delete();
+    });
+  }
+});
+
+test("a client can neither read nor write a group_moves tombstone", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc("group_moves/cat-tombstone-acl")
+      .set({ movedAt: new Date() });
+  });
+  const db = env.authenticatedContext(OWNER_UID).firestore();
+  await assertFails(db.doc("group_moves/cat-tombstone-acl").get());
+  await assertFails(db.doc("group_moves/cat-tombstone-acl").delete());
+  await assertFails(db.doc("group_moves/cat-tombstone-new").set({ movedAt: new Date() }));
 });
 
 // ====================================================================
