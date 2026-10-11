@@ -13502,6 +13502,14 @@
   "@hemStartCooking": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
   },
+  "hemSuggestion": "Förslag",
+  "@hemSuggestion": {
+    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3)."
+  },
+  "hemSwapSuggestion": "Byt förslag",
+  "@hemSwapSuggestion": {
+    "description": "HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3)."
+  },
   "hemSwapDish": "Byt rätt",
   "@hemSwapDish": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish."
