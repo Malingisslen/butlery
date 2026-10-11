@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -83,27 +84,18 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
         backTo: friendDisplayName,
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 600,
-                desktop: 700,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                Expanded(
-                  child: Consumer<SharedContentCoordinatorViewModel>(
-                    builder: (context, viewModel, _) =>
-                        _buildBody(context, viewModel),
-                  ),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              Expanded(
+                child: Consumer<SharedContentCoordinatorViewModel>(
+                  builder: (context, viewModel, _) =>
+                      _buildBody(context, viewModel),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

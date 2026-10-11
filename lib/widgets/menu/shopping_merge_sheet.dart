@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 part 'shopping_merge_sheet_parts.dart';
 
@@ -31,10 +32,8 @@ Future<MenuShoppingMergePreview?> showShoppingMergeSheet(
   required Future<MenuShoppingPantry> Function() retryPantry,
   bool canReplace = true,
 }) {
-  return showModalBottomSheet<MenuShoppingMergePreview>(
+  return showButlerySheet<MenuShoppingMergePreview>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => ShoppingMergeSheet(
       source: source,
       pantry: pantry,
@@ -125,162 +124,139 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
         ? l.shoppingMergeReplaceAction(merge.itemCount)
         : l.shoppingMergeAdd(merge.itemCount);
 
-    return DecoratedBox(
-      // The sheet's top edge: 1 px #7d897c in the drawing, border.strong
-      // (outline in both schemes).
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: cs.outline)),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingLg,
+        AppDimensions.spacingL,
+        AppDimensions.spacingLg,
+        AppDimensions.spacingLg,
       ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppDimensions.spacingLg,
-          AppDimensions.spacingL,
-          AppDimensions.spacingLg,
-          AppDimensions.spacingLg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // The drawn grab handle, 34 x 4 in border.subtle.
-            Center(
-              child: SizedBox(
-                width: 34,
-                height: AppDimensions.spacingXs,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: cs.outlineVariant,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusKnob,
-                    ),
-                  ),
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              l.shoppingMergeTitle,
+              style: AppTextStyles.headlineSmall.copyWith(
+                color: cs.onSurface,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Semantics(
-              header: true,
-              child: Text(
-                l.shoppingMergeTitle,
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: cs.onSurface,
-                ),
+          ),
+          const SizedBox(height: AppDimensions.space4),
+          _Summary(merge: merge),
+          if (widget.source.scaledMeals > 0) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Text(
+              l.menuShoppingScaledToPresence,
+              style: AppTextStyles.captionBase.copyWith(
+                color: cs.onSurfaceVariant,
               ),
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            _Summary(merge: merge),
-            if (widget.source.scaledMeals > 0) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
-              Text(
-                l.menuShoppingScaledToPresence,
-                style: AppTextStyles.captionBase.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-            if (merge.pantryUnavailable) ...[
-              const SizedBox(height: AppDimensions.spacingL),
-              _PantryUnavailable(
-                retrying: _retrying,
-                onRetry: () => unawaited(_retryPantry()),
-              ),
-            ],
-            if (!_detailsOpen) ...[
-              const SizedBox(height: AppDimensions.space12),
-              _Figures(merge: merge),
-            ],
-            const SizedBox(height: AppDimensions.spacingL),
-            _DetailsToggle(
-              open: _detailsOpen,
-              onTap: () => setState(() => _detailsOpen = !_detailsOpen),
-            ),
-            if (_detailsOpen) ...[
-              _SwitchRow(
-                which: ShoppingMergeSwitch.duplicates,
-                title: l.shoppingMergeDuplicatesTitle,
-                body: l.shoppingMergeDuplicatesBody,
-                value: _options.mergeDuplicates,
-                divider: true,
-                onChanged: (v) => setState(
-                  () => _options = _options.copyWith(mergeDuplicates: v),
-                ),
-              ),
-              _SwitchRow(
-                which: ShoppingMergeSwitch.convert,
-                title: l.shoppingMergeConvertTitle,
-                body: l.shoppingMergeConvertBody,
-                value: _options.convertUnits,
-                divider: true,
-                onChanged: (v) => setState(
-                  () => _options = _options.copyWith(convertUnits: v),
-                ),
-              ),
-              _SwitchRow(
-                which: ShoppingMergeSwitch.pantry,
-                title: l.shoppingMergePantryTitle,
-                body: l.shoppingMergePantryBody(merge.atHomeCount),
-                extra: merge.coveredAtHome.isEmpty
-                    ? null
-                    : Text(
-                        l.shoppingMergePantryCovered(
-                          merge.coveredAtHome.join(', '),
-                        ),
-                        key: ShoppingMergeSheet.coveredKey,
-                        style: AppTextStyles.captionBase.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                value: _options.subtractPantry,
-                divider: true,
-                onChanged: (v) => setState(
-                  () => _options = _options.copyWith(subtractPantry: v),
-                ),
-              ),
-            ] else
-              const SizedBox(height: AppDimensions.spacingL),
-            _SwitchRow(
-              which: ShoppingMergeSwitch.replace,
-              title: l.shoppingMergeReplaceTitle,
-              body: widget.canReplace
-                  ? l.shoppingMergeReplaceBody
-                  : l.shoppingMergeReplaceUnavailable,
-              value: _options.replaceList,
-              divider: false,
-              onChanged: widget.canReplace
-                  ? (v) => setState(
-                      () => _options = _options.copyWith(replaceList: v),
-                    )
-                  : null,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton(
-                    key: ShoppingMergeSheet.cancelKey,
-                    onPressed: () => Navigator.of(context).pop(),
-                    // A button never cuts its own name (BUT-2193, BUT-2219):
-                    // the label wraps, as HeroButton's does.
-                    child: Text(l.commonCancel, textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Expanded(
-                  flex: 3,
-                  child: HeroButton(
-                    key: ShoppingMergeSheet.confirmKey,
-                    label: confirmLabel,
-                    expand: true,
-                    onPressed: canConfirm
-                        ? () => Navigator.of(context).pop(merge)
-                        : null,
-                  ),
-                ),
-              ],
             ),
           ],
-        ),
+          if (merge.pantryUnavailable) ...[
+            const SizedBox(height: AppDimensions.spacingL),
+            _PantryUnavailable(
+              retrying: _retrying,
+              onRetry: () => unawaited(_retryPantry()),
+            ),
+          ],
+          if (!_detailsOpen) ...[
+            const SizedBox(height: AppDimensions.space12),
+            _Figures(merge: merge),
+          ],
+          const SizedBox(height: AppDimensions.spacingL),
+          _DetailsToggle(
+            open: _detailsOpen,
+            onTap: () => setState(() => _detailsOpen = !_detailsOpen),
+          ),
+          if (_detailsOpen) ...[
+            _SwitchRow(
+              which: ShoppingMergeSwitch.duplicates,
+              title: l.shoppingMergeDuplicatesTitle,
+              body: l.shoppingMergeDuplicatesBody,
+              value: _options.mergeDuplicates,
+              divider: true,
+              onChanged: (v) => setState(
+                () => _options = _options.copyWith(mergeDuplicates: v),
+              ),
+            ),
+            _SwitchRow(
+              which: ShoppingMergeSwitch.convert,
+              title: l.shoppingMergeConvertTitle,
+              body: l.shoppingMergeConvertBody,
+              value: _options.convertUnits,
+              divider: true,
+              onChanged: (v) => setState(
+                () => _options = _options.copyWith(convertUnits: v),
+              ),
+            ),
+            _SwitchRow(
+              which: ShoppingMergeSwitch.pantry,
+              title: l.shoppingMergePantryTitle,
+              body: l.shoppingMergePantryBody(merge.atHomeCount),
+              extra: merge.coveredAtHome.isEmpty
+                  ? null
+                  : Text(
+                      l.shoppingMergePantryCovered(
+                        merge.coveredAtHome.join(', '),
+                      ),
+                      key: ShoppingMergeSheet.coveredKey,
+                      style: AppTextStyles.captionBase.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+              value: _options.subtractPantry,
+              divider: true,
+              onChanged: (v) => setState(
+                () => _options = _options.copyWith(subtractPantry: v),
+              ),
+            ),
+          ] else
+            const SizedBox(height: AppDimensions.spacingL),
+          _SwitchRow(
+            which: ShoppingMergeSwitch.replace,
+            title: l.shoppingMergeReplaceTitle,
+            body: widget.canReplace
+                ? l.shoppingMergeReplaceBody
+                : l.shoppingMergeReplaceUnavailable,
+            value: _options.replaceList,
+            divider: false,
+            onChanged: widget.canReplace
+                ? (v) => setState(
+                    () => _options = _options.copyWith(replaceList: v),
+                  )
+                : null,
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: OutlinedButton(
+                  key: ShoppingMergeSheet.cancelKey,
+                  onPressed: () => Navigator.of(context).pop(),
+                  // A button never cuts its own name (BUT-2193, BUT-2219):
+                  // the label wraps, as HeroButton's does.
+                  child: Text(l.commonCancel, textAlign: TextAlign.center),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                flex: 3,
+                child: HeroButton(
+                  key: ShoppingMergeSheet.confirmKey,
+                  label: confirmLabel,
+                  expand: true,
+                  onPressed: canConfirm
+                      ? () => Navigator.of(context).pop(merge)
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

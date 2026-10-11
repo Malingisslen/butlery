@@ -9,7 +9,7 @@ import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_detail_view.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -56,11 +56,9 @@ class CookbookShelf extends StatelessWidget {
               : l10n.cookbookManageTags,
           onAction: vm.hasAnyTags
               ? () => showMakeCookbookFlow(context, vm)
-              : () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const PersonalTagsView(),
-                  ),
-                ),
+              : () => Navigator.of(
+                  context,
+                ).pushNamed(Routes.settingsPersonalTags),
         ),
       );
     }

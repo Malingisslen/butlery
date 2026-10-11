@@ -7,11 +7,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/decision_detail_args.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_list_scaffold.dart';
-import 'package:butlery/widgets/social/decision_status_badge.dart';
 
 /// "Beslut om mitt innehåll" — decisions about the user's own content. The
 /// server never names the reporter, and the content itself is already gone
@@ -81,7 +81,6 @@ class _Content extends StatelessWidget {
     ModerationOutcome decision,
   ) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     final type = decision.contentType;
     final reason = decision.reason;
     final decidedAt = decision.decidedAt;
@@ -98,21 +97,21 @@ class _Content extends StatelessWidget {
           : decisionSubject(l10n, type, owner: true),
       subtitle: lines.isEmpty ? null : lines.join('\n'),
       trailing: appealed == null
-          ? DecisionStatusBadge(
+          ? UnifiedBadge.status(
               label: l10n.decisionStatusDecided,
-              glyph: ButleryIcons.circleCheck,
-              color: cs.outline,
+              icon: ButleryIcons.circleCheck,
+              tone: BadgeTone.neutral,
             )
           : appealed.status == AppealStatus.open
-          ? DecisionStatusBadge(
+          ? UnifiedBadge.status(
               label: l10n.decisionStatusAppealed,
-              glyph: ButleryIcons.search,
-              color: cs.tertiary,
+              icon: ButleryIcons.search,
+              tone: BadgeTone.warning,
             )
-          : DecisionStatusBadge(
+          : UnifiedBadge.status(
               label: l10n.myReportsStatusClosed,
-              glyph: ButleryIcons.circleCheck,
-              color: cs.outline,
+              icon: ButleryIcons.circleCheck,
+              tone: BadgeTone.neutral,
             ),
       onTap: () async {
         await Navigator.pushNamed(

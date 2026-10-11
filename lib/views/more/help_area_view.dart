@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -15,8 +16,6 @@ import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/whats_new/whats_new_catalog.dart';
 import 'package:butlery/services/whats_new/whats_new_service.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
@@ -103,7 +102,9 @@ class _HelpAreaViewState extends State<HelpAreaView> {
               if (snap.data == true)
                 ButleryListRow(
                   label: l10n.moderatorReviewTitle,
-                  trailing: const _AdminPill(),
+                  trailing: UnifiedBadge.status(
+                    label: context.l10n.settingsAdminOnly,
+                  ),
                   onTap: () => open(Routes.moderatorReview),
                 ),
             ],
@@ -133,31 +134,6 @@ class _HelpAreaViewState extends State<HelpAreaView> {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _AdminPill extends StatelessWidget {
-  const _AdminPill();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: cs.outlineVariant),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.badgePaddingY,
-        ),
-        child: Text(
-          context.l10n.settingsAdminOnly.toUpperCase(),
-          style: AppTextStyles.overline.copyWith(color: cs.onSurfaceVariant),
-        ),
-      ),
     );
   }
 }

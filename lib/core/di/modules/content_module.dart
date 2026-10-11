@@ -96,6 +96,9 @@ import 'package:butlery/services/account/consent_service.dart';
 
 // LLM services
 import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/guest/guest_status.dart';
+import 'package:butlery/services/guest/guest_import_session.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 
 // YouTube import services
@@ -298,10 +301,19 @@ class ContentModule implements DIModule {
     );
 
     // LLM service for recipe extraction (depends on ConsentService — user-scoped)
+    container.registerLazySingleton<GuestImportSession>(
+      () => GuestImportSession(
+        uid: () => container<AuthService>().currentUser?.uid,
+      ),
+      dispose: (s) => s.dispose(),
+    );
+
     container.registerLazySingleton<LlmService>(
       () => LlmService(
         rateLimiter: app<ImportRateLimiter>(),
         consentService: container<ConsentService>(),
+        guestSession: container<GuestImportSession>(),
+        isGuest: () => container<AuthService>().isGuest,
       ),
     );
 

@@ -20,17 +20,13 @@ import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Opens the sheet. A drag down leaves the stored value as it was; only Klar
 /// saves.
 Future<void> showHouseholdPortionsSheet(BuildContext context) {
-  final cs = Theme.of(context).colorScheme;
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    backgroundColor: cs.surface,
     builder: (_) => const HouseholdPortionsSheet(),
   );
 }

@@ -11,14 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 /// Raw dialogs still allowed a red button, with how many and why. The list
 /// may only shrink.
 const _allowed = <String, ({int count, String why})>{
-  // #641 (two-step verification) rewrites both files; they move after it.
+  // Signing out with unsynced changes is a choice between waiting and
+  // discarding, not a delete confirmation: waiting is drawn as the answer.
   'lib/widgets/common/profile/dialogs/profile_dialogs.dart': (
-    count: 2,
-    why: 'waits for #641',
-  ),
-  'lib/views/settings/mfa_settings_view.dart': (
     count: 1,
-    why: 'waits for #641',
+    why: 'sign-out with unsynced changes',
   ),
   // Multi-choice dialogs, not confirmations: the red text button is one
   // choice among several, as drawn in #dialogosparat.

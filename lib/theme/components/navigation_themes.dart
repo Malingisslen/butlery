@@ -4,7 +4,7 @@
 /// - AppBar: Primary background with onPrimary text
 /// - Bottom Nav: Primary background
 /// - Tab Bar: the saffron plate line under the selected word
-/// - Dialogs/Sheets: Surface with proper elevation
+/// - Dialogs/Sheets: Surface
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -133,18 +133,29 @@ class NavigationThemes {
   static BottomSheetThemeData bottomSheetTheme(ColorScheme cs) {
     return BottomSheetThemeData(
       backgroundColor: cs.surface,
-      elevation: 16,
-      shadowColor: cs.shadow,
+      // Komponentark §09: "Noll skugga. Scrim + 1 px kontrastkant." The
+      // layer is separated by the scrim and a border-control edge.
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
       // Sheets round only their top edge, 12 (Komponentark: "Ark: 12 px
       // överkant"). The bottom edge meets the screen edge and stays sharp.
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: cs.outline),
+        borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
       modalBackgroundColor: cs.surface,
-      modalElevation: 16,
+      modalElevation: 0,
       modalBarrierColor: cs.scrim,
+      // On a wide screen every sheet keeps one column.
+      constraints: const BoxConstraints(
+        maxWidth: AppDimensions.dialogMaxWidthLarge,
+      ),
+      // The handle is 44 × 4 in border-control (Komponentark §09). Only
+      // showButlerySheet turns it on.
+      dragHandleColor: cs.outline,
+      dragHandleSize: const Size(44, 4),
     );
   }
 }

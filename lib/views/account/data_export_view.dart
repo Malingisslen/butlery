@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
@@ -13,13 +14,13 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -42,42 +43,32 @@ class DataExportView extends StatelessWidget {
           title: context.l10n.dataExportTitle,
         ),
         body: SafeArea(
-          // RESPONSIVE: Center and constrain content on large screens
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: LayoutComponents.valueFor(
-                  context: context,
-                  mobile: double.infinity,
-                  tablet: 600,
-                  desktop: 700,
-                ),
-              ),
-              child: Consumer<DataExportViewModel>(
-                builder: (context, viewModel, _) {
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.all(
-                      AppDimensions.layoutMarginOf(context),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildHeaderSection(context),
-                        const SizedBox(height: AppDimensions.spacingXl),
-                        _buildExportButton(context, viewModel),
-                        const SizedBox(height: AppDimensions.spacingLg),
-                        if (viewModel.isExporting) _buildLoadingState(context),
-                        if (viewModel.hasError)
-                          _buildErrorState(context, viewModel),
-                        if (viewModel.hasExportedData)
-                          _buildSuccessState(context, viewModel),
-                        const SizedBox(height: AppDimensions.spacingXl),
-                        _buildInfoSection(context),
-                      ],
-                    ),
-                  );
-                },
-              ),
+          child: ButleryPageBody(
+            width: PageWidth.text,
+            child: Consumer<DataExportViewModel>(
+              builder: (context, viewModel, _) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(
+                    AppDimensions.layoutMarginOf(context),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeaderSection(context),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildExportButton(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingLg),
+                      if (viewModel.isExporting) _buildLoadingState(context),
+                      if (viewModel.hasError)
+                        _buildErrorState(context, viewModel),
+                      if (viewModel.hasExportedData)
+                        _buildSuccessState(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildInfoSection(context),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -198,10 +189,6 @@ class DataExportView extends StatelessWidget {
         body = viewModel.errorMessage ?? l10n.errorExportFailed;
     }
 
-    // The theme makes every FilledButton full width.
-    final buttonStyle = FilledButton.styleFrom(
-      minimumSize: const Size(0, AppDimensions.minTouchTarget),
-    );
     final List<Widget> actions = switch (failure) {
       ExportFailure.network => [
         TextButton(
@@ -209,28 +196,28 @@ class DataExportView extends StatelessWidget {
           onPressed: viewModel.reset,
           child: Text(l10n.dataExportNotNow),
         ),
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.retry'),
-          style: buttonStyle,
+          label: l10n.commonRetry,
           onPressed: () => viewModel.retryExport(),
-          child: Text(l10n.commonRetry),
         ),
       ],
       ExportFailure.signedOut => [
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.signIn'),
-          style: buttonStyle,
+          label: l10n.dataExportSignIn,
           onPressed: () => _handleSignInAgain(context),
-          child: Text(l10n.dataExportSignIn),
         ),
       ],
       ExportFailure.permissionDenied => const <Widget>[],
       ExportFailure.other => [
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.retry'),
-          style: buttonStyle,
+          label: l10n.commonRetry,
           onPressed: () => viewModel.retryExport(),
-          child: Text(l10n.commonRetry),
         ),
       ],
     };

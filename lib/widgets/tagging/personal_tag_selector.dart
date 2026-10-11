@@ -15,7 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -80,10 +80,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   }
 
   Future<void> _openTagManager() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const PersonalTagsView()),
-    );
+    await Navigator.pushNamed(context, Routes.settingsPersonalTags);
     // Refresh tags after returning from tag management view
     await _viewModel.initialize();
     if (mounted) setState(() {});
@@ -255,7 +252,6 @@ class _PersonalTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: isSelected
@@ -264,34 +260,17 @@ class _PersonalTagChip extends StatelessWidget {
       selected: isSelected,
       button: true,
       child: PressFill(
-        surface: isSelected ? PressSurface.raised : PressSurface.base,
+        surface: isSelected ? PressSurface.ink : PressSurface.base,
         child: FilterChip(
           label: Text(tag.name),
           selected: isSelected,
           onSelected: (_) => onTap(),
-          backgroundColor: cs.surface,
-          // Chosen tags and choices sit on the raised surface with a real border,
-          // never an ink tint.
-          // primaryContainer = surface.raised/selected, onPrimaryContainer and
-          // onSurface = text.primary, outline = border.control, in both schemes.
-          // cs.primary is ink in both modes and vanished on dark.
-          selectedColor: cs.primaryContainer,
-          checkmarkColor: cs.onPrimaryContainer,
-          side: BorderSide(
-            color: isSelected ? cs.onPrimaryContainer : cs.outlineVariant,
-          ),
-          labelStyle: AppTextStyles.bodySmall.copyWith(
-            color: isSelected ? cs.onPrimaryContainer : cs.onSurface,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
           avatar: isSelected
               ? null
-              : ButleryIcon(
+              : const ButleryIcon(
                   ButleryIcons.tag,
                   size: AppDimensions.iconSize14,
-                  color: cs.onPrimaryContainer,
                 ),
-          showCheckmark: isSelected,
         ),
       ),
     );
@@ -320,7 +299,6 @@ class PersonalTagDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     if (tagIds.isEmpty) return const SizedBox.shrink();
 
     final tags = tagIds
@@ -340,21 +318,7 @@ class PersonalTagDisplay extends StatelessWidget {
       runSpacing: AppDimensions.spacingXs,
       children: [
         ...displayTags.map((tag) => _MiniTagChip(tag: tag)),
-        if (remainingCount > 0)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingS,
-              vertical: AppDimensions.spacingXs,
-            ),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            ),
-            child: Text(
-              '+$remainingCount',
-              style: AppTextStyles.metadataEmphasized,
-            ),
-          ),
+        if (remainingCount > 0) Chip(label: Text('+$remainingCount')),
       ],
     );
   }
@@ -367,38 +331,15 @@ class _MiniTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: context.l10n.personalTagA11yLabel(tag.name),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingS,
-          vertical: AppDimensions.spacingXs,
+      child: Chip(
+        avatar: const ButleryIcon(
+          ButleryIcons.tag,
+          size: AppDimensions.iconSizeXs,
         ),
-        decoration: BoxDecoration(
-          color: cs.primaryContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          // border.control (outline), never a faded ink (tokens.json:40-53).
-          border: Border.all(color: cs.outline),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ButleryIcon(
-              ButleryIcons.tag,
-              size: AppDimensions.iconSizeXs,
-              color: cs.onPrimaryContainer,
-            ),
-            const SizedBox(width: AppDimensions.space4),
-            Text(
-              tag.name,
-              style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.onPrimaryContainer,
-              ),
-            ),
-          ],
-        ),
+        label: Text(tag.name),
       ),
     );
   }
@@ -409,34 +350,15 @@ class _PlaceholderTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.spacingXs,
+    return Chip(
+      avatar: const ButleryIcon(
+        ButleryIcons.tag,
+        size: AppDimensions.iconSizeXs,
       ),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        border: Border.all(
-          color: cs.outline,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            ButleryIcons.tag,
-            size: AppDimensions.iconSizeXs,
-            color: cs.onPrimaryContainer,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          SkeletonComponents.skeletonBox(
-            width: 48,
-            height: 12,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          ),
-        ],
+      label: SkeletonComponents.skeletonBox(
+        width: 48,
+        height: 12,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
     );
   }

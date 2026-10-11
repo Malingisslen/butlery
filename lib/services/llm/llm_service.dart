@@ -7,6 +7,7 @@
 /// - Rate limiting integration
 library;
 
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
@@ -23,6 +24,7 @@ import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/guest/guest_import_session.dart';
 
 /// Service for LLM-based recipe extraction.
 ///
@@ -35,6 +37,8 @@ class LlmService extends BaseService {
   final FirebaseFunctions _functions;
   final ImportRateLimiter _rateLimiter;
   final ConsentService _consentService;
+  final GuestImportSession? _guestSession;
+  final bool Function() _isGuest;
 
   /// BUT-589: shared circuit breaker for the Vertex/Gemini backend.
   /// Trips after [_failureThreshold] consecutive Cloud Function failures and
@@ -61,8 +65,12 @@ class LlmService extends BaseService {
     required ConsentService consentService,
     FirebaseFunctions? functions,
     CircuitBreaker? backendBreaker,
+    GuestImportSession? guestSession,
+    bool Function()? isGuest,
   }) : _rateLimiter = rateLimiter,
        _consentService = consentService,
+       _guestSession = guestSession,
+       _isGuest = isGuest ?? (() => false),
        _functions = functions ?? FirebaseFunctions.instanceFor(region: _region),
        _backendBreaker =
            backendBreaker ??
@@ -360,6 +368,11 @@ class LlmService extends BaseService {
       // (functions/src/llm/pii-scrubber.ts) still runs as the second line of
       // defence; keep the Dart patterns in sync with the TS ones.
       final scrubbedJson = scrubPayload(requestJson);
+      // The import id is ours, not user text, so it is added after scrubbing.
+      final guestSession = _guestSessionFor(functionName);
+      if (guestSession != null) {
+        scrubbedJson['guestImportId'] = guestSession.currentId;
+      }
       final result = await callable.call<Map<String, dynamic>>(scrubbedJson);
       final response = parseResponse(result.data);
       _backendBreaker.recordSuccess();
@@ -369,13 +382,19 @@ class LlmService extends BaseService {
       if (success || (recordUsageOnFailure && cost > 0)) {
         await _rateLimiter.recordUsage(operation);
       }
+      if (success) await guestSession?.recordSuccess();
 
       return response;
     } on FirebaseFunctionsException catch (e) {
       final error = LlmException.fromFirebase(e);
       // The user's AI cost ceiling is an answer from a healthy backend, not
       // an outage, so it must not trip the breaker.
-      if (error.code != LlmException.costCeilingCode) {
+      if (error.code == LlmException.guestImportLimitCode) {
+        unawaited(_guestSession?.recordLimitReached());
+      }
+      if (error.code != LlmException.costCeilingCode &&
+          error.code != LlmException.guestImportLimitCode &&
+          error.code != LlmException.guestCapacityCode) {
         _backendBreaker.recordFailure();
       }
       AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
@@ -385,6 +404,14 @@ class LlmService extends BaseService {
       AppLogger.error('LlmService: Unexpected error - $e');
       throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
     }
+  }
+
+  /// The server requires an import id from a guest on these two callables.
+  GuestImportSession? _guestSessionFor(String functionName) {
+    if (functionName != 'structureRecipe' && functionName != 'ocrRecipeImage') {
+      return null;
+    }
+    return _isGuest() ? _guestSession : null;
   }
 
   bool _isSuccessful(dynamic response) {

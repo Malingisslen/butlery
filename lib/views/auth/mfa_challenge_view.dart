@@ -24,6 +24,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/styled/butlery_code_field.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// How the challenge ended.
 enum MfaChallengeResult {
@@ -270,20 +271,21 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
       const SizedBox(height: AppDimensions.spacingLg),
-      TextField(
-        key: const ValueKey('mfaChallenge.backupCode'),
-        controller: _backupController,
-        textCapitalization: TextCapitalization.characters,
-        autocorrect: false,
-        enableSuggestions: false,
-        maxLength: 11,
-        decoration: InputDecoration(
-          labelText: l10n.mfaBackupCodeLabel,
-          hintText: 'ABCDE-FGHJK',
-          border: const OutlineInputBorder(),
-          counterText: '',
+      LabeledField(
+        label: l10n.mfaBackupCodeLabel,
+        child: TextField(
+          key: const ValueKey('mfaChallenge.backupCode'),
+          controller: _backupController,
+          textCapitalization: TextCapitalization.characters,
+          autocorrect: false,
+          enableSuggestions: false,
+          maxLength: 11,
+          decoration: const InputDecoration(
+            hintText: 'ABCDE-FGHJK',
+            counterText: '',
+          ),
+          onSubmitted: (_) => _useBackupCode(),
         ),
-        onSubmitted: (_) => _useBackupCode(),
       ),
       if (_error != null) ...[
         const SizedBox(height: AppDimensions.spacingSm),

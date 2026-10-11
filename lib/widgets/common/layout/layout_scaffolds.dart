@@ -16,6 +16,8 @@ import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
@@ -63,7 +65,11 @@ class LayoutScaffolds {
   ///
   /// `currentIndex` is null on purpose — none of these leaf views is one of the
   /// four main tabs, so nothing should render as selected.
+  ///
+  /// Beside a list on a tablet (BUT-723) the shell's rail is already on
+  /// screen, so the page draws no row of its own.
   static Widget detailBottomNav(BuildContext context) {
+    if (DetailPane.isInside(context)) return const SizedBox.shrink();
     final items = ButleryAdaptiveNavigation.getNavigationItems(context);
     return ButleryBottomNavigation(
       currentIndex: null,
@@ -166,14 +172,20 @@ class _MainMenuLayoutState extends State<_MainMenuLayout>
     final custom = widget.tabBuilder;
     if (custom != null) return _tabs[index] ??= custom(index);
     _tabs[index] ??= switch (index) {
-      LayoutScaffolds.homeTab => const MinaReceptView(),
-      LayoutScaffolds.menuTab => const VeckomenyView(),
+      LayoutScaffolds.homeTab => _withDetailPane(const MinaReceptView()),
+      LayoutScaffolds.menuTab => _withDetailPane(const VeckomenyView()),
       LayoutScaffolds.shoppingTab => const UnifiedShoppingView(),
-      LayoutScaffolds.moreTab => const MoreView(),
+      LayoutScaffolds.moreTab => _withDetailPane(const MoreView()),
       _ => const SizedBox.shrink(),
     };
     return _tabs[index]!;
   }
+
+  // BUT-723: list and chosen item side by side on a tablet in landscape.
+  Widget _withDetailPane(Widget tab) => DetailPaneHost(
+    master: tab,
+    onGenerateRoute: AppRouter.generateRoute,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +263,7 @@ class _SimpleLayout extends StatelessWidget {
               : null),
       body: body,
       floatingActionButton: floatingActionButton,
-      bottomNavigationBar: showBottomNav
+      bottomNavigationBar: showBottomNav && !DetailPane.isInside(context)
           ? ButleryBottomNavigation(
               currentIndex: bottomNavIndex,
               items: ButleryAdaptiveNavigation.getNavigationItems(context),

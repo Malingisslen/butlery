@@ -4393,6 +4393,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'search...';
 
   @override
+  String get searchNothingYet => 'Nothing to search yet';
+
+  @override
   String shareFriendsSelectedCount(int count) {
     return '$count friend(s) selected';
   }
@@ -4809,6 +4812,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveTitle => 'Remove MFA?';
+
+  @override
+  String get mfaRemoveAction => 'Remove two-step verification';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13148,6 +13154,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityPasswordMismatch => 'Passwords do not match';
 
   @override
+  String get passwordsMatch => 'Passwords match';
+
+  @override
   String get profileAccountSecurity => 'Account Security';
 
   @override
@@ -15787,6 +15796,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageCouldNotBeShown => 'The image could not be shown';
+
+  @override
+  String get errorPartNotShown => 'This part could not be shown.';
 
   @override
   String get recipeAddPhoto => 'Add photo';
@@ -18970,6 +18982,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ratingRemoveAction => 'Remove rating';
 
   @override
+  String get detailPaneExpand => 'Fullscreen';
+
+  @override
+  String get detailPaneCollapse => 'Show the list';
+
+  @override
+  String get a11yDetailPaneList => 'List';
+
+  @override
+  String get a11yDetailPaneDetail => 'Selected page';
+
+  @override
   String get nutritionButton => 'Nutrition values';
 
   @override
@@ -19191,6 +19215,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRecipesSection => 'Recipes';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists',
+      one: '1 list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'New shopping list';
+
+  @override
+  String get a11yShoppingPickList => 'Choose list';
+
+  @override
+  String get guestBandLabel => 'You\'re trying it as a guest';
+
+  @override
+  String get guestCreateAccount => 'Create account';
+
+  @override
+  String get guestNotNow => 'Not now';
+
+  @override
+  String get guestAllergyTitle =>
+      'Does anyone in the household have allergies?';
+
+  @override
+  String get guestAllergyBody =>
+      'Set them up and Butlery will never suggest anything unsafe.';
+
+  @override
+  String get guestAllergyAction => 'Set up';
+
+  @override
+  String get guestAllergyDismiss => 'Close';
+
+  @override
+  String get guestSheetShareTitle => 'Create an account to share';
+
+  @override
+  String get guestSheetShareBody =>
+      'Sharing needs an account, so the person you share with can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Create an account to do things together';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Friends, groups, messages and family need an account, so others can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'You have used your three imports';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Create a free account to import more recipes from links and photos. The recipes you have already imported come with you.';
+
+  @override
+  String get guestRequiresAccount => 'Requires account';
+
+  @override
+  String get guestAccountValue => 'Guest';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count of 3 imports left as a guest';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Counts as an import';
+
+  @override
+  String get llmGuestImportLimit => 'You have used your three imports';
+
+  @override
+  String get llmGuestCapacity =>
+      'Guest imports are temporarily unavailable. Create a free account to import.';
 
   @override
   String get motivationRemovedCopyright =>

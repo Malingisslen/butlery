@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/cookbook_details.dart';
@@ -32,6 +33,7 @@ void main() {
   late _MockCookbookService service;
   late StreamController<List<PersonalTag>> tagStream;
   late CookbookViewModel vm;
+  late List<String?> namedRoutes;
 
   final soppor = cookbookTag(
     id: 'soppor',
@@ -52,6 +54,7 @@ void main() {
   });
 
   setUp(() async {
+    namedRoutes = [];
     await BaseUnitTest.setupUnitWithProductionLocator();
     service = _MockCookbookService();
     tagStream = StreamController<List<PersonalTag>>.broadcast();
@@ -81,6 +84,16 @@ void main() {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
+        // AppRouter.generateRoute reaches FirebaseAuth for settings routes, so
+        // the test maps the one route the shelf can open.
+        onGenerateRoute: (settings) {
+          namedRoutes.add(settings.name);
+          if (settings.name != Routes.settingsPersonalTags) return null;
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const PersonalTagsView(),
+          );
+        },
         child: Scaffold(
           body: ChangeNotifierProvider<CookbookViewModel>.value(
             value: vm,
@@ -166,6 +179,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PersonalTagsView), findsOneWidget);
+      expect(namedRoutes, [Routes.settingsPersonalTags]);
       expect(find.text(l10n.cookbookChooseTagTitle), findsNothing);
     });
   });

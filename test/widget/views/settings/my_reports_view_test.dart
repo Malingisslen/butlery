@@ -155,9 +155,9 @@ void main() {
       _report('4', ReportStatus.closed),
     ]);
 
-    expect(find.text('Inkommen'), findsOneWidget);
-    expect(find.text('Granskas'), findsNWidgets(2));
-    expect(find.text('Avslutad'), findsOneWidget);
+    expect(find.text('INKOMMEN'), findsOneWidget);
+    expect(find.text('GRANSKAS'), findsNWidgets(2));
+    expect(find.text('AVSLUTAD'), findsOneWidget);
     expect(find.byIcon(ButleryIcons.inbox), findsOneWidget);
     expect(find.byIcon(ButleryIcons.search), findsNWidgets(2));
     expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
@@ -217,7 +217,7 @@ void main() {
       },
     );
 
-    expect(find.text(sv.decisionStatusAppealed), findsOneWidget);
-    expect(find.text(sv.myReportsStatusClosed), findsNothing);
+    expect(find.text(sv.decisionStatusAppealed.toUpperCase()), findsOneWidget);
+    expect(find.text(sv.myReportsStatusClosed.toUpperCase()), findsNothing);
   });
 }

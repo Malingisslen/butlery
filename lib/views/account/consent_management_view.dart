@@ -10,6 +10,7 @@ import 'package:butlery/views/account/consent_management/consent_what_we_log_she
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -52,26 +53,23 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
-        child: Align(
-          alignment: AlignmentDirectional.topStart,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Consumer<ConsentViewModel>(
-              builder: (context, viewModel, _) {
-                if (!viewModel.isLoading) _loadedOnce = true;
-                if (viewModel.isLoading && !_loadedOnce) {
-                  return StateWidget.loading(message: l10n.loadingConsents);
-                }
-                return ListView(
-                  padding: EdgeInsetsDirectional.only(
-                    start: margin,
-                    end: margin,
-                    bottom: AppDimensions.spacingLg,
-                  ),
-                  children: _sections(context, viewModel),
-                );
-              },
-            ),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: Consumer<ConsentViewModel>(
+            builder: (context, viewModel, _) {
+              if (!viewModel.isLoading) _loadedOnce = true;
+              if (viewModel.isLoading && !_loadedOnce) {
+                return StateWidget.loading(message: l10n.loadingConsents);
+              }
+              return ListView(
+                padding: EdgeInsetsDirectional.only(
+                  start: margin,
+                  end: margin,
+                  bottom: AppDimensions.spacingLg,
+                ),
+                children: _sections(context, viewModel),
+              );
+            },
           ),
         ),
       ),

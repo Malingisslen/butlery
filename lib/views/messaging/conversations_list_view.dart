@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -65,31 +66,28 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
-        child: Align(
-          alignment: AlignmentDirectional.topStart,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: FocusTraversalGroup(
-              child: Column(
-                children: [
-                  LayoutComponents.offlineIndicator(),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
-                      margin,
-                      AppDimensions.spacingMd,
-                      margin,
-                      AppDimensions.spacingXs,
-                    ),
-                    child: ButlerySearchBox(
-                      hintText: l10n.messagesSearchHint,
-                      onChanged: (query) => context
-                          .read<ConversationsViewModel>()
-                          .updateSearchQuery(query),
-                    ),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: FocusTraversalGroup(
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    margin,
+                    AppDimensions.spacingMd,
+                    margin,
+                    AppDimensions.spacingXs,
                   ),
-                  Expanded(child: _buildConversationsList(margin)),
-                ],
-              ),
+                  child: ButlerySearchBox(
+                    hintText: l10n.messagesSearchHint,
+                    onChanged: (query) => context
+                        .read<ConversationsViewModel>()
+                        .updateSearchQuery(query),
+                  ),
+                ),
+                Expanded(child: _buildConversationsList(margin)),
+              ],
             ),
           ),
         ),

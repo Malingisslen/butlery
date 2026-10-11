@@ -4392,6 +4392,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchHint => 'sök …';
 
   @override
+  String get searchNothingYet => 'Inget att söka i ännu';
+
+  @override
   String shareFriendsSelectedCount(int count) {
     return '$count vän(ner) valda';
   }
@@ -4809,6 +4812,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaRemoveTitle => 'Ta bort MFA?';
+
+  @override
+  String get mfaRemoveAction => 'Ta bort tvåstegsverifiering';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13211,6 +13217,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accountSecurityPasswordMismatch => 'Lösenorden matchar inte';
 
   @override
+  String get passwordsMatch => 'Lösenorden matchar';
+
+  @override
   String get profileAccountSecurity => 'Kontosäkerhet';
 
   @override
@@ -15847,6 +15856,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get imageCouldNotBeShown => 'Bilden kunde inte visas';
+
+  @override
+  String get errorPartNotShown => 'Den här delen kunde inte visas.';
 
   @override
   String get recipeAddPhoto => 'Lägg till foto';
@@ -18986,6 +18998,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ratingRemoveAction => 'Ta bort betyget';
 
   @override
+  String get detailPaneExpand => 'Helskärm';
+
+  @override
+  String get detailPaneCollapse => 'Visa listan';
+
+  @override
+  String get a11yDetailPaneList => 'Lista';
+
+  @override
+  String get a11yDetailPaneDetail => 'Vald sida';
+
+  @override
   String get nutritionButton => 'Näringsvärden';
 
   @override
@@ -19205,6 +19229,88 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get settingsRecipesSection => 'Recept';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listor',
+      one: '1 lista',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'Ny inköpslista';
+
+  @override
+  String get a11yShoppingPickList => 'Välj lista';
+
+  @override
+  String get guestBandLabel => 'Du provar som gäst';
+
+  @override
+  String get guestCreateAccount => 'Skapa konto';
+
+  @override
+  String get guestNotNow => 'Inte nu';
+
+  @override
+  String get guestAllergyTitle => 'Har någon i hushållet allergier?';
+
+  @override
+  String get guestAllergyBody =>
+      'Ställ in dem så föreslår Butlery aldrig något osäkert.';
+
+  @override
+  String get guestAllergyAction => 'Ställ in';
+
+  @override
+  String get guestAllergyDismiss => 'Stäng';
+
+  @override
+  String get guestSheetShareTitle => 'Skapa konto för att dela';
+
+  @override
+  String get guestSheetShareBody =>
+      'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Skapa konto för att göra saker tillsammans';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'Du har använt dina tre importer';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.';
+
+  @override
+  String get guestRequiresAccount => 'Kräver konto';
+
+  @override
+  String get guestAccountValue => 'Gäst';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count av 3 importer kvar som gäst';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Räknas som en import';
+
+  @override
+  String get llmGuestImportLimit => 'Du har använt dina tre importer';
+
+  @override
+  String get llmGuestCapacity =>
+      'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.';
 
   @override
   String get motivationRemovedCopyright =>

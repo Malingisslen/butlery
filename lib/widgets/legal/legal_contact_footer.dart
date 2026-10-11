@@ -3,7 +3,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,15 +37,12 @@ class LegalContactFooter extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          ElevatedButton.icon(
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.privacyContactUs,
+            icon: ButleryIcons.mail,
             onPressed: () => _handleContactUs(context),
-            icon: const ButleryIcon(ButleryIcons.mail),
-            label: Text(context.l10n.privacyContactUs),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
+            isExpanded: true,
           ),
         ],
       ),

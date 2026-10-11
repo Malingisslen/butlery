@@ -28,7 +28,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -36,6 +36,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
 /// so the parent Scaffold can drop it straight in.
@@ -455,7 +456,7 @@ Future<void> _openBulkExport(
   final recipes = viewModel.selectedRecipes;
   if (recipes.isEmpty) return;
 
-  final choice = await showModalBottomSheet<_ExportChoice>(
+  final choice = await showButlerySheet<_ExportChoice>(
     context: context,
     builder: (sheetContext) => SafeArea(
       child: Wrap(
@@ -563,10 +564,8 @@ Future<void> _openBulkTagPicker(
   final selectedCount = viewModel.selectedCount;
   if (selectedCount == 0) return;
 
-  final picked = await showModalBottomSheet<({String id, String name})>(
+  final picked = await showButlerySheet<({String id, String name})>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (sheetContext) => _BulkTagPicker(selectedCount: selectedCount),
   );
 
@@ -599,7 +598,7 @@ Future<void> _openBulkTagPicker(
 ///
 /// Lists every PersonalTag from the singleton [PersonalTagViewModel]; tap a
 /// chip and the sheet pops with the chosen `(id, name)`. Empty state offers
-/// a button that navigates to [PersonalTagsView] for creating the first tag.
+/// a button that navigates to PersonalTagsView for creating the first tag.
 class _BulkTagPicker extends StatefulWidget {
   final int selectedCount;
 
@@ -628,9 +627,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
     // tree (or throw if the sheet's element is already deactivated).
     final navigator = Navigator.of(context);
     navigator.pop();
-    navigator.push(
-      MaterialPageRoute(builder: (_) => const PersonalTagsView()),
-    );
+    navigator.pushNamed(Routes.settingsPersonalTags);
   }
 
   @override
@@ -641,50 +638,30 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
       maxChildSize: 0.9,
       expand: false,
       builder: (sheetContext, scrollController) {
-        final cs = Theme.of(context).colorScheme;
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusCard),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: cs.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusKnob,
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.tag),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Text(
+                      context.l10n.bulkTagDialogTitle(widget.selectedCount),
+                      style: AppTextStyles.titleLarge,
+                    ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                child: Row(
-                  children: [
-                    const ButleryIcon(ButleryIcons.tag),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        context.l10n.bulkTagDialogTitle(widget.selectedCount),
-                        style: AppTextStyles.titleLarge,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(context.l10n.commonCancel),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(child: _buildBody(scrollController)),
-            ],
-          ),
+            ),
+            const Divider(height: 1),
+            Expanded(child: _buildBody(scrollController)),
+          ],
         );
       },
     );

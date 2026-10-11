@@ -30,6 +30,7 @@ import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {
@@ -425,26 +426,21 @@ class _FranSocialaMedierViewContentState
         minHeight: 200,
         maxHeight: 400,
       ),
-      child: TextField(
-        controller: _textController,
-        onChanged: (text) => _onTextChanged(text, viewModel),
-        decoration: InputDecoration(
-          hintText: context.l10n.importPasteRecipeHint,
-          hintMaxLines: 10,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      child: LabeledField(
+        child: TextField(
+          controller: _textController,
+          onChanged: (text) => _onTextChanged(text, viewModel),
+          decoration: InputDecoration(
+            hintText: context.l10n.importPasteRecipeHint,
+            hintMaxLines: 10,
           ),
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-          // A field on surface.base: hover takes surface.raised (BUT-2205).
-          hoverColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          maxLength: 10000,
+          expands: true,
+          textAlignVertical: TextAlignVertical.top,
+          style: AppTextStyles.bodyMedium,
         ),
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        maxLength: 10000,
-        expands: true,
-        textAlignVertical: TextAlignVertical.top,
-        style: AppTextStyles.bodyMedium,
       ),
     );
   }

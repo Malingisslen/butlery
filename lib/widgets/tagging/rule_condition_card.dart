@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Editable card for a single rule condition with type, operator, and value fields.
 class RuleConditionCard extends StatefulWidget {
@@ -163,21 +164,22 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            TextField(
-              controller: _valueController,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
-                  vertical: AppDimensions.paddingM,
+            LabeledField(
+              child: TextField(
+                controller: _valueController,
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingM,
+                    vertical: AppDimensions.paddingM,
+                  ),
+                  hintText: _getHintText(widget.condition.type),
                 ),
-                hintText: _getHintText(widget.condition.type),
-                border: const OutlineInputBorder(),
+                keyboardType: widget.condition.type.isNumeric
+                    ? TextInputType.number
+                    : TextInputType.text,
+                onChanged: widget.onValueChanged,
               ),
-              keyboardType: widget.condition.type.isNumeric
-                  ? TextInputType.number
-                  : TextInputType.text,
-              onChanged: widget.onValueChanged,
             ),
           ],
         ),

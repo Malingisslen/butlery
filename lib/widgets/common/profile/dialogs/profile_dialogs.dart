@@ -1,6 +1,7 @@
 // lib/widgets/common/profile/dialogs/profile_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
@@ -250,9 +251,8 @@ class ProfileDialogs {
         title: Text(l10n.profileLogout),
         content: Text(l10n.profileLogoutConfirm),
         actions: [
-          TextButton(
+          DialogCancelButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
           ),
           // Not error red: this dialog is only reached with an empty queue
           // (AuthActionHandler.handleLogout), so signing out deletes nothing.
@@ -292,73 +292,53 @@ class ProfileDialogs {
     final l10n = context.l10n;
     final controller = TextEditingController();
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        scrollable: true,
-        title: Text(l10n.profileDeleteAccount),
-        content: Builder(
-          builder: (builderContext) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.profileDeleteWarningTitle,
-                style: AppTextStyles.bodyBold,
-              ),
-              const SizedBox(height: AppDimensions.spacingSm),
-              Text('• ${l10n.profileDeleteWarningRecipes}'),
-              Text('• ${l10n.profileDeleteWarningMenus}'),
-              Text('• ${l10n.profileDeleteWarningShoppingLists}'),
-              Text('• ${l10n.profileDeleteWarningFriends}'),
-              Text('• ${l10n.profileDeleteWarningSharedContent}'),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(
-                l10n.profileDeleteIrreversible,
-                style: AppTextStyles.bodyBold.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(l10n.profileDeleteNoRecallWindow),
-              if (mayHaveOpenReview) ...[
-                const SizedBox(height: AppDimensions.spacingMd),
-                Text(l10n.profileDeleteAccountMayHaveReview),
-              ],
-              const SizedBox(height: AppDimensions.spacingMd),
-              LabeledField(
-                label: l10n.profileDeleteReasonLabel,
-                child: TextField(
-                  key: const ValueKey('accountDeletion.reason'),
-                  controller: controller,
-                  maxLength: deleteReasonMaxLength,
-                  maxLines: 3,
-                  minLines: 1,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    hintText: l10n.profileDeleteReasonHint,
-                    helperText: l10n.profileDeleteReasonHelp,
-                    helperMaxLines: 3,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: l10n.profileDeleteAccount,
+      customContent: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.profileDeleteWarningTitle, style: AppTextStyles.bodyBold),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text('• ${l10n.profileDeleteWarningRecipes}'),
+          Text('• ${l10n.profileDeleteWarningMenus}'),
+          Text('• ${l10n.profileDeleteWarningShoppingLists}'),
+          Text('• ${l10n.profileDeleteWarningFriends}'),
+          Text('• ${l10n.profileDeleteWarningSharedContent}'),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            l10n.profileDeleteIrreversible,
+            style: AppTextStyles.bodyBold.copyWith(
+              color: Theme.of(context).colorScheme.error,
             ),
-            child: Text(l10n.profileDeleteConfirmButton),
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(l10n.profileDeleteNoRecallWindow),
+          if (mayHaveOpenReview) ...[
+            const SizedBox(height: AppDimensions.spacingMd),
+            Text(l10n.profileDeleteAccountMayHaveReview),
+          ],
+          const SizedBox(height: AppDimensions.spacingMd),
+          LabeledField(
+            label: l10n.profileDeleteReasonLabel,
+            child: TextField(
+              key: const ValueKey('accountDeletion.reason'),
+              controller: controller,
+              maxLength: deleteReasonMaxLength,
+              maxLines: 3,
+              minLines: 1,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: l10n.profileDeleteReasonHint,
+                helperText: l10n.profileDeleteReasonHelp,
+                helperMaxLines: 3,
+              ),
+            ),
           ),
         ],
       ),
+      primaryActionText: l10n.profileDeleteConfirmButton,
     );
     // Not disposed here: the dialog's closing animation still builds the
     // field, and the controller is garbage once the route is gone (the
@@ -396,10 +376,7 @@ class ProfileDialogs {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.commonCancel),
-          ),
+          const DialogCancelButton(),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, controller.text),
             child: Text(l10n.profileConfirm),

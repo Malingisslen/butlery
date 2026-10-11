@@ -9,6 +9,8 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -34,6 +36,7 @@ import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Embeddable calendar widget. Reads `WeeklyMenuPlanViewModel` from the
 /// surrounding `MultiProvider` (set up by `VeckomenyView`).
@@ -345,7 +348,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   Future<(DayOfWeek, MealSlot)?> _showMoveTargetSheet(
     BuildContext context,
   ) async {
-    return showModalBottomSheet<(DayOfWeek, MealSlot)>(
+    return showButlerySheet<(DayOfWeek, MealSlot)>(
       context: context,
       builder: (sheetContext) {
         final cs = Theme.of(sheetContext).colorScheme;
@@ -481,8 +484,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final vm = context.read<WeeklyMenuPlanViewModel>();
     final recipe = vm.resolveForNavigation(recipeId);
     if (recipe != null && context.mounted) {
-      await Navigator.of(context).pushNamed(
-        '/recipe-detail',
+      await openDetail(
+        context,
+        Routes.recipeDetail,
+        selectionKey: recipe.id,
         // BUT-1613: carry the present count via the map form so recipe detail
         // can forward it to cooking mode. Bare-Recipe form kept when there's no
         // presence, so the 8+ other recipe-detail callers are untouched.

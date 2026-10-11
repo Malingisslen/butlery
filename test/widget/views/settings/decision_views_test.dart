@@ -341,7 +341,10 @@ void main() {
         find.textContaining('Anmält för upphovsrättsintrång'),
         findsOneWidget,
       );
-      expect(find.text(_sv.decisionStatusDecided), findsOneWidget);
+      expect(
+        find.text(_sv.decisionStatusDecided.toUpperCase()),
+        findsOneWidget,
+      );
 
       await tester.tap(find.byKey(const ValueKey('decision-r1')));
       await tester.pumpAndSettle();
@@ -367,7 +370,10 @@ void main() {
       );
       await pumpApp(tester, const MyContentDecisionsView());
 
-      expect(find.text(_sv.decisionStatusAppealed), findsOneWidget);
+      expect(
+        find.text(_sv.decisionStatusAppealed.toUpperCase()),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Back names Hjälp & om', (tester) async {

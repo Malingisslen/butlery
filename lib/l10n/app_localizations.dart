@@ -7315,6 +7315,12 @@ abstract class AppLocalizations {
   /// **'sök …'**
   String get searchHint;
 
+  /// No description provided for @searchNothingYet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att söka i ännu'**
+  String get searchNothingYet;
+
   /// No description provided for @shareFriendsSelectedCount.
   ///
   /// In sv, this message translates to:
@@ -8022,6 +8028,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort MFA?'**
   String get mfaRemoveTitle;
+
+  /// No description provided for @mfaRemoveAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort tvåstegsverifiering'**
+  String get mfaRemoveAction;
 
   /// No description provided for @realtimeOffline.
   ///
@@ -21887,6 +21899,12 @@ abstract class AppLocalizations {
   /// **'Lösenorden matchar inte'**
   String get accountSecurityPasswordMismatch;
 
+  /// No description provided for @passwordsMatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenorden matchar'**
+  String get passwordsMatch;
+
   /// No description provided for @profileAccountSecurity.
   ///
   /// In sv, this message translates to:
@@ -26313,6 +26331,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
+
+  /// Release builds draw this in place of a part of a screen that failed to build, above a line naming the error.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här delen kunde inte visas.'**
+  String get errorPartNotShown;
 
   /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
   ///
@@ -31012,6 +31036,30 @@ abstract class AppLocalizations {
   /// **'Ta bort betyget'**
   String get ratingRemoveAction;
 
+  /// BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Helskärm'**
+  String get detailPaneExpand;
+
+  /// BUT-723: text button that brings the list back beside a recipe in Helskärm
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa listan'**
+  String get detailPaneCollapse;
+
+  /// BUT-723: screen-reader name of the list side of a tablet's two panes
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista'**
+  String get a11yDetailPaneList;
+
+  /// BUT-723: screen-reader name of the side showing the chosen item on a tablet
+  ///
+  /// In sv, this message translates to:
+  /// **'Vald sida'**
+  String get a11yDetailPaneDetail;
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:
@@ -31353,6 +31401,138 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Recept'**
   String get settingsRecipesSection;
+
+  /// BUT-723: line under "Inköp" on a tablet, how many shopping lists the user has
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 lista} other{{count} listor}}'**
+  String shoppingListsCount(int count);
+
+  /// BUT-723: button under the shopping lists on a tablet; opens the create dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny inköpslista'**
+  String get shoppingNewShoppingList;
+
+  /// BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj lista'**
+  String get a11yShoppingPickList;
+
+  /// Guest mode band: the label before the action (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du provar som gäst'**
+  String get guestBandLabel;
+
+  /// Guest mode: create-account action in the band and the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto'**
+  String get guestCreateAccount;
+
+  /// Guest mode: dismiss button of the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get guestNotNow;
+
+  /// Guest mode: allergy card title on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Har någon i hushållet allergier?'**
+  String get guestAllergyTitle;
+
+  /// Guest mode: allergy card body on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in dem så föreslår Butlery aldrig något osäkert.'**
+  String get guestAllergyBody;
+
+  /// Guest mode: allergy card button that opens the allergen settings (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in'**
+  String get guestAllergyAction;
+
+  /// Guest mode: screen-reader label of the allergy card's close control (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng'**
+  String get guestAllergyDismiss;
+
+  /// Guest sheet: title when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att dela'**
+  String get guestSheetShareTitle;
+
+  /// Guest sheet: body when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetShareBody;
+
+  /// Guest sheet: title for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att göra saker tillsammans'**
+  String get guestSheetTogetherTitle;
+
+  /// Guest sheet: body for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetTogetherBody;
+
+  /// Guest sheet: title when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get guestSheetImportLimitTitle;
+
+  /// Guest sheet: body when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.'**
+  String get guestSheetImportLimitBody;
+
+  /// Guest mode: trailing value on Mer rows that need an account (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräver konto'**
+  String get guestRequiresAccount;
+
+  /// Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäst'**
+  String get guestAccountValue;
+
+  /// Guest mode: imports left in the add sheet (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} av 3 importer kvar som gäst'**
+  String guestImportsLeft(int count);
+
+  /// Guest mode: subtitle on the link and photo import tiles (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknas som en import'**
+  String get guestCountsAsImport;
+
+  /// LLM error: the guest has used its three imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get llmGuestImportLimit;
+
+  /// LLM error: the global daily guest ceiling is reached (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.'**
+  String get llmGuestCapacity;
 
   /// BUT-2353: motivation text, key removed_copyright
   ///

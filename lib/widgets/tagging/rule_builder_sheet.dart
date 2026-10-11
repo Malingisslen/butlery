@@ -150,60 +150,37 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusCard),
-            ),
-          ),
-          child: Column(
-            children: [
-              _buildHandleBar(colorScheme),
-              _buildHeader(),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                  children: [
-                    _buildNameField(),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildMatchModeSelector(),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildConditionsHeader(),
-                    const SizedBox(height: AppDimensions.spacingSm),
-                    _buildConditionsList(),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildEnabledSwitch(),
-                    const SizedBox(height: AppDimensions.spacingXxl),
-                  ],
-                ),
+        return Column(
+          children: [
+            _buildHeader(),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                children: [
+                  _buildNameField(),
+                  const SizedBox(height: AppDimensions.spacingLg),
+                  _buildMatchModeSelector(),
+                  const SizedBox(height: AppDimensions.spacingLg),
+                  _buildConditionsHeader(),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  _buildConditionsList(),
+                  const SizedBox(height: AppDimensions.spacingLg),
+                  _buildEnabledSwitch(),
+                  const SizedBox(height: AppDimensions.spacingXxl),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
-    );
-  }
-
-  Widget _buildHandleBar(ColorScheme colorScheme) {
-    return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.paddingM),
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: colorScheme.onSurfaceVariant,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusKnob),
-      ),
     );
   }
 

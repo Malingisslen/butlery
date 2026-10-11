@@ -14,11 +14,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -59,39 +58,16 @@ class _QueueCountsBuilderState extends State<QueueCountsBuilder> {
   Widget build(BuildContext context) => widget.builder(context, _counts);
 }
 
-/// The saffron count, as the Mer rows draw it (Skarmar v12 del 2 #mer):
-/// action.primary (colorScheme.secondary, #CE7C1E in both modes) behind
-/// text.onActionPrimary (colorScheme.onSecondary, #17251D in both modes),
-/// 10.5/700.
+/// The saffron count the Mer rows draw (Skarmar v12 del 2 #mer): changes
+/// waiting for the user, so the counter asks for action.
 class SaffronCount extends StatelessWidget {
   const SaffronCount({required this.count, super.key});
 
   final int count;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.secondary,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm - 1,
-          vertical: AppDimensions.badgePaddingY,
-        ),
-        child: Text(
-          '$count',
-          style: AppTextStyles.overline.copyWith(
-            color: cs.onSecondary,
-            letterSpacing: 0,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      UnifiedBadge.count(count: count, emphasis: CountEmphasis.action);
 }
 
 /// The top bar's queue counter: a sync glyph with the saffron count, shown

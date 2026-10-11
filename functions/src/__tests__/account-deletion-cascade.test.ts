@@ -5112,6 +5112,66 @@ async function scenario_mfaRecoveryDataErasedAndProbed(): Promise<void> {
 }
 
 /**
+ * BUT-920: `guest_quotas/{uid}` goes with the account; another guest's
+ * document survives, which is what makes the delete assertion non-vacuous.
+ * The probe stays clean with only the other document left and reports a
+ * leftover of the erased user's.
+ */
+async function scenario_guestQuotaErasedAndProbed(): Promise<void> {
+  const {
+    deleteGuestQuota,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`guest_quotas/${UID}`, { importIds: ["a", "b"], calls: 3 });
+  store.set(`guest_quotas/${OTHER}`, { importIds: ["c"], calls: 1 });
+
+  const ok = await deleteGuestQuota(asDb(store), UID);
+
+  check("the guest quota step reports success", ok === true, `returned ${ok}`);
+  check(
+    "the user's guest quota document is deleted",
+    !store.has(`guest_quotas/${UID}`),
+    `left behind: ${JSON.stringify(store.idsIn("guest_quotas"))}`,
+  );
+  check(
+    "another guest's quota document survives",
+    store.has(`guest_quotas/${OTHER}`),
+    `left: ${JSON.stringify(store.idsIn("guest_quotas"))}`,
+  );
+  check(
+    "re-running the step on a missing document still succeeds",
+    (await deleteGuestQuota(asDb(store), UID)) === true,
+    "second run did not return true",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const clean = emptyResult();
+  await probeResidualData(asDb(store), UID, clean);
+  check(
+    "with only another guest's quota left, the probe stays clean",
+    !clean.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(clean.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`guest_quotas/${UID}`, { importIds: ["a"], calls: 1 });
+  const dirty = emptyResult();
+  await probeResidualData(asDb(leftover), UID, dirty);
+  check(
+    "a surviving guest_quotas document is reported by the probe",
+    dirty.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(dirty.failedCollections)}`,
+  );
+}
+
+/**
  * BUT-1693: `household_allergen_shares` is erased by the flat `userId` field,
  * across every household id, and the probe SEES a leftover.
  *
@@ -10647,6 +10707,7 @@ async function main(): Promise<void> {
   await scenario_recipeSuggestionsErasedWithEitherAccountAndProbed();
   await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
   await scenario_mfaRecoveryDataErasedAndProbed();
+  await scenario_guestQuotaErasedAndProbed();
   await scenario_householdAllergenSharesDeclineAboveCap();
   await scenario_activityEventsErasedByActorAndProbed();
   await scenario_shoppingListTemplatesErasedByOwnerAndProbed();

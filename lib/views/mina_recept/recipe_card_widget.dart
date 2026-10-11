@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 /// Renders one recipe card with selection / swipe behavior intact.
@@ -43,6 +44,8 @@ class MinaReceptRecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelected = viewModel.selectedIds.contains(recipe.id);
+    final isOpenOnRight =
+        DetailPaneScope.maybeOf(context)?.isSelected(recipe.id) ?? false;
     final cs = Theme.of(context).colorScheme;
 
     final showBadges = allergenPrefs.showOnCards;
@@ -52,7 +55,9 @@ class MinaReceptRecipeCard extends StatelessWidget {
     Widget card = RecipeCard(
       key: ValueKey(recipe.id),
       recipe: recipe,
-      isSelected: isSelected,
+      // The card on the right takes the same drawn state as a ticked one:
+      // surface.selected with the ink/paper border.
+      isSelected: isSelected || isOpenOnRight,
       showTags: true,
       style: viewModel.isGridView
           ? RecipeCardStyle.grid
@@ -71,10 +76,11 @@ class MinaReceptRecipeCard extends StatelessWidget {
       onTap: viewModel.isSelectionMode
           ? (_) => viewModel.toggleSelection(recipe.id)
           : (_) async {
-              await Navigator.pushNamed(
+              await openDetail(
                 context,
                 Routes.recipeDetail,
                 arguments: recipe,
+                selectionKey: recipe.id,
               );
             },
       onLongPress: viewModel.isSelectionMode

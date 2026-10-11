@@ -16,12 +16,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 import '../infrastructure/builders/recipe_builder.dart';
@@ -135,6 +138,68 @@ void main() {
       await pumpCard(tester, showOnCards: false, gridView: true);
 
       expect(find.byType(CompactAllergenRow), findsNothing);
+    });
+  });
+  // BUT-723: the card whose recipe is open on the right is marked.
+  group('beside a detail pane', () {
+    Future<DetailPaneController> pumpInPane(WidgetTester tester) async {
+      final controller = DetailPaneController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: DetailPaneScope(
+            controller: controller,
+            child: Scaffold(
+              body: SizedBox(
+                width: 360,
+                child: MinaReceptRecipeCard(
+                  viewModel: viewModel,
+                  recipe: assessed(),
+                  allergenPrefs: prefs(showOnCards: true),
+                  onDelete: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      return controller;
+    }
+
+    testWidgets('a tap opens the recipe on the right and marks the card', (
+      tester,
+    ) async {
+      final controller = await pumpInPane(tester);
+      expect(
+        tester.widget<RecipeCard>(find.byType(RecipeCard)).isSelected,
+        isFalse,
+      );
+
+      await tester.tap(find.byType(RecipeCard));
+      await tester.pump();
+
+      expect(controller.selected?.name, Routes.recipeDetail);
+      expect(controller.selected?.arguments, isA<Recipe>());
+      expect(controller.isSelected('assessed'), isTrue);
+      expect(
+        tester.widget<RecipeCard>(find.byType(RecipeCard)).isSelected,
+        isTrue,
+      );
+    });
+
+    testWidgets('another recipe on the right leaves the card unmarked', (
+      tester,
+    ) async {
+      final controller = await pumpInPane(tester);
+
+      controller.open(const RouteSettings(name: '/x'), key: 'other');
+      await tester.pump();
+
+      expect(
+        tester.widget<RecipeCard>(find.byType(RecipeCard)).isSelected,
+        isFalse,
+      );
     });
   });
 }

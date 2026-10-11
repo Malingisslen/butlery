@@ -297,6 +297,36 @@ void main() {
     }
   });
 
+  testWidgets('the repeat says the passwords match only once they do', (
+    tester,
+  ) async {
+    linkIsGood();
+    await pumpView(tester);
+    final repeat = find.byKey(const ValueKey('setNewPassword.repeat'));
+    Finder mark() =>
+        find.descendant(of: repeat, matching: find.text(l10n.passwordsMatch));
+
+    expect(mark(), findsNothing);
+    await tester.enterText(
+      find.byKey(const ValueKey('setNewPassword.password')),
+      'nytt-losen-1',
+    );
+    await tester.enterText(repeat, 'nytt-losen-');
+    await tester.pump();
+    expect(mark(), findsNothing);
+
+    await tester.enterText(repeat, 'nytt-losen-1');
+    await tester.pump();
+    expect(mark(), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('setNewPassword.password')),
+      'nytt-losen-2',
+    );
+    await tester.pump();
+    expect(mark(), findsNothing);
+  });
+
   testWidgets('a refused password keeps both fields as typed', (tester) async {
     linkIsGood();
     when(

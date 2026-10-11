@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Handles image picker UI and logic for recipe forms.
 class RecipeImagePicker {
@@ -52,7 +53,7 @@ class RecipeImagePicker {
     BuildContext context,
     RecipeFormViewModel viewModel,
   ) async {
-    return showModalBottomSheet<String>(
+    return showButlerySheet<String>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/content_report.dart';
@@ -12,7 +13,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_list_scaffold.dart';
-import 'package:butlery/widgets/social/decision_status_badge.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 
@@ -115,29 +115,28 @@ class _MyReportsContent extends StatelessWidget {
     ModerationOutcome? outcome,
   ) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     if (outcome?.appeal?.status == AppealStatus.open) {
-      return DecisionStatusBadge(
+      return UnifiedBadge.status(
         label: l10n.decisionStatusAppealed,
-        glyph: ButleryIcons.search,
-        color: cs.tertiary,
+        icon: ButleryIcons.search,
+        tone: BadgeTone.warning,
       );
     }
     return switch (report.status) {
-      ReportStatus.newReport => DecisionStatusBadge(
+      ReportStatus.newReport => UnifiedBadge.status(
         label: l10n.myReportsStatusPending,
-        glyph: ButleryIcons.inbox,
-        color: cs.primary,
+        icon: ButleryIcons.inbox,
+        tone: BadgeTone.neutral,
       ),
-      ReportStatus.inReview || ReportStatus.actioned => DecisionStatusBadge(
+      ReportStatus.inReview || ReportStatus.actioned => UnifiedBadge.status(
         label: l10n.myReportsStatusReviewed,
-        glyph: ButleryIcons.search,
-        color: cs.tertiary,
+        icon: ButleryIcons.search,
+        tone: BadgeTone.warning,
       ),
-      ReportStatus.closed => DecisionStatusBadge(
+      ReportStatus.closed => UnifiedBadge.status(
         label: l10n.myReportsStatusClosed,
-        glyph: ButleryIcons.circleCheck,
-        color: cs.outline,
+        icon: ButleryIcons.circleCheck,
+        tone: BadgeTone.neutral,
       ),
     };
   }

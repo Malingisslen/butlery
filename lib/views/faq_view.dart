@@ -7,6 +7,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Simple FAQ page with Swedish Q&A content in expandable tiles.
@@ -22,34 +23,32 @@ class FaqView extends StatelessWidget {
       ),
       backgroundColor: cs.surfaceContainerHighest,
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700),
-          child: ListView(
-            padding: AppDimensions.screenPadding,
-            children: [
-              _FaqTile(
-                question: context.l10n.faqQ1,
-                answer: context.l10n.faqA1,
-              ),
-              _FaqTile(
-                question: context.l10n.faqQ2,
-                answer: context.l10n.faqA2,
-              ),
-              _FaqTile(
-                question: context.l10n.faqQ3,
-                answer: context.l10n.faqA3,
-              ),
-              _FaqTile(
-                question: context.l10n.faqQ4,
-                answer: context.l10n.faqA4,
-              ),
-              _FaqTile(
-                question: context.l10n.faqQ5,
-                answer: context.l10n.faqA5,
-              ),
-            ],
-          ),
+      body: ButleryPageBody(
+        width: PageWidth.text,
+        child: ListView(
+          padding: AppDimensions.screenPadding,
+          children: [
+            _FaqTile(
+              question: context.l10n.faqQ1,
+              answer: context.l10n.faqA1,
+            ),
+            _FaqTile(
+              question: context.l10n.faqQ2,
+              answer: context.l10n.faqA2,
+            ),
+            _FaqTile(
+              question: context.l10n.faqQ3,
+              answer: context.l10n.faqA3,
+            ),
+            _FaqTile(
+              question: context.l10n.faqQ4,
+              answer: context.l10n.faqA4,
+            ),
+            _FaqTile(
+              question: context.l10n.faqQ5,
+              answer: context.l10n.faqA5,
+            ),
+          ],
         ),
       ),
     );

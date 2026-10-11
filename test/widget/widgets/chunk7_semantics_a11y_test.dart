@@ -67,10 +67,11 @@ void main() {
   });
 
   // BUT-2205: the chip's own fill used to sit above the ink layer, so its
-  // remove × showed no press.
+  // remove × showed no press. The chip stands in the search box as an ink
+  // pill (Komponentark v1 §07), so its press is the step on ink.
   for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
     testWidgets('a pressed remove × on an ingredient chip shows the step on '
-        'raised (${theme.brightness.name})', (tester) async {
+        'ink (${theme.brightness.name})', (tester) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Theme(
@@ -105,7 +106,7 @@ void main() {
         paintsInkFill(
           tester,
           remove,
-          ModeColors.of(theme.brightness).pressedOnRaised,
+          ModeColors.of(theme.brightness).pressedOnInk,
         ),
         isTrue,
       );

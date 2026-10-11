@@ -111,11 +111,6 @@ class CookingPreferenceControls extends StatelessWidget {
                     viewModel.toggleCuisineAffinity(cuisine.tag);
                   }
                 },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
               ),
             );
           }).toList(),

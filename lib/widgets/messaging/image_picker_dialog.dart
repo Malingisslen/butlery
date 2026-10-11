@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Bottom sheet dialog for selecting image source (camera or gallery).
 /// Provides a clean, modern interface for image source selection with:
@@ -30,64 +31,56 @@ class ImagePickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppDimensions.paddingL,
+          horizontal: AppDimensions.paddingM,
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.paddingL,
-            horizontal: AppDimensions.paddingM,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Text(
-                context.l10n.imageSelectImage,
-                style: AppTextStyles.titleBold,
-                textAlign: TextAlign.center,
-              ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Text(
+              context.l10n.imageSelectImage,
+              style: AppTextStyles.titleBold,
+              textAlign: TextAlign.center,
+            ),
 
-              const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.spacingXl),
 
-              // Camera option
-              _SourceOption(
-                icon: ButleryIcons.camera,
-                label: context.l10n.commonTakePhoto,
-                color: cs.onSurface,
-                onTap: () => Navigator.pop(context, ImageSource.camera),
-              ),
+            // Camera option
+            _SourceOption(
+              icon: ButleryIcons.camera,
+              label: context.l10n.commonTakePhoto,
+              color: cs.onSurface,
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
 
-              const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
 
-              // Gallery option
-              _SourceOption(
-                icon: ButleryIcons.image,
-                label: context.l10n.commonSelectFromGallery,
-                color: context.modeColors.success,
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
-              ),
+            // Gallery option
+            _SourceOption(
+              icon: ButleryIcons.image,
+              label: context.l10n.commonSelectFromGallery,
+              color: context.modeColors.success,
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
 
-              const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.spacingXl),
 
-              // Cancel button
-              OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.paddingM,
-                  ),
+            // Cancel button
+            OutlinedButton(
+              onPressed: () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.paddingM,
                 ),
-                child: Text(context.l10n.commonCancel),
               ),
-            ],
-          ),
+              child: Text(context.l10n.commonCancel),
+            ),
+          ],
         ),
       ),
     );
@@ -165,10 +158,8 @@ class _SourceOption extends StatelessWidget {
 /// Show image picker dialog as bottom sheet.
 /// Returns selected [ImageSource] or null if cancelled.
 Future<ImageSource?> showImagePickerDialog(BuildContext context) async {
-  return await showModalBottomSheet<ImageSource>(
+  return await showButlerySheet<ImageSource>(
     context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
     builder: (context) => const ImagePickerDialog(),
   );
 }

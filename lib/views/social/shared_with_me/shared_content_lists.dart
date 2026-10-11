@@ -1,6 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_lists.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
@@ -11,7 +12,6 @@ import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -156,16 +156,11 @@ class SharedContentLists {
         // Loading the next page: the plate line with what is fetched.
         child: isLoading
             ? PlateLineMessage(message: context.l10n.loadingGeneric)
-            : ElevatedButton.icon(
+            : ActionButtons.primaryButton(
+                context,
+                label: context.l10n.commonShowMore,
+                icon: ButleryIcons.chevronDown,
                 onPressed: onPressed,
-                icon: const ButleryIcon(ButleryIcons.chevronDown),
-                label: Text(context.l10n.commonShowMore),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                    vertical: AppDimensions.spacingM,
-                  ),
-                ),
               ),
       ),
     );

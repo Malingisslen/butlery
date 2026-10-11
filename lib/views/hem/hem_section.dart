@@ -38,6 +38,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:intl/intl.dart';
 
@@ -51,6 +52,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/guest/guest_hem_intro.dart';
 
 /// The greeting for the hour of [now] (produktregler.md:278): 05–11 "God
 /// morgon", 11–17 "Hej", 17–22 "God kväll", 22–05 "God natt".
@@ -119,6 +121,7 @@ class HemSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          const GuestHemIntro(),
           HemGreeting(now: now, firstName: firstName, welcome: libraryEmpty),
           if (!libraryEmpty) ..._plan(context),
         ],
@@ -326,18 +329,12 @@ class HemTonightCard extends StatelessWidget {
                     minimumSize: const Size(0, AppDimensions.minTouchTarget),
                     onPressed: () => onStartCooking(recipe),
                   ),
-                OutlinedButton(
+                ActionButtons.actionButton(
+                  context,
                   key: swapKey,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: paper,
-                    minimumSize: const Size(0, AppDimensions.minTouchTarget),
-                    side: BorderSide(
-                      color: paper.withValues(alpha: 0.35),
-                      width: 1.5,
-                    ),
-                  ),
+                  style: ActionButtonStyle.outlinedOnInk,
+                  label: l10n.hemSwapDish,
                   onPressed: onSwap,
-                  child: Text(l10n.hemSwapDish),
                 ),
                 if (hero.allInPantry)
                   Text(

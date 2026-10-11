@@ -12,6 +12,8 @@ import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// The "Överklaganden" tab: open appeals with the text the person wrote and
 /// a "Svara" button.
@@ -112,12 +114,8 @@ class _AppealCard extends StatelessWidget {
 
   Future<void> _answer(BuildContext context) async {
     final vm = context.read<ModeratorAppealsViewModel>();
-    final outcome = await showModalBottomSheet<AppealStatus>(
+    final outcome = await showButlerySheet<AppealStatus>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (_) => AppealAnswerSheet(appeal: appeal),
     );
     if (outcome == null || !context.mounted) return;
@@ -217,10 +215,7 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
             onPressed: () => Navigator.pop(context, _choice),
             child: Text(l10n.moderatorAnswerSubmit),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.commonCancel),
-          ),
+          const DialogCancelButton(),
         ],
       ),
     );

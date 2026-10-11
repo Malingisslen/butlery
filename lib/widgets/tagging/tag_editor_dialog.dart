@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -290,10 +291,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(context.l10n.commonCancel),
-                  ),
+                  const DialogCancelButton(),
                   const SizedBox(width: AppDimensions.spacingM),
                   FilledButton(
                     onPressed: _save,
@@ -314,33 +312,22 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
   }
 
   Widget _buildTagChip(String tag) {
-    final cs = Theme.of(context).colorScheme;
     final isUserAdded = _isUserAdded(tag);
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
     return PressFill(
-      surface: isUserAdded ? PressSurface.raised : PressSurface.base,
+      surface: PressSurface.base,
       child: InputChip(
         label: Text(displayName),
-        labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isUserAdded ? cs.onPrimaryContainer : cs.onSurface,
-          fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
-        ),
-        backgroundColor: isUserAdded ? cs.primaryContainer : cs.surface,
-        side: BorderSide(
-          color: isUserAdded ? cs.outline : cs.outlineVariant,
-        ),
         deleteIcon: const ButleryIcon(
           ButleryIcons.x,
           size: AppDimensions.iconSize18,
         ),
-        deleteIconColor: cs.onSurfaceVariant,
         onDeleted: () => _removeTag(tag),
         avatar: isUserAdded
-            ? ButleryIcon(
+            ? const ButleryIcon(
                 ButleryIcons.user,
                 size: AppDimensions.iconSizeS,
-                color: cs.onPrimaryContainer,
               )
             : null,
         tooltip: isUserAdded
@@ -351,25 +338,19 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
   }
 
   Widget _buildRemovedTagChip(String tag) {
-    final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
     return PressFill(
       surface: PressSurface.base,
       child: ActionChip(
-        label: Text(displayName),
-        labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: cs.onSurfaceVariant,
-          decoration: TextDecoration.lineThrough,
+        // A removed tag reads struck through until it is restored.
+        label: Text(
+          displayName,
+          style: const TextStyle(decoration: TextDecoration.lineThrough),
         ),
-        // A removed tag: struck through in text.secondary on the base
-        // surface with border.subtle, never faded.
-        backgroundColor: cs.surface,
-        side: BorderSide(color: cs.outlineVariant),
-        avatar: ButleryIcon(
+        avatar: const ButleryIcon(
           ButleryIcons.undo,
           size: AppDimensions.iconSizeS,
-          color: cs.onSurfaceVariant,
         ),
         onPressed: () => _restoreTag(tag),
         tooltip: context.l10n.tagClickToRestore,

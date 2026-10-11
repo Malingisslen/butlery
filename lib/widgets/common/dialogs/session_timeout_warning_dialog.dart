@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
@@ -269,18 +270,11 @@ class _SessionTimeoutWarningDialogState
             ),
           ),
         ),
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('sessionTimeout.continue'),
+          label: context.l10n.sessionContinue,
           onPressed: _handleExtendSession,
-          style: FilledButton.styleFrom(
-            backgroundColor: cs.primary,
-          ),
-          child: Text(
-            context.l10n.sessionContinue,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: cs.surfaceContainerHighest,
-            ),
-          ),
         ),
       ],
     );

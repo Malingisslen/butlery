@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// The in-app appeal: one text, one appeal per decision. Pops with `true`
 /// once the server has accepted it.
@@ -82,21 +83,23 @@ class _AppealFormViewState extends State<AppealFormView> {
             children: [
               Text(l10n.appealFormIntro, style: AppTextStyles.bodyMedium),
               const SizedBox(height: AppDimensions.spacingMd),
-              TextField(
-                controller: _controller,
-                enabled: !vm.isLoading,
-                style: fieldTextStyle(context, enabled: !vm.isLoading),
-                minLines: 5,
-                maxLines: 10,
-                maxLength: ModerationAppealsService.maxTextLength,
-                textCapitalization: TextCapitalization.sentences,
-                keyboardType: TextInputType.multiline,
-                onChanged: vm.setText,
-                decoration: InputDecoration(
-                  hintText: l10n.appealFormHint,
-                  counterText: l10n.appealCounter(
-                    vm.text.length,
-                    ModerationAppealsService.maxTextLength,
+              LabeledField(
+                child: TextField(
+                  controller: _controller,
+                  enabled: !vm.isLoading,
+                  style: fieldTextStyle(context, enabled: !vm.isLoading),
+                  minLines: 5,
+                  maxLines: 10,
+                  maxLength: ModerationAppealsService.maxTextLength,
+                  textCapitalization: TextCapitalization.sentences,
+                  keyboardType: TextInputType.multiline,
+                  onChanged: vm.setText,
+                  decoration: InputDecoration(
+                    hintText: l10n.appealFormHint,
+                    counterText: l10n.appealCounter(
+                      vm.text.length,
+                      ModerationAppealsService.maxTextLength,
+                    ),
                   ),
                 ),
               ),

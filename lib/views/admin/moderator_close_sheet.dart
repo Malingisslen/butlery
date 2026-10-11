@@ -6,18 +6,16 @@ import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// "Stäng och meddela": the moderator picks one ready-made motivation for
 /// [decision]. Resolves to the chosen key, or null when dismissed.
 Future<ModerationMotivation?> showModeratorCloseSheet(
   BuildContext context, {
   required ModeratorDecision decision,
-}) => showModalBottomSheet<ModerationMotivation>(
+}) => showButlerySheet<ModerationMotivation>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
-  backgroundColor: Theme.of(context).colorScheme.surface,
   builder: (_) => ModeratorCloseSheet(decision: decision),
 );
 
@@ -110,10 +108,7 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
             onPressed: () => Navigator.pop(context, _selected),
             child: Text(l10n.moderatorCloseSheetTitle),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.commonCancel),
-          ),
+          const DialogCancelButton(),
         ],
       ),
     );

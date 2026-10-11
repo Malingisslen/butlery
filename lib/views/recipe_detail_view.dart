@@ -51,6 +51,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
@@ -67,6 +68,8 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 import 'package:butlery/services/shopping/recipe_pantry_check.dart';
+import 'package:butlery/widgets/guest/guest_account_sheet.dart';
+import 'package:butlery/widgets/guest/guest_gate.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -338,21 +341,26 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         final addToListLabel = _addToListLabel(context, recipe);
         final allAtHome = _actions.pantryCoversAll(recipe, _pantry.pantry);
         Future<void> startCooking() async {
-          final exit = await Navigator.pushNamed<Object?>(
-            context,
-            Routes.cookingMode,
-            // BUT-1613: forward the present count (map form) when this detail
-            // view was opened from a planned meal, so cooking mode opens
-            // pre-scaled; without it the key is left out.
-            // Q6-05 = C: on a recipe that is not the user's to edit, the
-            // empty state offers "Spara min kopia" instead of "Skriv
-            // stegen".
-            arguments: {
-              'recipe': recipe,
-              'presentServings': ?widget.presentServings,
-              'copyInsteadOfEdit': widget.readOnly || isOthersRecipe,
-            },
-          );
+          // Cooking mode is always full screen, so inside the detail pane it
+          // goes on the root navigator and returns to the same pane state.
+          final exit =
+              await Navigator.of(
+                context,
+                rootNavigator: DetailPane.isInside(context),
+              ).pushNamed<Object?>(
+                Routes.cookingMode,
+                // BUT-1613: forward the present count (map form) when this detail
+                // view was opened from a planned meal, so cooking mode opens
+                // pre-scaled; without it the key is left out.
+                // Q6-05 = C: on a recipe that is not the user's to edit, the
+                // empty state offers "Spara min kopia" instead of "Skriv
+                // stegen".
+                arguments: {
+                  'recipe': recipe,
+                  'presentServings': ?widget.presentServings,
+                  'copyInsteadOfEdit': widget.readOnly || isOthersRecipe,
+                },
+              );
           if (!context.mounted) return;
           switch (exit) {
             // "Klart" counts the recipe as cooked and the chip shows the new
@@ -401,7 +409,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         // The same rule as the shell (produktregler.md § 21.2), so the recipe
         // does not drop back to the bottom row on a width where Hem, Meny,
         // Inköp and Mer draw the rail.
-        final railNavigation = useNavigationRail(MediaQuery.sizeOf(context));
+        final inPane = DetailPane.isInside(context);
+        final paneController = DetailPaneScope.maybeOf(context);
+        final paneExpanded = paneController?.expanded ?? false;
+        // The pane's host already draws the rail, so the recipe adds none.
+        final railNavigation =
+            !inPane && useNavigationRail(MediaQuery.sizeOf(context));
+        final paneLeading =
+            inPane && paneController != null && !Navigator.of(context).canPop();
 
         return Scaffold(
           backgroundColor: cs.surface,
@@ -424,7 +439,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 addToShoppingListLabel: addToListLabel,
                 allAtHome: allAtHome,
               ),
-              if (!railNavigation)
+              if (!railNavigation && !inPane)
                 ButleryBottomNavigation(
                   currentIndex: 0,
                   items: navItems,
@@ -482,17 +497,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // UI Redesign: Custom leading widget (back button)
                   // BUT-2194: the leading slot is 56 dp, so 4 dp padding leaves
                   // the button its full 48 dp tap target.
-                  leading: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.space4),
-                    child: RecipeHeroButton(
-                      ringVisible: recipe.imageUrls.isNotEmpty,
-                      icon: ButleryIcons.arrowLeft,
-                      onPressed: () => Navigator.pop(context),
-                      tooltip: widget.backTo == null
-                          ? context.l10n.accessibilityBackButton
-                          : context.l10n.commonBackTo(widget.backTo!),
-                    ),
-                  ),
+                  leadingWidth: paneLeading
+                      ? _PaneLeadingButton.widthFor(context)
+                      : null,
+                  leading: paneLeading
+                      ? _PaneLeadingButton(controller: paneController)
+                      : Padding(
+                          padding: const EdgeInsets.all(AppDimensions.space4),
+                          child: RecipeHeroButton(
+                            ringVisible: recipe.imageUrls.isNotEmpty,
+                            icon: ButleryIcons.arrowLeft,
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: widget.backTo == null
+                                ? context.l10n.accessibilityBackButton
+                                : context.l10n.commonBackTo(widget.backTo!),
+                          ),
+                        ),
                   // Mönster 3 · Mediehero (Komponentark v1:81-89): the title
                   // stands under the hero, never on top of the food.
                   title: const SizedBox.shrink(),
@@ -981,7 +1001,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
                 // Recipe content — tablet uses two-column layout, mobile single-column
                 SliverToBoxAdapter(
-                  child: Breakpoints.isMobile(context)
+                  child:
+                      (inPane ? !paneExpanded : Breakpoints.isMobile(context))
                       ? _buildMobileContent(
                           context,
                           viewModel,
@@ -1408,6 +1429,54 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 }
 
+/// "Helskärm" / "Visa listan" in place of the back arrow on the detail pane's
+/// first page.
+class _PaneLeadingButton extends StatelessWidget {
+  const _PaneLeadingButton({required this.controller});
+
+  final DetailPaneController controller;
+
+  // Chevron and gaps plus the label, which grows with the text scale.
+  static double widthFor(BuildContext context) =>
+      68 + 68 * MediaQuery.textScalerOf(context).scale(1);
+
+  @override
+  Widget build(BuildContext context) {
+    final expanded = controller.expanded;
+    return MergeSemantics(
+      child: Semantics(
+        toggled: expanded,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            onPressed: () => controller.setExpanded(!expanded),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (expanded)
+                  const Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      end: AppDimensions.space4,
+                    ),
+                    child: ButleryIcon(ButleryIcons.chevronLeft),
+                  ),
+                Flexible(
+                  child: Text(
+                    expanded
+                        ? context.l10n.detailPaneCollapse
+                        : context.l10n.detailPaneExpand,
+                    style: AppTextStyles.buttonText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The sticky action bar over the bottom navigation (Komponentark v1
 /// "Sticky action bar": "Börja laga" and "Lägg 2 varor", 1 px top edge, the
 /// content's side margin; Skarmar v12 del 1 'Receptdetalj').
@@ -1617,6 +1686,7 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
   }
 
   Future<void> _onShare(String name) async {
+    if (offerAccountIfGuest(context, GuestAccountReason.share)) return;
     final ok = await ServiceLocator.get<SocialRecipeService>()
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;
