@@ -49,7 +49,13 @@ class _Consent extends Fake implements ConsentService {
 }
 
 class _Callable extends HttpsCallablePlatform {
-  _Callable(super.functions, super.origin, super.name, super.options, super.uri);
+  _Callable(
+    super.functions,
+    super.origin,
+    super.name,
+    super.options,
+    super.uri,
+  );
 
   @override
   Future<dynamic> call([dynamic parameters]) async {
