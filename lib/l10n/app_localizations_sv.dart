@@ -14420,6 +14420,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pendingSyncOffline => 'Sparat. Synkas när du är online igen.';
 
   @override
+  String get commentWaitingForNetwork =>
+      'Din förra kommentar väntar på nät. Skicka den här när den har gått iväg.';
+
+  @override
   String get cookingNowEyebrow => 'lagar just nu';
 
   @override
