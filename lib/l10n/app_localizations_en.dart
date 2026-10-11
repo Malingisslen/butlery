@@ -18342,4 +18342,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAdminOnly => 'Admin';
+
+  @override
+  String get familyAccountsSection => 'Accounts in the household';
+
+  @override
+  String get familyProfilesSection => 'Family profiles';
+
+  @override
+  String get familyAddMemberRow => 'Add family member';
+
+  @override
+  String get familyYou => 'You';
+
+  @override
+  String get familyMealsSection => 'Meals';
+
+  @override
+  String get householdPortionsTitle => 'Default portions';
+
+  @override
+  String get householdPortionsSaved => 'Portions saved';
+
+  @override
+  String get familyAllergiesSection => 'Allergies in the household';
 }

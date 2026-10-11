@@ -14473,5 +14473,37 @@
   "settingsAdminOnly": "Admin",
   "@settingsAdminOnly": {
     "description": "Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row"
+  },
+  "familyAccountsSection": "Konton i hushållet",
+  "@familyAccountsSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders"
+  },
+  "familyProfilesSection": "Familjeprofiler",
+  "@familyProfilesSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account"
+  },
+  "familyAddMemberRow": "Lägg till familjemedlem",
+  "@familyAddMemberRow": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form"
+  },
+  "familyYou": "Du",
+  "@familyYou": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): subtitle part on the signed-in user's own account row"
+  },
+  "familyMealsSection": "Måltider",
+  "@familyMealsSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the default portions"
+  },
+  "householdPortionsTitle": "Portioner som standard",
+  "@householdPortionsTitle": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): row on Familj & hushåll and title of its sheet: how many portions recipes open with"
+  },
+  "householdPortionsSaved": "Portionerna är sparade",
+  "@householdPortionsSaved": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): snackbar after the default portions are saved"
+  },
+  "familyAllergiesSection": "Allergier i hushållet",
+  "@familyAllergiesSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches"
   }
 }

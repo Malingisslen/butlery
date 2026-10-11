@@ -2,7 +2,7 @@
 // menu stops substituting a guessed four-allergen floor for you.
 //
 // Direction A of the design preview, chosen whole by Malin 2026-08-12: a second
-// switch row directly under the household-allergen filter, padlock icon, the
+// switch row directly under the household-allergen filter, the
 // TITLE saying what you can do and the SUBTITLE saying what the household sees
 // right now. Turning it ON opens the Art. 9(2)(a) consent copy as a dialog;
 // turning it OFF has no dialog at all, because withdrawing a consent must never
@@ -24,18 +24,19 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
 /// Public (not `_...`) so widget tests can render it, mirroring
 /// [HouseholdAllergenFilterTile].
 class HouseholdAllergenSharingTile extends StatefulWidget {
-  const HouseholdAllergenSharingTile({super.key});
+  const HouseholdAllergenSharingTile({this.dividerAbove = false, super.key});
+
+  /// As [MealAllergenScopeTile.dividerAbove].
+  final bool dividerAbove;
 
   @override
   State<HouseholdAllergenSharingTile> createState() =>
@@ -327,26 +328,26 @@ class _HouseholdAllergenSharingTileState
       return const SizedBox.shrink();
     }
 
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-
-    return SwitchListTile(
-      secondary: ButleryIcon(
-        ButleryIcons.lock,
-        color: sharing ? cs.onSurfaceVariant : context.modeColors.warning,
-      ),
-      title: Text(
-        l10n.householdAllergenShareTitle,
-        style: AppTextStyles.bodyMedium,
-      ),
-      subtitle: Text(
-        sharing
-            ? l10n.householdAllergenShareSubtitleOn
-            : l10n.householdAllergenShareSubtitleOff,
-        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-      ),
-      value: sharing,
-      onChanged: _busy ? null : _onChanged,
+    final row = ButleryListRow.toggle(
+      label: l10n.householdAllergenShareTitle,
+      subtitle: sharing
+          ? l10n.householdAllergenShareSubtitleOn
+          : l10n.householdAllergenShareSubtitleOff,
+      checked: sharing,
+      onChanged: _onChanged,
+    );
+    if (!widget.dividerAbove) return row;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(
+          height: 1,
+          thickness: 1,
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+        row,
+      ],
     );
   }
 }
