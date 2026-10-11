@@ -700,7 +700,7 @@
   "messagingDeleteConversation": "Delete conversation",
   "messagingLeftGroup": "You have left the group",
   "messagingLeave": "Leave",
-  "messagingDeleteConversationConfirm": "Are you sure you want to delete this conversation? All messages will be lost.",
+  "messagingDeleteConversationConfirm": "All messages in the conversation will be lost.",
   "messagingConversationDeleted": "Conversation \"{title}\" deleted",
   "@messagingConversationDeleted": {
     "placeholders": {
@@ -810,7 +810,7 @@
   "chatImageSent": "Image sent.",
   "chatNoImageSelected": "No image selected",
   "chatCouldNotSharePhoto": "Couldn't share photo",
-  "chatDeleteMessage": "Delete",
+  "chatDeleteMessage": "Delete message",
   "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
   "statusConnecting": "Connecting...",
   "statusSyncing": "Syncing...",
@@ -1493,7 +1493,7 @@
   "personalTagCouldNotCreateGroup": "Could not create group",
   "personalTagEditTag": "Edit tag",
   "personalTagUpdated": "Tag updated",
-  "personalTagDeleteTagConfirm": "Delete tag?",
+  "personalTagDeleteTagConfirm": "Delete the tag?",
   "personalTagDeleteTagMessageWithCount": "Are you sure you want to delete \"{name}\"? {count, plural, =0{No recipes will be affected.} =1{It will be untagged from 1 recipe.} other{It will be untagged from {count} recipes.}}",
   "@personalTagDeleteTagMessageWithCount": {
     "placeholders": {
@@ -1580,7 +1580,7 @@
   "personalTagGroupCreatedAndTagMoved": "Group created and tag moved",
   "personalTagRenameGroup": "Rename group",
   "personalTagGroupUpdated": "Group updated",
-  "personalTagDeleteGroupConfirm": "Delete group?",
+  "personalTagDeleteGroupConfirm": "Delete the group?",
   "personalTagDeleteGroupMessage": "Are you sure you want to delete \"{name}\"? Tags in the group will be ungrouped.",
   "@personalTagDeleteGroupMessage": {
     "placeholders": {
@@ -1624,8 +1624,8 @@
   "tagDetailRuleUpdated": "Rule updated",
   "tagDetailCouldNotUpdateRule": "Could not update rule",
   "tagDetailCouldNotChangeRuleStatus": "Could not change rule status",
-  "tagDetailDeleteRuleConfirm": "Delete rule?",
-  "tagDetailDeleteRuleMessage": "Are you sure you want to delete \"{name}\"?",
+  "tagDetailDeleteRuleConfirm": "Delete the rule?",
+  "tagDetailDeleteRuleMessage": "Do you want to delete \"{name}\"?",
   "@tagDetailDeleteRuleMessage": {
     "placeholders": {
       "name": {
@@ -1649,7 +1649,7 @@
   },
   "tagDetailNoRecipesMatched": "No recipes matched the rules",
   "tagDetailCouldNotApplyRules": "Could not apply rules",
-  "tagDetailDeleteTagConfirm": "Delete tag?",
+  "tagDetailDeleteTagConfirm": "Delete the tag?",
   "tagDetailDeleted": "Tag deleted",
   "tagDetailCouldNotDelete": "Could not delete tag",
   "tagDetailRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
@@ -6781,7 +6781,7 @@
   "errorWeakPassword": "Password is too weak. Use at least 6 characters.",
   "errorLoginFailed": "Login failed. Please try again.",
   "errorCouldNotLogOut": "Could not log out",
-  "errorCouldNotDeleteAccount": "Could not delete account",
+  "errorCouldNotDeleteAccount": "Could not delete the account",
   "errorCouldNotCompleteMfa": "Could not complete MFA enrollment",
   "errorMfaVerificationFailed": "MFA verification failed",
   "errorInvalidPhoneNumber": "Invalid phone number. Enter with country code.",
@@ -8935,7 +8935,7 @@
   "unsavedChangesTitle": "Unsaved changes",
   "unsavedChangesMessage": "You have unsaved changes. Do you really want to cancel?",
   "cancelWithoutSaving": "Cancel without saving",
-  "deleteActionIrreversible": "This action cannot be undone.",
+  "deleteActionIrreversible": "This can't be undone.",
   "deleteConfirmMessage": "Do you really want to delete",
   "groupLeaveTitle": "Leave group?",
   "groupLeaveMessage": "Do you really want to leave the group \"{name}\"?",
@@ -9181,7 +9181,7 @@
   "viewModeGrid": "Grid View",
   "viewModeList": "List View",
   "imageCropTitle": "Crop image",
-  "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
+  "bulkDeleteConfirmMessage": "The selected recipes move to the trash and stay there for 30 days.",
   "bulkDeleteSuccess": "{count, plural, =1{1 recipe moved to the trash for 30 days} other{{count} recipes moved to the trash for 30 days}}",
   "@bulkDeleteSuccess": {
     "placeholders": {
@@ -14204,5 +14204,118 @@
   "consentTurnOffAllOptional": "Turn off all optional",
   "@consentTurnOffAllOptional": {
     "description": "Danger row on the consent page that revokes every optional consent after a confirmation"
+  },
+  "recipeDeleteConfirmTitle": "Delete the recipe?",
+  "@recipeDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the recipe delete confirmation"
+  },
+  "bulkDeleteConfirmTitle": "{count, plural, =1{Delete 1 recipe?} other{Delete {count} recipes?}}",
+  "@bulkDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the multi-select recipe delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkDeleteConfirmAction": "{count, plural, =1{Delete the recipe} other{Delete {count} recipes}}",
+  "@bulkDeleteConfirmAction": {
+    "description": "BUT-2366: red button of the multi-select recipe delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentDeleteConfirmTitle": "Delete the comment?",
+  "@commentDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the comment delete confirmation"
+  },
+  "commentDeleteConfirmAction": "Delete comment",
+  "@commentDeleteConfirmAction": {
+    "description": "BUT-2366: red button of the comment delete confirmation"
+  },
+  "cookSnapDeleteConfirmTitle": "Delete the photo?",
+  "@cookSnapDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the cook-snap delete confirmation"
+  },
+  "groupDeleteConfirmTitle": "Delete the group?",
+  "@groupDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the group delete confirmation"
+  },
+  "friendRemoveConfirmTitle": "Remove {name} as a friend?",
+  "@friendRemoveConfirmTitle": {
+    "description": "BUT-2366: title of the remove-friend confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveMemberConfirmTitle": "Remove {name} from the group?",
+  "@messagingRemoveMemberConfirmTitle": {
+    "description": "BUT-2366: title of the remove-member confirmation in a group chat",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveMemberAction": "Remove from group",
+  "@messagingRemoveMemberAction": {
+    "description": "BUT-2366: red button of the remove-member confirmation in a group chat"
+  },
+  "messagingLeaveGroupTitle": "Leave the group?",
+  "@messagingLeaveGroupTitle": {
+    "description": "BUT-2366: title of the leave-group-chat confirmation"
+  },
+  "messagingDeleteConversationTitle": "Delete the conversation?",
+  "@messagingDeleteConversationTitle": {
+    "description": "BUT-2366: title of the delete-conversation confirmation"
+  },
+  "messagingDeleteConversationAction": "Delete conversation",
+  "@messagingDeleteConversationAction": {
+    "description": "BUT-2366: red button of the delete-conversation confirmation"
+  },
+  "chatDeleteMessageTitle": "Delete the message?",
+  "@chatDeleteMessageTitle": {
+    "description": "BUT-2366: title of the delete-message confirmation"
+  },
+  "personalTagBulkDeleteAction": "{count, plural, =1{Delete the tag} other{Delete {count} tags}}",
+  "@personalTagBulkDeleteAction": {
+    "description": "BUT-2366: red button of the bulk tag delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCancelInvitationTitle": "Cancel the invitation?",
+  "@groupCancelInvitationTitle": {
+    "description": "BUT-2366: title of the cancel-group-invitation confirmation"
+  },
+  "groupCancelInvitationAction": "Cancel invitation",
+  "@groupCancelInvitationAction": {
+    "description": "BUT-2366: red button of the cancel-group-invitation confirmation"
+  },
+  "groupKeepInvitation": "Keep invitation",
+  "@groupKeepInvitation": {
+    "description": "BUT-2366: the keep side of the cancel-group-invitation confirmation"
+  },
+  "importHeirloomClearAction": "Remove image",
+  "@importHeirloomClearAction": {
+    "description": "BUT-2366: red button when removing a photo also clears the heirloom details"
+  },
+  "dataExportClearAction": "Clear export",
+  "@dataExportClearAction": {
+    "description": "BUT-2366: red button of the clear-export confirmation"
+  },
+  "shoppingDeleteListTitle": "Delete the list?",
+  "@shoppingDeleteListTitle": {
+    "description": "BUT-2366: title of the shopping list delete confirmation"
+  },
+  "ratingRemoveAction": "Remove rating",
+  "@ratingRemoveAction": {
+    "description": "BUT-2366: red button of the remove-rating confirmation"
   }
 }

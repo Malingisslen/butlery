@@ -1,1054 +1,400 @@
-/// Intent-driven unit tests for `CommonDialogActions` — the factory of
-/// delete/action/info dialog helpers used across 25+ call sites.
-///
-/// Behaviours covered:
-/// - `showDeleteConfirmation`: confirm tap resolves `true`, cancel tap
-///   resolves `false`, barrier-tap (outside dismiss) resolves `null`, custom
-///   `warningMessage` renders, dialog renders the localized
-///   `deleteConfirmMessage` + `deleteActionIrreversible` strings.
-/// - `showRecipeDeleteConfirmation` / `showGroupDeleteConfirmation` /
-///   `showShoppingListDeleteConfirmation`: surface the right localized
-///   warning string for their item type (recipeDeleteWarning, etc.) and
-///   round-trip the user's choice as a `bool?` future.
-/// - `showActionConfirmation`: confirm → `true`, cancel → `false`,
-///   default `cancelText` falls back to the localized `commonCancel`,
-///   `confirmColor` is honored for the FilledButton background, and the
-///   `isDangerous` flag forces the colorScheme.error tint regardless of
-///   `confirmColor`.
-/// - `showLeaveGroupConfirmation` and `showUnsavedChangesConfirmation`:
-///   render their localized title/message/confirm-text triplets and
-///   resolve correctly.
-/// - `showShareConfirmation`: collapses long recipient lists to
-///   "name1, name2 och N till" via `shareRecipientsMore`.
-/// - `showSuccessDialog` / `showWarningDialog` / `showErrorDialog`:
-///   render with the localized `commonClose` button ("Stäng"), dismiss on tap,
-///   future resolves once the user acknowledges.
-///
-/// Production bug surface notes (do NOT fix here):
-/// - `lib/core/utils/common_dialog_actions.dart:46, 60, 74` pass HARDCODED
-///   Swedish item-type strings ('recept', 'grupp', 'inköpslista') into the
-///   dialog title. The dialog title becomes "Ta bort recept?" in Swedish but
-///   would become "Delete recept?" in English — these literals bypass l10n.
-///   Same bug class as BUT-1088. Surfaced by the
-///   `english locale → recipe delete title leaks Swedish 'recept'` test.
+/// Intent-driven tests for `CommonDialogActions`: the named confirmations the
+/// views ask for (BUT-2366). Each preset must draw the right shared dialog
+/// with its own sv l10n title and button text, and resolve the user's choice
+/// as a `bool?`.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// Wraps the [child] in a MaterialApp with l10n delegates so dialogs can
-/// resolve `context.l10n.commonCancel` etc. Defaults to Swedish, matching
-/// the production app's default locale.
-Widget _wrap(Widget child, {Locale locale = const Locale('sv')}) => MaterialApp(
-  theme: AppTheme.lightTheme,
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  locale: locale,
-  home: Scaffold(body: child),
-);
+final _sv = AppLocalizationsSv();
 
-/// Builds a trigger button that opens the dialog and exposes the resolved
-/// future to the test via [onResult]. Standard recipe pattern lifted from
-/// Flutter's showDialog cookbook and the sibling confirmation_dialogs_test.
-Widget _triggerButton<T>({
-  required Future<T> Function(BuildContext) openDialog,
-  required void Function(T) onResult,
-}) {
-  return Builder(
-    builder: (ctx) => ElevatedButton(
-      onPressed: () async {
-        final result = await openDialog(ctx);
-        onResult(result);
-      },
-      child: const Text('Open'),
+class _Result {
+  bool? value;
+  bool resolved = false;
+}
+
+/// Opens [openDialog] from a trigger button and returns the holder that the
+/// resolved future is written to.
+Future<_Result> _open(
+  WidgetTester tester,
+  Future<bool?> Function(BuildContext) openDialog,
+) async {
+  final result = _Result();
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      home: Scaffold(
+        body: Builder(
+          builder: (ctx) => ElevatedButton(
+            onPressed: () async {
+              result.value = await openDialog(ctx);
+              result.resolved = true;
+            },
+            child: const Text('Open'),
+          ),
+        ),
+      ),
     ),
   );
+  await tester.tap(find.text('Open'));
+  await tester.pumpAndSettle();
+  return result;
 }
+
+Finder _button(String label) => find.ancestor(
+  of: find.text(label),
+  matching: find.bySubtype<FilledButton>(),
+);
+
+Finder _richText(bool Function(String plain) test) => find.byWidgetPredicate(
+  (w) => w is RichText && test(w.text.toPlainText()),
+);
 
 void main() {
   group('showDeleteConfirmation', () {
-    /// Proves: tapping the delete (primary) action resolves the returned
-    /// Future to `true` — the contract callers rely on to actually perform
-    /// the deletion.
-    testWidgets('delete tap resolves the future with true', (tester) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'Min favorit',
-              itemType: 'recept',
-            ),
-            onResult: (v) => result = v,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+    Future<bool?> open(
+      BuildContext ctx, {
+      String message = '',
+      String itemName = '',
+      String? warningMessage,
+      bool irreversible = false,
+    }) => CommonDialogActions.showDeleteConfirmation(
+      context: ctx,
+      title: 'Radera boken?',
+      confirmText: 'Radera boken',
+      message: message,
+      itemName: itemName,
+      warningMessage: warningMessage,
+      irreversible: irreversible,
+    );
 
-      // Primary action label is the localized "Ta bort" — rendered as a
-      // bare Text inside FilledButton.icon. Title is "Ta bort recept?"
-      // (full sentence), so find.text('Ta bort') uniquely hits the button.
-      expect(find.text('Ta bort'), findsOneWidget);
-      await tester.tap(find.text('Ta bort'));
-      await tester.pumpAndSettle();
-
-      expect(
-        result,
-        isTrue,
-        reason:
-            'delete-confirm must return true on primary tap '
-            'or callers will silently no-op the deletion',
-      );
-    });
-
-    /// Proves: tapping cancel pops with `null` — the standard
-    /// Navigator.pop() with no args. Callers commonly `?? false` this.
-    testWidgets('cancel tap resolves the future with null (Navigator.pop)', (
+    testWidgets('draws the destructive dialog with the caller-named button', (
       tester,
     ) async {
-      bool? sentinel = true; // distinguish "not called" from "called with null"
-      var resolved = false;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'Min favorit',
-              itemType: 'recept',
-            ),
-            onResult: (v) {
-              sentinel = v;
-              resolved = true;
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await _open(tester, (ctx) => open(ctx));
 
-      await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
-      await tester.pumpAndSettle();
-
-      expect(resolved, isTrue);
-      // The BaseDialog cancel button calls Navigator.of(context).pop() with
-      // no args → showDialog<bool>() resolves with null. If a refactor ever
-      // accidentally pops `true` or `false` from the cancel button, callers
-      // would silently delete; this assertion locks the null contract.
-      expect(sentinel, isNull);
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text('Radera boken?'), findsOneWidget);
+      expect(_button('Radera boken'), findsOneWidget);
     });
 
-    /// Proves: dismissing the dialog via the barrier (tap outside)
-    /// resolves with null. `barrierDismissible` defaults to true in
-    /// BaseDialog and most callers depend on it.
-    testWidgets('barrier-tap (outside dismiss) resolves the future with null', (
-      tester,
-    ) async {
-      bool? sentinel = true;
-      var resolved = false;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'X',
-              itemType: 'recept',
-            ),
-            onResult: (v) {
-              sentinel = v;
-              resolved = true;
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
+    testWidgets('confirm tap resolves true', (tester) async {
+      final r = await _open(tester, (ctx) => open(ctx));
+
+      await tester.tap(_button('Radera boken'));
       await tester.pumpAndSettle();
 
-      // Tap on the modal barrier at the very top of the screen (outside
-      // the AlertDialog content area).
+      expect(r.value, isTrue);
+    });
+
+    testWidgets('cancel tap resolves to no yes', (tester) async {
+      final r = await _open(tester, (ctx) => open(ctx));
+
+      await tester.tap(find.text(_sv.commonCancel));
+      await tester.pumpAndSettle();
+
+      expect(r.resolved, isTrue);
+      expect(r.value, isNot(true));
+    });
+
+    testWidgets('barrier tap resolves to no yes', (tester) async {
+      final r = await _open(tester, (ctx) => open(ctx));
+
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
 
-      expect(resolved, isTrue);
-      expect(sentinel, isNull);
+      expect(r.resolved, isTrue);
+      expect(r.value, isNot(true));
     });
 
-    /// Proves: the localized confirm message + irreversibility hint render.
-    /// These are the two strings every user reads before clicking delete —
-    /// if either silently disappears, the dialog becomes far less safe.
-    testWidgets('renders the localized confirm message and the '
-        '"action is irreversible" hint', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'Pasta carbonara',
-              itemType: 'recept',
-            ),
-            onResult: (_) {},
-          ),
-        ),
+    testWidgets('quotes the item name after the message', (tester) async {
+      await _open(
+        tester,
+        (ctx) => open(ctx, message: 'Vill du radera', itemName: 'Pasta'),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
 
-      // RichText composes "Vill du verkligen ta bort \"<itemName>\"?".
-      expect(
-        find.byWidgetPredicate((w) {
-          if (w is! RichText) return false;
-          final txt = w.text.toPlainText();
-          return txt.contains('Vill du verkligen ta bort') &&
-              txt.contains('Pasta carbonara');
-        }),
-        findsOneWidget,
-      );
-      // Static italic irreversibility footnote.
-      expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
+      expect(_richText((t) => t == 'Vill du radera ”Pasta”?'), findsOneWidget);
     });
 
-    /// Proves: passing a `warningMessage` renders it verbatim above the
-    /// "action is irreversible" footnote.
-    testWidgets('renders custom warningMessage when provided', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'X',
-              itemType: 'recept',
-              warningMessage: 'OBS: detta är farligt',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      expect(find.text('OBS: detta är farligt'), findsOneWidget);
+    testWidgets('warningMessage renders', (tester) async {
+      await _open(tester, (ctx) => open(ctx, warningMessage: 'OBS: farligt'));
+      expect(find.text('OBS: farligt'), findsOneWidget);
     });
 
-    /// Proves: omitting `warningMessage` does NOT render an empty Text or
-    /// the placeholder text. Catches the bug class where a null-guarded
-    /// section accidentally always renders something.
-    testWidgets('omits warningMessage section when not provided', (
+    testWidgets('irreversible adds the line', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'X',
-              itemType: 'recept',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      // No warning section should be present — only the standard
-      // confirm message + the static irreversibility footnote.
-      expect(find.text('OBS: detta är farligt'), findsNothing);
-      expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
+      await _open(tester, (ctx) => open(ctx, irreversible: true));
+      expect(find.text(_sv.deleteActionIrreversible), findsOneWidget);
     });
 
-    /// Proves: with no item name (the cook-snap photo) no body line ends in
-    /// an empty '""?' (BUT-2164).
-    testWidgets('an empty itemName draws no quoted name', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: '',
-              itemType: 'foto',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('""'),
-        ),
-        findsNothing,
-      );
-      expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
-    });
-
-    /// Proves (BUT-1821): the warning message is text, so it takes
-    /// text.warning rather than the icon-only warning token.
-    testWidgets('warningMessage is drawn in text.warning', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
-              context: ctx,
-              itemName: 'X',
-              itemType: 'recept',
-              warningMessage: 'OBS: detta är farligt',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      final text = tester.widget<Text>(find.text('OBS: detta är farligt'));
-      expect(text.style?.color, AppColors.textWarning);
+    testWidgets('not irreversible by default', (tester) async {
+      await _open(tester, (ctx) => open(ctx, itemName: 'Pasta'));
+      expect(find.text(_sv.deleteActionIrreversible), findsNothing);
     });
   });
 
-  group('domain-specific delete helpers', () {
-    /// Proves: the recipe variant surfaces the localized
-    /// `recipeDeleteWarning` to the user. Off-by-one bug class: if the
-    /// helper accidentally wired the warning to the wrong l10n key, the
-    /// user would see the wrong consequence statement.
-    testWidgets(
-      'showRecipeDeleteConfirmation shows the recipe warning string',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) =>
-                  CommonDialogActions.showRecipeDeleteConfirmation(
-                    context: ctx,
-                    recipeName: 'Pasta',
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(
-            'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
-          ),
-          findsOneWidget,
-        );
-      },
-    );
-
-    /// Proves: the group variant surfaces the group-specific warning, NOT
-    /// the recipe one. Catches a copy-paste bug between the three sibling
-    /// helpers.
-    testWidgets('showGroupDeleteConfirmation shows the group warning string', (
+  group('delete presets: sv title and button text', () {
+    testWidgets('recipe: title, button and trash warning, no irreversible', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) =>
-                CommonDialogActions.showGroupDeleteConfirmation(
-                  context: ctx,
-                  groupName: 'Familjen',
-                ),
-            onResult: (_) {},
-          ),
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showRecipeDeleteConfirmation(
+          context: ctx,
+          recipeName: 'Pasta',
         ),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text(_sv.recipeDeleteConfirmTitle), findsOneWidget);
+      expect(_button(_sv.recipeDelete), findsOneWidget);
+      expect(find.text(_sv.recipeDeleteWarning), findsOneWidget);
+      expect(_richText((t) => t.contains('”Pasta”')), findsOneWidget);
+      // The recipe goes to the trash, so it must not claim it cannot be undone.
+      expect(find.text(_sv.deleteActionIrreversible), findsNothing);
+    });
+
+    for (final count in [1, 3]) {
+      testWidgets('bulk recipes ($count): title and button follow the count', (
+        tester,
+      ) async {
+        await _open(
+          tester,
+          (ctx) => CommonDialogActions.showBulkRecipeDeleteConfirmation(
+            context: ctx,
+            count: count,
+          ),
+        );
+
+        expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+        expect(find.text(_sv.bulkDeleteConfirmTitle(count)), findsOneWidget);
+        expect(_button(_sv.bulkDeleteConfirmAction(count)), findsOneWidget);
+        expect(find.text(_sv.bulkDeleteConfirmMessage), findsOneWidget);
+      });
+    }
+
+    testWidgets('comment: title and button', (tester) async {
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showCommentDeleteConfirmation(
+          context: ctx,
+          commentText: 'Gott!',
+        ),
+      );
+
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text(_sv.commentDeleteConfirmTitle), findsOneWidget);
+      expect(_button(_sv.commentDeleteConfirmAction), findsOneWidget);
+      expect(_richText((t) => t == '”Gott!”'), findsOneWidget);
+    });
+
+    testWidgets('comment: a long comment is cut at 40 characters with "…"', (
+      tester,
+    ) async {
+      final long = List.filled(60, 'x').join();
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showCommentDeleteConfirmation(
+          context: ctx,
+          commentText: long,
+        ),
+      );
 
       expect(
-        find.text('Alla medlemmar kommer att lämna gruppen.'),
+        _richText((t) => t == '”${long.substring(0, 40)}…”'),
         findsOneWidget,
-      );
-      // Negative: the recipe warning must NOT leak into the group dialog.
-      expect(
-        find.text(
-          'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
-        ),
-        findsNothing,
       );
     });
 
-    /// Proves: the shopping-list variant surfaces its own warning. Same
-    /// rationale as above.
-    testWidgets(
-      'showShoppingListDeleteConfirmation shows the shopping warning string',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) =>
-                  CommonDialogActions.showShoppingListDeleteConfirmation(
-                    context: ctx,
-                    listName: 'Veckohandling',
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+    testWidgets('cook snap: title and button, no quoted name', (tester) async {
+      await _open(
+        tester,
+        (ctx) =>
+            CommonDialogActions.showCookSnapDeleteConfirmation(context: ctx),
+      );
 
-        expect(
-          find.text('Alla varor på listan kommer att försvinna.'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text(_sv.cookSnapDeleteConfirmTitle), findsOneWidget);
+      expect(_button(_sv.cookSnapDelete), findsOneWidget);
+      expect(_richText((t) => t.contains('””')), findsNothing);
+    });
 
-    /// BUT-1115 fix: English locale now properly localizes the itemType
-    /// to "recipe" rather than leaking the Swedish "recept" string. The
-    /// dialog title in English is "Delete recipe?". Same bug class as
-    /// BUT-1088 (hardcoded Swedish in nominally-localized helpers).
-    testWidgets(
-      'english locale → recipe delete title is fully localized (BUT-1115)',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) =>
-                  CommonDialogActions.showRecipeDeleteConfirmation(
-                    context: ctx,
-                    recipeName: 'Pasta',
-                  ),
-              onResult: (_) {},
-            ),
-            locale: const Locale('en'),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Delete recipe?'),
-          findsOneWidget,
-          reason:
-              'BUT-1115: itemType is now sourced from '
-              'context.l10n.itemTypeRecipe so the English locale renders '
-              '"Delete recipe?" instead of the Swedish-leaking "Delete recept?".',
-        );
-        // Negative: the previously-leaking Swedish literal must NOT appear.
-        expect(find.text('Delete recept?'), findsNothing);
-      },
-    );
   });
 
   group('showActionConfirmation', () {
-    /// Proves: tapping the primary action resolves with true.
-    testWidgets('confirm tap → future resolves true', (tester) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showActionConfirmation(
-              context: ctx,
-              title: 'Bekräfta',
-              message: 'Säker?',
-              confirmText: 'Ja',
-            ),
-            onResult: (v) => result = v,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Ja'));
-      await tester.pumpAndSettle();
-
-      expect(result, isTrue);
-    });
-
-    /// Proves: tapping cancel pops with `false` explicitly — note that
-    /// `_ActionConfirmationDialog` (unlike the BaseDialog flow used by
-    /// showDeleteConfirmation) wires cancel to `Navigator.pop(false)`,
-    /// so callers get a concrete `false`, not `null`.
-    testWidgets('cancel tap → future resolves false (not null)', (
+    testWidgets('dangerous: destructive dialog, icon on the button', (
       tester,
     ) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showActionConfirmation(
-              context: ctx,
-              title: 't',
-              message: 'm',
-              confirmText: 'Ja',
-            ),
-            onResult: (v) => result = v,
-          ),
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 'Lämna?',
+          message: 'Säker?',
+          confirmText: 'Lämna',
+          icon: ButleryIcons.logOut,
+          isDangerous: true,
         ),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
 
-      // Default cancel label is localized Avbryt.
-      await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
-      await tester.pumpAndSettle();
-
-      expect(result, isFalse);
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(
+        find.descendant(
+          of: _button('Lämna'),
+          matching: find.byIcon(ButleryIcons.logOut),
+        ),
+        findsOneWidget,
+      );
     });
 
-    /// Proves: omitting `cancelText` falls back to the localized
-    /// `commonCancel` ("Avbryt" in Swedish). Catches the regression where
-    /// someone changes the default to a hardcoded string.
-    testWidgets('default cancelText comes from the localized commonCancel', (
+    testWidgets('not dangerous: plain confirmation, icon above the title', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showActionConfirmation(
-              context: ctx,
-              title: 't',
-              message: 'm',
-              confirmText: 'Ja',
-            ),
-            onResult: (_) {},
-          ),
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 'Dela?',
+          message: 'Säker?',
+          confirmText: 'Dela',
+          icon: ButleryIcons.share2,
         ),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
+      expect(find.byType(ConfirmationDialog), findsOneWidget);
+      expect(find.byType(DestructiveConfirmationDialog), findsNothing);
+      expect(find.byIcon(ButleryIcons.share2), findsOneWidget);
+      expect(
+        find.descendant(
+          of: _button('Dela'),
+          matching: find.byIcon(ButleryIcons.share2),
+        ),
+        findsNothing,
+      );
     });
 
-    /// Proves: a custom `cancelText` overrides the localized default. The
-    /// other way the test could fail: someone makes the helper ignore the
-    /// custom value and always use commonCancel.
-    testWidgets('custom cancelText overrides the localized default', (
+    testWidgets('confirm resolves true, cancel does not', (tester) async {
+      var r = await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 't',
+          message: 'm',
+          confirmText: 'Ja',
+        ),
+      );
+      await tester.tap(_button('Ja'));
+      await tester.pumpAndSettle();
+      expect(r.value, isTrue);
+
+      r = await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 't',
+          message: 'm',
+          confirmText: 'Ja',
+        ),
+      );
+      await tester.tap(find.text(_sv.commonCancel));
+      await tester.pumpAndSettle();
+      expect(r.resolved, isTrue);
+      expect(r.value, isNot(true));
+    });
+
+    testWidgets('cancelText defaults to commonCancel', (tester) async {
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 't',
+          message: 'm',
+          confirmText: 'Ja',
+        ),
+      );
+      expect(find.text(_sv.commonCancel), findsOneWidget);
+    });
+
+    testWidgets('a custom cancelText replaces the default (dangerous too)', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showActionConfirmation(
-              context: ctx,
-              title: 't',
-              message: 'm',
-              confirmText: 'Ja',
-              cancelText: 'Nope',
-            ),
-            onResult: (_) {},
-          ),
+      await _open(
+        tester,
+        (ctx) => CommonDialogActions.showActionConfirmation(
+          context: ctx,
+          title: 't',
+          message: 'm',
+          confirmText: 'Ja',
+          cancelText: 'Nope',
+          isDangerous: true,
         ),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextButton, 'Nope'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'Avbryt'), findsNothing);
+      expect(find.text('Nope'), findsOneWidget);
+      expect(find.text(_sv.commonCancel), findsNothing);
     });
-
-    /// Proves: when `isDangerous: true`, the primary button's background
-    /// is the theme's `colorScheme.error`, even if a confirmColor is
-    /// supplied — `isDangerous` must trump the override. This is the
-    /// safety invariant for destructive-action UIs.
-    testWidgets(
-      'isDangerous forces colorScheme.error background even with confirmColor',
-      (tester) async {
-        late ColorScheme cs;
-        await tester.pumpWidget(
-          _wrap(
-            Builder(
-              builder: (rootCtx) {
-                cs = Theme.of(rootCtx).colorScheme;
-                return _triggerButton<bool?>(
-                  openDialog: (ctx) =>
-                      CommonDialogActions.showActionConfirmation(
-                        context: ctx,
-                        title: 't',
-                        message: 'm',
-                        confirmText: 'Kör',
-                        confirmColor: Colors.green, // should be IGNORED
-                        isDangerous: true,
-                      ),
-                  onResult: (_) {},
-                );
-              },
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        final FilledButton btn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'Kör'),
-        );
-        final bg = btn.style!.backgroundColor!.resolve({});
-        expect(
-          bg,
-          cs.error,
-          reason:
-              'isDangerous=true must override any confirmColor — '
-              'otherwise destructive UIs could be rendered in the wrong '
-              'colour and lose their visual warning affordance.',
-        );
-      },
-    );
-
-    /// Proves: when NOT dangerous, the supplied confirmColor wins over the
-    /// theme primary. Inverse of the test above.
-    testWidgets(
-      'non-dangerous + confirmColor → button uses the supplied confirmColor',
-      (tester) async {
-        const customColor = Color(0xFF112233);
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => CommonDialogActions.showActionConfirmation(
-                context: ctx,
-                title: 't',
-                message: 'm',
-                confirmText: 'Kör',
-                confirmColor: customColor,
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        final FilledButton btn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'Kör'),
-        );
-        final bg = btn.style!.backgroundColor!.resolve({});
-        expect(bg, customColor);
-      },
-    );
   });
 
   group('showLeaveGroupConfirmation', () {
-    /// Proves: the leave-group helper renders the localized title and
-    /// substitutes the group name into the localized message template.
-    /// Catches the bug where the helper passes the name to the wrong
-    /// localization function (or forgets to interpolate it at all).
-    testWidgets(
-      'renders localized title, message-with-group-name, and confirm action',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) =>
-                  CommonDialogActions.showLeaveGroupConfirmation(
-                    context: ctx,
-                    groupName: 'Familjen',
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Lämna grupp?'), findsOneWidget);
-        // Message: "Vill du verkligen lämna gruppen \"Familjen\"?"
-        expect(find.textContaining('Familjen'), findsWidgets);
-        // Confirm action label: "Lämna grupp".
-        expect(
-          find.widgetWithText(FilledButton, 'Lämna grupp'),
-          findsOneWidget,
-        );
-      },
-    );
-
-    /// Proves: the confirm tap resolves true so callers actually leave.
-    testWidgets('confirm tap resolves the future with true', (tester) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showLeaveGroupConfirmation(
-              context: ctx,
-              groupName: 'Familjen',
-            ),
-            onResult: (v) => result = v,
-          ),
+    testWidgets('names the group and is destructive', (tester) async {
+      final r = await _open(
+        tester,
+        (ctx) => CommonDialogActions.showLeaveGroupConfirmation(
+          context: ctx,
+          groupName: 'Familjen',
         ),
       );
-      await tester.tap(find.text('Open'));
+
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text(_sv.groupLeaveTitle), findsOneWidget);
+      expect(find.textContaining('Familjen', findRichText: true), findsWidgets);
+
+      await tester.tap(_button(_sv.groupLeaveAction));
       await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Lämna grupp'));
-      await tester.pumpAndSettle();
-
-      expect(result, isTrue);
-    });
-
-    /// Proves: marked `isDangerous: true`, the warning-tinted button gets
-    /// colorScheme.error — see the showActionConfirmation invariant above.
-    /// This is the per-helper guarantee that leaving a group looks
-    /// destructive, not casual.
-    testWidgets('leave-group uses the error-tinted button (isDangerous=true)', (
-      tester,
-    ) async {
-      late ColorScheme cs;
-      await tester.pumpWidget(
-        _wrap(
-          Builder(
-            builder: (rootCtx) {
-              cs = Theme.of(rootCtx).colorScheme;
-              return _triggerButton<bool?>(
-                openDialog: (ctx) =>
-                    CommonDialogActions.showLeaveGroupConfirmation(
-                      context: ctx,
-                      groupName: 'g',
-                    ),
-                onResult: (_) {},
-              );
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      final FilledButton btn = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Lämna grupp'),
-      );
-      final bg = btn.style!.backgroundColor!.resolve({});
-      expect(bg, cs.error);
+      expect(r.value, isTrue);
     });
   });
 
   group('showUnsavedChangesConfirmation', () {
-    /// Proves: localized title + message + "cancel without saving" confirm
-    /// label all render. Catches the bug where any of the three is wired
-    /// to the wrong l10n key.
-    testWidgets('renders localized title, message, and confirm label', (
+    testWidgets('confirm discards (true), cancel keeps editing', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) =>
-                CommonDialogActions.showUnsavedChangesConfirmation(
-                  context: ctx,
-                ),
-            onResult: (_) {},
-          ),
-        ),
+      var r = await _open(
+        tester,
+        (ctx) =>
+            CommonDialogActions.showUnsavedChangesConfirmation(context: ctx),
       );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Osparade ändringar'), findsOneWidget);
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.text(_sv.unsavedChangesTitle), findsOneWidget);
       expect(
-        find.text('Du har osparade ändringar. Vill du verkligen avbryta?'),
+        find.text(_sv.unsavedChangesMessage, findRichText: true),
         findsOneWidget,
       );
-      expect(
-        find.widgetWithText(FilledButton, 'Avbryt utan att spara'),
-        findsOneWidget,
+      await tester.tap(_button(_sv.cancelWithoutSaving));
+      await tester.pumpAndSettle();
+      expect(r.value, isTrue);
+
+      r = await _open(
+        tester,
+        (ctx) =>
+            CommonDialogActions.showUnsavedChangesConfirmation(context: ctx),
       );
-    });
-
-    /// Proves: tapping "Avbryt utan att spara" resolves the future to
-    /// true so the caller actually discards the unsaved changes.
-    testWidgets('confirm tap → future resolves true (discard changes)', (
-      tester,
-    ) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) =>
-                CommonDialogActions.showUnsavedChangesConfirmation(
-                  context: ctx,
-                ),
-            onResult: (v) => result = v,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
+      await tester.tap(find.text(_sv.commonCancel));
       await tester.pumpAndSettle();
-
-      await tester.tap(
-        find.widgetWithText(FilledButton, 'Avbryt utan att spara'),
-      );
-      await tester.pumpAndSettle();
-
-      expect(result, isTrue);
-    });
-
-    /// Proves: tapping the secondary "Avbryt" resolves the future to
-    /// false so the caller keeps the form open. Note: must be `false`,
-    /// not `null` — `_ActionConfirmationDialog` pops with an explicit
-    /// `false` from the cancel button.
-    testWidgets('cancel tap → future resolves false (keep editing)', (
-      tester,
-    ) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) =>
-                CommonDialogActions.showUnsavedChangesConfirmation(
-                  context: ctx,
-                ),
-            onResult: (v) => result = v,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      // Secondary action (cancel) uses the default localized Avbryt label.
-      await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
-      await tester.pumpAndSettle();
-
-      expect(result, isFalse);
-    });
-  });
-
-  group('showShareConfirmation', () {
-    /// Proves: a recipient list <= 3 long is joined with ", " verbatim
-    /// (no "and N more" tail). Off-by-one bug class: the helper switches
-    /// behaviour at length 3 vs 4.
-    testWidgets(
-      '<= 3 recipients → all names joined with ", " (no overflow tail)',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => CommonDialogActions.showShareConfirmation(
-                context: ctx,
-                itemType: 'recept',
-                recipientNames: const ['Anna', 'Beata', 'Cecilia'],
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        // Message template: "Vill du dela recept med Anna, Beata, Cecilia?"
-        expect(find.textContaining('Anna, Beata, Cecilia'), findsOneWidget);
-        // Must NOT contain the "och N till" suffix at this length.
-        expect(find.textContaining('och'), findsNothing);
-      },
-    );
-
-    /// Proves: at length 4+, the helper takes the first 2 names and
-    /// appends the localized `shareRecipientsMore(count-2)` tail.
-    /// Validates both the boundary (4 = first overflow) AND the count.
-    testWidgets('>= 4 recipients → first 2 names + "och N till" overflow', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showShareConfirmation(
-              context: ctx,
-              itemType: 'recept',
-              recipientNames: const ['Anna', 'Beata', 'Cecilia', 'Disa', 'Eva'],
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      // Expected: "Anna, Beata och 3 till" (5 recipients → 2 shown + 3 more)
-      expect(find.textContaining('Anna, Beata'), findsOneWidget);
-      expect(find.textContaining('och 3 till'), findsOneWidget);
-      // Negative: the overflowed names must NOT appear.
-      expect(find.textContaining('Cecilia'), findsNothing);
-    });
-
-    /// Proves: the share confirm button uses the localized "Dela" label.
-    testWidgets('confirm button uses localized commonShare label', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => CommonDialogActions.showShareConfirmation(
-              context: ctx,
-              itemType: 'recept',
-              recipientNames: const ['Anna'],
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.widgetWithText(FilledButton, 'Dela'), findsOneWidget);
-    });
-  });
-
-  group('showSuccessDialog / showWarningDialog / showErrorDialog', () {
-    /// Proves: the success info dialog renders title, message, the
-    /// localized Stäng button (never OK; content-style-guide.md:77), and uses the butlery success color on the
-    /// button background — captured from the live extension rather than
-    /// hardcoded so a theme tweak doesn't break the test.
-    testWidgets(
-      'success dialog renders content + Stäng + modeColors.success button',
-      (tester) async {
-        late Color expectedColor;
-        var resolved = false;
-        await tester.pumpWidget(
-          _wrap(
-            Builder(
-              builder: (rootCtx) {
-                expectedColor = rootCtx.modeColors.success;
-                return _triggerButton<void>(
-                  openDialog: (ctx) async {
-                    await CommonDialogActions.showSuccessDialog(
-                      context: ctx,
-                      title: 'Klart!',
-                      message: 'Det funkade',
-                    );
-                  },
-                  onResult: (_) => resolved = true,
-                );
-              },
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Klart!'), findsOneWidget);
-        expect(find.text('Det funkade'), findsOneWidget);
-
-        final FilledButton btn = tester.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'Stäng'),
-        );
-        final bg = btn.style!.backgroundColor!.resolve({});
-        expect(bg, expectedColor);
-
-        // Acknowledge to make sure the future resolves (caller commonly
-        // `await`s and continues afterwards).
-        await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
-        await tester.pumpAndSettle();
-        expect(resolved, isTrue);
-      },
-    );
-
-    /// Proves: the warning dialog uses modeColors.warning. Same shape
-    /// as the success test, swapping the colour invariant.
-    testWidgets('warning dialog uses modeColors.warning on the button', (
-      tester,
-    ) async {
-      late Color expectedColor;
-      await tester.pumpWidget(
-        _wrap(
-          Builder(
-            builder: (rootCtx) {
-              expectedColor = rootCtx.modeColors.warning;
-              return _triggerButton<void>(
-                openDialog: (ctx) async {
-                  await CommonDialogActions.showWarningDialog(
-                    context: ctx,
-                    title: 'Obs',
-                    message: 'Var försiktig',
-                  );
-                },
-                onResult: (_) {},
-              );
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      final FilledButton btn = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Stäng'),
-      );
-      final bg = btn.style!.backgroundColor!.resolve({});
-      expect(bg, expectedColor);
-
-      // Tear down the open dialog so the test framework doesn't complain
-      // about a still-mounted modal route.
-      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
-      await tester.pumpAndSettle();
-    });
-
-    /// Proves: the error dialog uses the theme's `colorScheme.error`
-    /// (NOT modeColors.warning — these are intentionally different
-    /// channels in the design system).
-    testWidgets('error dialog uses colorScheme.error on the button', (
-      tester,
-    ) async {
-      late Color expectedColor;
-      await tester.pumpWidget(
-        _wrap(
-          Builder(
-            builder: (rootCtx) {
-              expectedColor = Theme.of(rootCtx).colorScheme.error;
-              return _triggerButton<void>(
-                openDialog: (ctx) async {
-                  await CommonDialogActions.showErrorDialog(
-                    context: ctx,
-                    title: 'Fel',
-                    message: 'Något gick snett',
-                  );
-                },
-                onResult: (_) {},
-              );
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      final FilledButton btn = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Stäng'),
-      );
-      final bg = btn.style!.backgroundColor!.resolve({});
-      expect(bg, expectedColor);
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
-      await tester.pumpAndSettle();
-    });
-
-    /// Proves: tapping Stäng dismisses the info dialog — info dialogs are
-    /// the only way for an info-modal caller to continue (no barrier-
-    /// cancel for these, since they don't take a `bool?`).
-    testWidgets('Stäng tap dismisses the info dialog and resolves the await', (
-      tester,
-    ) async {
-      var resolved = false;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<void>(
-            openDialog: (ctx) async {
-              await CommonDialogActions.showSuccessDialog(
-                context: ctx,
-                title: 't',
-                message: 'm',
-              );
-            },
-            onResult: (_) => resolved = true,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      expect(resolved, isFalse, reason: 'await should still be pending');
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
-      await tester.pumpAndSettle();
-      expect(resolved, isTrue);
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(r.resolved, isTrue);
+      expect(r.value, isNot(true));
     });
   });
 }

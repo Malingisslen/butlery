@@ -1224,11 +1224,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     String snapId,
     CookSnapViewModel vm,
   ) async {
-    final confirmed = await CommonDialogActions.showDeleteConfirmation(
+    final confirmed = await CommonDialogActions.showCookSnapDeleteConfirmation(
       context: context,
-      itemName: '', // The dialog already says "Delete photo"; no identifier.
-      itemType: 'foto',
-      icon: ButleryIcons.image,
     );
     if (confirmed != true || !mounted) return;
 

@@ -225,7 +225,7 @@ void main() {
           expect(find.byType(AlertDialog), findsNothing);
           expect(find.text('M1'), findsNothing);
           expect(find.text('M2'), findsOneWidget);
-          expect(find.text('Meny "M1" borttagen'), findsOneWidget);
+          expect(find.text('Menyn ”M1” raderad'), findsOneWidget);
 
           await tester.pumpAndSettle();
           await tester.tap(find.text('Ångra'));

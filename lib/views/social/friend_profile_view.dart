@@ -12,7 +12,7 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/navigation_components.dart';
-import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -318,10 +318,11 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   }
 
   Future<void> _showRemoveFriendDialog(BuildContext context) async {
-    final shouldRemove = await DialogFactory.showDeleteConfirmation(
+    final shouldRemove = await DestructiveConfirmationDialog.show(
       context,
-      itemName: friend.displayName,
-      itemType: context.l10n.socialFriendFromList,
+      title: context.l10n.friendRemoveConfirmTitle(friend.displayName),
+      primaryActionText: context.l10n.friendProfileRemoveFriend,
+      primaryActionIcon: ButleryIcons.userMinus,
     );
 
     if (shouldRemove == true && context.mounted) {

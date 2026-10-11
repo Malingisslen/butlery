@@ -143,7 +143,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageAddImage => 'Lägg till bild';
 
   @override
-  String get commentDeletedUndoMessage => 'Kommentar borttagen';
+  String get commentDeletedUndoMessage => 'Kommentaren raderad';
 
   @override
   String get imageRemovedUndoMessage => 'Foto borttaget';
@@ -595,7 +595,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String confirmDeleteItem(String itemName) {
-    return 'Bekräftelse krävs — ta bort \"$itemName\"?';
+    return 'Bekräftelse krävs — ta bort ”$itemName”?';
   }
 
   @override
@@ -761,7 +761,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeEdit => 'Redigera recept';
 
   @override
-  String get recipeDelete => 'Ta bort recept';
+  String get recipeDelete => 'Radera receptet';
 
   @override
   String get recipeDeleting => 'Raderar receptet …';
@@ -855,11 +855,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get messagingDeleteConversationConfirm =>
-      'Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.';
+      'Alla meddelanden i konversationen försvinner.';
 
   @override
   String messagingConversationDeleted(String title) {
-    return 'Konversation \"$title\" raderad';
+    return 'Konversationen ”$title” raderad';
   }
 
   @override
@@ -962,7 +962,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatWriteYourMessage => 'Skriv ditt meddelande...';
 
   @override
-  String get chatCouldNotDeleteMessage => 'Kunde inte ta bort meddelandet';
+  String get chatCouldNotDeleteMessage => 'Kunde inte radera meddelandet';
 
   @override
   String get chatMessageCopied => 'Meddelande kopierat';
@@ -1062,7 +1062,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatCouldNotSharePhoto => 'Kunde inte dela foto';
 
   @override
-  String get chatDeleteMessage => 'Ta bort';
+  String get chatDeleteMessage => 'Radera meddelandet';
 
   @override
   String get chatDeleteMessageConfirm =>
@@ -1957,7 +1957,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get personalTagSectionTags => 'Taggar';
 
   @override
-  String get personalTagDeleteGroup => 'Ta bort grupp';
+  String get personalTagDeleteGroup => 'Radera gruppen';
 
   @override
   String get personalTagGroupEmpty => 'Inga taggar i denna grupp';
@@ -2006,7 +2006,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get personalTagMoveToGroup => 'Flytta till grupp';
 
   @override
-  String get personalTagDeleteTag => 'Ta bort tagg';
+  String get personalTagDeleteTag => 'Radera taggen';
 
   @override
   String get personalTagEnableAllRulesConfirm => 'Aktivera alla regler?';
@@ -2064,7 +2064,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get personalTagUpdated => 'Tagg uppdaterad';
 
   @override
-  String get personalTagDeleteTagConfirm => 'Ta bort tagg?';
+  String get personalTagDeleteTagConfirm => 'Radera taggen?';
 
   @override
   String personalTagDeleteTagMessageWithCount(String name, int count) {
@@ -2075,11 +2075,11 @@ class AppLocalizationsSv extends AppLocalizations {
       one: 'Den tas bort från 1 recept.',
       zero: 'Inga recept påverkas.',
     );
-    return 'Är du säker på att du vill ta bort \"$name\"? $_temp0';
+    return 'Vill du radera ”$name”? $_temp0';
   }
 
   @override
-  String get personalTagDeleted => 'Tagg borttagen';
+  String get personalTagDeleted => 'Taggen raderad';
 
   @override
   String get personalTagMergeAction => 'Slå ihop';
@@ -2125,8 +2125,8 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Ta bort $count taggar?',
-      one: 'Ta bort 1 tagg?',
+      other: 'Radera $count taggar?',
+      one: 'Radera 1 tagg?',
     );
     return '$_temp0';
   }
@@ -2147,8 +2147,8 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count taggar borttagna',
-      one: '1 tagg borttagen',
+      other: '$count taggar raderade',
+      one: '1 tagg raderad',
     );
     return '$_temp0';
   }
@@ -2173,15 +2173,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get personalTagGroupUpdated => 'Grupp uppdaterad';
 
   @override
-  String get personalTagDeleteGroupConfirm => 'Ta bort grupp?';
+  String get personalTagDeleteGroupConfirm => 'Radera gruppen?';
 
   @override
   String personalTagDeleteGroupMessage(String name) {
-    return 'Är du säker på att du vill ta bort \"$name\"? Taggar i gruppen blir ogrupperade.';
+    return 'Vill du radera ”$name”? Taggar i gruppen blir ogrupperade.';
   }
 
   @override
-  String get personalTagGroupDeleted => 'Grupp borttagen';
+  String get personalTagGroupDeleted => 'Gruppen raderad';
 
   @override
   String get personalTagSortByName => 'Namn';
@@ -2246,18 +2246,18 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte ändra regelstatus';
 
   @override
-  String get tagDetailDeleteRuleConfirm => 'Ta bort regel?';
+  String get tagDetailDeleteRuleConfirm => 'Radera regeln?';
 
   @override
   String tagDetailDeleteRuleMessage(String name) {
-    return 'Är du säker på att du vill ta bort \"$name\"?';
+    return 'Vill du radera ”$name”?';
   }
 
   @override
-  String get tagDetailRuleDeleted => 'Regel borttagen';
+  String get tagDetailRuleDeleted => 'Regeln raderad';
 
   @override
-  String get tagDetailCouldNotDeleteRule => 'Kunde inte ta bort regeln';
+  String get tagDetailCouldNotDeleteRule => 'Kunde inte radera regeln';
 
   @override
   String get tagDetailApplyingRules => 'Kör regler på recept...';
@@ -2274,13 +2274,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagDetailCouldNotApplyRules => 'Kunde inte köra regler';
 
   @override
-  String get tagDetailDeleteTagConfirm => 'Ta bort tagg?';
+  String get tagDetailDeleteTagConfirm => 'Radera taggen?';
 
   @override
-  String get tagDetailDeleted => 'Tagg borttagen';
+  String get tagDetailDeleted => 'Taggen raderad';
 
   @override
-  String get tagDetailCouldNotDelete => 'Kunde inte ta bort taggen';
+  String get tagDetailCouldNotDelete => 'Kunde inte radera taggen';
 
   @override
   String tagDetailRecipeCount(int count) {
@@ -2850,10 +2850,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingAllItemsRemovedFromMenu =>
-      'Du har tagit bort alla artiklar från menyn';
+      'Du har tagit bort alla varor från menyn';
 
   @override
-  String get shoppingRemoveItem => 'Ta bort artikel';
+  String get shoppingRemoveItem => 'Ta bort varan';
 
   @override
   String get shoppingRemoveAll => 'Ta bort alla';
@@ -2957,7 +2957,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileDeleteAccountSubtitle =>
-      'Ta bort ditt konto och all data permanent';
+      'Radera ditt konto och all data permanent';
 
   @override
   String get profileAccountDeletedPermanently =>
@@ -3687,7 +3687,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Är du säker på att du vill ta bort gruppen ';
 
   @override
-  String get groupDeleteTheGroup => 'Ta bort gruppen';
+  String get groupDeleteTheGroup => 'Radera gruppen';
 
   @override
   String get groupDeleteWarning => 'Alla medlemmar kommer att lämna gruppen.';
@@ -5344,7 +5344,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuDeletedSuccess(String name) {
-    return 'Meny \"$name\" borttagen';
+    return 'Menyn ”$name” raderad';
   }
 
   @override
@@ -5877,7 +5877,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupDeleted(String name) {
-    return 'Gruppen \"$name\" har tagits bort';
+    return 'Gruppen ”$name” är raderad';
   }
 
   @override
@@ -6811,7 +6811,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupDaysActive => 'Dagar aktiv';
 
   @override
-  String get groupDeleteGroup => 'Ta bort grupp';
+  String get groupDeleteGroup => 'Radera gruppen';
 
   @override
   String get groupViewMembers => 'Visa medlemmar';
@@ -7174,7 +7174,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupOwner => 'Ägare';
 
   @override
-  String get groupRemoveFromGroup => 'Ta bort från grupp';
+  String get groupRemoveFromGroup => 'Ta bort ur gruppen';
 
   @override
   String get groupRemoveMember => 'Ta bort medlem';
@@ -7418,7 +7418,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingCouldNotAddMembers => 'Kunde inte lägga till medlemmar';
 
   @override
-  String get shoppingCouldNotDeleteList => 'Kunde inte ta bort lista';
+  String get shoppingCouldNotDeleteList => 'Kunde inte radera listan';
 
   @override
   String get shoppingCouldNotLoadLists => 'Kunde inte ladda inköpslistor';
@@ -7450,7 +7450,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingCreator => 'Skapare';
 
   @override
-  String get shoppingDeleteList => 'Ta bort lista';
+  String get shoppingDeleteList => 'Radera listan';
 
   @override
   String get shoppingDescriptionHint => 'Lägg till en beskrivning...';
@@ -7673,12 +7673,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shoppingDeleteListConfirm(String name) {
-    return 'Vill du ta bort listan \"$name\"?';
+    return 'Vill du radera listan ”$name”?';
   }
 
   @override
   String shoppingDeleteListWithItemsConfirm(String name, int count) {
-    return 'Vill du ta bort listan \"$name\" med $count varor?';
+    return 'Vill du radera listan ”$name” med $count varor?';
   }
 
   @override
@@ -7708,7 +7708,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shoppingListDeleted(String name) {
-    return 'Listan \"$name\" borttagen';
+    return 'Listan ”$name” raderad';
   }
 
   @override
@@ -8196,7 +8196,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yEditComment => 'Redigera kommentar';
 
   @override
-  String get a11yDeleteComment => 'Ta bort kommentar';
+  String get a11yDeleteComment => 'Radera kommentaren';
 
   @override
   String get a11yReportComment => 'Anmäl kommentar';
@@ -9710,7 +9710,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorGroupNotFound => 'Gruppen hittades inte';
 
   @override
-  String get errorCouldNotDeleteGroup => 'Kunde inte ta bort gruppen';
+  String get errorCouldNotDeleteGroup => 'Kunde inte radera gruppen';
 
   @override
   String get errorCouldNotCreateRule => 'Kunde inte skapa regeln';
@@ -9964,7 +9964,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotLoadRecipes => 'Kunde inte ladda recept';
 
   @override
-  String get errorCouldNotDeleteRecipe => 'Kunde inte ta bort recept';
+  String get errorCouldNotDeleteRecipe => 'Kunde inte radera receptet';
 
   @override
   String get errorCouldNotValidateImage => 'Kunde inte validera bild';
@@ -10348,7 +10348,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotLogOut => 'Kunde inte logga ut';
 
   @override
-  String get errorCouldNotDeleteAccount => 'Kunde inte ta bort konto';
+  String get errorCouldNotDeleteAccount => 'Kunde inte radera kontot';
 
   @override
   String get errorCouldNotCompleteMfa => 'Kunde inte slutföra MFA-registrering';
@@ -12930,7 +12930,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cancelWithoutSaving => 'Avbryt utan att spara';
 
   @override
-  String get deleteActionIrreversible => 'Denna åtgärd kan inte ångras.';
+  String get deleteActionIrreversible => 'Det går inte att ångra.';
 
   @override
   String get deleteConfirmMessage => 'Vill du verkligen ta bort';
@@ -12980,7 +12980,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get commentDeleteError => 'Kunde inte ta bort kommentaren';
+  String get commentDeleteError => 'Kunde inte radera kommentaren';
 
   @override
   String get commentEditHint => 'Redigera din kommentar';
@@ -13210,7 +13210,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get bulkMoreActions => 'Fler åtgärder';
 
   @override
-  String get bulkDelete => 'Ta bort valda';
+  String get bulkDelete => 'Radera valda';
 
   @override
   String get bulkShare => 'Dela valda';
@@ -13252,7 +13252,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get bulkDeleteConfirmMessage =>
-      'De valda recepten kommer att tas bort.';
+      'De valda recepten flyttas till papperskorgen och ligger kvar där i 30 dagar.';
 
   @override
   String bulkDeleteSuccess(int count) {
@@ -13694,7 +13694,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11ySwipeEditAction => 'Redigera recept';
 
   @override
-  String get a11ySwipeDeleteAction => 'Ta bort recept';
+  String get a11ySwipeDeleteAction => 'Radera receptet';
 
   @override
   String a11yRecipeSelected(String title) {
@@ -13954,10 +13954,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapErrorUpload => 'Kunde inte ladda upp foto';
 
   @override
-  String get cookSnapErrorDelete => 'Kunde inte ta bort foto';
+  String get cookSnapErrorDelete => 'Kunde inte radera bilden';
 
   @override
-  String get cookSnapDelete => 'Ta bort foto';
+  String get cookSnapDelete => 'Radera bilden';
 
   @override
   String get cookSnapDeletedUndoMessage => 'Bilden raderas — ångra?';
@@ -17705,13 +17705,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryAddFailed => 'Kunde inte lägga till i skafferiet';
 
   @override
-  String get pantryRemoveItemFailed => 'Kunde inte ta bort objektet';
+  String get pantryRemoveItemFailed => 'Kunde inte ta bort varan';
 
   @override
   String get pantryRestoreItemFailed => 'Kunde inte återställa objektet';
 
   @override
-  String get pantryRemoveItemsFailed => 'Kunde inte ta bort objekten';
+  String get pantryRemoveItemsFailed => 'Kunde inte ta bort varorna';
 
   @override
   String get pantryRestoreItemsFailed => 'Kunde inte återställa objekten';
@@ -18578,7 +18578,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagDetailShareTag => 'Dela taggen';
 
   @override
-  String get tagDetailDeleteTagAction => 'Ta bort taggen';
+  String get tagDetailDeleteTagAction => 'Radera taggen';
 
   @override
   String get tagDetailRuleStateOn => 'På';
@@ -18596,8 +18596,102 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagDetailRuleDisable => 'Pausa regeln';
 
   @override
-  String get tagDetailRuleDeleteAction => 'Ta bort regeln';
+  String get tagDetailRuleDeleteAction => 'Radera regeln';
 
   @override
   String get consentTurnOffAllOptional => 'Stäng av alla valfria';
+
+  @override
+  String get recipeDeleteConfirmTitle => 'Radera receptet?';
+
+  @override
+  String bulkDeleteConfirmTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Radera $count recept?',
+      one: 'Radera 1 recept?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkDeleteConfirmAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Radera $count recept',
+      one: 'Radera receptet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commentDeleteConfirmTitle => 'Radera kommentaren?';
+
+  @override
+  String get commentDeleteConfirmAction => 'Radera kommentaren';
+
+  @override
+  String get cookSnapDeleteConfirmTitle => 'Radera bilden?';
+
+  @override
+  String get groupDeleteConfirmTitle => 'Radera gruppen?';
+
+  @override
+  String friendRemoveConfirmTitle(String name) {
+    return 'Ta bort $name som vän?';
+  }
+
+  @override
+  String messagingRemoveMemberConfirmTitle(String name) {
+    return 'Ta bort $name ur gruppen?';
+  }
+
+  @override
+  String get messagingRemoveMemberAction => 'Ta bort ur gruppen';
+
+  @override
+  String get messagingLeaveGroupTitle => 'Lämna gruppen?';
+
+  @override
+  String get messagingDeleteConversationTitle => 'Radera konversationen?';
+
+  @override
+  String get messagingDeleteConversationAction => 'Radera konversationen';
+
+  @override
+  String get chatDeleteMessageTitle => 'Radera meddelandet?';
+
+  @override
+  String personalTagBulkDeleteAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Radera $count taggar',
+      one: 'Radera taggen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupCancelInvitationTitle => 'Avbryta inbjudan?';
+
+  @override
+  String get groupCancelInvitationAction => 'Avbryt inbjudan';
+
+  @override
+  String get groupKeepInvitation => 'Behåll inbjudan';
+
+  @override
+  String get importHeirloomClearAction => 'Ta bort bilden';
+
+  @override
+  String get dataExportClearAction => 'Rensa exporten';
+
+  @override
+  String get shoppingDeleteListTitle => 'Radera listan?';
+
+  @override
+  String get ratingRemoveAction => 'Ta bort betyget';
 }

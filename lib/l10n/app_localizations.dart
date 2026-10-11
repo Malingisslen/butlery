@@ -365,7 +365,7 @@ abstract class AppLocalizations {
   /// BUT-943: snackbar shown after own-comment deletion; pairs with commonUndo action button. Mirrors imageRemovedUndoMessage pattern.
   ///
   /// In sv, this message translates to:
-  /// **'Kommentar borttagen'**
+  /// **'Kommentaren raderad'**
   String get commentDeletedUndoMessage;
 
   /// BUT-932: snackbar shown after image deletion; pairs with commonUndo action button.
@@ -971,7 +971,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDeleteItem.
   ///
   /// In sv, this message translates to:
-  /// **'Bekräftelse krävs — ta bort \"{itemName}\"?'**
+  /// **'Bekräftelse krävs — ta bort ”{itemName}”?'**
   String confirmDeleteItem(String itemName);
 
   /// No description provided for @confirmUnsavedChanges.
@@ -1259,7 +1259,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort recept'**
+  /// **'Radera receptet'**
   String get recipeDelete;
 
   /// No description provided for @recipeDeleting.
@@ -1427,13 +1427,13 @@ abstract class AppLocalizations {
   /// No description provided for @messagingDeleteConversationConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.'**
+  /// **'Alla meddelanden i konversationen försvinner.'**
   String get messagingDeleteConversationConfirm;
 
   /// No description provided for @messagingConversationDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Konversation \"{title}\" raderad'**
+  /// **'Konversationen ”{title}” raderad'**
   String messagingConversationDeleted(String title);
 
   /// No description provided for @messagingConfirmLeaveGroup.
@@ -1613,7 +1613,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatCouldNotDeleteMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort meddelandet'**
+  /// **'Kunde inte radera meddelandet'**
   String get chatCouldNotDeleteMessage;
 
   /// No description provided for @chatMessageCopied.
@@ -1799,7 +1799,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatDeleteMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort'**
+  /// **'Radera meddelandet'**
   String get chatDeleteMessage;
 
   /// No description provided for @chatDeleteMessageConfirm.
@@ -3251,7 +3251,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagDeleteGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort grupp'**
+  /// **'Radera gruppen'**
   String get personalTagDeleteGroup;
 
   /// No description provided for @personalTagGroupEmpty.
@@ -3317,7 +3317,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagDeleteTag.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort tagg'**
+  /// **'Radera taggen'**
   String get personalTagDeleteTag;
 
   /// No description provided for @personalTagEnableAllRulesConfirm.
@@ -3425,19 +3425,19 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagDeleteTagConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort tagg?'**
+  /// **'Radera taggen?'**
   String get personalTagDeleteTagConfirm;
 
   /// No description provided for @personalTagDeleteTagMessageWithCount.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill ta bort \"{name}\"? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}'**
+  /// **'Vill du radera ”{name}”? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}'**
   String personalTagDeleteTagMessageWithCount(String name, int count);
 
   /// No description provided for @personalTagDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Tagg borttagen'**
+  /// **'Taggen raderad'**
   String get personalTagDeleted;
 
   /// Tooltip for the merge action in the selection app-bar
@@ -3485,7 +3485,7 @@ abstract class AppLocalizations {
   /// Title of the bulk-delete confirmation dialog
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Ta bort 1 tagg?} other{Ta bort {count} taggar?}}'**
+  /// **'{count, plural, =1{Radera 1 tagg?} other{Radera {count} taggar?}}'**
   String personalTagBulkDeleteTitle(int count);
 
   /// Body of the bulk-delete confirmation dialog
@@ -3497,7 +3497,7 @@ abstract class AppLocalizations {
   /// Snackbar after a successful bulk delete
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 tagg borttagen} other{{count} taggar borttagna}}'**
+  /// **'{count, plural, =1{1 tagg raderad} other{{count} taggar raderade}}'**
   String personalTagBulkDeleted(int count);
 
   /// No description provided for @personalTagNoGroup.
@@ -3539,19 +3539,19 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagDeleteGroupConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort grupp?'**
+  /// **'Radera gruppen?'**
   String get personalTagDeleteGroupConfirm;
 
   /// No description provided for @personalTagDeleteGroupMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill ta bort \"{name}\"? Taggar i gruppen blir ogrupperade.'**
+  /// **'Vill du radera ”{name}”? Taggar i gruppen blir ogrupperade.'**
   String personalTagDeleteGroupMessage(String name);
 
   /// No description provided for @personalTagGroupDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Grupp borttagen'**
+  /// **'Gruppen raderad'**
   String get personalTagGroupDeleted;
 
   /// No description provided for @personalTagSortByName.
@@ -3670,25 +3670,25 @@ abstract class AppLocalizations {
   /// No description provided for @tagDetailDeleteRuleConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort regel?'**
+  /// **'Radera regeln?'**
   String get tagDetailDeleteRuleConfirm;
 
   /// No description provided for @tagDetailDeleteRuleMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill ta bort \"{name}\"?'**
+  /// **'Vill du radera ”{name}”?'**
   String tagDetailDeleteRuleMessage(String name);
 
   /// No description provided for @tagDetailRuleDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Regel borttagen'**
+  /// **'Regeln raderad'**
   String get tagDetailRuleDeleted;
 
   /// No description provided for @tagDetailCouldNotDeleteRule.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort regeln'**
+  /// **'Kunde inte radera regeln'**
   String get tagDetailCouldNotDeleteRule;
 
   /// No description provided for @tagDetailApplyingRules.
@@ -3718,19 +3718,19 @@ abstract class AppLocalizations {
   /// No description provided for @tagDetailDeleteTagConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort tagg?'**
+  /// **'Radera taggen?'**
   String get tagDetailDeleteTagConfirm;
 
   /// No description provided for @tagDetailDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Tagg borttagen'**
+  /// **'Taggen raderad'**
   String get tagDetailDeleted;
 
   /// No description provided for @tagDetailCouldNotDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort taggen'**
+  /// **'Kunde inte radera taggen'**
   String get tagDetailCouldNotDelete;
 
   /// No description provided for @tagDetailRecipeCount.
@@ -4630,13 +4630,13 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingAllItemsRemovedFromMenu.
   ///
   /// In sv, this message translates to:
-  /// **'Du har tagit bort alla artiklar från menyn'**
+  /// **'Du har tagit bort alla varor från menyn'**
   String get shoppingAllItemsRemovedFromMenu;
 
   /// No description provided for @shoppingRemoveItem.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort artikel'**
+  /// **'Ta bort varan'**
   String get shoppingRemoveItem;
 
   /// No description provided for @shoppingRemoveAll.
@@ -4822,7 +4822,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteAccountSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort ditt konto och all data permanent'**
+  /// **'Radera ditt konto och all data permanent'**
   String get profileDeleteAccountSubtitle;
 
   /// No description provided for @profileAccountDeletedPermanently.
@@ -6130,7 +6130,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupDeleteTheGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort gruppen'**
+  /// **'Radera gruppen'**
   String get groupDeleteTheGroup;
 
   /// No description provided for @groupDeleteWarning.
@@ -8878,7 +8878,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuDeletedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Meny \"{name}\" borttagen'**
+  /// **'Menyn ”{name}” raderad'**
   String menuDeletedSuccess(String name);
 
   /// No description provided for @menuDeleteFailed.
@@ -9814,7 +9814,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Gruppen \"{name}\" har tagits bort'**
+  /// **'Gruppen ”{name}” är raderad'**
   String groupDeleted(String name);
 
   /// No description provided for @groupInvitationSent.
@@ -11374,7 +11374,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupDeleteGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort grupp'**
+  /// **'Radera gruppen'**
   String get groupDeleteGroup;
 
   /// No description provided for @groupViewMembers.
@@ -11998,7 +11998,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupRemoveFromGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort från grupp'**
+  /// **'Ta bort ur gruppen'**
   String get groupRemoveFromGroup;
 
   /// No description provided for @groupRemoveMember.
@@ -12394,7 +12394,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingCouldNotDeleteList.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort lista'**
+  /// **'Kunde inte radera listan'**
   String get shoppingCouldNotDeleteList;
 
   /// No description provided for @shoppingCouldNotLoadLists.
@@ -12454,7 +12454,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingDeleteList.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort lista'**
+  /// **'Radera listan'**
   String get shoppingDeleteList;
 
   /// No description provided for @shoppingDescriptionHint.
@@ -12844,13 +12844,13 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingDeleteListConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du ta bort listan \"{name}\"?'**
+  /// **'Vill du radera listan ”{name}”?'**
   String shoppingDeleteListConfirm(String name);
 
   /// No description provided for @shoppingDeleteListWithItemsConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du ta bort listan \"{name}\" med {count} varor?'**
+  /// **'Vill du radera listan ”{name}” med {count} varor?'**
   String shoppingDeleteListWithItemsConfirm(String name, int count);
 
   /// No description provided for @shoppingErrorAdding.
@@ -12886,7 +12886,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Listan \"{name}\" borttagen'**
+  /// **'Listan ”{name}” raderad'**
   String shoppingListDeleted(String name);
 
   /// No description provided for @shoppingListRenamed.
@@ -13642,7 +13642,7 @@ abstract class AppLocalizations {
   /// No description provided for @a11yDeleteComment.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort kommentar'**
+  /// **'Radera kommentaren'**
   String get a11yDeleteComment;
 
   /// No description provided for @a11yReportComment.
@@ -16402,7 +16402,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotDeleteGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort gruppen'**
+  /// **'Kunde inte radera gruppen'**
   String get errorCouldNotDeleteGroup;
 
   /// No description provided for @errorCouldNotCreateRule.
@@ -16864,7 +16864,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotDeleteRecipe.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort recept'**
+  /// **'Kunde inte radera receptet'**
   String get errorCouldNotDeleteRecipe;
 
   /// No description provided for @errorCouldNotValidateImage.
@@ -17506,7 +17506,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotDeleteAccount.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort konto'**
+  /// **'Kunde inte radera kontot'**
   String get errorCouldNotDeleteAccount;
 
   /// No description provided for @errorCouldNotCompleteMfa.
@@ -21512,7 +21512,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteActionIrreversible.
   ///
   /// In sv, this message translates to:
-  /// **'Denna åtgärd kan inte ångras.'**
+  /// **'Det går inte att ångra.'**
   String get deleteActionIrreversible;
 
   /// No description provided for @deleteConfirmMessage.
@@ -21584,7 +21584,7 @@ abstract class AppLocalizations {
   /// No description provided for @commentDeleteError.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort kommentaren'**
+  /// **'Kunde inte radera kommentaren'**
   String get commentDeleteError;
 
   /// No description provided for @commentEditHint.
@@ -21986,7 +21986,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort valda'**
+  /// **'Radera valda'**
   String get bulkDelete;
 
   /// No description provided for @bulkShare.
@@ -22058,7 +22058,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkDeleteConfirmMessage.
   ///
   /// In sv, this message translates to:
-  /// **'De valda recepten kommer att tas bort.'**
+  /// **'De valda recepten flyttas till papperskorgen och ligger kvar där i 30 dagar.'**
   String get bulkDeleteConfirmMessage;
 
   /// No description provided for @bulkDeleteSuccess.
@@ -22850,7 +22850,7 @@ abstract class AppLocalizations {
   /// No description provided for @a11ySwipeDeleteAction.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort recept'**
+  /// **'Radera receptet'**
   String get a11ySwipeDeleteAction;
 
   /// No description provided for @a11yRecipeSelected.
@@ -23300,13 +23300,13 @@ abstract class AppLocalizations {
   /// No description provided for @cookSnapErrorDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort foto'**
+  /// **'Kunde inte radera bilden'**
   String get cookSnapErrorDelete;
 
   /// No description provided for @cookSnapDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort foto'**
+  /// **'Radera bilden'**
   String get cookSnapDelete;
 
   /// Snackbar message shown for 7s after the user confirms cook-snap delete (BUT-937). Undo button cancels the delete; timeout commits it.
@@ -29101,7 +29101,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort objektet'**
+  /// **'Kunde inte ta bort varan'**
   String get pantryRemoveItemFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
@@ -29113,7 +29113,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort objekten'**
+  /// **'Kunde inte ta bort varorna'**
   String get pantryRemoveItemsFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
@@ -30463,7 +30463,7 @@ abstract class AppLocalizations {
   /// Danger row in the menu of the tag page
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort taggen'**
+  /// **'Radera taggen'**
   String get tagDetailDeleteTagAction;
 
   /// Value of a rule row when the rule is enabled
@@ -30499,7 +30499,7 @@ abstract class AppLocalizations {
   /// Danger row in the rule sheet
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort regeln'**
+  /// **'Radera regeln'**
   String get tagDetailRuleDeleteAction;
 
   /// Danger row on the consent page that revokes every optional consent after a confirmation
@@ -30507,6 +30507,138 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stäng av alla valfria'**
   String get consentTurnOffAllOptional;
+
+  /// BUT-2366: title of the recipe delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera receptet?'**
+  String get recipeDeleteConfirmTitle;
+
+  /// BUT-2366: title of the multi-select recipe delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Radera 1 recept?} other{Radera {count} recept?}}'**
+  String bulkDeleteConfirmTitle(int count);
+
+  /// BUT-2366: red button of the multi-select recipe delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Radera receptet} other{Radera {count} recept}}'**
+  String bulkDeleteConfirmAction(int count);
+
+  /// BUT-2366: title of the comment delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera kommentaren?'**
+  String get commentDeleteConfirmTitle;
+
+  /// BUT-2366: red button of the comment delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera kommentaren'**
+  String get commentDeleteConfirmAction;
+
+  /// BUT-2366: title of the cook-snap delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera bilden?'**
+  String get cookSnapDeleteConfirmTitle;
+
+  /// BUT-2366: title of the group delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera gruppen?'**
+  String get groupDeleteConfirmTitle;
+
+  /// BUT-2366: title of the remove-friend confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name} som vän?'**
+  String friendRemoveConfirmTitle(String name);
+
+  /// BUT-2366: title of the remove-member confirmation in a group chat
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name} ur gruppen?'**
+  String messagingRemoveMemberConfirmTitle(String name);
+
+  /// BUT-2366: red button of the remove-member confirmation in a group chat
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort ur gruppen'**
+  String get messagingRemoveMemberAction;
+
+  /// BUT-2366: title of the leave-group-chat confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna gruppen?'**
+  String get messagingLeaveGroupTitle;
+
+  /// BUT-2366: title of the delete-conversation confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera konversationen?'**
+  String get messagingDeleteConversationTitle;
+
+  /// BUT-2366: red button of the delete-conversation confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera konversationen'**
+  String get messagingDeleteConversationAction;
+
+  /// BUT-2366: title of the delete-message confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera meddelandet?'**
+  String get chatDeleteMessageTitle;
+
+  /// BUT-2366: red button of the bulk tag delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Radera taggen} other{Radera {count} taggar}}'**
+  String personalTagBulkDeleteAction(int count);
+
+  /// BUT-2366: title of the cancel-group-invitation confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryta inbjudan?'**
+  String get groupCancelInvitationTitle;
+
+  /// BUT-2366: red button of the cancel-group-invitation confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt inbjudan'**
+  String get groupCancelInvitationAction;
+
+  /// BUT-2366: the keep side of the cancel-group-invitation confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll inbjudan'**
+  String get groupKeepInvitation;
+
+  /// BUT-2366: red button when removing a photo also clears the heirloom details
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort bilden'**
+  String get importHeirloomClearAction;
+
+  /// BUT-2366: red button of the clear-export confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa exporten'**
+  String get dataExportClearAction;
+
+  /// BUT-2366: title of the shopping list delete confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera listan?'**
+  String get shoppingDeleteListTitle;
+
+  /// BUT-2366: red button of the remove-rating confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort betyget'**
+  String get ratingRemoveAction;
 }
 
 class _AppLocalizationsDelegate

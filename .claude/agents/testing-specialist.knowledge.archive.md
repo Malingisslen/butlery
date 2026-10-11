@@ -40271,3 +40271,6 @@ SettingsHubView, AboutButleryView, LanguageTile, AutoAddPantryTile, ProfileMenu 
 - Clear-on-cancel: assert the count returns to the ORIGINAL, not zero. Copy-paste id-field mismatches
   are invisible unless a fixture makes the fields DIFFER.
 ```
+
+### 2026-10-11 — BUT-2366 destructive dialog tests [trigger: widgets-ui finder]
+Writing common_dialog_actions_test / dialog_factory_test / destructive_confirmation_dialog_test: old `widgetWithText(FilledButton, ...)` and `(TextButton, ...)` finders stop matching once the primary is `FilledButton.icon` (exact-type match); fixed with `find.bySubtype<FilledButton>()` under `find.ancestor`. Cancel on BaseDialog pops null (the old ActionConfirmation popped false), so tests assert `isNot(true)`. A RichText message needs `findRichText: true`.
