@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/services/nutrition/nutrition_table.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -69,7 +70,7 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: const BoxConstraints(maxWidth: Breakpoints.mobileLarge),
         child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.viewInsetsOf(context).bottom,

@@ -13522,6 +13522,20 @@
   "pantryRestorePreviousAction": "Restore",
   "pantryPreviousRestored": "Previous version restored",
   "pantryRestorePreviousFailed": "Couldn't restore the previous version",
+  "whatsNewTitle": "What's new",
+  "whatsNewDone": "Got it",
+  "whatsNewAboutTitle": "What's new",
+  "whatsNewVersionRange": "Version {from}–{to}",
+  "@whatsNewVersionRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "setNewPasswordTitle": "Choose a new password",
   "setNewPasswordChecking": "Checking the link …",
   "setNewPasswordForAccount": "For the account {email}.",

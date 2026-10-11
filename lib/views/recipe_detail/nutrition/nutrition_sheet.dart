@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/services/nutrition/nutrient_values.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -77,7 +78,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: const BoxConstraints(maxWidth: Breakpoints.mobileLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -290,10 +291,7 @@ class _NutrientRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final style = subItem
         ? AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant)
-        : AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurface,
-            fontWeight: FontWeight.w600,
-          );
+        : AppTextStyles.labelLarge.copyWith(color: cs.onSurface);
     return Semantics(
       container: true,
       label: '$label $spoken',

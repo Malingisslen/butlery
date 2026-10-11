@@ -17831,6 +17831,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t restore the previous version';
 
   @override
+  String get whatsNewTitle => 'What\'s new';
+
+  @override
+  String get whatsNewDone => 'Got it';
+
+  @override
+  String get whatsNewAboutTitle => 'What\'s new';
+
+  @override
+  String whatsNewVersionRange(String from, String to) {
+    return 'Version $from–$to';
+  }
+
+  @override
   String get setNewPasswordTitle => 'Choose a new password';
 
   @override

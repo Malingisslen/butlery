@@ -6,12 +6,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_sheet.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_strip.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// The recipe detail's nutrition entry points: the optional strip and the
 /// always-present "Näringsvärden" button. Follows the portion scaler through
@@ -75,7 +73,6 @@ class _RecipeNutritionSectionState extends State<RecipeNutritionSection> {
     return ListenableBuilder(
       listenable: Listenable.merge([_vm, _userService]),
       builder: (context, _) {
-        final cs = Theme.of(context).colorScheme;
         final showStrip =
             _userService.currentUserProfile?.showNutritionStrip ?? false;
         return Column(
@@ -84,23 +81,9 @@ class _RecipeNutritionSectionState extends State<RecipeNutritionSection> {
             if (showStrip) NutritionStrip(viewModel: _vm),
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
-              // Same pill as "Lägg till foto" in the metadata row above it.
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, AppDimensions.minTouchTarget),
-                  shape: const StadiumBorder(),
-                  side: BorderSide(color: cs.outlineVariant),
-                  foregroundColor: cs.onSurface,
-                  textStyle: AppTextStyles.labelMedium,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                  ),
-                ),
-                icon: const ButleryIcon(
-                  ButleryIcons.barChart,
-                  size: AppDimensions.iconSizeS,
-                ),
-                label: Text(context.l10n.nutritionButton),
+              child: ActionButtons.outlinedButton(
+                context,
+                label: context.l10n.nutritionButton,
                 onPressed: () => showNutritionSheet(context, viewModel: _vm),
               ),
             ),
