@@ -8,6 +8,14 @@ abstract class AuthRepository {
   /// Create new user account.
   Future<UserCredential> createUser(String email, String password);
 
+  /// Signs in as a guest: a Firebase anonymous account.
+  Future<UserCredential> signInAnonymously();
+
+  /// Adds an e-mail and password to the signed-in guest. The uid stays the
+  /// same, so everything the guest saved stays theirs, and
+  /// [authStateChanges] does not fire.
+  Future<UserCredential> linkEmailPassword(String email, String password);
+
   /// Update user display name.
   Future<void> updateDisplayName(User user, String displayName);
 

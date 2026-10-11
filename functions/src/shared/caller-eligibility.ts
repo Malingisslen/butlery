@@ -61,12 +61,17 @@ export function assertAgeCompliant(auth: CallerAuth | undefined): void {
  * refused even if it ever held the claim.
  */
 export function assertNotGuest(auth: CallerAuth | undefined): void {
-  if (auth?.token?.firebase?.sign_in_provider === "anonymous") {
+  if (isGuestCaller(auth)) {
     throw new HttpsError(
       "permission-denied",
       "guest-not-allowed",
     );
   }
+}
+
+/** BUT-920: the guest test behind assertNotGuest, for callers that branch on it. */
+export function isGuestCaller(auth: CallerAuth | undefined): boolean {
+  return auth?.token?.firebase?.sign_in_provider === "anonymous";
 }
 
 /**

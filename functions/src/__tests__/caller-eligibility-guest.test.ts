@@ -17,6 +17,8 @@ import {
   assertAgeCompliant,
   CallerAuth,
 } from "../shared/caller-eligibility";
+import { joinGroupHousehold } from "../family/join-group-household";
+import * as rateLimiter from "../middleware/rate_limiter";
 
 /**
  * Source with comments removed, so a commented-out call is not counted. Naive
@@ -24,6 +26,35 @@ import {
  */
 function stripComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+}
+
+/**
+ * Runs joinGroupHousehold's callable body with `enforceRateLimit` swapped for a
+ * recorder that throws, so a caller that got past the eligibility gate shows up
+ * as the sentinel and never reaches Firestore.
+ */
+async function runJoin(auth: CallerAuth): Promise<{
+  err: { code?: string; message?: string } | null;
+  limiterCalls: number;
+}> {
+  const mutable = rateLimiter as { enforceRateLimit: unknown };
+  const real = mutable.enforceRateLimit;
+  let limiterCalls = 0;
+  mutable.enforceRateLimit = async () => {
+    limiterCalls++;
+    throw new Error("sentinel: reached the rate limiter");
+  };
+  try {
+    await joinGroupHousehold.run({
+      auth,
+      data: { ownerId: "owner", groupId: "group" },
+    } as unknown as Parameters<typeof joinGroupHousehold.run>[0]);
+    return { err: null, limiterCalls };
+  } catch (err) {
+    return { err: err as { code?: string; message?: string }, limiterCalls };
+  } finally {
+    mutable.enforceRateLimit = real;
+  }
 }
 
 function refusal(fn: () => void): { code?: string; message?: string } | null {
@@ -93,12 +124,33 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // Both callables build a module-level `admin.firestore()` and cannot be
+    name: "joinGroupHousehold refuses a guest holding ageCompliant:true before the rate limiter",
+    fn: async () => {
+      const { err, limiterCalls } = await runJoin(anonymousWithClaim);
+      assertEqual(err?.code, "permission-denied", "code");
+      assertEqual(err?.message, "guest-not-allowed", "message");
+      assertEqual(limiterCalls, 0, "limiter calls");
+    },
+  },
+  {
+    name: "control: joinGroupHousehold lets a password caller with the claim through to the rate limiter",
+    fn: async () => {
+      const { err, limiterCalls } = await runJoin(passwordWithClaim);
+      assertEqual(err?.message, "sentinel: reached the rate limiter", "message");
+      assertEqual(limiterCalls, 1, "limiter calls");
+    },
+  },
+  {
+    // These callables build a module-level `admin.firestore()` and cannot be
     // imported without an app, so the call site is pinned on source: present,
     // and ahead of the first read of the request payload.
-    name: "acceptFriendRequest and acceptGroupInvitation call assertNotGuest before reading request.data",
+    name: "acceptFriendRequest, acceptGroupInvitation and setProfileSearchability call assertNotGuest before reading request.data",
     fn: () => {
-      for (const file of ["accept-friend-request.ts", "accept-group-invitation.ts"]) {
+      for (const file of [
+        "accept-friend-request.ts",
+        "accept-group-invitation.ts",
+        "set-profile-searchability.ts",
+      ]) {
         const src = stripComments(
           fs.readFileSync(path.resolve(__dirname, "..", "social", file), "utf8"),
         );

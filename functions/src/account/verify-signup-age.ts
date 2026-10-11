@@ -43,6 +43,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 import { enforceRateLimit } from "../middleware/rate_limiter";
+import { isGuestCaller } from "../shared/caller-eligibility";
 
 const db = admin.firestore();
 
@@ -70,8 +71,8 @@ export interface VerifySignupAgeRequest {
 }
 
 export interface VerifySignupAgeResponse {
-  /** True when the caller is ≥15 and the `ageCompliant` claim was set. When
-   *  false, the caller's Auth account has been deleted server-side. */
+  /** True when the caller is ≥15. When false, the caller's Auth account has
+   *  been deleted server-side. */
   compliant: boolean;
   /** BUT-1454: true when the caller is a compliant 15–17-year-old. Threaded
    *  back to the onboarding client so it can stamp the profile as a minor at
@@ -79,6 +80,15 @@ export interface VerifySignupAgeResponse {
    *  (default-private search-suppression) without waiting for the private
    *  settings doc to be re-read. Always false on the rejected (deleted) path. */
   isMinor: boolean;
+}
+
+export function isValidBirthYear(birthYear: unknown): birthYear is number {
+  return (
+    typeof birthYear === "number" &&
+    Number.isInteger(birthYear) &&
+    birthYear >= MIN_PLAUSIBLE_BIRTH_YEAR &&
+    birthYear <= new Date().getFullYear()
+  );
 }
 
 /**
@@ -124,13 +134,7 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
     // Validate input before any work. A non-int / out-of-range year is a
     // client bug or an attack — reject loudly, write nothing.
     const birthYear = request.data?.birthYear;
-    const currentYear = new Date().getFullYear();
-    if (
-      typeof birthYear !== "number" ||
-      !Number.isInteger(birthYear) ||
-      birthYear < MIN_PLAUSIBLE_BIRTH_YEAR ||
-      birthYear > currentYear
-    ) {
+    if (!isValidBirthYear(birthYear)) {
       throw new HttpsError(
         "invalid-argument",
         "A valid birth year is required.",
@@ -153,6 +157,7 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
       { db, auth: admin.auth() },
       uid,
       birthYear,
+      { guest: isGuestCaller(request.auth) },
     );
   },
 );
@@ -160,6 +165,12 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
 export interface VerifySignupAgeDeps {
   db: admin.firestore.Firestore;
   auth: admin.auth.Auth;
+}
+
+/** Required rather than defaulted: a caller that forgot it would hand a guest
+ *  the claim. */
+export interface VerifySignupAgeMode {
+  guest: boolean;
 }
 
 /**
@@ -171,6 +182,7 @@ export async function runVerifySignupAgeWithDeps(
   deps: VerifySignupAgeDeps,
   uid: string,
   birthYear: number,
+  mode: VerifySignupAgeMode,
 ): Promise<VerifySignupAgeResponse> {
   const { db: database, auth } = deps;
   const currentYear = new Date().getFullYear();
@@ -209,6 +221,19 @@ export async function runVerifySignupAgeWithDeps(
     return { compliant: false, isMinor: false };
   }
 
+  if (mode.guest) {
+    // BUT-920 panel condition: a guest gets the age test and the artefacts but
+    // not the claim, which waits for finishGuestUpgrade. Every path gated on
+    // the claim then stays closed to a guest with no list of exceptions. This
+    // branch returns above the retry branch, so a guest's retry never reaches
+    // a claim write either.
+    await writeComplianceArtifacts(database, uid, birthYear, isMinor);
+    logger.info("[verifySignupAge] admitted ≥15 guest, claim deferred", {
+      uid_prefix: hashUid(uid),
+    });
+    return { compliant: true, isMinor };
+  }
+
   // Idempotency: if the claim is already set, this is a retry.
   const user = await auth.getUser(uid);
   const existingClaims = user.customClaims ?? {};
@@ -240,9 +265,8 @@ export async function runVerifySignupAgeWithDeps(
 }
 
 /**
- * Idempotent compliance artifacts written after the gate claim is set: the
- * dual-located `birthYear` and the consent-audit row. Safe to re-run on a
- * retry (BUT-1435) — both birthYear writes are merge-sets, and the audit uses a
+ * Idempotent compliance artifacts: the dual-located `birthYear` and the
+ * consent-audit row. Safe to re-run on a retry (BUT-1435) — both birthYear writes are merge-sets, and the audit uses a
  * deterministic doc id (set+merge), so re-running never clobbers sibling fields
  * or duplicates the audit row.
  *
@@ -291,11 +315,13 @@ async function writeComplianceArtifacts(
 export async function runVerifySignupAge(
   uid: string,
   birthYear: number,
+  mode: VerifySignupAgeMode,
 ): Promise<VerifySignupAgeResponse> {
   return runVerifySignupAgeWithDeps(
     { db, auth: admin.auth() },
     uid,
     birthYear,
+    mode,
   );
 }
 
@@ -313,21 +339,31 @@ export async function runVerifySignupAge(
  * re-asserts artifacts overwrites in place rather than appending a duplicate.
  * The purge job matches by operation membership + timestamp, not by id, so
  * retention is unaffected.
+ *
+ * BUT-920: `event: "guest_upgrade"` records the check finishGuestUpgrade runs,
+ * in a row of its own. The
+ * operation stays `consent_age_verification`, which keeps the row in the
+ * consent retention bucket.
  */
-async function writeComplianceAudit(
+export async function writeComplianceAudit(
   database: admin.firestore.Firestore,
   uid: string,
   birthYear: number,
+  event?: "guest_upgrade",
 ): Promise<void> {
+  const id = event
+    ? `consent_guest_upgrade_${hashUid(uid)}`
+    : `consent_age_verification_${hashUid(uid)}`;
   await database
     .collection("audit_logs")
-    .doc(`consent_age_verification_${hashUid(uid)}`)
+    .doc(id)
     .set(
       {
         operation: "consent_age_verification",
         userIdHash: hashUid(uid),
         isAgeCompliant: true,
         birthDecade: birthDecade(birthYear),
+        ...(event ? { event } : {}),
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true },

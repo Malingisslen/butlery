@@ -39,6 +39,10 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
+import 'package:butlery/services/auth/guest_auth_service.dart';
+import 'package:butlery/services/guest/guest_start_coordinator.dart';
+import 'package:butlery/services/onboarding/starter_recipe_seeder.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -116,6 +120,8 @@ class CoreModule implements DIModule {
       AccountDeletionService,
       PendingRetentionNoticeStore,
       AgeVerificationService,
+      GuestAuthService,
+      GuestStartCoordinator,
       ProfileSearchabilityService,
       DataExportService,
       ConsentService,
@@ -338,6 +344,34 @@ class CoreModule implements DIModule {
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         );
       });
+
+      // BUT-920: guest sign-in and upgrade, and the guest start that runs
+      // across the sign-in swapping the screen tree. The seeder resolves the
+      // user-scoped recipe service only when it runs, after the sign-in has
+      // pushed that scope.
+      container.registerLazySingleton<GuestAuthService>(
+        () => GuestAuthService(
+          authRepository: container<AuthRepository>(),
+          authService: container<AuthService>(),
+          analyticsService: container<AnalyticsService>(),
+        ),
+      );
+      container.registerLazySingleton<GuestStartCoordinator>(
+        () => GuestStartCoordinator(
+          guestAuth: () => container<GuestAuthService>(),
+          authService: container<AuthService>(),
+          ageVerification: () => container<AgeVerificationService>(),
+          eraseGuest: () async {
+            final result = await container<AccountDeletionService>()
+                .deleteUserAccount(reason: 'guest_start_failed');
+            return result['cfCompleted'] == true;
+          },
+          seedStarterRecipes: (uid) => StarterRecipeSeeder(
+            recipeService: GetIt.instance<UnifiedRecipeService>(),
+            analytics: container<AnalyticsService>(),
+          ).seed(uid: uid),
+        ),
+      );
 
       // BUT-1629: wrapper for the `setProfileSearchability` callable — the one
       // server-side path a minor can use to opt into people-search (the rules

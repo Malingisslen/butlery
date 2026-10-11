@@ -179,6 +179,34 @@ void main() {
     expect(llm.backendBreakerForTest.allowRequest(), isTrue);
   });
 
+  test('the per-call guest limit tells the session and opens no circuit '
+      'breaker', () async {
+    functions.error = FirebaseFunctionsException(
+      code: 'resource-exhausted',
+      message: 'guest-call-limit',
+      details: const {'reason': 'guest-call-limit'},
+    );
+    final llm = service();
+    var hits = 0;
+    session.limitHits.addListener(() => hits++);
+
+    for (var i = 0; i < 5; i++) {
+      await expectLater(
+        llm.structureRecipe(text: 'Pannkakor'),
+        throwsA(
+          isA<LlmException>().having(
+            (e) => e.code,
+            'code',
+            LlmException.guestCallLimitCode,
+          ),
+        ),
+      );
+    }
+
+    expect(hits, 5);
+    expect(llm.backendBreakerForTest.allowRequest(), isTrue);
+  });
+
   test(
     'the capacity answer does not open the circuit breaker either',
     () async {

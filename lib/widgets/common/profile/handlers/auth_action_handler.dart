@@ -13,6 +13,7 @@ import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/deletion_schedule_dialogs.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/guest/guest_erasure.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Handler for authentication-related actions (logout, delete account).
@@ -49,6 +50,14 @@ class AuthActionHandler {
   /// user picks the destructive choice; an ordinary sign-out leaves it on the
   /// device, where it syncs at this account's next sign-in.
   static Future<void> handleLogout(BuildContext context) async {
+    // A guest cannot sign back in, so signing out erases the guest at once
+    // (BUT-920). Only for an anonymous user; nobody else takes this path.
+    if (ServiceLocator.tryGet<AuthService>()?.currentUser?.isAnonymous ??
+        false) {
+      await _handleGuestLogout(context);
+      return;
+    }
+
     final guard = guardFactory();
     final pending = await guard.pendingForCurrentUser();
     if (!context.mounted) return;
@@ -84,6 +93,40 @@ class AuthActionHandler {
     }
   }
 
+  /// Nothing the guest saved can be reached after this, so the queue guard
+  /// does not apply: the queue goes with the account.
+  static Future<void> _handleGuestLogout(BuildContext context) {
+    final l10n = context.l10n;
+    return _eraseGuest(
+      context,
+      title: l10n.guestLogoutTitle,
+      confirmLabel: l10n.guestLogoutConfirm,
+      reason: 'guest_sign_out',
+    );
+  }
+
+  static Future<void> _eraseGuest(
+    BuildContext context, {
+    required String title,
+    required String confirmLabel,
+    required String reason,
+  }) async {
+    final confirmed = await GuestErasure.confirm(
+      context,
+      title: title,
+      body: context.l10n.guestLogoutBody,
+      confirmLabel: confirmLabel,
+    );
+    if (!confirmed || !context.mounted) return;
+    final erased = await GuestErasure.eraseAndSignOut(context, reason: reason);
+    if (erased && context.mounted) {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pushNamedAndRemoveUntil('/auth', (route) => false);
+    }
+  }
+
   /// Perform the actual logout.
   static Future<void> _performLogout(BuildContext context) async {
     try {
@@ -113,6 +156,20 @@ class AuthActionHandler {
   /// by the server when the grace period ends, and signing in before then
   /// offers an undo.
   static Future<void> handleDeleteAccount(BuildContext context) async {
+    // A guest has no password to confirm with, so the account is erased at
+    // once, as signing out as a guest does (BUT-920).
+    if (ServiceLocator.tryGet<AuthService>()?.currentUser?.isAnonymous ??
+        false) {
+      final l10n = context.l10n;
+      await _eraseGuest(
+        context,
+        title: l10n.guestDeleteTitle,
+        confirmLabel: l10n.guestDeleteConfirm,
+        reason: 'guest_account_delete',
+      );
+      return;
+    }
+
     // The Art. 12(4) notice can no longer be shown after the erasure, because
     // the server runs it days later with nobody signed in. `unknown` is
     // silent, because a failed read must not surface
