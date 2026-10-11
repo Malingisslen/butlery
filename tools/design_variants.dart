@@ -43,6 +43,13 @@ const variantSpecs = <VariantSpec>[
         'outside lib/widgets/common/buttons/',
   ),
   VariantSpec(
+    'raw_dialog_cancel',
+    'BUT-2367',
+    0,
+    'TextButton( labelled with the commonCancel text, outside '
+        'lib/widgets/common/dialogs/, instead of DialogCancelButton',
+  ),
+  VariantSpec(
     'raw_snackbars',
     'BUT-2371',
     0,
@@ -147,6 +154,7 @@ final _errorColour = RegExp(
   r'\b(?:colorScheme|cs|scheme|colors|theme\.colorScheme)\.error\b'
   r'|\bAppColors\.error\b',
 );
+final _cancelLabel = RegExp(r'^Text\(\s*\w+(?:\.l10n)?\.commonCancel\b');
 final _numberLiteral = RegExp(r'(?<![\w.$])(?:\d+\.?\d*|\.\d+)(?![\w.])');
 final _edgeInsetsCall = RegExp(
   r'(?<![\w.$])EdgeInsets(?:Directional)?\.(?:all|symmetric|only|fromLTRB|fromSTEB)\s*\(',
@@ -200,6 +208,14 @@ countVariants(CensusSource src) {
           r'\b(?:Filled|Elevated|Outlined)Button\.styleFrom\(',
         ).allMatches(code).length,
       );
+    }
+    if (!path.startsWith('lib/widgets/common/dialogs/')) {
+      for (final args in callArguments(code, 'TextButton')) {
+        final child = namedArgument(args, 'child');
+        if (child != null && _cancelLabel.hasMatch(child)) {
+          add('raw_dialog_cancel', path);
+        }
+      }
     }
     if (path != _photoViewer) {
       add(

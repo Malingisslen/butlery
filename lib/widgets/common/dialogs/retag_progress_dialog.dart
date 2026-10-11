@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -128,14 +129,12 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
             child: Text(context.l10n.commonClose),
           )
         else
-          TextButton(
-            onPressed: _isRunning
-                ? () {
-                    setState(() => _cancelled = true);
-                    Navigator.of(context).pop();
-                  }
-                : null,
-            child: Text(context.l10n.commonCancel),
+          DialogCancelButton(
+            enabled: _isRunning,
+            onPressed: () {
+              setState(() => _cancelled = true);
+              Navigator.of(context).pop();
+            },
           ),
       ],
     );

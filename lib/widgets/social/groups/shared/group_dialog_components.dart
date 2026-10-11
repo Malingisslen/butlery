@@ -267,8 +267,6 @@ class DialogFooter extends StatelessWidget {
   final VoidCallback onSecondaryAction;
   final bool isLoading;
   final IconData primaryActionIcon;
-  final Color? primaryActionColor;
-  final Color? primaryActionForegroundColor;
 
   const DialogFooter({
     super.key,
@@ -278,8 +276,6 @@ class DialogFooter extends StatelessWidget {
     required this.onSecondaryAction,
     required this.isLoading,
     required this.primaryActionIcon,
-    this.primaryActionColor,
-    this.primaryActionForegroundColor,
   });
 
   @override
@@ -309,30 +305,16 @@ class DialogFooter extends StatelessWidget {
             child: BusyButtonSemantics(
               busy: isLoading,
               name: primaryActionText,
-              child: Builder(
-                builder: (context) {
-                  final ButtonStyle? own = primaryActionColor != null
-                      ? FilledButton.styleFrom(
-                          backgroundColor: primaryActionColor,
-                          foregroundColor:
-                              primaryActionForegroundColor ??
-                              Theme.of(context).colorScheme.onPrimary,
-                        )
-                      : null;
-                  return FilledButton.icon(
-                    onPressed: isLoading
-                        ? PlateLineButton.ignore
-                        : onPrimaryAction,
-                    style: isLoading
-                        ? PlateLineButton.busyStyle(
-                            own,
-                            Theme.of(context).filledButtonTheme.style,
-                          )
-                        : own,
-                    icon: ButleryIcon(primaryActionIcon),
-                    label: Text(primaryActionText),
-                  );
-                },
+              child: FilledButton.icon(
+                onPressed: isLoading ? PlateLineButton.ignore : onPrimaryAction,
+                style: isLoading
+                    ? PlateLineButton.busyStyle(
+                        null,
+                        Theme.of(context).filledButtonTheme.style,
+                      )
+                    : null,
+                icon: ButleryIcon(primaryActionIcon),
+                label: Text(primaryActionText),
               ),
             ),
           ),

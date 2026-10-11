@@ -496,6 +496,29 @@ class ButtonThemes {
         ),
       );
 
+  /// A filled button on surface.ink (the Hem hero band, an ink overlay):
+  /// paper behind ink text, the ink primary turned inside out.
+  static ButtonStyle onInkButtonStyle(ColorScheme cs) =>
+      ElevatedButton.styleFrom(
+        backgroundColor: cs.onPrimary,
+        foregroundColor: cs.primary,
+        disabledBackgroundColor: AppModeColors.surfaceDisabled(cs.brightness),
+        disabledForegroundColor: _filledDisabledForeground(cs),
+        elevation: 0,
+      );
+
+  /// An outlined button on surface.ink: paper text and a paper outline at
+  /// 35 %, as the Hem hero band drew its second action.
+  static ButtonStyle outlinedOnInkButtonStyle(ColorScheme cs) =>
+      OutlinedButton.styleFrom(
+        foregroundColor: cs.onPrimary,
+        backgroundColor: Colors.transparent,
+        side: BorderSide(
+          color: cs.onPrimary.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+      );
+
   /// Delete button style
   static ButtonStyle deleteButtonStyle(ColorScheme cs) =>
       OutlinedButton.styleFrom(

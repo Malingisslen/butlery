@@ -38,6 +38,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:intl/intl.dart';
 
@@ -326,18 +327,12 @@ class HemTonightCard extends StatelessWidget {
                     minimumSize: const Size(0, AppDimensions.minTouchTarget),
                     onPressed: () => onStartCooking(recipe),
                   ),
-                OutlinedButton(
+                ActionButtons.actionButton(
+                  context,
                   key: swapKey,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: paper,
-                    minimumSize: const Size(0, AppDimensions.minTouchTarget),
-                    side: BorderSide(
-                      color: paper.withValues(alpha: 0.35),
-                      width: 1.5,
-                    ),
-                  ),
+                  style: ActionButtonStyle.outlinedOnInk,
+                  label: l10n.hemSwapDish,
                   onPressed: onSwap,
-                  child: Text(l10n.hemSwapDish),
                 ),
                 if (hero.allInPantry)
                   Text(

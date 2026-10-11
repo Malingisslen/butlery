@@ -4811,6 +4811,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaRemoveTitle => 'Remove MFA?';
 
   @override
+  String get mfaRemoveAction => 'Remove two-step verification';
+
+  @override
   String get realtimeOffline => 'Offline';
 
   @override

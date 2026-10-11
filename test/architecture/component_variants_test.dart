@@ -15,7 +15,8 @@ import '../../tools/design_variants.dart';
 const variantCeilings = {
   'raw_destructive_alert_dialogs': 20,
   'hero_style_outside_hero_button': 0,
-  'raw_button_style_from': 54,
+  'raw_button_style_from': 14,
+  'raw_dialog_cancel': 29,
   'raw_snackbars': 21,
   'own_empty_states': 7,
   'card_surface_overrides': 9,
@@ -83,6 +84,9 @@ void main() {
     'hero_style_outside_hero_button':
         'final _p = ComponentThemes.heroButtonStyle(cs);',
     'raw_button_style_from': 'final _p = FilledButton.styleFrom();',
+    'raw_dialog_cancel':
+        'final _p = TextButton(onPressed: f, '
+        'child: Text(context.l10n.commonCancel));',
     'raw_snackbars': 'final _p = SnackBar(content: Text("x"));',
     'own_empty_states': 'class _ProbeEmptyState {}',
     'card_surface_overrides': 'final _p = Card(elevation: 2);',

@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -108,18 +109,13 @@ class DraftRecoveryDialog extends StatelessWidget {
         ),
 
         // Primary action - Restore most recent
-        FilledButton.icon(
+        ActionButtons.primaryButton(
+          context,
+          label: context.l10n.draftRestore,
+          icon: ButleryIcons.history,
           onPressed: availableDrafts.isNotEmpty
               ? () => Navigator.of(context).pop(availableDrafts.first.draftId)
               : null,
-          icon: const ButleryIcon(
-            ButleryIcons.history,
-            size: AppDimensions.iconSizeS,
-          ),
-          label: Text(context.l10n.draftRestore),
-          style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
         ),
       ],
     );

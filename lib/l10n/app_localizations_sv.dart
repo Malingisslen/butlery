@@ -4811,6 +4811,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaRemoveTitle => 'Ta bort MFA?';
 
   @override
+  String get mfaRemoveAction => 'Ta bort tvåstegsverifiering';
+
+  @override
   String get realtimeOffline => 'Offline';
 
   @override

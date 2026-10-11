@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/group_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -166,10 +167,7 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
                 ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: Text(context.l10n.commonCancel),
-          ),
+          const DialogCancelButton(),
           TextButton(
             onPressed: () {
               final result = availableTargets

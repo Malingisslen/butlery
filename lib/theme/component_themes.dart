@@ -111,6 +111,10 @@ class ComponentThemes {
       ButtonThemes.dangerButtonStyle(cs);
   static ButtonStyle outlinedButtonStyle(ColorScheme cs) =>
       ButtonThemes.outlinedButtonStyleNamed(cs);
+  static ButtonStyle onInkButtonStyle(ColorScheme cs) =>
+      ButtonThemes.onInkButtonStyle(cs);
+  static ButtonStyle outlinedOnInkButtonStyle(ColorScheme cs) =>
+      ButtonThemes.outlinedOnInkButtonStyle(cs);
   static ButtonStyle deleteButtonStyle(ColorScheme cs) =>
       ButtonThemes.deleteButtonStyle(cs);
   static ButtonStyle extendedFabStyle(ColorScheme cs) =>

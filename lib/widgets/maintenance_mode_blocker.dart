@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -77,17 +78,11 @@ class MaintenanceModeBlocker extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppDimensions.spacingXxl),
-                  FilledButton(
+                  ActionButtons.actionButton(
+                    context,
+                    label: context.l10n.commonRetry,
                     onPressed: onRetry,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: cs.onPrimary,
-                      foregroundColor: cs.primary,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      minimumSize: const Size(160, 48),
-                    ),
-                    child: Text(context.l10n.commonRetry),
+                    style: ActionButtonStyle.onInk,
                   ),
                 ],
               ),

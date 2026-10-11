@@ -270,7 +270,7 @@ void main() {
         sentinel,
         isNull,
         reason:
-            'cancel button at dialog_factory.dart:108 calls '
+            'cancel button calls '
             'Navigator.pop() with no args → resolves to null. Callers '
             'rely on this to distinguish "no feedback" from "empty feedback."',
       );

@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +49,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
               child: _buildContent(context, viewModel),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  context.l10n.commonCancel,
-                  style: AppTextStyles.labelLarge,
-                ),
-              ),
+              const DialogCancelButton(),
               if (viewModel.hasSelectedRecipes)
                 // The theme's ink filled button (onPrimary on primary in both
                 // schemes); sharing says so and draws the plate line along

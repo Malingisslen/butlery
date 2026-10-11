@@ -4,6 +4,8 @@
 // ignore_for_file: unused_element_parameter
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,9 +45,11 @@ class _TestBaseDialog extends BaseDialog<String> {
     this.validateResult = true,
     this.contentChild,
     this.onAction,
+    this.gate,
   });
 
   final bool shouldThrow;
+  final Completer<void>? gate;
   final VoidCallback? onAction;
   final String contentText;
   final String? additionalText;
@@ -65,6 +69,7 @@ class _TestBaseDialog extends BaseDialog<String> {
 
   @override
   Future<String?> performAction(BuildContext context) async {
+    await gate?.future;
     if (shouldThrow) throw Exception('boom from action');
     onAction?.call();
     return 'success';
@@ -111,9 +116,11 @@ class _TestActionDialog extends BaseActionDialog<int> {
     this.destructive = false,
     this.actionStyle,
     this.contentChild,
+    this.gate,
   });
 
   final bool fail;
+  final Completer<void>? gate;
   final String titleText;
   final String actionLabel;
   final String? cancelLabel;
@@ -150,6 +157,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
 
   @override
   Future<int> performAction(BuildContext context) async {
+    await gate?.future;
     if (fail) throw Exception('action failure');
     return 42;
   }
@@ -746,5 +754,72 @@ void main() {
         );
       },
     );
+  });
+
+  group('Avbryt while the action works', () {
+    TextButton cancelButton(WidgetTester tester, String label) =>
+        tester.widget<TextButton>(
+          find.ancestor(
+            of: find.text(label),
+            matching: find.byType(TextButton),
+          ),
+        );
+
+    testWidgets('BaseDialog: Avbryt is off while the action works, carries '
+        'its own name, and comes back after a failure', (tester) async {
+      final gate = Completer<void>();
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<String>(
+        context: ctx,
+        builder: (_) => _TestBaseDialog(
+          title: 't',
+          secondaryActionText: 'Vänta',
+          shouldThrow: true,
+          gate: gate,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Avbryt'), findsNothing);
+      expect(cancelButton(tester, 'Vänta').onPressed, isNotNull);
+
+      await tester.tap(find.text('Stäng'));
+      await tester.pump();
+      expect(cancelButton(tester, 'Vänta').onPressed, isNull);
+      await tester.tap(find.text('Vänta'), warnIfMissed: false);
+      await tester.pump();
+      expect(find.byType(_TestBaseDialog), findsOneWidget);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(cancelButton(tester, 'Vänta').onPressed, isNotNull);
+    });
+
+    testWidgets('BaseActionDialog: Avbryt is off while the action works and '
+        'comes back after a failure', (tester) async {
+      final gate = Completer<void>();
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<int>(
+        context: ctx,
+        builder: (_) =>
+            _TestActionDialog(fail: true, actionLabel: 'Go', gate: gate),
+      );
+      await tester.pumpAndSettle();
+      expect(cancelButton(tester, 'Avbryt').onPressed, isNotNull);
+
+      await tester.tap(find.text('Go'));
+      await tester.pump();
+      expect(cancelButton(tester, 'Avbryt').onPressed, isNull);
+      await tester.tap(find.text('Avbryt'), warnIfMissed: false);
+      await tester.pump();
+      expect(find.byType(_TestActionDialog), findsOneWidget);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(cancelButton(tester, 'Avbryt').onPressed, isNotNull);
+    });
   });
 }

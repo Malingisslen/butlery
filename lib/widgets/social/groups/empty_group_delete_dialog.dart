@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/empty_group_delete_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -41,10 +42,7 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text(context.l10n.commonCancel),
-        ),
+        DialogCancelButton(onPressed: () => Navigator.pop(context, false)),
         TextButton(
           onPressed: () => Navigator.pop(context, true),
           child: Text(context.l10n.groupDeleteTheGroup),

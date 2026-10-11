@@ -1,5 +1,6 @@
 /// Main onboarding wizard view with PageView navigation.
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -193,30 +194,20 @@ class _OnboardingContentState extends State<_OnboardingContent> {
               // Back button (hidden on first page)
               if (!viewModel.isFirstPage)
                 Expanded(
-                  child: SizedBox(
-                    height: AppDimensions.buttonHeight,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        viewModel.previousPage();
-                        _pageController.previousPage(
-                          duration: AnimationUtils.getDuration(
-                            context,
-                            const Duration(milliseconds: 300),
-                          ),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: cs.onSurface),
-                        shape: const RoundedRectangleBorder(),
-                      ),
-                      child: Text(
-                        context.l10n.onboardingBack,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: cs.onSurface,
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    label: context.l10n.onboardingBack,
+                    isExpanded: true,
+                    onPressed: () {
+                      viewModel.previousPage();
+                      _pageController.previousPage(
+                        duration: AnimationUtils.getDuration(
+                          context,
+                          const Duration(milliseconds: 300),
                         ),
-                      ),
-                    ),
+                        curve: Curves.easeInOut,
+                      );
+                    },
                   ),
                 ),
               if (!viewModel.isFirstPage)

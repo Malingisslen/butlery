@@ -3223,6 +3223,7 @@
   "mfaRegisteredMethods": "Registered methods",
   "mfaRemoveConfirm": "Are you sure you want to switch off two-step verification? This makes your account less secure.",
   "mfaRemoveTitle": "Remove MFA?",
+  "mfaRemoveAction": "Remove two-step verification",
   "realtimeOffline": "Offline",
   "recipeMealType": "Meal type",
   "recipeTitle": "Title",

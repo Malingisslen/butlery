@@ -5,6 +5,8 @@
 // Excludes the current recipe from the selectable list (no self-link).
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -89,21 +91,12 @@ class _RelatedRecipesPickerDialogState
             child: _buildContent(context, vm),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.commonCancel),
-            ),
+            const DialogCancelButton(),
             if (_selectedIds.isNotEmpty)
-              FilledButton(
+              ActionButtons.primaryButton(
+                context,
+                label: '${context.l10n.commonAdd} (${_selectedIds.length})',
                 onPressed: () => _confirm(context, vm),
-                style: FilledButton.styleFrom(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                ),
-                child: Text(
-                  '${context.l10n.commonAdd} (${_selectedIds.length})',
-                ),
               ),
           ],
         ),
