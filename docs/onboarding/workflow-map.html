@@ -253,9 +253,9 @@
     },
     {
       "id": "v-settings",
-      "label": "Inställningar (radera konto)",
+      "label": "Mer och dess områden (Konto & säkerhet, Integritet & data, Appinställningar, Hjälp & om)",
       "context": "view",
-      "path": "lib/views/settings/settings_hub_view.dart"
+      "path": "lib/views/more/more_view.dart, lib/views/more/*_area_view.dart, lib/views/more/app_settings_view.dart"
     },
     {
       "id": "vm-smart-import",
@@ -1522,12 +1522,6 @@
       "label": "Grupper-flik (vänner-vy)",
       "context": "view",
       "path": "lib/views/social/friends_list/groups_tab.dart"
-    },
-    {
-      "id": "v-group-search-tab",
-      "label": "Sök grupper-flik",
-      "context": "view",
-      "path": "lib/views/social/friends_list/group_search_tab.dart"
     },
     {
       "id": "v-create-group-dialog",
@@ -3272,7 +3266,7 @@
     {
       "id": "flow-auth-4",
       "label": "onboarding",
-      "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Inställningar > Hushållsstorlek (döpt om från ”Meny och smak” i BUT-1594, som samtidigt flyttade kök/skicklighet-reglagen till profilredigeringens ”cooking identity”-sektion — denna vy hette tidigare menu_taste_view.dart, nu lib/views/settings/household_size_view.dart och rymmer bara hushållsstorlek). BUT-1939: exempelmenyn sås inte alls om veckan inte gick att läsa — idempotensvakten (hoppa över om veckan redan har innehåll) kunde inte se skillnad på en tom vecka och en misslyckad läsning.",
+      "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Familj & hushåll > Portioner som standard (döpt om från ”Meny och smak” i BUT-1594, som samtidigt flyttade kök/skicklighet-reglagen till profilredigeringens ”cooking identity”-sektion — denna vy hette tidigare menu_taste_view.dart, sedan Mer, omtänkt del 2 arket lib/views/family/household_portions_sheet.dart). BUT-1939: exempelmenyn sås inte alls om veckan inte gick att läsa — idempotensvakten (hoppa över om veckan redan har innehåll) kunde inte se skillnad på en tom vecka och en misslyckad läsning.",
       "features": [
         "AUTH-07",
         "AUTH-08"
@@ -5148,7 +5142,7 @@
     {
       "id": "flow-soc-2",
       "label": "profiler",
-      "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/household_size_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder. BUT-1629: sökbarhetsreglaget har två helt olika skrivvägar beroende på ålder. För en VUXEN är det som förr en lokal ändring som sparas med profilen (repo-user-vägen). För en MINDERÅRIG (15–17, serverbekräftad) kan varken en klientskrivning eller den vanliga profilsparningen göra kontot sökbart — firestore.rules nekar klientskrivningen och UserProfile.toFirestore nollar isSearchable för varje minderårig-sparning — så reglaget routas i stället genom setSearchableOptIn → svc-user.setMinorSearchable → svc-searchability → den Admin-SDK-callable cf-set-searchability som kringgår reglerna (enda tillåtna opt-in-vägen, riktad enbart mot inloggat konto, App Check + rate limit, fail-closed om profil saknas). Effekten är omedelbar (skrivningen ÄR callablen), inte fördröjd till Spara. Eftersom varje helprofilsparning nollar fältet gör svc-user.saveProfile dessutom en villkorad återförsäkran efteråt: en minderårig som REDAN opt-in:at får sitt val återställt via samma callable (en ny opt-in kan aldrig självbeviljas), och serverns faktiska svar bärs tillbaka — aldrig det begärda. Reglaget är avstängt medan en sparning pågår (vm.isSaving) så de två skrivvägarna inte kan varva och återaktivera sökbarhet direkt efter en medveten opt-out.",
+      "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via arket Portioner som standard på Familj & hushåll (lib/views/family/household_portions_sheet.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder. BUT-1629: sökbarhetsreglaget har två helt olika skrivvägar beroende på ålder. För en VUXEN är det som förr en lokal ändring som sparas med profilen (repo-user-vägen). För en MINDERÅRIG (15–17, serverbekräftad) kan varken en klientskrivning eller den vanliga profilsparningen göra kontot sökbart — firestore.rules nekar klientskrivningen och UserProfile.toFirestore nollar isSearchable för varje minderårig-sparning — så reglaget routas i stället genom setSearchableOptIn → svc-user.setMinorSearchable → svc-searchability → den Admin-SDK-callable cf-set-searchability som kringgår reglerna (enda tillåtna opt-in-vägen, riktad enbart mot inloggat konto, App Check + rate limit, fail-closed om profil saknas). Effekten är omedelbar (skrivningen ÄR callablen), inte fördröjd till Spara. Eftersom varje helprofilsparning nollar fältet gör svc-user.saveProfile dessutom en villkorad återförsäkran efteråt: en minderårig som REDAN opt-in:at får sitt val återställt via samma callable (en ny opt-in kan aldrig självbeviljas), och serverns faktiska svar bärs tillbaka — aldrig det begärda. Reglaget är avstängt medan en sparning pågår (vm.isSaving) så de två skrivvägarna inte kan varva och återaktivera sökbarhet direkt efter en medveten opt-out.",
       "features": [
         "SOC-06",
         "SOC-07",
@@ -5878,13 +5872,6 @@
           "to": "ds-friend-categories",
           "payload": "medlem tillagd",
           "transport": "write",
-          "verified": true
-        },
-        {
-          "from": "v-group-search-tab",
-          "to": "svc-unified-friends",
-          "payload": "filtrera tillgängliga grupper",
-          "transport": "call",
           "verified": true
         },
         {
@@ -6674,8 +6661,8 @@
     },
     {
       "id": "flow-set-1",
-      "label": "Inställningar",
-      "description": "Inställningsnavet med allergen-/kostinställningar, notisinställningar och receptstatistik — allt läser/skriver på inloggad användare eller redan cachad receptlista, ingen ny nätverksresa för statistiken.",
+      "label": "Mer och inställningar",
+      "description": "Mer med allergen-/kostinställningar, notisinställningar och receptstatistik — allt läser/skriver på inloggad användare eller redan cachad receptlista, ingen ny nätverksresa för statistiken.",
       "features": [
         "SET-01",
         "SET-02",
@@ -6998,7 +6985,7 @@
         {
           "from": "v-legal-privacy",
           "to": "ext-legal-assets",
-          "payload": "laddar privacy_policy_{språk}.md — nås från signup-samtycke, GDPR-samtyckeshanteraren och rapportdialogen, inte direkt från Inställningar",
+          "payload": "laddar privacy_policy_{språk}.md — nås från Integritet & data, signup-samtycke, GDPR-samtyckeshanteraren och rapportdialogen",
           "transport": "rootBundle.loadString",
           "verified": true
         },

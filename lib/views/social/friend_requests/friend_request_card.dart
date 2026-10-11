@@ -33,8 +33,7 @@ class FriendRequestCard {
   ) {
     final userProfile = viewModel.getUserProfile(request.fromUserId);
     final displayName =
-        userProfile?.displayName ??
-        viewModel.getDisplayNameForUser(request.fromUserId);
+        userProfile?.displayName ?? context.l10n.friendRequestTitle;
     final avatarUrl = userProfile?.avatarUrl;
 
     // Chosen is surface.selected with a real border, never a tint
@@ -202,8 +201,7 @@ class FriendRequestCard {
   ) {
     final userProfile = viewModel.getUserProfile(request.toUserId);
     final displayName =
-        userProfile?.displayName ??
-        viewModel.getDisplayNameForUser(request.toUserId);
+        userProfile?.displayName ?? context.l10n.friendRequestTitle;
     final avatarUrl = userProfile?.avatarUrl;
 
     final cs = Theme.of(context).colorScheme;

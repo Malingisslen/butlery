@@ -2398,7 +2398,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pantryAutoAddPromptBody =>
-      'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.';
+      'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare under Appinställningar.';
 
   @override
   String get pantryAutoAddPromptEnable => 'Ja, lägg till automatiskt';
@@ -5160,7 +5160,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinConfirmBody =>
-      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.';
+      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.';
 
   @override
   String get householdJoinFailed =>
@@ -5171,10 +5171,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinedSubtitle =>
-      'Dela dina allergier under Inställningar, så räknar menyn med dem.';
+      'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.';
 
   @override
-  String get householdOpenSettings => 'Inställningar';
+  String get householdOpenSettings => 'Visa hushållet';
 
   @override
   String get menuVoteTitle => 'Rösta om recept';
@@ -15025,7 +15025,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yRelatedRecipeThumbnail => 'Öppna relaterat recept';
 
   @override
-  String get familyTitle => 'Min familj';
+  String get familyTitle => 'Familj & hushåll';
 
   @override
   String get familyIntro =>
@@ -17188,16 +17188,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moreSectionKitchen => 'Ditt kök';
 
   @override
-  String get moreSectionAppAccount => 'App & konto';
+  String get moreSectionAppAccount => 'Konto & app';
 
   @override
-  String get moreFamily => 'Min familj';
+  String get moreFamily => 'Familj & hushåll';
 
   @override
   String get morePersonalTags => 'Egna taggar';
 
   @override
-  String get moreCollectionStats => 'Samlingsstatistik';
+  String get moreCollectionStats => 'Statistik';
 
   @override
   String get moreNotifications => 'Notiser';
@@ -18215,6 +18215,393 @@ class AppLocalizationsSv extends AppLocalizations {
       'Raderingen har redan startat och kan inte ångras längre.';
 
   @override
+  String get moreProfileSubtitle => 'Profil och synlighet';
+
+  @override
+  String get moreProfileFallbackName => 'Din profil';
+
+  @override
+  String moreSyncBand(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar på synk',
+      one: '1 ändring väntar på synk',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moreSectionHousehold => 'Hushåll & mat';
+
+  @override
+  String get moreAllergens => 'Allergener & kost';
+
+  @override
+  String get moreHouseholdSection => 'Hushållet';
+
+  @override
+  String get settingsAccountAreaTitle => 'Konto & säkerhet';
+
+  @override
+  String get settingsAccountAreaSubtitle =>
+      'Inloggning, tvåstegsverifiering, logga ut';
+
+  @override
+  String get settingsPrivacyAreaTitle => 'Integritet & data';
+
+  @override
+  String get settingsPrivacyAreaSubtitle => 'Samtycken, export, säkerhetskopia';
+
+  @override
+  String get settingsAppTitle => 'Appinställningar';
+
+  @override
+  String get settingsAppSubtitle => 'Språk, tema, notiser';
+
+  @override
+  String get settingsHelpTitle => 'Hjälp & om';
+
+  @override
+  String get settingsHelpSubtitle => 'Frågor, villkor, rapporter';
+
+  @override
+  String get settingsSignInSection => 'Inloggning';
+
+  @override
+  String get settingsAccountEmail => 'E-postadress';
+
+  @override
+  String get settingsAccountPassword => 'Lösenord';
+
+  @override
+  String get settingsAccountTwoStep => 'Tvåstegsverifiering';
+
+  @override
+  String get settingsYourChoicesSection => 'Dina val';
+
+  @override
+  String get settingsYourDataSection => 'Din data';
+
+  @override
+  String get settingsDocumentsSection => 'Dokument';
+
+  @override
+  String get settingsConsents => 'Samtycken';
+
+  @override
+  String get settingsBackupTitle => 'Säkerhetskopia av recept';
+
+  @override
+  String get settingsBackupSubtitle => 'Ladda ner eller återställ';
+
+  @override
+  String get settingsAppearanceSection => 'Utseende';
+
+  @override
+  String get settingsShoppingSection => 'Inköp';
+
+  @override
+  String get settingsNotificationSettings => 'Notisinställningar';
+
+  @override
+  String get settingsHelpSection => 'Hjälp';
+
+  @override
+  String get settingsRulesSection => 'Regler och rapporter';
+
+  @override
+  String get settingsMyReportsSubtitle =>
+      'Det du har rapporterat och hur det gick';
+
+  @override
+  String get settingsVersionLabel => 'Version';
+
+  @override
+  String get settingsAdminOnly => 'Admin';
+
+  @override
+  String get socialFriendRequestsTitle => 'Vänförfrågningar';
+
+  @override
+  String socialPendingRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count väntande förfrågningar',
+      one: '1 väntande förfrågan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get socialSearchNameOrEmailHint => 'Namn eller e-postadress';
+
+  @override
+  String get socialShareProfileLink => 'Dela din profillänk';
+
+  @override
+  String get messagesNewMessage => 'Nytt meddelande';
+
+  @override
+  String get messagesToFriend => 'Till en vän';
+
+  @override
+  String get messagesNewGroup => 'Ny gruppkonversation';
+
+  @override
+  String get messagesSearchHint => 'Sök i meddelanden';
+
+  @override
+  String get messagesArchivedRow => 'Arkiverade samtal';
+
+  @override
+  String messagesMoreOptionsFor(String name) {
+    return 'Fler val för $name';
+  }
+
+  @override
+  String get socialMoreOptions => 'Fler val';
+
+  @override
+  String groupMetaMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupMetaMembersAdmin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0 · du är admin';
+  }
+
+  @override
+  String get groupShareWithGroupSection => 'Dela med gruppen';
+
+  @override
+  String get groupShareRecipeRow => 'Dela ett recept';
+
+  @override
+  String get groupShareMenuRow => 'Dela veckomenyn';
+
+  @override
+  String get groupShareShoppingListRow => 'Dela en inköpslista';
+
+  @override
+  String groupMembersSection(int count) {
+    return 'Medlemmar · $count';
+  }
+
+  @override
+  String groupPendingInvitationsSection(int count) {
+    return 'Väntande inbjudningar · $count';
+  }
+
+  @override
+  String get groupLeaveTheGroup => 'Lämna gruppen';
+
+  @override
+  String get groupCreatedInfoRow => 'Skapad';
+
+  @override
+  String friendProfileMeta(int recipes, int friends) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes recept',
+      one: '1 recept',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      friends,
+      locale: localeName,
+      other: '$friends vänner',
+      one: '1 vän',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get friendProfileShareRecipe => 'Dela ett recept';
+
+  @override
+  String get friendProfileRecipesSection => 'Recept';
+
+  @override
+  String friendProfilePublicRecipesRow(String owner) {
+    return '$owner publika recept';
+  }
+
+  @override
+  String friendProfileSharedWithYouRow(String name) {
+    return 'Delat med dig av $name';
+  }
+
+  @override
+  String get friendProfileRemoveFriend => 'Ta bort som vän';
+
+  @override
+  String get familyAccountsSection => 'Konton i hushållet';
+
+  @override
+  String get familyProfilesSection => 'Familjeprofiler';
+
+  @override
+  String get familyAddMemberRow => 'Lägg till familjemedlem';
+
+  @override
+  String get familyYou => 'Du';
+
+  @override
+  String get familyMealsSection => 'Måltider';
+
+  @override
+  String get householdPortionsTitle => 'Portioner som standard';
+
+  @override
+  String get householdPortionsSaved => 'Portionerna är sparade';
+
+  @override
+  String get familyAllergiesSection => 'Allergier i hushållet';
+
+  @override
+  String get allergenIntro => 'Välj vad du vill se status för på recepten.';
+
+  @override
+  String get allergenSectionAllergens => 'Allergener';
+
+  @override
+  String get allergenSectionDietary => 'Specialkost';
+
+  @override
+  String get allergenDisplayCoverageLabel => 'Hur säker märkningen är';
+
+  @override
+  String get allergenDisplayUnknownLabel => 'Okänd allergenstatus';
+
+  @override
+  String get allergenLabelNote =>
+      'Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.';
+
+  @override
+  String get allergenSectionMaintenance => 'Underhåll';
+
+  @override
+  String get allergenRetagRow => 'Uppdatera märkningen på alla recept';
+
+  @override
+  String get allergenResetTitle => 'Återställ till standard?';
+
+  @override
+  String get allergenResetBody =>
+      'Dina val av allergener och specialkost återställs till standardvalen.';
+
+  @override
+  String get notifAllowRow => 'Tillåt notiser';
+
+  @override
+  String get notifCategoriesSection => 'Vad du får notiser om';
+
+  @override
+  String get notifDigestSection => 'Sammanfattning';
+
+  @override
+  String get notifDigestRow => 'Skicka sammanfattning';
+
+  @override
+  String get consentRequiredValue => 'Krävs';
+
+  @override
+  String get settingsBlockedPeople => 'Blockerade personer';
+
+  @override
+  String trashIntro(int days) {
+    return 'Recept raderas för gott efter $days dagar.';
+  }
+
+  @override
+  String get trashRestoreRecipe => 'Återställ receptet';
+
+  @override
+  String get trashRestoreAll => 'Återställ alla';
+
+  @override
+  String trashDeleteOneTitle(String name) {
+    return 'Radera $name för gott?';
+  }
+
+  @override
+  String get trashDeleteOneBody => 'Det går inte att ångra.';
+
+  @override
+  String get personalTagUngroupedSection => 'Utan grupp';
+
+  @override
+  String personalTagUnusedSection(int count) {
+    return 'Oanvända · $count';
+  }
+
+  @override
+  String get personalTagDeleteUnusedAction => 'Radera oanvända taggar';
+
+  @override
+  String get personalTagNewTag => 'Ny tagg';
+
+  @override
+  String get personalTagNewGroup => 'Ny grupp';
+
+  @override
+  String get personalTagManageGroup => 'Hantera gruppen';
+
+  @override
+  String get tagDetailGroupLabel => 'Grupp';
+
+  @override
+  String get tagDetailRulesSection => 'Regler';
+
+  @override
+  String get tagDetailAddRule => 'Lägg till regel';
+
+  @override
+  String get tagDetailRunRulesAll => 'Kör reglerna på alla recept';
+
+  @override
+  String get tagDetailShareTag => 'Dela taggen';
+
+  @override
+  String get tagDetailDeleteTagAction => 'Ta bort taggen';
+
+  @override
+  String get tagDetailRuleStateOn => 'På';
+
+  @override
+  String get tagDetailRuleStateOff => 'Av';
+
+  @override
+  String get tagDetailRuleEdit => 'Redigera regeln';
+
+  @override
+  String get tagDetailRuleEnable => 'Aktivera regeln';
+
+  @override
+  String get tagDetailRuleDisable => 'Pausa regeln';
+
+  @override
+  String get tagDetailRuleDeleteAction => 'Ta bort regeln';
+
+  @override
+  String get consentTurnOffAllOptional => 'Stäng av alla valfria';
+
+  @override
   String get nutritionButton => 'Näringsvärden';
 
   @override
@@ -18431,4 +18818,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get nutritionLoading => 'Räknar ut näringsvärden …';
+
+  @override
+  String get settingsRecipesSection => 'Recept';
 }

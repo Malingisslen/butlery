@@ -327,9 +327,7 @@ void main() {
 
       await tester.pumpWidget(_app(TagDetailView(tagId: tag.id)));
       await tester.pump();
-      await tester.tap(find.byType(PopupMenuButton<String>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(_sv.tagDetailApplyRules));
+      await tester.tap(find.text(_sv.tagDetailRunRulesAll));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

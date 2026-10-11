@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
-/// Collapsible section showing blocked users with unblock actions.
-/// Used in consent/privacy settings to let users manage their block list.
+/// The list of blocked people with unblock actions, as rows on the Blockerade
+/// personer page.
 class BlockedUsersSection extends StatefulWidget {
   const BlockedUsersSection({super.key});
 
@@ -29,7 +25,6 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
   List<String> _blockedUserIds = [];
   Map<String, UserProfile> _userProfiles = {};
   bool _isLoading = true;
-  bool _isExpanded = false;
 
   // BUT-1039: multi-select bulk-unblock (mirrors the BUT-1038 group pattern).
   bool _selectionMode = false;
@@ -104,15 +99,6 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     }
   }
 
-  void _enterSelection(String uid) {
-    setState(() {
-      _selectionMode = true;
-      _selectedIds.add(uid);
-    });
-  }
-
-  /// "Välj" in the section's header row (B-46; Skarmar v12 etapp 9
-  /// #flervalingang: "sektionens rubrikrad").
   void _startSelection() {
     setState(() => _selectionMode = true);
   }
@@ -174,255 +160,98 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     await _loadBlockedUsers();
   }
 
-  /// Inline action bar shown while selecting — kept self-contained inside the
-  /// section's Column (no parent app-bar coordination), mirroring BUT-1038.
-  Widget _buildSelectionBar(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final count = _selectedIds.length;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.space4,
-      ),
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AppDimensions.spacingXs,
-        AppDimensions.space4,
-        AppDimensions.space4,
-        AppDimensions.space4,
-      ),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
-      ),
-      // "2 valda · Avblockera 2" (Skarmar v12 etapp 9 "Blockerade — och den
-      // sjätte flervalsytan"): the counter in tabular figures and the
-      // action; Avbryt sits in the header row (produktregler.md:873, :876).
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingSm,
-            ),
-            child: Semantics(
-              liveRegion: true,
-              child: Text(
-                context.l10n.bulkSelectedCount(count),
-                key: const ValueKey('blocked-users-selection-count'),
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.onSurface,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-          ),
-          const Spacer(),
-          TextButton.icon(
-            onPressed: count > 0 ? _unblockSelected : null,
-            icon: const ButleryIcon(ButleryIcons.unlock),
-            label: Text(context.l10n.blockedUsersUnblockSelectedCount(count)),
-            style: TextButton.styleFrom(
-              foregroundColor: cs.onSurface,
-              // Off at zero with the name readable (produktregler.md:876), in
-              // the disabled role on surface.raised, never a fade
-              // (tokens.json:71-74, :198).
-              disabledForegroundColor: AppModeColors.textDisabled(
-                cs.brightness,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Card(
-      elevation: 0,
-      color: cs.surface,
-      child: Column(
-        children: [
-          // Collapsible header. P5-U31: the section sits inside a settings
-          // view without a top bar of its own, so its header row carries
-          // "Välj", and Avbryt in the same place in selection mode (Skarmar
-          // v12 etapp 9 #flervalingang; produktregler.md:870-874). Shown
-          // while the list is open and has two or more people.
-          Row(
-            children: [
-              Expanded(child: _buildHeader(context, cs)),
-              if (_selectionMode)
-                ButleryCancelSelectionButton(
-                  key: const ValueKey('blocked-users-selection-cancel'),
-                  foregroundColor: cs.onSurface,
-                  onPressed: _cancelSelection,
-                )
-              else if (_isExpanded &&
-                  !_isLoading &&
-                  ButlerySelectButton.shownFor(_blockedUserIds.length))
-                ButlerySelectButton(
-                  key: const ValueKey('blocked-users-select-enter'),
-                  semanticLabel: context.l10n.selectionEnterBlockedUsers,
-                  foregroundColor: cs.onSurface,
-                  onPressed: _startSelection,
-                ),
-            ],
+    final l10n = context.l10n;
+    if (_isLoading) {
+      return Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        child: Center(
+          child: PlateLineMessage(message: l10n.loadingBlockedUsers),
+        ),
+      );
+    }
+    if (_blockedUserIds.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+        child: Text(
+          l10n.blockedUsersEmpty,
+          style: AppTextStyles.metadataEmphasized,
+        ),
+      );
+    }
+    final count = _selectedIds.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+          child: Text(
+            l10n.blockedUsersSharesHiddenNote,
+            style: AppTextStyles.metadataEmphasized,
           ),
-          // Expandable content
-          if (_isExpanded) ...[
-            Divider(height: 1, color: cs.outlineVariant),
-            if (_isLoading)
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                child: Center(
-                  child: PlateLineMessage(
-                    message: context.l10n.loadingBlockedUsers,
-                  ),
-                ),
-              )
-            else if (_blockedUserIds.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        ),
+        ButleryListSection(rows: _blockedUserIds.map(_buildRow).toList()),
+        // Selecting several is offered only when there is more than one to
+        // choose between.
+        if (_selectionMode)
+          ButleryListSection(
+            rows: [
+              // The count is announced as it changes; the unblock row only
+              // exists once there is something to unblock.
+              Semantics(
+                liveRegion: true,
                 child: Text(
-                  context.l10n.blockedUsersEmpty,
-                  style: AppTextStyles.metadataEmphasized,
-                ),
-              )
-            else ...[
-              if (_selectionMode) _buildSelectionBar(context),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppDimensions.spacingMd,
-                  AppDimensions.spacingMd,
-                  AppDimensions.spacingMd,
-                  AppDimensions.spacingXs,
-                ),
-                child: Text(
-                  context.l10n.blockedUsersSharesHiddenNote,
+                  l10n.bulkSelectedCount(count),
                   style: AppTextStyles.metadataEmphasized,
                 ),
               ),
-              ..._blockedUserIds.map(_buildBlockedUserTile),
-            ],
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, ColorScheme cs) {
-    return Semantics(
-      label: context.l10n.a11yBlockedUsersToggle,
-      button: true,
-      expanded: _isExpanded,
-      child: PressFill(
-        surface: PressSurface.base,
-        child: InkWell(
-          onTap: () => setState(() => _isExpanded = !_isExpanded),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.block,
-                  color: cs.onSurfaceVariant,
-                  size: AppDimensions.iconSizeM,
+              if (count > 0)
+                ButleryListRow(
+                  key: const ValueKey('blocked-users-selection-count'),
+                  label: l10n.blockedUsersUnblockSelectedCount(count),
+                  leading: ButleryIcons.unlock,
+                  onTap: _unblockSelected,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.blockedUsersTitle,
-                        style: AppTextStyles.titleBold,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        '${_blockedUserIds.length} blockerade',
-                        style: AppTextStyles.metadataEmphasized,
-                      ),
-                    ],
-                  ),
-                ),
-                ButleryIcon(
-                  _isExpanded
-                      ? ButleryIcons.chevronUp
-                      : ButleryIcons.chevronDown,
-                  color: cs.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBlockedUserTile(String userId) {
-    final profile = _userProfiles[userId];
-    final displayName = profile?.displayName ?? userId;
-    final cs = Theme.of(context).colorScheme;
-    final isSelected = _selectedIds.contains(userId);
-
-    final row = Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
-      ),
-      child: Row(
-        children: [
-          if (_selectionMode) ...[
-            ButleryIcon(
-              isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
-              color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.spacingSm),
-          ],
-          SocialAvatarComponents.avatar(
-            announceName: false,
-            user: profile,
-            displayName: profile == null ? userId : null,
-            size: ImageSize.medium,
-          ),
-          const SizedBox(width: AppDimensions.spacingL),
-          Expanded(
-            child: Text(
-              displayName,
-              style: AppTextStyles.titleMedium,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          // Per-tile unblock hides in selection mode to reduce noise.
-          if (!_selectionMode)
-            TextButton(
-              onPressed: () => _unblockUser(userId),
-              style: TextButton.styleFrom(
-                foregroundColor: cs.onSurface,
-                padding: AppDimensions.paddingSymmetric16x8,
+              ButleryListRow(
+                key: const ValueKey('blocked-users-selection-cancel'),
+                label: l10n.commonCancel,
+                onTap: _cancelSelection,
               ),
-              child: Text(context.l10n.blockedUsersUnblock),
-            ),
-        ],
-      ),
+            ],
+          )
+        else if (_blockedUserIds.length > 1)
+          ButleryListSection(
+            rows: [
+              ButleryListRow(
+                key: const ValueKey('blocked-users-select-enter'),
+                label: l10n.selectionEnterBlockedUsers,
+                onTap: _startSelection,
+              ),
+            ],
+          ),
+      ],
     );
+  }
 
-    // Long-press anywhere on a tile enters selection; in selection mode a tap
-    // toggles. Wrapped in Semantics per the tap-target a11y rule.
-    return Semantics(
-      label: context.l10n.a11yBlockedUserSelect,
-      button: true,
-      selected: _selectionMode ? isSelected : null,
-      child: PressFill(
-        surface: PressSurface.base,
-        child: InkWell(
-          onLongPress: () => _enterSelection(userId),
-          onTap: _selectionMode ? () => _toggleSelection(userId) : null,
-          child: row,
-        ),
-      ),
+  Widget _buildRow(String userId) {
+    final displayName = _userProfiles[userId]?.displayName ?? userId;
+    if (!_selectionMode) {
+      return ButleryListRow(
+        key: ValueKey('blocked-user-$userId'),
+        label: displayName,
+        value: context.l10n.blockedUsersUnblock,
+        onTap: () => _unblockUser(userId),
+      );
+    }
+    return ButleryListRow(
+      key: ValueKey('blocked-user-$userId'),
+      label: displayName,
+      selected: _selectedIds.contains(userId),
+      leading: _selectedIds.contains(userId)
+          ? ButleryIcons.checkSquare
+          : ButleryIcons.square,
+      onTap: () => _toggleSelection(userId),
     );
   }
 }

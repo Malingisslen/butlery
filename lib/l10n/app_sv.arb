@@ -1731,7 +1731,7 @@
   "@pantryAutoAddPromptTitle": {
     "description": "BUT-1306: title of the one-time dialog offered on the user's first shopping checkoff."
   },
-  "pantryAutoAddPromptBody": "Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.",
+  "pantryAutoAddPromptBody": "Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare under Appinställningar.",
   "@pantryAutoAddPromptBody": {
     "description": "BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry."
   },
@@ -3471,7 +3471,7 @@
   "@householdJoinAction": {
     "description": "BUT-2267: button that joins the household (opens a confirm dialog first)"
   },
-  "householdJoinConfirmBody": "Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.",
+  "householdJoinConfirmBody": "Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.",
   "@householdJoinConfirmBody": {
     "description": "BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave"
   },
@@ -3483,11 +3483,11 @@
   "@householdJoinedTitle": {
     "description": "BUT-2267: group page, after joining the household"
   },
-  "householdJoinedSubtitle": "Dela dina allergier under Inställningar, så räknar menyn med dem.",
+  "householdJoinedSubtitle": "Dela dina allergier under Familj & hushåll, så räknar menyn med dem.",
   "@householdJoinedSubtitle": {
     "description": "BUT-2267: under householdJoinedTitle; points to the sharing setting"
   },
-  "householdOpenSettings": "Inställningar",
+  "householdOpenSettings": "Visa hushållet",
   "@householdOpenSettings": {
     "description": "BUT-2267: opens Settings, where the allergy-sharing switch is"
   },
@@ -10954,7 +10954,7 @@
   "@a11yRelatedRecipeThumbnail": {
     "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
-  "familyTitle": "Min familj",
+  "familyTitle": "Familj & hushåll",
   "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
   "familyHouseholdSection": "hushållet",
   "familyMembersSection": "familjen",
@@ -12976,11 +12976,11 @@
   "@moreSectionKitchen": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
   },
-  "moreSectionAppAccount": "App & konto",
+  "moreSectionAppAccount": "Konto & app",
   "@moreSectionAppAccount": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
   },
-  "moreFamily": "Min familj",
+  "moreFamily": "Familj & hushåll",
   "@moreFamily": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
   },
@@ -12988,7 +12988,7 @@
   "@morePersonalTags": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
   },
-  "moreCollectionStats": "Samlingsstatistik",
+  "moreCollectionStats": "Statistik",
   "@moreCollectionStats": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
   },
@@ -14341,6 +14341,502 @@
   "@pendingDeletionAlreadyStarted": {
     "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
   },
+  "moreProfileSubtitle": "Profil och synlighet",
+  "@moreProfileSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the profile row at the top of Mer"
+  },
+  "moreProfileFallbackName": "Din profil",
+  "@moreProfileFallbackName": {
+    "description": "Mer, omtänkt (2026-10-10): profile row title when the user has no display name"
+  },
+  "moreSyncBand": "{count, plural, =1{1 ändring väntar på synk} other{{count} ändringar väntar på synk}}",
+  "@moreSyncBand": {
+    "description": "Mer, omtänkt (2026-10-10): the band at the top of Mer while changes wait to sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreSectionHousehold": "Hushåll & mat",
+  "@moreSectionHousehold": {
+    "description": "Mer, omtänkt (2026-10-10): Mer section heading"
+  },
+  "moreAllergens": "Allergener & kost",
+  "@moreAllergens": {
+    "description": "Mer, omtänkt (2026-10-10): Mer row to the allergen settings"
+  },
+  "moreHouseholdSection": "Hushållet",
+  "@moreHouseholdSection": {
+    "description": "Mer, omtänkt (2026-10-10): section on Familj & hushåll holding portions and the household allergen settings"
+  },
+  "settingsAccountAreaTitle": "Konto & säkerhet",
+  "@settingsAccountAreaTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Konto & säkerhet page and its row in Mer"
+  },
+  "settingsAccountAreaSubtitle": "Inloggning, tvåstegsverifiering, logga ut",
+  "@settingsAccountAreaSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Konto & säkerhet row in Mer"
+  },
+  "settingsPrivacyAreaTitle": "Integritet & data",
+  "@settingsPrivacyAreaTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Integritet & data page and its row in Mer"
+  },
+  "settingsPrivacyAreaSubtitle": "Samtycken, export, säkerhetskopia",
+  "@settingsPrivacyAreaSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Integritet & data row in Mer"
+  },
+  "settingsAppTitle": "Appinställningar",
+  "@settingsAppTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Appinställningar page and its row in Mer"
+  },
+  "settingsAppSubtitle": "Språk, tema, notiser",
+  "@settingsAppSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Appinställningar row in Mer"
+  },
+  "settingsHelpTitle": "Hjälp & om",
+  "@settingsHelpTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Hjälp & om page and its row in Mer"
+  },
+  "settingsHelpSubtitle": "Frågor, villkor, rapporter",
+  "@settingsHelpSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Hjälp & om row in Mer"
+  },
+  "settingsSignInSection": "Inloggning",
+  "@settingsSignInSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Konto & säkerhet"
+  },
+  "settingsAccountEmail": "E-postadress",
+  "@settingsAccountEmail": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsAccountPassword": "Lösenord",
+  "@settingsAccountPassword": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsAccountTwoStep": "Tvåstegsverifiering",
+  "@settingsAccountTwoStep": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsYourChoicesSection": "Dina val",
+  "@settingsYourChoicesSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsYourDataSection": "Din data",
+  "@settingsYourDataSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsDocumentsSection": "Dokument",
+  "@settingsDocumentsSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsConsents": "Samtycken",
+  "@settingsConsents": {
+    "description": "Mer, omtänkt (2026-10-10): row on Integritet & data that opens the consent settings"
+  },
+  "settingsBackupTitle": "Säkerhetskopia av recept",
+  "@settingsBackupTitle": {
+    "description": "Mer, omtänkt (2026-10-10): row on Integritet & data and the title of its sheet"
+  },
+  "settingsBackupSubtitle": "Ladda ner eller återställ",
+  "@settingsBackupSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the backup row"
+  },
+  "settingsAppearanceSection": "Utseende",
+  "@settingsAppearanceSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Appinställningar"
+  },
+  "settingsShoppingSection": "Inköp",
+  "@settingsShoppingSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Appinställningar"
+  },
+  "settingsNotificationSettings": "Notisinställningar",
+  "@settingsNotificationSettings": {
+    "description": "Mer, omtänkt (2026-10-10): row on Appinställningar that opens the notification preferences"
+  },
+  "settingsHelpSection": "Hjälp",
+  "@settingsHelpSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Hjälp & om"
+  },
+  "settingsRulesSection": "Regler och rapporter",
+  "@settingsRulesSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Hjälp & om"
+  },
+  "settingsMyReportsSubtitle": "Det du har rapporterat och hur det gick",
+  "@settingsMyReportsSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Mina rapporter row"
+  },
+  "settingsVersionLabel": "Version",
+  "@settingsVersionLabel": {
+    "description": "Mer, omtänkt (2026-10-10): label of the static version row on Hjälp & om"
+  },
+  "settingsAdminOnly": "Admin",
+  "@settingsAdminOnly": {
+    "description": "Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row"
+  },
+  "socialFriendRequestsTitle": "Vänförfrågningar",
+  "@socialFriendRequestsTitle": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): title of the friend requests page and the row on the Vänner tab"
+  },
+  "socialPendingRequestsCount": "{count, plural, =1{1 väntande förfrågan} other{{count} väntande förfrågningar}}",
+  "@socialPendingRequestsCount": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): spoken meaning of the count on the Vänförfrågningar row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialSearchNameOrEmailHint": "Namn eller e-postadress",
+  "@socialSearchNameOrEmailHint": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): hint in the Hitta vänner sheet search field"
+  },
+  "socialShareProfileLink": "Dela din profillänk",
+  "@socialShareProfileLink": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Hitta vänner sheet that shares the invitation link"
+  },
+  "messagesNewMessage": "Nytt meddelande",
+  "@messagesNewMessage": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): name of the pencil action in the Meddelanden top bar and title of its sheet"
+  },
+  "messagesToFriend": "Till en vän",
+  "@messagesToFriend": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that starts a direct conversation"
+  },
+  "messagesNewGroup": "Ny gruppkonversation",
+  "@messagesNewGroup": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that opens group creation"
+  },
+  "messagesSearchHint": "Sök i meddelanden",
+  "@messagesSearchHint": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): hint of the search field on the Meddelanden page"
+  },
+  "messagesArchivedRow": "Arkiverade samtal",
+  "@messagesArchivedRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): last row on Meddelanden, toggles the archived conversations; its value is the count"
+  },
+  "messagesMoreOptionsFor": "Fler val för {name}",
+  "@messagesMoreOptionsFor": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): name of the three-dot button on a conversation row in Meddelanden",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialMoreOptions": "Fler val",
+  "@socialMoreOptions": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): tooltip and name of the ⋯ button in the group and friend profile top bars"
+  },
+  "groupMetaMembers": "{count, plural, =1{1 medlem} other{{count} medlemmar}}",
+  "@groupMetaMembers": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the group name",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMetaMembersAdmin": "{count, plural, =1{1 medlem} other{{count} medlemmar}} · du är admin",
+  "@groupMetaMembersAdmin": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the group name when the user is admin",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupShareWithGroupSection": "Dela med gruppen",
+  "@groupShareWithGroupSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): section title on group detail"
+  },
+  "groupShareRecipeRow": "Dela ett recept",
+  "@groupShareRecipeRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupShareMenuRow": "Dela veckomenyn",
+  "@groupShareMenuRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupShareShoppingListRow": "Dela en inköpslista",
+  "@groupShareShoppingListRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupMembersSection": "Medlemmar · {count}",
+  "@groupMembersSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): members section overline on group detail",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPendingInvitationsSection": "Väntande inbjudningar · {count}",
+  "@groupPendingInvitationsSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): pending invitations overline on group detail",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupLeaveTheGroup": "Lämna gruppen",
+  "@groupLeaveTheGroup": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the group ⋯ sheet"
+  },
+  "groupCreatedInfoRow": "Skapad",
+  "@groupCreatedInfoRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): info row on group detail, value is the creation date"
+  },
+  "friendProfileMeta": "{recipes, plural, =1{1 recept} other{{recipes} recept}} · {friends, plural, =1{1 vän} other{{friends} vänner}}",
+  "@friendProfileMeta": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the friend's name on the friend profile",
+    "placeholders": {
+      "recipes": {
+        "type": "int"
+      },
+      "friends": {
+        "type": "int"
+      }
+    }
+  },
+  "friendProfileShareRecipe": "Dela ett recept",
+  "@friendProfileShareRecipe": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): secondary button on the friend profile"
+  },
+  "friendProfileRecipesSection": "Recept",
+  "@friendProfileRecipesSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): section title on the friend profile"
+  },
+  "friendProfilePublicRecipesRow": "{owner} publika recept",
+  "@friendProfilePublicRecipesRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row on the friend profile; owner is the friend's name already in genitive form",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileSharedWithYouRow": "Delat med dig av {name}",
+  "@friendProfileSharedWithYouRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row on the friend profile",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileRemoveFriend": "Ta bort som vän",
+  "@friendProfileRemoveFriend": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet"
+  },
+  "familyAccountsSection": "Konton i hushållet",
+  "@familyAccountsSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders"
+  },
+  "familyProfilesSection": "Familjeprofiler",
+  "@familyProfilesSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account"
+  },
+  "familyAddMemberRow": "Lägg till familjemedlem",
+  "@familyAddMemberRow": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form"
+  },
+  "familyYou": "Du",
+  "@familyYou": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): subtitle part on the signed-in user's own account row"
+  },
+  "familyMealsSection": "Måltider",
+  "@familyMealsSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the default portions"
+  },
+  "householdPortionsTitle": "Portioner som standard",
+  "@householdPortionsTitle": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): row on Familj & hushåll and title of its sheet: how many portions recipes open with"
+  },
+  "householdPortionsSaved": "Portionerna är sparade",
+  "@householdPortionsSaved": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): snackbar after the default portions are saved"
+  },
+  "familyAllergiesSection": "Allergier i hushållet",
+  "@familyAllergiesSection": {
+    "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches"
+  },
+  "allergenIntro": "Välj vad du vill se status för på recepten.",
+  "@allergenIntro": {
+    "description": "Intro text on the allergens and diet page"
+  },
+  "allergenSectionAllergens": "Allergener",
+  "@allergenSectionAllergens": {
+    "description": "Section overline for the allergen chips"
+  },
+  "allergenSectionDietary": "Specialkost",
+  "@allergenSectionDietary": {
+    "description": "Section overline for the diet chips"
+  },
+  "allergenDisplayCoverageLabel": "Hur säker märkningen är",
+  "@allergenDisplayCoverageLabel": {
+    "description": "Toggle label: show the coverage indicator"
+  },
+  "allergenDisplayUnknownLabel": "Okänd allergenstatus",
+  "@allergenDisplayUnknownLabel": {
+    "description": "Toggle label: include recipes with unknown allergen status in menu suggestions"
+  },
+  "allergenLabelNote": "Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.",
+  "@allergenLabelNote": {
+    "description": "Muted note under the display toggles on the allergens page"
+  },
+  "allergenSectionMaintenance": "Underhåll",
+  "@allergenSectionMaintenance": {
+    "description": "Section overline for retag and reset rows on the allergens page"
+  },
+  "allergenRetagRow": "Uppdatera märkningen på alla recept",
+  "@allergenRetagRow": {
+    "description": "Row that starts retagging all recipes"
+  },
+  "allergenResetTitle": "Återställ till standard?",
+  "@allergenResetTitle": {
+    "description": "Title of the reset confirmation dialog on the allergens page"
+  },
+  "allergenResetBody": "Dina val av allergener och specialkost återställs till standardvalen.",
+  "@allergenResetBody": {
+    "description": "Body of the reset confirmation dialog on the allergens page"
+  },
+  "notifAllowRow": "Tillåt notiser",
+  "@notifAllowRow": {
+    "description": "Master toggle row on the notification settings page"
+  },
+  "notifCategoriesSection": "Vad du får notiser om",
+  "@notifCategoriesSection": {
+    "description": "Section overline above the notification category toggles"
+  },
+  "notifDigestSection": "Sammanfattning",
+  "@notifDigestSection": {
+    "description": "Section overline for the digest frequency row"
+  },
+  "notifDigestRow": "Skicka sammanfattning",
+  "@notifDigestRow": {
+    "description": "Row label that opens the digest frequency sheet"
+  },
+  "consentRequiredValue": "Krävs",
+  "@consentRequiredValue": {
+    "description": "Value on the rows of consent purposes that cannot be switched off"
+  },
+  "settingsBlockedPeople": "Blockerade personer",
+  "@settingsBlockedPeople": {
+    "description": "Row on Integritet & data and title of the page listing the people the user has blocked"
+  },
+  "trashIntro": "Recept raderas för gott efter {days} dagar.",
+  "@trashIntro": {
+    "description": "Intro line on the trash page",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoreRecipe": "Återställ receptet",
+  "@trashRestoreRecipe": {
+    "description": "Sheet row restoring one recipe from the trash"
+  },
+  "trashRestoreAll": "Återställ alla",
+  "@trashRestoreAll": {
+    "description": "Menu row restoring every recipe in the trash"
+  },
+  "trashDeleteOneTitle": "Radera {name} för gott?",
+  "@trashDeleteOneTitle": {
+    "description": "Confirm title for deleting one recipe from the trash for good",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDeleteOneBody": "Det går inte att ångra.",
+  "@trashDeleteOneBody": {
+    "description": "Confirm body for deleting one recipe from the trash for good"
+  },
+  "personalTagUngroupedSection": "Utan grupp",
+  "@personalTagUngroupedSection": {
+    "description": "Section title for tags that belong to no group in Egna taggar"
+  },
+  "personalTagUnusedSection": "Oanvända · {count}",
+  "@personalTagUnusedSection": {
+    "description": "Section title for tags no recipe uses, with their count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteUnusedAction": "Radera oanvända taggar",
+  "@personalTagDeleteUnusedAction": {
+    "description": "Danger row at the end of the unused tags section"
+  },
+  "personalTagNewTag": "Ny tagg",
+  "@personalTagNewTag": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagNewGroup": "Ny grupp",
+  "@personalTagNewGroup": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagManageGroup": "Hantera gruppen",
+  "@personalTagManageGroup": {
+    "description": "Row ending a tag group that opens rename and delete"
+  },
+  "tagDetailGroupLabel": "Grupp",
+  "@tagDetailGroupLabel": {
+    "description": "Section title and row label for the group of a tag"
+  },
+  "tagDetailRulesSection": "Regler",
+  "@tagDetailRulesSection": {
+    "description": "Section title for the rules of a tag"
+  },
+  "tagDetailAddRule": "Lägg till regel",
+  "@tagDetailAddRule": {
+    "description": "Row that opens the rule builder"
+  },
+  "tagDetailRunRulesAll": "Kör reglerna på alla recept",
+  "@tagDetailRunRulesAll": {
+    "description": "Secondary button on the tag page that applies the rules to existing recipes"
+  },
+  "tagDetailShareTag": "Dela taggen",
+  "@tagDetailShareTag": {
+    "description": "Row in the menu of the tag page"
+  },
+  "tagDetailDeleteTagAction": "Ta bort taggen",
+  "@tagDetailDeleteTagAction": {
+    "description": "Danger row in the menu of the tag page"
+  },
+  "tagDetailRuleStateOn": "På",
+  "@tagDetailRuleStateOn": {
+    "description": "Value of a rule row when the rule is enabled"
+  },
+  "tagDetailRuleStateOff": "Av",
+  "@tagDetailRuleStateOff": {
+    "description": "Value of a rule row when the rule is disabled"
+  },
+  "tagDetailRuleEdit": "Redigera regeln",
+  "@tagDetailRuleEdit": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleEnable": "Aktivera regeln",
+  "@tagDetailRuleEnable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDisable": "Pausa regeln",
+  "@tagDetailRuleDisable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDeleteAction": "Ta bort regeln",
+  "@tagDetailRuleDeleteAction": {
+    "description": "Danger row in the rule sheet"
+  },
+  "consentTurnOffAllOptional": "Stäng av alla valfria",
+  "@consentTurnOffAllOptional": {
+    "description": "Danger row on the consent page that revokes every optional consent after a confirmation"
+  },
   "nutritionButton": "Näringsvärden",
   "@nutritionButton": {
     "description": "BUT-643 nutrition values."
@@ -14654,5 +15150,9 @@
   "nutritionLoading": "Räknar ut näringsvärden …",
   "@nutritionLoading": {
     "description": "BUT-643 nutrition values."
+  },
+  "settingsRecipesSection": "Recept",
+  "@settingsRecipesSection": {
+    "description": "BUT-643: section heading on Appinställningar holding the nutrition strip switch"
   }
 }

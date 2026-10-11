@@ -534,7 +534,7 @@ class FCMService extends BaseService {
 
       switch (notificationType) {
         case NotificationPayloadType.friendRequest:
-          navigator.pushNamed(Routes.friends, arguments: {'tab': 'requests'});
+          navigator.pushNamed(Routes.friendRequests);
           break;
         case NotificationPayloadType.recipeShared:
           await _navigateToSharedRecipe(navigator, data);

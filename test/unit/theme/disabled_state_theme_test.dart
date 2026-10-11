@@ -156,7 +156,13 @@ void main() {
             t.inputDecorationTheme.disabledBorder! as OutlineInputBorder;
         expect(border.borderSide.color, m.surfaceDisabled);
         expect(border.borderSide.width, 1);
-        expect(t.inputDecorationTheme.fillColor, m.surfaceRaised);
+        expect(
+          WidgetStateProperty.resolveAs(
+            t.inputDecorationTheme.fillColor!,
+            _disabled,
+          ),
+          m.surfaceRaised,
+        );
       });
 
       test('switch: raised track, disabled edge and knob, off and on', () {

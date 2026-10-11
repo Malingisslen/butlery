@@ -1,7 +1,7 @@
-// BUT-2183 5m: the menu, permission, profile, empty-state, search-stats and
+// BUT-2183 5m: the menu, permission, empty-state, search-stats and
 // service widgets under lib/widgets/common leave the old opacity steps.
 // Fills are the raised surface, borders are outlineVariant, the notice boxes
-// (no access, service error, delete account, log out) are the danger tint with
+// (no access, service error) are the danger tint with
 // no border and the error on-colour, and the grab handles and the empty-state
 // glyph are text.disabled. Each test runs in both modes and asserts glyph and
 // text colours as well as fills, so a value that is shared by one mode is
@@ -23,25 +23,17 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
-import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/permissions/permission_widgets.dart';
-import 'package:butlery/widgets/common/profile/builders/profile_section_builders.dart';
-import 'package:butlery/widgets/common/profile/profile_menu.dart';
 import 'package:butlery/widgets/common/scaffolds/empty_state_scaffold.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 import 'package:butlery/widgets/common/service/service_widgets.dart';
 
 class _FakeMenuViewModel extends Mock implements MenuViewModel {}
-
-class _FakeFriendsViewModel extends Mock implements FriendsViewModel {}
-
-class _FakeProfileViewModel extends Mock implements ProfileViewModel {}
 
 class _FakeRecipeService extends Mock implements UnifiedRecipeService {}
 
@@ -167,35 +159,6 @@ void main() {
         );
       });
 
-      testWidgets('profile menu: the grab handle is text.disabled', (
-        tester,
-      ) async {
-        final friends = _FakeFriendsViewModel();
-        when(friends.refresh).thenAnswer((_) async {});
-        final profile = _FakeProfileViewModel();
-        when(() => profile.isAuthenticated).thenReturn(false);
-        GetIt.instance.registerSingleton<FriendsViewModel>(friends);
-        GetIt.instance.registerSingleton<ProfileViewModel>(profile);
-        production.ServiceLocator.initialize(DIContainer());
-        addTearDown(() async {
-          production.ServiceLocator.reset();
-          await GetIt.instance.reset();
-        });
-
-        await _pump(
-          tester,
-          theme,
-          const Scaffold(body: ProfileMenu(displayName: 'Anna')),
-        );
-
-        final handle = _handle(48, AppDimensions.spacingXs);
-        expect(handle, findsOneWidget);
-        expect(
-          _handleColor(tester, handle),
-          AppModeColors.textDisabled(theme.brightness),
-        );
-      });
-
       testWidgets('no access: the danger tint with the error on-colour', (
         tester,
       ) async {
@@ -217,105 +180,6 @@ void main() {
         expect(decoration.border, isNull);
         expect(_textColor(tester, _sv.permissionNoAccess), cs.onErrorContainer);
         expect(_iconColor(tester, ButleryIcons.block), cs.onErrorContainer);
-      });
-
-      testWidgets('backup buttons: raised with a quiet border', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          Scaffold(
-            body: Builder(
-              builder: (context) =>
-                  ProfileSectionBuilders.buildDataBackupSection(context),
-            ),
-          ),
-        );
-
-        final decoration = _boxAbove(
-          tester,
-          find.text(_sv.profileDownloadBackup),
-        );
-        expect(decoration.color, cs.surfaceContainerHighest);
-        expect(decoration.border, Border.all(color: cs.outlineVariant));
-        expect(_textColor(tester, _sv.profileDownloadBackup), cs.onSurface);
-        expect(
-          _textColor(tester, _sv.profileDownloadBackupSubtitle),
-          cs.onSurface,
-        );
-        expect(_iconColor(tester, ButleryIcons.download), cs.onSurface);
-      });
-
-      testWidgets('account buttons: neutral, info and danger tones', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          Scaffold(
-            body: SingleChildScrollView(
-              child: Builder(
-                builder: (context) =>
-                    ProfileSectionBuilders.buildAccountManagementSection(
-                      context,
-                    ),
-              ),
-            ),
-          ),
-        );
-
-        final neutral = _boxAbove(tester, find.text(_sv.profilePrivacyPolicy));
-        expect(neutral.color, cs.surfaceContainerHighest);
-        expect(neutral.border, Border.all(color: cs.outlineVariant));
-        expect(_textColor(tester, _sv.profilePrivacyPolicy), cs.onSurface);
-
-        final info = _boxAbove(tester, find.text(_sv.profileExportData));
-        expect(info.color, cs.surfaceContainerHighest);
-        expect(info.border, isNull);
-        expect(_textColor(tester, _sv.profileExportData), modeColors.info);
-        expect(
-          _textColor(tester, _sv.profileExportDataSubtitle),
-          modeColors.info,
-        );
-        expect(_iconColor(tester, ButleryIcons.download), modeColors.info);
-
-        final danger = _boxAbove(tester, find.text(_sv.profileDeleteAccount));
-        expect(danger.color, modeColors.surfaceTintDanger);
-        expect(danger.border, isNull);
-        expect(
-          _textColor(tester, _sv.profileDeleteAccount),
-          cs.onErrorContainer,
-        );
-        expect(
-          _textColor(tester, _sv.profileDeleteAccountSubtitle),
-          cs.onErrorContainer,
-        );
-        expect(_iconColor(tester, ButleryIcons.trash2), cs.onErrorContainer);
-      });
-
-      testWidgets('log out: the danger tint with the error on-colour', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          Scaffold(
-            body: Builder(
-              builder: (context) =>
-                  ProfileSectionBuilders.buildLogoutSection(context),
-            ),
-          ),
-        );
-
-        final style = tester
-            .widget<ButtonStyleButton>(find.bySubtype<FilledButton>())
-            .style!;
-        expect(
-          style.backgroundColor!.resolve({}),
-          modeColors.surfaceTintDanger,
-        );
-        expect(style.foregroundColor!.resolve({}), cs.onErrorContainer);
       });
 
       testWidgets('empty state: the glyph is text.disabled', (tester) async {

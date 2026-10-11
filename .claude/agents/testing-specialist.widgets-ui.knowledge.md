@@ -163,10 +163,7 @@ the wrong belief and has been corrected in place):**
   the widget fixture by role, and diff the two builders' SIGNATURES when a unit suite and a widget
   suite share a subject (BUT-1971).
 ### Multi-select / bulk-action wiring
-- VM tests + card tests can pass while the GLUE (snapshot/order/callback) is untested at widget level.
-  Selection-guard tests need the owner's OWN tile, not all-strangers.
-- Clear-on-cancel: assert the count returns to the ORIGINAL, not zero. Copy-paste id-field mismatches
-  are invisible unless a fixture makes the fields DIFFER.
+- A selection-guard test needs the owner's OWN tile.
 - Async error stubs: `thenAnswer((_) => Future<T>.error(...))` with production's `T` — never
   `thenThrow`, and never `(_) async => throw`, which infers `Future<Never>`: a `.catchError((_)
   => [])` swallow in production then throws a type error instead of swallowing, so that
@@ -208,3 +205,4 @@ the wrong belief and has been corrected in place):**
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
 - **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).
 - **A gate that WAITS with the same loading text the app branch also shows makes "the app opens" unfalsifiable** — `PendingDeletionGate` and `AuthWrapper` both draw `loadingProfileBusy`, so a gate stuck waiting passed "no claim goes into the app". Assert an observable only the opened branch draws (the profile-load retry view, `commonRetry`) and keep the waiting text its own test (BUT-950).
+- **A behaviour moved to a new surface keeps the OLD test's intent, not its harness.** A route in `Routes.requiresAuth` cannot be built by `AppRouter.generateRoute` in a widget host (Firebase check): pin the gate on `requiresAuth`, drive the view directly. A back arrow exists only on a PUSHED page (BUT-2363).

@@ -63,6 +63,8 @@ import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -486,59 +488,71 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ],
 
       // Title field
-      TextFormField(
-        initialValue: viewModel.title,
-        decoration: InputDecoration(labelText: context.l10n.recipeTitle),
-        style: AppTextStyles.bodyMedium,
-        textInputAction: TextInputAction.next,
-        onChanged: viewModel.setTitle,
-        validator: FormValidators.combine([
-          FormValidators.required(context.l10n.recipeTitle),
-          FormValidators.minLength(3, context.l10n.recipeTitle),
-          FormValidators.maxLength(100, context.l10n.recipeTitle),
-          // BUT-517: block profanity at validator level (BEFORE the API call).
-          FormValidators.contentFilter(context.l10n.recipeTitle),
-        ]),
+      LabeledField(
+        label: context.l10n.recipeTitle,
+        child: TextFormField(
+          initialValue: viewModel.title,
+          errorBuilder: FieldErrorLine.builder,
+          style: AppTextStyles.bodyMedium,
+          textInputAction: TextInputAction.next,
+          onChanged: viewModel.setTitle,
+          validator: FormValidators.combine([
+            FormValidators.required(context.l10n.recipeTitle),
+            FormValidators.minLength(3, context.l10n.recipeTitle),
+            FormValidators.maxLength(100, context.l10n.recipeTitle),
+            // BUT-517: block profanity at validator level (BEFORE the API call).
+            FormValidators.contentFilter(context.l10n.recipeTitle),
+          ]),
+        ),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Description field
-      TextFormField(
-        initialValue: viewModel.description,
-        maxLines: 2,
-        decoration: InputDecoration(labelText: context.l10n.recipeDescription),
-        style: AppTextStyles.bodyMedium,
-        textInputAction: TextInputAction.next,
-        onChanged: viewModel.setDescription,
-        validator: FormValidators.combine([
-          FormValidators.maxLength(500, context.l10n.recipeDescription),
-          // BUT-517
-          FormValidators.contentFilter(context.l10n.recipeDescription),
-        ]),
+      LabeledField(
+        label: context.l10n.recipeDescription,
+        child: TextFormField(
+          initialValue: viewModel.description,
+          maxLines: 2,
+          errorBuilder: FieldErrorLine.builder,
+          style: AppTextStyles.bodyMedium,
+          textInputAction: TextInputAction.next,
+          onChanged: viewModel.setDescription,
+          validator: FormValidators.combine([
+            FormValidators.maxLength(500, context.l10n.recipeDescription),
+            // BUT-517
+            FormValidators.contentFilter(context.l10n.recipeDescription),
+          ]),
+        ),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Portions field
-      TextFormField(
-        initialValue: (viewModel.portions?.toString()).orEmpty(),
-        decoration: InputDecoration(labelText: context.l10n.recipePortions),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.next,
-        onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
-        validator: FormValidators.portions(),
+      LabeledField(
+        label: context.l10n.recipePortions,
+        child: TextFormField(
+          initialValue: (viewModel.portions?.toString()).orEmpty(),
+          errorBuilder: FieldErrorLine.builder,
+          style: AppTextStyles.bodyMedium,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          onChanged: (value) => viewModel.setPortions(int.tryParse(value)),
+          validator: FormValidators.portions(),
+        ),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Time field
-      TextFormField(
-        initialValue: (viewModel.timeMinutes?.toString()).orEmpty(),
-        decoration: InputDecoration(labelText: context.l10n.recipeTimeMinutes),
-        style: AppTextStyles.bodyMedium,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.next,
-        onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
-        validator: FormValidators.cookingTime(),
+      LabeledField(
+        label: context.l10n.recipeTimeMinutes,
+        child: TextFormField(
+          initialValue: (viewModel.timeMinutes?.toString()).orEmpty(),
+          errorBuilder: FieldErrorLine.builder,
+          style: AppTextStyles.bodyMedium,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          onChanged: (value) => viewModel.setTimeMinutes(int.tryParse(value)),
+          validator: FormValidators.cookingTime(),
+        ),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -607,41 +621,49 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Rating field
-        TextFormField(
-          // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
-          // Fixing one without the other leaves the bug on the other screen, and
-          // this is the one reached by editing a saved recipe.
-          initialValue: viewModel.rating == null
-              ? ''
-              : formatSwedishDecimal(viewModel.rating!),
-          decoration: InputDecoration(labelText: context.l10n.recipeRating),
-          style: AppTextStyles.bodyMedium,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: const [SwedishDecimalInputFormatter()],
-          textInputAction: TextInputAction.next,
-          onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
-          validator: FormValidators.rating(),
+        LabeledField(
+          label: context.l10n.recipeRating,
+          child: TextFormField(
+            // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
+            // Fixing one without the other leaves the bug on the other screen, and
+            // this is the one reached by editing a saved recipe.
+            initialValue: viewModel.rating == null
+                ? ''
+                : formatSwedishDecimal(viewModel.rating!),
+            errorBuilder: FieldErrorLine.builder,
+            style: AppTextStyles.bodyMedium,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [SwedishDecimalInputFormatter()],
+            textInputAction: TextInputAction.next,
+            onChanged: (value) =>
+                viewModel.setRating(parseSwedishDecimal(value)),
+            validator: FormValidators.rating(),
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Source URL field
-        TextFormField(
-          initialValue: viewModel.sourceUrl.orEmpty(),
-          decoration: InputDecoration(
-            labelText: context.l10n.recipeSourceUrl,
-            hintText: context.l10n.recipeSourceUrlHint,
-            helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
-                ? context.l10n.recipeImportedFromShare
-                : context.l10n.recipeSourceUrlHelper,
-            prefixIcon: const ButleryIcon(
-              ButleryIcons.link,
-              size: AppDimensions.iconSizeAction,
+        LabeledField(
+          label: context.l10n.recipeSourceUrl,
+          child: TextFormField(
+            initialValue: viewModel.sourceUrl.orEmpty(),
+            errorBuilder: FieldErrorLine.builder,
+            decoration: InputDecoration(
+              hintText: context.l10n.recipeSourceUrlHint,
+              helperText:
+                  viewModel.sourceUrl == context.l10n.recipeSharedFromApp
+                  ? context.l10n.recipeImportedFromShare
+                  : context.l10n.recipeSourceUrlHelper,
+              prefixIcon: const ButleryIcon(
+                ButleryIcons.link,
+                size: AppDimensions.iconSizeAction,
+              ),
             ),
+            style: AppTextStyles.bodyMedium,
+            keyboardType: TextInputType.url,
+            onChanged: viewModel.setSourceUrl,
+            validator: FormValidators.recipeSourceUrl(),
           ),
-          style: AppTextStyles.bodyMedium,
-          keyboardType: TextInputType.url,
-          onChanged: viewModel.setSourceUrl,
-          validator: FormValidators.recipeSourceUrl(),
         ),
         const SizedBox(height: AppDimensions.spacingXl),
 

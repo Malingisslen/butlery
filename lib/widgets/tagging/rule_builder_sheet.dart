@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -244,14 +245,15 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   }
 
   Widget _buildNameField() {
-    return TextField(
-      controller: _nameController,
-      decoration: InputDecoration(
-        labelText: context.l10n.ruleNameLabel,
-        hintText: context.l10n.ruleNameHint,
-        border: const OutlineInputBorder(),
+    return LabeledField(
+      label: context.l10n.ruleNameLabel,
+      child: TextField(
+        controller: _nameController,
+        decoration: InputDecoration(
+          hintText: context.l10n.ruleNameHint,
+        ),
+        textCapitalization: TextCapitalization.sentences,
       ),
-      textCapitalization: TextCapitalization.sentences,
     );
   }
 

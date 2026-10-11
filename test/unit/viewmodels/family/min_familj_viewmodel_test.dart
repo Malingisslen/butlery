@@ -322,6 +322,22 @@ void main() {
       await fs.collection('households').doc(hh.id).set(hh.toFirestore());
     }
 
+    test('isCurrentUser names only the signed-in account', () async {
+      await seedDuoHousehold();
+
+      actAs(_malin);
+      final vmMalin = _vm();
+      await vmMalin.load();
+      expect(vmMalin.isCurrentUser(_malin), isTrue);
+      expect(vmMalin.isCurrentUser(_johan), isFalse);
+
+      actAs(_johan);
+      final vmJohan = _vm();
+      await vmJohan.load();
+      expect(vmJohan.isCurrentUser(_johan), isTrue);
+      expect(vmJohan.isCurrentUser(_malin), isFalse);
+    });
+
     test(
       'a second admin who adds allergen consent is credited, not the first',
       () async {

@@ -45,6 +45,7 @@ import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 
+import '../../../infrastructure/helpers/field_finder.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 
@@ -190,7 +191,7 @@ void main() {
       // Type in the ingredient field — triggers _onSearchChanged which
       // sets _showSuggestions=true if results are non-empty.
       await tester.enterText(
-        find.widgetWithText(TextField, 'Ingrediens'),
+        fieldLabelled('Ingrediens', type: TextField),
         'lax',
       );
       await tester.pump();
@@ -210,6 +211,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit the form (the primary button text is "LÄGG TILL" in add mode).
+      await tester.ensureVisible(find.text('LÄGG TILL'));
       await tester.tap(find.text('LÄGG TILL'));
       await tester.pump();
 
@@ -270,11 +272,12 @@ void main() {
       );
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'Ingrediens'),
+        fieldLabelled('Ingrediens', type: TextField),
         'Hemlagad buljong',
       );
       await tester.pump();
 
+      await tester.ensureVisible(find.text('LÄGG TILL'));
       await tester.tap(find.text('LÄGG TILL'));
       await tester.pump();
 
@@ -340,6 +343,7 @@ void main() {
     // The primary button in edit mode shows "Spara", not "LÄGG TILL".
     expect(find.text('Spara'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pump();
 
@@ -407,11 +411,12 @@ void main() {
     await pumpRoutedSheet(tester);
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Mjölk',
     );
     await tester.pump();
 
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pumpAndSettle(); // run _submit + surface the snackbar
 
@@ -471,11 +476,12 @@ void main() {
     await pumpRoutedSheet(tester);
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Mjölk',
     );
     await tester.pump();
 
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pumpAndSettle();
 
@@ -515,6 +521,7 @@ void main() {
     await tester.tap(find.text('dl').hitTestable().last);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pumpAndSettle();
 
@@ -579,6 +586,7 @@ void main() {
       ['knippe', ...AddPantryItemSheet.offeredUnits],
     );
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pumpAndSettle();
 
@@ -638,6 +646,7 @@ void main() {
     await tester.tap(find.text('knippe').hitTestable().last);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pumpAndSettle();
 
@@ -690,6 +699,7 @@ void main() {
       AddPantryItemSheet.offeredUnits,
     );
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pumpAndSettle();
 
@@ -717,7 +727,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Grädde',
     );
     await tester.pump();
@@ -729,6 +739,7 @@ void main() {
     await tester.tap(find.text('dl').hitTestable().last);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pump();
 
@@ -759,17 +770,18 @@ void main() {
   ) async {
     await tester.pumpWidget(buildSheet());
 
-    final amount = find.widgetWithText(TextField, 'Mängd');
+    final amount = fieldLabelled('Mängd', type: TextField);
     expect(tester.widget<TextField>(amount).controller!.text, isEmpty);
     expect(tester.widget<TextField>(amount).decoration!.hintText, '1');
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Ägg',
     );
     await tester.tap(amount);
     await tester.enterText(amount, '6');
     await tester.pump();
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pump();
 
@@ -789,10 +801,11 @@ void main() {
     await tester.pumpWidget(buildSheet());
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Ägg',
     );
     await tester.pump();
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pump();
 
@@ -814,12 +827,13 @@ void main() {
     await tester.pumpWidget(buildSheet());
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Mjölk',
     );
-    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '0,5');
+    await tester.enterText(fieldLabelled('Mängd', type: TextField), '0,5');
     await tester.pump();
 
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pump();
 
@@ -839,12 +853,13 @@ void main() {
     await tester.pumpWidget(buildSheet());
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'Ingrediens'),
+      fieldLabelled('Ingrediens', type: TextField),
       'Mjölk',
     );
-    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), ',5');
+    await tester.enterText(fieldLabelled('Mängd', type: TextField), ',5');
     await tester.pump();
 
+    await tester.ensureVisible(find.text('LÄGG TILL'));
     await tester.tap(find.text('LÄGG TILL'));
     await tester.pump();
 
@@ -865,7 +880,7 @@ void main() {
   testWidgets('the field refuses a second separator', (tester) async {
     await tester.pumpWidget(buildSheet());
 
-    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '1,5,5');
+    await tester.enterText(fieldLabelled('Mängd', type: TextField), '1,5,5');
     await tester.pump();
 
     // The formatter keeps the first separator and drops the second, so the
@@ -873,7 +888,7 @@ void main() {
     // string. Asserting the FIELD, not the submit, because this is the
     // formatter's job and the parser never sees the rejected keystroke.
     final field = tester.widget<TextField>(
-      find.widgetWithText(TextField, 'Mängd'),
+      fieldLabelled('Mängd', type: TextField),
     );
     expect(field.controller!.text, '1,55');
   });
@@ -900,7 +915,7 @@ void main() {
 
     await tester.pumpWidget(buildSheet(existingItem: existing));
 
-    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '');
+    await tester.enterText(fieldLabelled('Mängd', type: TextField), '');
     await tester.pump();
 
     // The premise, asserted rather than assumed: if the formatter refused the
@@ -908,12 +923,13 @@ void main() {
     // reached, and this test would pass for the wrong reason.
     expect(
       tester
-          .widget<TextField>(find.widgetWithText(TextField, 'Mängd'))
+          .widget<TextField>(fieldLabelled('Mängd', type: TextField))
           .controller!
           .text,
       isEmpty,
     );
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pump();
 
@@ -948,9 +964,10 @@ void main() {
 
     await tester.pumpWidget(buildSheet(existingItem: existing));
 
-    await tester.enterText(find.widgetWithText(TextField, 'Mängd'), '0,5');
+    await tester.enterText(fieldLabelled('Mängd', type: TextField), '0,5');
     await tester.pump();
 
+    await tester.ensureVisible(find.text('Spara'));
     await tester.tap(find.text('Spara'));
     await tester.pump();
 

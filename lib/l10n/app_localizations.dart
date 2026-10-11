@@ -3916,7 +3916,7 @@ abstract class AppLocalizations {
   /// BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.'**
+  /// **'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare under Appinställningar.'**
   String get pantryAutoAddPromptBody;
 
   /// BUT-1306: confirm button on the first-checkoff prompt that enables auto-add-to-pantry.
@@ -8602,7 +8602,7 @@ abstract class AppLocalizations {
   /// BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave
   ///
   /// In sv, this message translates to:
-  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.'**
+  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.'**
   String get householdJoinConfirmBody;
 
   /// BUT-2267: joining the household failed
@@ -8620,13 +8620,13 @@ abstract class AppLocalizations {
   /// BUT-2267: under householdJoinedTitle; points to the sharing setting
   ///
   /// In sv, this message translates to:
-  /// **'Dela dina allergier under Inställningar, så räknar menyn med dem.'**
+  /// **'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.'**
   String get householdJoinedSubtitle;
 
   /// BUT-2267: opens Settings, where the allergy-sharing switch is
   ///
   /// In sv, this message translates to:
-  /// **'Inställningar'**
+  /// **'Visa hushållet'**
   String get householdOpenSettings;
 
   /// No description provided for @menuVoteTitle.
@@ -25051,7 +25051,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Min familj'**
+  /// **'Familj & hushåll'**
   String get familyTitle;
 
   /// No description provided for @familyIntro.
@@ -28279,13 +28279,13 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer section heading.
   ///
   /// In sv, this message translates to:
-  /// **'App & konto'**
+  /// **'Konto & app'**
   String get moreSectionAppAccount;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
   ///
   /// In sv, this message translates to:
-  /// **'Min familj'**
+  /// **'Familj & hushåll'**
   String get moreFamily;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
@@ -28297,7 +28297,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
   ///
   /// In sv, this message translates to:
-  /// **'Samlingsstatistik'**
+  /// **'Statistik'**
   String get moreCollectionStats;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
@@ -29866,6 +29866,648 @@ abstract class AppLocalizations {
   /// **'Raderingen har redan startat och kan inte ångras längre.'**
   String get pendingDeletionAlreadyStarted;
 
+  /// Mer, omtänkt (2026-10-10): subtitle of the profile row at the top of Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Profil och synlighet'**
+  String get moreProfileSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): profile row title when the user has no display name
+  ///
+  /// In sv, this message translates to:
+  /// **'Din profil'**
+  String get moreProfileFallbackName;
+
+  /// Mer, omtänkt (2026-10-10): the band at the top of Mer while changes wait to sync
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar på synk} other{{count} ändringar väntar på synk}}'**
+  String moreSyncBand(int count);
+
+  /// Mer, omtänkt (2026-10-10): Mer section heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll & mat'**
+  String get moreSectionHousehold;
+
+  /// Mer, omtänkt (2026-10-10): Mer row to the allergen settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener & kost'**
+  String get moreAllergens;
+
+  /// Mer, omtänkt (2026-10-10): section on Familj & hushåll holding portions and the household allergen settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållet'**
+  String get moreHouseholdSection;
+
+  /// Mer, omtänkt (2026-10-10): title of the Konto & säkerhet page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Konto & säkerhet'**
+  String get settingsAccountAreaTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Konto & säkerhet row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning, tvåstegsverifiering, logga ut'**
+  String get settingsAccountAreaSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Integritet & data page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet & data'**
+  String get settingsPrivacyAreaTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Integritet & data row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycken, export, säkerhetskopia'**
+  String get settingsPrivacyAreaSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Appinställningar page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Appinställningar'**
+  String get settingsAppTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Appinställningar row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Språk, tema, notiser'**
+  String get settingsAppSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Hjälp & om page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp & om'**
+  String get settingsHelpTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Hjälp & om row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Frågor, villkor, rapporter'**
+  String get settingsHelpSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning'**
+  String get settingsSignInSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadress'**
+  String get settingsAccountEmail;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenord'**
+  String get settingsAccountPassword;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifiering'**
+  String get settingsAccountTwoStep;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val'**
+  String get settingsYourChoicesSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Din data'**
+  String get settingsYourDataSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Dokument'**
+  String get settingsDocumentsSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Integritet & data that opens the consent settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycken'**
+  String get settingsConsents;
+
+  /// Mer, omtänkt (2026-10-10): row on Integritet & data and the title of its sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Säkerhetskopia av recept'**
+  String get settingsBackupTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the backup row
+  ///
+  /// In sv, this message translates to:
+  /// **'Ladda ner eller återställ'**
+  String get settingsBackupSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Appinställningar
+  ///
+  /// In sv, this message translates to:
+  /// **'Utseende'**
+  String get settingsAppearanceSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Appinställningar
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp'**
+  String get settingsShoppingSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Appinställningar that opens the notification preferences
+  ///
+  /// In sv, this message translates to:
+  /// **'Notisinställningar'**
+  String get settingsNotificationSettings;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp'**
+  String get settingsHelpSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Regler och rapporter'**
+  String get settingsRulesSection;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Mina rapporter row
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du har rapporterat och hur det gick'**
+  String get settingsMyReportsSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): label of the static version row on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Version'**
+  String get settingsVersionLabel;
+
+  /// Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row
+  ///
+  /// In sv, this message translates to:
+  /// **'Admin'**
+  String get settingsAdminOnly;
+
+  /// Mer, omtänkt del 4 (2026-10-11): title of the friend requests page and the row on the Vänner tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänförfrågningar'**
+  String get socialFriendRequestsTitle;
+
+  /// Mer, omtänkt del 4 (2026-10-11): spoken meaning of the count on the Vänförfrågningar row
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 väntande förfrågan} other{{count} väntande förfrågningar}}'**
+  String socialPendingRequestsCount(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): hint in the Hitta vänner sheet search field
+  ///
+  /// In sv, this message translates to:
+  /// **'Namn eller e-postadress'**
+  String get socialSearchNameOrEmailHint;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Hitta vänner sheet that shares the invitation link
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela din profillänk'**
+  String get socialShareProfileLink;
+
+  /// Mer, omtänkt del 4 (2026-10-11): name of the pencil action in the Meddelanden top bar and title of its sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Nytt meddelande'**
+  String get messagesNewMessage;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that starts a direct conversation
+  ///
+  /// In sv, this message translates to:
+  /// **'Till en vän'**
+  String get messagesToFriend;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that opens group creation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny gruppkonversation'**
+  String get messagesNewGroup;
+
+  /// Mer, omtänkt del 4 (2026-10-11): hint of the search field on the Meddelanden page
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök i meddelanden'**
+  String get messagesSearchHint;
+
+  /// Mer, omtänkt del 4 (2026-10-11): last row on Meddelanden, toggles the archived conversations; its value is the count
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade samtal'**
+  String get messagesArchivedRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): name of the three-dot button on a conversation row in Meddelanden
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String messagesMoreOptionsFor(String name);
+
+  /// Mer, omtänkt del 4 (2026-10-11): tooltip and name of the ⋯ button in the group and friend profile top bars
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val'**
+  String get socialMoreOptions;
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the group name
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}}'**
+  String groupMetaMembers(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the group name when the user is admin
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}} · du är admin'**
+  String groupMetaMembersAdmin(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): section title on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med gruppen'**
+  String get groupShareWithGroupSection;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela ett recept'**
+  String get groupShareRecipeRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela veckomenyn'**
+  String get groupShareMenuRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela en inköpslista'**
+  String get groupShareShoppingListRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): members section overline on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmar · {count}'**
+  String groupMembersSection(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): pending invitations overline on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntande inbjudningar · {count}'**
+  String groupPendingInvitationsSection(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): danger row in the group ⋯ sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna gruppen'**
+  String get groupLeaveTheGroup;
+
+  /// Mer, omtänkt del 4 (2026-10-11): info row on group detail, value is the creation date
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapad'**
+  String get groupCreatedInfoRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the friend's name on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipes, plural, =1{1 recept} other{{recipes} recept}} · {friends, plural, =1{1 vän} other{{friends} vänner}}'**
+  String friendProfileMeta(int recipes, int friends);
+
+  /// Mer, omtänkt del 4 (2026-10-11): secondary button on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela ett recept'**
+  String get friendProfileShareRecipe;
+
+  /// Mer, omtänkt del 4 (2026-10-11): section title on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get friendProfileRecipesSection;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row on the friend profile; owner is the friend's name already in genitive form
+  ///
+  /// In sv, this message translates to:
+  /// **'{owner} publika recept'**
+  String friendProfilePublicRecipesRow(String owner);
+
+  /// Mer, omtänkt del 4 (2026-10-11): row on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat med dig av {name}'**
+  String friendProfileSharedWithYouRow(String name);
+
+  /// Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort som vän'**
+  String get friendProfileRemoveFriend;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
+  ///
+  /// In sv, this message translates to:
+  /// **'Konton i hushållet'**
+  String get familyAccountsSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjeprofiler'**
+  String get familyProfilesSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till familjemedlem'**
+  String get familyAddMemberRow;
+
+  /// Mer, omtänkt del 2 (2026-10-11): subtitle part on the signed-in user's own account row
+  ///
+  /// In sv, this message translates to:
+  /// **'Du'**
+  String get familyYou;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the default portions
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltider'**
+  String get familyMealsSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): row on Familj & hushåll and title of its sheet: how many portions recipes open with
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner som standard'**
+  String get householdPortionsTitle;
+
+  /// Mer, omtänkt del 2 (2026-10-11): snackbar after the default portions are saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Portionerna är sparade'**
+  String get householdPortionsSaved;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergier i hushållet'**
+  String get familyAllergiesSection;
+
+  /// Intro text on the allergens and diet page
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj vad du vill se status för på recepten.'**
+  String get allergenIntro;
+
+  /// Section overline for the allergen chips
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get allergenSectionAllergens;
+
+  /// Section overline for the diet chips
+  ///
+  /// In sv, this message translates to:
+  /// **'Specialkost'**
+  String get allergenSectionDietary;
+
+  /// Toggle label: show the coverage indicator
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur säker märkningen är'**
+  String get allergenDisplayCoverageLabel;
+
+  /// Toggle label: include recipes with unknown allergen status in menu suggestions
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd allergenstatus'**
+  String get allergenDisplayUnknownLabel;
+
+  /// Muted note under the display toggles on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.'**
+  String get allergenLabelNote;
+
+  /// Section overline for retag and reset rows on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Underhåll'**
+  String get allergenSectionMaintenance;
+
+  /// Row that starts retagging all recipes
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera märkningen på alla recept'**
+  String get allergenRetagRow;
+
+  /// Title of the reset confirmation dialog on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ till standard?'**
+  String get allergenResetTitle;
+
+  /// Body of the reset confirmation dialog on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val av allergener och specialkost återställs till standardvalen.'**
+  String get allergenResetBody;
+
+  /// Master toggle row on the notification settings page
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt notiser'**
+  String get notifAllowRow;
+
+  /// Section overline above the notification category toggles
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad du får notiser om'**
+  String get notifCategoriesSection;
+
+  /// Section overline for the digest frequency row
+  ///
+  /// In sv, this message translates to:
+  /// **'Sammanfattning'**
+  String get notifDigestSection;
+
+  /// Row label that opens the digest frequency sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka sammanfattning'**
+  String get notifDigestRow;
+
+  /// Value on the rows of consent purposes that cannot be switched off
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs'**
+  String get consentRequiredValue;
+
+  /// Row on Integritet & data and title of the page listing the people the user has blocked
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockerade personer'**
+  String get settingsBlockedPeople;
+
+  /// Intro line on the trash page
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept raderas för gott efter {days} dagar.'**
+  String trashIntro(int days);
+
+  /// Sheet row restoring one recipe from the trash
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ receptet'**
+  String get trashRestoreRecipe;
+
+  /// Menu row restoring every recipe in the trash
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ alla'**
+  String get trashRestoreAll;
+
+  /// Confirm title for deleting one recipe from the trash for good
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera {name} för gott?'**
+  String trashDeleteOneTitle(String name);
+
+  /// Confirm body for deleting one recipe from the trash for good
+  ///
+  /// In sv, this message translates to:
+  /// **'Det går inte att ångra.'**
+  String get trashDeleteOneBody;
+
+  /// Section title for tags that belong to no group in Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Utan grupp'**
+  String get personalTagUngroupedSection;
+
+  /// Section title for tags no recipe uses, with their count
+  ///
+  /// In sv, this message translates to:
+  /// **'Oanvända · {count}'**
+  String personalTagUnusedSection(int count);
+
+  /// Danger row at the end of the unused tags section
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera oanvända taggar'**
+  String get personalTagDeleteUnusedAction;
+
+  /// Row in the create sheet of Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny tagg'**
+  String get personalTagNewTag;
+
+  /// Row in the create sheet of Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny grupp'**
+  String get personalTagNewGroup;
+
+  /// Row ending a tag group that opens rename and delete
+  ///
+  /// In sv, this message translates to:
+  /// **'Hantera gruppen'**
+  String get personalTagManageGroup;
+
+  /// Section title and row label for the group of a tag
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get tagDetailGroupLabel;
+
+  /// Section title for the rules of a tag
+  ///
+  /// In sv, this message translates to:
+  /// **'Regler'**
+  String get tagDetailRulesSection;
+
+  /// Row that opens the rule builder
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till regel'**
+  String get tagDetailAddRule;
+
+  /// Secondary button on the tag page that applies the rules to existing recipes
+  ///
+  /// In sv, this message translates to:
+  /// **'Kör reglerna på alla recept'**
+  String get tagDetailRunRulesAll;
+
+  /// Row in the menu of the tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela taggen'**
+  String get tagDetailShareTag;
+
+  /// Danger row in the menu of the tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort taggen'**
+  String get tagDetailDeleteTagAction;
+
+  /// Value of a rule row when the rule is enabled
+  ///
+  /// In sv, this message translates to:
+  /// **'På'**
+  String get tagDetailRuleStateOn;
+
+  /// Value of a rule row when the rule is disabled
+  ///
+  /// In sv, this message translates to:
+  /// **'Av'**
+  String get tagDetailRuleStateOff;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera regeln'**
+  String get tagDetailRuleEdit;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera regeln'**
+  String get tagDetailRuleEnable;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Pausa regeln'**
+  String get tagDetailRuleDisable;
+
+  /// Danger row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort regeln'**
+  String get tagDetailRuleDeleteAction;
+
+  /// Danger row on the consent page that revokes every optional consent after a confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng av alla valfria'**
+  String get consentTurnOffAllOptional;
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:
@@ -30201,6 +30843,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Räknar ut näringsvärden …'**
   String get nutritionLoading;
+
+  /// BUT-643: section heading on Appinställningar holding the nutrition strip switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get settingsRecipesSection;
 }
 
 class _AppLocalizationsDelegate

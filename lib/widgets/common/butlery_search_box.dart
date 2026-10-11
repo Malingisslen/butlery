@@ -1,21 +1,15 @@
-/// Custom search box widget with forest green/rust border treatment.
-///
-/// Provides a styled search input that matches the Butlery UI redesign:
-/// - White background with subtle border
-/// - Forest green focus border with rust accent on bottom
-/// - Matching icons and typography
+/// The search field: paper with a 1 px border.control edge, radius 8, no
+/// shadow, and the focus ring outside it (Komponentark v1 §07 Sökfält:
+/// "Papper + border-control. Aldrig border-subtle, aldrig #FFF").
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/field_text_style.dart';
-import 'package:butlery/theme/app_motion.dart';
 
 /// Custom search box with Butlery styling.
 ///
@@ -131,63 +125,71 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // Focus is the canonical ring outside the box; the box's own edge no
-    // longer thickens at focus (Komponentark v1:657). The ring shows for
-    // keyboard focus, like every other control (beslut-paket2 D3).
+    final radius = BorderRadius.circular(AppDimensions.radiusControl);
+    // The edge keeps its colour and width at focus; the ring outside the
+    // box shows focus (Komponentark v1:657). Fill, disabled edge and hover
+    // come from the app's input theme.
+    final edge = OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide(
+        color: cs.outline,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
     return ButleryFocusRing(
       focused: _isFocused,
-      child: AnimatedContainer(
-        duration: AppMotion.micro.respectingMotion(context),
-        decoration: InputThemes.searchBoxDecoration,
-        child: TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          autofocus: widget.autofocus,
+      borderRadius: radius,
+      child: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        autofocus: widget.autofocus,
+        enabled: widget.enabled,
+        style: fieldTextStyle(
+          context,
           enabled: widget.enabled,
-          style: fieldTextStyle(
-            context,
-            enabled: widget.enabled,
-            base: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onSurface,
-            ),
+          base: AppTextStyles.bodyMedium.copyWith(
+            color: cs.onSurface,
           ),
-          decoration: InputDecoration(
-            hintText: widget.hintText ?? context.l10n.searchHint,
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-            prefixIcon:
-                widget.prefixIcon ??
-                ButleryIcon(
-                  ButleryIcons.search,
-                  color: _isFocused ? cs.onSurface : cs.outline,
-                  size: AppDimensions.iconSizeM,
-                ),
-            suffixIcon:
-                widget.suffixIcon ??
-                (_hasText
-                    ? IconButton(
-                        icon: ButleryIcon(
-                          ButleryIcons.x,
-                          color: cs.outline,
-                          size: AppDimensions.iconSizeM,
-                        ),
-                        onPressed: _clearText,
-                        tooltip: context.l10n.commonClear,
-                      )
-                    : null),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-            ),
-          ),
-          onChanged: widget.onChanged,
-          onSubmitted: widget.onSubmitted,
-          textInputAction: TextInputAction.search,
         ),
+        decoration: InputDecoration(
+          hintText: widget.hintText ?? context.l10n.searchHint,
+          hintStyle: AppTextStyles.bodyMedium.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+          prefixIcon:
+              widget.prefixIcon ??
+              ButleryIcon(
+                ButleryIcons.search,
+                color: _isFocused ? cs.onSurface : cs.onSurfaceVariant,
+                size: AppDimensions.iconSizeM,
+              ),
+          suffixIcon:
+              widget.suffixIcon ??
+              (_hasText
+                  ? IconButton(
+                      icon: ButleryIcon(
+                        ButleryIcons.x,
+                        color: cs.onSurface,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                      onPressed: _clearText,
+                      tooltip: context.l10n.commonClear,
+                    )
+                  : null),
+          border: edge,
+          enabledBorder: edge,
+          focusedBorder: edge,
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.space12,
+          ),
+        ),
+        onChanged: widget.onChanged,
+        onSubmitted: widget.onSubmitted,
+        textInputAction: TextInputAction.search,
       ),
     );
   }

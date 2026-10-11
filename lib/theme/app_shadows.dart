@@ -96,15 +96,6 @@ abstract class AppShadows {
     ),
   ];
 
-  /// Search box shadow — subtle lift for the search input
-  static List<BoxShadow> get searchBox => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    ),
-  ];
-
   /// Active chip glow — green-tinted shadow for selected filter chips
   static List<BoxShadow> activeChip(Color primaryColor) => [
     BoxShadow(

@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Opens the food picker for [line]; completes with true when the household's
 /// choice was saved.
@@ -114,15 +115,17 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                       horizontal: AppDimensions.spacingMd,
                       vertical: AppDimensions.spacingSm,
                     ),
-                    child: TextField(
-                      controller: _controller,
-                      autofocus: true,
-                      textInputAction: TextInputAction.search,
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        labelText: l10n.nutritionPickerSearchLabel,
-                        helperText: l10n.nutritionPickerHint,
-                        helperMaxLines: 2,
+                    child: LabeledField(
+                      label: l10n.nutritionPickerSearchLabel,
+                      child: TextField(
+                        controller: _controller,
+                        autofocus: true,
+                        textInputAction: TextInputAction.search,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          helperText: l10n.nutritionPickerHint,
+                          helperMaxLines: 2,
+                        ),
                       ),
                     ),
                   ),

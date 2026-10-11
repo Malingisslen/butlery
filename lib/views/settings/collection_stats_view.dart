@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/views/more/more_area_scaffold.dart';
+import 'package:butlery/views/settings/collection_stats/completeness_distribution.dart';
+import 'package:butlery/views/settings/collection_stats/meal_type_bar.dart';
+import 'package:butlery/views/settings/collection_stats/stat_tiles.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -50,478 +47,122 @@ class _CollectionStatsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final vm = context.watch<RecipeQueryViewModel>();
     final insights = vm.recipeInsights;
+    final mealTypes = vm.getMostUsedMealTypes().take(6).toList();
+    final tags = vm.getMostUsedTags().take(8).toList();
+    final incompleteRecipes = vm.getIncompleteRecipes();
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.statsMyStatistics,
-      ),
-      backgroundColor: cs.surface,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: ListView(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.paddingM,
-              ),
-              children: [
-                _HeroBanner(
-                  totalRecipes: insights.totalRecipes,
-                  favorites: insights.favoriteCount,
-                  recentlyCooked: insights.recentlyCookedCount,
-                  withImages: insights.withImagesCount,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _SectionHeader(title: context.l10n.statsRecipeCollection),
-                _RecipeBreakdown(
-                  personal: insights.personalRecipes,
-                  collaborative: insights.collaborativeRecipes,
-                  highRated: insights.highRatedCount,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _SectionHeader(title: context.l10n.statsMealTypes),
-                _MealTypeChart(entries: vm.getMostUsedMealTypes()),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _SectionHeader(title: context.l10n.statsPopularTags),
-                _TopTags(entries: vm.getMostUsedTags()),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _SectionHeader(title: context.l10n.statsCookingActivity),
-                _CookingSummary(
-                  totalCooks: insights.totalCooks,
-                  mealTypes: insights.mealTypes,
-                  tags: insights.tags,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _SectionHeader(title: context.l10n.statsCompleteness),
-                _CompletenessSection(
-                  withoutPhoto: insights.withoutPhotoCount,
-                  withoutTime: insights.withoutTimeCount,
-                  incompleteCount: insights.incompleteCount,
-                  distribution: insights.completenessDistribution,
-                  incompleteRecipes: vm.getIncompleteRecipes(),
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-              ],
+    return MoreAreaScaffold(
+      title: l10n.moreCollectionStats,
+      sections: [
+        StatTiles(
+          totalRecipes: insights.totalRecipes,
+          favorites: insights.favoriteCount,
+          recentlyCooked: insights.recentlyCookedCount,
+          withImages: insights.withImagesCount,
+        ),
+        ButleryListSection(
+          title: l10n.statsRecipeCollection,
+          rows: [
+            ButleryListRow.info(
+              label: l10n.statsPersonalRecipes,
+              value: '${insights.personalRecipes}',
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroBanner extends StatelessWidget {
-  final int totalRecipes;
-  final int favorites;
-  final int recentlyCooked;
-  final int withImages;
-
-  const _HeroBanner({
-    required this.totalRecipes,
-    required this.favorites,
-    required this.recentlyCooked,
-    required this.withImages,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    Widget card(IconData icon, int value, String label) => Expanded(
-      child: Column(
-        children: [
-          ButleryIcon(icon, color: cs.onPrimary, size: AppDimensions.iconSizeM),
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            '$value',
-            style: AppTextStyles.headlineBold.copyWith(color: cs.onPrimary),
-          ),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: cs.onPrimary.withValues(alpha: 0.8),
+            ButleryListRow.info(
+              label: l10n.statsCollaborativeRecipes,
+              value: '${insights.collaborativeRecipes}',
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      color: cs.primary,
-      child: Column(
-        children: [
-          Row(
-            children: [
-              card(ButleryIcons.bookOpen, totalRecipes, l10n.statsTotalRecipes),
-              const SizedBox(width: AppDimensions.spacingMd),
-              card(
-                ButleryIcons.favourite,
-                favorites,
-                l10n.statsFavorites,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingMd),
-          Row(
-            children: [
-              card(
-                ButleryIcons.utensils,
-                recentlyCooked,
-                l10n.statsRecentlyCooked,
-              ),
-              const SizedBox(width: AppDimensions.spacingMd),
-              card(ButleryIcons.camera, withImages, l10n.statsWithImages),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
-      ),
-      child: Text(
-        title.toUpperCase(),
-        style: AppTextStyles.sectionLabel.copyWith(
-          color: context.modeColors.onWarningContainer,
-        ),
-      ),
-    );
-  }
-}
-
-class _RecipeBreakdown extends StatelessWidget {
-  final int personal;
-  final int collaborative;
-  final int highRated;
-
-  const _RecipeBreakdown({
-    required this.personal,
-    required this.collaborative,
-    required this.highRated,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
-      child: Column(
-        children: [
-          _StatRow(
-            label: context.l10n.statsPersonalRecipes,
-            value: personal,
-          ),
-          _StatRow(
-            label: context.l10n.statsCollaborativeRecipes,
-            value: collaborative,
-          ),
-          _StatRow(
-            label: context.l10n.statsHighRated,
-            value: highRated,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MealTypeChart extends StatelessWidget {
-  final List<MapEntry<String, int>> entries;
-
-  const _MealTypeChart({required this.entries});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final top = entries.take(6).toList();
-
-    if (top.isEmpty) {
-      return StateWidget.empty(title: context.l10n.statsNoMealTypes);
-    }
-
-    final maxValue = top.first.value;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final barMaxWidth = constraints.maxWidth * 0.6;
-
-          return Column(
-            children: top.map((entry) {
-              final barWidth = maxValue > 0
-                  ? (entry.value / maxValue) * barMaxWidth
-                  : 0.0;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingXs,
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: constraints.maxWidth * 0.25,
-                      child: Text(
-                        entry.key,
-                        style: AppTextStyles.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Container(
-                      width: barWidth,
-                      height: AppDimensions.spacingMd + AppDimensions.spacingXs,
-                      color: cs.onSurface.withValues(alpha: 0.8),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      '${entry.value}',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _TopTags extends StatelessWidget {
-  final List<MapEntry<String, int>> entries;
-
-  const _TopTags({required this.entries});
-
-  @override
-  Widget build(BuildContext context) {
-    final top = entries.take(8).toList();
-
-    if (top.isEmpty) {
-      return StateWidget.empty(title: context.l10n.statsNoTags);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
-      child: Column(
-        children: List.generate(top.length, (i) {
-          return _StatRow(
-            label: '${i + 1}. ${top[i].key}',
-            value: top[i].value,
-          );
-        }),
-      ),
-    );
-  }
-}
-
-class _CookingSummary extends StatelessWidget {
-  final int totalCooks;
-  final int mealTypes;
-  final int tags;
-
-  const _CookingSummary({
-    required this.totalCooks,
-    required this.mealTypes,
-    required this.tags,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
-      child: Column(
-        children: [
-          _StatRow(
-            label: context.l10n.statsTotalCooks,
-            value: totalCooks,
-          ),
-          _StatRow(
-            label: context.l10n.statsDistinctMealTypes,
-            value: mealTypes,
-          ),
-          _StatRow(
-            label: context.l10n.statsDistinctTags,
-            value: tags,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompletenessSection extends StatelessWidget {
-  final int withoutPhoto;
-  final int withoutTime;
-  final int incompleteCount;
-  final Map<String, int> distribution;
-  final List<Recipe> incompleteRecipes;
-
-  const _CompletenessSection({
-    required this.withoutPhoto,
-    required this.withoutTime,
-    required this.incompleteCount,
-    required this.distribution,
-    required this.incompleteRecipes,
-  });
-
-  // Segment label keys are stable; colors resolve from the theme at build()
-  // time so dark-mode flips and theme overrides flow through.
-  static const _segmentLabels = ['0-25%', '25-50%', '50-75%', '75-100%'];
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final butlery = context.modeColors;
-    final l10n = context.l10n;
-    final segmentColors = <Color>[
-      cs.error,
-      butlery.warning,
-      cs.primaryContainer,
-      butlery.success,
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _StatRow(label: l10n.statsWithoutPhoto, value: withoutPhoto),
-          _StatRow(label: l10n.statsWithoutTime, value: withoutTime),
-          _StatRow(label: l10n.statsIncomplete, value: incompleteCount),
-          const SizedBox(height: AppDimensions.spacingMd),
-          _buildDistributionBar(segmentColors),
-          const SizedBox(height: AppDimensions.spacingMd),
-          if (incompleteRecipes.isEmpty)
-            StateWidget.empty(title: l10n.statsAllComplete)
-          else
-            _buildQuickFixChips(cs),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDistributionBar(List<Color> segmentColors) {
-    final total = distribution.values.fold<int>(0, (sum, v) => sum + v);
-    if (total == 0) return const SizedBox.shrink();
-    final segments = [
-      for (var i = 0; i < _segmentLabels.length; i++)
-        (
-          _segmentLabels[i],
-          distribution[_segmentLabels[i]] ?? 0,
-          segmentColors[i],
-        ),
-    ];
-    return Column(
-      children: [
-        SizedBox(
-          height: AppDimensions.spacingMd + AppDimensions.spacingXs,
-          child: Row(
-            children: [
-              for (final (_, count, color) in segments)
-                if (count > 0)
-                  Expanded(
-                    flex: count,
-                    child: ColoredBox(
-                      color: color,
-                      child: const SizedBox.expand(),
-                    ),
-                  ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            for (final (label, count, color) in segments)
-              Text(
-                '$label: $count',
-                style: AppTextStyles.labelSmall.copyWith(color: color),
-              ),
+            ButleryListRow.info(
+              label: l10n.statsHighRated,
+              value: '${insights.highRatedCount}',
+            ),
           ],
         ),
+        ButleryListSection(
+          title: l10n.statsMealTypes,
+          rows: [
+            if (mealTypes.isEmpty)
+              StateWidget.empty(title: l10n.statsNoMealTypes)
+            else
+              for (final entry in mealTypes)
+                MealTypeBar(
+                  label: entry.key,
+                  value: entry.value,
+                  maxValue: mealTypes.first.value,
+                ),
+          ],
+        ),
+        ButleryListSection(
+          title: l10n.statsPopularTags,
+          rows: [
+            if (tags.isEmpty)
+              StateWidget.empty(title: l10n.statsNoTags)
+            else
+              for (var i = 0; i < tags.length; i++)
+                ButleryListRow.info(
+                  label: '${i + 1}. ${tags[i].key}',
+                  value: '${tags[i].value}',
+                ),
+          ],
+        ),
+        ButleryListSection(
+          title: l10n.statsCookingActivity,
+          rows: [
+            ButleryListRow.info(
+              label: l10n.statsTotalCooks,
+              value: '${insights.totalCooks}',
+            ),
+            ButleryListRow.info(
+              label: l10n.statsDistinctMealTypes,
+              value: '${insights.mealTypes}',
+            ),
+            ButleryListRow.info(
+              label: l10n.statsDistinctTags,
+              value: '${insights.tags}',
+            ),
+          ],
+        ),
+        ButleryListSection(
+          title: l10n.statsCompleteness,
+          rows: [
+            ButleryListRow.info(
+              label: l10n.statsWithoutPhoto,
+              value: '${insights.withoutPhotoCount}',
+            ),
+            ButleryListRow.info(
+              label: l10n.statsWithoutTime,
+              value: '${insights.withoutTimeCount}',
+            ),
+            ButleryListRow.info(
+              label: l10n.statsIncomplete,
+              value: '${insights.incompleteCount}',
+            ),
+            CompletenessDistribution(
+              distribution: insights.completenessDistribution,
+            ),
+          ],
+        ),
+        if (incompleteRecipes.isEmpty)
+          StateWidget.empty(title: l10n.statsAllComplete)
+        else
+          ButleryListSection(
+            title: l10n.statsIncomplete,
+            rows: [
+              for (final recipe in incompleteRecipes)
+                ButleryListRow(
+                  key: ValueKey('stats-incomplete-${recipe.id}'),
+                  label: recipe.title,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    Routes.editRecipe,
+                    arguments: recipe,
+                  ),
+                ),
+            ],
+          ),
       ],
-    );
-  }
-
-  Widget _buildQuickFixChips(ColorScheme cs) {
-    return SizedBox(
-      height: AppDimensions.spacingXl + AppDimensions.spacingSm,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: incompleteRecipes.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(width: AppDimensions.spacingSm),
-        itemBuilder: (context, index) {
-          final recipe = incompleteRecipes[index];
-          return PressFill(
-            surface: PressSurface.raised,
-            child: ActionChip(
-              label: Text(
-                recipe.title,
-                style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
-              ),
-              backgroundColor: cs.errorContainer,
-              side: BorderSide.none,
-              shape: const RoundedRectangleBorder(),
-              onPressed: () => Navigator.pushNamed(
-                context,
-                Routes.editRecipe,
-                arguments: recipe,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _StatRow extends StatelessWidget {
-  final String label;
-  final int value;
-
-  const _StatRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(label, style: AppTextStyles.bodyMedium),
-          ),
-          Text(
-            '$value',
-            style: AppTextStyles.titleMedium.copyWith(
-              color: cs.onSurface,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

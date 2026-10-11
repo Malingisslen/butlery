@@ -19,6 +19,7 @@ import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -193,20 +194,15 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with add button (hidden during selection to reduce noise).
+        // The members section header: the one overline style, with Välj in
+        // its row (Avbryt in selection mode).
         Row(
           children: [
-            Text(
-              context.l10n.groupMembersAndInvitations,
-              style: AppTextStyles.titleBold,
-            ),
-            const Spacer(),
-            if (_canAddMembers && !_selectionMode)
-              TextButton.icon(
-                onPressed: widget.onAddMembers,
-                icon: const ButleryIcon(ButleryIcons.userPlus),
-                label: Text(context.l10n.commonAdd),
+            Expanded(
+              child: _SectionOverline(
+                context.l10n.groupMembersSection(members.length),
               ),
+            ),
             // P5-U31: the list lives in the group view's scroll, so the
             // section's header row carries "Välj", and Avbryt takes its
             // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
@@ -227,17 +223,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
               ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space4),
 
-        // Members section
         if (members.isNotEmpty) ...[
-          Text(
-            context.l10n.groupMembersCount(members.length),
-            style: AppTextStyles.titleMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space4),
           if (_selectionMode) _buildSelectionBar(context),
           ListView.separated(
             shrinkWrap: true,
@@ -267,6 +255,17 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           ),
         ],
 
+        if (_canAddMembers && !_selectionMode)
+          ButleryListSection(
+            rows: [
+              ButleryListRow(
+                label: context.l10n.groupAddMembers,
+                leading: ButleryIcons.plus,
+                onTap: widget.onAddMembers,
+              ),
+            ],
+          ),
+
         if (_partial != null) ...[
           const SizedBox(height: AppDimensions.spacingL),
           _buildPartialOutcome(context, _partial!),
@@ -276,12 +275,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         if (pendingInvitations.isNotEmpty) ...[
           if (members.isNotEmpty)
             const SizedBox(height: AppDimensions.spacingXl),
-          Text(
-            context.l10n.groupPendingInvitationsCount(
+          _SectionOverline(
+            context.l10n.groupPendingInvitationsSection(
               pendingInvitations.length,
-            ),
-            style: AppTextStyles.titleMedium.copyWith(
-              color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
           const SizedBox(height: AppDimensions.space4),
@@ -422,6 +418,28 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Same look as [ButleryListSection]'s overline, for the sections here that
+/// hold cards and a selection header and so cannot be a list section.
+class _SectionOverline extends StatelessWidget {
+  const _SectionOverline(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      header: true,
+      child: Text(
+        text.toUpperCase(),
+        style: AppTextStyles.overline.copyWith(
+          color: Theme.of(context).colorScheme.tertiary,
+        ),
       ),
     );
   }

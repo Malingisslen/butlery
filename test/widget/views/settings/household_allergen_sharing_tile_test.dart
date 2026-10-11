@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -204,7 +205,7 @@ void main() {
 
       await pump(tester);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
       // And it did not even look: an off switch must not spend a read on a
       // collection the rules still deny.
       verifyNever(() => households.getActiveForUser(any()));
@@ -216,7 +217,7 @@ void main() {
 
       await pump(tester);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
     });
 
     testWidgets('with a household of ONE — nobody to share with', (
@@ -229,7 +230,7 @@ void main() {
 
       await pump(tester);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
       expect(find.text(sv.householdAllergenShareSubtitleOff), findsNothing);
     });
 
@@ -245,11 +246,11 @@ void main() {
         await pump(tester);
 
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
           isTrue,
         );
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         verify(() => shares.revoke(_householdId)).called(1);
@@ -266,7 +267,7 @@ void main() {
 
       await pump(tester);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
     });
   });
 
@@ -283,11 +284,11 @@ void main() {
     await pump(tester);
 
     expect(
-      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+      tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
       isTrue,
     );
 
-    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.byType(ButleryListRow));
     await tester.pumpAndSettle();
 
     verify(() => shares.revoke(_householdId)).called(1);
@@ -304,7 +305,7 @@ void main() {
 
         await pump(tester);
 
-        expect(find.byType(SwitchListTile), findsOneWidget);
+        expect(find.byType(ButleryListRow), findsOneWidget);
         // The state is resolved once in initState and never re-read: a second
         // pair here would mean duplicated reads of a collection the rules
         // still gate.
@@ -320,7 +321,7 @@ void main() {
       expect(find.text(sv.householdAllergenShareTitle), findsOneWidget);
       expect(find.text(sv.householdAllergenShareSubtitleOff), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isFalse,
       );
     });
@@ -332,7 +333,7 @@ void main() {
 
       expect(find.text(sv.householdAllergenShareSubtitleOn), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isTrue,
       );
     });
@@ -344,7 +345,7 @@ void main() {
       wire(household: _household());
       await pump(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       expect(
@@ -372,7 +373,7 @@ void main() {
       );
       verifyNever(() => shares.create(any()));
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isFalse,
         reason: 'the switch must not move on a refused consent',
       );
@@ -384,7 +385,7 @@ void main() {
       wire(household: _household());
       await pump(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
       await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
       await tester.pumpAndSettle();
@@ -426,7 +427,7 @@ void main() {
         wire(household: _household(), profile: _emptyProfile());
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
         await tester.pumpAndSettle();
@@ -458,7 +459,7 @@ void main() {
         wire(household: _household(), profile: _unreadProfile());
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
         await tester.pumpAndSettle();
@@ -494,7 +495,7 @@ void main() {
         });
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
         await tester.pumpAndSettle();
@@ -520,7 +521,7 @@ void main() {
         expect(replacement.trackedAllergens, {'ägg'});
         expect(replacement.includeUnknownInMenu, isFalse);
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
           isTrue,
         );
       },
@@ -556,7 +557,7 @@ void main() {
         );
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
         await tester.pumpAndSettle();
@@ -584,14 +585,16 @@ void main() {
         );
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
+        await tester.tap(find.byType(ButleryListRow));
+        await tester.pumpAndSettle();
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
-          isNull,
+          find.text(sv.householdAllergenShareConfirmAction),
+          findsNothing,
           reason: 'a second tap must not reach the consent dialog',
         );
 
@@ -599,11 +602,10 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(() => shares.create(any())).called(1);
-        expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
-          isNotNull,
-          reason: 'the latch must clear once the grant finishes',
-        );
+        // The latch has cleared: withdrawing now goes through (no dialog).
+        await tester.tap(find.byType(ButleryListRow));
+        await tester.pumpAndSettle();
+        verify(() => shares.revoke(any())).called(1);
       },
     );
 
@@ -621,7 +623,7 @@ void main() {
         );
         await pump(tester);
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
         await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
         await tester.pumpAndSettle();
@@ -642,12 +644,12 @@ void main() {
       when(() => shares.revoke(_householdId)).thenThrow(StateError('denied'));
       await pump(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.householdAllergenShareFailed), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isTrue,
         reason: 'the member must not be told they stopped when they did not',
       );
@@ -660,14 +662,14 @@ void main() {
       wire(household: _household(), existingShare: _share());
       await pump(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
       verify(() => shares.revoke(_householdId)).called(1);
       expect(find.text(sv.householdAllergenShareStopped), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isFalse,
       );
     });
@@ -679,14 +681,14 @@ void main() {
       when(() => shares.create(any())).thenThrow(StateError('denied'));
       await pump(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
       await tester.tap(find.text(sv.householdAllergenShareConfirmAction));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.householdAllergenShareFailed), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isFalse,
         reason: 'the member must never be told they shared when they did not',
       );

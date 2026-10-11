@@ -24,14 +24,18 @@ import 'dart:ui' show Locale;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show VoidCallback;
+import 'package:flutter/material.dart'
+    show MaterialApp, MaterialPageRoute, RouteSettings, SizedBox;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
+import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -375,6 +379,31 @@ void main() {
           }
         },
       );
+
+      testWidgets('a friend_request push opens the friend requests page once, '
+          'with no arguments', (tester) async {
+        final pushed = <RouteSettings>[];
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorKey: appNavigatorKey,
+            home: const SizedBox(),
+            onGenerateRoute: (settings) {
+              pushed.add(settings);
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const SizedBox(),
+              );
+            },
+          ),
+        );
+        when(() => mockMessage.data).thenReturn({'type': 'friend_request'});
+
+        await service.handleNotificationNavigation(mockMessage);
+        await tester.pumpAndSettle();
+
+        expect(pushed.map((r) => r.name), [Routes.friendRequests]);
+        expect(pushed.single.arguments, isNull);
+      });
 
       test('completes for unknown notification types', () async {
         when(() => mockMessage.data).thenReturn({'type': 'unknown_type'});

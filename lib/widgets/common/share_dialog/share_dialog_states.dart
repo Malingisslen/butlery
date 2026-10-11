@@ -8,7 +8,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/views/social/friends_list/requests_tab.dart';
+import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -66,7 +66,7 @@ class ShareDialogStates {
               final userId =
                   ServiceLocator.get<PermissionService>().currentUserId;
               if (userId == null) return;
-              RequestsTab.shareInvitationLinkForUser(context, userId);
+              InvitationLinkShare.shareInvitationLinkForUser(context, userId);
             },
             icon: const ButleryIcon(ButleryIcons.share2),
             label: Text(context.l10n.socialInviteFriends),

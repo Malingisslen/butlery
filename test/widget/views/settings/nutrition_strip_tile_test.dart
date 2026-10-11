@@ -70,7 +70,7 @@ void main() {
 
       expect(find.text(sv.settingsNutritionStripTitle), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<Switch>(find.byType(Switch)).value,
         isFalse,
       );
     });
@@ -79,7 +79,7 @@ void main() {
       await pumpTile(tester, strip: true);
 
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<Switch>(find.byType(Switch)).value,
         isTrue,
       );
     });
@@ -87,7 +87,7 @@ void main() {
     testWidgets('turning ON persists at once with no dialog', (tester) async {
       await pumpTile(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
       verify(() => userService.setShowNutritionStrip(true)).called(1);
@@ -97,7 +97,7 @@ void main() {
     testWidgets('turning OFF persists at once', (tester) async {
       await pumpTile(tester, strip: true);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
       verify(() => userService.setShowNutritionStrip(false)).called(1);
@@ -111,7 +111,7 @@ void main() {
       ).thenAnswer((_) => Future<void>.error(Exception('offline')));
       await pumpTile(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
       expect(find.textContaining(sv.settingsSaveFailed), findsOneWidget);

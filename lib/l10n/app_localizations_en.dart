@@ -2394,7 +2394,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryAutoAddPromptBody =>
-      'Want bought items added to your pantry automatically when you check them off? You can change this later in Settings.';
+      'Want bought items added to your pantry automatically when you check them off? You can change this later in App settings.';
 
   @override
   String get pantryAutoAddPromptEnable => 'Yes, add automatically';
@@ -5161,7 +5161,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdJoinConfirmBody =>
-      'You become a member of the household. Your allergies are not shared until you choose to in Settings. You leave the household by leaving the group.';
+      'You become a member of the household. Your allergies are not shared until you choose to in Family & household. You leave the household by leaving the group.';
 
   @override
   String get householdJoinFailed =>
@@ -5172,10 +5172,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdJoinedSubtitle =>
-      'Share your allergies in Settings, so the menu accounts for them.';
+      'Share your allergies in Family & household, so the menu accounts for them.';
 
   @override
-  String get householdOpenSettings => 'Settings';
+  String get householdOpenSettings => 'Show household';
 
   @override
   String get menuVoteTitle => 'Vote on recipe';
@@ -15005,7 +15005,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yRelatedRecipeThumbnail => 'Open related recipe';
 
   @override
-  String get familyTitle => 'My family';
+  String get familyTitle => 'Family & household';
 
   @override
   String get familyIntro =>
@@ -17174,16 +17174,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreSectionKitchen => 'Your kitchen';
 
   @override
-  String get moreSectionAppAccount => 'App & account';
+  String get moreSectionAppAccount => 'Account & app';
 
   @override
-  String get moreFamily => 'My family';
+  String get moreFamily => 'Family & household';
 
   @override
   String get morePersonalTags => 'Personal tags';
 
   @override
-  String get moreCollectionStats => 'Collection statistics';
+  String get moreCollectionStats => 'Statistics';
 
   @override
   String get moreNotifications => 'Notifications';
@@ -18239,6 +18239,393 @@ class AppLocalizationsEn extends AppLocalizations {
       'The deletion has already started and can no longer be undone.';
 
   @override
+  String get moreProfileSubtitle => 'Profile and visibility';
+
+  @override
+  String get moreProfileFallbackName => 'Your profile';
+
+  @override
+  String moreSyncBand(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting to sync',
+      one: '1 change waiting to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moreSectionHousehold => 'Household & food';
+
+  @override
+  String get moreAllergens => 'Allergens & diet';
+
+  @override
+  String get moreHouseholdSection => 'Household';
+
+  @override
+  String get settingsAccountAreaTitle => 'Account & security';
+
+  @override
+  String get settingsAccountAreaSubtitle =>
+      'Sign-in, two-step verification, sign out';
+
+  @override
+  String get settingsPrivacyAreaTitle => 'Privacy & data';
+
+  @override
+  String get settingsPrivacyAreaSubtitle => 'Consents, export, backup';
+
+  @override
+  String get settingsAppTitle => 'App settings';
+
+  @override
+  String get settingsAppSubtitle => 'Language, theme, notifications';
+
+  @override
+  String get settingsHelpTitle => 'Help & about';
+
+  @override
+  String get settingsHelpSubtitle => 'Questions, terms, reports';
+
+  @override
+  String get settingsSignInSection => 'Sign-in';
+
+  @override
+  String get settingsAccountEmail => 'Email address';
+
+  @override
+  String get settingsAccountPassword => 'Password';
+
+  @override
+  String get settingsAccountTwoStep => 'Two-step verification';
+
+  @override
+  String get settingsYourChoicesSection => 'Your choices';
+
+  @override
+  String get settingsYourDataSection => 'Your data';
+
+  @override
+  String get settingsDocumentsSection => 'Documents';
+
+  @override
+  String get settingsConsents => 'Consents';
+
+  @override
+  String get settingsBackupTitle => 'Recipe backup';
+
+  @override
+  String get settingsBackupSubtitle => 'Download or restore';
+
+  @override
+  String get settingsAppearanceSection => 'Appearance';
+
+  @override
+  String get settingsShoppingSection => 'Shopping';
+
+  @override
+  String get settingsNotificationSettings => 'Notification settings';
+
+  @override
+  String get settingsHelpSection => 'Help';
+
+  @override
+  String get settingsRulesSection => 'Rules and reports';
+
+  @override
+  String get settingsMyReportsSubtitle => 'What you reported and how it went';
+
+  @override
+  String get settingsVersionLabel => 'Version';
+
+  @override
+  String get settingsAdminOnly => 'Admin';
+
+  @override
+  String get socialFriendRequestsTitle => 'Friend requests';
+
+  @override
+  String socialPendingRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending requests',
+      one: '1 pending request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get socialSearchNameOrEmailHint => 'Name or email address';
+
+  @override
+  String get socialShareProfileLink => 'Share your profile link';
+
+  @override
+  String get messagesNewMessage => 'New message';
+
+  @override
+  String get messagesToFriend => 'To a friend';
+
+  @override
+  String get messagesNewGroup => 'New group conversation';
+
+  @override
+  String get messagesSearchHint => 'Search messages';
+
+  @override
+  String get messagesArchivedRow => 'Archived conversations';
+
+  @override
+  String messagesMoreOptionsFor(String name) {
+    return 'More options for $name';
+  }
+
+  @override
+  String get socialMoreOptions => 'More options';
+
+  @override
+  String groupMetaMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupMetaMembersAdmin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0 · you are admin';
+  }
+
+  @override
+  String get groupShareWithGroupSection => 'Share with the group';
+
+  @override
+  String get groupShareRecipeRow => 'Share a recipe';
+
+  @override
+  String get groupShareMenuRow => 'Share the weekly menu';
+
+  @override
+  String get groupShareShoppingListRow => 'Share a shopping list';
+
+  @override
+  String groupMembersSection(int count) {
+    return 'Members · $count';
+  }
+
+  @override
+  String groupPendingInvitationsSection(int count) {
+    return 'Pending invitations · $count';
+  }
+
+  @override
+  String get groupLeaveTheGroup => 'Leave the group';
+
+  @override
+  String get groupCreatedInfoRow => 'Created';
+
+  @override
+  String friendProfileMeta(int recipes, int friends) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes recipes',
+      one: '1 recipe',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      friends,
+      locale: localeName,
+      other: '$friends friends',
+      one: '1 friend',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get friendProfileShareRecipe => 'Share a recipe';
+
+  @override
+  String get friendProfileRecipesSection => 'Recipes';
+
+  @override
+  String friendProfilePublicRecipesRow(String owner) {
+    return '$owner public recipes';
+  }
+
+  @override
+  String friendProfileSharedWithYouRow(String name) {
+    return 'Shared with you by $name';
+  }
+
+  @override
+  String get friendProfileRemoveFriend => 'Remove as friend';
+
+  @override
+  String get familyAccountsSection => 'Accounts in the household';
+
+  @override
+  String get familyProfilesSection => 'Family profiles';
+
+  @override
+  String get familyAddMemberRow => 'Add family member';
+
+  @override
+  String get familyYou => 'You';
+
+  @override
+  String get familyMealsSection => 'Meals';
+
+  @override
+  String get householdPortionsTitle => 'Default portions';
+
+  @override
+  String get householdPortionsSaved => 'Portions saved';
+
+  @override
+  String get familyAllergiesSection => 'Allergies in the household';
+
+  @override
+  String get allergenIntro =>
+      'Choose what you want to see the status of on recipes.';
+
+  @override
+  String get allergenSectionAllergens => 'Allergens';
+
+  @override
+  String get allergenSectionDietary => 'Special diets';
+
+  @override
+  String get allergenDisplayCoverageLabel => 'How certain the labelling is';
+
+  @override
+  String get allergenDisplayUnknownLabel => 'Unknown allergen status';
+
+  @override
+  String get allergenLabelNote =>
+      'The labelling is based on the ingredient list. Always check the packaging if the allergy is serious.';
+
+  @override
+  String get allergenSectionMaintenance => 'Maintenance';
+
+  @override
+  String get allergenRetagRow => 'Update the labelling on all recipes';
+
+  @override
+  String get allergenResetTitle => 'Reset to default?';
+
+  @override
+  String get allergenResetBody =>
+      'Your allergen and diet choices go back to the defaults.';
+
+  @override
+  String get notifAllowRow => 'Allow notifications';
+
+  @override
+  String get notifCategoriesSection => 'What you get notifications about';
+
+  @override
+  String get notifDigestSection => 'Summary';
+
+  @override
+  String get notifDigestRow => 'Send summary';
+
+  @override
+  String get consentRequiredValue => 'Required';
+
+  @override
+  String get settingsBlockedPeople => 'Blocked people';
+
+  @override
+  String trashIntro(int days) {
+    return 'Recipes are deleted for good after $days days.';
+  }
+
+  @override
+  String get trashRestoreRecipe => 'Restore the recipe';
+
+  @override
+  String get trashRestoreAll => 'Restore all';
+
+  @override
+  String trashDeleteOneTitle(String name) {
+    return 'Delete $name for good?';
+  }
+
+  @override
+  String get trashDeleteOneBody => 'This cannot be undone.';
+
+  @override
+  String get personalTagUngroupedSection => 'No group';
+
+  @override
+  String personalTagUnusedSection(int count) {
+    return 'Unused · $count';
+  }
+
+  @override
+  String get personalTagDeleteUnusedAction => 'Delete unused tags';
+
+  @override
+  String get personalTagNewTag => 'New tag';
+
+  @override
+  String get personalTagNewGroup => 'New group';
+
+  @override
+  String get personalTagManageGroup => 'Manage group';
+
+  @override
+  String get tagDetailGroupLabel => 'Group';
+
+  @override
+  String get tagDetailRulesSection => 'Rules';
+
+  @override
+  String get tagDetailAddRule => 'Add rule';
+
+  @override
+  String get tagDetailRunRulesAll => 'Run the rules on all recipes';
+
+  @override
+  String get tagDetailShareTag => 'Share tag';
+
+  @override
+  String get tagDetailDeleteTagAction => 'Delete tag';
+
+  @override
+  String get tagDetailRuleStateOn => 'On';
+
+  @override
+  String get tagDetailRuleStateOff => 'Off';
+
+  @override
+  String get tagDetailRuleEdit => 'Edit rule';
+
+  @override
+  String get tagDetailRuleEnable => 'Enable rule';
+
+  @override
+  String get tagDetailRuleDisable => 'Pause rule';
+
+  @override
+  String get tagDetailRuleDeleteAction => 'Delete rule';
+
+  @override
+  String get consentTurnOffAllOptional => 'Turn off all optional';
+
+  @override
   String get nutritionButton => 'Nutrition values';
 
   @override
@@ -18457,4 +18844,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nutritionLoading => 'Calculating nutrition values …';
+
+  @override
+  String get settingsRecipesSection => 'Recipes';
 }

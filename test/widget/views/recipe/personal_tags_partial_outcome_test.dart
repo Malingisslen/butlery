@@ -22,6 +22,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -116,7 +117,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('personal-tags-select-enter')));
     await tester.pump();
     for (final name in ['Snabbt', 'Vardag', 'Fest']) {
-      await tester.tap(find.widgetWithText(ListTile, name));
+      await tester.tap(find.widgetWithText(ButleryListRow, name));
       await tester.pump();
     }
     expect(find.text('3 valda'), findsOneWidget);
@@ -191,7 +192,7 @@ void main() {
     await selectAllThreeAndDelete(tester);
 
     // Untick Fest; Vardag stays selected.
-    await tester.tap(find.widgetWithText(ListTile, 'Fest').first);
+    await tester.tap(find.widgetWithText(ButleryListRow, 'Fest').first);
     await tester.pump();
     expect(find.text('1 valda'), findsOneWidget);
 
@@ -212,7 +213,7 @@ void main() {
     await selectAllThreeAndDelete(tester);
 
     for (final name in ['Vardag', 'Fest']) {
-      await tester.tap(find.widgetWithText(ListTile, name).first);
+      await tester.tap(find.widgetWithText(ButleryListRow, name).first);
       await tester.pump();
     }
 

@@ -1,16 +1,21 @@
+// Intention: the allergens page saves every choice at once and offers no Spara;
+// reset asks first. Drives the real view over a mocked UserService.
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
+import 'package:butlery/views/settings/allergen_preferences_view.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
-import '../test_support/base_unit_test.dart';
-import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/mocks/production_mocks.dart';
 
 const _seedPrefs = UserAllergenPreferences(
@@ -21,284 +26,160 @@ const _seedPrefs = UserAllergenPreferences(
   showCoverage: true,
 );
 
-Widget _testApp(AllergenPreferencesViewModel viewModel) {
-  return ChangeNotifierProvider<AllergenPreferencesViewModel>.value(
-    value: viewModel,
-    child: MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      home: Scaffold(
-        appBar: AppBar(),
-        body: const _AllergenPreferencesBody(),
-      ),
-    ),
-  );
-}
-
-/// Extracted body that watches the ViewModel directly.
-/// This avoids the full AllergenPreferencesView which internally creates
-/// its own ChangeNotifierProvider (requiring ServiceLocator).
-class _AllergenPreferencesBody extends StatelessWidget {
-  const _AllergenPreferencesBody();
-
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = context.watch<AllergenPreferencesViewModel>();
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Allergen chips
-          const Text('Allergen chips:'),
-          Wrap(
-            spacing: 8,
-            children: AllergenPreferenceOptions.allergens.entries.map((e) {
-              final isSelected = viewModel.isAllergenTracked(e.key);
-              return FilterChip(
-                key: Key('allergen_${e.key}'),
-                label: Text(e.value),
-                selected: isSelected,
-                onSelected: (_) => viewModel.toggleAllergen(e.key),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          // Dietary chips
-          const Text('Dietary chips:'),
-          Wrap(
-            spacing: 8,
-            children: AllergenPreferenceOptions.dietary.entries.map((e) {
-              final isSelected = viewModel.isDietaryTracked(e.key);
-              return FilterChip(
-                key: Key('dietary_${e.key}'),
-                label: Text(e.value),
-                selected: isSelected,
-                onSelected: (_) => viewModel.toggleDietary(e.key),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          // Display switches
-          SwitchListTile(
-            key: const Key('showOnCards'),
-            title: const Text('Show on cards'),
-            value: viewModel.showOnCards,
-            onChanged: viewModel.setShowOnCards,
-          ),
-          SwitchListTile(
-            key: const Key('showOnDetail'),
-            title: const Text('Show on detail'),
-            value: viewModel.showOnDetail,
-            onChanged: viewModel.setShowOnDetail,
-          ),
-          SwitchListTile(
-            key: const Key('showCoverage'),
-            title: const Text('Show coverage'),
-            value: viewModel.showCoverage,
-            onChanged: viewModel.setShowCoverage,
-          ),
-          // Save button
-          if (viewModel.hasChanges)
-            ElevatedButton(
-              key: const Key('save'),
-              onPressed: () async {
-                final success = await viewModel.save();
-                if (success && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Saved')),
-                  );
-                }
-              },
-              child: const Text('Save'),
-            ),
-          // Reset button
-          TextButton(
-            key: const Key('reset'),
-            onPressed: () => _confirmReset(context, viewModel),
-            child: const Text('Reset'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmReset(
-    BuildContext context,
-    AllergenPreferencesViewModel viewModel,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm reset'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            key: const Key('confirm_reset'),
-            onPressed: () {
-              viewModel.resetToDefaults();
-              Navigator.pop(ctx, true);
-            },
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 void main() {
-  late MockUserService mockUserService;
-  late AllergenPreferencesViewModel viewModel;
-
-  setUpAll(() async {
-    await BaseUnitTest.setupUnit();
-    registerFallbackValue(UserAllergenPreferences.defaults);
-  });
+  final sv = AppLocalizationsSv();
+  late MockUserService userService;
 
   setUp(() async {
-    await TestServiceLocator.initialize();
-    mockUserService = MockUserService();
-
-    when(() => mockUserService.allergenPreferences).thenReturn(_seedPrefs);
+    await GetIt.instance.reset();
+    registerFallbackValue(UserAllergenPreferences.defaults);
+    userService = MockUserService();
+    when(() => userService.allergenPreferences).thenReturn(_seedPrefs);
     when(
-      () => mockUserService.updateAllergenPreferences(any()),
+      () => userService.updateAllergenPreferences(any()),
     ).thenAnswer((_) async => true);
-
-    TestServiceLocator.registerMock<UserService>(mockUserService);
-    viewModel = AllergenPreferencesViewModel(userService: mockUserService);
+    GetIt.instance.registerSingleton<UserService>(userService);
+    prod.ServiceLocator.initialize(DIContainer());
   });
 
   tearDown(() async {
-    viewModel.dispose();
-    await TestServiceLocator.reset();
-    BaseUnitTest.resetMocks();
+    prod.ServiceLocator.reset();
+    await GetIt.instance.reset();
   });
 
-  tearDownAll(() async {
-    await BaseUnitTest.teardownUnit();
+  Future<void> pumpView(WidgetTester tester, {String? backTo}) async {
+    tester.view.physicalSize = const Size(600, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final original = FlutterError.onError;
+    FlutterError.onError = (details) {
+      if (details.exceptionAsString().contains('overflowed')) return;
+      original?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = original);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        locale: const Locale('sv', 'SE'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: AllergenPreferencesView(backTo: backTo),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  UserAllergenPreferences lastSaved() =>
+      verify(
+            () => userService.updateAllergenPreferences(captureAny()),
+          ).captured.last
+          as UserAllergenPreferences;
+
+  testWidgets('the page is named as its Mer row and has no Spara', (
+    tester,
+  ) async {
+    await pumpView(tester);
+
+    expect(find.text(sv.moreAllergens), findsWidgets);
+    expect(find.text(sv.commonSave), findsNothing);
+    expect(find.text(sv.allergenSaveSettings), findsNothing);
   });
 
-  group('AllergenPreferencesView', () {
-    testWidgets('allergen chips render from AllergenPreferenceOptions', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+  testWidgets('Back is named after where the caller says it leads', (
+    tester,
+  ) async {
+    await pumpView(tester, backTo: sv.moreTitle);
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      'Mer',
+    );
+  });
 
-      // Should render all 19 allergen chips
-      for (final key in AllergenPreferenceOptions.allergens.keys) {
-        expect(find.byKey(Key('allergen_$key')), findsOneWidget);
-      }
-    });
+  // The banners and empty states that also open this page lead elsewhere.
+  testWidgets('opened without a destination, Back names none', (
+    tester,
+  ) async {
+    await pumpView(tester);
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      isNull,
+    );
+  });
 
-    testWidgets('dietary chips render (including nötkötsfri, aip-vänlig)', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+  testWidgets('every allergen and diet option is a chip', (tester) async {
+    await pumpView(tester);
 
-      for (final key in AllergenPreferenceOptions.dietary.keys) {
-        expect(find.byKey(Key('dietary_$key')), findsOneWidget);
-      }
-      // Verify the newer ones are present
-      expect(find.text('Nötkötsfri'), findsOneWidget);
-      expect(find.text('AIP-vänlig'), findsOneWidget);
-    });
+    for (final label in [
+      ...AllergenPreferenceOptions.allergens.values,
+      ...AllergenPreferenceOptions.dietary.values,
+    ]) {
+      expect(find.widgetWithText(FilterChip, label), findsOneWidget);
+    }
+  });
 
-    testWidgets('tapping a chip triggers toggle', (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+  testWidgets('tapping a chip saves at once and shows the snackbar', (
+    tester,
+  ) async {
+    await pumpView(tester);
 
-      // gluten is tracked in seed prefs — tap to untoggle
-      await tester.tap(find.byKey(const Key('allergen_gluten')));
-      await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(
+        FilterChip,
+        AllergenPreferenceOptions.allergens['gluten']!,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
-      expect(viewModel.isAllergenTracked('gluten'), isFalse);
-      expect(viewModel.hasChanges, isTrue);
-    });
+    expect(lastSaved().trackedAllergens, isNot(contains('gluten')));
+    expect(find.text(sv.allergenSettingsSaved), findsOneWidget);
+  });
 
-    testWidgets('save button appears when hasChanges', (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+  testWidgets('flipping a display toggle saves at once', (tester) async {
+    await pumpView(tester);
 
-      // Initially no save button
-      expect(find.byKey(const Key('save')), findsNothing);
+    await tester.tap(find.text(sv.allergenDisplayOnCardsTitle));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
-      // Toggle something to trigger hasChanges
-      viewModel.toggleAllergen('fisk');
-      await tester.pumpAndSettle();
+    expect(lastSaved().showOnCards, isFalse);
+  });
 
-      expect(find.byKey(const Key('save')), findsOneWidget);
-    });
+  testWidgets('reset asks first, then saves the defaults', (tester) async {
+    await pumpView(tester);
 
-    testWidgets('display switches present', (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text(sv.allergenResetToDefaults));
+    await tester.pumpAndSettle();
+    expect(find.text(sv.allergenResetTitle), findsOneWidget);
+    verifyNever(() => userService.updateAllergenPreferences(any()));
 
-      expect(find.byKey(const Key('showOnCards')), findsOneWidget);
-      expect(find.byKey(const Key('showOnDetail')), findsOneWidget);
-      expect(find.byKey(const Key('showCoverage')), findsOneWidget);
-    });
+    await tester.tap(find.text(sv.allergenReset));
+    await tester.pumpAndSettle();
 
-    testWidgets('reset opens confirmation dialog', (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+    expect(lastSaved(), UserAllergenPreferences.defaults);
+  });
 
-      // Scroll to make reset button visible
-      await tester.scrollUntilVisible(
-        find.byKey(const Key('reset')),
-        200,
-      );
-      await tester.pumpAndSettle();
+  testWidgets('cancelling the reset keeps the choices', (tester) async {
+    await pumpView(tester);
 
-      await tester.tap(find.byKey(const Key('reset')));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text(sv.allergenResetToDefaults));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(sv.commonCancel));
+    await tester.pumpAndSettle();
 
-      // Dialog should appear
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Confirm reset'), findsOneWidget);
+    verifyNever(() => userService.updateAllergenPreferences(any()));
+  });
 
-      // Confirm reset
-      await tester.tap(find.byKey(const Key('confirm_reset')));
-      await tester.pumpAndSettle();
+  testWidgets('the settings are rows, not switch tiles', (tester) async {
+    await pumpView(tester);
 
-      // After reset, preferences should be defaults
-      expect(viewModel.hasChanges, isTrue);
-    });
-
-    testWidgets('successful save shows snackbar', (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
-
-      // Toggle to enable save
-      viewModel.toggleAllergen('fisk');
-      await tester.pumpAndSettle();
-
-      // Scroll to make save button visible
-      await tester.scrollUntilVisible(
-        find.byKey(const Key('save')),
-        200,
-      );
-      await tester.pumpAndSettle();
-
-      // Tap save
-      await tester.tap(find.byKey(const Key('save')));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Saved'), findsOneWidget);
-    });
+    expect(find.byType(SwitchListTile), findsNothing);
+    expect(find.byType(ButleryListSection), findsWidgets);
   });
 }

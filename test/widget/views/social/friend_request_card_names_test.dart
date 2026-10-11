@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
 import '../../../test_support/semantics_announcement.dart';
@@ -25,8 +26,16 @@ Future<void> _pump(
   bool accepting = false,
 }) {
   final vm = _MockFriendsVm();
-  when(() => vm.getUserProfile(any())).thenReturn(null);
-  when(() => vm.getDisplayNameForUser(any())).thenReturn(_name);
+  final now = DateTime.utc(2026, 10, 5, 9);
+  when(() => vm.getUserProfile(any())).thenReturn(
+    UserProfile(
+      uid: 'erik',
+      displayName: _name,
+      email: 'erik@example.com',
+      joinedAt: now,
+      lastActiveAt: now,
+    ),
+  );
   when(() => vm.isLoading).thenReturn(false);
   when(() => vm.isAccepting(any())).thenReturn(false);
   when(() => vm.isAccepting('r1')).thenReturn(accepting);

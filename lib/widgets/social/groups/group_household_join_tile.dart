@@ -1,7 +1,7 @@
 // BUT-2267: a member of a group the owner has marked as household joins the
 // household from the group page, so they can then share their own allergens
 // with it. Joining is their own act; the owner decides who may, through who is
-// in the group. Joining shares nothing: the consent lives in Settings, behind
+// in the group. Joining shares nothing: the consent lives behind
 // its own dialog (DPIA Annex A), which the joined state points to.
 
 import 'package:flutter/material.dart';
@@ -155,7 +155,8 @@ class _GroupHouseholdJoinTileState extends State<GroupHouseholdJoinTile> {
         ),
         trailing: joined
             ? TextButton(
-                onPressed: () => Navigator.pushNamed(context, Routes.settings),
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.settingsFamily),
                 child: Text(l10n.householdOpenSettings),
               )
             : TextButton(

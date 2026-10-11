@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -143,34 +145,37 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   }
 
   Widget _buildNameField() {
-    return TextFormField(
-      style: fieldTextStyle(context, enabled: !_isLoading),
-      controller: _nameController,
-      decoration: InputDecoration(
-        labelText: context.l10n.menuNameLabel,
-        hintText: context.l10n.menuNameHint,
-        border: const OutlineInputBorder(),
-        prefixIcon: const ButleryIcon(ButleryIcons.utensils),
+    return LabeledField(
+      label: context.l10n.menuNameLabel,
+      child: TextFormField(
+        errorBuilder: FieldErrorLine.builder,
+        style: fieldTextStyle(context, enabled: !_isLoading),
+        controller: _nameController,
+        decoration: InputDecoration(
+          hintText: context.l10n.menuNameHint,
+          prefixIcon: const ButleryIcon(ButleryIcons.utensils),
+        ),
+        validator: FormValidators.required(context.l10n.menuNameRequired),
+        maxLength: 50,
+        enabled: !_isLoading,
       ),
-      validator: FormValidators.required(context.l10n.menuNameRequired),
-      maxLength: 50,
-      enabled: !_isLoading,
     );
   }
 
   Widget _buildCommentField() {
-    return TextFormField(
-      style: fieldTextStyle(context, enabled: !_isLoading),
-      controller: _commentController,
-      decoration: InputDecoration(
-        labelText: context.l10n.menuCommentLabel,
-        hintText: context.l10n.menuCommentHint,
-        border: const OutlineInputBorder(),
-        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
+    return LabeledField(
+      label: context.l10n.menuCommentLabel,
+      child: TextFormField(
+        style: fieldTextStyle(context, enabled: !_isLoading),
+        controller: _commentController,
+        decoration: InputDecoration(
+          hintText: context.l10n.menuCommentHint,
+          prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
+        ),
+        maxLines: 3,
+        maxLength: 200,
+        enabled: !_isLoading,
       ),
-      maxLines: 3,
-      maxLength: 200,
-      enabled: !_isLoading,
     );
   }
 
@@ -256,18 +261,19 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   }
 
   Widget _buildShareMessage() {
-    return TextFormField(
-      style: fieldTextStyle(context, enabled: !_isLoading),
-      controller: _shareMessageController,
-      decoration: InputDecoration(
-        labelText: context.l10n.menuShareMessageLabel,
-        hintText: context.l10n.menuShareMessageHint,
-        border: const OutlineInputBorder(),
-        prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
+    return LabeledField(
+      label: context.l10n.menuShareMessageLabel,
+      child: TextFormField(
+        style: fieldTextStyle(context, enabled: !_isLoading),
+        controller: _shareMessageController,
+        decoration: InputDecoration(
+          hintText: context.l10n.menuShareMessageHint,
+          prefixIcon: const ButleryIcon(ButleryIcons.messageSquare),
+        ),
+        maxLines: 2,
+        maxLength: 100,
+        enabled: !_isLoading,
       ),
-      maxLines: 2,
-      maxLength: 100,
-      enabled: !_isLoading,
     );
   }
 

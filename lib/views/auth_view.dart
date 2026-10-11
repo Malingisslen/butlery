@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -809,21 +811,25 @@ class _AuthViewState extends State<AuthView> {
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
-              TextField(
-                key: const Key('reset_email_field'),
-                autofocus: true,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: context.l10n.authEmail,
-                  hintText: context.l10n.authEmailHint,
-                  errorText: emailError,
+              LabeledField(
+                label: context.l10n.authEmail,
+                child: TextField(
+                  key: const Key('reset_email_field'),
+                  autofocus: true,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.authEmailHint,
+                    error: emailError == null
+                        ? null
+                        : FieldErrorLine(emailError!),
+                  ),
+                  onChanged: (value) {
+                    emailValue = value;
+                    if (emailError != null) {
+                      setDialogState(() => emailError = null);
+                    }
+                  },
                 ),
-                onChanged: (value) {
-                  emailValue = value;
-                  if (emailError != null) {
-                    setDialogState(() => emailError = null);
-                  }
-                },
               ),
             ],
           ),

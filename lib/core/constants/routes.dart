@@ -94,9 +94,14 @@ class Routes {
   static const String notifications = '/notifications';
 
   // Settings routes
+  // Mer, omtänkt (2026-10-10): '/settings' is Appinställningar, so links
+  // to the old Inställningar page still land on a settings page.
   static const String settings = '/settings';
+  static const String settingsAccount = '/settings/account';
+  static const String settingsPrivacy = '/settings/privacy';
+  static const String settingsBlocked = '/settings/blocked';
+  static const String settingsHelp = '/settings/help';
   static const String settingsFamily = '/settings/family';
-  static const String settingsHousehold = '/settings/household-size';
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
@@ -157,8 +162,11 @@ class Routes {
     cookingMode,
     notifications,
     settings,
+    settingsAccount,
+    settingsPrivacy,
+    settingsBlocked,
+    settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -203,8 +211,11 @@ class Routes {
     ingredientSearch,
     notifications,
     settings,
+    settingsAccount,
+    settingsPrivacy,
+    settingsBlocked,
+    settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -316,8 +327,11 @@ class Routes {
 
     // Settings
     settings,
+    settingsAccount,
+    settingsPrivacy,
+    settingsBlocked,
+    settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,

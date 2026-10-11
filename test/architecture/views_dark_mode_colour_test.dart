@@ -163,8 +163,6 @@ const _inkOnPaperSites = <String, int>{
   // The hero buttons' glyphs inside _PaperRing (cs.onPrimary, Komponentark
   // v1:81-89).
   'lib/views/recipe_detail/recipe_detail_hero_buttons.dart': 2,
-  // The unread count on its paper disc (cs.onPrimary) in the ink bar.
-  'lib/views/social/shared_with_me/shared_content_app_bar.dart': 1,
 };
 
 void main() {

@@ -20,6 +20,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Lightweight recipe quick capture — just a title and optional meal type.
 class QuickCaptureView extends StatelessWidget {
@@ -88,21 +90,22 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: AppDimensions.spacingXl),
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.quickCaptureTitleHint,
+                    LabeledField(
+                      label: context.l10n.quickCaptureTitleHint,
+                      child: TextFormField(
+                        controller: _titleController,
+                        errorBuilder: FieldErrorLine.builder,
+                        style: AppTextStyles.bodyLarge,
+                        autofocus: true,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _save(vm),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return context.l10n.validationTitleCannotBeEmpty;
+                          }
+                          return null;
+                        },
                       ),
-                      style: AppTextStyles.bodyLarge,
-                      autofocus: true,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _save(vm),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return context.l10n.validationTitleCannotBeEmpty;
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
                     _MealTypeSelector(

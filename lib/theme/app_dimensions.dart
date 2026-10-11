@@ -266,6 +266,10 @@ class AppDimensions {
   /// Thick border width
   static const double borderWidthThick = 2.0;
 
+  /// An outlined edge: secondary button, chosen chip, a field in error
+  /// (tokens.json controls.lines.outlinedEdge).
+  static const double borderWidthOutlinedEdge = 1.5;
+
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
 

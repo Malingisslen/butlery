@@ -1,5 +1,5 @@
-/// BUT-907: state of the trash view: the kept rows, the selection, and the
-/// three changes a user can make (restore, delete for good, empty).
+/// BUT-907: state of the trash view: the kept rows and the
+/// changes a user can make (restore, delete for good, empty).
 library;
 
 import 'dart:async';
@@ -33,30 +33,22 @@ class TrashViewModel extends BaseViewModel {
   StreamSubscription<List<TrashItem>>? _subscription;
 
   List<TrashItem> _items = const [];
-  final Set<String> _selectedIds = {};
   bool _isWorking = false;
 
   List<TrashItem> get items => _items;
   bool get isEmpty => _items.isEmpty;
-  Set<String> get selectedIds => Set.unmodifiable(_selectedIds);
-  int get selectedCount => _selectedIds.length;
-  bool get hasSelection => _selectedIds.isNotEmpty;
-  bool get allSelected =>
-      _items.isNotEmpty && _selectedIds.length == _items.length;
 
-  /// True while a restore or delete runs, so the footer cannot fire twice.
+  /// True while a restore or delete runs, so a change cannot fire twice.
   bool get isWorking => _isWorking;
 
-  bool isSelected(String id) => _selectedIds.contains(id);
-
-  /// Whole days left of a row's 30 days at [now], never below zero.
+  /// Whole days left of a row's retention at [now], never below zero.
   static int daysLeft(TrashItem item, DateTime now) {
     final left = item.expireAt.difference(now);
     if (left.isNegative) return 0;
     return (left.inHours / 24).ceil();
   }
 
-  /// Share of the 30 days still left at [now], from 0 to 1.
+  /// Share of the retention still left at [now], from 0 to 1.
   static double fractionLeft(TrashItem item, DateTime now) {
     final left = item.expireAt.difference(now).inSeconds;
     final total = TrashItem.keptFor.inSeconds;
@@ -72,8 +64,6 @@ class TrashViewModel extends BaseViewModel {
     _subscription = _service.watchTrash().listen(
       _onItems,
       onError: (Object _) {
-        // The row is not shown without its stream, so the selection goes too.
-        _selectedIds.clear();
         setError(AppLocale.current.trashLoadFailed);
       },
     );
@@ -82,30 +72,12 @@ class TrashViewModel extends BaseViewModel {
   void _onItems(List<TrashItem> items) {
     if (isDisposed) return;
     _items = items;
-    _selectedIds.retainAll(items.map((i) => i.id));
     clearError();
     setLoading(false);
   }
 
-  void toggle(String id) {
-    if (_isWorking || !_items.any((i) => i.id == id)) return;
-    if (!_selectedIds.remove(id)) _selectedIds.add(id);
-    notifyListeners();
-  }
-
-  /// Selects every row, or clears the selection when every row is selected.
-  void toggleAll() {
-    if (_isWorking) return;
-    if (allSelected) {
-      _selectedIds.clear();
-    } else {
-      _selectedIds.addAll(_items.map((i) => i.id));
-    }
-    notifyListeners();
-  }
-
-  Future<TrashActionResult?> restoreSelected() {
-    final chosen = _items.where((i) => _selectedIds.contains(i.id)).toList();
+  Future<TrashActionResult?> restoreOne(String id) {
+    final chosen = _items.where((i) => i.id == id).toList();
     return _run(
       TrashAction.restore,
       chosen.length,
@@ -113,8 +85,13 @@ class TrashViewModel extends BaseViewModel {
     );
   }
 
-  Future<TrashActionResult?> deleteSelected() {
-    final ids = _selectedIds.toList();
+  Future<TrashActionResult?> restoreAll() {
+    final all = List.of(_items);
+    return _run(TrashAction.restore, all.length, () => _service.restore(all));
+  }
+
+  Future<TrashActionResult?> deleteOne(String id) {
+    final ids = _items.where((i) => i.id == id).map((i) => i.id).toList();
     return _run(
       TrashAction.deleteForever,
       ids.length,
@@ -140,8 +117,6 @@ class TrashViewModel extends BaseViewModel {
     notifyListeners();
     try {
       final outcome = await change();
-      // Rows that went stay out of the selection even before the stream says so.
-      _selectedIds.removeAll(outcome.doneIds);
       return TrashActionResult(
         action: action,
         requested: requested,

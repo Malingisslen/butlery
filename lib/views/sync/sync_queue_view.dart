@@ -34,7 +34,9 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 class SyncQueueView extends StatefulWidget {
   const SyncQueueView({this.backTo, super.key});
@@ -301,6 +303,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                 ),
               ),
       ),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -320,7 +323,6 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                       children: [
                         if (queue.needsUser.isNotEmpty) ...[
                           _SectionHeading(
-                            icon: ButleryIcons.triangleAlert,
                             text: l10n.syncQueueNeedsYouHeader(
                               queue.needsUser.length,
                             ),
@@ -349,22 +351,15 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                           const SizedBox(height: AppDimensions.spacingL),
                         ],
                         if (queue.draining.isNotEmpty) ...[
-                          if (queue.needsUser.isNotEmpty)
-                            Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: cs.outlineVariant,
-                            ),
-                          const SizedBox(height: AppDimensions.spacingMd - 2),
-                          _SectionHeading(
-                            icon: ButleryIcons.clock,
-                            text: l10n.syncQueueQueuedHeader(
+                          ButleryListSection(
+                            title: l10n.syncQueueQueuedHeader(
                               queue.draining.length,
                             ),
-                            color: cs.onSurfaceVariant,
+                            rows: [
+                              for (final change in queue.draining)
+                                SyncQueueRow(change: change),
+                            ],
                           ),
-                          for (final change in queue.draining)
-                            SyncQueueRow(change: change),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
                             l10n.syncQueueOrderNote,
@@ -407,43 +402,22 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   }
 }
 
-/// "Väntar på dig · 2" / "I kö · 5": a small icon and an uppercase heading.
+/// "Väntar på dig · 2": the overline of [ButleryListSection], kept in
+/// text.danger because the cards under it need the user.
 class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({
-    required this.icon,
-    required this.text,
-    required this.color,
-  });
+  const _SectionHeading({required this.text, required this.color});
 
-  final IconData icon;
   final String text;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       header: true,
-      child: Row(
-        children: [
-          ExcludeSemantics(
-            child: ButleryIcon(
-              icon,
-              size: AppDimensions.iconSizeS,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              text.toUpperCase(),
-              style: AppTextStyles.captionBase.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        text.toUpperCase(),
+        style: AppTextStyles.overline.copyWith(color: color),
       ),
     );
   }

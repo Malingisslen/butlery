@@ -14,5 +14,4 @@ export 'personal_tag_selector.dart';
 export 'rule_builder_sheet.dart';
 export 'rule_condition_card.dart';
 export 'tag_detail_header.dart';
-export 'tag_detail_rule_tile.dart';
 export 'tag_detail_rules_section.dart';

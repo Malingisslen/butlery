@@ -18,6 +18,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 // Widgets
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Local extracted components
 import 'package:butlery/views/social/friend_requests/friend_request_actions.dart';
@@ -184,79 +185,77 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   Widget build(BuildContext context) {
     final viewModel = context.watch<FriendsViewModel>();
 
-    return LayoutComponents.mainMenu(
-      currentIndex: null,
-      body: Scaffold(
-        appBar: FriendRequestsHeaderBuilder.buildAppBar(
-          context,
-          viewModel,
-          _tabController,
-          _selectedIncoming,
-          _selectedSent,
-          () => _handleBatchAccept(viewModel),
-          () => _handleBatchReject(viewModel),
-          () => _handleCancelSelected(viewModel),
-          batchRunning: _batchRunning,
-        ),
-        body: SafeArea(
-          // ✅ RESPONSIVE: Center and constrain content on large screens
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: LayoutComponents.valueFor(
-                  context: context,
-                  mobile: double.infinity,
-                  tablet: 700,
-                  desktop: 800,
+    return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+      appBar: FriendRequestsHeaderBuilder.buildAppBar(
+        context,
+        viewModel,
+        _tabController,
+        _selectedIncoming,
+        _selectedSent,
+        () => _handleBatchAccept(viewModel),
+        () => _handleBatchReject(viewModel),
+        () => _handleCancelSelected(viewModel),
+        batchRunning: _batchRunning,
+      ),
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                // Outside the TabBarView and gated on the batch rather than
+                // on a selection, so it survives a tab switch and a cleared
+                // selection — both of which take every batch control off
+                // screen (BUT-2041).
+                BatchActivityBar(active: _batchRunning),
+                FriendRequestsHeaderBuilder.buildErrorDisplay(
+                  context,
+                  viewModel,
                 ),
-              ),
-              child: Column(
-                children: [
-                  LayoutComponents.offlineIndicator(),
-                  // Outside the TabBarView and gated on the batch rather than
-                  // on a selection, so it survives a tab switch and a cleared
-                  // selection — both of which take every batch control off
-                  // screen (BUT-2041).
-                  BatchActivityBar(active: _batchRunning),
-                  FriendRequestsHeaderBuilder.buildErrorDisplay(
-                    context,
-                    viewModel,
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      IncomingRequestsTabBuilder.build(
+                        context,
+                        viewModel,
+                        _selectedIncoming,
+                        _onIncomingSelectionChanged,
+                        () => _clearSelection(_selectedIncoming),
+                        () => _pruneAfterRefresh(viewModel),
+                      ),
+                      SentRequestsTabBuilder.build(
+                        context,
+                        viewModel,
+                        _selectedSent,
+                        _onSentSelectionChanged,
+                        () => _clearSelection(_selectedSent),
+                        () => _pruneAfterRefresh(viewModel),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        IncomingRequestsTabBuilder.build(
-                          context,
-                          viewModel,
-                          _selectedIncoming,
-                          _onIncomingSelectionChanged,
-                          () => _clearSelection(_selectedIncoming),
-                          () => _pruneAfterRefresh(viewModel),
-                        ),
-                        SentRequestsTabBuilder.build(
-                          context,
-                          viewModel,
-                          _selectedSent,
-                          _onSentSelectionChanged,
-                          () => _clearSelection(_selectedSent),
-                          () => _pruneAfterRefresh(viewModel),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-        floatingActionButton: _actions.buildFloatingActionButton(
-          context,
-          _tabController,
-          _selectedIncoming,
-          () => _handleBatchAccept(viewModel),
-          batchRunning: _batchRunning,
-        ),
+      ),
+      floatingActionButton: _actions.buildFloatingActionButton(
+        context,
+        _tabController,
+        _selectedIncoming,
+        () => _handleBatchAccept(viewModel),
+        batchRunning: _batchRunning,
       ),
     );
   }
