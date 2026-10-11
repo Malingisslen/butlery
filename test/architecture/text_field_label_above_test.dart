@@ -16,9 +16,6 @@ const _notYetMoved = <String, int>{
   'lib/views/settings/account_security_view.dart': 5,
   'lib/views/settings/mfa_enrollment_forms.dart': 3,
   'lib/widgets/common/input/instruction_editor.dart': 1,
-  'lib/widgets/import/assisted_import_dialog.dart': 4,
-  'lib/widgets/tagging/personal_tag_rule_dialog.dart': 1,
-  'lib/widgets/tagging/rule_builder_sheet.dart': 1,
 };
 
 /// Strips comments so a sentence that names a field is not counted.

@@ -1,7 +1,8 @@
 /// The assisted import's review step stores what its meal-type dropdown
 /// offers, and the viewmodel's default has to be one of those items or the
 /// control asserts on build. Both halves are the app's Swedish vocabulary so
-/// the menu generator's slot match reaches a recipe imported this way.
+/// the menu generator's slot match reaches a recipe imported this way. The
+/// step's labels stand above their boxes.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
+import '../../../infrastructure/helpers/field_finder.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
 // Indices after trim+split: 0-1 ingredients, 2 blank, 3-4 instructions.
@@ -65,6 +67,25 @@ void main() {
           .toList();
       expect(offered, contains(viewModel.mealType));
       expect(RecipeFormState.mealTypes, containsAll(offered));
+
+      // Komponentark v1 §11: each review field's label stands above its box.
+      for (final (label, type) in [
+        ('Receptnamn *', TextFormField),
+        ('Beskrivning', TextFormField),
+        ('Portioner', TextFormField),
+        ('Tillagningstid', TextFormField),
+        ('Måltid', DropdownButtonFormField<String>),
+      ]) {
+        expect(fieldLabelled(label, type: type), findsOneWidget, reason: label);
+        expect(
+          find.descendant(
+            of: find.byType(InputDecorator),
+            matching: find.text(label),
+          ),
+          findsNothing,
+          reason: label,
+        );
+      }
     },
   );
 }

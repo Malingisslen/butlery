@@ -12,6 +12,7 @@
 /// - [EditableListBuilder] - Editable list component
 library;
 
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -252,29 +253,31 @@ class _ReviewEditStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Title
-          TextFormField(
-            initialValue: viewModel.title,
-            decoration: InputDecoration(
-              labelText: context.l10n.importRecipeNameRequired,
-              hintText: context.l10n.importRecipeNameHint,
-              border: const OutlineInputBorder(),
+          LabeledField(
+            label: context.l10n.importRecipeNameRequired,
+            child: TextFormField(
+              initialValue: viewModel.title,
+              decoration: InputDecoration(
+                hintText: context.l10n.importRecipeNameHint,
+              ),
+              onChanged: viewModel.setTitle,
+              textCapitalization: TextCapitalization.sentences,
             ),
-            onChanged: viewModel.setTitle,
-            textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Description
-          TextFormField(
-            initialValue: viewModel.description,
-            decoration: InputDecoration(
-              labelText: context.l10n.recipeDescription,
-              hintText: context.l10n.importDescriptionHint,
-              border: const OutlineInputBorder(),
+          LabeledField(
+            label: context.l10n.recipeDescription,
+            child: TextFormField(
+              initialValue: viewModel.description,
+              decoration: InputDecoration(
+                hintText: context.l10n.importDescriptionHint,
+              ),
+              onChanged: viewModel.setDescription,
+              maxLines: 2,
+              textCapitalization: TextCapitalization.sentences,
             ),
-            onChanged: viewModel.setDescription,
-            maxLines: 2,
-            textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
 
@@ -282,34 +285,32 @@ class _ReviewEditStep extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: TextFormField(
-                  initialValue: viewModel.portions.toString(),
-                  decoration: InputDecoration(
-                    labelText: context.l10n.recipePortions,
-                    border: const OutlineInputBorder(),
-                    suffixText: 'st',
+                child: LabeledField(
+                  label: context.l10n.recipePortions,
+                  child: TextFormField(
+                    initialValue: viewModel.portions.toString(),
+                    decoration: const InputDecoration(suffixText: 'st'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      final parsed = int.tryParse(value);
+                      if (parsed != null) viewModel.setPortions(parsed);
+                    },
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    final parsed = int.tryParse(value);
-                    if (parsed != null) viewModel.setPortions(parsed);
-                  },
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
-                child: TextFormField(
-                  initialValue: viewModel.timeMinutes.toString(),
-                  decoration: InputDecoration(
-                    labelText: context.l10n.recipeCookingTime,
-                    border: const OutlineInputBorder(),
-                    suffixText: 'min',
+                child: LabeledField(
+                  label: context.l10n.recipeCookingTime,
+                  child: TextFormField(
+                    initialValue: viewModel.timeMinutes.toString(),
+                    decoration: const InputDecoration(suffixText: 'min'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      final parsed = int.tryParse(value);
+                      if (parsed != null) viewModel.setTimeMinutes(parsed);
+                    },
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    final parsed = int.tryParse(value);
-                    if (parsed != null) viewModel.setTimeMinutes(parsed);
-                  },
                 ),
               ),
             ],
@@ -317,44 +318,45 @@ class _ReviewEditStep extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingMd),
 
           // Meal type dropdown
-          PressFill(
-            surface: PressSurface.base,
-            child: DropdownButtonFormField<String>(
-              icon: const ButleryIcon(ButleryIcons.chevronDown),
-              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
+          LabeledField(
+            label: context.l10n.importMealType,
+            child: PressFill(
+              surface: PressSurface.base,
+              child: DropdownButtonFormField<String>(
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
+                iconEnabledColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                iconDisabledColor: AppModeColors.textDisabled(
+                  Theme.of(context).brightness,
+                ),
+                initialValue: viewModel.mealType,
+                items: [
+                  DropdownMenuItem(
+                    value: 'Frukost',
+                    child: Text(context.l10n.importMealBreakfast),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Lunch',
+                    child: Text(context.l10n.importMealLunch),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Middag',
+                    child: Text(context.l10n.importMealDinner),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Mellanmål',
+                    child: Text(context.l10n.importMealSnack),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Dessert',
+                    child: Text(context.l10n.importMealDessert),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) viewModel.setMealType(value);
+                },
               ),
-              initialValue: viewModel.mealType,
-              decoration: InputDecoration(
-                labelText: context.l10n.importMealType,
-                border: const OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: 'Frukost',
-                  child: Text(context.l10n.importMealBreakfast),
-                ),
-                DropdownMenuItem(
-                  value: 'Lunch',
-                  child: Text(context.l10n.importMealLunch),
-                ),
-                DropdownMenuItem(
-                  value: 'Middag',
-                  child: Text(context.l10n.importMealDinner),
-                ),
-                DropdownMenuItem(
-                  value: 'Mellanmål',
-                  child: Text(context.l10n.importMealSnack),
-                ),
-                DropdownMenuItem(
-                  value: 'Dessert',
-                  child: Text(context.l10n.importMealDessert),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) viewModel.setMealType(value);
-              },
             ),
           ),
           const SizedBox(height: AppDimensions.spacingLg),
