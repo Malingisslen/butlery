@@ -31,6 +31,7 @@ import 'package:butlery/widgets/messaging/dialogs/block_group_member_dialog.dart
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -732,11 +733,13 @@ class _EditMessageDialogState extends State<_EditMessageDialog> {
     final l10n = context.l10n;
     return AlertDialog(
       title: Text(l10n.chatEditMessage),
-      content: TextField(
-        controller: _controller,
-        maxLines: null,
-        maxLength: 5000,
-        decoration: InputDecoration(hintText: l10n.chatWriteYourMessage),
+      content: LabeledField(
+        child: TextField(
+          controller: _controller,
+          maxLines: null,
+          maxLength: 5000,
+          decoration: InputDecoration(hintText: l10n.chatWriteYourMessage),
+        ),
       ),
       actions: [
         TextButton(

@@ -49,11 +49,13 @@ class _SheetContent extends StatefulWidget {
 class _SheetContentState extends State<_SheetContent> {
   final _searchController = TextEditingController();
   List<Recipe> _filtered = [];
+  late final bool _nothingToOffer;
 
   @override
   void initState() {
     super.initState();
     _filtered = _getFilteredRecipes('');
+    _nothingToOffer = _filtered.isEmpty;
   }
 
   @override
@@ -137,13 +139,19 @@ class _SheetContentState extends State<_SheetContent> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                     ),
-                    child: ButlerySearchBox(
-                      controller: _searchController,
-                      hintText: context.l10n.commonSearch,
-                      onChanged: (query) {
-                        setState(() => _filtered = _getFilteredRecipes(query));
-                      },
-                    ),
+                    // No dish to offer: the box says so instead of
+                    // inviting a search that cannot find anything.
+                    child: _nothingToOffer
+                        ? const ButlerySearchBox.nothingToSearch()
+                        : ButlerySearchBox(
+                            controller: _searchController,
+                            hintText: context.l10n.commonSearch,
+                            onChanged: (query) {
+                              setState(
+                                () => _filtered = _getFilteredRecipes(query),
+                              );
+                            },
+                          ),
                   ),
                   const SizedBox(height: AppDimensions.space4),
 

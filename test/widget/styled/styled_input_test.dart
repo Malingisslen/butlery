@@ -561,6 +561,52 @@ void main() {
     });
   });
 
+  group('StyledInput validated (Komponentark v1 §11 Validerad)', () {
+    Widget app(Widget child) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      theme: AppTheme.lightTheme,
+      home: Scaffold(body: SizedBox(width: 300, child: child)),
+    );
+
+    testWidgets('shows a check and the word inside the box, in text.success, '
+        'on the resting edge', (tester) async {
+      await tester.pumpWidget(
+        app(const StyledInput(label: 'Användarnamn', validText: 'Ledigt')),
+      );
+      final box = tester.getRect(find.byType(InputDecorator));
+      expect(box.contains(tester.getCenter(find.text('Ledigt'))), isTrue);
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
+      final word = tester.widget<Text>(find.text('Ledigt'));
+      expect(
+        word.style!.color,
+        ModeColors.of(Brightness.light).success,
+      );
+      final decoration = tester
+          .widget<TextField>(find.byType(TextField))
+          .decoration!;
+      expect(
+        (decoration.enabledBorder! as OutlineInputBorder).borderSide.color,
+        AppTheme.lightTheme.colorScheme.outline,
+      );
+    });
+
+    testWidgets('an error replaces the mark', (tester) async {
+      await tester.pumpWidget(
+        app(
+          const StyledInput(
+            label: 'Användarnamn',
+            validText: 'Ledigt',
+            errorText: 'Upptaget',
+          ),
+        ),
+      );
+      expect(find.text('Ledigt'), findsNothing);
+      expect(find.text('Upptaget'), findsOneWidget);
+    });
+  });
+
   group('StyledFormField Widget Tests', () {
     Widget createTestWidget(Widget child) {
       return MaterialApp(

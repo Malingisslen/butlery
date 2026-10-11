@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/butlery_password_field.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -10,8 +10,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// "Välj nytt lösenord", opened by the link in the "glömt lösenord" mail
@@ -65,8 +63,6 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
   final _passwordController = TextEditingController();
   final _repeatController = TextEditingController();
   final _repeatFocus = FocusNode();
-  bool _obscurePassword = true;
-  bool _obscureRepeat = true;
 
   @override
   void dispose() {
@@ -195,42 +191,34 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            LabeledField(
+            ButleryPasswordField(
+              fieldKey: const ValueKey('setNewPassword.password'),
               label: l.accountSecurityNewPassword,
-              child: TextField(
-                key: const ValueKey('setNewPassword.password'),
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                autofillHints: const [AutofillHints.newPassword],
-                textInputAction: TextInputAction.next,
-                onSubmitted: (_) => _repeatFocus.requestFocus(),
-                decoration: InputDecoration(
-                  suffixIcon: _visibilityToggle(
-                    obscured: _obscurePassword,
-                    onToggle: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                ),
-              ),
+              controller: _passwordController,
+              autofillHints: const [AutofillHints.newPassword],
+              onSubmitted: (_) => _repeatFocus.requestFocus(),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            LabeledField(
-              label: l.setNewPasswordRepeat,
-              child: TextField(
-                key: const ValueKey('setNewPassword.repeat'),
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                _passwordController,
+                _repeatController,
+              ]),
+              builder: (context, _) => ButleryPasswordField(
+                fieldKey: const ValueKey('setNewPassword.repeat'),
+                label: l.setNewPasswordRepeat,
                 controller: _repeatController,
                 focusNode: _repeatFocus,
-                obscureText: _obscureRepeat,
                 autofillHints: const [AutofillHints.newPassword],
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _save(),
-                decoration: InputDecoration(
-                  suffixIcon: _visibilityToggle(
-                    obscured: _obscureRepeat,
-                    onToggle: () =>
-                        setState(() => _obscureRepeat = !_obscureRepeat),
-                  ),
-                ),
+                validText:
+                    ButleryPasswordField.matches(
+                      _passwordController.text,
+                      _repeatController.text,
+                    )
+                    ? l.passwordsMatch
+                    : null,
               ),
             ),
             if (vm.error != null) ...[
@@ -261,19 +249,6 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _visibilityToggle({
-    required bool obscured,
-    required VoidCallback onToggle,
-  }) {
-    return IconButton(
-      icon: ButleryIcon(obscured ? ButleryIcons.eye : ButleryIcons.eyeOff),
-      tooltip: obscured
-          ? context.l10n.tooltipShowPassword
-          : context.l10n.tooltipHidePassword,
-      onPressed: onToggle,
     );
   }
 }

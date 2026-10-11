@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -244,20 +245,21 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           ),
           if (isOther) ...[
             const SizedBox(height: 8),
-            TextField(
-              controller: _descriptionController,
-              autofocus: true,
-              maxLength: 500,
-              maxLines: 3,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: l10n.reportDescriptionHint,
-                // "Krävs när du väljer Annat." with the 0 / 500 counter
-                // beside it, as drawn (#fbanmal:516;
-                // produktregler.md). Interpretation: the drawn bold
-                // on "Krävs" is left out; the helper is plain text.
-                helperText: l10n.reportDescriptionRequiredHelper,
-                border: const OutlineInputBorder(),
+            LabeledField(
+              child: TextField(
+                controller: _descriptionController,
+                autofocus: true,
+                maxLength: 500,
+                maxLines: 3,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: l10n.reportDescriptionHint,
+                  // "Krävs när du väljer Annat." with the 0 / 500 counter
+                  // beside it, as drawn (#fbanmal:516;
+                  // produktregler.md). Interpretation: the drawn bold
+                  // on "Krävs" is left out; the helper is plain text.
+                  helperText: l10n.reportDescriptionRequiredHelper,
+                ),
               ),
             ),
           ],

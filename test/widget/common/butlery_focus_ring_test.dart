@@ -333,16 +333,12 @@ void main() {
       });
 
       test(
-        '${t.brightness}: bare fields fall back to the ring on the edge',
+        '${t.brightness}: a focused field keeps its resting edge; the ring '
+        'outside the box shows focus',
         () {
-          for (final b in [
-            t.inputDecorationTheme.focusedBorder!,
-            t.inputDecorationTheme.focusedErrorBorder!,
-          ]) {
-            final border = b as OutlineInputBorder;
-            expect(border.borderSide.color, ring);
-            expect(border.borderSide.width, 2);
-          }
+          final d = t.inputDecorationTheme;
+          expect(d.focusedBorder, d.enabledBorder);
+          expect(d.focusedErrorBorder, d.errorBorder);
         },
       );
 

@@ -769,17 +769,18 @@ class _ConditionRow extends StatelessWidget {
           if (condition.type == ConditionType.property)
             _buildPropertyDropdown(context)
           else
-            TextFormField(
-              style: fieldTextStyle(context, enabled: enabled),
-              initialValue: condition.value,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: AppDimensions.paddingAll12,
-                hintText: _getHintText(context),
-                border: const OutlineInputBorder(),
+            LabeledField(
+              child: TextFormField(
+                style: fieldTextStyle(context, enabled: enabled),
+                initialValue: condition.value,
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: AppDimensions.paddingAll12,
+                  hintText: _getHintText(context),
+                ),
+                enabled: enabled,
+                onChanged: onValueChanged,
               ),
-              enabled: enabled,
-              onChanged: onValueChanged,
             ),
         ],
       ),

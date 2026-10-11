@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -166,28 +167,32 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Widget _buildItemInput(BuildContext context) {
-    return TextField(
-      style: fieldTextStyle(context, enabled: !viewModel.isAddingItem),
-      controller: newItemController,
-      decoration: InputDecoration(
-        hintText: context.l10n.collaborativeAddItemHint,
-        // Adding: the plate line in the field's end, named for the screen
-        // reader (produktregler.md:163, B-18).
-        suffixIcon: viewModel.isAddingItem
-            ? Padding(
-                padding: const EdgeInsets.all(AppDimensions.space4),
-                child: SizedBox(
-                  width: AppDimensions.iconSizeL,
-                  child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
-                ),
-              )
-            : null,
+    return LabeledField(
+      child: TextField(
+        style: fieldTextStyle(context, enabled: !viewModel.isAddingItem),
+        controller: newItemController,
+        decoration: InputDecoration(
+          hintText: context.l10n.collaborativeAddItemHint,
+          // Adding: the plate line in the field's end, named for the screen
+          // reader (produktregler.md, B-18).
+          suffixIcon: viewModel.isAddingItem
+              ? Padding(
+                  padding: const EdgeInsets.all(AppDimensions.space4),
+                  child: SizedBox(
+                    width: AppDimensions.iconSizeL,
+                    child: PlateLine(
+                      semanticLabel: context.l10n.loadingGeneric,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        onSubmitted: (_) => onAddItem(),
+        enabled: !viewModel.isAddingItem,
+        textInputAction: TextInputAction.done,
+        autocorrect: false,
+        textCapitalization: TextCapitalization.sentences,
       ),
-      onSubmitted: (_) => onAddItem(),
-      enabled: !viewModel.isAddingItem,
-      textInputAction: TextInputAction.done,
-      autocorrect: false,
-      textCapitalization: TextCapitalization.sentences,
     );
   }
 

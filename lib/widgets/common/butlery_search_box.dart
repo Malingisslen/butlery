@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
 /// Custom search box with Butlery styling.
@@ -34,8 +36,26 @@ class ButlerySearchBox extends StatefulWidget {
     this.suffixIcon,
     this.trailing,
     this.focusNode,
+    this.tokens,
     super.key,
   });
+
+  /// The box over an empty library: disabled, saying there is nothing to
+  /// search yet instead of inviting a search (Komponentark v1 §07
+  /// "Inaktiverad (tomt bibliotek)").
+  const ButlerySearchBox.nothingToSearch({super.key})
+    : controller = null,
+      hintText = null,
+      onChanged = null,
+      onSubmitted = null,
+      onClear = null,
+      autofocus = false,
+      enabled = false,
+      prefixIcon = null,
+      suffixIcon = null,
+      trailing = null,
+      focusNode = null,
+      tokens = null;
 
   /// Controller for the text field.
   final TextEditingController? controller;
@@ -71,8 +91,29 @@ class ButlerySearchBox extends StatefulWidget {
   /// Focus node for the text field.
   final FocusNode? focusNode;
 
+  /// Chosen terms drawn as removable chips inside the box, before the
+  /// text (Komponentark v1 §07 "Tokeniserad"); the search glyph gives way
+  /// to them. A list, even an empty one, keeps the box in this layout, so
+  /// the field keeps its focus as the first term is added or the last is
+  /// removed.
+  final List<SearchToken>? tokens;
+
   @override
   State<ButlerySearchBox> createState() => _ButlerySearchBoxState();
+}
+
+/// One chosen term in a tokenised search box.
+class SearchToken {
+  const SearchToken({
+    required this.id,
+    required this.label,
+    required this.onRemove,
+  });
+
+  /// Keeps each chip's place in the tree as tokens come and go.
+  final String id;
+  final String label;
+  final VoidCallback onRemove;
 }
 
 class _ButlerySearchBoxState extends State<ButlerySearchBox> {
@@ -163,6 +204,8 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
         width: AppDimensions.borderWidthStandard,
       ),
     );
+    final tokens = widget.tokens;
+    if (tokens != null) return _buildTokenised(cs, radius, tokens);
     return ButleryFocusRing(
       focused: _isFocused,
       borderRadius: radius,
@@ -179,10 +222,18 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           ),
         ),
         decoration: InputDecoration(
-          hintText: widget.hintText ?? context.l10n.searchHint,
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
+          hintText: widget.enabled
+              ? widget.hintText ?? context.l10n.searchHint
+              : widget.hintText ?? context.l10n.searchNothingYet,
+          // Disabled says why in readable text, as a disabled field's value
+          // stays readable; the edge and the fill show the state.
+          hintStyle: widget.enabled
+              ? AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant)
+              : fieldTextStyle(
+                  context,
+                  enabled: false,
+                  base: AppTextStyles.bodyMedium,
+                ),
           prefixIcon:
               widget.prefixIcon ??
               ButleryIcon(
@@ -205,6 +256,181 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
         textInputAction: TextInputAction.search,
+      ),
+    );
+  }
+
+  Widget _buildTokenised(
+    ColorScheme cs,
+    BorderRadius radius,
+    List<SearchToken> tokens,
+  ) {
+    final suffix = widget.suffixIcon ?? _buildSuffix(cs);
+    // The chips and the text share the box and wrap together; each line is
+    // the 48 dp touch target, so a chip's remove target is that tall
+    // (tokens.json controls.chip.hitbox) without growing the box.
+    return ButleryFocusRing(
+      focused: _isFocused,
+      borderRadius: radius,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        // The field below is the node a screen reader focuses; this only
+        // widens the pointer target to the whole box.
+        excludeFromSemantics: true,
+        onTap: _focusNode.requestFocus,
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          padding: const EdgeInsetsDirectional.only(
+            start: AppDimensions.space8,
+          ),
+          decoration: BoxDecoration(
+            color: widget.enabled ? cs.surface : cs.surfaceContainerHighest,
+            border: Border.all(
+              color: widget.enabled
+                  ? cs.outline
+                  : AppModeColors.surfaceDisabled(cs.brightness),
+              width: AppDimensions.borderWidthStandard,
+            ),
+            borderRadius: radius,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Wrap(
+                  spacing: AppDimensions.space8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (tokens.isEmpty)
+                      ButleryIcon(
+                        ButleryIcons.search,
+                        color: _isFocused ? cs.onSurface : cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                    for (final token in tokens)
+                      _SearchTokenChip(key: ValueKey(token.id), token: token),
+                    ConstrainedBox(
+                      key: const ValueKey(#searchField),
+                      constraints: const BoxConstraints(
+                        minWidth: AppDimensions.minTouchTarget * 2,
+                      ),
+                      child: IntrinsicWidth(
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          autofocus: widget.autofocus,
+                          enabled: widget.enabled,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: fieldTextStyle(
+                            context,
+                            enabled: widget.enabled,
+                            base: AppTextStyles.bodyMedium.copyWith(
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          // The box draws the edge; the field is a bare
+                          // line, 48 dp tall so it is a full touch target.
+                          decoration: InputDecoration(
+                            hintText:
+                                widget.hintText ?? context.l10n.searchHint,
+                            hintStyle: AppTextStyles.bodyMedium.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                            filled: false,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minHeight: AppDimensions.minTouchTarget,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                          ),
+                          onChanged: widget.onChanged,
+                          onSubmitted: widget.onSubmitted,
+                          textInputAction: TextInputAction.search,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ?suffix,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A chosen term: ink pill with paper text and a remove glyph, the whole
+/// chip one remove button (Komponentark v1 §07; tokens.json
+/// controls.chipCompactInField).
+class _SearchTokenChip extends StatelessWidget {
+  const _SearchTokenChip({required this.token, super.key});
+
+  final SearchToken token;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final pill = BorderRadius.circular(AppDimensions.radiusPill);
+    // The pill is its own Material so the press fill draws over the ink,
+    // not under it; the line around it still takes the tap, so the target
+    // is 48 dp tall (tokens.json controls.chip.hitbox).
+    return Semantics(
+      button: true,
+      label: context.l10n.a11yRemoveIngredientChip(token.label),
+      onTap: token.onRemove,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: token.onRemove,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+            minWidth: AppDimensions.minTouchTarget,
+          ),
+          child: Center(
+            widthFactor: 1,
+            child: Material(
+              color: cs.onSurface,
+              borderRadius: pill,
+              child: PressFill(
+                surface: PressSurface.ink,
+                child: InkWell(
+                  onTap: token.onRemove,
+                  borderRadius: pill,
+                  child: Padding(
+                    padding: AppDimensions.chipCompactInFieldPadding,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          token.label,
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: cs.surface,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.space4),
+                        ButleryIcon(
+                          ButleryIcons.x,
+                          size: AppDimensions.iconSizeXs,
+                          color: cs.surface,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -467,6 +467,17 @@
 .b-input.disabled { background: var(--cs-raised); border-color: var(--cs-disabled-fill); }
 .b-input.search { padding: 12px 4px 12px 16px; }
 .b-input.search .b-iconbtn { width: 40px; height: 40px; color: var(--cs-on-surface); }
+.b-input.tokens { padding: 0 4px 0 8px; flex-wrap: wrap; column-gap: 8px; row-gap: 0; }
+.b-input.tokens > * { min-height: 48px; display: inline-flex; align-items: center; }
+.b-token {
+  align-self: center; min-height: 0 !important; padding: 6px 11px; border-radius: 999px;
+  background: var(--cs-on-surface); color: var(--cs-surface);
+  font-size: 12.5px; font-weight: 600; gap: 4px;
+}
+.b-valid {
+  display: inline-flex; align-items: center; gap: 4px; margin-left: auto;
+  font-size: 10.5px; font-weight: 700; color: var(--butlery-text-success);
+}
 .b-field-error {
   display: flex; gap: 4px; align-items: flex-start;
   font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--cs-error);
@@ -853,7 +864,7 @@ Mörkt läge: lägg data-theme="dark" på .phone. Alla färger byts av sig själ
 </template></div>
 
 <div class="spec"><h3>Fält och sökfält (LabeledField, ButlerySearchBox)</h3>
-<p class="note">Etiketten står ovanför rutan. Fokus = ring utanför rutan. Fel = 1,5 px röd kant och felrad med ikon.</p>
+<p class="note">Etiketten står ovanför rutan. Fokus = ring utanför rutan. Fel = 1,5 px röd kant och felrad med ikon. Validerad = vilokant med bock och ord i rutan. Valda termer står som brickor i sökrutan. Tomt bibliotek = avstängd sökruta som säger att det inte finns något att söka i.</p>
 <template>
 <div style="display:grid;gap:16px">
   <div class="b-input search"><svg class="i i-m"><use href="#i-search"/></svg><span class="hint">sök...</span></div>
@@ -862,6 +873,9 @@ Mörkt läge: lägg data-theme="dark" på .phone. Alla färger byts av sig själ
   <label class="b-field"><span class="label">Portioner</span><div class="b-input error"><span class="val">0</span></div>
     <span class="b-field-error"><svg class="i i-xs"><use href="#i-info"/></svg>Ange minst 1 portion</span></label>
   <label class="b-field"><span class="label">E-post</span><div class="b-input disabled"><span class="hint">namn@exempel.se</span></div></label>
+  <label class="b-field"><span class="label">Upprepa lösenordet</span><div class="b-input"><span class="val">••••••••</span><span class="b-valid"><svg class="i i-xs"><use href="#i-check"/></svg>Lösenorden matchar</span></div></label>
+  <div class="b-input tokens"><span class="b-token">svamp<svg class="i i-xs"><use href="#i-x"/></svg></span><span class="b-token">grädde<svg class="i i-xs"><use href="#i-x"/></svg></span><span class="hint">pasta …</span></div>
+  <div class="b-input search disabled"><svg class="i i-m"><use href="#i-search"/></svg><span class="val">Inget att söka i ännu</span></div>
 </div>
 </template></div>
 

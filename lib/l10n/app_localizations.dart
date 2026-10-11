@@ -7315,6 +7315,12 @@ abstract class AppLocalizations {
   /// **'sök …'**
   String get searchHint;
 
+  /// No description provided for @searchNothingYet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att söka i ännu'**
+  String get searchNothingYet;
+
   /// No description provided for @shareFriendsSelectedCount.
   ///
   /// In sv, this message translates to:
@@ -21886,6 +21892,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenorden matchar inte'**
   String get accountSecurityPasswordMismatch;
+
+  /// No description provided for @passwordsMatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenorden matchar'**
+  String get passwordsMatch;
 
   /// No description provided for @profileAccountSecurity.
   ///

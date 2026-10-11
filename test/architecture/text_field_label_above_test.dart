@@ -9,10 +9,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _notYetMoved = <String, int>{
-  'lib/views/auth/mfa_challenge_view.dart': 1,
-  'lib/views/personal_tags/personal_tag_dialogs.dart': 4,
-};
+const _notYetMoved = <String, int>{};
 
 /// Strips comments so a sentence that names a field is not counted.
 String _code(String path) => File(path)
