@@ -18,7 +18,11 @@ import 'package:butlery/widgets/common/state_widget.dart';
 /// Every switch saves at once through [ConsentViewModel.saveConsent], which
 /// writes one consent record per change.
 class ConsentManagementView extends StatefulWidget {
-  const ConsentManagementView({super.key});
+  const ConsentManagementView({this.backTo, super.key});
+
+  /// Where Back leads, given only by Integritet & data; the consent renewal
+  /// dialog that also opens this page leaves it null.
+  final String? backTo;
 
   @override
   State<ConsentManagementView> createState() => _ConsentManagementViewState();
@@ -44,7 +48,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Scaffold(
       appBar: ButleryTopBar.undersida(
         title: l10n.settingsConsents,
-        backTo: l10n.settingsPrivacyAreaTitle,
+        backTo: widget.backTo,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(

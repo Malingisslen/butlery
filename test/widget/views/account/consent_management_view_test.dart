@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -71,7 +72,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(WidgetTester tester, {String? backTo}) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -81,7 +82,7 @@ void main() {
         wrapInScaffold: false,
         child: ChangeNotifierProvider<ConsentViewModel>.value(
           value: viewModel,
-          child: const ConsentManagementView(),
+          child: ConsentManagementView(backTo: backTo),
         ),
       ),
     );
@@ -107,6 +108,16 @@ void main() {
     expect(find.byType(Card), findsNothing);
     expect(find.text(sv.settingsBlockedPeople), findsNothing);
     expect(find.text(sv.blockedUsersTitle), findsNothing);
+  });
+
+  testWidgets('Back is named after where the caller says it leads, and '
+      'names none from the renewal dialog', (tester) async {
+    ButleryTopBar bar() => tester.widget(find.byType(ButleryTopBar));
+    await pump(tester, backTo: sv.settingsPrivacyAreaTitle);
+    expect(bar().backTo, 'Integritet & data');
+
+    await pump(tester);
+    expect(bar().backTo, isNull);
   });
 
   testWidgets('flipping a switch saves once with only that purpose changed', (

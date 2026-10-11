@@ -44,6 +44,7 @@ class MoreView extends StatelessWidget {
       String? subtitle,
       int count = 0,
       String? countLabel,
+      bool namesBack = false,
     }) => ButleryListRow(
       key: rowKey(route),
       identifier: 'more-row-$route',
@@ -51,7 +52,9 @@ class MoreView extends StatelessWidget {
       subtitle: subtitle,
       count: count,
       countLabel: countLabel,
-      onTap: () => Navigator.of(context).pushNamed(route),
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(route, arguments: namesBack ? l10n.moreTitle : null),
     );
 
     return Scaffold(
@@ -102,13 +105,21 @@ class MoreView extends StatelessWidget {
                   title: l10n.moreSectionHousehold,
                   rows: [
                     row(l10n.moreFamily, Routes.settingsFamily),
-                    row(l10n.moreAllergens, Routes.settingsAllergens),
+                    row(
+                      l10n.moreAllergens,
+                      Routes.settingsAllergens,
+                      namesBack: true,
+                    ),
                   ],
                 ),
                 ButleryListSection(
                   title: l10n.moreSectionKitchen,
                   rows: [
-                    row(l10n.morePersonalTags, Routes.settingsPersonalTags),
+                    row(
+                      l10n.morePersonalTags,
+                      Routes.settingsPersonalTags,
+                      namesBack: true,
+                    ),
                     row(l10n.moreCollectionStats, Routes.collectionStats),
                     row(l10n.trashTitle, Routes.settingsTrash),
                   ],

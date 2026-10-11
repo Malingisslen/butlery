@@ -32,7 +32,11 @@ enum TagSortOrder { byName, byUsage, byRuleCount }
 
 /// Full-screen view for managing personal tags.
 class PersonalTagsView extends StatefulWidget {
-  const PersonalTagsView({super.key});
+  const PersonalTagsView({this.backTo, super.key});
+
+  /// Where Back leads, given only by the Mer row; the recipe list, recipe
+  /// page and tag picker that also open this page leave it null.
+  final String? backTo;
 
   @override
   State<PersonalTagsView> createState() => _PersonalTagsViewState();
@@ -61,13 +65,15 @@ class _PersonalTagsViewState extends State<PersonalTagsView> {
           value: _selectionManager,
         ),
       ],
-      child: const _PersonalTagsViewContent(),
+      child: _PersonalTagsViewContent(backTo: widget.backTo),
     );
   }
 }
 
 class _PersonalTagsViewContent extends StatefulWidget {
-  const _PersonalTagsViewContent();
+  const _PersonalTagsViewContent({required this.backTo});
+
+  final String? backTo;
 
   @override
   State<_PersonalTagsViewContent> createState() =>
@@ -187,7 +193,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final tagCount = context.watch<PersonalTagViewModel>().tags.length;
     return ButleryTopBar.undersida(
       title: context.l10n.morePersonalTags,
-      backTo: context.l10n.moreTitle,
+      backTo: widget.backTo,
       actions: [
         // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
         // produktregler.md:870-874). Long-press stays as a shortcut.

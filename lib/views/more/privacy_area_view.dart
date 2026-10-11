@@ -34,6 +34,7 @@ class PrivacyAreaView extends StatelessWidget {
               onTap: () => GdprConsentHandler.handleManageConsent(
                 context,
                 closeModal: false,
+                backTo: l10n.settingsPrivacyAreaTitle,
               ),
             ),
             ButleryListRow(

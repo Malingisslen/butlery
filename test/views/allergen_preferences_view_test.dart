@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -46,7 +47,7 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {String? backTo}) async {
     tester.view.physicalSize = const Size(600, 4000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -68,7 +69,7 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: const AllergenPreferencesView(),
+        home: AllergenPreferencesView(backTo: backTo),
       ),
     );
     await tester.pumpAndSettle();
@@ -88,6 +89,27 @@ void main() {
     expect(find.text(sv.moreAllergens), findsWidgets);
     expect(find.text(sv.commonSave), findsNothing);
     expect(find.text(sv.allergenSaveSettings), findsNothing);
+  });
+
+  testWidgets('Back is named after where the caller says it leads', (
+    tester,
+  ) async {
+    await pumpView(tester, backTo: sv.moreTitle);
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      'Mer',
+    );
+  });
+
+  // The banners and empty states that also open this page lead elsewhere.
+  testWidgets('opened without a destination, Back names none', (
+    tester,
+  ) async {
+    await pumpView(tester);
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      isNull,
+    );
   });
 
   testWidgets('every allergen and diet option is a chip', (tester) async {

@@ -73,7 +73,7 @@ void main() {
     }
   });
 
-  Widget testApp() {
+  Widget testApp({String? backTo}) {
     return MaterialApp(
       locale: const Locale('sv'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -84,18 +84,18 @@ void main() {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: AppTheme.lightTheme,
-      home: const PersonalTagsView(),
+      home: PersonalTagsView(backTo: backTo),
     );
   }
 
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester, {String? backTo}) async {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
-    await tester.pumpWidget(testApp());
+    await tester.pumpWidget(testApp(backTo: backTo));
     await tester.pump(); // settle the post-frame statistics callback
   }
 
@@ -238,15 +238,24 @@ void main() {
   });
 
   group('Mer, omtänkt', () {
-    testWidgets('the bar names the row that opens it and Back leads to Mer', (
+    testWidgets('the bar names the row that opens it, and Back is named '
+        'after where the caller says it leads', (tester) async {
+      fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
+      await pumpView(tester, backTo: 'Mer');
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.title, 'Egna taggar');
+      expect(bar.backTo, 'Mer');
+    });
+
+    testWidgets('opened from elsewhere, Back names no destination', (
       tester,
     ) async {
       fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
       await pumpView(tester);
 
       final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
-      expect(bar.title, 'Egna taggar');
-      expect(bar.backTo, 'Mer');
+      expect(bar.backTo, isNull);
     });
 
     testWidgets('groups, ungrouped and unused tags are separate sections, '

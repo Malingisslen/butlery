@@ -43,6 +43,7 @@ class GdprConsentHandler {
   static Future<void> handleManageConsent(
     BuildContext context, {
     bool closeModal = true,
+    String? backTo,
   }) async {
     try {
       if (closeModal) Navigator.pop(context);
@@ -59,7 +60,7 @@ class GdprConsentHandler {
         MaterialPageRoute(
           builder: (context) => ChangeNotifierProvider.value(
             value: viewModel,
-            child: const ConsentManagementView(),
+            child: ConsentManagementView(backTo: backTo),
           ),
         ),
       );

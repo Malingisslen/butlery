@@ -23,19 +23,25 @@ import 'package:butlery/widgets/tagging/tag_result_display.dart';
 /// Allergens and diets the user wants status for, and where it is shown.
 /// Every change is saved at once.
 class AllergenPreferencesView extends StatelessWidget {
-  const AllergenPreferencesView({super.key});
+  const AllergenPreferencesView({this.backTo, super.key});
+
+  /// Where Back leads, given only by the Mer row; the banners and empty
+  /// states that also open this page leave it null.
+  final String? backTo;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AllergenPreferencesViewModel(),
-      child: const _AllergenPreferencesContent(),
+      child: _AllergenPreferencesContent(backTo: backTo),
     );
   }
 }
 
 class _AllergenPreferencesContent extends StatelessWidget {
-  const _AllergenPreferencesContent();
+  const _AllergenPreferencesContent({required this.backTo});
+
+  final String? backTo;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +57,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
       }
     }
 
-    return MoreAreaScaffold(
+    return MoreAreaScaffold.backTo(
+      backTo,
       title: l10n.moreAllergens,
       sections: [
         Padding(

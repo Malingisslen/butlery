@@ -187,6 +187,30 @@ void main() {
     });
   }
 
+  // Allergener & kost and Egna taggar are also opened from recipes, import
+  // and home, so only this row tells them Back leads to Mer.
+  testWidgets('only the rows to pages with other ways in pass Mer as where '
+      'Back leads', (tester) async {
+    await tall(tester);
+    final pushes = _Pushes();
+    await tester.pumpWidget(_app(AppTheme.lightTheme, pushes));
+    await tester.pump();
+    const named = {Routes.settingsAllergens, Routes.settingsPersonalTags};
+    for (final route in _rows.keys) {
+      if (route == Routes.syncQueue) continue;
+      pushes.pushed.clear();
+      await tester.tap(find.byKey(MoreView.rowKey(route)));
+      await tester.pumpAndSettle();
+      expect(
+        pushes.pushed.single.arguments,
+        named.contains(route) ? _sv.moreTitle : isNull,
+        reason: route,
+      );
+      Navigator.of(tester.element(find.text('pushed'))).pop();
+      await tester.pumpAndSettle();
+    }
+  });
+
   testWidgets('the four rows of Konto & app say what is behind them', (
     tester,
   ) async {
