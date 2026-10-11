@@ -189,7 +189,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 842 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
-| `recipe_card.dart` | 1183 | Recipe list card widget. |
+| `recipe_card.dart` | 746 | Recipe list card widget. |
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 834 | DI registrations for content layer |

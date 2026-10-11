@@ -316,6 +316,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             key: ValueKey(recipe.id),
             item: recipe,
             type: ContentCardType.recipe,
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+            ),
             onTap: () => Navigator.pushNamed(
               context,
               '/receptDetalj',

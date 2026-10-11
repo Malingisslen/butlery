@@ -58,7 +58,6 @@ class MinaReceptRecipeCard extends StatelessWidget {
       // The card on the right takes the same drawn state as a ticked one:
       // surface.selected with the ink/paper border.
       isSelected: isSelected || isOpenOnRight,
-      showTags: true,
       style: viewModel.isGridView
           ? RecipeCardStyle.grid
           : RecipeCardStyle.detailed,
@@ -70,9 +69,6 @@ class MinaReceptRecipeCard extends StatelessWidget {
           ? viewModel.pantryMatches[recipe.id]
           : null,
       pooledStats: viewModel.pooledStats[recipe.id],
-      onFavoriteToggle: viewModel.isSelectionMode
-          ? null
-          : (_) => viewModel.toggleFavorite(recipe.id),
       onTap: viewModel.isSelectionMode
           ? (_) => viewModel.toggleSelection(recipe.id)
           : (_) async {
@@ -89,28 +85,44 @@ class MinaReceptRecipeCard extends StatelessWidget {
     );
 
     if (viewModel.isSelectionMode) {
-      card = Stack(
-        children: [
-          card,
-          Positioned(
-            top: AppDimensions.spacingSm,
-            left: AppDimensions.spacingSm,
-            child: Semantics(
-              selected: isSelected,
-              label: isSelected
-                  ? context.l10n.a11yRecipeSelected(recipe.title)
-                  : context.l10n.a11yRecipeNotSelected(recipe.title),
-              child: ButleryIcon(
-                isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
-                // text.primary when chosen, border.control when not: ink on
-                // light and paper on dark (#flerbar draws the ink check).
-                color: isSelected ? cs.onSurface : cs.outline,
-                size: AppDimensions.iconSizeM,
-              ),
-            ),
-          ),
-        ],
+      final check = Semantics(
+        selected: isSelected,
+        label: isSelected
+            ? context.l10n.a11yRecipeSelected(recipe.title)
+            : context.l10n.a11yRecipeNotSelected(recipe.title),
+        child: ButleryIcon(
+          isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
+          // text.primary when chosen, border.control when not: ink on
+          // light and paper on dark (#flerbar draws the ink check).
+          color: isSelected ? cs.onSurface : cs.outline,
+          size: AppDimensions.iconSizeM,
+        ),
       );
+      // A list row has its thumbnail at the left edge, so the check stands
+      // beside it; a grid card carries it in the top corner, over the photo.
+      card = viewModel.isGridView
+          ? Stack(
+              fit: StackFit.passthrough,
+              children: [
+                card,
+                Positioned(
+                  top: AppDimensions.spacingSm,
+                  right: AppDimensions.spacingSm,
+                  child: check,
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.space12,
+                  ),
+                  child: check,
+                ),
+                Expanded(child: card),
+              ],
+            );
     }
 
     if (!viewModel.isSelectionMode) {

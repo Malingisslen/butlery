@@ -34,6 +34,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -830,7 +831,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               items: recipes,
               tabletColumns: 2,
               desktopColumns: 3,
-              spacing: AppDimensions.responsiveGridSpacing(context),
+              // On a phone the list is rows that each draw their own hairline
+              // (Komponentark v1 receptlistrad), so they stand edge to edge.
+              spacing: Breakpoints.isMobile(context)
+                  ? 0
+                  : AppDimensions.responsiveGridSpacing(context),
               padding: AppDimensions.responsiveContentPadding(context),
               gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
                 context,

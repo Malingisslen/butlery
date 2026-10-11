@@ -17,6 +17,21 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../test_support/semantics_announcement.dart';
 
+/// The one metadata line is a rich Text, so it is found by its plain text.
+Finder _meta(String text) => find.byWidgetPredicate(
+  (w) =>
+      w is Text &&
+      (w.textSpan?.toPlainText(includeSemanticsLabels: false) ?? '') == text,
+);
+
+Finder _metaHas(String text) => find.byWidgetPredicate(
+  (w) =>
+      w is Text &&
+      (w.textSpan?.toPlainText(includeSemanticsLabels: false) ?? '').contains(
+        text,
+      ),
+);
+
 void main() {
   group('RecipeCard', () {
     late Recipe testRecipe;
@@ -82,14 +97,13 @@ void main() {
           ),
         );
 
-        // Title and description
+        // The drawing has the title and one metadata line, no description.
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
-        expect(find.text('Klassisk svensk husmanskost'), findsOneWidget);
+        expect(find.text('Klassisk svensk husmanskost'), findsNothing);
 
-        // Metadata (dot-separated text format per UI redesign)
-        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
-        // Rating shown as green pill badge
-        expect(find.text('\u2605 4.5'), findsOneWidget);
+        // Metadata and the rating are one line of text
+        // (Komponentark v1 receptlistrad)
+        expect(_meta('45 min \u00B7 4 port \u00B7 \u2605 4,5'), findsOneWidget);
       });
 
       testWidgets('should render recipe without image correctly', (
@@ -129,22 +143,16 @@ void main() {
                 recipe: testRecipe,
                 style: RecipeCardStyle.detailed,
                 showImage: false,
-                showTags: false,
                 showMetadata: false,
               ),
             ),
           ),
         );
 
-        // Should show title and description
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
-        expect(find.text('Klassisk svensk husmanskost'), findsOneWidget);
-
-        // Should not show other elements
         expect(find.text('Middag'), findsNothing);
-        expect(find.text('45 min \u00B7 4 port'), findsNothing);
-        expect(find.text('svensk'), findsNothing);
-        expect(find.byIcon(ButleryIcons.heartOutline), findsNothing);
+        expect(_metaHas('45 min'), findsNothing);
+        expect(_metaHas('4 port'), findsNothing);
       });
 
       testWidgets('should handle minimal recipe data', (tester) async {
@@ -185,7 +193,7 @@ void main() {
         // Compact style should not show description
         expect(find.text('Klassisk svensk husmanskost'), findsNothing);
         // But should show metadata (dot-separated text format)
-        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
+        expect(_metaHas('45 min \u00B7 4 port'), findsOneWidget);
       });
 
       testWidgets('should use smaller image in compact mode', (tester) async {
@@ -236,38 +244,7 @@ void main() {
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
         // Grid style should not show description
         expect(find.text('Klassisk svensk husmanskost'), findsNothing);
-        // Should show compact metadata (dot-separated text format)
-        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
-      });
-
-      testWidgets('should position favorite button as overlay in grid mode', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            // topLeft, so the card is given a LOOSE height and takes the one
-            // its content needs — which is how the grid lays it out
-            // (BUT-1911). A tight box would measure the card's willingness to
-            // be squeezed, and it is no longer willing: the recipe photo used
-            // to be the slack and gave up its whole height before anything
-            // complained.
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: 200,
-                child: RecipeCard(
-                  recipe: testRecipe,
-                  style: RecipeCardStyle.grid,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        // Recipe card should render without favorite button
-        expect(find.byIcon(ButleryIcons.heartOutline), findsNothing);
-        expect(find.byIcon(ButleryIcons.heart), findsNothing);
+        expect(_metaHas('45 min \u00B7 4 port'), findsOneWidget);
       });
     });
 
@@ -366,7 +343,6 @@ void main() {
           ),
         );
 
-        // UI Redesign: Selected state uses green border decoration (no elevation)
         expect(find.byType(RecipeCard), findsOneWidget);
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
       });
@@ -384,7 +360,6 @@ void main() {
           ),
         );
 
-        // UI Redesign: Normal state uses left green + bottom rust border decoration
         expect(find.byType(RecipeCard), findsOneWidget);
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
       });
@@ -428,21 +403,17 @@ void main() {
           ),
         );
 
-        // Find the Container that's a child of InkWell (the one with padding)
-        final inkWell = find.descendant(
-          of: find.byType(RecipeCard),
-          matching: find.byType(InkWell),
-        );
-        final container = tester.widget<Container>(
-          find
-              .descendant(
-                of: inkWell,
-                matching: find.byType(Container),
-              )
-              .first,
+        final padded = find.descendant(
+          of: find.descendant(
+            of: find.byType(RecipeCard),
+            matching: find.byType(InkWell),
+          ),
+          matching: find.byWidgetPredicate(
+            (w) => w is Padding && w.padding == customPadding,
+          ),
         );
 
-        expect(container.padding, equals(customPadding));
+        expect(padded, findsOneWidget);
       });
 
       testWidgets('should apply default styling when not specified', (
@@ -463,48 +434,8 @@ void main() {
           find.byType(Container).first,
         );
 
-        expect(
-          container.margin,
-          equals(const EdgeInsets.symmetric(vertical: 1, horizontal: 16)),
-        );
-      });
-    });
-
-    group('Context Menu', () {
-      testWidgets('should show context menu button when enabled', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(
-                recipe: testRecipe,
-                showContextMenu: true,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.moreVertical), findsOneWidget);
-      });
-
-      testWidgets('should hide context menu button when disabled', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(
-                recipe: testRecipe,
-                showContextMenu: false,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.moreVertical), findsNothing);
+        // The page margin belongs to the list, not to the row.
+        expect(container.margin ?? EdgeInsets.zero, EdgeInsets.zero);
       });
     });
 
@@ -616,10 +547,9 @@ void main() {
         );
 
         expect(find.text('Räksmörgås'), findsOneWidget);
-        expect(find.text('Öppet smörgås med räkor och ägg'), findsOneWidget);
-        // showMealType and showPersonalTags default to false in UI redesign
+        expect(find.text('Öppet smörgås med räkor och ägg'), findsNothing);
+        // showMealType defaults to false
         expect(find.text('Frukost'), findsNothing);
-        expect(find.text('ägg'), findsNothing);
       });
 
       testWidgets('should use Swedish units for metadata', (tester) async {
@@ -634,8 +564,7 @@ void main() {
           ),
         );
 
-        // UI Redesign: dot-separated text format
-        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
+        expect(_metaHas('45 min \u00B7 4 port'), findsOneWidget);
       });
     });
 
@@ -666,29 +595,6 @@ void main() {
         expect(titleText.overflow, equals(TextOverflow.ellipsis));
       });
 
-      testWidgets('should handle empty tags list', (tester) async {
-        final noTagsRecipe = RecipeFactory.build(
-          personalTagIds: [],
-        );
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(
-                recipe: noTagsRecipe,
-                showTags: true,
-              ),
-            ),
-          ),
-        );
-
-        // Should not crash and should not show any tag text widgets
-        // (tags are rendered as Text widgets, not Chips in RecipeCard)
-        expect(find.text('svensk'), findsNothing);
-        expect(find.text('husmanskost'), findsNothing);
-      });
-
       testWidgets('should handle zero portions gracefully', (tester) async {
         final zeroPortionsRecipe = RecipeFactory.build(
           portions: 0,
@@ -706,7 +612,7 @@ void main() {
         );
 
         // Should not show portions when zero
-        expect(find.text('0 port'), findsNothing);
+        expect(_metaHas('0 port'), findsNothing);
       });
 
       testWidgets('should handle negative time values', (tester) async {
@@ -726,182 +632,11 @@ void main() {
         );
 
         // Should not show negative time
-        expect(find.text('-10 min'), findsNothing);
+        expect(_metaHas('-10 min'), findsNothing);
       });
     });
 
-    // BUT-1213: active favourite heart must use cs.primary (green), not
-    // cs.error (red). Green = personal favourite; red is reserved for social
-    // likes. This test would fail if the colour token regressed.
-    group('Favourite heart colour (BUT-1213)', () {
-      testWidgets(
-        'active favourite heart icon uses cs.primary (green), not cs.error',
-        (tester) async {
-          late ColorScheme cs;
-          final favoriteRecipe = RecipeFactory.build(
-            id: 'fav_recipe',
-            title: 'Favorit rätt',
-          ).copyWith(isFavorite: true);
-
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              wrapInScaffold: false,
-              child: Builder(
-                builder: (context) {
-                  cs = Theme.of(context).colorScheme;
-                  return Scaffold(
-                    body: RecipeCard(
-                      recipe: favoriteRecipe,
-                      onFavoriteToggle: (_) {},
-                    ),
-                  );
-                },
-              ),
-            ),
-          );
-
-          // The favourite button renders an Icon with the active colour.
-          // The favourite state is the filled heart glyph (ButleryIcons.favourite).
-          final activeIcon = tester.widget<Icon>(
-            find.byWidgetPredicate(
-              (w) => w is Icon && w.icon == ButleryIcons.favourite,
-            ),
-          );
-          expect(
-            activeIcon.color,
-            cs.primary,
-            reason:
-                'Active favourite must be green (cs.primary), '
-                'not red (cs.error) — BUT-1213 colour convention.',
-          );
-          expect(
-            activeIcon.color,
-            isNot(cs.error),
-            reason: 'cs.error (red) is reserved for social likes.',
-          );
-        },
-      );
-
-      testWidgets('inactive favourite heart icon uses cs.onSurfaceVariant', (
-        tester,
-      ) async {
-        late ColorScheme cs;
-        final nonFavoriteRecipe = RecipeFactory.build(
-          id: 'non_fav_recipe',
-          title: 'Vanlig rätt',
-        );
-        // isFavorite defaults to false — no copyWith needed.
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Builder(
-              builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return Scaffold(
-                  body: RecipeCard(
-                    recipe: nonFavoriteRecipe,
-                    onFavoriteToggle: (_) {},
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-
-        final inactiveIcon = tester.widget<Icon>(
-          find.byWidgetPredicate(
-            (w) => w is Icon && w.icon == ButleryIcons.favouriteOutline,
-          ),
-        );
-        expect(
-          inactiveIcon.color,
-          cs.onSurfaceVariant,
-          reason:
-              'Inactive favourite must be onSurfaceVariant (muted), '
-              'not cs.primary or cs.error.',
-        );
-      });
-    });
-
-    // BUT-1036: pin the three-branch visibility-icon switch in
-    // `_buildVisibilityIcon`. The switch arms (`isCollaborative` →
-    // people_outline, `isPublic` → public, default → lock_outline) plus
-    // the "collab wins over public" precedence are a domain invariant —
-    // a future refactor that reorders the arms or drops the precedence
-    // comment must be caught here.
-    group('Visibility icon (BUT-909 / BUT-1036)', () {
-      testWidgets(
-        'collaborative recipe with isPublic=true also → people_outline only '
-        '(collab precedence wins)',
-        (tester) async {
-          final collabAndPublic = RecipeFactory.build(
-            id: 'collab_public',
-            type: RecipeType.collaborative,
-            isPublic: true,
-          );
-
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              wrapInScaffold: false,
-              child: Scaffold(
-                body: RecipeCard(recipe: collabAndPublic),
-              ),
-            ),
-          );
-
-          expect(find.byIcon(ButleryIcons.users), findsOneWidget);
-          expect(find.byIcon(ButleryIcons.globe), findsNothing);
-          expect(find.byIcon(ButleryIcons.lock), findsNothing);
-        },
-      );
-
-      testWidgets('public-only personal recipe → public icon only', (
-        tester,
-      ) async {
-        final publicOnly = RecipeFactory.build(
-          id: 'public_only',
-          isPublic: true,
-        );
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(recipe: publicOnly),
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.globe), findsOneWidget);
-        expect(find.byIcon(ButleryIcons.users), findsNothing);
-        expect(find.byIcon(ButleryIcons.lock), findsNothing);
-      });
-
-      testWidgets('private personal recipe → lock_outline (default arm)', (
-        tester,
-      ) async {
-        final private = RecipeFactory.build(
-          id: 'private',
-          isPublic: false,
-        );
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(recipe: private),
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
-        expect(find.byIcon(ButleryIcons.users), findsNothing);
-        expect(find.byIcon(ButleryIcons.globe), findsNothing);
-      });
-    });
-
-    group('Rating pills (family / personal / alla)', () {
+    group('Rating in the metadata line', () {
       // RecipeFactory doesn't expose the denormalized family / public fields,
       // so override them on the core directly.
       Recipe withCore(
@@ -937,50 +672,50 @@ void main() {
       testWidgets('family verdict supersedes the personal star', (
         tester,
       ) async {
-        // rating 4.5 (personal) AND a family average → only the family pill.
         await pump(
           tester,
           withCore(testRecipe, familyAverage: 4.2, familyRatingCount: 3),
         );
-
-        expect(find.textContaining('familj'), findsOneWidget);
         expect(
-          find.textContaining('★'),
-          findsNothing,
-          reason: 'the personal star pill must yield to the family verdict',
+          _metaHas('★ 4,2'),
+          findsOneWidget,
         );
+        expect(_metaHas('4,5'), findsNothing);
       });
 
       testWidgets('personal star shows when there is no family verdict', (
         tester,
       ) async {
-        await pump(tester, testRecipe); // rating 4.5, no family average
-        expect(find.textContaining('★'), findsOneWidget);
-        expect(find.textContaining('familj'), findsNothing);
+        await pump(tester, testRecipe);
+        expect(
+          _metaHas('★ 4,5'),
+          findsOneWidget,
+        );
       });
 
-      testWidgets(
-        'the public "alla" pill shows alongside, from averageRating',
-        (
-          tester,
-        ) async {
-          await pump(
-            tester,
-            withCore(
-              testRecipe,
-              familyAverage: 4.2,
-              familyRatingCount: 3,
-              averageRating: 4.5,
-            ),
-          );
-          expect(find.textContaining('familj'), findsOneWidget);
-          expect(find.textContaining('alla'), findsOneWidget);
-        },
-      );
+      testWidgets('the public aggregate is the last fallback', (tester) async {
+        final unrated = RecipeFactory.build(rating: null);
+        await pump(tester, withCore(unrated, averageRating: 4.3));
+        expect(
+          _metaHas('★ 4,3'),
+          findsOneWidget,
+        );
+      });
 
-      testWidgets('family and alla pills each announce their label alone', (
-        tester,
-      ) async {
+      testWidgets('the card carries one rating, never two', (tester) async {
+        await pump(
+          tester,
+          withCore(
+            testRecipe,
+            familyAverage: 4.2,
+            familyRatingCount: 3,
+            averageRating: 4.5,
+          ),
+        );
+        expect(_metaHas('★'), findsOneWidget);
+      });
+
+      testWidgets('the rating announces its label alone', (tester) async {
         final handle = tester.ensureSemantics();
         await pump(
           tester,
@@ -991,94 +726,65 @@ void main() {
             averageRating: 4.5,
           ),
         );
-
-        // The pills merge into the card's node; the visible "familj 4,2" /
-        // "alla 4,5" paraphrase the labels, so count lines carrying each value.
         final lines = announcedLines(
           tester,
-          find.bySemanticsLabel(RegExp('Familjebetyg 4,2')),
+          find
+              .descendant(
+                of: find.byType(RecipeCard),
+                matching: find.byType(InkWell),
+              )
+              .first,
         );
-        expect(lines.where((l) => l.contains('4,2')), ['Familjebetyg 4,2']);
-        expect(lines.where((l) => l.contains('4,5')), ['Allas betyg 4,5']);
+        expect(lines.where((l) => l.contains('4,2')), [
+          '45 min \u00B7 4 port \u00B7 Familjebetyg 4,2',
+        ]);
+        expect(lines.where((l) => l.contains('4,5')), isEmpty);
         handle.dispose();
       });
 
-      // ── Butlery-betyget community pill (AC7) ──
-      testWidgets(
-        'community pill shows at n>=5 with the count, replacing the per-copy alla pill',
-        (tester) async {
-          await pump(
-            tester,
-            withCore(testRecipe, averageRating: 4.0),
-            pooledStats: const PooledStats(count: 12, average: 4.3),
-          );
-          // The community pill carries the vote count ("betyg" is unique to it).
-          expect(find.textContaining('12 betyg'), findsOneWidget);
-          // Decision 9: it replaces the per-copy 'alla' aggregate on the card.
-          expect(find.textContaining('alla'), findsNothing);
-        },
-      );
+      testWidgets('a floored pool replaces the per-copy aggregate', (
+        tester,
+      ) async {
+        final unrated = RecipeFactory.build(rating: null);
+        await pump(
+          tester,
+          withCore(unrated, averageRating: 4.0),
+          pooledStats: const PooledStats(count: 12, average: 4.3),
+        );
+        expect(
+          _metaHas('★ 4,3'),
+          findsOneWidget,
+        );
+        expect(_metaHas('4,0'), findsNothing);
+      });
 
-      testWidgets(
-        'a whole-number pooled average keeps its decimal, Swedish comma (4,0)',
-        (tester) async {
-          // ButleryBetygPill's documented contract: always one decimal with a
-          // decimal comma — deliberately NOT formatFractional (which would
-          // render "4"). This pins the sv-SE "4,0" shape.
-          await pump(
-            tester,
-            withCore(testRecipe, averageRating: null),
-            pooledStats: const PooledStats(count: 12, average: 4.0),
-          );
-          expect(find.textContaining('4,0'), findsOneWidget);
-          expect(find.textContaining('4.0'), findsNothing);
-        },
-      );
+      testWidgets('below the floor the pool is ignored', (tester) async {
+        final unrated = RecipeFactory.build(rating: null);
+        await pump(
+          tester,
+          withCore(unrated, averageRating: 4.0),
+          pooledStats: const PooledStats(count: 4, average: 4.3),
+        );
+        expect(
+          _metaHas('★ 4,0'),
+          findsOneWidget,
+        );
+      });
 
-      testWidgets(
-        'below the floor (n<5) shows no community pill — per-copy fallback intact',
-        (tester) async {
-          await pump(
-            tester,
-            withCore(testRecipe, averageRating: 4.0),
-            pooledStats: const PooledStats(count: 4, average: 4.3),
-          );
-          expect(find.textContaining('betyg'), findsNothing);
-          expect(find.textContaining('alla'), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'null pooledStats (flag off / not loaded) leaves the per-copy display unchanged',
-        (tester) async {
-          await pump(tester, withCore(testRecipe, averageRating: 4.0));
-          expect(find.textContaining('betyg'), findsNothing);
-          expect(find.textContaining('alla'), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'a floored pool DEMOTES the co-existing family pill off brand-green',
-        (tester) async {
-          await pump(
-            tester,
-            withCore(testRecipe, familyAverage: 4.2, familyRatingCount: 3),
-            pooledStats: const PooledStats(count: 12, average: 4.3),
-          );
-          // Both render: the family verdict is kept AND the community pill added.
-          expect(find.textContaining('familj'), findsOneWidget);
-          expect(find.textContaining('12 betyg'), findsOneWidget);
-          // Demotion (decision 9): the family pill's text recedes from the
-          // brand-green onPrimary to the neutral onSurfaceVariant, so only the
-          // community number reads as green. Removing `demoted: showPool` would
-          // leave it onPrimary and fail this.
-          final cs = Theme.of(
-            tester.element(find.byType(RecipeCard)),
-          ).colorScheme;
-          final familyText = tester.widget<Text>(find.textContaining('familj'));
-          expect(familyText.style?.color, cs.onSurfaceVariant);
-        },
-      );
+      testWidgets('a whole-number average keeps its decimal comma', (
+        tester,
+      ) async {
+        final unrated = RecipeFactory.build(rating: null);
+        await pump(
+          tester,
+          withCore(unrated, averageRating: null),
+          pooledStats: const PooledStats(count: 12, average: 4.0),
+        );
+        expect(
+          _metaHas('★ 4,0'),
+          findsOneWidget,
+        );
+      });
     });
 
     // BUT-1869. A user who unticks every allergen reaches the card with an

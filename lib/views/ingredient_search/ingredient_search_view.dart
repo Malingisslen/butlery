@@ -202,6 +202,9 @@ class _IngredientSearchContent extends StatelessWidget {
           item: result.recipe,
           type: ContentCardType.recipe,
           style: ContentCardStyle.detailed,
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+          ),
           matchPercent: result.matchPercent,
           subtitle: l10n.ingredientMatchCount(
             result.matchedCount,

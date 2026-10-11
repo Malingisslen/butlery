@@ -8,7 +8,7 @@
 ///   - Pass-through props (margin, padding, showImage, showTags, showMetadata,
 ///     showOnlineStatus, showSharingStatus, trailing, subtitle) reach the
 ///     specialized widget.
-///   - Tap / long-press / favorite callbacks fire and are
+///   - Tap / long-press callbacks fire and are
 ///     adapted across the (Recipe) -> () signature gap for RecipeCard.
 ///   - Legacy static factory methods (recipe / compactRecipe / friend)
 ///     produce equivalent ContentCard configurations.
@@ -341,7 +341,7 @@ void main() {
   });
 
   group('ContentCard - prop forwarding (recipe)', () {
-    testWidgets('showImage / showTags / showMetadata forwarded to RecipeCard', (
+    testWidgets('showImage / showMetadata forwarded to RecipeCard', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -350,14 +350,12 @@ void main() {
             item: _recipe(),
             type: ContentCardType.recipe,
             showImage: false,
-            showTags: false,
             showMetadata: false,
           ),
         ),
       );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.showImage, isFalse);
-      expect(card.showTags, isFalse);
       expect(card.showMetadata, isFalse);
     });
 
@@ -602,23 +600,6 @@ void main() {
       expect(longs, 1);
     });
 
-    testWidgets('recipe onFavoriteToggle is adapted and fires', (tester) async {
-      var favs = 0;
-      await tester.pumpWidget(
-        _wrap(
-          ContentCard(
-            item: _recipe(),
-            type: ContentCardType.recipe,
-            onFavoriteToggle: () => favs++,
-          ),
-        ),
-      );
-      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
-      expect(card.onFavoriteToggle, isNotNull);
-      card.onFavoriteToggle!(_recipe());
-      expect(favs, 1);
-    });
-
     testWidgets('recipe callbacks are null when not provided', (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -628,7 +609,6 @@ void main() {
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.onTap, isNull);
       expect(card.onLongPress, isNull);
-      expect(card.onFavoriteToggle, isNull);
     });
 
     testWidgets('friend onTap forwarded as-is and fires via tap', (
@@ -659,11 +639,10 @@ void main() {
       expect(find.byType(RecipeCard), findsOneWidget);
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.style, RecipeCardStyle.detailed);
-      expect(card.showTags, isTrue);
     });
 
     testWidgets(
-      'ContentCard.compactRecipe forces compact style + showTags=false',
+      'ContentCard.compactRecipe forces compact style',
       (tester) async {
         await tester.pumpWidget(
           _wrap(
@@ -672,7 +651,6 @@ void main() {
         );
         final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
         expect(card.style, RecipeCardStyle.compact);
-        expect(card.showTags, isFalse);
       },
     );
 

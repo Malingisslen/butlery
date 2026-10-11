@@ -13,23 +13,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
 
-/// Paints an ink highlight in [color]: any drawRRect whose paint is exactly
-/// it. `paints..rrect` would stop at the first, transparent, rrect the
-/// enclosing Material draws.
+/// Paints an ink highlight in [color]: any drawRRect (a card) or a wide
+/// drawRect (a square list row) whose paint is exactly it. `paints..rrect` would stop at
+/// the first, transparent, rrect the enclosing Material draws.
 PaintPattern paintsRaisedHighlight(Color color) => paints
   ..something(
     (Symbol method, List<dynamic> arguments) =>
-        method == #drawRRect &&
+        (method == #drawRRect ||
+            // The initial plate is a raised rect too; a highlight spans the row.
+            (method == #drawRect && (arguments[0] as Rect).width > 100)) &&
         (arguments[1] as Paint).color.toARGB32() == color.toARGB32(),
   );
 
@@ -46,9 +47,6 @@ void main() {
         id: 'hover_recipe',
         title: 'Köttbullar med potatismos',
         description: 'Klassisk svensk husmanskost',
-        // Three ingredients keep the recipe above the completeness threshold:
-        // the incomplete chip is a surface.raised fill, and the highlight
-        // matcher below counts any raised rrect the card draws.
         ingredients: const ['Köttfärs', 'Ströbröd', 'Mjölk'],
         imageUrls: const [],
         personalTagIds: const [],
@@ -78,8 +76,39 @@ void main() {
       );
     });
 
+    testWidgets('a grid card rests on the shared paper-with-edge surface', (
+      tester,
+    ) async {
+      late BoxDecoration expected;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Scaffold(
+            body: Builder(
+              builder: (context) {
+                expected = StyledCard.decorationOf(context);
+                return RecipeCard(
+                  recipe: testRecipe,
+                  style: RecipeCardStyle.grid,
+                  onTap: (_) {},
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      final hoverable = tester.widget<HoverableCard>(
+        find.descendant(
+          of: find.byType(RecipeCard),
+          matching: find.byType(HoverableCard),
+        ),
+      );
+      expect(hoverable.restDecoration, expected);
+    });
+
     testWidgets(
-      'unselected rest decoration is the square recipe-card design token',
+      'unselected rest decoration is a hairline row',
       (tester) async {
         late ColorScheme cs;
         await tester.pumpWidget(
@@ -104,19 +133,17 @@ void main() {
         );
 
         final rest = hoverable.restDecoration as BoxDecoration;
-        // Square design language: the recipe-card token uses an asymmetric
-        // Border (green left + rust bottom) and never a rounded BorderRadius.
-        expect(rest, equals(InputThemes.recipeCardDecoration));
+        // Komponentark v1 receptlistrad: paper, one hairline under the row,
+        // no card edge and no corners.
+        expect(rest.color, cs.surface);
         expect(
-          rest.borderRadius,
-          isNull,
-          reason: 'Recipe card must stay square — no BorderRadius.',
+          rest.border,
+          Border(bottom: BorderSide(color: cs.outlineVariant)),
         );
-        expect(rest.border, isA<Border>());
+        expect(rest.borderRadius, isNull);
 
-        // Hover fills to surface.raised (B83-1 = A, BUT-2183); border +
-        // corners stay identical so the square treatment is preserved under
-        // the cursor.
+        // Hover fills to surface.raised (B83-1 = A, BUT-2183); the border
+        // stays identical under the cursor.
         final hover = hoverable.hoverDecoration as BoxDecoration;
         expect(hover.border, equals(rest.border));
         expect(hover.borderRadius, isNull);
@@ -300,16 +327,6 @@ void main() {
       );
       final selected = hoverable.restDecoration as BoxDecoration;
 
-      // Distinct from the unselected square token: the selected state is a
-      // rounded primary-tinted fill with a primary outline (BUT-948 bulk
-      // multi-select affordance).
-      expect(
-        selected,
-        isNot(equals(InputThemes.recipeCardDecoration)),
-        reason:
-            'Selected card must use its own decoration, not the default '
-            'recipe-card token.',
-      );
       final border = selected.border as Border;
       expect(
         border.top.color,
@@ -402,13 +419,6 @@ void main() {
           equals(selectedRest.color),
           reason: 'Hovering a selected card must keep the selected fill tint.',
         );
-        expect(
-          rendered,
-          isNot(equals(InputThemes.recipeCardDecoration)),
-          reason:
-              'Hover must never replace the selected decoration with the '
-              'unselected recipe-card token.',
-        );
       },
     );
 
@@ -460,8 +470,8 @@ void main() {
       },
     );
 
-    testWidgets('in dark mode the resting card is the dark surface.base, '
-        'with the dark border colours', (tester) async {
+    testWidgets('in dark mode the resting row is the dark surface.base, '
+        'with the dark hairline', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -484,10 +494,11 @@ void main() {
                   )
                   .restDecoration
               as BoxDecoration;
-      expect(rest.color, AppColorsDark.cardWhite);
+      final cs = AppTheme.darkTheme.colorScheme;
+      expect(rest.color, cs.surface);
       final border = rest.border! as Border;
-      expect(border.left.color, AppColorsDark.recipeCardLeftBorder);
-      expect(border.bottom.color, AppColorsDark.recipeCardBottomBorder);
+      expect(border.bottom.color, cs.outlineVariant);
+      expect(border.left, BorderSide.none);
       expect(rest.borderRadius, isNull);
     });
   });
