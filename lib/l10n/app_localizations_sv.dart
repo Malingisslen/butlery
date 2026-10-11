@@ -5134,7 +5134,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinConfirmBody =>
-      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.';
+      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Mitt hushåll. Du lämnar hushållet genom att lämna gruppen.';
 
   @override
   String get householdJoinFailed =>
@@ -5145,7 +5145,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinedSubtitle =>
-      'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.';
+      'Dela dina allergier under Mitt hushåll, så räknar menyn med dem.';
 
   @override
   String get householdOpenSettings => 'Visa hushållet';
@@ -5841,6 +5841,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupAddMembers => 'Lägg till medlemmar';
+
+  @override
+  String groupAddToGroup(String group) {
+    return 'Lägg till i $group';
+  }
 
   @override
   String get groupAllFriendsAlreadyMembers =>
@@ -8639,19 +8644,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonTo => 'Till';
 
   @override
-  String get notificationCategoryFriends => 'Vänner';
+  String get notificationCategoryFriends => 'Vänner & förfrågningar';
 
   @override
   String get notificationCategoryRecipes => 'Recept';
 
   @override
-  String get notificationCategoryCollaboration => 'Samarbete';
+  String get notificationCategoryCollaboration => 'Samarbete i realtid';
 
   @override
-  String get notificationCategoryShopping => 'Inköp';
+  String get notificationCategoryShopping => 'Inköpslistor';
 
   @override
-  String get notificationCategorySocial => 'Social aktivitet';
+  String get notificationCategorySocial => 'Socialt flöde';
 
   @override
   String get notificationCategorySystem => 'System';
@@ -13583,19 +13588,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statsMyStatistics => 'Min statistik';
 
   @override
-  String get statsRecipeCollection => 'Receptsamling';
+  String get statsRecipeCollection => 'Samlingen';
 
   @override
-  String get statsTotalRecipes => 'Totalt recept';
+  String get statsTotalRecipes => 'recept';
 
   @override
-  String get statsFavorites => 'Favoriter';
+  String get statsFavorites => 'favoriter';
 
   @override
-  String get statsRecentlyCooked => 'Nyligen lagat';
+  String get statsRecentlyCooked => 'lagade senaste veckan';
 
   @override
-  String get statsWithImages => 'Med bilder';
+  String get statsWithImages => 'med bild';
 
   @override
   String get statsPersonalRecipes => 'Egna recept';
@@ -13604,13 +13609,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statsCollaborativeRecipes => 'Delade recept';
 
   @override
-  String get statsHighRated => 'Högt betyg';
+  String get statsHighRated => 'Högt betygsatta';
 
   @override
-  String get statsMealTypes => 'Måltidstyper';
+  String get statsMealTypes => 'Vad du lagar';
 
   @override
-  String get statsPopularTags => 'Populära taggar';
+  String get statsPopularTags => 'Vanligaste taggarna';
 
   @override
   String get statsCookingActivity => 'Matlagningsaktivitet';
@@ -13623,6 +13628,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get statsNoTags => 'Inga taggar använda än';
+
+  @override
+  String statsCountedNote(int count) {
+    return 'Räknat på $count recept i telefonen. Siffrorna gäller din samling som den är hämtad hit – inte en beräkning på servern.';
+  }
 
   @override
   String get statsDistinctMealTypes => 'Måltidstyper';
@@ -13910,13 +13920,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statsAllComplete => 'Alla recept är kompletta.';
 
   @override
-  String get notificationsTitle => 'Aviseringar';
+  String get notificationsTitle => 'Notiser';
 
   @override
-  String get notificationsEmpty => 'Inga aviseringar än';
+  String get notificationsEmpty => 'Inga notiser än';
 
   @override
-  String get notificationsErrorLoad => 'Kunde inte ladda aviseringar';
+  String get notificationsErrorLoad => 'Kunde inte ladda notiser';
 
   @override
   String notificationsSelectedCount(int count) {
@@ -13927,12 +13937,30 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationsMarkAllRead => 'Markera alla som lästa';
 
   @override
+  String get notificationsMarkAllReadShort => 'Markera alla lästa';
+
+  @override
+  String notificationsUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count olästa',
+      one: '1 oläst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsNote =>
+      'Tjugo i taget, äldre hämtas när du rullar. Långtryck för att välja flera.';
+
+  @override
   String notificationsDismissed(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count aviseringar togs bort',
-      one: 'Aviseringen togs bort',
+      other: '$count notiser togs bort',
+      one: 'Notisen togs bort',
     );
     return '$_temp0';
   }
@@ -15077,11 +15105,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yRelatedRecipeThumbnail => 'Öppna relaterat recept';
 
   @override
-  String get familyTitle => 'Familj & hushåll';
+  String get familyTitle => 'Mitt hushåll';
 
   @override
   String get familyIntro =>
-      'Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.';
+      'Hushållet delar recept, meny och inköpslistor. Familjemedlemmar utan konto kan ändå betygsätta maten.';
 
   @override
   String get familyHouseholdSection => 'hushållet';
@@ -15121,33 +15149,33 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ageBandAdult => 'vuxen';
 
   @override
-  String get familyAddTitle => 'ny familjemedlem';
+  String get familyAddTitle => 'Lägg till familjemedlem';
 
   @override
   String get familyEditTitle => 'redigera familjemedlem';
 
   @override
-  String get familyNameLabel => 'namn';
+  String get familyNameLabel => 'Namn';
 
   @override
   String get familyNameHint =>
       'Smeknamn eller initial räcker — vi behöver inte fullständigt namn.';
 
   @override
-  String get familyColorLabel => 'färg';
+  String get familyColorLabel => 'Färg';
 
   @override
-  String get familyAgeBandLabel => 'åldersgrupp';
+  String get familyAgeBandLabel => 'Åldersband';
 
   @override
   String get familyAgeBandHint =>
-      'Bara grov åldersgrupp — inget födelsedatum sparas.';
+      'Vi lagrar aldrig födelsedatum – bara ett ungefärligt band.';
 
   @override
-  String get familyConsentSectionTitle => 'samtycke';
+  String get familyConsentSectionTitle => 'Vårdnadshavarsamtycke';
 
   @override
-  String get familyConsentRequiredBadge => 'krävs';
+  String get familyConsentRequiredBadge => 'Krävs';
 
   @override
   String familyGuardianConsentText(String name) {
@@ -15155,10 +15183,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyAllergenSectionTitle => 'allergier & specialkost';
+  String get familyAllergenSectionTitle => 'Allergener';
 
   @override
-  String get familyOptionalBadge => 'valfritt';
+  String get familyOptionalBadge => 'Valfritt';
 
   @override
   String get familyAllergenHealthNote =>
@@ -15174,7 +15202,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get familyWithdrawAllergenConsent =>
-      'Återkalla samtycke & radera allergiuppgifter';
+      'Ta tillbaka samtycke och radera allergener';
 
   @override
   String get familyDeleteMember => 'Ta bort familjemedlem';
@@ -15373,7 +15401,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get deepLinkUnavailable => 'Innehållet är inte längre tillgängligt.';
 
   @override
-  String get familyDislikesSectionTitle => 'ogillade ingredienser';
+  String get familyDislikesSectionTitle => 'Ogillade ingredienser';
 
   @override
   String get familyDislikesNote =>
@@ -17250,13 +17278,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moreSectionAppAccount => 'Konto & app';
 
   @override
-  String get moreFamily => 'Familj & hushåll';
+  String get moreFamily => 'Mitt hushåll';
 
   @override
   String get morePersonalTags => 'Egna taggar';
 
   @override
-  String get moreCollectionStats => 'Statistik';
+  String get moreCollectionStats => 'Min samling';
 
   @override
   String get moreNotifications => 'Notiser';
@@ -18524,10 +18552,32 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendProfileRemoveFriend => 'Ta bort som vän';
 
   @override
-  String get familyAccountsSection => 'Konton i hushållet';
+  String get familyAccountsSection => 'Hushållets konton';
 
   @override
-  String get familyProfilesSection => 'Familjeprofiler';
+  String get familyProfilesSection => 'Familjemedlemmar';
+
+  @override
+  String familyAccountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count konton',
+      one: '1 konto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String familyProfilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count profiler',
+      one: '1 profil',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get familyAddMemberRow => 'Lägg till familjemedlem';
@@ -18584,6 +18634,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get notifCategoriesSection => 'Vad du får notiser om';
+
+  @override
+  String get notifCategoriesFootnote =>
+      'Avstängda kategorier syns fortfarande i notisinkorgen – de skickas bara inte som push.';
 
   @override
   String get notifDigestSection => 'Sammanfattning';

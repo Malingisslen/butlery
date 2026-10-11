@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
 
 export 'package:butlery/widgets/common/layout/butlery_page_body.dart'
     show ButleryPageBody, PageWidth;
@@ -28,13 +29,20 @@ class ButleryPage extends StatelessWidget {
     super.key,
   }) : backTo = null,
        showTabBar = false,
+       lightBar = false,
+       ruleUnderBar = false,
        _pattern = ButleryTopBarPattern.rot;
 
   /// Every page reached from somewhere else: the subpage bar, its back
   /// arrow named "Tillbaka till [backTo]", or "Tillbaka" without one.
   ///
-  /// [showTabBar] keeps the app's tab bar under the page, as Mer's pages
-  /// have it. [bottomNavigationBar] takes its place when given.
+  /// The tab bar stays under every page reached from a tab (Malin
+  /// 2026-10-11, B-54). A focus mode (cooking, onboarding, sign-in, a form
+  /// such as the recipe editor) passes [showTabBar] false.
+  /// [bottomNavigationBar] takes the tab bar's place when given.
+  ///
+  /// [lightBar] draws the bar on paper with ink text, for the sketch frames
+  /// that show the back arrow without the dark band.
   const ButleryPage.undersida({
     required this.title,
     required this.body,
@@ -44,7 +52,9 @@ class ButleryPage extends StatelessWidget {
     this.width = PageWidth.text,
     this.floatingActionButton,
     this.bottomNavigationBar,
-    this.showTabBar = false,
+    this.showTabBar = true,
+    this.lightBar = false,
+    this.ruleUnderBar = true,
     super.key,
   }) : _pattern = ButleryTopBarPattern.undersida;
 
@@ -62,10 +72,16 @@ class ButleryPage extends StatelessWidget {
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
   final bool showTabBar;
+  final bool lightBar;
+
+  /// The 2 px ink rule under a [lightBar]; false where the page puts its own
+  /// rule lower, as Mitt hushåll does under its intro text.
+  final bool ruleUnderBar;
   final ButleryTopBarPattern _pattern;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final bar = switch (_pattern) {
       ButleryTopBarPattern.rot => ButleryTopBar.rot(
         title: title,
@@ -77,6 +93,8 @@ class ButleryPage extends StatelessWidget {
         backTo: backTo,
         secondaryLine: secondaryLine,
         actions: actions,
+        backgroundColor: lightBar ? cs.surface : null,
+        foregroundColor: lightBar ? cs.onSurface : null,
       ),
     };
     return Scaffold(
@@ -86,7 +104,15 @@ class ButleryPage extends StatelessWidget {
           bottomNavigationBar ??
           (showTabBar ? LayoutScaffolds.detailBottomNav(context) : null),
       body: SafeArea(
-        child: ButleryPageBody(width: width, child: body),
+        child: ButleryPageBody(
+          width: width,
+          child: lightBar && ruleUnderBar
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [const PageRule(), Expanded(child: body)],
+                )
+              : body,
+        ),
       ),
     );
   }

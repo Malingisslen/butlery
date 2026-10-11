@@ -8,12 +8,19 @@ class MealTypeBar extends StatelessWidget {
     required this.label,
     required this.value,
     required this.maxValue,
+    this.rank = 0,
+    this.ranks = 1,
     super.key,
   });
 
   final String label;
   final int value;
   final int maxValue;
+
+  /// This bar's place among [ranks] bars, 0 first. The bars step from ink
+  /// toward paper, so the biggest reads darkest.
+  final int rank;
+  final int ranks;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +39,7 @@ class MealTypeBar extends StatelessWidget {
                 width: constraints.maxWidth * 0.28,
                 child: Text(
                   label,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                  ),
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -45,7 +50,15 @@ class MealTypeBar extends StatelessWidget {
                     widthFactor: fraction,
                     child: SizedBox(
                       height: AppDimensions.space16,
-                      child: ColoredBox(color: cs.tertiary),
+                      child: ColoredBox(
+                        color:
+                            Color.lerp(
+                              cs.primary,
+                              cs.surface,
+                              ranks > 1 ? 0.55 * rank / (ranks - 1) : 0,
+                            ) ??
+                            cs.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -53,8 +66,8 @@ class MealTypeBar extends StatelessWidget {
               const SizedBox(width: AppDimensions.space8),
               Text(
                 '$value',
-                style: AppTextStyles.captionBase.copyWith(
-                  color: cs.onSurfaceVariant,
+                style: AppTextStyles.bodyBold.copyWith(
+                  color: cs.onSurface,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),

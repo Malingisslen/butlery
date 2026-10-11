@@ -20,7 +20,26 @@ import 'package:butlery/widgets/common/section_heading.dart';
 /// A section: an optional overline and its rows, a divider between rows but
 /// not after the last.
 class ButleryListSection extends StatelessWidget {
-  const ButleryListSection({this.title, required this.rows, super.key});
+  const ButleryListSection({
+    this.title,
+    required this.rows,
+    this.count,
+    super.key,
+  }) : _plainTitle = false;
+
+  /// A section named in bold ink with its size at the end of the line, as
+  /// Mitt hushåll draws "Hushållets konton · 2 konton".
+  const ButleryListSection.counted({
+    required String this.title,
+    required String this.count,
+    required this.rows,
+    super.key,
+  }) : _plainTitle = true;
+
+  /// Written at the end of a [ButleryListSection.counted] heading.
+  final String? count;
+
+  final bool _plainTitle;
 
   /// The overline. Without one the section is a plain group of rows, as
   /// for Logga ut and Radera kontot, which stand apart from what is above.
@@ -42,6 +61,31 @@ class ButleryListSection extends StatelessWidget {
           ),
           child: heading == null
               ? null
+              : _plainTitle
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          heading,
+                          style: AppTextStyles.bodyBold.copyWith(
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (count != null)
+                      Text(
+                        count!,
+                        style: AppTextStyles.captionBase.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                )
               : SectionHeading(heading, tone: SectionHeadingTone.emphasis),
         ),
         for (var i = 0; i < rows.length; i++) ...[
@@ -75,6 +119,8 @@ class ButleryListRow extends StatelessWidget {
     super.key,
   }) : _kind = _RowKind.nav,
        enabled = true,
+       emphasis = false,
+       strongValue = false,
        checked = false,
        onChanged = null;
 
@@ -85,9 +131,11 @@ class ButleryListRow extends StatelessWidget {
     required ValueChanged<bool> this.onChanged,
     this.subtitle,
     this.enabled = true,
+    this.emphasis = false,
     this.identifier,
     super.key,
   }) : _kind = _RowKind.toggle,
+       strongValue = false,
        selected = null,
        onTap = null,
        value = null,
@@ -107,6 +155,8 @@ class ButleryListRow extends StatelessWidget {
   }) : _kind = _RowKind.danger,
        selected = null,
        enabled = true,
+       emphasis = false,
+       strongValue = false,
        value = null,
        count = 0,
        countLabel = null,
@@ -119,11 +169,13 @@ class ButleryListRow extends StatelessWidget {
   const ButleryListRow.info({
     required this.label,
     required String this.value,
+    this.strongValue = false,
     this.identifier,
     super.key,
   }) : _kind = _RowKind.info,
        selected = null,
        enabled = true,
+       emphasis = false,
        onTap = null,
        subtitle = null,
        count = 0,
@@ -166,6 +218,12 @@ class ButleryListRow extends StatelessWidget {
   /// is off; drawn in text.disabled, never faded.
   final bool enabled;
 
+  /// The master switch that rules the rows under it, set in bold.
+  final bool emphasis;
+
+  /// An information row's figure set in bold ink, as the sketch's counts.
+  final bool strongValue;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -199,9 +257,10 @@ class ButleryListRow extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: labelColor,
-                    ),
+                    style: (emphasis
+                            ? AppTextStyles.bodyBold
+                            : AppTextStyles.bodyMedium)
+                        .copyWith(color: labelColor),
                   ),
                   if (subtitle != null)
                     Text(
@@ -224,10 +283,15 @@ class ButleryListRow extends StatelessWidget {
                   textAlign: TextAlign.end,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.captionBase.copyWith(
-                    color: mutedText,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                  style: strongValue
+                      ? AppTextStyles.bodyBold.copyWith(
+                          color: cs.onSurface,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        )
+                      : AppTextStyles.captionBase.copyWith(
+                          color: mutedText,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                 ),
               ),
             ],

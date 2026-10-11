@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -11,12 +10,12 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/views/settings/notification_preferences/notification_system_off_row.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -176,12 +175,10 @@ class _NotificationPreferencesViewState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.settingsNotificationSettings,
-        backTo: context.l10n.settingsAppTitle,
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+    return ButleryPage.undersida(
+      title: context.l10n.settingsNotificationSettings,
+      backTo: context.l10n.settingsAppTitle,
+      lightBar: true,
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),
@@ -198,35 +195,30 @@ class _NotificationPreferencesViewState
                     actionLabel: context.l10n.commonRetry,
                     onAction: _loadPreferences,
                   )
-                : SafeArea(
-                    child: ButleryPageBody(
-                      width: PageWidth.text,
-                      // BUT-701: scope keyboard tab-order to this form so
-                      // Tab walks the rows in visual order.
-                      child: FocusTraversalGroup(
-                        child: ListView(
-                          padding: EdgeInsetsDirectional.only(
-                            start: ButleryTopBar.sideMargin(context),
-                            end: ButleryTopBar.sideMargin(context),
-                            bottom: AppDimensions.space24,
-                          ),
-                          children: [
-                            if (_systemOff)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: AppDimensions.space16,
-                                ),
-                                child: NotificationSystemOffRow(
-                                  onOpenSettings: _openSystemSettings,
-                                ),
-                              ),
-                            _buildMasterSection(),
-                            _buildCategorySection(),
-                            _buildDigestSection(),
-                            _buildQuietHoursSection(),
-                          ],
-                        ),
+                // BUT-701: scope keyboard tab-order to this form so Tab
+                // walks the rows in visual order.
+                : FocusTraversalGroup(
+                    child: ListView(
+                      padding: ButleryPageBody.margin(
+                        context,
+                        bottom: AppDimensions.space24,
                       ),
+                      children: [
+                        if (_systemOff)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: AppDimensions.space16,
+                            ),
+                            child: NotificationSystemOffRow(
+                              onOpenSettings: _openSystemSettings,
+                            ),
+                          ),
+                        _buildMasterSection(),
+                        _buildCategorySection(),
+                        _buildCategoryFootnote(),
+                        _buildDigestSection(),
+                        _buildQuietHoursSection(),
+                      ],
                     ),
                   ),
           ),
@@ -240,6 +232,7 @@ class _NotificationPreferencesViewState
       rows: [
         ButleryListRow.toggle(
           label: context.l10n.notifAllowRow,
+          emphasis: true,
           checked: _preferences.enabled,
           enabled: !_systemOff,
           onChanged: _onMasterToggle,
@@ -275,6 +268,18 @@ class _NotificationPreferencesViewState
             },
           ),
       ],
+    );
+  }
+
+  Widget _buildCategoryFootnote() {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.space12),
+      child: Text(
+        context.l10n.notifCategoriesFootnote,
+        style: AppTextStyles.captionBase.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 
