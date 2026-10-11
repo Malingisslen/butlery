@@ -224,7 +224,10 @@ void main() {
       await tester.tap(_revokeButtonInRowNamed(_groupId));
       await tester.pumpAndSettle();
       await tester.tap(
-        find.widgetWithText(FilledButton, l10n.recipeSharingRemoveGroup),
+        find.ancestor(
+          of: find.text(l10n.recipeSharingRemoveGroup),
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -277,7 +280,10 @@ void main() {
       await tester.tap(_revokeButtonInRowNamed(_groupId));
       await tester.pumpAndSettle();
       await tester.tap(
-        find.widgetWithText(FilledButton, l10n.recipeSharingRemoveGroup),
+        find.ancestor(
+          of: find.text(l10n.recipeSharingRemoveGroup),
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
+        ),
       );
       await tester.pumpAndSettle();
 

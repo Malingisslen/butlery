@@ -108,13 +108,11 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
 
   Future<void> _remove() async {
     final l10n = context.l10n;
-    final confirmed = await ConfirmationDialog.show(
+    final confirmed = await DestructiveConfirmationDialog.show(
       context,
       title: l10n.cookbookRemove,
       message: l10n.cookbookRemoveBody,
       primaryActionText: l10n.cookbookRemove,
-      secondaryActionText: l10n.commonCancel,
-      isDangerous: true,
     );
     if (confirmed != true || !mounted) return;
     final vm = context.read<CookbookViewModel>();

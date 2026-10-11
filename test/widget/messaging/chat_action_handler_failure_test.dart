@@ -176,7 +176,8 @@ void main() {
 
     await pumpAndRun(tester, (h) => h.handleMessageAction(message, 'delete'));
     // Confirm the delete question.
-    await tester.tap(find.text('Ta bort').last);
+    expect(find.text('Radera meddelandet?'), findsOneWidget);
+    await tester.tap(find.text('Radera meddelandet'));
     await tester.pumpAndSettle();
 
     expect(find.text('Stäng'), findsOneWidget);

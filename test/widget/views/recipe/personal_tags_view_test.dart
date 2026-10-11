@@ -313,11 +313,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Byt namn'), findsOneWidget);
-      expect(find.text('Ta bort grupp'), findsOneWidget);
+      expect(find.text('Radera gruppen'), findsOneWidget);
 
-      await tester.tap(find.text('Ta bort grupp'));
+      await tester.tap(find.text('Radera gruppen'));
       await tester.pumpAndSettle();
-      expect(find.text('Ta bort grupp?'), findsOneWidget);
+      expect(find.text('Radera gruppen?'), findsOneWidget);
       await tester.tap(find.text('Avbryt'));
       await tester.pumpAndSettle();
 
@@ -351,7 +351,12 @@ void main() {
 
       await tester.tap(find.text('Radera oanvända taggar'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+      await tester.tap(
+        find.ancestor(
+          of: find.text('Radera oanvända taggar'),
+          matching: find.bySubtype<FilledButton>(),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(fakeVm.deleteUnusedCalls, 1);
     });

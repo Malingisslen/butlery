@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -534,27 +535,11 @@ class DataExportView extends StatelessWidget {
     BuildContext context,
     DataExportViewModel viewModel,
   ) async {
-    final cs = Theme.of(context).colorScheme;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.dataExportClearConfirmTitle),
-        content: Text(context.l10n.dataExportClearConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: cs.error,
-            ),
-            child: Text(context.l10n.commonClear),
-          ),
-        ],
-      ),
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.dataExportClearConfirmTitle,
+      message: context.l10n.dataExportClearConfirmMessage,
+      primaryActionText: context.l10n.dataExportClearAction,
     );
 
     if (confirmed == true) {

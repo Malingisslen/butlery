@@ -1,58 +1,16 @@
-/// Intent-driven unit tests for `DialogFactory` — the consolidated factory
-/// (confirmation + feedback + interactive + error + loading + delete + text
-/// input) used by ~all dialog call sites that aren't going through
-/// `CommonDialogActions`.
+/// Intent-driven unit tests for `DialogFactory`: confirmation, feedback,
+/// interactive, error, loading and text-input dialogs used by call sites that
+/// don't go through `CommonDialogActions`.
 ///
-/// Behaviours covered:
-/// - `showConfirmation`: confirm tap resolves true, cancel tap resolves false,
-///   the confirm label is the caller's (required) and cancel falls back to
-///   the localized `commonCancel`, iOS shows the same Material dialog, `isDangerous` paints the confirm action in
-///   `colorScheme.error`, and `isDangerous` trumps an explicit `confirmColor`.
-/// - `showFeedback`: confirm resolves with the trimmed/raw controller text,
-///   cancel resolves null (no string returned), `initialValue` pre-fills the
-///   text field, `hint` renders verbatim.
-/// - `showInteractive<T>`: passes typed `T` through Navigator.pop, omits the
-///   title widget when `title: null`, forwards `actions` verbatim.
-/// - `showError`: renders default localized title + "Stäng" when omitted,
-///   tapping the button dismisses + resolves the future.
-/// - `showLoading`: defaults the message to the localized `dialogLoading`,
-///   shows a CircularProgressIndicator, is NOT barrier-dismissible.
-/// - `showDeleteConfirmation`: defaults title/confirm/cancel labels from
-///   l10n, interpolates itemName + itemType into the localized
-///   `dialogConfirmDeleteMessage` template, and forwards isDangerous=true so
-///   the confirm button gets the error tint.
-/// - `showTextInput`: empty trimmed text returns null, non-empty resolves
-///   the trimmed string, `required: true` blocks the confirm tap entirely
-///   when the trimmed text is empty, `initialValue` pre-fills.
+/// `showConfirmation` (BUT-2366): `isDangerous` draws the shared
+/// `DestructiveConfirmationDialog`, otherwise a `ConfirmationDialog`; the
+/// confirm label is the caller's and cancel falls back to `commonCancel`.
 ///
-/// Production bug surface notes (do NOT fix here):
-/// - `lib/core/dialogs/dialog_factory.dart:94` and `:242` allocate a
-///   `TextEditingController` per call but NEVER dispose it. Each invocation
-///   leaks one controller. Surfaced by `showFeedback` and `showTextInput`
-///   tests below — neither asserts on the leak directly (impossible from
-///   black-box) but a manual review of the file confirms the bug.
-///   Suggested fix: convert each of those two methods into a small
-///   StatefulWidget that owns the controller and disposes it in
-///   `dispose()`. Impact: low memory churn but a real leak that
-///   accumulates over a long session of opening text-input dialogs.
-/// - `lib/core/dialogs/dialog_factory.dart:204-226` (`showDeleteConfirmation`)
-///   does NOT localize the `itemType` parameter — it's a plain `String` that
-///   callers pass in. Most call sites pass Swedish words ('recept', 'lista')
-///   verbatim, so the localized `dialogConfirmDeleteMessage` template
-///   "Are you sure you want to remove {itemName} from {itemType}?" renders
-///   as "Are you sure you want to remove X from recept?" in English. Same
-///   bug class as BUT-1115 (CommonDialogActions hardcoded Swedish item
-///   types) and the BUT-1088 family. Suggested fix: make `itemType` an
-///   enum or thread localized strings via a named-param API.
-/// - `lib/core/dialogs/dialog_factory.dart:60-79` Android-path confirm
-///   button applies `dangerColor` to `TextButton.foregroundColor` only when
-///   `isDangerous` is true (because `confirmColor` is null and dangerColor
-///   stays null if isDangerous=false). The result: a caller who passes
-///   ONLY `confirmColor` (no isDangerous) gets it applied; a caller who
-///   passes `isDangerous: true` AND `confirmColor: Colors.green` gets
-///   `colorScheme.error` (isDangerous wins). That matches the contract
-///   tested below but the dual-purpose `dangerColor` local is confusing —
-///   suggest renaming to `effectiveConfirmColor`.
+/// Production bug surface note (do NOT fix here): `showFeedback` and
+/// `showTextInput` allocate a `TextEditingController` per call and never
+/// dispose it, so each invocation leaks one controller. The tests below
+/// cannot observe the leak; the fix is a small StatefulWidget per method that
+/// owns and disposes the controller.
 library;
 
 import 'package:flutter/cupertino.dart';
@@ -63,6 +21,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -96,221 +56,19 @@ Widget _triggerButton<T>({
 
 void main() {
   group('showConfirmation', () {
-    /// Proves: confirm tap resolves the future to `true` — the contract
-    /// callers rely on to actually perform the action.
-    testWidgets('confirm tap → future resolves true (Android path)', (
-      tester,
-    ) async {
-      bool? result;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => DialogFactory.showConfirmation(
-              ctx,
-              title: 'Bekräfta',
-              message: 'Säker?',
-              confirmText: 'Ja',
-            ),
-            onResult: (v) => result = v,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      // The Android path uses TextButton; iOS path is platform-gated and
-      // tests default-target-platform on host (Linux/Windows). Run is on
-      // Android-equivalent here.
-      await tester.tap(find.widgetWithText(TextButton, 'Ja'));
-      await tester.pumpAndSettle();
-
-      expect(
-        result,
-        isTrue,
-        reason:
-            'showConfirmation must return true on primary tap '
-            'or callers silently no-op the action',
-      );
-    });
-
-    /// Proves: cancel tap resolves the future to `false` (NOT null) —
-    /// the Android cancel button explicitly pops `false`, so callers
-    /// reading the result without `?? false` still get the right thing.
-    testWidgets('cancel tap → future resolves false (Android path)', (
-      tester,
-    ) async {
-      bool? result;
-      var resolved = false;
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => DialogFactory.showConfirmation(
-              ctx,
-              title: 't',
-              message: 'm',
-              confirmText: 'Ja',
-            ),
-            onResult: (v) {
-              result = v;
-              resolved = true;
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
-      await tester.pumpAndSettle();
-
-      expect(resolved, isTrue);
-      expect(
-        result,
-        isFalse,
-        reason:
-            'Cancel button explicitly pops false at dialog_factory.dart '
-            ':67; flipping to pop() with no args would silently change the '
-            'contract from false to null and break consumers using `?? true`.',
-      );
-    });
-
-    /// Proves: the confirm label is the caller's (it says what happens,
-    /// content-style-guide.md:77) and the cancel label defaults to the
-    /// localized commonCancel. There is no "OK" fallback any more.
-    testWidgets('confirm label comes from the caller, cancel from l10n', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => DialogFactory.showConfirmation(
-              ctx,
-              title: 't',
-              message: 'm',
-              confirmText: 'Radera kontot',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.widgetWithText(TextButton, 'Radera kontot'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
-    });
-
-    /// Proves: on iOS the confirmation is the same Material dialog as on
-    /// Android, never a CupertinoAlertDialog (plattformsmatris.md:73-75).
-    testWidgets('iOS shows the Material dialog, not the Cupertino alert', (
-      tester,
-    ) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      try {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => DialogFactory.showConfirmation(
-                ctx,
-                title: 't',
-                message: 'm',
-                confirmText: 'Ja',
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AlertDialog), findsOneWidget);
-        expect(find.byType(CupertinoAlertDialog), findsNothing);
-        expect(find.widgetWithText(TextButton, 'Ja'), findsOneWidget);
-      } finally {
-        debugDefaultTargetPlatformOverride = null;
-      }
-    });
-
-    /// Proves: `isDangerous: true` paints the confirm button's foreground
-    /// in the theme's `colorScheme.error`, regardless of any
-    /// `confirmColor` override. Safety invariant for destructive UIs.
-    testWidgets(
-      'isDangerous=true overrides confirmColor → button foregroundColor '
-      'becomes colorScheme.error',
-      (tester) async {
-        late ColorScheme cs;
-        await tester.pumpWidget(
-          _wrap(
-            Builder(
-              builder: (rootCtx) {
-                cs = Theme.of(rootCtx).colorScheme;
-                return _triggerButton<bool?>(
-                  openDialog: (ctx) => DialogFactory.showConfirmation(
-                    ctx,
-                    title: 't',
-                    message: 'm',
-                    confirmText: 'Kör',
-                    confirmColor: Colors.green, // must be IGNORED
-                    isDangerous: true,
-                  ),
-                  onResult: (_) {},
-                );
-              },
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        final btn = tester.widget<TextButton>(
-          find.widgetWithText(TextButton, 'Kör'),
-        );
-        final fg = btn.style!.foregroundColor!.resolve({});
-        expect(
-          fg,
-          cs.error,
-          reason:
-              'isDangerous=true must override confirmColor — otherwise '
-              'destructive dialogs lose their visual warning affordance.',
-        );
-      },
+    Finder confirmButton(String label) => find.ancestor(
+      of: find.text(label),
+      matching: find.bySubtype<FilledButton>(),
     );
 
-    /// Proves: when NOT dangerous, a supplied `confirmColor` is applied
-    /// to the confirm button's foregroundColor. Inverse of the test above.
-    testWidgets(
-      'non-dangerous + confirmColor → button foregroundColor = confirmColor',
-      (tester) async {
-        const customColor = Color(0xFF112233);
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => DialogFactory.showConfirmation(
-                ctx,
-                title: 't',
-                message: 'm',
-                confirmText: 'Kör',
-                confirmColor: customColor,
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        final btn = tester.widget<TextButton>(
-          find.widgetWithText(TextButton, 'Kör'),
-        );
-        final fg = btn.style!.foregroundColor!.resolve({});
-        expect(fg, customColor);
-      },
-    );
-
-    /// Proves: title + message both render into the AlertDialog so users
-    /// actually see what they're confirming.
-    testWidgets('renders title and message verbatim', (tester) async {
+    Future<void> open(
+      WidgetTester tester, {
+      String confirmText = 'Ja',
+      String? cancelText,
+      bool isDangerous = false,
+      IconData dangerIcon = ButleryIcons.trash2,
+      void Function(bool?)? onResult,
+    }) async {
       await tester.pumpWidget(
         _wrap(
           _triggerButton<bool?>(
@@ -318,17 +76,136 @@ void main() {
               ctx,
               title: 'Radera konto?',
               message: 'Detta går inte att ångra.',
-              confirmText: 'Ja',
+              confirmText: confirmText,
+              cancelText: cancelText,
+              isDangerous: isDangerous,
+              dangerIcon: dangerIcon,
             ),
-            onResult: (_) {},
+            onResult: onResult ?? (_) {},
           ),
         ),
       );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
+    }
+
+    testWidgets('isDangerous draws the destructive dialog', (tester) async {
+      await open(tester, isDangerous: true);
+
+      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
+      expect(find.byType(ConfirmationDialog), findsNothing);
+    });
+
+    testWidgets('the confirm button carries the trash glyph unless told '
+        'otherwise', (tester) async {
+      await open(tester, isDangerous: true);
+      expect(
+        find.descendant(
+          of: confirmButton('Ja'),
+          matching: find.byIcon(ButleryIcons.trash2),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('dangerIcon replaces the trash glyph on the button', (
+      tester,
+    ) async {
+      await open(tester, isDangerous: true, dangerIcon: ButleryIcons.logOut);
+      expect(
+        find.descendant(
+          of: confirmButton('Ja'),
+          matching: find.byIcon(ButleryIcons.logOut),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(ButleryIcons.trash2), findsNothing);
+    });
+
+    testWidgets('not dangerous draws the plain confirmation dialog', (
+      tester,
+    ) async {
+      await open(tester);
+
+      expect(find.byType(ConfirmationDialog), findsOneWidget);
+      expect(find.byType(DestructiveConfirmationDialog), findsNothing);
+    });
+
+    for (final dangerous in [false, true]) {
+      testWidgets('confirm tap resolves true (dangerous: $dangerous)', (
+        tester,
+      ) async {
+        bool? result;
+        await open(tester, isDangerous: dangerous, onResult: (v) => result = v);
+
+        await tester.tap(confirmButton('Ja'));
+        await tester.pumpAndSettle();
+
+        expect(result, isTrue);
+      });
+
+      testWidgets('cancel tap does not resolve true (dangerous: $dangerous)', (
+        tester,
+      ) async {
+        bool? result;
+        var resolved = false;
+        await open(
+          tester,
+          isDangerous: dangerous,
+          onResult: (v) {
+            result = v;
+            resolved = true;
+          },
+        );
+
+        await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
+        await tester.pumpAndSettle();
+
+        expect(resolved, isTrue);
+        expect(result, isNot(true));
+      });
+    }
+
+    testWidgets('confirm label comes from the caller, cancel from l10n', (
+      tester,
+    ) async {
+      await open(tester, confirmText: 'Radera kontot');
+
+      expect(confirmButton('Radera kontot'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
+      expect(find.text('OK'), findsNothing);
+    });
+
+    testWidgets('a custom cancelText replaces the default', (tester) async {
+      await open(tester, cancelText: 'Nej tack', isDangerous: true);
+
+      expect(find.widgetWithText(TextButton, 'Nej tack'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Avbryt'), findsNothing);
+    });
+
+    testWidgets('iOS shows the Material dialog, not the Cupertino alert', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        await open(tester);
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.byType(CupertinoAlertDialog), findsNothing);
+        expect(confirmButton('Ja'), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('renders title and message', (tester) async {
+      await open(tester, isDangerous: true);
 
       expect(find.text('Radera konto?'), findsOneWidget);
-      expect(find.text('Detta går inte att ångra.'), findsOneWidget);
+      expect(
+        find.text('Detta går inte att ångra.', findRichText: true),
+        findsOneWidget,
+      );
     });
   });
 
@@ -775,168 +652,6 @@ void main() {
         );
       },
     );
-  });
-
-  group('showDeleteConfirmation', () {
-    /// Proves: the delete-confirm helper composes the localized
-    /// `dialogConfirmDeleteMessage` template with the supplied
-    /// `itemName` and `itemType`. Catches the bug where args are
-    /// swapped or one is dropped.
-    testWidgets(
-      'interpolates itemName and itemType into the localized delete message',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-                ctx,
-                itemName: 'Pasta carbonara',
-                itemType: 'receptboken',
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        // Template: "Är du säker på att du vill ta bort {itemName} från {itemType}?"
-        expect(find.textContaining('Pasta carbonara'), findsOneWidget);
-        expect(find.textContaining('receptboken'), findsOneWidget);
-      },
-    );
-
-    /// Proves: default title falls back to localized
-    /// `dialogConfirmDeleteTitle` ("Bekräfta borttagning").
-    testWidgets('default title = localized dialogConfirmDeleteTitle', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-              ctx,
-              itemName: 'X',
-              itemType: 'Y',
-            ),
-            onResult: (_) {},
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Bekräfta borttagning'), findsOneWidget);
-    });
-
-    /// Proves: default confirm label = localized `commonDelete` ("Ta bort").
-    /// Catches the bug where the confirm label is hardcoded or wired to
-    /// the wrong l10n key (commonOk would be wrong here — destructive
-    /// actions should be labeled with the verb, not "OK").
-    testWidgets(
-      'default confirm label = localized commonDelete (not commonOk)',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<bool?>(
-              openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-                ctx,
-                itemName: 'X',
-                itemType: 'Y',
-              ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        expect(find.widgetWithText(TextButton, 'Ta bort'), findsOneWidget);
-        // Negative: must NOT label the destructive action as "OK" — that
-        // would lose the verb-warning affordance.
-        expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
-      },
-    );
-
-    /// Proves: delete forwards `isDangerous: true` to showConfirmation,
-    /// which paints the confirm button's foreground in `colorScheme.error`.
-    /// This is what visually distinguishes deletion from generic confirm.
-    testWidgets(
-      'confirm button foreground = colorScheme.error (isDangerous=true)',
-      (tester) async {
-        late ColorScheme cs;
-        await tester.pumpWidget(
-          _wrap(
-            Builder(
-              builder: (rootCtx) {
-                cs = Theme.of(rootCtx).colorScheme;
-                return _triggerButton<bool?>(
-                  openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-                    ctx,
-                    itemName: 'X',
-                    itemType: 'Y',
-                  ),
-                  onResult: (_) {},
-                );
-              },
-            ),
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
-
-        final btn = tester.widget<TextButton>(
-          find.widgetWithText(TextButton, 'Ta bort'),
-        );
-        final fg = btn.style!.foregroundColor!.resolve({});
-        expect(
-          fg,
-          cs.error,
-          reason:
-              'Delete dialogs must inherit the destructive tint via '
-              'isDangerous=true — visually communicates "this is permanent."',
-        );
-      },
-    );
-
-    /// SURFACES PRODUCTION BUG (see library doc): the `itemType` parameter
-    /// is a raw String. In English locale, the template renders as
-    /// "Are you sure you want to remove Pasta from receptboken?" — the
-    /// Swedish word leaks through unlocalized. Documents the bug today;
-    /// flip the assertion once the helper accepts a localized itemType.
-    testWidgets('english locale → itemType leaks Swedish word verbatim '
-        '(documents hardcoded-string bug, family of BUT-1115)', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          _triggerButton<bool?>(
-            openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-              ctx,
-              itemName: 'Pasta',
-              itemType: 'receptboken',
-            ),
-            onResult: (_) {},
-          ),
-          locale: const Locale('en'),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      // Today's broken behaviour: 'receptboken' (Swedish) renders in the
-      // English message verbatim. Once the helper accepts a localized
-      // itemType, flip this to expect the English equivalent and the
-      // bug will surface as a failing test.
-      expect(
-        find.textContaining('receptboken'),
-        findsOneWidget,
-        reason:
-            'lib/core/dialogs/dialog_factory.dart:205-226 accepts '
-            'itemType as a raw String, so callers passing Swedish words '
-            'leak into the English locale. Fix: make itemType an enum or '
-            'thread a localized string via a named-param API. Same bug '
-            'class as BUT-1115.',
-      );
-    });
   });
 
   group('showTextInput', () {
