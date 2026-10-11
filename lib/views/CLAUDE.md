@@ -36,7 +36,7 @@ class _XxxViewState extends State<XxxView> {
 - Singleton VMs: `ChangeNotifierProvider.value(value: vm)` — never `create:` for singletons (causes double-dispose)
 - `context.watch<VM>()` for rebuilds, `context.read<VM>()` in callbacks only
 - Post-frame loading: `addPostFrameCallback` with `if (mounted)` guard
-- Use scaffold widgets from `lib/widgets/common/scaffolds/` (BaseScaffold, ListScaffold, etc.)
+- Use scaffold widgets from `lib/widgets/common/scaffolds/` (BaseScaffold, FormScaffold)
 - Large views: split into sub-files in a same-name subdirectory
 - Colors via theme, `withValues(alpha:)` not `withOpacity()`
 - Localization: `context.l10n.xxxKey`

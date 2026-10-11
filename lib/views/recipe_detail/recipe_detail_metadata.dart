@@ -512,7 +512,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       context: context,
       title: context.l10n.ratingRemoveTitle,
       message: context.l10n.ratingRemoveMessage,
-      confirmText: context.l10n.commonDelete,
+      confirmText: context.l10n.ratingRemoveAction,
       icon: ButleryIcons.starOutline,
       isDangerous: true,
     );

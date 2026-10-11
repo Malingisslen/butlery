@@ -129,19 +129,15 @@ class _HouseholdAllergenFilterTileState
     final body = names.isEmpty
         ? l10n.householdAllergenOffBodyGeneric
         : l10n.householdAllergenOffBody(names);
-    return ConfirmationDialog.show(
+    return DestructiveConfirmationDialog.show(
       context,
       title: l10n.householdAllergenOffTitle,
       message: rosterComplete
           ? body
           : '$body\n\n${l10n.householdAllergenRosterIncomplete}',
-      titleIcon: ButleryIcons.triangleAlert,
-      // Weighted red confirm (isDangerous) — this is the one settings toggle
-      // whose wrong tap has a child-safety consequence, so it should carry
-      // gravity. But it is NOT a delete, so override the default trash icon
-      // with a warning icon (base_dialog defaults primaryActionIcon to
-      // ButleryIcons.trash2 when isDangerous).
-      isDangerous: true,
+      // The red confirm: this is the one settings toggle whose wrong tap has
+      // a child-safety consequence, so it should carry gravity. But it is NOT
+      // a delete, so the warning icon replaces the default trash icon.
       primaryActionIcon: ButleryIcons.triangleAlert,
       primaryActionText: l10n.commonTurnOff,
       secondaryActionText: l10n.commonCancel,

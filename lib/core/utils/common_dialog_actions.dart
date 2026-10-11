@@ -1,84 +1,99 @@
-/// Standardized dialog system for Swedish cooking app eliminating 2,100+ lines of duplication across 25+ files.
-/// Provides delete, action, success/warning/error dialogs with Swedish localization and BaseDialog foundation.
+/// Named confirmations the views ask for. Each one is drawn by a shared
+/// dialog: [DestructiveConfirmationDialog] when something is deleted, removed
+/// or left, [ConfirmationDialog] otherwise (BUT-2366).
 /// ```dart
 /// await CommonDialogActions.showRecipeDeleteConfirmation(context: context, recipeName: name);
 /// ```
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
 class CommonDialogActions {
-  /// Show delete confirmation dialog for any item type
+  /// Asks before content stops existing or is lifted out of a list.
+  /// [confirmText] names what disappears ("Radera receptet").
   static Future<bool?> showDeleteConfirmation({
     required BuildContext context,
-    required String itemName,
-    required String itemType,
+    required String title,
+    required String confirmText,
+    String message = '',
+    String itemName = '',
     String? warningMessage,
-    IconData? icon,
-  }) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => _DeleteConfirmationDialog(
-        itemName: itemName,
-        itemType: itemType,
-        warningMessage: warningMessage,
-        icon: icon,
-        deleteText: dialogContext.l10n.commonDelete,
-        cancelText: dialogContext.l10n.commonCancel,
-      ),
+    bool irreversible = false,
+  }) {
+    return DestructiveConfirmationDialog.show(
+      context,
+      title: title,
+      message: message,
+      itemName: itemName,
+      warning: warningMessage,
+      irreversible: irreversible,
+      primaryActionText: confirmText,
     );
   }
 
-  /// Show recipe delete confirmation
+  /// The recipe goes to the trash, so the dialog does not say it cannot be
+  /// undone.
   static Future<bool?> showRecipeDeleteConfirmation({
     required BuildContext context,
     required String recipeName,
-  }) async {
-    return await showDeleteConfirmation(
+  }) {
+    final l10n = context.l10n;
+    return showDeleteConfirmation(
       context: context,
+      title: l10n.recipeDeleteConfirmTitle,
       itemName: recipeName,
-      itemType: context.l10n.itemTypeRecipe,
-      warningMessage: context.l10n.recipeDeleteWarning,
-      icon: ButleryIcons.utensils,
+      warningMessage: l10n.recipeDeleteWarning,
+      confirmText: l10n.recipeDelete,
     );
   }
 
-  /// Show group delete confirmation
-  static Future<bool?> showGroupDeleteConfirmation({
+  /// Several recipes at once; they go to the trash like one does.
+  static Future<bool?> showBulkRecipeDeleteConfirmation({
     required BuildContext context,
-    required String groupName,
-  }) async {
-    return await showDeleteConfirmation(
+    required int count,
+  }) {
+    final l10n = context.l10n;
+    return showDeleteConfirmation(
       context: context,
-      itemName: groupName,
-      itemType: context.l10n.itemTypeGroup,
-      warningMessage: context.l10n.groupDeleteWarning,
-      icon: ButleryIcons.users,
+      title: l10n.bulkDeleteConfirmTitle(count),
+      warningMessage: l10n.bulkDeleteConfirmMessage,
+      confirmText: l10n.bulkDeleteConfirmAction(count),
     );
   }
 
-  /// Show shopping list delete confirmation
-  static Future<bool?> showShoppingListDeleteConfirmation({
+  /// A comment, behind an Ångra snackbar.
+  static Future<bool?> showCommentDeleteConfirmation({
     required BuildContext context,
-    required String listName,
-  }) async {
-    return await showDeleteConfirmation(
+    required String commentText,
+  }) {
+    final l10n = context.l10n;
+    return showDeleteConfirmation(
       context: context,
-      itemName: listName,
-      itemType: context.l10n.itemTypeShoppingList,
-      warningMessage: context.l10n.shoppingListDeleteWarning,
-      icon: ButleryIcons.shoppingCart,
+      title: l10n.commentDeleteConfirmTitle,
+      itemName: commentText.length > 40
+          ? '${commentText.substring(0, 40)}…'
+          : commentText,
+      confirmText: l10n.commentDeleteConfirmAction,
     );
   }
 
-  /// Show generic action confirmation dialog
+  /// A cook-snap photo, behind an Ångra snackbar.
+  static Future<bool?> showCookSnapDeleteConfirmation({
+    required BuildContext context,
+  }) {
+    final l10n = context.l10n;
+    return showDeleteConfirmation(
+      context: context,
+      title: l10n.cookSnapDeleteConfirmTitle,
+      confirmText: l10n.cookSnapDelete,
+    );
+  }
+
+  /// A confirmation with a caller-named action. [isDangerous] draws the
+  /// destructive dialog with [icon] on its button; otherwise [icon] sits
+  /// above the title.
   static Future<bool?> showActionConfirmation({
     required BuildContext context,
     required String title,
@@ -86,301 +101,52 @@ class CommonDialogActions {
     required String confirmText,
     String? cancelText,
     IconData? icon,
-    Color? confirmColor,
     bool isDangerous = false,
-  }) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => _ActionConfirmationDialog(
+  }) {
+    if (isDangerous) {
+      return DestructiveConfirmationDialog.show(
+        context,
         title: title,
         message: message,
         primaryActionText: confirmText,
-        secondaryActionText: cancelText ?? dialogContext.l10n.commonCancel,
-        icon: icon,
-        confirmColor: confirmColor,
-        isDangerous: isDangerous,
-      ),
+        secondaryActionText: cancelText,
+        primaryActionIcon: icon ?? ButleryIcons.trash2,
+      );
+    }
+    return ConfirmationDialog.show(
+      context,
+      title: title,
+      message: message,
+      titleIcon: icon,
+      primaryActionText: confirmText,
+      secondaryActionText: cancelText,
     );
   }
 
-  /// Show leave group confirmation
   static Future<bool?> showLeaveGroupConfirmation({
     required BuildContext context,
     required String groupName,
-  }) async {
-    return await showActionConfirmation(
+  }) {
+    return showActionConfirmation(
       context: context,
       title: context.l10n.groupLeaveTitle,
       message: context.l10n.groupLeaveMessage(groupName),
       confirmText: context.l10n.groupLeaveAction,
       icon: ButleryIcons.logOut,
-      confirmColor: context.modeColors.warning,
       isDangerous: true,
     );
   }
 
-  /// Show unsaved changes confirmation
   static Future<bool?> showUnsavedChangesConfirmation({
     required BuildContext context,
-  }) async {
-    return await showActionConfirmation(
+  }) {
+    return showActionConfirmation(
       context: context,
       title: context.l10n.unsavedChangesTitle,
       message: context.l10n.unsavedChangesMessage,
       confirmText: context.l10n.cancelWithoutSaving,
-      icon: ButleryIcons.triangleAlert,
-      confirmColor: context.modeColors.warning,
+      icon: ButleryIcons.x,
       isDangerous: true,
-    );
-  }
-
-  /// Show share confirmation
-  static Future<bool?> showShareConfirmation({
-    required BuildContext context,
-    required String itemType,
-    required List<String> recipientNames,
-  }) async {
-    final recipients = recipientNames.length <= 3
-        ? recipientNames.join(', ')
-        : '${recipientNames.take(2).join(', ')} ${context.l10n.shareRecipientsMore(recipientNames.length - 2)}';
-
-    return await showActionConfirmation(
-      context: context,
-      title: context.l10n.shareItemTitle(itemType),
-      message: context.l10n.shareItemMessage(itemType, recipients),
-      confirmText: context.l10n.commonShare,
-      icon: ButleryIcons.share2,
-      confirmColor: Theme.of(context).colorScheme.primary,
-    );
-  }
-
-  /// Show success dialog
-  static Future<void> showSuccessDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    IconData? icon,
-  }) async {
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => _InfoDialog(
-        title: title,
-        message: message,
-        icon: icon ?? ButleryIcons.circleCheck,
-        color: context.modeColors.success,
-        buttonText: dialogContext.l10n.commonClose,
-      ),
-    );
-  }
-
-  /// Show warning dialog
-  static Future<void> showWarningDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    IconData? icon,
-  }) async {
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => _InfoDialog(
-        title: title,
-        message: message,
-        icon: icon ?? ButleryIcons.triangleAlert,
-        color: context.modeColors.warning,
-        buttonText: dialogContext.l10n.commonClose,
-      ),
-    );
-  }
-
-  /// Show error dialog
-  static Future<void> showErrorDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    IconData? icon,
-  }) async {
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => _InfoDialog(
-        title: title,
-        message: message,
-        icon: icon ?? ButleryIcons.triangleAlert,
-        color: Theme.of(context).colorScheme.error,
-        buttonText: dialogContext.l10n.commonClose,
-      ),
-    );
-  }
-}
-
-/// Private delete confirmation dialog
-class _DeleteConfirmationDialog extends BaseDialog<bool> {
-  final String itemName;
-  final String itemType;
-  final String? warningMessage;
-  final IconData? icon;
-  const _DeleteConfirmationDialog({
-    required this.itemName,
-    required this.itemType,
-    this.warningMessage,
-    this.icon,
-    required String deleteText,
-    required String cancelText,
-  }) : super(
-         title: '$deleteText $itemType?',
-         titleIcon: ButleryIcons.trash2,
-         primaryActionText: deleteText,
-         secondaryActionText: cancelText,
-         isDangerous: true,
-       );
-
-  @override
-  Widget buildContent(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Without a name the title ("Ta bort foto?") already asks; the
-        // question here would end in an empty '""?'.
-        if (itemName.isNotEmpty)
-          RichText(
-            text: TextSpan(
-              style: AppTextStyles.bodyMedium,
-              children: [
-                TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
-                TextSpan(
-                  text: '"$itemName"',
-                  style: AppTextStyles.bodyBold,
-                ),
-                const TextSpan(text: '?'),
-              ],
-            ),
-          ),
-        if (warningMessage != null) ...[
-          const SizedBox(
-            height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-          ),
-          Text(
-            warningMessage!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppModeColors.textWarning(Theme.of(context).brightness),
-            ),
-          ),
-        ],
-        const SizedBox(
-          height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
-        Text(
-          context.l10n.deleteActionIrreversible,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Future<bool> performAction(BuildContext context) async {
-    return true; // Simply return true for confirmation
-  }
-}
-
-/// Private action confirmation dialog - uses simple AlertDialog to avoid BaseDialog state issues
-class _ActionConfirmationDialog extends StatelessWidget {
-  final String title;
-  final String message;
-  final String primaryActionText;
-  final String secondaryActionText;
-  final IconData? icon;
-  final Color? confirmColor;
-  final bool isDangerous;
-
-  const _ActionConfirmationDialog({
-    required this.title,
-    required this.message,
-    required this.primaryActionText,
-    required this.secondaryActionText,
-    this.icon,
-    this.confirmColor,
-    this.isDangerous = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final buttonColor = isDangerous ? cs.error : (confirmColor ?? cs.primary);
-
-    return AlertDialog(
-      icon: icon != null
-          ? ButleryIcon(
-              icon,
-              color: isDangerous ? cs.error : buttonColor,
-              size: 48,
-            )
-          : null,
-      title: Text(title),
-      content: Text(
-        message,
-        style: AppTextStyles.bodyMedium,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(secondaryActionText),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          style: FilledButton.styleFrom(
-            backgroundColor: buttonColor,
-            foregroundColor: cs.onPrimary,
-          ),
-          child: Text(primaryActionText),
-        ),
-      ],
-    );
-  }
-}
-
-/// Private info dialog (success/warning/error)
-class _InfoDialog extends StatelessWidget {
-  final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final String buttonText;
-
-  const _InfoDialog({
-    required this.title,
-    required this.message,
-    required this.icon,
-    required this.color,
-    required this.buttonText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return AlertDialog(
-      icon: ButleryIcon(
-        icon,
-        color: color,
-        size: 48,
-      ),
-      title: Text(title),
-      content: Text(
-        message,
-        style: AppTextStyles.bodyMedium,
-      ),
-      actions: [
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: FilledButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: cs.onPrimary,
-          ),
-          child: Text(buttonText),
-        ),
-      ],
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -144,28 +145,16 @@ class GroupInvitationCard {
     String? inviteeName,
     VoidCallback onCancelled,
   ) async {
-    final shouldCancel = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.groupCancelInvitationConfirm),
-        // Names the invitee; without a readable name the title alone asks.
-        content: inviteeName == null
-            ? null
-            : Text(context.l10n.groupCancelInvitationMessage(inviteeName)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonNo),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(context.l10n.groupYesCancel),
-          ),
-        ],
-      ),
+    final shouldCancel = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.groupCancelInvitationTitle,
+      // Names the invitee; without a readable name the title alone asks.
+      message: inviteeName == null
+          ? ''
+          : context.l10n.groupCancelInvitationMessage(inviteeName),
+      primaryActionText: context.l10n.groupCancelInvitationAction,
+      secondaryActionText: context.l10n.groupKeepInvitation,
+      primaryActionIcon: ButleryIcons.x,
     );
 
     if (shouldCancel == true && context.mounted) {

@@ -5,8 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -221,6 +223,10 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       commentData['imageUrls'] = imageUrls;
     }
 
+    if (await _hasUnsentComment(userId)) {
+      throw const CommentAwaitingSendException();
+    }
+
     // Batch write: comment + rate limit doc + parent replyCount increment
     final batch = firestore.batch();
     final docRef = collection.doc();
@@ -241,9 +247,12 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       });
     }
 
-    await batch.commit();
+    // BUT-2363: offline the commit settles only when the server answers, so
+    // the comment form stayed busy for the whole outage.
+    await awaitOrLeaveQueued(batch.commit(), what: 'comment ${docRef.id}');
 
-    final doc = await docRef.get();
+    // From the cache, which holds the comment either way.
+    final doc = await docRef.get(const GetOptions(source: Source.cache));
 
     logPermissionCheck(
       userId: currentUser,
@@ -254,6 +263,25 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     );
 
     return fromFirestore(doc);
+  }
+
+  /// BUT-2363: whether a comment of [userId]'s is still in Firestore's
+  /// offline queue. Every comment batch writes the burst stamp, so the cached
+  /// stamp has pending writes exactly while one is unsent; read from the
+  /// device's cache, it survives a restart and belongs to one account.
+  Future<bool> _hasUnsentComment(String userId) async {
+    try {
+      final stamp = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userRateLimits)
+          .doc('comments')
+          .get(const GetOptions(source: Source.cache));
+      return stamp.metadata.hasPendingWrites;
+    } on FirebaseException {
+      // Not in the cache: nothing of this account's is queued here.
+      return false;
+    }
   }
 
   @override

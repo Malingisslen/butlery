@@ -4,11 +4,10 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// Base action handler with executeAction, executeWithConfirmation, executeDeleteAction, navigation helpers, feedback methods, and validation utilities.
+/// Base action handler with executeAction, executeWithConfirmation, navigation helpers, feedback methods, and validation utilities.
 abstract class BaseActionHandler {
   /// Service name for logging and debugging
   String get serviceName;
@@ -117,51 +116,6 @@ abstract class BaseActionHandler {
       popOnSuccess: popOnSuccess,
       metadata: metadata,
     );
-  }
-
-  Future<bool> executeDeleteAction({
-    required BuildContext context,
-    required Future<bool> Function() deleteAction,
-    required String itemName,
-    required String itemType,
-    String? warningMessage,
-    IconData? icon,
-    String? successMessage,
-    String? errorMessage,
-    bool popOnSuccess = true,
-    Map<String, dynamic>? metadata,
-  }) async {
-    if (!context.mounted) return false;
-
-    // Show delete confirmation
-    final confirmed = await CommonDialogActions.showDeleteConfirmation(
-      context: context,
-      itemName: itemName,
-      itemType: itemType,
-      warningMessage: warningMessage,
-      icon: icon,
-    );
-
-    if (confirmed != true) {
-      AppLogger.info('🚫 $serviceName: Delete cancelled by user');
-      return false;
-    }
-
-    // Check context again after async operation
-    if (!context.mounted) return false;
-
-    // Execute delete action
-    final result = await executeAction<bool>(
-      context: context,
-      action: deleteAction,
-      successMessage:
-          successMessage ?? AppLocale.current.itemDeletedSuccess(itemType),
-      errorMessage: errorMessage ?? AppLocale.current.itemDeleteError(itemType),
-      popOnSuccess: popOnSuccess,
-      metadata: metadata,
-    );
-
-    return result ?? false;
   }
 
   Future<T?> navigateTo<T>(

@@ -190,8 +190,6 @@ Future<void> showMakeCookbookFlow(
   final tag = await showModalBottomSheet<PersonalTag>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(),
     builder: (sheetContext) => ChangeNotifierProvider<CookbookViewModel>.value(
       value: vm,
       child: const _TagChooser(),

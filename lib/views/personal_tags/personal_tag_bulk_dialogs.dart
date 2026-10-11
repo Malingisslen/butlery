@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
+import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -162,104 +164,48 @@ abstract final class PersonalTagBulkDialogs {
     final viewModel = context.read<PersonalTagViewModel>();
     final selection = context.read<PersonalTagSelectionManager>();
     final ids = selectedTags.map((t) => t.id).toList();
-    // The view's context: the outcome is reported after the dialog is gone.
-    final hostContext = context;
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagBulkDeleteTitle(ids.length)),
-            content: Text(
-              [
-                context.l10n.personalTagBulkDeleteMessage(ids.length),
-                if (selectedTags.any((t) => t.isCookbook))
-                  context.l10n.cookbookDeleteTagWarning,
-              ].join('\n\n'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonDelete,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          FilledButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.error,
-                          ),
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : FilledButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          setState(() => isLoading = true);
-                          selection.clearPartialDelete();
-                          try {
-                            final result = await viewModel.bulkDeleteTags(ids);
-                            await viewModel.loadTagStatistics();
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            // P5-U33 (produktregler.md:905-909): all went is a
-                            // success; some went is the third outcome, shown
-                            // by the list with the rest still selected; none
-                            // went is a failure that keeps the selection.
-                            if (result.isComplete) {
-                              selection.exitSelection();
-                              if (!context.mounted) return;
-                              SnackBarUtils.showSuccess(
-                                context,
-                                context.l10n.personalTagBulkDeleted(
-                                  result.deletedIds.length,
-                                ),
-                              );
-                            } else if (result.isPartial) {
-                              final deleted = result.deletedIds.toSet();
-                              selection.showPartialDelete(
-                                result,
-                                deletedNames: [
-                                  for (final t in selectedTags)
-                                    if (deleted.contains(t.id)) t.name,
-                                ],
-                              );
-                            } else {
-                              if (!hostContext.mounted) return;
-                              SnackBarUtils.showFailure(
-                                hostContext,
-                                what:
-                                    hostContext.l10n.personalTagBulkDeleteNone,
-                                preserved: hostContext.l10n.selectionFailedKept,
-                              );
-                            }
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonDelete),
-                ),
-              ),
-            ],
-          ),
-        );
+    PersonalTagBulkDeleteResult? result;
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.personalTagBulkDeleteTitle(ids.length),
+      message: context.l10n.personalTagBulkDeleteMessage(ids.length),
+      warning: selectedTags.any((t) => t.isCookbook)
+          ? context.l10n.cookbookDeleteTagWarning
+          : null,
+      primaryActionText: context.l10n.personalTagBulkDeleteAction(ids.length),
+      onConfirm: () async {
+        selection.clearPartialDelete();
+        result = await viewModel.bulkDeleteTags(ids);
+        await viewModel.loadTagStatistics();
       },
     );
+    final outcome = result;
+    if (confirmed != true || outcome == null || !context.mounted) return;
+
+    // P5-U33 (produktregler.md): all went is a success; some went is
+    // the third outcome, shown by the list with the rest still selected; none
+    // went is a failure that keeps the selection.
+    if (outcome.isComplete) {
+      selection.exitSelection();
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.personalTagBulkDeleted(outcome.deletedIds.length),
+      );
+    } else if (outcome.isPartial) {
+      final deleted = outcome.deletedIds.toSet();
+      selection.showPartialDelete(
+        outcome,
+        deletedNames: [
+          for (final t in selectedTags)
+            if (deleted.contains(t.id)) t.name,
+        ],
+      );
+    } else {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.personalTagBulkDeleteNone,
+        preserved: context.l10n.selectionFailedKept,
+      );
+    }
   }
 }

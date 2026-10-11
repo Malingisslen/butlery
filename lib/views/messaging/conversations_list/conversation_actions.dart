@@ -19,10 +19,10 @@ import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/views/messaging/create_group_conversation_view.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
-import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
 import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
 
 enum _NewMessageChoice { friend, group }
@@ -162,97 +162,60 @@ Future<void> showConversationActions(
     case _ConversationAction.groupInfo:
       _navigateToGroupInfo(context, conversation);
     case _ConversationAction.leaveGroup:
-      _confirmLeaveGroup(context, vm, conversation);
+      await _confirmLeaveGroup(context, vm, conversation);
     case _ConversationAction.profile:
       await _navigateToUserProfile(context, vm, conversation);
     case _ConversationAction.delete:
-      _confirmDelete(context, vm, conversation);
+      await _confirmDelete(context, vm, conversation);
   }
 }
 
-void _confirmLeaveGroup(
+Future<void> _confirmLeaveGroup(
   BuildContext context,
   ConversationsViewModel vm,
   Conversation conversation,
-) {
+) async {
   final l10n = context.l10n;
-
-  showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.messagingLeaveGroup),
-      content: Text(
-        l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty()),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(l10n.commonCancel),
-        ),
-        TextButton(
-          onPressed: () async {
-            Navigator.of(dialogContext).pop();
-            final success = await vm.leaveGroup(conversation.id);
-            if (context.mounted) {
-              if (success) {
-                SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
-              } else {
-                SnackBarUtils.showFailure(
-                  context,
-                  what: vm.error ?? l10n.groupLeaveFailed,
-                );
-              }
-            }
-          },
-          child: ErrorText(l10n.messagingLeave),
-        ),
-      ],
-    ),
+  final confirmed = await DestructiveConfirmationDialog.show(
+    context,
+    title: l10n.messagingLeaveGroupTitle,
+    message: l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty()),
+    primaryActionText: l10n.messagingLeave,
+    primaryActionIcon: ButleryIcons.logOut,
   );
+  if (confirmed != true || !context.mounted) return;
+  final success = await vm.leaveGroup(conversation.id);
+  if (!context.mounted) return;
+  if (success) {
+    SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
+  } else {
+    SnackBarUtils.showFailure(context, what: vm.error ?? l10n.groupLeaveFailed);
+  }
 }
 
-void _confirmDelete(
+Future<void> _confirmDelete(
   BuildContext context,
   ConversationsViewModel vm,
   Conversation conversation,
-) {
+) async {
   final l10n = context.l10n;
-
-  showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.messagingDeleteConversation),
-      content: Text(l10n.messagingDeleteConversationConfirm),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(l10n.commonCancel),
-        ),
-        TextButton(
-          onPressed: () async {
-            Navigator.of(dialogContext).pop();
-            final success = await vm.deleteConversation(conversation.id);
-            if (context.mounted) {
-              if (success) {
-                SnackBarUtils.showSuccess(
-                  context,
-                  l10n.messagingConversationDeleted(
-                    conversation.title.orEmpty(),
-                  ),
-                );
-              } else {
-                SnackBarUtils.showFailure(
-                  context,
-                  what: l10n.conversationDeleteFailed,
-                );
-              }
-            }
-          },
-          child: ErrorText(l10n.commonDelete),
-        ),
-      ],
-    ),
+  final confirmed = await DestructiveConfirmationDialog.show(
+    context,
+    title: l10n.messagingDeleteConversationTitle,
+    message: l10n.messagingDeleteConversationConfirm,
+    primaryActionText: l10n.messagingDeleteConversationAction,
   );
+  if (confirmed != true || !context.mounted) return;
+  final success = await vm.deleteConversation(conversation.id);
+  if (!context.mounted) return;
+  if (success) {
+    SnackBarUtils.showSuccess(
+      context,
+      l10n.messagingConversationDeleted(conversation.title.orEmpty()),
+    );
+  } else {
+    SnackBarUtils.showFailure(context, what: l10n.conversationDeleteFailed);
+  }
 }
 
 // Pushes the CHAT group screen directly, the same way the in-chat

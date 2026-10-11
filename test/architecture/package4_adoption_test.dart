@@ -45,11 +45,6 @@ const _plateLineFiles = [
   'lib/widgets/common/layout/layout_scaffolds.dart',
   'lib/widgets/common/layout_components.dart',
   'lib/widgets/common/scaffolds/base_scaffold.dart',
-  'lib/widgets/common/scaffolds/loading_scaffold.dart',
-  'lib/widgets/common/scaffolds/list_scaffold.dart',
-  'lib/widgets/common/scaffolds/tabbed_scaffold.dart',
-  'lib/widgets/common/scaffolds/empty_state_scaffold.dart',
-  'lib/widgets/common/scaffolds/error_scaffold.dart',
 ];
 
 /// The shared scaffolds that draw the canonical subpage top bar.
@@ -57,11 +52,6 @@ const _scaffoldFiles = [
   'lib/widgets/common/layout/layout_scaffolds.dart',
   'lib/widgets/common/layout_components.dart',
   'lib/widgets/common/scaffolds/base_scaffold.dart',
-  'lib/widgets/common/scaffolds/loading_scaffold.dart',
-  'lib/widgets/common/scaffolds/list_scaffold.dart',
-  'lib/widgets/common/scaffolds/tabbed_scaffold.dart',
-  'lib/widgets/common/scaffolds/empty_state_scaffold.dart',
-  'lib/widgets/common/scaffolds/error_scaffold.dart',
   'lib/widgets/common/scaffolds/form_scaffold.dart',
 ];
 

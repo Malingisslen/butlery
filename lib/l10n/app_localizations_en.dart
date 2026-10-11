@@ -855,7 +855,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagingDeleteConversationConfirm =>
-      'Are you sure you want to delete this conversation? All messages will be lost.';
+      'All messages in the conversation will be lost.';
 
   @override
   String messagingConversationDeleted(String title) {
@@ -1059,7 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatCouldNotSharePhoto => 'Couldn\'t share photo';
 
   @override
-  String get chatDeleteMessage => 'Delete';
+  String get chatDeleteMessage => 'Delete message';
 
   @override
   String get chatDeleteMessageConfirm =>
@@ -2060,7 +2060,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalTagUpdated => 'Tag updated';
 
   @override
-  String get personalTagDeleteTagConfirm => 'Delete tag?';
+  String get personalTagDeleteTagConfirm => 'Delete the tag?';
 
   @override
   String personalTagDeleteTagMessageWithCount(String name, int count) {
@@ -2169,7 +2169,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalTagGroupUpdated => 'Group updated';
 
   @override
-  String get personalTagDeleteGroupConfirm => 'Delete group?';
+  String get personalTagDeleteGroupConfirm => 'Delete the group?';
 
   @override
   String personalTagDeleteGroupMessage(String name) {
@@ -2242,11 +2242,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not change rule status';
 
   @override
-  String get tagDetailDeleteRuleConfirm => 'Delete rule?';
+  String get tagDetailDeleteRuleConfirm => 'Delete the rule?';
 
   @override
   String tagDetailDeleteRuleMessage(String name) {
-    return 'Are you sure you want to delete \"$name\"?';
+    return 'Do you want to delete \"$name\"?';
   }
 
   @override
@@ -2270,7 +2270,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagDetailCouldNotApplyRules => 'Could not apply rules';
 
   @override
-  String get tagDetailDeleteTagConfirm => 'Delete tag?';
+  String get tagDetailDeleteTagConfirm => 'Delete the tag?';
 
   @override
   String get tagDetailDeleted => 'Tag deleted';
@@ -10302,7 +10302,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotLogOut => 'Could not log out';
 
   @override
-  String get errorCouldNotDeleteAccount => 'Could not delete account';
+  String get errorCouldNotDeleteAccount => 'Could not delete the account';
 
   @override
   String get errorCouldNotCompleteMfa => 'Could not complete MFA enrollment';
@@ -12879,7 +12879,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelWithoutSaving => 'Cancel without saving';
 
   @override
-  String get deleteActionIrreversible => 'This action cannot be undone.';
+  String get deleteActionIrreversible => 'This can\'t be undone.';
 
   @override
   String get deleteConfirmMessage => 'Do you really want to delete';
@@ -13200,7 +13200,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bulkDeleteConfirmMessage =>
-      'The selected recipes will be removed.';
+      'The selected recipes move to the trash and stay there for 30 days.';
 
   @override
   String bulkDeleteSuccess(int count) {
@@ -14401,6 +14401,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pendingSyncOffline =>
       'Saved. It\'ll sync when you\'re back online.';
+
+  @override
+  String get commentWaitingForNetwork =>
+      'Your last comment is waiting for a connection. Send this one once it has gone.';
 
   @override
   String get cookingNowEyebrow => 'cooking right now';
@@ -18839,4 +18843,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookbookLoading => 'Loading cookbooks …';
+
+  @override
+  String get recipeDeleteConfirmTitle => 'Delete the recipe?';
+
+  @override
+  String bulkDeleteConfirmTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes?',
+      one: 'Delete 1 recipe?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkDeleteConfirmAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes',
+      one: 'Delete the recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commentDeleteConfirmTitle => 'Delete the comment?';
+
+  @override
+  String get commentDeleteConfirmAction => 'Delete comment';
+
+  @override
+  String get cookSnapDeleteConfirmTitle => 'Delete the photo?';
+
+  @override
+  String get groupDeleteConfirmTitle => 'Delete the group?';
+
+  @override
+  String friendRemoveConfirmTitle(String name) {
+    return 'Remove $name as a friend?';
+  }
+
+  @override
+  String messagingRemoveMemberConfirmTitle(String name) {
+    return 'Remove $name from the group?';
+  }
+
+  @override
+  String get messagingRemoveMemberAction => 'Remove from group';
+
+  @override
+  String get messagingLeaveGroupTitle => 'Leave the group?';
+
+  @override
+  String get messagingDeleteConversationTitle => 'Delete the conversation?';
+
+  @override
+  String get messagingDeleteConversationAction => 'Delete conversation';
+
+  @override
+  String get chatDeleteMessageTitle => 'Delete the message?';
+
+  @override
+  String personalTagBulkDeleteAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count tags',
+      one: 'Delete the tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupCancelInvitationTitle => 'Cancel the invitation?';
+
+  @override
+  String get groupCancelInvitationAction => 'Cancel invitation';
+
+  @override
+  String get groupKeepInvitation => 'Keep invitation';
+
+  @override
+  String get importHeirloomClearAction => 'Remove image';
+
+  @override
+  String get dataExportClearAction => 'Clear export';
+
+  @override
+  String get shoppingDeleteListTitle => 'Delete the list?';
+
+  @override
+  String get ratingRemoveAction => 'Remove rating';
 }
