@@ -175,6 +175,7 @@
     "test:cleanup-inactive-guests": "ts-node src/__tests__/cleanup-inactive-guests.test.ts",
     "test:cleanup-old-notifications": "ts-node src/__tests__/cleanup-old-notifications.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",
+    "test:finish-guest-upgrade": "ts-node src/__tests__/finish-guest-upgrade.test.ts",
     "test:caller-eligibility-guest": "ts-node src/__tests__/caller-eligibility-guest.test.ts",
     "test:mfa-backup-codes": "ts-node src/__tests__/mfa-backup-codes.test.ts",
     "test:set-profile-searchability": "ts-node src/__tests__/set-profile-searchability.test.ts",

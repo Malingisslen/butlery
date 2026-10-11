@@ -1,7 +1,7 @@
 /**
  * BUT-1386 — `verifySignupAge` DI-core tests.
  *
- * Exercises the contract of `runVerifySignupAgeWithDeps(deps, uid, birthYear)`
+ * Exercises the contract of `runVerifySignupAgeWithDeps(deps, uid, birthYear, mode)`
  * and the `enforceIpAuditCap(db, ip)` FinOps guard against hand-rolled fake
  * `admin` surfaces (mirrors `request-account-deletion.test.ts` — no emulator,
  * no real Firebase). Each case asserts side effects on injected fakes.
@@ -20,11 +20,15 @@
  *   4. <15 + deleteUser throws — function rethrows (never returns compliant).
  *   5. enforceIpAuditCap — under cap increments; at/over cap throws
  *      resource-exhausted; a transaction error fails closed (throws).
+ *   6. BUT-920 guest mode — the same artefacts and the same under-15 deletion,
+ *      and no claim write on a first call or a retry.
  *
  * Run: npx ts-node src/__tests__/verify-signup-age.test.ts
  */
 
 import * as admin from "firebase-admin";
+import * as fs from "fs";
+import * as path from "path";
 import { createHash } from "crypto";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-verify-signup-age" });
@@ -63,6 +67,8 @@ interface MergeWrite {
 interface FakeDbState {
   auditRows: AuditRow[];
   setWrites: MergeWrite[];
+  /** Doc ids of audit rows written with set(), when a case records them. */
+  auditIds?: string[];
 }
 
 /** Minimal Firestore fake recording `add` to audit_logs and `doc().set()`
@@ -84,10 +90,13 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
           return { id: `synthetic-${state.auditRows.length}` };
         },
         // BUT-1435: the consent audit now uses a deterministic doc id + set().
-        doc(_id: string) {
+        doc(id: string) {
           return {
             async set(data: AuditRow, _opts?: { merge?: boolean }) {
-              if (name === "audit_logs") state.auditRows.push(data);
+              if (name === "audit_logs") {
+                state.auditRows.push(data);
+                state.auditIds?.push(id);
+              }
             },
           };
         },
@@ -173,6 +182,7 @@ test("≥15 admitted: claim set (preserving existing), dual birthYear merge, one
       { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
       uid,
       birthYear,
+      { guest: false },
     );
 
     assert(result.compliant === true, `expected compliant:true for birthYear ${birthYear}`);
@@ -227,6 +237,7 @@ test("idempotent retry: re-ensures birthYear + one consent row, does NOT re-set 
     { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
     uid,
     1990,
+    { guest: false },
   );
 
   assert(result.compliant === true, "retry of a compliant user must still return compliant:true");
@@ -276,6 +287,7 @@ test("BUT-674 compliant adult: both docs get isMinor:false and NO isSearchable a
       { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
       uid,
       birthYear,
+      { guest: false },
     );
 
     assert(result.compliant === true, `expected compliant:true for birthYear ${birthYear}`);
@@ -322,6 +334,7 @@ test("BUT-674 compliant minor: both docs get isMinor:true and NO isSearchable an
       { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
       uid,
       CURRENT_YEAR - age,
+      { guest: false },
     );
 
     assert(result.compliant === true, `age ${age} must be compliant (≥15)`);
@@ -365,6 +378,7 @@ test("BUT-674 idempotent retry for minor: still writes isMinor:true to both docs
     { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
     uid,
     CURRENT_YEAR - 16, // 16-year-old
+    { guest: false },
   );
 
   assert(result.compliant === true, "retry of a compliant minor must return compliant:true");
@@ -404,6 +418,7 @@ test("<15 rejected: deleteUser called, no claim, non-identifying rejection audit
     { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
     uid,
     CURRENT_YEAR - (MIN_AGE_YEARS - 1), // 14 years old
+    { guest: false },
   );
 
   assert(result.compliant === false, "under-15 must return compliant:false");
@@ -443,6 +458,7 @@ test("<15 + deleteUser throws: function rethrows, never returns compliant", asyn
       { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
       "uid-minor-2",
       CURRENT_YEAR - (MIN_AGE_YEARS - 1),
+      { guest: false },
     );
   } catch {
     threw = true;
@@ -454,6 +470,106 @@ test("<15 + deleteUser throws: function rethrows, never returns compliant", asyn
     "function must NOT return a value (esp. not compliant) when deletion fails",
   );
   assert(authState.setClaimsCallCount === 0, "no claim should be set on the rejection path");
+});
+
+// ---- BUT-920 guest mode ----
+
+/**
+ * A compliant guest gets the artefacts an ordinary signup gets (birthYear and
+ * isMinor on both docs, the consent row) and the same response, but no claim
+ * write. Ages 16 and 30 so both isMinor values are exercised.
+ */
+test("BUT-920 guest ≥15: artefacts and consent row written, no claim set", async () => {
+  for (const age of [16, 30]) {
+    const dbState: FakeDbState = { auditRows: [], setWrites: [] };
+    const authState = freshAuthState({ premium: true });
+    const uid = "uid-guest";
+    const birthYear = CURRENT_YEAR - age;
+
+    const result = await runVerifySignupAgeWithDeps(
+      { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
+      uid,
+      birthYear,
+      { guest: true },
+    );
+
+    assert(result.compliant === true, `age ${age}: guest must be compliant`);
+    assert(result.isMinor === (age < 18), `age ${age}: isMinor in the response`);
+    assert(authState.setClaimsCallCount === 0, `age ${age}: a guest must not get any claim`);
+    assert(authState.deleteUserCallCount === 0, `age ${age}: a compliant guest is not deleted`);
+
+    for (const p of [`users/${uid}`, `users/${uid}/settings/preferences`]) {
+      const w = dbState.setWrites.find((x) => x.path === p);
+      assert(w !== undefined, `age ${age}: ${p} write missing`);
+      assert(w!.merge === true, `age ${age}: ${p} must be a merge-set`);
+      assert(w!.data.birthYear === birthYear, `age ${age}: ${p} birthYear`);
+      assert(w!.data.isMinor === (age < 18), `age ${age}: ${p} isMinor`);
+    }
+
+    assert(dbState.auditRows.length === 1, `age ${age}: one consent row, got ${dbState.auditRows.length}`);
+    const row = dbState.auditRows[0];
+    assert(row.operation === "consent_age_verification", `age ${age}: consent operation`);
+    assert(row.userIdHash === expectedHashUid(uid), `age ${age}: hashed uid`);
+    assert(!("birthYear" in row), `age ${age}: no raw birthYear in the row`);
+    assert(!("event" in row), `age ${age}: a guest signup row carries no upgrade event`);
+  }
+});
+
+/**
+ * A guest's retry must not reach the claim write either.
+ */
+test("BUT-920 guest retry: two calls, still no claim, one consent row id", async () => {
+  const dbState: FakeDbState = { auditRows: [], setWrites: [], auditIds: [] };
+  const authState = freshAuthState(undefined);
+  const deps = { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) };
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const result = await runVerifySignupAgeWithDeps(deps, "uid-guest-retry", 1990, {
+      guest: true,
+    });
+    assert(result.compliant === true, `attempt ${attempt}: compliant`);
+  }
+  assert(authState.setClaimsCallCount === 0, "no claim on either call");
+  assert(
+    new Set(dbState.auditIds).size === 1,
+    `both calls write the same consent row id, got ${JSON.stringify(dbState.auditIds)}`,
+  );
+});
+
+/** A guest under 15 takes the signup deletion path unchanged. */
+test("BUT-920 guest <15: deleted, no claim, no artefacts, non-identifying row", async () => {
+  const dbState: FakeDbState = { auditRows: [], setWrites: [] };
+  const authState = freshAuthState(undefined);
+
+  const result = await runVerifySignupAgeWithDeps(
+    { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
+    "uid-guest-14",
+    CURRENT_YEAR - (MIN_AGE_YEARS - 1),
+    { guest: true },
+  );
+
+  assert(result.compliant === false && result.isMinor === false, "rejected response");
+  assert(authState.deleteUserUid === "uid-guest-14", "the guest's account is deleted");
+  assert(authState.setClaimsCallCount === 0, "no claim");
+  assert(dbState.setWrites.length === 0, "no birthYear written");
+  assert(dbState.auditRows.length === 1, "one rejection row");
+  assert(dbState.auditRows[0].operation === "age_verification_rejected", "rejection operation");
+  assert(!("userIdHash" in dbState.auditRows[0]), "rejection row is not linkable");
+});
+
+/**
+ * The callable builds a module-level Firestore and calls enforceIpAuditCap on
+ * it, so its body is not reachable here; the guest flag's source is pinned on
+ * source instead. Deleting the argument fails to compile, but passing a
+ * constant would not.
+ */
+test("BUT-920 the verifySignupAge callable derives guest mode from the caller's token", async () => {
+  const src = fs
+    .readFileSync(path.resolve(__dirname, "..", "account", "verify-signup-age.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+  const wired = "{ guest: isGuestCaller(request.auth) }";
+  assert(src.split(wired).length - 1 === 1, `expected exactly one ${wired}`);
 });
 
 // ---- enforceIpAuditCap ----

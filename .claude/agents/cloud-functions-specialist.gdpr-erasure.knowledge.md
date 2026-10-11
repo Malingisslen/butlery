@@ -255,6 +255,14 @@
   OWNER + id, or an ex-member re-creating that id under their own uid is
   handed the victim's object. Do not then exempt that owner from the
   membership check — an owner who left could otherwise empty its roster.
+- **A flag whose OMISSION widens a grant is a REQUIRED parameter** (`mode: { guest }` in
+  `runVerifySignupAgeWithDeps`); tsc pins callers, and a source pin covers the unreachable body.
+- **A consent-row VARIANT keeps `operation` inside `CONSENT_OPERATIONS`** and differs by a field
+  and its own id (`consent_guest_upgrade_{hash}`): an unlisted operation falls to the 180-day bucket.
+- **A token-based guest exemption is confirmed against the Auth record** (`providerData.length
+  === 0`): a pre-upgrade anonymous ID token stays valid until expiry and nothing checks revocation.
+- **Pin gate-before-limiter on the REAL callable** (`.run(request)`, `enforceRateLimit` swapped for
+  a sentinel-thrower) with an eligible-caller control that MUST reach the sentinel.
 - A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
   implausibly small — an empty denormalized member list must not read as "everyone left"; guard
   `if (roster.size===0) return docs;` and prefer the authoritative membership list over a
