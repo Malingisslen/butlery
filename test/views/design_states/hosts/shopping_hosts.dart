@@ -21,7 +21,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
-import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/models/social_request.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
@@ -189,26 +190,22 @@ Widget _collaborativeView(HostContext ctx) {
   return const CollaborativeShoppingView(listId: 'list-delad');
 }
 
-/// The shopping service the member dialog adds through; its add never
+/// The invitation layer the member dialog invites through; its call never
 /// answers, so the dialog stays busy.
-class _PendingOps extends Fake implements CollaborativeShoppingOperations {
+class _PendingInvitations extends Fake implements ListInvitationOperations {
   @override
-  Future<bool> addMember({
+  String? get currentUserId => null;
+
+  @override
+  Stream<List<SocialRequest>> pendingSentForList(String listId) =>
+      const Stream.empty();
+
+  @override
+  Future<ListInviteSummary> invite({
     required String listId,
-    required String userId,
-    required String userDisplayName,
-    SharedListPermission permission = SharedListPermission.edit,
-  }) => Completer<bool>().future;
-}
-
-class _PendingService extends Fake implements UnifiedShoppingService {
-  final _ops = _PendingOps();
-
-  @override
-  CollaborativeShoppingOperations get collaborative => _ops;
-
-  @override
-  String? consumeMutationError() => null;
+    required List<String> userIds,
+    String permission = 'edit',
+  }) => Completer<ListInviteSummary>().future;
 }
 
 final shoppingHosts = <String, StateHost>{
@@ -222,13 +219,10 @@ final shoppingHosts = <String, StateHost>{
     online: false,
     build: (ctx) async => _shopping(_list(_weekItems())),
   ),
-  // BEVIS is the member dialog: adding a friend to the shared list is the
+  // BEVIS is the member dialog: inviting a friend to the shared list is the
   // list's loading state that has a drawing-free busy form.
   'inköpslista::LOADING': StateHost(
     build: (ctx) async {
-      TestServiceLocator.registerMock<UnifiedShoppingService>(
-        _PendingService(),
-      );
       final UserProfile friend = testUserProfile(
         uid: 'u-cecilia',
         displayName: 'Cecilia',
@@ -246,6 +240,7 @@ final shoppingHosts = <String, StateHost>{
                 'u-cecilia': 'Cecilia',
               },
               availableFriends: [friend],
+              invitations: _PendingInvitations(),
             ),
           ),
         ),
@@ -255,7 +250,7 @@ final shoppingHosts = <String, StateHost>{
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.text('Cecilia').last);
       await tester.pump();
-      final add = find.text(sv.shoppingAddFriendsCount(1));
+      final add = find.text(sv.listInviteButtonCount(1));
       await tester.ensureVisible(add);
       await tester.tap(add);
       await tester.pump();

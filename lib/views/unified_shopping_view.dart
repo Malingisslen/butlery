@@ -28,6 +28,7 @@ import 'package:butlery/services/share_service.dart';
 // Focused shopping components implementing facade pattern
 import 'package:butlery/widgets/shopping/shopping_template_browser.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
+import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
@@ -277,6 +278,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
         child: Column(
           children: [
             if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+            const ListInvitationsSection(),
             ShoppingListHeader.build(
               context,
               viewModel,
