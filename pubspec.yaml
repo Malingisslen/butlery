@@ -122,6 +122,8 @@ dependencies:
   in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
   fl_chart: ^1.2.0
   dio: ^5.9.2  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^7.0.1
 
 dev_dependencies:
   flutter_test:

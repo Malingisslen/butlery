@@ -41,14 +41,21 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
     super.dispose();
   }
 
-  Future<void> _change() async {
+  Future<void> _change({bool reauthenticated = false}) async {
     final success = await _viewModel.changePassword(
       currentPassword: _currentController.text,
       newPassword: _newController.text,
       confirmPassword: _confirmController.text,
+      reauthenticated: reauthenticated,
     );
 
     if (!mounted) return;
+    if (!success && _viewModel.pendingSecondFactor != null) {
+      if (await confirmSecondFactor(context, _viewModel) && mounted) {
+        await _change(reauthenticated: true);
+      }
+      return;
+    }
     // A failure stays until tapped; the new outcome replaces it rather
     // than queueing behind it.
     ScaffoldMessenger.of(context).hideCurrentSnackBar();

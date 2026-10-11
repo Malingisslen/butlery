@@ -58,6 +58,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -116,6 +117,28 @@ class AuthViewModel extends ChangeNotifier
   /// sign-in that returns false with this set is not a failure: the view
   /// shows the challenge (Skarmar v12 etapp 3 #authmfa).
   MfaResolverInfo? get pendingMfaChallenge => _authService.pendingMfaChallenge;
+
+  /// Whether "Fortsätt med [provider]" is shown on this platform (BUT-916).
+  bool isProviderOffered(SignInProvider provider) =>
+      _authService.isProviderOffered(provider);
+
+  /// The password account a provider sign-in found, for "Koppla ihop".
+  PendingProviderLink? get pendingProviderLink =>
+      _authService.pendingProviderLink;
+
+  /// "Fortsätt med Google / Apple". One sheet at a time, like [signIn].
+  Future<ProviderSignInOutcome> signInWithProvider(SignInProvider provider) {
+    final running = _providerInFlight;
+    if (running != null) return running;
+    _validationError = null;
+    final future = _authService.signInWithProvider(provider).whenComplete(() {
+      _providerInFlight = null;
+    });
+    _providerInFlight = future;
+    return future;
+  }
+
+  Future<ProviderSignInOutcome>? _providerInFlight;
 
   /// Initializes authentication ViewModel with reactive AuthService integration and state synchronization.
   /// Establishes comprehensive listener connection to AuthService ensuring automatic state synchronization

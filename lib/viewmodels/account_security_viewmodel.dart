@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -6,12 +7,77 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
+import 'package:butlery/services/auth/auth_provider_flows.dart';
+
+/// How an address change is confirmed (BUT-916 C7).
+enum EmailChangeConfirmation {
+  /// The current password, in the form.
+  password,
+
+  /// The account's Google or Apple sheet.
+  provider,
+
+  /// No password, and the account's provider is not offered on this
+  /// platform: the change cannot be confirmed here.
+  unavailable,
+}
 
 class AccountSecurityViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final AuthService _authService = ServiceLocator.get<AuthService>();
 
   String? get currentEmail => _authService.currentUser?.email;
+
+  /// Without a password there is none to change, and none to confirm an
+  /// address change with (BUT-916 C7).
+  bool get hasPassword => _authService.hasPasswordSignIn;
+
+  SignInProvider? get _reauthProvider =>
+      _authService.reauthenticationProvider();
+
+  /// The same decision `AuthActionHandler.reauthenticate` acts on: a
+  /// provider means its sheet, null means the password, or nothing at all
+  /// for an account without one.
+  EmailChangeConfirmation get emailChangeConfirmation {
+    if (_reauthProvider != null) return EmailChangeConfirmation.provider;
+    return hasPassword
+        ? EmailChangeConfirmation.password
+        : EmailChangeConfirmation.unavailable;
+  }
+
+  /// The provider a change is confirmed through when there is no password.
+  String? get reauthProviderName {
+    final provider = _reauthProvider;
+    return provider == null ? null : AuthProviderFlows.providerName(provider);
+  }
+
+  /// Set when the current password was right and the account's second
+  /// factor is asked for before the change can go on.
+  MfaResolverInfo? get pendingSecondFactor => _authService.pendingMfaChallenge;
+
+  /// The form's own check of a new address, before any sign-in sheet opens.
+  String? newEmailProblem(String newEmail) =>
+      ValidationUtils.validateEmail(newEmail);
+
+  /// Confirms with [currentPassword], or not at all when [reauthenticated]
+  /// says the one re-authentication entry point already did (C7). False
+  /// without an error when the second factor is asked for next.
+  Future<bool> _confirm(
+    String? currentPassword, {
+    required bool reauthenticated,
+  }) async {
+    if (reauthenticated) return true;
+    return _authService.reauthenticateWithPassword(currentPassword.orEmpty());
+  }
+
+  bool _failedOnSecondFactor() {
+    if (pendingSecondFactor == null) return false;
+    setLoading(false);
+    clearError();
+    return true;
+  }
 
   /// Whether trying the same change again can help.
   ///
@@ -63,9 +129,10 @@ class AccountSecurityViewModel extends ChangeNotifier
     required String currentPassword,
     required String newPassword,
     required String confirmPassword,
+    bool reauthenticated = false,
   }) async {
     _canRetry = false;
-    if (currentPassword.isEmpty) {
+    if (currentPassword.isEmpty && !reauthenticated) {
       setError(AppLocale.current.validationPasswordRequired);
       return false;
     }
@@ -89,11 +156,12 @@ class AccountSecurityViewModel extends ChangeNotifier
     clearError();
     setLoading(true);
 
-    // Reauthenticate first
-    final reauthed = await _authService.reauthenticateWithPassword(
+    final reauthed = await _confirm(
       currentPassword,
+      reauthenticated: reauthenticated,
     );
     if (!reauthed) {
+      if (_failedOnSecondFactor()) return false;
       setLoading(false);
       _setPasswordFailure();
       return false;
@@ -109,15 +177,16 @@ class AccountSecurityViewModel extends ChangeNotifier
   }
 
   Future<bool> changeEmail({
-    required String currentPassword,
+    String? currentPassword,
     required String newEmail,
+    bool reauthenticated = false,
   }) async {
     _canRetry = false;
-    if (currentPassword.isEmpty) {
+    if (currentPassword.orEmpty().isEmpty && !reauthenticated) {
       setError(AppLocale.current.validationPasswordRequired);
       return false;
     }
-    final emailError = ValidationUtils.validateEmail(newEmail);
+    final emailError = newEmailProblem(newEmail);
     if (emailError != null) {
       setError(emailError);
       return false;
@@ -126,11 +195,12 @@ class AccountSecurityViewModel extends ChangeNotifier
     clearError();
     setLoading(true);
 
-    // Reauthenticate first
-    final reauthed = await _authService.reauthenticateWithPassword(
+    final reauthed = await _confirm(
       currentPassword,
+      reauthenticated: reauthenticated,
     );
     if (!reauthed) {
+      if (_failedOnSecondFactor()) return false;
       setLoading(false);
       _setEmailFailure();
       return false;

@@ -84,7 +84,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `artifacts.schema.json` | `2cafc43ab6a147642447b21c4eb45aac9d38176f659021897ae67f13f86ebc57` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
 | `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
-| `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
+| `assets/brand-colors.json` | `e92f954e5758aea2ea62d6dce2007cad3d8b49b9ac3f2939c95e4219be74f31f` |
 | `assets/brand-colors.schema.json` | `7c16a20daa7be3856cbf48706940eeb065a44849cf8d6afd11fa4d9bfeeaf0af` |
 | `assets/fonts/ButlerySans-0.626-Bold.ttf` | `ea2f924134a732405fa7d28afe64a899ef79f8ba5da8b18630f3f6d166477042` |
 | `assets/fonts/ButlerySans-0.626-Bold.woff2` | `7295ac71e238c47d2238dabbb0f3df49eabe87d56333b1e144190aad3fbce923` |
@@ -593,7 +593,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
-| `legacy-api-contract.json` | `88e09adeba412c066477791c2543e011ac972f0ca98918c4f39fb86e65645d48` |
+| `legacy-api-contract.json` | `35aacbad7424af5d46c700d768afdfe2a60836b4c262cc0d198a5d8ebed95910` |
 | `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
@@ -604,9 +604,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `ff50ad252a5e8fc482775615e2aa1c50705cdeec76561d756b75f4d67c38d168` |
+| `lib/theme/app_colors.dart` | `389cd84d3b5f7fffc2688171ef656f7b711404fb46de15766cf6f22e5499b598` |
 | `lib/theme/app_colors_dark.dart` | `6cd983e5348f077aea4b8ea6df463073ebfb4f21f74fda1dd145a18dbdd41e84` |
-| `lib/theme/app_text_styles.dart` | `fad8f9fb06ff87e83d776068ec3b5a90d6e2bbbd5091b331f2a80070b3cac76e` |
+| `lib/theme/app_text_styles.dart` | `da165d9e31bd2f1d4dadc81d80d69a259179030d03c7fef6710f680166f0e15c` |
 | `lib/theme/butlery_tokens.dart` | `75f072a2fd22556a093e35ecac2f26a802aca6228c26208eab2f6d527d74a0cf` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |

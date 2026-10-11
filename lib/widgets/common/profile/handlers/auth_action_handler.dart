@@ -1,6 +1,7 @@
 // lib/widgets/common/profile/handlers/auth_action_handler.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/support_mail.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -13,21 +14,52 @@ import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/deletion_schedule_dialogs.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Handler for authentication-related actions (logout, delete account).
 class AuthActionHandler {
-  /// Shows password dialog and re-authenticates. Returns true on success.
-  /// On failure, shows error via [onError] callback and returns false.
+  /// The one re-authentication entry point (BUT-916 C7). AuthService decides
+  /// password or provider; this only renders the password dialog or lets the
+  /// provider's sheet open, then the second factor if the account has one.
+  /// Returns true on success; on failure [onError] gets the message. Leaving
+  /// a dialog or sheet returns false without a message.
   static Future<bool> reauthenticate(
     BuildContext context, {
     void Function(String error)? onError,
+    bool forDeletion = false,
   }) async {
-    final password = await ProfileDialogs.showPasswordDialog(context);
-    if (password == null || !context.mounted) return false;
-
     final authService = ServiceLocator.get<AuthService>();
-    final success = await authService.reauthenticateWithPassword(password);
+    // A challenge left from an earlier attempt must not be taken for this
+    // one's.
+    authService.clearPendingMfa();
+    final provider = authService.reauthenticationProvider(
+      forDeletion: forDeletion,
+    );
+    var success = false;
+    if (provider == null) {
+      final password = await ProfileDialogs.showPasswordDialog(context);
+      if (password == null || !context.mounted) return false;
+      success = await authService.reauthenticateWithPassword(password);
+    } else {
+      final outcome = await authService.reauthenticateWithProvider(provider);
+      if (outcome == ProviderSignInOutcome.cancelled) return false;
+      success = outcome == ProviderSignInOutcome.signedIn;
+    }
+    final challenge = authService.pendingMfaChallenge;
+    if (!success && challenge != null && context.mounted) {
+      final result = await Navigator.of(context).push<MfaChallengeResult>(
+        MaterialPageRoute(
+          builder: (_) => MfaChallengeView(
+            challenge: challenge,
+            provider: provider,
+            forReauthentication: true,
+          ),
+        ),
+      );
+      return result != null;
+    }
     if (!success && context.mounted) {
       final msg = authService.errorMessage ?? context.l10n.errorSessionExpired;
       onError?.call(msg);
@@ -135,6 +167,7 @@ class AuthActionHandler {
     final reauthSuccess = await reauthenticate(
       context,
       onError: (msg) => reauthError = msg,
+      forDeletion: true,
     );
     if (!reauthSuccess) {
       if (reauthError != null && context.mounted) {
@@ -161,6 +194,7 @@ class AuthActionHandler {
         final reauthed = await reauthenticate(
           context,
           onError: (msg) => reauthError = msg,
+          forDeletion: true,
         );
         if (!reauthed || !context.mounted) {
           if (reauthError != null && context.mounted) {
@@ -227,7 +261,7 @@ class AuthActionHandler {
     final subject = Uri.encodeComponent(
       context.l10n.accountDeletionPartialEmailSubject(auditLogId.orEmpty()),
     );
-    final uri = Uri.parse('mailto:integritet@butlery.se?subject=$subject');
+    final uri = Uri.parse('mailto:$privacyMailAddress?subject=$subject');
     final fallback = context.l10n.accountDeletionPartialNoEmail;
     try {
       if (await canLaunchUrl(uri)) {

@@ -1,3 +1,4 @@
+import 'package:butlery/core/constants/support_mail.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -51,7 +52,7 @@ class LegalContactFooter extends StatelessWidget {
 
   Future<void> _handleContactUs(BuildContext context) async {
     final subject = Uri.encodeComponent(context.l10n.privacyEmailSubject);
-    final uri = Uri.parse('mailto:integritet@butlery.se?subject=$subject');
+    final uri = Uri.parse('mailto:$privacyMailAddress?subject=$subject');
 
     try {
       final canLaunch = await canLaunchUrl(uri);

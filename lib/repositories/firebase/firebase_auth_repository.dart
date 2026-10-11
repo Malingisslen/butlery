@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/auth/password_reset_link.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -226,6 +228,93 @@ class FirebaseAuthRepository implements AuthRepository {
     await user.reload();
     _cachedUser = _firebaseAuth.currentUser;
   }
+
+  @override
+  List<String> get providerIds =>
+      _firebaseAuth.currentUser?.providerData
+          .map((info) => info.providerId)
+          .toList() ??
+      const [];
+
+  @override
+  AuthCredential providerCredential(ProviderTokens tokens) =>
+      switch (tokens.provider) {
+        SignInProvider.google => GoogleAuthProvider.credential(
+          idToken: tokens.idToken,
+        ),
+        // The one-time code is not passed: it is spent only on the token
+        // revocation before an account deletion.
+        SignInProvider.apple => OAuthProvider('apple.com').credential(
+          idToken: tokens.idToken,
+          rawNonce: tokens.rawNonce,
+        ),
+      };
+
+  /// Name and e-mail only: the photo is never asked for (Malin 2026-10-10).
+  AuthProvider _firebaseProvider(SignInProvider provider) => switch (provider) {
+    SignInProvider.google =>
+      GoogleAuthProvider()
+        ..addScope('email')
+        ..addScope('profile'),
+    SignInProvider.apple =>
+      AppleAuthProvider()
+        ..addScope('email')
+        ..addScope('name'),
+  };
+
+  @override
+  Future<UserCredential> signInWithProviderTokens(ProviderTokens tokens) =>
+      _remember(
+        _firebaseAuth.signInWithCredential(providerCredential(tokens)),
+      );
+
+  @override
+  Future<UserCredential> signInWithProviderFlow(SignInProvider provider) {
+    final authProvider = _firebaseProvider(provider);
+    return _remember(
+      kIsWeb
+          ? _firebaseAuth.signInWithPopup(authProvider)
+          : _firebaseAuth.signInWithProvider(authProvider),
+    );
+  }
+
+  Future<UserCredential> _remember(Future<UserCredential> signIn) async {
+    final credential = await signIn;
+    _cachedUser = credential.user;
+    _ignoreInitialNull = false;
+    return credential;
+  }
+
+  @override
+  Future<void> linkCredential(AuthCredential credential) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    await user.linkWithCredential(credential);
+    _cachedUser = _firebaseAuth.currentUser;
+  }
+
+  @override
+  Future<void> reauthenticateWithProviderTokens(ProviderTokens tokens) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    await user.reauthenticateWithCredential(providerCredential(tokens));
+  }
+
+  @override
+  Future<void> reauthenticateWithProviderFlow(SignInProvider provider) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    final authProvider = _firebaseProvider(provider);
+    if (kIsWeb) {
+      await user.reauthenticateWithPopup(authProvider);
+    } else {
+      await user.reauthenticateWithProvider(authProvider);
+    }
+  }
+
+  @override
+  Future<void> revokeAppleToken(String authorizationCode) =>
+      _firebaseAuth.revokeTokenWithAuthorizationCode(authorizationCode);
 
   @override
   Future<void> verifyBeforeUpdateEmail(String newEmail) async {

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
+
 /// Repository interface for authentication operations.
 abstract class AuthRepository {
   /// Login with email and password.
@@ -77,4 +79,32 @@ abstract class AuthRepository {
 
   /// Send verification email to new address before updating (requires recent authentication).
   Future<void> verifyBeforeUpdateEmail(String newEmail);
+
+  /// The sign-in methods on the current user (`password`, `google.com`,
+  /// `apple.com`), read from its provider data. Empty when signed out.
+  List<String> get providerIds;
+
+  /// The Firebase credential for tokens a provider's own SDK returned.
+  AuthCredential providerCredential(ProviderTokens tokens);
+
+  /// Signs in with the credential for [tokens] (BUT-916 native flows).
+  Future<UserCredential> signInWithProviderTokens(ProviderTokens tokens);
+
+  /// Lets Firebase run [provider]'s sheet: a popup on the web,
+  /// `signInWithProvider` elsewhere.
+  Future<UserCredential> signInWithProviderFlow(SignInProvider provider);
+
+  /// Links [credential] to the signed-in user.
+  Future<void> linkCredential(AuthCredential credential);
+
+  /// Re-authenticates the signed-in user with [tokens], which refreshes the
+  /// token's `auth_time`.
+  Future<void> reauthenticateWithProviderTokens(ProviderTokens tokens);
+
+  /// Re-authenticates through Firebase's own sheet for [provider].
+  Future<void> reauthenticateWithProviderFlow(SignInProvider provider);
+
+  /// Revokes the app's Apple tokens with a one-time [authorizationCode]
+  /// from a Sign in with Apple sheet (App Store 5.1.1(v)).
+  Future<void> revokeAppleToken(String authorizationCode);
 }

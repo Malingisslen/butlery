@@ -44,6 +44,10 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/auth/password_reset_service.dart` (runs signed OUT, which
   `executeServiceOperation`'s auth pre-flight refuses, and its callers need the failure
   TYPE rather than a message — BUT-2170)
+- `lib/services/auth/provider_sign_in_service.dart` (BUT-916: works before and
+  around sign-in — the provider sheet, the MFA stop, the link step — where
+  `executeServiceOperation`'s auth pre-flight refuses, and its callers need the outcome
+  TYPE rather than a message; same reason as `password_reset_service.dart`)
 - `lib/services/account/pending_retention_notice_store.dart` (pure local storage —
   `shared_preferences` read/write/clear for the Art. 12(4) notice that must outlive a missed
   dialog; no Firebase, no async service lifecycle)

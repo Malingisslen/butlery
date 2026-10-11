@@ -102,7 +102,22 @@ class AuthMfaService extends ChangeNotifier
     required String email,
     required String password,
     required String code,
-  }) async {
+  }) => _recover({'email': email, 'password': password, 'code': code});
+
+  /// The same way in for an account that signs in with Google or Apple: the
+  /// server checks [proof] with the provider instead of a password. The
+  /// caller signs in through the provider again afterwards.
+  Future<MfaRecoveryOutcome> recoverWithProviderBackupCode({
+    required MfaProviderProof proof,
+    required String code,
+  }) => _recover({
+    'providerId': proof.providerId,
+    'idToken': proof.idToken,
+    if (proof.nonce != null) 'nonce': proof.nonce,
+    'code': code,
+  });
+
+  Future<MfaRecoveryOutcome> _recover(Map<String, String?> request) async {
     final functions = _functions;
     if (functions == null) return MfaRecoveryOutcome.unavailable;
     try {
@@ -113,11 +128,7 @@ class AuthMfaService extends ChangeNotifier
             'recoverWithMfaBackupCode',
             options: HttpsCallableOptions(limitedUseAppCheckToken: true),
           )
-          .call<dynamic>({
-            'email': email,
-            'password': password,
-            'code': code,
-          });
+          .call<dynamic>(request);
       await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return MfaRecoveryOutcome.recovered;
     } on FirebaseFunctionsException catch (e) {
@@ -311,11 +322,14 @@ class AuthMfaService extends ChangeNotifier
   Future<void> discardBackupCodes() => _clearBackupCodes();
 
   /// Finishes a sign-in that waits for the second factor, with the
-  /// six-digit [code] from the authenticator app.
+  /// six-digit [code] from the authenticator app. [method] is how the first
+  /// factor was given (`email`, `google`, `apple`), for analytics.
   Future<bool> completeMfaSignIn(
     MfaResolverInfo resolverInfo,
-    String code,
-  ) async {
+    String code, {
+    // Null for a re-authentication, which is not a login.
+    String? method = 'email',
+  }) async {
     try {
       final resolver = resolverInfo.unwrap<MultiFactorResolver>();
       final hint = resolver.hints.whereType<TotpMultiFactorInfo>().firstOrNull;
@@ -330,7 +344,9 @@ class AuthMfaService extends ChangeNotifier
       );
 
       AppLogger.info('MFA sign-in completed');
-      await _analyticsService.logLogin(method: 'email_mfa');
+      if (method != null) {
+        await _analyticsService.logLogin(method: '${method}_mfa');
+      }
       return true;
     } on FirebaseAuthException catch (e) {
       AppLogger.error('MFA sign-in failed: ${e.code}');

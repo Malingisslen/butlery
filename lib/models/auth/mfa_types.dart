@@ -70,3 +70,21 @@ enum MfaRecoveryOutcome {
   /// The server could not be reached or is not set up.
   unavailable,
 }
+
+/// What proves the first factor to the backup-code server when the account
+/// signs in with Google or Apple: the provider's id token, and for Apple the
+/// raw nonce it was issued for. Memory only; [toString] prints no token.
+class MfaProviderProof {
+  const MfaProviderProof({
+    required this.providerId,
+    required this.idToken,
+    this.nonce,
+  });
+
+  final String providerId;
+  final String idToken;
+  final String? nonce;
+
+  @override
+  String toString() => 'MfaProviderProof($providerId)';
+}

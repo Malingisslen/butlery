@@ -39,6 +39,8 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
+import 'package:butlery/services/auth/provider_sign_in_platform.dart';
+import 'package:butlery/services/auth/provider_sign_in_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -129,6 +131,7 @@ class CoreModule implements DIModule {
       FeedbackService,
       // Auth MFA and device integrity
       AuthMfaService,
+      ProviderSignInService,
       PasswordResetService,
       DeviceIntegrityService,
       // Onboarding progress (BUT-743)
@@ -260,12 +263,22 @@ class CoreModule implements DIModule {
         ),
       );
 
+      // "Fortsätt med Google / Apple" (BUT-916, BUT-549): the provider SDKs
+      // behind one seam, handed to AuthService, which delegates to it.
+      container.registerSingleton<ProviderSignInService>(
+        ProviderSignInService(
+          authRepository: container<AuthRepository>(),
+          platform: DeviceProviderSignInPlatform(),
+        ),
+      );
+
       // Authentication service is critical and needed by many other services
       // Note: Depends on AnalyticsService (available on all platforms)
       container.registerSingleton<AuthService>(
         AuthService(
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
+          providerSignIn: container<ProviderSignInService>(),
         ),
         dispose: (s) => s.dispose(),
       );

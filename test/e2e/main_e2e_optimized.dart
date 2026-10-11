@@ -337,6 +337,9 @@ class _MockAuthRepository implements AuthRepository {
   Stream<firebase_auth.User?> authStateChanges() => Stream.value(null);
 
   @override
+  List<String> get providerIds => const [];
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
