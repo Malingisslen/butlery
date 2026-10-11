@@ -218,8 +218,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      Finder editRatingField() =>
-          find.widgetWithText(TextFormField, 'Betyg (0–5)');
+      Finder editRatingField() => fieldLabelled('Betyg (0–5)');
 
       Future<void> revealEditRatingField(WidgetTester tester) async {
         await tester.scrollUntilVisible(
