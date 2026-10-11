@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _notYetMoved = <String, int>{
   'lib/views/auth/mfa_challenge_view.dart': 2,
-  'lib/views/personal_tags/personal_tag_dialogs.dart': 5,
+  'lib/views/personal_tags/personal_tag_dialogs.dart': 4,
   'lib/views/settings/account_security_view.dart': 5,
   'lib/views/settings/mfa_enrollment_forms.dart': 3,
   'lib/widgets/common/input/instruction_editor.dart': 1,
