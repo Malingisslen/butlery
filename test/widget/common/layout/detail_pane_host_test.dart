@@ -297,6 +297,58 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('a page that pops its only route empties the right side', (
+      tester,
+    ) async {
+      _size(tester, 1280, 800);
+      await tester.pumpWidget(_app());
+      await _tap(tester, 'open a');
+      _controller(tester).setExpanded(true);
+      await tester.pumpAndSettle();
+
+      // What a save or a delete does: a bare pop on the pane's first page.
+      Navigator.of(tester.element(find.text('page /a'))).pop();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('page /a'), findsNothing);
+      expect(find.text('the list'), findsOneWidget);
+      expect(_controller(tester).selected, isNull);
+      expect(_controller(tester).expanded, isFalse);
+      expect(find.text('a unmarked'), findsOneWidget);
+
+      await _tap(tester, 'open a');
+      expect(find.text('page /a'), findsOneWidget);
+    });
+
+    testWidgets('a page that replaces the stack keeps the selection and '
+        'shows the new page', (tester) async {
+      _size(tester, 1280, 800);
+      await tester.pumpWidget(_app());
+      await _tap(tester, 'open a');
+      Navigator.of(
+        tester.element(find.text('page /a')),
+      ).pushNamedAndRemoveUntil('/b', (_) => false);
+      await tester.pumpAndSettle();
+
+      expect(find.text('page /b'), findsOneWidget);
+      expect(_controller(tester).selected, isNotNull);
+    });
+
+    testWidgets('popping a page pushed on top keeps the selection', (
+      tester,
+    ) async {
+      _size(tester, 1280, 800);
+      await tester.pumpWidget(_app());
+      await _tap(tester, 'open a');
+      await _tap(tester, 'push inner');
+      Navigator.of(tester.element(find.text('page /inner'))).pop();
+      await tester.pumpAndSettle();
+
+      expect(find.text('page /a'), findsOneWidget);
+      expect(_controller(tester).isSelected('a'), isTrue);
+    });
+
     testWidgets('a leaf page beside the list draws no bottom row; on its own '
         'it does', (tester) async {
       _size(tester, 1280, 800);

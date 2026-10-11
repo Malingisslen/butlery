@@ -117,5 +117,22 @@ void main() {
       expect(controller.expanded, isFalse);
       expect(notified, 2);
     });
+
+    test('clear empties a pick and Helskärm, and a later offer is shown', () {
+      controller.open(b, key: 'b');
+      controller.setExpanded(true);
+      controller.clear();
+
+      expect(controller.selected, isNull);
+      expect(controller.isSelected('b'), isFalse);
+      expect(controller.expanded, isFalse);
+      expect(notified, 3);
+
+      controller.clear();
+      expect(notified, 3);
+
+      controller.offerFirst(a, key: 'a');
+      expect(controller.selected, same(a));
+    });
   });
 }

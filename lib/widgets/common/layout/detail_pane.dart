@@ -74,6 +74,16 @@ class DetailPaneController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Empties the right side, for when its last page has gone.
+  void clear() {
+    if (_selected == null && !_expanded) return;
+    _selected = null;
+    _selectedKey = null;
+    _offered = false;
+    _expanded = false;
+    notifyListeners();
+  }
+
   void setExpanded(bool value) {
     if (_expanded == value) return;
     _expanded = value;
@@ -91,9 +101,8 @@ class DetailPaneScope extends InheritedNotifier<DetailPaneController> {
 
   /// The controller of the nearest two-pane host, or null on a phone, in
   /// portrait and anywhere outside a host.
-  static DetailPaneController? maybeOf(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<DetailPaneScope>()
-      ?.notifier;
+  static DetailPaneController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<DetailPaneScope>()?.notifier;
 }
 
 /// Marks the right side, so a page can tell it is shown beside a list.
@@ -130,6 +139,7 @@ class _DetailPaneHostState extends State<DetailPaneHost> {
   // A new pick starts a new stack, so the navigator gets a new key with it;
   // following a link inside the right side pushes onto the current one.
   GlobalKey<NavigatorState> _detailNavigator = GlobalKey();
+  _LastPageObserver? _observer;
   RouteSettings? _shown;
   // The master keeps its state when the screen turns between one and two
   // panes, so the list does not reload or lose its scroll position.
@@ -221,7 +231,11 @@ class _DetailPaneHostState extends State<DetailPaneHost> {
     if (!identical(selected, _shown)) {
       _shown = selected;
       _detailNavigator = GlobalKey();
+      _observer = null;
     }
+    // A page that pops itself after a save or a delete can take the stack's
+    // only route with it, so an empty stack empties the selection too.
+    final observer = _observer ??= _LastPageObserver(_controller.clear);
     final expanded = _controller.expanded;
     // In Helskärm, back shows the list again before it leaves the page.
     return PopScope(
@@ -239,6 +253,7 @@ class _DetailPaneHostState extends State<DetailPaneHost> {
         },
         child: Navigator(
           key: _detailNavigator,
+          observers: [observer],
           onGenerateInitialRoutes: (navigator, _) => [
             widget.onGenerateRoute(selected)!,
           ],
@@ -246,5 +261,16 @@ class _DetailPaneHostState extends State<DetailPaneHost> {
         ),
       ),
     );
+  }
+}
+
+class _LastPageObserver extends NavigatorObserver {
+  _LastPageObserver(this.onEmpty);
+
+  final VoidCallback onEmpty;
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (previousRoute == null) onEmpty();
   }
 }
