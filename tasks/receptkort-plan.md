@@ -18,6 +18,7 @@ listraden byggs om efter Komponentark v1 "Receptkort · receptlistrad" och Skär
   filtreras med "Favoriter".
 - **Kvar av säkerhetsskäl:** allergenvarningarna och "Allergener ej bedömda" när användaren
   slagit på "Visa på receptkort" (skissen Familj: "Visas som varningar på receptkort").
+- Tester för det som tas bort från kortet tas bort tillsammans med funktionen.
 - Skafferimatchningen (filtret "Laga med vad jag har") blir text i metaraden.
 - Valt läge: `surface.selected` med 1,5 px kant, som förut.
 
