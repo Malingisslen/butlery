@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
@@ -37,6 +38,9 @@ class _MockCheckoffPantryService extends Mock
 class _MockUserServiceForSeam extends Mock implements UserService {}
 
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockCollaborativeOps extends Mock
+    implements CollaborativeShoppingOperations {}
 
 class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
 
@@ -81,6 +85,7 @@ void main() {
 
   late UnifiedShoppingViewModel viewModel;
   late MockUnifiedShoppingService mockShoppingService;
+  late _MockCollaborativeOps mockCollaborativeOps;
   late FakePermissionService mockPermissionService;
 
   const testUserId = 'test-user-123';
@@ -145,18 +150,23 @@ void main() {
     when(
       () => mockShoppingService.createPersonalList(any()),
     ).thenAnswer((_) async => 'new-list-id');
+    mockCollaborativeOps = _MockCollaborativeOps();
+    when(() => mockShoppingService.collaborative).thenReturn(
+      mockCollaborativeOps,
+    );
     when(
-      () => mockShoppingService.createCollaborativeList(
+      () => mockCollaborativeOps.createListAndInvite(
         name: any(named: 'name'),
         description: any(named: 'description'),
         memberIds: any(named: 'memberIds'),
-        memberDisplayNames: any(named: 'memberDisplayNames'),
         items: any(named: 'items'),
         categoryIds: any(named: 'categoryIds'),
         allowGuestEditing: any(named: 'allowGuestEditing'),
         autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
       ),
-    ).thenAnswer((_) async => 'collab-list-id');
+    ).thenAnswer(
+      (_) async => (listId: 'collab-list-id', notInvited: const <String>[]),
+    );
     when(
       () => mockShoppingService.setActiveList(any()),
     ).thenAnswer((_) async => true);
@@ -602,22 +612,63 @@ void main() {
   });
 
   group('Collaborative List Creation', () {
-    test('createCollaborativeList delegates to service', () async {
+    test('createCollaborativeList creates the list and hands the friends '
+        'over to be invited', () async {
       final result = await viewModel.createCollaborativeList(
         name: 'Familjelista',
         memberIds: ['user-2'],
-        memberDisplayNames: {'user-2': 'Partner'},
       );
-      expect(result, isTrue);
+      expect(result.listId, 'collab-list-id');
+      expect(result.notInvited, isEmpty);
+      verify(
+        () => mockCollaborativeOps.createListAndInvite(
+          name: 'Familjelista',
+          description: null,
+          memberIds: ['user-2'],
+          items: null,
+          categoryIds: null,
+          allowGuestEditing: true,
+          autoRemoveCompleted: false,
+        ),
+      ).called(1);
+    });
+
+    test('createCollaborativeList reports who was not invited', () async {
+      when(
+        () => mockCollaborativeOps.createListAndInvite(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          items: any(named: 'items'),
+          categoryIds: any(named: 'categoryIds'),
+          allowGuestEditing: any(named: 'allowGuestEditing'),
+          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
+        ),
+      ).thenAnswer(
+        (_) async => (listId: 'collab-list-id', notInvited: ['user-2']),
+      );
+
+      final result = await viewModel.createCollaborativeList(
+        name: 'Familjelista',
+        memberIds: ['user-2'],
+      );
+
+      expect(result.listId, 'collab-list-id');
+      expect(result.notInvited, ['user-2']);
     });
 
     test('createCollaborativeList rejects empty name', () async {
       final result = await viewModel.createCollaborativeList(
         name: '',
         memberIds: ['user-2'],
-        memberDisplayNames: {'user-2': 'Partner'},
       );
-      expect(result, isFalse);
+      expect(result.listId, isNull);
+      verifyNever(
+        () => mockCollaborativeOps.createListAndInvite(
+          name: any(named: 'name'),
+          memberIds: any(named: 'memberIds'),
+        ),
+      );
     });
   });
 

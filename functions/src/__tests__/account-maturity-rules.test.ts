@@ -108,6 +108,13 @@ async function setup(): Promise<void> {
       createdAt: twoHoursAgo,
       displayName: "Other",
     });
+    for (const uid of ["verified-inviter-a", "verified-inviter-b"]) {
+      await ctx.firestore().doc(`users/${uid}`).set({
+        uid,
+        createdAt: now,
+        displayName: "Verified",
+      });
+    }
     // Conversation that messages tests use.
     await ctx.firestore().doc("conversations/conv-1").set({
       participantIds: [NEW_USER, OLD_USER, VERIFIED_USER, OTHER_USER],
@@ -251,6 +258,82 @@ test(
     );
   },
 );
+
+// BUT-2089: a list invitation is written by `sendListInvitations` alone.
+// Two fresh verified accounts, so a stamp from one case cannot deny the other.
+function invitationBody(fromUid: string, type: string): Record<string, unknown> {
+  return { ...friendRequestBody(fromUid, OTHER_USER), type, listId: "list-1" };
+}
+
+// AM6: the control for AM7.
+test(
+  "social_requests: a client CAN create a group invitation (AM7's control)",
+  async () => {
+    await assertSucceeds(
+      createStampedRequest(
+        "verified-inviter-a",
+        { email_verified: true, ...AGE_OK },
+        "req-inv-a",
+        invitationBody("verified-inviter-a", "groupInvitation"),
+      ),
+    );
+  },
+);
+
+// AM7
+test(
+  "social_requests: a client CANNOT create a list invitation",
+  async () => {
+    await assertFails(
+      createStampedRequest(
+        "verified-inviter-b",
+        { email_verified: true, ...AGE_OK },
+        "req-inv-b",
+        invitationBody("verified-inviter-b", "listInvitation"),
+      ),
+    );
+  },
+);
+
+// BUT-2089: a declined list invitation is the 30-day memory the server
+// reads, so its sender cannot delete it. Each case seeds one row and changes
+// one thing against AM8 (`status`, `type` or the actor).
+async function seedRequest(id: string, type: string, status: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`social_requests/${id}`).set({
+      type, status, fromUserId: OLD_USER, toUserId: OTHER_USER, sentAt: new Date(),
+    });
+  });
+}
+
+function deleteAs(uid: string, id: string): Promise<void> {
+  return env.authenticatedContext(uid, AGE_OK).firestore()
+    .doc(`social_requests/${id}`).delete();
+}
+
+// AM8
+test("social_requests: the sender CANNOT delete a declined list invitation", async () => {
+  await seedRequest("del-list-rejected", "listInvitation", "rejected");
+  await assertFails(deleteAs(OLD_USER, "del-list-rejected"));
+});
+
+// AM9: "Ta tillbaka" — the same row while it is pending.
+test("social_requests: the sender CAN delete a pending list invitation", async () => {
+  await seedRequest("del-list-pending", "listInvitation", "pending");
+  await assertSucceeds(deleteAs(OLD_USER, "del-list-pending"));
+});
+
+// AM10: other types keep the sender's delete whatever their status.
+test("social_requests: the sender CAN delete a declined group invitation", async () => {
+  await seedRequest("del-group-rejected", "groupInvitation", "rejected");
+  await assertSucceeds(deleteAs(OLD_USER, "del-group-rejected"));
+});
+
+// AM11: the invitee may still delete a row about themselves.
+test("social_requests: the recipient CAN delete a declined list invitation", async () => {
+  await seedRequest("del-list-recipient", "listInvitation", "rejected");
+  await assertSucceeds(deleteAs(OTHER_USER, "del-list-recipient"));
+});
 
 async function run(): Promise<void> {
   console.log("BUT-659: account-maturity rules tests\n");

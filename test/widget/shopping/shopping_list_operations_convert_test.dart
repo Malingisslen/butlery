@@ -35,6 +35,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart';
 
+import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -128,7 +129,11 @@ void main() {
       when(
         () => collaborativeOps.convertCollaborativeToPersonal(any()),
       ).thenAnswer(
-        (_) async => (newListId: 'personal-1', originalKept: true),
+        (_) async => (
+          newListId: 'personal-1',
+          originalKept: true,
+          notInvited: const <String>[],
+        ),
       );
 
       await convertAndConfirm(tester);
@@ -162,7 +167,11 @@ void main() {
       when(
         () => collaborativeOps.convertCollaborativeToPersonal(any()),
       ).thenAnswer(
-        (_) async => (newListId: 'personal-1', originalKept: false),
+        (_) async => (
+          newListId: 'personal-1',
+          originalKept: false,
+          notInvited: const <String>[],
+        ),
       );
 
       await convertAndConfirm(tester);
@@ -175,7 +184,10 @@ void main() {
   testWidgets('a conversion that never ran reports the error', (tester) async {
     when(
       () => collaborativeOps.convertCollaborativeToPersonal(any()),
-    ).thenAnswer((_) async => (newListId: null, originalKept: false));
+    ).thenAnswer(
+      (_) async =>
+          (newListId: null, originalKept: false, notInvited: const <String>[]),
+    );
 
     await convertAndConfirm(tester);
 
@@ -263,10 +275,104 @@ void main() {
         () => collaborativeOps.convertPersonalToCollaborative(
           personalListId: any(named: 'personalListId'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
           description: any(named: 'description'),
         ),
       );
+    });
+
+    group('with friends to invite', () {
+      setUp(() {
+        when(() => friends.friends).thenReturn([
+          testUserProfile(uid: 'anna-uid', displayName: 'Anna'),
+          testUserProfile(uid: 'erik-uid', displayName: 'Erik'),
+        ]);
+      });
+
+      Future<void> convertWithBothFriends(
+        WidgetTester tester, {
+        required ({
+          String? newListId,
+          bool originalKept,
+          List<String> notInvited,
+        })
+        outcome,
+      }) async {
+        when(
+          () => collaborativeOps.convertPersonalToCollaborative(
+            personalListId: any(named: 'personalListId'),
+            memberIds: any(named: 'memberIds'),
+            description: any(named: 'description'),
+          ),
+        ).thenAnswer((_) async => outcome);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) {
+                l10n = context.l10n;
+                return TextButton(
+                  onPressed: () =>
+                      ShoppingListOperations.showConvertToCollaborativeDialog(
+                        context,
+                        _collaborativeList(),
+                        successes.add,
+                        errors.add,
+                      ),
+                  child: const Text('convert'),
+                );
+              },
+            ),
+          ),
+        );
+        await tester.tap(find.text('convert'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Anna'));
+        await tester.tap(find.text('Erik'));
+        await tester.pump();
+        await tester.tap(find.text(l10n.shoppingConvertToCollaborative).last);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('hands the chosen friends over to be invited and says they '
+          'have to accept', (tester) async {
+        await convertWithBothFriends(
+          tester,
+          outcome: (
+            newListId: 'new-1',
+            originalKept: false,
+            notInvited: const <String>[],
+          ),
+        );
+
+        verify(
+          () => collaborativeOps.convertPersonalToCollaborative(
+            personalListId: 'collab-1',
+            memberIds: ['anna-uid', 'erik-uid'],
+            description: any(named: 'description'),
+          ),
+        ).called(1);
+        expect(successes, [l10n.listInviteConvertedInvited]);
+        expect(errors, isEmpty);
+      });
+
+      testWidgets('keeps the converted list and names who was not invited, '
+          'as one line', (tester) async {
+        await convertWithBothFriends(
+          tester,
+          outcome: (
+            newListId: 'new-1',
+            originalKept: false,
+            notInvited: const ['erik-uid'],
+          ),
+        );
+
+        expect(successes, [l10n.listInviteConvertedSomeNotInvited('Erik')]);
+        expect(
+          errors,
+          isEmpty,
+          reason: 'the list is converted; a missed invitation is not an error',
+        );
+      });
     });
   });
 }

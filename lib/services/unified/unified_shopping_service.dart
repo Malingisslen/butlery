@@ -24,6 +24,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
@@ -142,6 +143,15 @@ class UnifiedShoppingService
       deleteList: deleteList,
       createPersonalList: createPersonalList,
       confirmPersistedItemCount: _shoppingRepository.confirmPersistedItemCount,
+      inviteMembers: (listId, userIds, permission) =>
+          ServiceLocator.get<UnifiedFriendsService>()
+              .invitations
+              .listInvitations
+              .invite(
+                listId: listId,
+                userIds: userIds,
+                permission: permission,
+              ),
     );
 
     final memberOps = ListMemberOperations(
@@ -395,11 +405,11 @@ class UnifiedShoppingService
     return await _listManagement.createPersonalList(name, items: items);
   }
 
+  /// Creates a collaborative list with only the caller seated; see
+  /// [ShoppingListManagementModule.createCollaborativeList].
   Future<String?> createCollaborativeList({
     required String name,
     String? description,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing = true,
@@ -408,34 +418,6 @@ class UnifiedShoppingService
     return await _listManagement.createCollaborativeList(
       name: name,
       description: description,
-      memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
-      items: items,
-      categoryIds: categoryIds,
-      allowGuestEditing: allowGuestEditing,
-      autoRemoveCompleted: autoRemoveCompleted,
-    );
-  }
-
-  Future<String?> createCollaborativeListFromInvitation({
-    required String name,
-    String? description,
-    required String ownerId,
-    required String ownerDisplayName,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
-    List<UnifiedShoppingItem>? items,
-    List<String>? categoryIds,
-    bool allowGuestEditing = true,
-    bool autoRemoveCompleted = false,
-  }) async {
-    return await _listManagement.createCollaborativeListFromInvitation(
-      name: name,
-      description: description,
-      ownerId: ownerId,
-      ownerDisplayName: ownerDisplayName,
-      memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
       items: items,
       categoryIds: categoryIds,
       allowGuestEditing: allowGuestEditing,

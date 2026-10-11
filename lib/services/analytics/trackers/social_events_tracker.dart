@@ -135,6 +135,23 @@ class SocialEventsTracker extends BaseTracker {
     );
   }
 
+  /// A shared shopping list invitation went out. [count] is how many
+  /// invitees were sent, never who.
+  Future<void> logListInvitationSent({required int count}) async {
+    await logEvent(
+      name: AnalyticsEvents.listInvitationSent,
+      parameters: {'count': count},
+    );
+  }
+
+  Future<void> logListInvitationAccepted() async {
+    await logEvent(name: AnalyticsEvents.listInvitationAccepted);
+  }
+
+  Future<void> logListInvitationDeclined() async {
+    await logEvent(name: AnalyticsEvents.listInvitationDeclined);
+  }
+
   /// Log group joined
   Future<void> logGroupJoined({
     required String groupId,

@@ -71,11 +71,12 @@ class ShoppingListManagementModule {
     }
   }
 
+  /// Creates a collaborative list with only the owner seated. Nobody is put on
+  /// a list by someone else (BUT-2089): the rules refuse a create that seats a
+  /// second key, so friends are invited afterwards and join by accepting.
   Future<String?> createCollaborativeList({
     required String name,
     String? description,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing = true,
@@ -96,23 +97,6 @@ class ShoppingListManagementModule {
         return null;
       }
 
-      // Create member permissions with owner and members
-      final memberPermissions = <String, SharedListPermission>{};
-
-      // Add owner with admin permissions
-      memberPermissions[currentUserId] = SharedListPermission.admin;
-
-      // Add members with appropriate permissions
-      for (final memberId in memberIds) {
-        if (memberId != currentUserId) {
-          // Don't duplicate owner
-          memberPermissions[memberId] = allowGuestEditing
-              ? SharedListPermission.edit
-              : SharedListPermission.view;
-        }
-      }
-
-      // Create UnifiedShoppingList object for collaborative sharing
       final newList = UnifiedShoppingList(
         name: name,
         ownerId: currentUserId,
@@ -120,7 +104,7 @@ class ShoppingListManagementModule {
         description: description,
         items: items ?? [],
         type: ListType.collaborative,
-        memberPermissions: memberPermissions,
+        memberPermissions: {currentUserId: SharedListPermission.admin},
         allowGuestEditing: allowGuestEditing,
         autoRemoveCompleted: autoRemoveCompleted,
         lastActivityByUserId: currentUserId,
@@ -134,78 +118,10 @@ class ShoppingListManagementModule {
       lists.add(savedList);
       notifyListeners();
 
-      AppLogger.success(
-        'Created collaborative list: ${savedList.name} with ${memberIds.length} members',
-      );
+      AppLogger.success('Created collaborative list: ${savedList.name}');
       return savedList.id;
     } catch (e) {
       AppLogger.error('Failed to create collaborative list: $e');
-      return null;
-    }
-  }
-
-  /// Create collaborative list from invitation - preserves original sender as owner
-  Future<String?> createCollaborativeListFromInvitation({
-    required String name,
-    String? description,
-    required String ownerId,
-    required String ownerDisplayName,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
-    List<UnifiedShoppingItem>? items,
-    List<String>? categoryIds,
-    bool allowGuestEditing = true,
-    bool autoRemoveCompleted = false,
-  }) async {
-    try {
-      // Create member permissions with specified owner and members
-      final memberPermissions = <String, SharedListPermission>{};
-
-      // Add owner with admin permissions
-      memberPermissions[ownerId] = SharedListPermission.admin;
-
-      // Add members with appropriate permissions
-      for (final memberId in memberIds) {
-        if (memberId != ownerId) {
-          // Don't duplicate owner
-          memberPermissions[memberId] = allowGuestEditing
-              ? SharedListPermission.edit
-              : SharedListPermission.view;
-        }
-      }
-
-      // Create UnifiedShoppingList object for collaborative sharing
-      final newList = UnifiedShoppingList(
-        name: name,
-        ownerId: ownerId, // Use specified owner, not current user
-        ownerDisplayName: ownerDisplayName,
-        description: description,
-        items: items ?? [],
-        type: ListType.collaborative,
-        memberPermissions: memberPermissions,
-        allowGuestEditing: allowGuestEditing,
-        autoRemoveCompleted: autoRemoveCompleted,
-        lastActivityByUserId: ownerId, // Initial activity by owner
-        lastActivityByDisplayName: ownerDisplayName,
-        collaborativeOrigin:
-            'shared', // Mark as created from sharing to prevent duplicates
-      );
-
-      // Save to Firebase repository
-      final savedList = await repository.create(newList);
-
-      // Add to local lists array
-      lists.add(savedList);
-      notifyListeners();
-
-      AppLogger.success(
-        'Created collaborative list from invitation: ${savedList.name} with owner: $ownerDisplayName',
-      );
-      return savedList.id;
-    } catch (e) {
-      AppLogger.error(
-        'Failed to create collaborative list from invitation: $e',
-      );
       return null;
     }
   }

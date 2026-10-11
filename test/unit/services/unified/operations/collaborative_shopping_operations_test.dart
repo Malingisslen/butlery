@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
@@ -42,6 +43,9 @@ void main() {
     /// unrelated earlier failure's sentence was shown as the cause. The clear
     /// has to happen HERE, at the entry point, not inside the service.
     late int beginMutationCalls;
+    late List<(String, String, String)> inviteCalls;
+    late List<String> inviteNotInvited;
+    late bool inviteThrows;
 
     setUpAll(() async {
       // Register fallback values for mocktail
@@ -213,8 +217,6 @@ void main() {
         () => mockParentService.createCollaborativeList(
           name: any(named: 'name'),
           description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
           items: any(named: 'items'),
           categoryIds: any(named: 'categoryIds'),
           allowGuestEditing: any(named: 'allowGuestEditing'),
@@ -272,6 +274,9 @@ void main() {
       // that care set it explicitly.
       confirmedItemCount = 99;
       beginMutationCalls = 0;
+      inviteCalls = [];
+      inviteNotInvited = const [];
+      inviteThrows = false;
       final lifecycleOps = ListLifecycleOperations(
         getCollaborativeLists: () => mockParentService.collaborativeLists,
         getPersonalLists: () => mockParentService.personalLists,
@@ -279,6 +284,11 @@ void main() {
         deleteList: mockParentService.deleteList,
         createPersonalList: mockParentService.createPersonalList,
         confirmPersistedItemCount: (_) async => confirmedItemCount,
+        inviteMembers: (listId, userIds, permission) async {
+          inviteCalls.add((listId, userIds.join(','), permission));
+          if (inviteThrows) throw Exception('callable unreachable');
+          return ListInviteSummary(notInvited: inviteNotInvited);
+        },
       );
 
       final memberOps = ListMemberOperations(
@@ -321,36 +331,90 @@ void main() {
     });
 
     group('List Management', () {
-      test('should create collaborative list', () async {
-        // Act
-        final listId = await operations.createList(
+      test('creates the list with only the owner seated, then invites the '
+          'chosen friends', () async {
+        final created = await operations.createListAndInvite(
           name: 'Ny lista',
           description: 'Test beskrivning',
           memberIds: ['user_456', 'user_789'],
-          memberDisplayNames: {
-            'user_456': 'Anna',
-            'user_789': 'Erik',
-          },
           allowGuestEditing: true,
         );
 
-        // Assert
-        expect(listId, equals('new_list_id'));
+        expect(created.listId, equals('new_list_id'));
+        expect(created.notInvited, isEmpty);
+        // The create call carries no member ids at all, so no path through it
+        // can seat anyone but the creator.
         verify(
           () => mockParentService.createCollaborativeList(
             name: 'Ny lista',
             description: 'Test beskrivning',
-            memberIds: ['user_456', 'user_789'],
-            memberDisplayNames: {
-              'user_456': 'Anna',
-              'user_789': 'Erik',
-            },
             items: null,
             categoryIds: null,
             allowGuestEditing: true,
             autoRemoveCompleted: false,
           ),
         ).called(1);
+        expect(inviteCalls, [
+          ('new_list_id', 'user_456,user_789', 'edit'),
+        ]);
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
+      });
+
+      test('invites as view when guests may not edit', () async {
+        await operations.createListAndInvite(
+          name: 'Ny lista',
+          memberIds: ['user_456'],
+          allowGuestEditing: false,
+        );
+
+        expect(inviteCalls.single.$3, 'view');
+      });
+
+      test('a failed create sends no invitations', () async {
+        when(
+          () => mockParentService.createCollaborativeList(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            items: any(named: 'items'),
+            categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
+            autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        final created = await operations.createListAndInvite(
+          name: 'Ny lista',
+          memberIds: ['user_456'],
+        );
+
+        expect(created.listId, isNull);
+        expect(inviteCalls, isEmpty);
+      });
+
+      test('keeps the new list and names who was not invited', () async {
+        inviteNotInvited = ['user_789'];
+
+        final created = await operations.createListAndInvite(
+          name: 'Ny lista',
+          memberIds: ['user_456', 'user_789'],
+        );
+
+        expect(created.listId, equals('new_list_id'));
+        expect(created.notInvited, ['user_789']);
+      });
+
+      test('keeps the new list when the invite call throws', () async {
+        inviteThrows = true;
+
+        final created = await operations.createListAndInvite(
+          name: 'Ny lista',
+          memberIds: ['user_456', 'user_789'],
+        );
+
+        expect(created.listId, equals('new_list_id'));
+        expect(created.notInvited, ['user_456', 'user_789']);
       });
 
       test('should get all collaborative lists', () {
@@ -403,7 +467,6 @@ void main() {
         final collaborativeId = await operations.convertPersonalToCollaborative(
           personalListId: 'personal_list_1',
           memberIds: ['user_456'],
-          memberDisplayNames: {'user_456': 'Anna'},
           description: 'Now collaborative',
         );
 
@@ -414,14 +477,43 @@ void main() {
           () => mockParentService.createCollaborativeList(
             name: 'Min lista',
             description: 'Now collaborative',
-            memberIds: ['user_456'],
-            memberDisplayNames: {'user_456': 'Anna'},
             items: [],
             categoryIds: null,
             allowGuestEditing: true,
             autoRemoveCompleted: false,
           ),
         ).called(1);
+        verify(() => mockParentService.deleteList('personal_list_1')).called(1);
+        expect(inviteCalls, [
+          ('new_list_id', 'user_456', 'edit'),
+        ]);
+      });
+
+      test('a failed invitation keeps the converted list and names who was '
+          'not invited', () async {
+        inviteNotInvited = ['user_456'];
+
+        final outcome = await operations.convertPersonalToCollaborative(
+          personalListId: 'personal_list_1',
+          memberIds: ['user_456', 'user_789'],
+        );
+
+        expect(outcome.newListId, equals('new_list_id'));
+        expect(outcome.notInvited, ['user_456']);
+        expect(outcome.originalKept, isFalse);
+        verify(() => mockParentService.deleteList('personal_list_1')).called(1);
+      });
+
+      test('an unreachable invite call still converts the list', () async {
+        inviteThrows = true;
+
+        final outcome = await operations.convertPersonalToCollaborative(
+          personalListId: 'personal_list_1',
+          memberIds: ['user_456'],
+        );
+
+        expect(outcome.newListId, equals('new_list_id'));
+        expect(outcome.notInvited, ['user_456']);
         verify(() => mockParentService.deleteList('personal_list_1')).called(1);
       });
 
@@ -572,7 +664,6 @@ void main() {
               .convertPersonalToCollaborative(
                 personalListId: 'personal_list_1',
                 memberIds: ['user_456'],
-                memberDisplayNames: {'user_456': 'Anna'},
               );
 
           expect(collaborativeId.newListId, equals('new_list_id'));
@@ -594,12 +685,11 @@ void main() {
       test(
         'an early refusal still clears any parked failure reason',
         () async {
-          // "already a member" — returns false without touching the service.
-          final result = await operations.addMember(
+          // Removing yourself here is refused (use leaveList) — false without touching the
+          // service.
+          final result = await operations.removeMember(
             listId: 'collab_list_1',
-            userId: 'user_456',
-            userDisplayName: 'Existing User',
-            permission: SharedListPermission.edit,
+            userId: 'user_123',
           );
 
           expect(result, isFalse);
@@ -615,54 +705,6 @@ void main() {
           );
         },
       );
-
-      test('should add member to list', () async {
-        // Act
-        final result = await operations.addMember(
-          listId: 'collab_list_1',
-          userId: 'user_999',
-          userDisplayName: 'New User',
-          permission: SharedListPermission.edit,
-        );
-
-        // Assert
-        expect(result, isTrue);
-        verify(
-          () => mockParentService.updateSharedListMembership(any(), any()),
-        ).called(1);
-      });
-
-      test('should not add existing member', () async {
-        // Act
-        final result = await operations.addMember(
-          listId: 'collab_list_1',
-          userId: 'user_456',
-          userDisplayName: 'Existing User',
-          permission: SharedListPermission.edit,
-        );
-
-        // Assert
-        expect(result, isFalse);
-        verifyNever(
-          () => mockParentService.updateSharedListMembership(any(), any()),
-        );
-      });
-
-      test('should not add member without permission', () async {
-        // Act
-        final result = await operations.addMember(
-          listId: 'shared_list_2',
-          userId: 'user_999',
-          userDisplayName: 'New User',
-          permission: SharedListPermission.edit,
-        );
-
-        // Assert
-        expect(result, isFalse);
-        verifyNever(
-          () => mockParentService.updateSharedListMembership(any(), any()),
-        );
-      });
 
       test('should remove member from list', () async {
         // Act
@@ -742,23 +784,6 @@ void main() {
           expect(base.id, updated.id);
         });
 
-        test('adding a member carries the new key and the pre-change '
-            'base', () async {
-          await operations.addMember(
-            listId: 'collab_list_1',
-            userId: 'user_999',
-            userDisplayName: 'New User',
-            permission: SharedListPermission.view,
-          );
-
-          final [updated, base] = membershipCalls.single;
-          expect(
-            updated.memberPermissions['user_999'],
-            SharedListPermission.view,
-          );
-          expect(base.memberPermissions.keys, isNot(contains('user_999')));
-        });
-
         test('a permission change carries the new value', () async {
           await operations.updateMemberPermission(
             listId: 'collab_list_1',
@@ -790,14 +815,6 @@ void main() {
             await operations.removeMember(
               listId: 'collab_list_1',
               userId: 'user_456',
-            ),
-            isFalse,
-          );
-          expect(
-            await operations.addMember(
-              listId: 'collab_list_1',
-              userId: 'user_999',
-              userDisplayName: 'New User',
             ),
             isFalse,
           );

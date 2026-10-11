@@ -8532,7 +8532,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingConvertToCollaborativeDescription =>
-      'Select friends to share this list with. They will be able to add and check off items in real time.';
+      'Select friends to invite to this list. They join once they accept, and can then add and check off items in real time.';
 
   @override
   String get shoppingConvertToPersonalTitle => 'Make personal list';
@@ -19692,6 +19692,117 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingMyContentDecisions => 'Loading the decisions …';
+
+  @override
+  String get listInvitationsSection => 'Invitations';
+
+  @override
+  String listInvitationMetaEdit(String name) {
+    return '$name invites you to their shared list. You can edit it.';
+  }
+
+  @override
+  String listInvitationMetaView(String name) {
+    return '$name invites you to their shared list. You can view it.';
+  }
+
+  @override
+  String get listInvitationUnknownSender => 'Someone';
+
+  @override
+  String get listInvitationDecline => 'Decline';
+
+  @override
+  String get listInvitationJoin => 'Join';
+
+  @override
+  String get listInvitationMoreActions => 'More options for the invitation';
+
+  @override
+  String listInvitationBlockSender(String name) {
+    return 'Block $name';
+  }
+
+  @override
+  String listInvitationJoined(String listName) {
+    return 'You joined $listName';
+  }
+
+  @override
+  String get listInvitationDeclinedNotice => 'Invitation declined';
+
+  @override
+  String get listInvitationNoLongerValid => 'The invitation is no longer valid';
+
+  @override
+  String get listInvitationActionFailed =>
+      'Could not respond to the invitation';
+
+  @override
+  String get listInviteHeading => 'Invite friends';
+
+  @override
+  String listInviteButtonCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends',
+      one: '1 friend',
+    );
+    return 'Invite $_temp0';
+  }
+
+  @override
+  String listInviteSentOne(String name) {
+    return 'Invitation sent. $name joins once they accept.';
+  }
+
+  @override
+  String listInviteSentMany(int count) {
+    return '$count invitations sent. They join once they accept.';
+  }
+
+  @override
+  String listInviteNotInvited(String names) {
+    return '$names could not be invited right now.';
+  }
+
+  @override
+  String get listInviteFailed => 'The invitation could not be sent';
+
+  @override
+  String get listInvitePendingHeading => 'Invited';
+
+  @override
+  String get listInviteNotAnsweredYet => 'Has not answered yet';
+
+  @override
+  String get listInviteStatusPending => 'Waiting';
+
+  @override
+  String get listInviteRevoke => 'Take back invitation';
+
+  @override
+  String get listInviteRevoked => 'Invitation taken back';
+
+  @override
+  String get listInviteRevokeFailed => 'The invitation could not be taken back';
+
+  @override
+  String get listInviteAlreadyInvited => 'Already invited';
+
+  @override
+  String get listInviteConvertedInvited =>
+      'The list is shared. Your friends join once they accept.';
+
+  @override
+  String listInviteConvertedSomeNotInvited(String names) {
+    return 'The list is shared, but $names could not be invited right now.';
+  }
+
+  @override
+  String get listInviteShareSent =>
+      'Invitation sent. Recipients join once they accept.';
 
   @override
   String get authContinueWithGoogle => 'Continue with Google';

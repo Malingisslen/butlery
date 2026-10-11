@@ -14260,7 +14260,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingConvertToCollaborativeDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.'**
+  /// **'Välj vänner att bjuda in till listan. De kommer med när de har tackat ja och kan sedan lägga till och bocka av varor i realtid.'**
   String get shoppingConvertToCollaborativeDescription;
 
   /// No description provided for @shoppingConvertToPersonalTitle.
@@ -32079,6 +32079,174 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar besluten …'**
   String get loadingMyContentDecisions;
+
+  /// Overline above the pending shared shopping list invitations on the shopping tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudningar'**
+  String get listInvitationsSection;
+
+  /// Meta line of a list invitation that seats the invitee with edit access
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} bjuder in dig till sin delade lista. Du kan redigera den.'**
+  String listInvitationMetaEdit(String name);
+
+  /// Meta line of a list invitation that seats the invitee with view access
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} bjuder in dig till sin delade lista. Du kan se den.'**
+  String listInvitationMetaView(String name);
+
+  /// Stand-in for the inviter's name when the invitation carries none
+  ///
+  /// In sv, this message translates to:
+  /// **'Någon'**
+  String get listInvitationUnknownSender;
+
+  /// Text button that declines a shared list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Neka'**
+  String get listInvitationDecline;
+
+  /// Filled button that accepts a shared list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med'**
+  String get listInvitationJoin;
+
+  /// Accessibility label of the three-dot button on a list invitation card
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för inbjudan'**
+  String get listInvitationMoreActions;
+
+  /// Danger row in the sheet on a list invitation card
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockera {name}'**
+  String listInvitationBlockSender(String name);
+
+  /// Snackbar after accepting a list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är med i {listName}'**
+  String listInvitationJoined(String listName);
+
+  /// Snackbar after declining a list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan nekad'**
+  String get listInvitationDeclinedNotice;
+
+  /// Message when the server refuses a list invitation; the card is removed
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan gäller inte längre'**
+  String get listInvitationNoLongerValid;
+
+  /// Generic failure when answering a list invitation; the card stays
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att svara på inbjudan'**
+  String get listInvitationActionFailed;
+
+  /// Heading above the friend picker in the shopping list member dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in vänner'**
+  String get listInviteHeading;
+
+  /// Button that sends list invitations to the selected friends
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in {count, plural, =1{1 vän} other{{count} vänner}}'**
+  String listInviteButtonCount(int count);
+
+  /// Snackbar after one list invitation went out
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan skickad. {name} kommer med när hen har tackat ja.'**
+  String listInviteSentOne(String name);
+
+  /// Snackbar after several list invitations went out
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} inbjudningar skickade. De kommer med när de har tackat ja.'**
+  String listInviteSentMany(int count);
+
+  /// One line for everyone a list invitation was refused for (not a friend, blocked, declined); never says which, so a block is not revealed
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} kunde inte bjudas in just nu.'**
+  String listInviteNotInvited(String names);
+
+  /// Failure when the send-list-invitations call did not go through
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att skicka inbjudan'**
+  String get listInviteFailed;
+
+  /// Heading of the pending invitations in the shopping list member dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudna'**
+  String get listInvitePendingHeading;
+
+  /// Subtitle of a pending list invitation row
+  ///
+  /// In sv, this message translates to:
+  /// **'Har inte svarat än'**
+  String get listInviteNotAnsweredYet;
+
+  /// Status label of a pending list invitation row
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar'**
+  String get listInviteStatusPending;
+
+  /// Button that withdraws a pending list invitation the user sent
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta tillbaka inbjudan'**
+  String get listInviteRevoke;
+
+  /// Snackbar after withdrawing a list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan tillbakatagen'**
+  String get listInviteRevoked;
+
+  /// Failure when withdrawing a list invitation
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att ta tillbaka inbjudan'**
+  String get listInviteRevokeFailed;
+
+  /// Subtitle of a friend who already has a pending invitation to the list; not selectable
+  ///
+  /// In sv, this message translates to:
+  /// **'Redan inbjuden'**
+  String get listInviteAlreadyInvited;
+
+  /// Snackbar after converting a personal list to a shared one and inviting friends
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan är delad. Vännerna kommer med när de har tackat ja.'**
+  String get listInviteConvertedInvited;
+
+  /// Message after converting a list when some invitations were not sent; the list stays converted
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan är delad, men {names} kunde inte bjudas in just nu.'**
+  String listInviteConvertedSomeNotInvited(String names);
+
+  /// Snackbar after sharing a shopping list live: the recipients are invited, not added
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.'**
+  String get listInviteShareSent;
 
   /// BUT-916: Google sign-in button on the sign-in screen
   ///
