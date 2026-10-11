@@ -18,7 +18,7 @@ const variantCeilings = {
   'raw_button_style_from': 62,
   'raw_snackbars': 21,
   'own_empty_states': 7,
-  'card_surface_overrides': 11,
+  'card_surface_overrides': 9,
   'chevron_sizes': 5,
   'sheet_shape_overrides': 11,
   'direct_font_weights': 119,

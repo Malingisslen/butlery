@@ -259,9 +259,7 @@ class ButleryListRow extends StatelessWidget {
               ),
             ] else if (!info) ...[
               const SizedBox(width: AppDimensions.spacingSm),
-              ExcludeSemantics(
-                child: ButleryIcon(ButleryIcons.chevronRight, color: mutedText),
-              ),
+              const ButleryChevron(),
             ],
           ],
         ),
@@ -297,6 +295,24 @@ class ButleryListRow extends StatelessWidget {
               : onTap,
           child: content,
         ),
+      ),
+    );
+  }
+}
+
+/// The chevron at the end of a row that leads somewhere: 12 px in
+/// text.secondary (Komponentark v1:36 "listradschevron är 12 px"). Drawn, not
+/// read: the row it sits in is the control and carries the meaning.
+class ButleryChevron extends StatelessWidget {
+  const ButleryChevron({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: ButleryIcon(
+        ButleryIcons.chevronRight,
+        size: AppDimensions.iconSizeXs,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }

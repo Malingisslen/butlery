@@ -236,12 +236,7 @@ class _ProfileRowState extends State<_ProfileRow> {
                     ],
                   ),
                 ),
-                ExcludeSemantics(
-                  child: ButleryIcon(
-                    ButleryIcons.chevronRight,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
+                const ButleryChevron(),
               ],
             ),
           ),
@@ -314,12 +309,7 @@ class _SyncBand extends StatelessWidget {
                         ),
                         const SizedBox(width: AppDimensions.spacingSm),
                       ],
-                      ExcludeSemantics(
-                        child: ButleryIcon(
-                          ButleryIcons.chevronRight,
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
+                      const ButleryChevron(),
                     ],
                   ),
                 ),

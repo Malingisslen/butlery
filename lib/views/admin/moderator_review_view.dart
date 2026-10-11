@@ -13,9 +13,11 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
+import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -151,99 +153,95 @@ class _ReportCard extends StatelessWidget {
         );
     final cs = Theme.of(context).colorScheme;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: const RoundedRectangleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${report.contentType == ContentType.menuDish ? context.l10n.moderatorContentTypeMenuDish : report.contentType.wireName.toUpperCase()} · ${report.contentId}',
-                    style: AppTextStyles.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                _StatusPill(status: report.status),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text(
-              '${context.l10n.moderatorReasonLabel}: '
-              '${reportReasonDisplay(context.l10n, report.reason)}',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            if (report.description != null && report.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
                 child: Text(
-                  report.description!,
-                  style: AppTextStyles.bodySmall,
+                  '${report.contentType == ContentType.menuDish ? context.l10n.moderatorContentTypeMenuDish : report.contentType.wireName.toUpperCase()} · ${report.contentId}',
+                  style: AppTextStyles.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text(
-              report.reporterErased
-                  ? context.l10n.moderatorReporterErased
-                  : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
-              style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.onSurfaceVariant,
+              StatusPill(label: report.status.wireName),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            '${context.l10n.moderatorReasonLabel}: '
+            '${reportReasonDisplay(context.l10n, report.reason)}',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          if (report.description != null && report.description!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              child: Text(
+                report.description!,
+                style: AppTextStyles.bodySmall,
               ),
             ),
-            if (report.contentType == ContentType.menuDish)
-              _MenuDishNotes(
-                claimedCreatorIsReporter: evidence is ReportEvidenceLoaded
-                    ? evidence.evidence.claimedCreatorIsReporter
-                    : null,
-              ),
-            if (evidence is! ReportEvidenceLoading) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
-              _EvidenceSection(state: evidence),
-            ],
-            // BUT-1609: moderation on a minor's account carries extra care
-            // (GDPR/child-safety) — surface it before any action is taken.
-            if (vm.isMinorOwner(report)) ...[
-              const SizedBox(height: AppDimensions.spacingXs),
-              AdminBadge(
-                label: context.l10n.moderatorMinorAccountBadge,
-                icon: ButleryIcons.shield,
-              ),
-            ],
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            report.reporterErased
+                ? context.l10n.moderatorReporterErased
+                : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
+            style: AppTextStyles.metadataEmphasized.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          if (report.contentType == ContentType.menuDish)
+            _MenuDishNotes(
+              claimedCreatorIsReporter: evidence is ReportEvidenceLoaded
+                  ? evidence.evidence.claimedCreatorIsReporter
+                  : null,
+            ),
+          if (evidence is! ReportEvidenceLoading) ...[
             const SizedBox(height: AppDimensions.spacingSm),
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingXs,
-              children: [
-                if (report.status != ReportStatus.closed)
-                  OutlinedButton(
-                    onPressed: () => _advance(context, vm),
-                    child: Text(context.l10n.moderatorActionAdvance),
-                  ),
-                OutlinedButton(
-                  onPressed: () => _confirmTakeDown(context, vm),
-                  child: Text(
-                    vm.isReversibleAction(report)
-                        ? context.l10n.moderatorActionHide
-                        : report.contentType == ContentType.menuDish
-                        ? context.l10n.moderatorActionRemoveDish
-                        : context.l10n.moderatorActionDelete,
-                  ),
-                ),
-                if (report.status != ReportStatus.closed)
-                  TextButton(
-                    onPressed: () => _close(context, vm),
-                    child: Text(context.l10n.moderatorActionClose),
-                  ),
-              ],
+            _EvidenceSection(state: evidence),
+          ],
+          // BUT-1609: moderation on a minor's account carries extra care
+          // (GDPR/child-safety) — surface it before any action is taken.
+          if (vm.isMinorOwner(report)) ...[
+            const SizedBox(height: AppDimensions.spacingXs),
+            AdminBadge(
+              label: context.l10n.moderatorMinorAccountBadge,
+              icon: ButleryIcons.shield,
             ),
           ],
-        ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Wrap(
+            spacing: AppDimensions.spacingSm,
+            runSpacing: AppDimensions.spacingXs,
+            children: [
+              if (report.status != ReportStatus.closed)
+                OutlinedButton(
+                  onPressed: () => _advance(context, vm),
+                  child: Text(context.l10n.moderatorActionAdvance),
+                ),
+              OutlinedButton(
+                onPressed: () => _confirmTakeDown(context, vm),
+                child: Text(
+                  vm.isReversibleAction(report)
+                      ? context.l10n.moderatorActionHide
+                      : report.contentType == ContentType.menuDish
+                      ? context.l10n.moderatorActionRemoveDish
+                      : context.l10n.moderatorActionDelete,
+                ),
+              ),
+              if (report.status != ReportStatus.closed)
+                TextButton(
+                  onPressed: () => _close(context, vm),
+                  child: Text(context.l10n.moderatorActionClose),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -444,29 +442,6 @@ class _EvidenceSection extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  final ReportStatus status;
-  const _StatusPill({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.statusPillPadding,
-      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
-      // v1:297 draws the pill text at 0.5 px tracking.
-      decoration: BoxDecoration(
-        color: cs.secondaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      ),
-      child: Text(
-        status.wireName,
-        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
-      ),
     );
   }
 }
