@@ -55,7 +55,7 @@ class ProfileDialogs {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.signOutPendingBody),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               ...pendingChangeLines(dialogContext, pending),
             ],
           ),
@@ -120,7 +120,7 @@ class ProfileDialogs {
         child: Dialog(
           key: const ValueKey('accountDeletion.waiting'),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(AppDimensions.space24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -128,7 +128,7 @@ class ProfileDialogs {
                 PlateLineMessage(
                   message: dialogContext.l10n.accountDeletingProgress,
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 Text(
                   dialogContext.l10n.accountDeletionWaitNotice,
                   style: AppTextStyles.bodySmall.copyWith(
@@ -201,9 +201,9 @@ class ProfileDialogs {
                 l10n.accountDeletionPartialHeading(failedCount),
                 style: AppTextStyles.bodyBold,
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               Text(l10n.accountDeletionPartialBody(failedCount)),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               if (auditLogId != null) ...[
                 Text(
                   l10n.accountDeletionPartialAuditIdLabel,
@@ -300,26 +300,26 @@ class ProfileDialogs {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.profileDeleteWarningTitle, style: AppTextStyles.bodyBold),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text('• ${l10n.profileDeleteWarningRecipes}'),
           Text('• ${l10n.profileDeleteWarningMenus}'),
           Text('• ${l10n.profileDeleteWarningShoppingLists}'),
           Text('• ${l10n.profileDeleteWarningFriends}'),
           Text('• ${l10n.profileDeleteWarningSharedContent}'),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             l10n.profileDeleteIrreversible,
             style: AppTextStyles.bodyBold.copyWith(
               color: Theme.of(context).colorScheme.error,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(l10n.profileDeleteNoRecallWindow),
           if (mayHaveOpenReview) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(l10n.profileDeleteAccountMayHaveReview),
           ],
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           LabeledField(
             label: l10n.profileDeleteReasonLabel,
             child: TextField(
@@ -365,7 +365,7 @@ class ProfileDialogs {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.profileEnterPasswordToConfirm),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             LabeledField(
               label: l10n.profilePassword,
               child: TextField(
@@ -483,11 +483,11 @@ class ProfileDialogs {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(what),
-                      const SizedBox(height: AppDimensions.spacingMd),
+                      const SizedBox(height: AppDimensions.space16),
                       Text(why),
-                      const SizedBox(height: AppDimensions.spacingMd),
+                      const SizedBox(height: AppDimensions.space16),
                       Text(howLong),
-                      const SizedBox(height: AppDimensions.spacingMd),
+                      const SizedBox(height: AppDimensions.space16),
                       Text(
                         l10n.profileDeletionNoticeRights,
                         style: AppTextStyles.bodySmall,

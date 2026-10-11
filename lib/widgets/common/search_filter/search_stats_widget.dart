@@ -31,10 +31,10 @@ class SearchStatsWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
       ),
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -46,11 +46,11 @@ class SearchStatsWidget extends StatelessWidget {
             size: AppDimensions.iconSizeM,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Expanded(
             child: Text(
               statsText,
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),

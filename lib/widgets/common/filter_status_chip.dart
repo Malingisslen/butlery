@@ -22,8 +22,8 @@ class FilterStatusChip extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
       ),
       // A neutral info chip: the raised surface with no border (B83-2).
       decoration: BoxDecoration(
@@ -37,18 +37,18 @@ class FilterStatusChip extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               'Filter: ${filterParts.join(' • ')}',
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
             ),
           ),
           Text(
             '$selectedCount valda',
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),

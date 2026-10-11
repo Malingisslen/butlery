@@ -69,9 +69,9 @@ class RateLimitDialog extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildRetryInfo(context),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           _buildAlternativeActions(context),
         ],
       ),
@@ -102,7 +102,7 @@ class RateLimitDialog extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -170,7 +170,7 @@ class RateLimitDialog extends StatelessWidget {
       children: [
         Text(
           context.l10n.dialogAlternatives,
-          style: AppTextStyles.metadataEmphasized.copyWith(
+          style: AppTextStyles.labelMedium.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -246,7 +246,7 @@ class _ActionTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            padding: const EdgeInsets.all(AppDimensions.space8),
             decoration: BoxDecoration(
               border: Border.all(color: cs.outlineVariant),
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -258,7 +258,7 @@ class _ActionTile extends StatelessWidget {
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeL,
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

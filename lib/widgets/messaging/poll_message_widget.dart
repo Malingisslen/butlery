@@ -64,19 +64,18 @@ class PollMessageWidget extends StatelessWidget {
                 '📊',
                 style: TextStyle(fontSize: AppDimensions.emojiGlyphBody),
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Expanded(
                 child: Text(
                   poll.question,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: textColor,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
 
           // Options
           ...poll.options.map(
@@ -90,7 +89,7 @@ class PollMessageWidget extends StatelessWidget {
           ),
 
           // Vote count + status
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Row(
             children: [
               // BUT-1908: "0 röster" is a claim about the votes, and it must
@@ -115,7 +114,7 @@ class PollMessageWidget extends StatelessWidget {
                   style: AppTextStyles.labelSmall.copyWith(color: subtleColor),
                 ),
               if (!poll.isActive) ...[
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Text(
                   context.l10n.pollClosed,
                   style: AppTextStyles.labelSmall.copyWith(
@@ -128,7 +127,7 @@ class PollMessageWidget extends StatelessWidget {
           ),
 
           if (votesUnread) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               voteHydration == PollVoteHydration.capped
                   ? context.l10n.pollVotesNotLoadedHint
@@ -148,7 +147,7 @@ class PollMessageWidget extends StatelessWidget {
               poll.creatorId == currentUserId &&
               !votesUnread &&
               onClose != null) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Semantics(
               button: true,
               child: GestureDetector(
@@ -157,7 +156,6 @@ class PollMessageWidget extends StatelessWidget {
                   context.l10n.pollCloseAction,
                   style: AppTextStyles.labelSmall.copyWith(
                     color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
-                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -182,7 +180,7 @@ class PollMessageWidget extends StatelessWidget {
     final isRecipeOption = option.hasRecipe;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
         label: context.l10n.a11yPollVoteOption,
         button: true,
@@ -192,8 +190,8 @@ class PollMessageWidget extends StatelessWidget {
           onTap: poll.isActive ? () => onVote?.call(option.id) : null,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingS,
-              vertical: AppDimensions.spacingXs + 2,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4 + 2,
             ),
             decoration: BoxDecoration(
               color: isFromCurrentUser
@@ -270,7 +268,7 @@ class PollMessageWidget extends StatelessWidget {
             if (hasVoted)
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingXs,
+                  end: AppDimensions.space4,
                 ),
                 child: ButleryIcon(
                   ButleryIcons.circleCheck,
@@ -283,7 +281,6 @@ class PollMessageWidget extends StatelessWidget {
                 option.text,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: textColor,
-                  fontWeight: hasVoted ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
@@ -292,7 +289,6 @@ class PollMessageWidget extends StatelessWidget {
                 '${(percentage * 100).round()}%',
                 style: AppTextStyles.labelSmall.copyWith(
                   color: _percentColor(cs, subtleColor),
-                  fontWeight: FontWeight.w600,
                 ),
               ),
           ],
@@ -342,7 +338,7 @@ class PollMessageWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +349,7 @@ class PollMessageWidget extends StatelessWidget {
                       if (hasVoted)
                         Padding(
                           padding: const EdgeInsetsDirectional.only(
-                            end: AppDimensions.spacingXs,
+                            end: AppDimensions.space4,
                           ),
                           child: ButleryIcon(
                             ButleryIcons.circleCheck,
@@ -368,9 +364,6 @@ class PollMessageWidget extends StatelessWidget {
                           option.text,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: textColor,
-                            fontWeight: hasVoted
-                                ? FontWeight.w600
-                                : FontWeight.normal,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -381,7 +374,7 @@ class PollMessageWidget extends StatelessWidget {
                   if (portions != null)
                     Padding(
                       padding: const EdgeInsets.only(
-                        top: AppDimensions.spacingXs,
+                        top: AppDimensions.space4,
                       ),
                       child: Text(
                         '$portions ${context.l10n.portionsUnit}',
@@ -395,7 +388,7 @@ class PollMessageWidget extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         // Progress bar + percentage row
         SizedBox(
           height: 12,
@@ -431,12 +424,11 @@ class PollMessageWidget extends StatelessWidget {
         ),
         if (totalVotes > 0)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: Text(
               '${(percentage * 100).round()}%',
               style: AppTextStyles.labelSmall.copyWith(
                 color: _percentColor(cs, subtleColor),
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),

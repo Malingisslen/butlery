@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:65fe0c718e80881e7d8a9680030b0dbcf103a2a105e97eb35775d93d95ffcdf3 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:a8e804ef61d4a3c2393eb7bbf11b10c6239157a5f4cb3622bd6a3c8c06116d55 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -211,7 +211,6 @@ class AppTextStyles {
   static TextStyle get appBarTitle => headlineSmall;
   static TextStyle get headerTitle => headlineSmall;
   static TextStyle get mainViewTitle => headlineBold;
-  static TextStyle get sectionTitleStyle => sectionHeader;
   static TextStyle get emptyStateBody => bodyMedium;
   static TextStyle get bodyMediumMuted => bodyMedium;
   static TextStyle get titleMediumMuted => titleMedium;
@@ -245,6 +244,10 @@ class AppTextStyles {
   static TextStyle get titleBold => titleMedium.copyWith(fontWeight: FontWeight.w700);
   static TextStyle get bodyBold => bodyMedium.copyWith(fontWeight: FontWeight.w700);
   static TextStyle get bodyLargeBold => bodyLarge.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get bodySmallBold => bodySmall.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get labelMediumBold => labelMedium.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get titleLargeBold => titleLarge.copyWith(fontWeight: FontWeight.w700);
+  static TextStyle get captionBold => captionBase.copyWith(fontWeight: FontWeight.w700);
   static TextStyle get bodyMediumError => bodyMedium.copyWith(color: AppColors.error);
   static TextStyle get bodyMediumSuccess => bodyMedium.copyWith(color: AppColors.success);
   static TextStyle get bodyMediumWarning => bodyMedium.copyWith(color: AppColors.warningText);
@@ -254,7 +257,6 @@ class AppTextStyles {
   static TextStyle get snackbarText => bodyMedium.copyWith(color: AppColors.neutralLight);
   static TextStyle get buttonTextLight => labelLarge.copyWith(color: AppColors.textOnPrimary);
   static TextStyle get headerCountBadge => labelMedium.copyWith(color: AppColors.rustLight);
-  static TextStyle get sectionLabel => overline.copyWith(color: AppColors.onWarningContainer);
   static TextStyle get subpageTitle => labelLarge.copyWith(fontWeight: FontWeight.w700);
 
   /// Material 3-TextTheme. Färg utelämnad — M3 lägger på colorScheme.onSurface.

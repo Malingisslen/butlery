@@ -249,9 +249,9 @@ class ResponsiveWrap extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultSpacing = Breakpoints.valueFor(
       context: context,
-      mobile: AppDimensions.spacingSm,
-      tablet: AppDimensions.spacingMd,
-      desktop: AppDimensions.spacingMd,
+      mobile: AppDimensions.space8,
+      tablet: AppDimensions.space16,
+      desktop: AppDimensions.space16,
     );
 
     return Wrap(

@@ -63,8 +63,8 @@ class CollectionInsightsCard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingLg,
-              vertical: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space24,
+              vertical: AppDimensions.space8,
             ),
             child: recipes.length < 3
                 ? _buildInsufficientData(context)
@@ -96,14 +96,14 @@ class CollectionInsightsCard extends StatelessWidget {
         for (final entry in dietary)
           _DietaryBar(label: entry.label, fraction: entry.fraction),
         if (topCuisines.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.collectionInsightsTopCuisines,
             style: AppTextStyles.labelMedium.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           for (final cuisine in topCuisines)
             Padding(
               padding: const EdgeInsets.only(bottom: AppDimensions.space4),
@@ -115,7 +115,7 @@ class CollectionInsightsCard extends StatelessWidget {
               ),
             ),
         ],
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
       ],
     );
   }
@@ -182,7 +182,7 @@ class _DietaryBar extends StatelessWidget {
     final percent = (fraction * 100).round();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

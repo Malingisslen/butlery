@@ -20,7 +20,7 @@ class LegalContactFooter extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         border: Border(
@@ -37,7 +37,7 @@ class LegalContactFooter extends StatelessWidget {
             style: AppTextStyles.bodyBold,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           ActionButtons.primaryButton(
             context,
             label: context.l10n.privacyContactUs,

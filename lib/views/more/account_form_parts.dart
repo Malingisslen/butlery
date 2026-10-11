@@ -33,7 +33,7 @@ class AccountFormButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingL),
+      padding: const EdgeInsets.only(top: AppDimensions.space12),
       child: BusyButtonSemantics(
         busy: busy,
         name: label,

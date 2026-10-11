@@ -44,7 +44,7 @@ class GroupCard {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall,
               ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               group.summary,
               style: AppTextStyles.bodySmall.copyWith(

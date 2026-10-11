@@ -52,7 +52,7 @@ class ModeratorEvidenceSection extends StatelessWidget {
       children: [
         Text(
           heading,
-          style: AppTextStyles.metadataEmphasized.copyWith(
+          style: AppTextStyles.labelMedium.copyWith(
             color: cs.onSurfaceVariant,
           ),
         ),
@@ -61,7 +61,7 @@ class ModeratorEvidenceSection extends StatelessWidget {
         else ...[
           for (final (field, value) in evidence.text)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              padding: const EdgeInsets.only(top: AppDimensions.space4),
               child: Text(
                 value,
                 key: ValueKey('evidence-$field'),
@@ -70,11 +70,11 @@ class ModeratorEvidenceSection extends StatelessWidget {
             ),
           if (evidence.truncated)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              padding: const EdgeInsets.only(top: AppDimensions.space4),
               child: Text(l10n.moderatorEvidenceTruncated, style: muted),
             ),
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: Text(l10n.moderatorEvidenceTextOnly, style: muted),
           ),
         ],

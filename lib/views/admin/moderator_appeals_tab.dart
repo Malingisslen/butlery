@@ -42,7 +42,7 @@ class ModeratorAppealsTab extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       itemCount: vm.appeals.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
       itemBuilder: (_, i) => _AppealCard(appeal: vm.appeals[i]),
@@ -72,7 +72,7 @@ class _AppealCard extends StatelessWidget {
     final decidedAt = appeal.decidedAt;
     final createdAt = appeal.createdAt;
     return StyledCard(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -92,7 +92,7 @@ class _AppealCard extends StatelessWidget {
                   ),
             style: muted,
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           // Untrusted user text: plain Text only.
           Text(appeal.text, style: AppTextStyles.bodyMedium),
           if (createdAt != null)
@@ -102,7 +102,7 @@ class _AppealCard extends StatelessWidget {
               ),
               style: muted,
             ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           OutlinedButton(
             onPressed: () => _answer(context),
             child: Text(l10n.moderatorAppealAnswerButton),
@@ -163,10 +163,10 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
         widget.appeal.decision == ModeratorDecision.contentRemoved;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.paddingM,
+        AppDimensions.space12,
         0,
-        AppDimensions.paddingM,
-        AppDimensions.paddingM,
+        AppDimensions.space12,
+        AppDimensions.space12,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -194,7 +194,7 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
           ),
           if (_choice == AppealStatus.reversed && removed)
             Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               color: cs.secondaryContainer,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +210,7 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
                 ],
               ),
             ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           FilledButton(
             onPressed: () => Navigator.pop(context, _choice),
             child: Text(l10n.moderatorAnswerSubmit),

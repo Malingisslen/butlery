@@ -62,7 +62,7 @@ class FriendRequestCard {
           onTap: () => onSelectionChanged(!isSelected),
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Column(
               children: [
                 Row(
@@ -79,7 +79,7 @@ class FriendRequestCard {
                       imageUrl: avatarUrl,
                       displayName: displayName,
                     ),
-                    const SizedBox(width: AppDimensions.spacingL),
+                    const SizedBox(width: AppDimensions.space12),
 
                     // Request info
                     Expanded(
@@ -101,7 +101,7 @@ class FriendRequestCard {
                             ),
                           ),
                           if (request.message?.isNotEmpty == true) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
+                            const SizedBox(height: AppDimensions.space4),
                             Container(
                               padding: const EdgeInsets.all(
                                 AppDimensions.space4,
@@ -122,7 +122,7 @@ class FriendRequestCard {
                               ),
                             ),
                           ],
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             request.timeAgoText,
                             style: AppTextStyles.bodySmall.copyWith(
@@ -139,7 +139,7 @@ class FriendRequestCard {
 
                 // Actions (not shown during bulk selection)
                 if (!isSelected) ...[
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   // Acceptera first, then the decline action, in the order
                   // drawn in Skarmar v12 del 3 #forfragningar, which labels
                   // the decline action "Avböj" (del 3:406, :420).
@@ -167,7 +167,7 @@ class FriendRequestCard {
                           expand: true,
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingL),
+                      const SizedBox(width: AppDimensions.space12),
                       Expanded(
                         child: ActionButtons.outlinedButton(
                           context,
@@ -262,7 +262,7 @@ class FriendRequestCard {
           onTap: () => onSelectionChanged(!isSelected),
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Row(
               children: [
                 if (request.isPending)
@@ -272,7 +272,7 @@ class FriendRequestCard {
                   )
                 else
                   const SizedBox(
-                    width: AppDimensions.spacingXxxl,
+                    width: AppDimensions.space24,
                   ), // Placeholder for alignment
 
                 const SizedBox(width: AppDimensions.space4),
@@ -283,7 +283,7 @@ class FriendRequestCard {
                   imageUrl: avatarUrl,
                   displayName: displayName,
                 ),
-                const SizedBox(width: AppDimensions.spacingL),
+                const SizedBox(width: AppDimensions.space12),
 
                 // Request info
                 Expanded(
@@ -305,7 +305,7 @@ class FriendRequestCard {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Row(
                         children: [
                           ButleryIcon(
@@ -313,10 +313,10 @@ class FriendRequestCard {
                             size: AppDimensions.iconSizeS,
                             color: statusColor,
                           ),
-                          const SizedBox(width: AppDimensions.spacingXs),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             statusText,
-                            style: AppTextStyles.metadataEmphasized.copyWith(
+                            style: AppTextStyles.labelMedium.copyWith(
                               color: statusColor,
                             ),
                           ),

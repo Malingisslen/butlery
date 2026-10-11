@@ -152,7 +152,7 @@ class ShoppingAppBar {
       child: Row(
         children: [
           ButleryIcon(icon, size: AppDimensions.iconSizeM),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Flexible(child: Text(label)),
         ],
       ),

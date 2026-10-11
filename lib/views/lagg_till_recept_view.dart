@@ -33,12 +33,12 @@ class LaggTillReceptView extends StatelessWidget {
       body: Padding(
         padding: ButleryPageBody.margin(
           context,
-          bottom: AppDimensions.spacingLg,
+          bottom: AppDimensions.space24,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             // Quick capture — full-width entry point. Title + subtitle
             // clarify that this saves only name + meal type (no import).
             Semantics(
@@ -53,15 +53,15 @@ class LaggTillReceptView extends StatelessWidget {
                     AppDimensions.buttonHeight,
                   ),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
+                    horizontal: AppDimensions.space16,
+                    vertical: AppDimensions.space12,
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const ButleryIcon(ButleryIcons.zap),
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                     Flexible(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -89,7 +89,7 @@ class LaggTillReceptView extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             // 2x2 grid with 4 import options
             Expanded(
               child: _buildButtonGrid(context),
@@ -104,7 +104,7 @@ class LaggTillReceptView extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate button size to fit a 2x2 grid with spacing
-        const spacing = AppDimensions.spacingMd;
+        const spacing = AppDimensions.space16;
         final buttonWidth = (constraints.maxWidth - spacing) / 2;
         final buttonHeight = (constraints.maxHeight - spacing) / 2;
         final buttonSize = buttonWidth < buttonHeight
@@ -215,7 +215,7 @@ class _AddRecipeButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     );
     Widget content(Color foreground) => Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -224,12 +224,11 @@ class _AddRecipeButton extends StatelessWidget {
             size: AppDimensions.iconSizeXl,
             color: foreground,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             label,
             style: AppTextStyles.labelMedium.copyWith(
               color: foreground,
-              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

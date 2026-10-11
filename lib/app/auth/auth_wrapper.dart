@@ -366,14 +366,14 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
                     color: cs.onSurface,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   l10n.onboardingResumeBody,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
                 SizedBox(
                   width: double.infinity,
                   height: AppDimensions.buttonHeight,
@@ -430,7 +430,7 @@ class _ProfileLoadErrorView extends StatelessWidget {
             ),
             if (onSignOut != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+                padding: const EdgeInsets.only(bottom: AppDimensions.space24),
                 child: TextButton(
                   onPressed: onSignOut,
                   child: Text(context.l10n.profileLogout),

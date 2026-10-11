@@ -55,15 +55,15 @@ class DataExportView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeaderSection(context),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.space32),
                       _buildExportButton(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingLg),
+                      const SizedBox(height: AppDimensions.space24),
                       if (viewModel.isExporting) _buildLoadingState(context),
                       if (viewModel.hasError)
                         _buildErrorState(context, viewModel),
                       if (viewModel.hasExportedData)
                         _buildSuccessState(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.space32),
                       _buildInfoSection(context),
                     ],
                   ),
@@ -92,7 +92,7 @@ class DataExportView extends StatelessWidget {
                   size: AppDimensions.iconSizeXl,
                   color: cs.onSurface,
                 ),
-                const SizedBox(width: AppDimensions.spacingL),
+                const SizedBox(width: AppDimensions.space12),
                 Expanded(
                   child: Text(
                     context.l10n.dataExportDownloadTitle,
@@ -101,7 +101,7 @@ class DataExportView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               context.l10n.dataExportGdprDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -145,7 +145,7 @@ class DataExportView extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         // The export button above carries the plate line and the busy
         // label; this card only says how long it may take.
         child: Column(
@@ -231,10 +231,10 @@ class DataExportView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: AppTextStyles.titleBold),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(body, style: Theme.of(context).textTheme.bodyMedium),
             if (failure == ExportFailure.network) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               Text(
                 l10n.dataExportNoPartialFile,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -243,11 +243,11 @@ class DataExportView extends StatelessWidget {
               ),
             ],
             if (actions.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Wrap(
                 alignment: WrapAlignment.end,
-                spacing: AppDimensions.spacingSm,
-                runSpacing: AppDimensions.spacingSm,
+                spacing: AppDimensions.space8,
+                runSpacing: AppDimensions.space8,
                 children: actions,
               ),
             ],
@@ -291,19 +291,19 @@ class DataExportView extends StatelessWidget {
               size: AppDimensions.iconSizeXxl,
               color: context.modeColors.onSuccessContainer,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               context.l10n.dataExportSuccess,
               style: AppTextStyles.titleBold,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               '${context.l10n.dataExportExportedAt} ${viewModel.exportTimestampText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               '${context.l10n.dataExportFileSize}: ${viewModel.exportSizeText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -324,7 +324,7 @@ class DataExportView extends StatelessWidget {
                   ),
                 ),
                 if (export_helper.canShareFiles) ...[
-                  const SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.space12),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _handleShare(context, viewModel),
@@ -335,7 +335,7 @@ class DataExportView extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             // The file lives only in memory and is cleared when the view is
             // left, and the view says so (produktregler.md:733; Skarmar v12
             // etapp 6 #kontodataexport).
@@ -346,7 +346,7 @@ class DataExportView extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
               icon: const ButleryIcon(ButleryIcons.trash2),
@@ -376,7 +376,7 @@ class DataExportView extends StatelessWidget {
                   color: context.modeColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: Text(
                     context.l10n.dataExportWhatsIncluded,
@@ -385,7 +385,7 @@ class DataExportView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             _buildInfoItem(context, context.l10n.dataExportIncludesProfile),
             _buildInfoItem(context, context.l10n.dataExportIncludesRecipes),
             _buildInfoItem(context, context.l10n.dataExportIncludesFriends),
@@ -394,7 +394,7 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, context.l10n.dataExportIncludesComments),
             _buildInfoItem(context, context.l10n.dataExportIncludesActivity),
             _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               context.l10n.dataExportSharedDataNote,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -419,7 +419,7 @@ class DataExportView extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
           ),

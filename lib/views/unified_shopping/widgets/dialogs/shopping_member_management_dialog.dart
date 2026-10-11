@@ -350,10 +350,10 @@ class _ShoppingMemberManagementDialogState
         children: [
           ButleryIcon(
             ButleryIcons.users,
-            size: AppDimensions.iconSizeAction,
+            size: AppDimensions.iconSizeM,
             color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               context.l10n.shoppingManageSharing,
@@ -370,7 +370,7 @@ class _ShoppingMemberManagementDialogState
             if (_error != null) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                padding: const EdgeInsets.all(AppDimensions.space12),
                 decoration: BoxDecoration(
                   color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
@@ -384,13 +384,13 @@ class _ShoppingMemberManagementDialogState
                   ),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
             ],
             Text(
               context.l10n.shoppingCurrentMembers(allMembers.length),
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Expanded(
               flex: 2,
               child: DecoratedBox(
@@ -421,7 +421,7 @@ class _ShoppingMemberManagementDialogState
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             const Divider(),
             PendingInviteesSection(
               operations: _invitations,
@@ -436,20 +436,20 @@ class _ShoppingMemberManagementDialogState
               context.l10n.listInviteHeading,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             InviteLevelPicker(
               value: _inviteLevel,
               onChanged: _isLoading
                   ? null
                   : (level) => setState(() => _inviteLevel = level),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ButlerySearchBox(
               controller: _searchController,
               hintText: context.l10n.shoppingSearchFriends,
               onChanged: (_) => _updateFilteredFriends(),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Expanded(
               flex: 1,
               child: DecoratedBox(
@@ -480,7 +480,7 @@ class _ShoppingMemberManagementDialogState
               ),
             ),
             if (_selectedFriends.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               SizedBox(
                 width: double.infinity,
                 child: ActionButtons.primaryButton(
@@ -521,9 +521,9 @@ class _ShoppingMemberManagementDialogState
     // theme sets none).
     final nameInset =
         (tileTheme.contentPadding?.resolve(Directionality.of(context)).left ??
-            AppDimensions.spacingMd) +
+            AppDimensions.space16) +
         2 * _avatarRadius +
-        (tileTheme.horizontalTitleGap ?? AppDimensions.spacingMd);
+        (tileTheme.horizontalTitleGap ?? AppDimensions.space16);
 
     final tile = ListTile(
       leading: CircleAvatar(
@@ -573,7 +573,7 @@ class _ShoppingMemberManagementDialogState
           Padding(
             padding: EdgeInsetsDirectional.only(
               start: nameInset,
-              end: AppDimensions.spacingMd,
+              end: AppDimensions.space16,
             ),
             child: PressFill(
               surface: PressSurface.base,
@@ -604,7 +604,7 @@ class _ShoppingMemberManagementDialogState
                           size: AppDimensions.iconSizeS,
                           color: cs.onSurfaceVariant,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(context.l10n.shoppingPermissionView),
                       ],
                     ),
@@ -622,7 +622,7 @@ class _ShoppingMemberManagementDialogState
                               ? cs.secondary
                               : cs.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(context.l10n.shoppingPermissionEdit),
                       ],
                     ),
@@ -636,7 +636,7 @@ class _ShoppingMemberManagementDialogState
                           size: AppDimensions.iconSizeS,
                           color: cs.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(context.l10n.shoppingPermissionAdmin),
                       ],
                     ),

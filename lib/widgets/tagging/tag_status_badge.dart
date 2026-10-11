@@ -91,7 +91,7 @@ class TagStatusBadge extends StatelessWidget {
               ExcludeSemantics(
                 child: Text(
                   label!,
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: onColor,
                   ),
                 ),
@@ -152,7 +152,7 @@ class TagStatusBadgeCompact extends StatelessWidget {
               semanticLabel: null,
             ),
             if (label != null) ...[
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               ExcludeSemantics(
                 child: Text(
                   label!,

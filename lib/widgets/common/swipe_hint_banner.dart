@@ -81,14 +81,14 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
 
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space8,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppDimensions.spacingM,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingXs,
-        AppDimensions.spacingSm,
+        AppDimensions.space8,
+        AppDimensions.space8,
+        AppDimensions.space4,
+        AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         // The information surface, without a border (B83-2b), with the
@@ -103,7 +103,7 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
             size: AppDimensions.iconSizeM,
             color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               widget.message ?? context.l10n.recipeSwipeHintText,

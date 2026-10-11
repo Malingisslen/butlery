@@ -46,8 +46,8 @@ class SystemMessageWidget extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final pill = Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
@@ -69,7 +69,7 @@ class SystemMessageWidget extends StatelessWidget {
             ),
           ),
           if (onDismiss != null) ...[
-            const SizedBox(width: AppDimensions.paddingS),
+            const SizedBox(width: AppDimensions.space8),
             ButleryIcon(
               ButleryIcons.x,
               size: AppDimensions.iconSizeS,
@@ -82,8 +82,8 @@ class SystemMessageWidget extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Center(
         child: onDismiss == null
@@ -147,8 +147,8 @@ class ReplyPreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
+      padding: const EdgeInsets.all(AppDimensions.space8),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       decoration: BoxDecoration(
         color: isFromCurrentUser
             ? AppModeColors.surfaceRaisedOnInk()

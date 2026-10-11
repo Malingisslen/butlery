@@ -36,7 +36,7 @@ class GuestBand extends StatelessWidget {
             borderRadius: radius,
             child: Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingMd,
+                start: AppDimensions.space16,
               ),
               child: Row(
                 children: [
@@ -51,7 +51,7 @@ class GuestBand extends StatelessWidget {
                   ExcludeSemantics(
                     child: Padding(
                       padding: const EdgeInsetsDirectional.only(
-                        start: AppDimensions.spacingSm,
+                        start: AppDimensions.space8,
                       ),
                       child: Text(
                         '·',
@@ -75,7 +75,7 @@ class GuestBand extends StatelessWidget {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingMd,
+                              horizontal: AppDimensions.space16,
                             ),
                             child: Center(
                               child: Text(

@@ -47,11 +47,9 @@ class ImagePickerDialogs {
           children: [
             Text(
               context.l10n.imageSelectSource,
-              style: AppTextStyles.displaySmall.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.displaySmall,
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             ListTile(
               leading: const ButleryIcon(
                 ButleryIcons.camera,
@@ -79,7 +77,7 @@ class ImagePickerDialogs {
                 Navigator.pop(context, ImageSource.gallery);
               },
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
           ],
         ),
       ),
@@ -168,7 +166,7 @@ class ImagePickerDialogs {
                         : null,
                     semanticLabel: context.l10n.imageUploadingImages,
                   ),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   Text(
                     progress.message,
                     style: AppTextStyles.bodyMedium,

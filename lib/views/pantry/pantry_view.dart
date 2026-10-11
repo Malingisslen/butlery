@@ -129,8 +129,8 @@ class _PantryViewContent extends StatelessWidget {
           )
         else
           Positioned(
-            right: AppDimensions.spacingLg,
-            bottom: AppDimensions.spacingLg,
+            right: AppDimensions.space24,
+            bottom: AppDimensions.space24,
             child: _PantryFab(
               onPressed: () => _showAddSheet(context, viewModel),
             ),
@@ -200,7 +200,7 @@ class _PantrySections extends StatelessWidget {
 
     return ListView(
       padding: const EdgeInsets.only(
-        top: AppDimensions.spacingMd,
+        top: AppDimensions.space16,
         bottom: 96,
       ),
       children: [
@@ -249,10 +249,10 @@ class _PantrySection extends StatelessWidget {
     // ink edge and saffron rule.
     return Container(
       margin: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
         0,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingMd,
+        AppDimensions.space24,
+        AppDimensions.space16,
       ),
       decoration: BoxDecoration(
         color: isDark ? AppColorsDark.forestGreen : cs.surface,
@@ -269,21 +269,20 @@ class _PantrySection extends StatelessWidget {
           iconColor: cs.onSurfaceVariant,
           collapsedIconColor: cs.onSurfaceVariant,
           tilePadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingXs,
+            horizontal: AppDimensions.space24,
+            vertical: AppDimensions.space4,
           ),
           childrenPadding: EdgeInsets.zero,
           title: Row(
             children: [
               Text(
                 title.toLowerCase(),
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.bodySmallBold.copyWith(
                   letterSpacing: 2,
-                  fontWeight: FontWeight.w700,
                   color: cs.onSurface,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 '${items.length}',
                 style: AppTextStyles.labelMedium.copyWith(
@@ -370,8 +369,8 @@ class _PantryBulkBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
           child: Row(
             children: [

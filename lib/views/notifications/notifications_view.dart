@@ -205,14 +205,14 @@ class _NotificationsContentState extends State<_NotificationsContent> {
         },
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.paddingM,
+            vertical: AppDimensions.space12,
           ),
           itemCount: vm.entries.length + (vm.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == vm.entries.length) {
               // Loading the next page: the plate line with what is fetched.
               return Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Center(
                   child: PlateLineMessage(
                     message: context.l10n.loadingNotifications,
@@ -278,12 +278,12 @@ class _NotificationTile extends StatelessWidget {
           ? ButleryIcon(
               isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
               color: isSelected ? cs.onSurface : cs.outline,
-              size: AppDimensions.iconSizeAction,
+              size: AppDimensions.iconSizeM,
             )
           : ButleryIcon(
               _categoryIcon(entry.category),
               color: entry.opened ? cs.onSurfaceVariant : cs.onSurface,
-              size: AppDimensions.iconSizeAction,
+              size: AppDimensions.iconSizeM,
             ),
       title: Text(
         entry.displayTitle,

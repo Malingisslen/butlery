@@ -77,7 +77,7 @@ class _FindFriendsSheetState extends State<_FindFriendsSheet> {
                       style: AppTextStyles.subpageTitle,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                   ButlerySearchBox(
                     controller: _controller,
                     hintText: l10n.socialSearchNameOrEmailHint,

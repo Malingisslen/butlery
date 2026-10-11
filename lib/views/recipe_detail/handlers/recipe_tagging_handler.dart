@@ -57,7 +57,7 @@ class RecipeTaggingHandler {
                   semanticLabel: context.l10n.taggingAnalyzingIngredients,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.space16),
               Expanded(
                 child: Text(
                   context.l10n.taggingAnalyzingIngredients,

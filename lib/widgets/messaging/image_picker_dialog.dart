@@ -34,8 +34,8 @@ class ImagePickerDialog extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.paddingL,
-          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.space16,
+          horizontal: AppDimensions.space12,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -48,7 +48,7 @@ class ImagePickerDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
 
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Camera option
             _SourceOption(
@@ -58,7 +58,7 @@ class ImagePickerDialog extends StatelessWidget {
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
 
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
 
             // Gallery option
             _SourceOption(
@@ -68,14 +68,14 @@ class ImagePickerDialog extends StatelessWidget {
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
 
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Cancel button
             OutlinedButton(
               onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.paddingM,
+                  vertical: AppDimensions.space12,
                 ),
               ),
               child: Text(context.l10n.commonCancel),
@@ -115,11 +115,11 @@ class _SourceOption extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
@@ -132,7 +132,7 @@ class _SourceOption extends StatelessWidget {
                       size: AppDimensions.iconSizeL,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.space12),
                   Text(
                     label,
                     style: AppTextStyles.titleMedium.copyWith(

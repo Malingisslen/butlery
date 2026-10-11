@@ -156,13 +156,13 @@ class ModuleLoadErrorScreen extends StatelessWidget {
                 size: AppDimensions.iconSizeXl,
                 color: cs.error,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               Text(
                 context.l10n.errorCouldNotLoadPage,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.errorLoadingRetryOrGoBack,
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -170,7 +170,7 @@ class ModuleLoadErrorScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               // The button theme asks for full width (button_themes.dart,
               // minimumSize double.infinity), so each button takes its share
               // of the row; unbounded, the row threw at layout.
@@ -183,7 +183,7 @@ class ModuleLoadErrorScreen extends StatelessWidget {
                       label: Text(context.l10n.navigationGoHome),
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingMd),
+                  const SizedBox(width: AppDimensions.space16),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: onRetry,

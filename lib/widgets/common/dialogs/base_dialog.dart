@@ -78,16 +78,16 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.subtitle != null) ...[
-              Text(widget.subtitle!, style: AppTextStyles.bodyMediumMuted),
-              const SizedBox(height: AppDimensions.spacingM),
+              Text(widget.subtitle!, style: AppTextStyles.bodyMedium),
+              const SizedBox(height: AppDimensions.space8),
             ],
             widget.buildContent(context),
             if (widget.buildAdditionalContent(context) != null) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               widget.buildAdditionalContent(context)!,
             ],
             if (_error != null) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               _buildErrorDisplay(),
             ],
           ],
@@ -328,7 +328,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
           children: [
             widget.buildContent(context),
             if (error != null) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               _buildErrorDisplay(),
             ],
           ],
@@ -436,7 +436,7 @@ class LoadingDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ExcludeSemantics(child: Text(message)),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             PlateLine(semanticLabel: message),
           ],
         ),

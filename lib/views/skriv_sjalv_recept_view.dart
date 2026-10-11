@@ -460,8 +460,8 @@ class _SkrivSjalvReceptViewContentState
                                 isExpanded: true,
                                 decoration: const InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingL,
-                                    vertical: AppDimensions.paddingM,
+                                    horizontal: AppDimensions.space16,
+                                    vertical: AppDimensions.space12,
                                   ),
                                   border: OutlineInputBorder(),
                                 ),
@@ -487,7 +487,7 @@ class _SkrivSjalvReceptViewContentState
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Bildhantering med UniversalImageManager
                         UniversalImageManager.recipeEdit(
@@ -542,7 +542,7 @@ class _SkrivSjalvReceptViewContentState
                           onClearAllFailed: viewModel.clearAllFailedUploads,
                         ),
                         RecipeImagePermissionNotice(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Titel
                         StyledInput(
@@ -569,7 +569,7 @@ class _SkrivSjalvReceptViewContentState
                             ),
                           ]),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Beskrivning
                         StyledInput(
@@ -590,7 +590,7 @@ class _SkrivSjalvReceptViewContentState
                             ),
                           ]),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Portioner
                         StyledInput(
@@ -604,7 +604,7 @@ class _SkrivSjalvReceptViewContentState
                               .contains('portions'),
                           validator: FormValidators.portions(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Tid
                         StyledInput(
@@ -618,7 +618,7 @@ class _SkrivSjalvReceptViewContentState
                               .contains('totalTime'),
                           validator: FormValidators.cookingTime(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Explains the empty list and the greyed-out save
                         // button; gone as soon as one ingredient exists.
@@ -632,7 +632,7 @@ class _SkrivSjalvReceptViewContentState
                             color: context.modeColors.info,
                             text: context.l10n.recipeImportNoIngredientsNotice,
                           ),
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                         ],
 
                         // Ingredienser — sectioned editor (PR #211)
@@ -665,14 +665,14 @@ class _SkrivSjalvReceptViewContentState
                         // ParsedRecipe (30-min TTL in ParsedRecipeCache).
                         if (viewModel.parsedIngredients != null &&
                             viewModel.parsedIngredients!.isNotEmpty) ...[
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                           ParseConfidenceReview(
                             ingredients: viewModel.parsedIngredients!,
                             isConfirmed: viewModel.isParseRowConfirmed,
                             onConfirm: viewModel.confirmParseRow,
                           ),
                         ],
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Instruktioner
                         _buildDynamicList(
@@ -684,7 +684,7 @@ class _SkrivSjalvReceptViewContentState
                           onReorder: viewModel.reorderInstruction,
                           viewModel: viewModel,
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Personal tags selector
                         PersonalTagSelector(
@@ -695,7 +695,7 @@ class _SkrivSjalvReceptViewContentState
                           title: context.l10n.recipePersonalTags,
                           showManageButton: true,
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Betyg
                         StyledInput(
@@ -718,7 +718,7 @@ class _SkrivSjalvReceptViewContentState
                               viewModel.setRating(parseSwedishDecimal(value)),
                           validator: FormValidators.rating(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
 
                         // Source URL field
                         StyledInput(
@@ -732,13 +732,13 @@ class _SkrivSjalvReceptViewContentState
                               : context.l10n.recipeSourceUrlHelper,
                           prefixIcon: const ButleryIcon(
                             ButleryIcons.link,
-                            size: AppDimensions.iconSizeAction,
+                            size: AppDimensions.iconSizeM,
                           ),
                           keyboardType: TextInputType.url,
                           onChanged: viewModel.setSourceUrl,
                           validator: FormValidators.recipeSourceUrl(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
                     ),
                   ),
@@ -780,7 +780,7 @@ class _SkrivSjalvReceptViewContentState
               if (pendingConfirmations > 0)
                 Padding(
                   padding: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingSm,
+                    bottom: AppDimensions.space8,
                   ),
                   child: Text(
                     context.l10n.parseConfidencePendingSave(
@@ -827,7 +827,7 @@ class _SkrivSjalvReceptViewContentState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         if (controllers.isNotEmpty && onReorder != null)
           ReorderableListView.builder(
             shrinkWrap: true,
@@ -956,10 +956,10 @@ class _SkrivSjalvReceptViewContentState
     final colors = context.modeColors;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space12),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         decoration: BoxDecoration(
           color: colors.warningContainer,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

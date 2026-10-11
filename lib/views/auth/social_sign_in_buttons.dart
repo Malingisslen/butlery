@@ -49,16 +49,16 @@ class SocialSignInButtons extends StatelessWidget {
                 : () => _run(context, provider),
           ),
           const SizedBox(
-            height: AppDimensions.spacingSm + AppDimensions.spacingXs,
+            height: AppDimensions.space8 + AppDimensions.space4,
           ),
         ],
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Row(
           children: [
             Expanded(child: Divider(color: cs.outlineVariant)),
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
+                horizontal: AppDimensions.space16,
               ),
               child: Text(
                 context.l10n.commonOr,
@@ -70,7 +70,7 @@ class SocialSignInButtons extends StatelessWidget {
             Expanded(child: Divider(color: cs.outlineVariant)),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
       ],
     );
   }
@@ -168,7 +168,7 @@ class _ProviderButton extends StatelessWidget {
           children: [
             logo,
             const SizedBox(
-              width: AppDimensions.spacingSm + AppDimensions.spacingXs,
+              width: AppDimensions.space8 + AppDimensions.space4,
             ),
             Flexible(
               child: Text(

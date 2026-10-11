@@ -33,7 +33,7 @@ class CollaborativeStatusWidgets {
               padding ??
               const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space4,
-                vertical: AppDimensions.spacingXs,
+                vertical: AppDimensions.space4,
               ),
           decoration: BoxDecoration(
             color: onInk
@@ -52,7 +52,7 @@ class CollaborativeStatusWidgets {
                 size: AppDimensions.iconSizeM,
                 color: effectiveColor,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 text ?? context.l10n.collaborativeShared,
                 style: AppTextStyles.labelLarge.copyWith(
@@ -84,7 +84,7 @@ class CollaborativeStatusWidgets {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: bgColor,
             border: Border(
@@ -101,7 +101,7 @@ class CollaborativeStatusWidgets {
                   ButleryIcon(
                     ButleryIcons.users,
                     color: cs.onSurface,
-                    size: AppDimensions.iconSizeAction,
+                    size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.space4),
                   Expanded(

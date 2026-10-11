@@ -208,13 +208,13 @@ class _NotificationPreferencesViewState
                           padding: EdgeInsetsDirectional.only(
                             start: ButleryTopBar.sideMargin(context),
                             end: ButleryTopBar.sideMargin(context),
-                            bottom: AppDimensions.spacingLg,
+                            bottom: AppDimensions.space24,
                           ),
                           children: [
                             if (_systemOff)
                               Padding(
                                 padding: const EdgeInsets.only(
-                                  top: AppDimensions.spacingMd,
+                                  top: AppDimensions.space16,
                                 ),
                                 child: NotificationSystemOffRow(
                                   onOpenSettings: _openSystemSettings,

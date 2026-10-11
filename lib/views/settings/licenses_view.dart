@@ -91,7 +91,7 @@ class _LicensesViewState extends State<LicensesView> {
     if (_loadFailed) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          padding: const EdgeInsets.all(AppDimensions.space24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -100,12 +100,12 @@ class _LicensesViewState extends State<LicensesView> {
                 size: AppDimensions.iconSizeXXXl,
                 color: Theme.of(context).colorScheme.error,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.licensesCouldNotLoad,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
               ElevatedButton.icon(
                 onPressed: _load,
                 icon: const ButleryIcon(ButleryIcons.refreshCw),
@@ -132,16 +132,16 @@ class _LicensesViewState extends State<LicensesView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < texts.length; i++) ...[
-            if (i > 0) const SizedBox(height: AppDimensions.spacingLg),
+            if (i > 0) const SizedBox(height: AppDimensions.space24),
             _document(headings[i], texts[i]),
           ],
           // BUT-643: CC BY 4.0 attribution for the bundled nutrition table.
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           _document(
             context.l10n.licensesLivsmedelsverketHeading,
             context.l10n.licensesLivsmedelsverketBody,
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           // The packages' licences already live in Flutter's own page, so link
           // rather than duplicate them.
           ListTile(
@@ -165,7 +165,7 @@ class _LicensesViewState extends State<LicensesView> {
           header: true,
           child: Text(heading, style: AppTextStyles.titleMedium),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         SelectableText(
           text,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),

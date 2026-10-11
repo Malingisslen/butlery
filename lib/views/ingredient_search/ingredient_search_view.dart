@@ -88,12 +88,12 @@ class _IngredientSearchContent extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
+            horizontal: AppDimensions.space24,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Input + chips
               IngredientChipInput(
@@ -104,7 +104,7 @@ class _IngredientSearchContent extends StatelessWidget {
                 onIngredientRemoved: vm.removeIngredient,
               ),
 
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
 
               // Search button
               ActionButtons.primaryButton(
@@ -115,7 +115,7 @@ class _IngredientSearchContent extends StatelessWidget {
                     : vm.performSearch,
               ),
 
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
 
               // Results area
               Expanded(child: _buildResults(context, vm)),
@@ -166,7 +166,7 @@ class _IngredientSearchContent extends StatelessWidget {
           l10n.ingredientSearchResultCount(vm.matchResults.length),
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Expanded(
           child: ListView.builder(
             itemCount: vm.matchResults.length,
@@ -216,15 +216,15 @@ class _IngredientSearchContent extends StatelessWidget {
         if (missingText != null || result.recipe.isCollaborative)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingMd,
-              bottom: AppDimensions.spacingSm,
+              start: AppDimensions.space16,
+              bottom: AppDimensions.space8,
             ),
             child: Row(
               children: [
                 if (result.recipe.isCollaborative)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
-                      end: AppDimensions.spacingSm,
+                      end: AppDimensions.space8,
                     ),
                     child: Text(
                       l10n.ingredientSearchSharedBadge,

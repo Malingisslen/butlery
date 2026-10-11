@@ -148,8 +148,8 @@ void main() {
         );
 
         final handle = _handle(
-          AppDimensions.iconSizeDisplay,
-          AppDimensions.spacingXs,
+          AppDimensions.iconSizeXl,
+          AppDimensions.space4,
         );
         expect(handle, findsOneWidget);
         expect(

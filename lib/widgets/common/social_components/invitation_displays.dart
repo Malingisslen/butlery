@@ -167,7 +167,7 @@ class InvitationDisplays {
     // Simple implementation since SocialFacade doesn't have this method
     return Card(
       child: Container(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
             targetCard(target: target, onTap: onTap, selected: selected),

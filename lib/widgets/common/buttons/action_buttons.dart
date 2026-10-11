@@ -45,7 +45,7 @@ class ActionButtons {
     final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
 
     final Widget buttonChild = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -291,7 +291,7 @@ class ActionButtons {
     final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
 
     final Widget buttonChild = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -468,7 +468,7 @@ class AppIconButton extends StatelessWidget {
           child: ButleryIcon(icon, color: color, size: iconSize),
         ),
         onPressed: onPressed,
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space8),
       ),
     );
   }

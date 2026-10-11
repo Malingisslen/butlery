@@ -36,7 +36,7 @@ class ShareDialogActions {
         bottomRight: Radius.circular(AppDimensions.radiusControl),
       ),
       child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
@@ -57,7 +57,7 @@ class ShareDialogActions {
                 enablePressAnimation: false,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               flex: 4,
               child: ActionButtons.primaryButton(
@@ -108,12 +108,12 @@ class ShareDialogActions {
       // anyone, so it carries no warning colour or glyph.
       return Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingL,
+          horizontal: AppDimensions.space12,
           vertical: AppDimensions.space4,
         ),
         child: Text(
           context.l10n.shareSelectAtLeastOneFriend,
-          style: AppTextStyles.metadataEmphasized.copyWith(
+          style: AppTextStyles.labelMedium.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -123,7 +123,7 @@ class ShareDialogActions {
     final successColor = context.modeColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
+        horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
@@ -137,11 +137,11 @@ class ShareDialogActions {
             size: AppDimensions.iconSizeS,
             color: successColor,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               context.l10n.shareFriendsSelectedCount(selectedCount),
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: successColor,
               ),
             ),

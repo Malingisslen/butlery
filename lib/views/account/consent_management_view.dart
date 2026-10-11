@@ -65,7 +65,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 padding: EdgeInsetsDirectional.only(
                   start: margin,
                   end: margin,
-                  bottom: AppDimensions.spacingLg,
+                  bottom: AppDimensions.space24,
                 ),
                 children: _sections(context, viewModel),
               );
@@ -81,7 +81,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return [
       Padding(
-        padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+        padding: const EdgeInsets.only(top: AppDimensions.space16),
         child: Text(
           l10n.consentGdprDescription,
           style: AppTextStyles.bodyMedium.copyWith(color: muted),
@@ -89,7 +89,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       ),
       if (viewModel.hasConsent)
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(top: AppDimensions.space8),
           child: Text(
             '${l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
             style: AppTextStyles.infoText.copyWith(color: muted),
@@ -97,7 +97,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ),
       if (viewModel.hasError)
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(top: AppDimensions.space8),
           child: Text(
             viewModel.errorMessage!,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -173,7 +173,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           ])
             Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingSm,
+                vertical: AppDimensions.space8,
               ),
               child: Text(
                 line,
@@ -186,7 +186,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _note(BuildContext context, String text) => Padding(
-    padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+    padding: const EdgeInsets.only(top: AppDimensions.space4),
     child: Text(
       text,
       style: AppTextStyles.bodySmall.copyWith(

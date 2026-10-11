@@ -32,7 +32,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
       onDismissed: (_) => viewModel.dismissOnboardingBanner(),
       child: Container(
         margin: AppDimensions.responsiveContentPadding(context),
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
           // border.subtle, never a faded ink (tokens.json:40-53, :124-127).
@@ -41,7 +41,7 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
         child: Row(
           children: [
             ButleryIcon(ButleryIcons.info, color: cs.onSurface),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Text(
                 context.l10n.onboardingSkippedBanner,
@@ -91,7 +91,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
       onDismissed: (_) => viewModel.dismissWelcomeBanner(),
       child: Container(
         margin: AppDimensions.responsiveContentPadding(context),
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         decoration: BoxDecoration(
           color: cs.primaryContainer,
           // border.subtle, never a faded ink (tokens.json:40-53, :124-127).
@@ -100,7 +100,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
         child: Row(
           children: [
             ButleryIcon(ButleryIcons.info, color: cs.onSurface),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Text(
                 context.l10n.onboardingWelcomeBanner,

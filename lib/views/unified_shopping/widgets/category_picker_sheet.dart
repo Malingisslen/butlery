@@ -41,7 +41,7 @@ class CategoryPickerSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Text(
               context.l10n.shoppingMoveToCategory,
               style: AppTextStyles.titleMedium,
@@ -72,11 +72,9 @@ class CategoryPickerSheet extends StatelessWidget {
                   ),
                   title: Text(
                     ShoppingCategory.displayName(category),
-                    style: AppTextStyles.contentTitle.copyWith(
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
+                    style: isSelected
+                        ? AppTextStyles.bodyLargeBold
+                        : AppTextStyles.contentTitle,
                   ),
                   trailing: isSelected
                       ? ButleryIcon(ButleryIcons.check, color: cs.onSurface)

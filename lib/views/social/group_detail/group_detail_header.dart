@@ -38,7 +38,7 @@ class GroupDetailHeader {
               size: ImageSize.large,
               displayName: group.name,
             ),
-            const SizedBox(width: AppDimensions.spacingL),
+            const SizedBox(width: AppDimensions.space12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +54,7 @@ class GroupDetailHeader {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     isAdmin
                         ? l10n.groupMetaMembersAdmin(count)
@@ -68,7 +68,7 @@ class GroupDetailHeader {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           emoji != null && emoji.isNotEmpty
               ? '$emoji $description'

@@ -31,8 +31,8 @@ class ParsedExtractionChips extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,13 +41,13 @@ class ParsedExtractionChips extends StatelessWidget {
           if (trace.understood.isNotEmpty) ...[
             Text(
               l10n.weeklyMenuChipsHeading,
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: scheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.space4),
             Wrap(
-              spacing: AppDimensions.spacingXs,
+              spacing: AppDimensions.space4,
               runSpacing: AppDimensions.space4,
               children: trace.understood
                   .map((e) => _UnderstoodChip(entry: e))
@@ -58,13 +58,13 @@ class ParsedExtractionChips extends StatelessWidget {
             const SizedBox(height: AppDimensions.space4),
             Text(
               l10n.weeklyMenuChipsNotUnderstood,
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: AppModeColors.textWarning(scheme.brightness),
               ),
             ),
             const SizedBox(height: AppDimensions.space4),
             Wrap(
-              spacing: AppDimensions.spacingXs,
+              spacing: AppDimensions.space4,
               runSpacing: AppDimensions.space4,
               children: trace.notUnderstood
                   .map((t) => _NotUnderstoodChip(label: t))

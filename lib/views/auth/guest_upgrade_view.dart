@@ -186,8 +186,8 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
             child: ListView(
               padding: ButleryPageBody.margin(
                 context,
-                top: AppDimensions.spacingLg,
-                bottom: AppDimensions.spacingLg,
+                top: AppDimensions.space24,
+                bottom: AppDimensions.space24,
               ),
               children: [
                 Text(
@@ -196,9 +196,9 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 ..._fields(context),
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
                 if (_emailInUse) ...[
                   StateWidget.error(message: l10n.errorEmailAlreadyInUse),
                   TextButton(
@@ -206,11 +206,11 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
                     onPressed: _busy ? null : _signInInstead,
                     child: Text(l10n.guestSignInInstead),
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                 ],
                 if (_error != null) ...[
                   StateWidget.error(message: _error!),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                 ],
                 HeroButton(
                   key: GuestUpgradeView.submitKey,
@@ -247,7 +247,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
           autofillHints: const [AutofillHints.name],
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingMd),
+      const SizedBox(height: AppDimensions.space16),
       LabeledField(
         label: l10n.authEmail,
         child: TextFormField(
@@ -266,7 +266,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
           },
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingMd),
+      const SizedBox(height: AppDimensions.space16),
       LabeledField(
         label: l10n.authPassword,
         child: TextFormField(
@@ -282,7 +282,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
             suffixIcon: IconButton(
               icon: ButleryIcon(
                 _passwordVisible ? ButleryIcons.eyeOff : ButleryIcons.eye,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
               onPressed: enabled
                   ? () => setState(() => _passwordVisible = !_passwordVisible)

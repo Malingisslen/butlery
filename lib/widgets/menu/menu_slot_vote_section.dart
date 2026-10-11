@@ -151,7 +151,7 @@ class MenuStartVoteButton extends StatelessWidget {
                       }
                     : null,
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                  padding: const EdgeInsets.all(AppDimensions.space4),
                   child: ButleryIcon(
                     ButleryIcons.vote,
                     size: AppDimensions.iconSizeS,

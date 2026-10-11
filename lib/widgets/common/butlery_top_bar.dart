@@ -177,7 +177,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   static const double hitbox = AppDimensions.minTouchTarget;
 
   /// Avstånd mellan åtgärder (tokens.json touchTarget.minGap, rad 488).
-  static const double actionGap = AppDimensions.spacingSm;
+  static const double actionGap = AppDimensions.space8;
 
   /// Undersidans lägsta höjd, 56 dp. Komponentark rad 73–74 ritar 58 px:
   /// 16 px ovan och 14 px under, men bakåtpilens 48 px hitbox sticker ut
@@ -204,8 +204,8 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   // 320 dp, 24 vid 360–430 dp), så att titeln och innehållet under delar
   // vänsterkant (paket 4, Q-P4-14). Ritningens 18 px är varken 16 eller
   // layoutMargin, och tokenet är innehållets kanoniska rytm. Tolkning.
-  static const double _padTop = AppDimensions.spacingMd;
-  static const double _padBottom = AppDimensions.spacingL;
+  static const double _padTop = AppDimensions.space16;
+  static const double _padBottom = AppDimensions.space12;
 
   /// Sidmarginalen för [context]: tokens.json space.layoutMargin, 20 under
   /// 360 dp och 24 därifrån (AppDimensions.layoutMarginOf).
@@ -214,14 +214,14 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Undersidans luft ovan och under bakåtpilens hitbox. Se
   /// [subpageMinHeight] för hur 6/4 px ur ritningen blir 4/4.
-  static const double _subpagePadVertical = AppDimensions.spacingXs;
+  static const double _subpagePadVertical = AppDimensions.space4;
 
   /// Komponentark rad 74: bakåtpilens hitbox sticker ut 10 px åt vänster ur
   /// 18 px kant, så hitboxen börjar 8 px in. Samma inset gäller varje
   /// [leading] med 48 dp hitbox, även på rotnivån (tolkning: arket ritar
   /// ingen leading på rotnivån, men en hitbox ska stå lika långt in var den
   /// än står).
-  static const double _subpageLeadingInset = AppDimensions.spacingSm;
+  static const double _subpageLeadingInset = AppDimensions.space8;
 
   /// Komponentark rad 73 ritar 10 px mellan bakåtpilens hitbox och titeln.
   /// Tolkning: 10 läggs på 8, samma som minsta avståndet mellan träffytor
@@ -587,7 +587,7 @@ ButtonStyle _selectionTextStyle(Color? foregroundColor) => TextButton.styleFrom(
   foregroundColor: foregroundColor,
   // Ritningen: 12 px sidluft (Skarmar v12 etapp 9 #flervalingang).
   padding: const EdgeInsets.symmetric(
-    horizontal: AppDimensions.spacingSm + AppDimensions.spacingXs,
+    horizontal: AppDimensions.space8 + AppDimensions.space4,
   ),
 );
 

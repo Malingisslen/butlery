@@ -236,8 +236,7 @@ class _BannerFrame extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: AppTextStyles.labelMedium.copyWith(
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.labelMediumBold.copyWith(
               color: cs.onSurface,
             ),
           ),
@@ -262,7 +261,7 @@ class _BannerFrame extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space12,
-          vertical: AppDimensions.paddingM,
+          vertical: AppDimensions.space12,
         ),
         child: content,
       ),
@@ -299,8 +298,8 @@ class _BannerFrame extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingLg,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space24,
+        vertical: AppDimensions.space8,
       ),
       child: Semantics(
         container: true,
@@ -340,7 +339,7 @@ class OfflineStatusIcon extends StatelessWidget {
           child: ButleryIcon(
             ButleryIcons.wifiOff,
             color: AppModeColors.textWarning(Theme.of(context).brightness),
-            size: AppDimensions.iconSizeAction,
+            size: AppDimensions.iconSizeM,
           ),
         );
       },

@@ -158,8 +158,8 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
     return Padding(
       key: RecipeSuggestionNotice.noticeKey,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Material(
         color: context.modeColors.surfaceTintWarning,
@@ -169,9 +169,9 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.space12,
-            AppDimensions.paddingS,
-            AppDimensions.spacingXs,
-            AppDimensions.paddingS,
+            AppDimensions.space8,
+            AppDimensions.space4,
+            AppDimensions.space8,
           ),
           child: Row(
             children: [

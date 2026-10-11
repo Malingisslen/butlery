@@ -94,7 +94,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
@@ -337,8 +337,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                               final cs = Theme.of(context).colorScheme;
                               return Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.paddingS,
-                                  vertical: AppDimensions.spacingXs,
+                                  horizontal: AppDimensions.space8,
+                                  vertical: AppDimensions.space4,
                                 ),
                                 decoration: BoxDecoration(
                                   color: cs.surfaceContainerHighest,
@@ -358,7 +358,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         ],
                       ],
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.space8),
 
                     // Tab bar
                     Builder(
@@ -411,7 +411,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         );
                       },
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.space8),
 
                     // Tab content
                     SizedBox(

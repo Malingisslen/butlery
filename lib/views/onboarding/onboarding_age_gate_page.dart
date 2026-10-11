@@ -31,13 +31,13 @@ class OnboardingAgeGatePage extends StatelessWidget {
             style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingAgeGateSubtitle,
             style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           // The wizard keeps `Next` disabled until a year is picked (see
           // OnboardingViewModel).
           BirthYearDropdown(
@@ -45,7 +45,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
             selected: selected,
             onChanged: viewModel.setBirthYear,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingAgeGatePrivacyNote,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),

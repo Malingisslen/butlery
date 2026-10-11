@@ -129,7 +129,7 @@ class RecipeCard extends StatelessWidget {
           margin:
               margin ??
               const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
+                horizontal: AppDimensions.space16,
                 vertical: AppDimensions.borderWidthStandard,
               ),
           restDecoration: restDecoration,
@@ -162,7 +162,7 @@ class RecipeCard extends StatelessWidget {
                       padding ??
                       const EdgeInsets.symmetric(
                         vertical: AppDimensions.space12,
-                        horizontal: AppDimensions.spacingMd,
+                        horizontal: AppDimensions.space16,
                       ),
                   child: _buildCardContent(context),
                 ),
@@ -228,7 +228,7 @@ class RecipeCard extends StatelessWidget {
             // Recipe image
             if (showImage) ...[
               _buildRecipeImage(context),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.space16),
             ],
             // Content area — expands to fit text naturally
             Expanded(
@@ -247,12 +247,12 @@ class RecipeCard extends StatelessWidget {
                     ],
                   ),
                   if (hasDescription || hasMetadata)
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                   // Description
                   if (hasDescription) ...[
                     _buildDescription(context),
                     if (hasMetadata)
-                      const SizedBox(height: AppDimensions.spacingSm),
+                      const SizedBox(height: AppDimensions.space8),
                   ],
                   // Metadata row inside text column per mockup
                   if (hasMetadata) _buildMetadataRow(context),
@@ -277,7 +277,7 @@ class RecipeCard extends StatelessWidget {
         // same function the row calls to decide whether to collapse, so the
         // gate and the row can no longer disagree.
         if (showAllergenBadges && _allergenBadges.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           CompactAllergenRow(
             tagResult: recipe.tagResult!,
             userPrefs: userAllergenPrefs,
@@ -285,7 +285,7 @@ class RecipeCard extends StatelessWidget {
           ),
         ],
         if (_showUnassessedIndicator) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildUnassessedIndicator(context),
         ],
         // spacingSm, not spacingXs. The gap BETWEEN the two badge rows has to be
@@ -296,7 +296,7 @@ class RecipeCard extends StatelessWidget {
         // the 1.5-2x text scale this codebase designs for (BUT-547), not at 1x.
         // Raised on the Creative Director's condition, 2026-08-18.
         if (showDietaryBadges && _dietaryBadges.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           CompactDietaryRow(
             tagResult: recipe.tagResult!,
             userPrefs: userDietaryPrefs,
@@ -305,23 +305,23 @@ class RecipeCard extends StatelessWidget {
         ],
         // Personal tags (user-defined categories)
         if (showPersonalTags && _hasPersonalTags) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildPersonalTagsRow(context),
         ],
         // Untagged indicator when tagResult is null or failed
         if (_showUntaggedIndicator) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildUntaggedIndicator(context),
         ],
         // Completeness indicator for incomplete recipes
         if (recipe.completenessScore case final score
             when score < incompleteThreshold) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildCompletenessIndicator(context, score),
         ],
         // Tags (effective tags: auto-generated + user overrides)
         if (showTags && _hasEffectiveTags) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _buildTagsRow(context),
         ],
       ],
@@ -333,7 +333,7 @@ class RecipeCard extends StatelessWidget {
       children: [
         if (showImage) ...[
           _buildRecipeImage(context, size: 60),
-          const SizedBox(width: AppDimensions.spacingMd),
+          const SizedBox(width: AppDimensions.space16),
         ],
         Expanded(
           child: Column(
@@ -352,7 +352,7 @@ class RecipeCard extends StatelessWidget {
                 ],
               ),
               if (showMetadata) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 _buildMetadataRow(context, compact: true),
               ],
             ],
@@ -387,7 +387,7 @@ class RecipeCard extends StatelessWidget {
               height: double.infinity,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
         // Title + favorite
         Row(
@@ -398,7 +398,7 @@ class RecipeCard extends StatelessWidget {
           ],
         ),
         if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           _buildMetadataRow(context, compact: true),
         ],
         // BUT-1895: allergen information must not depend on which view toggle
@@ -436,7 +436,7 @@ class RecipeCard extends StatelessWidget {
         // Diet keeps its word in the DETAILED layout, which is full-width and
         // has the room. The compact layout draws neither badge row at all.
         if (showAllergenBadges && _allergenBadges.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           CompactAllergenRow(
             tagResult: recipe.tagResult!,
             userPrefs: userAllergenPrefs,
@@ -444,7 +444,7 @@ class RecipeCard extends StatelessWidget {
           ),
         ],
         if (_showUnassessedIndicator) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           _buildUnassessedIndicator(context),
         ],
       ],
@@ -535,7 +535,7 @@ class RecipeCard extends StatelessWidget {
       ),
     };
     return Padding(
-      padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingXs),
+      padding: const EdgeInsetsDirectional.only(start: AppDimensions.space4),
       child: Tooltip(
         message: label,
         excludeFromSemantics: true,
@@ -634,8 +634,8 @@ class RecipeCard extends StatelessWidget {
     // instead of overflowing at 2x text scaling (BUT-547 / WCAG 1.4.4).
     // At default scale this lays out identically to a Row.
     return Wrap(
-      spacing: AppDimensions.spacingSm,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space8,
+      runSpacing: AppDimensions.space4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (parts.isNotEmpty)
@@ -698,7 +698,6 @@ class RecipeCard extends StatelessWidget {
               context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: fg,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -729,7 +728,6 @@ class RecipeCard extends StatelessWidget {
               context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: cs.surface,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -754,7 +752,6 @@ class RecipeCard extends StatelessWidget {
           '$pct%',
           style: AppTextStyles.badge.copyWith(
             color: cs.onSurface,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -784,7 +781,6 @@ class RecipeCard extends StatelessWidget {
           '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
           style: AppTextStyles.badge.copyWith(
             color: fg,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -794,8 +790,8 @@ class RecipeCard extends StatelessWidget {
   Widget _buildTagsRow(BuildContext context) {
     final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
     return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: _topEffectiveTags
           .map(
             (tag) => _buildTag(
@@ -970,8 +966,8 @@ class RecipeCard extends StatelessWidget {
     final overflow = names.length - displayCount;
 
     return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: [
         ...names
             .take(displayCount)
@@ -1054,7 +1050,7 @@ class RecipeCard extends StatelessWidget {
               size: AppDimensions.iconSize14,
               color: noticeFg,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(
@@ -1127,7 +1123,7 @@ class RecipeCard extends StatelessWidget {
               size: AppDimensions.iconSize14,
               color: secondary,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
             // icon and the sentence need about 254, so unconstrained it
@@ -1181,7 +1177,7 @@ class RecipeCard extends StatelessWidget {
               size: AppDimensions.iconSize14,
               color: secondary,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(

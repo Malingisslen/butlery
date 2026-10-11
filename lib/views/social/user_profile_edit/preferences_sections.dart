@@ -42,7 +42,7 @@ class ProfileActionButtons extends StatelessWidget {
           expand: true,
         ),
 
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
 
         ActionButtons.outlinedButton(
           context,
@@ -54,10 +54,10 @@ class ProfileActionButtons extends StatelessWidget {
 
         // Unsaved changes indicator
         if (viewModel.hasUnsavedChanges) ...[
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             decoration: BoxDecoration(
               color: context.modeColors.surfaceTintWarning,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -71,7 +71,7 @@ class ProfileActionButtons extends StatelessWidget {
                   ),
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     context.l10n.profileYouHaveUnsavedChanges,

@@ -50,12 +50,12 @@ class ProfileAvatarSection extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
 
           // Avatar action buttons
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: AppDimensions.spacingL,
+            spacing: AppDimensions.space12,
             children: [
               ActionButtons.outlinedButton(
                 context,
@@ -112,7 +112,7 @@ class ProfileDisplayNameField extends StatelessWidget {
           context.l10n.profileDisplayName,
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         StyledInput(
           controller: controller,
           focusNode: focusNode,
@@ -140,7 +140,7 @@ class ProfileDisplayNameField extends StatelessWidget {
           onChanged: onChanged,
         ),
         if (viewModel.displayNameError != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             viewModel.displayNameError!,
             style: AppTextStyles.bodySmall.copyWith(

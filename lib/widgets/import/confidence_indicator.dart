@@ -48,7 +48,7 @@ class ConfidenceIndicator extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space4,
-          vertical: AppDimensions.spacingXs,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: badgeBackgroundColor,

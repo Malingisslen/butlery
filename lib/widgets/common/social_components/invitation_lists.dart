@@ -109,7 +109,7 @@ class InvitationLists {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Text(
                 type == InvitationTargetType.group
                     ? context.l10n.socialGroups
@@ -189,7 +189,7 @@ class InvitationLists {
                 child: InkWell(
                   onTap: onTargetTap != null ? () => onTargetTap(target) : null,
                   child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                    padding: const EdgeInsets.all(AppDimensions.space8),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -198,7 +198,7 @@ class InvitationLists {
                               ? ButleryIcons.users
                               : ButleryIcons.user,
                         ),
-                        const SizedBox(height: AppDimensions.spacingXs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           target.displayName,
                           maxLines: 2,
@@ -249,7 +249,7 @@ class InvitationLists {
               onTap: onTargetTap != null ? () => onTargetTap(target) : null,
               child: Padding(
                 padding: const EdgeInsets.all(
-                  (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                  (AppDimensions.space8 + AppDimensions.space4),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -260,7 +260,7 @@ class InvitationLists {
                           : ButleryIcons.user,
                       size: AppDimensions.iconSizeXl,
                     ),
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     Text(
                       target.displayName,
                       maxLines: 2,
@@ -268,7 +268,7 @@ class InvitationLists {
                       textAlign: TextAlign.center,
                       style: AppTextStyles.contentLabel,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       context.l10n.labelMemberCount(target.memberCount ?? 0),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(

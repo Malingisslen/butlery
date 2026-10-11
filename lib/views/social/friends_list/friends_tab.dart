@@ -41,7 +41,7 @@ class FriendsTab {
           await viewModel.refresh();
         },
         child: ListView.separated(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           itemCount: friends.length,
           separatorBuilder: (context, index) =>
               const SizedBox(height: AppDimensions.space4),

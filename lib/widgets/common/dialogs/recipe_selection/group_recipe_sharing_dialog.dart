@@ -118,7 +118,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
           searchQuery: viewModel.searchQuery,
           onSearchChanged: viewModel.setSearchQuery,
           searchHint: context.l10n.dialogSearchRecipes,
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           showStats: true,
           resultCount: viewModel.filteredRecipes.isNotEmpty
               ? viewModel.filteredRecipes.length
@@ -165,7 +165,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
     GroupRecipeSelectionViewModel viewModel,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Row(
         children: [
           if (viewModel.searchQuery.isNotEmpty)
@@ -180,8 +180,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
             if (viewModel.searchQuery.isNotEmpty) const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingXs,
-                vertical: AppDimensions.spacingXs,
+                horizontal: AppDimensions.space4,
+                vertical: AppDimensions.space4,
               ),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -189,7 +189,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
               ),
               child: Text(
                 context.l10n.dialogSelectedCount(viewModel.selectedCount),
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

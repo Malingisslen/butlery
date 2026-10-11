@@ -123,8 +123,8 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
             child: SingleChildScrollView(
               padding: ButleryPageBody.margin(
                 context,
-                top: AppDimensions.spacingXl,
-                bottom: AppDimensions.spacingLg,
+                top: AppDimensions.space32,
+                bottom: AppDimensions.space24,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -146,7 +146,7 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                         color: cs.onSurface,
                       ),
                     ),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   LabeledField(
                     label: l10n.authPassword,
                     child: TextField(
@@ -171,13 +171,13 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: ButleryIcon(
                             _obscure ? ButleryIcons.eye : ButleryIcons.eyeOff,
-                            size: AppDimensions.iconSizeAction,
+                            size: AppDimensions.iconSizeM,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   HeroButton(
                     key: const ValueKey('providerLink.submit'),
                     label: l10n.providerLinkSubmit,
@@ -187,7 +187,7 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                     busy: vm.isLoading,
                     expand: true,
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   TextButton(
                     onPressed: vm.isLoading ? null : () => _forgot(vm),
                     child: Text(l10n.authForgotPassword),

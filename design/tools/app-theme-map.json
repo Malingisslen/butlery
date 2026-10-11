@@ -671,7 +671,6 @@
   "appBarTitle": "headlineSmall",
   "headerTitle": "headlineSmall",
   "mainViewTitle": "headlineBold",
-  "sectionTitleStyle": "sectionHeader",
   "emptyStateBody": "bodyMedium",
   "bodyMediumMuted": "bodyMedium",
   "titleMediumMuted": "titleMedium",
@@ -738,6 +737,26 @@
    "color": null,
    "bold": true
   },
+  "bodySmallBold": {
+   "base": "bodySmall",
+   "color": null,
+   "bold": true
+  },
+  "labelMediumBold": {
+   "base": "labelMedium",
+   "color": null,
+   "bold": true
+  },
+  "titleLargeBold": {
+   "base": "titleLarge",
+   "color": null,
+   "bold": true
+  },
+  "captionBold": {
+   "base": "captionBase",
+   "color": null,
+   "bold": true
+  },
   "bodyMediumError": {
    "base": "bodyMedium",
    "color": "AppColors.error"
@@ -773,10 +792,6 @@
   "headerCountBadge": {
    "base": "labelMedium",
    "color": "AppColors.rustLight"
-  },
-  "sectionLabel": {
-   "base": "overline",
-   "color": "AppColors.onWarningContainer"
   },
   "subpageTitle": {
    "base": "labelLarge",

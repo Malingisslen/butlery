@@ -142,7 +142,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             child: ButleryPageBody(
               width: PageWidth.text,
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
@@ -174,7 +174,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                               if (viewModel.detection != null &&
                                   viewModel.detection!.input.isNotEmpty) ...[
                                 const SizedBox(
-                                  height: AppDimensions.spacingL,
+                                  height: AppDimensions.space12,
                                 ),
                                 PlatformBadgeWidget(
                                   detection: viewModel.detection,
@@ -185,7 +185,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                               if (viewModel.isImporting ||
                                   viewModel.phase == ImportPhase.complete) ...[
                                 const SizedBox(
-                                  height: AppDimensions.spacingLg,
+                                  height: AppDimensions.space24,
                                 ),
                                 ImportProgressWidget(
                                   currentStep: viewModel.currentStep,
@@ -202,7 +202,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                               if (viewModel.error != null &&
                                   viewModel.phase == ImportPhase.error) ...[
                                 const SizedBox(
-                                  height: AppDimensions.spacingMd,
+                                  height: AppDimensions.space16,
                                 ),
                                 ImportErrorMessage(
                                   message: viewModel.error!,

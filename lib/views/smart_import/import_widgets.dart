@@ -32,8 +32,8 @@ class PendingImportBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space16),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       color: cs.primaryContainer,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +44,7 @@ class PendingImportBanner extends StatelessWidget {
               color: cs.onPrimaryContainer,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -52,7 +52,7 @@ class PendingImportBanner extends StatelessWidget {
                 onPressed: onDismiss,
                 child: Text(context.l10n.importPendingDismiss),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               FilledButton(
                 // The theme's full-width minimum is infinite inside a Row.
                 style: const ButtonStyle(
@@ -105,7 +105,7 @@ class ImportInputSection extends StatelessWidget {
           hintStyle: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
-          contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
+          contentPadding: const EdgeInsets.all(AppDimensions.space16),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
                   icon: const ButleryIcon(ButleryIcons.x),
@@ -171,11 +171,11 @@ class ImportErrorMessage extends StatelessWidget {
       children: [
         InlineError(what: message, preserved: preserved),
         if (routes.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           SectionHeading(l10n.importFailureOtherRoutes),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           for (final (i, route) in routes.indexed) ...[
-            if (i > 0) const SizedBox(height: AppDimensions.spacingSm),
+            if (i > 0) const SizedBox(height: AppDimensions.space8),
             _RouteButton(
               key: routeKey(route),
               filled: i == 0,
@@ -285,7 +285,7 @@ class ImportActionSection extends StatelessWidget {
             label: context.l10n.importPasteFromClipboard,
             isExpanded: true,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
         ],
 
         // Import button.
@@ -307,7 +307,7 @@ class ImportActionSection extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
 
         // Manual import link
         TextButton(

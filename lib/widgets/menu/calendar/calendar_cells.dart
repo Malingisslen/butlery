@@ -184,9 +184,8 @@ class _DayHeader extends StatelessWidget {
         children: [
           Text(
             day.displayLabel.toUpperCase(),
-            style: AppTextStyles.labelMedium.copyWith(
+            style: AppTextStyles.labelMediumBold.copyWith(
               letterSpacing: 2,
-              fontWeight: FontWeight.w700,
               color: isToday ? cs.onPrimaryContainer : cs.onSurface,
             ),
           ),
@@ -200,7 +199,6 @@ class _DayHeader extends StatelessWidget {
                 context.l10n.weeklyMenuTodayBadge,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: cs.onPrimaryContainer,
-                  fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                 ),
               ),

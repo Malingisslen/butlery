@@ -210,7 +210,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   style: AppTextStyles.headlineBold,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
                 LabeledField(
                   label: context.l10n.authEmail,
                   child: TextField(
@@ -218,7 +218,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     keyboardType: TextInputType.emailAddress,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 LabeledField(
                   label: context.l10n.adminPasswordLabel,
                   child: TextField(
@@ -228,10 +228,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                 ),
                 if (_error != null) ...[
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   Text(_error!, style: TextStyle(color: cs.error)),
                 ],
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
                 ActionButtons.primaryButton(
                   context,
                   onPressed: _isSubmitting ? null : _submit,
@@ -269,13 +269,13 @@ class _AdminNotAuthorized extends StatelessWidget {
                 size: AppDimensions.iconSizeXXXl,
                 color: cs.outline,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.adminNotAuthorized,
                 style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
               TextButton(
                 onPressed: onSignOut,
                 child: Text(context.l10n.adminSignOut),

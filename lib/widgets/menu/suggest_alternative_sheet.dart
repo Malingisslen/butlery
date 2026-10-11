@@ -102,7 +102,7 @@ class _SheetContentState extends State<_SheetContent> {
                   // Title
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
+                      horizontal: AppDimensions.space16,
                     ),
                     child: Text(
                       context.l10n.menuVoteSuggestAlternative,
@@ -113,12 +113,12 @@ class _SheetContentState extends State<_SheetContent> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
 
                   // Search field
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
+                      horizontal: AppDimensions.space16,
                     ),
                     // No dish to offer: the box says so instead of
                     // inviting a search that cannot find anything.
@@ -151,7 +151,7 @@ class _SheetContentState extends State<_SheetContent> {
                             controller: scrollController,
                             itemCount: _filtered.length,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.paddingL,
+                              horizontal: AppDimensions.space16,
                             ),
                             itemBuilder: (context, index) {
                               final recipe = _filtered[index];

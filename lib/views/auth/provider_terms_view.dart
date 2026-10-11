@@ -90,8 +90,8 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
           child: SingleChildScrollView(
             padding: ButleryPageBody.margin(
               context,
-              top: AppDimensions.spacingXl,
-              bottom: AppDimensions.spacingLg,
+              top: AppDimensions.space32,
+              bottom: AppDimensions.space24,
             ),
             child: Form(
               key: _formKey,
@@ -104,14 +104,14 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                       color: cs.onSurface,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     l10n.providerTermsSubtitle,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   LabeledField(
                     label: l10n.authYourName,
                     child: TextFormField(
@@ -125,14 +125,14 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                       errorBuilder: FieldErrorLine.builder,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   Text(
                     l10n.providerTermsNameHelp,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -149,7 +149,7 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Expanded(
                         child: Wrap(
                           crossAxisAlignment: WrapCrossAlignment.center,
@@ -194,10 +194,10 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                     ],
                   ),
                   if (vm.error != null) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     FieldErrorLine(vm.error!),
                   ],
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   HeroButton(
                     key: const ValueKey('providerTerms.create'),
                     label: l10n.authCreateAccount,
@@ -205,7 +205,7 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                     busy: vm.isLoading,
                     expand: true,
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   TextButton(
                     key: const ValueKey('providerTerms.decline'),
                     onPressed: vm.isLoading ? null : vm.decline,

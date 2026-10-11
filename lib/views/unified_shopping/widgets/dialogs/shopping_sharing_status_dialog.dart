@@ -42,9 +42,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           ButleryIcon(
             _getListTypeIcon(),
             color: _getListTypeColor(cs),
-            size: AppDimensions.iconSizeAction,
+            size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               _getDialogTitle(context),
@@ -62,15 +62,15 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             children: [
               _buildListInfoSection(context),
               if (currentUserId != null && list.isCollaborative) ...[
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 _buildPermissionSection(context, currentUserId),
               ],
               if (list.isCollaborative) ...[
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 _buildMembersSection(context, userService),
               ],
               if (list.lastActivityAt != null) ...[
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 _buildActivitySection(context),
               ],
             ],
@@ -131,7 +131,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return Card(
       color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -141,7 +141,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 color: cs.onSurface,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             _buildInfoRow(context.l10n.commonName, list.name),
             _buildInfoRow(context.l10n.commonType, _getListTypeLabel(context)),
             // BUT-1697: the owner name is stamped EMPTY when the profile has
@@ -214,7 +214,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return Card(
       color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -234,12 +234,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               permissionLabel,
               style: AppTextStyles.bodyBold,
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               permissionDescription,
               style: AppTextStyles.bodyMedium,
@@ -263,7 +263,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return Card(
       color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -283,7 +283,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             ...allMembers.entries.map((entry) {
               final isOwner = entry.key == list.ownerId;
               return _buildMemberRow(context, entry.key, entry.value, isOwner);
@@ -363,7 +363,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +381,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                       size: AppDimensions.iconSizeS,
                       color: permissionColor,
                     ),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
                       permissionLabel,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -404,7 +404,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     return Card(
       color: cs.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -424,7 +424,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             // Empty, not null, is the unresolved value since BUT-1697 — a bare
             // `!= null` check renders a nameless attribution row, and so does
             // a bare `isNotEmpty` once the stamped name is whitespace-only
@@ -455,7 +455,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

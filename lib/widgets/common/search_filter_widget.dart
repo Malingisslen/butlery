@@ -356,7 +356,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   /// Search bar with integrated filter toggle
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: ButlerySearchBox(
         controller: _searchController,
         focusNode: _searchFocusNode,
@@ -419,7 +419,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
+        horizontal: AppDimensions.space12,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,10 +430,10 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
-            spacing: AppDimensions.spacingXs,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: widget.searchHistory!.map((query) {
               return PressFill(
                 surface: PressSurface.base,

@@ -60,7 +60,7 @@ class GuestErasure {
         child: Dialog(
           key: progressKey,
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(AppDimensions.space24),
             child: PlateLineMessage(message: l10n.guestErasing),
           ),
         ),

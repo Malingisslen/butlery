@@ -70,7 +70,7 @@ class InputThemes {
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
+        horizontal: AppDimensions.space16,
         vertical: AppDimensions.space12,
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
@@ -98,8 +98,8 @@ class InputThemes {
         ),
       ),
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
     );
   }
@@ -146,10 +146,10 @@ class InputThemes {
         color: cs.onSurfaceVariant,
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
-      minVerticalPadding: AppDimensions.spacingSm,
+      minVerticalPadding: AppDimensions.space8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
@@ -202,8 +202,8 @@ class InputThemes {
       ),
       brightness: cs.brightness,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       // Chips are pill-shaped: tokens.json controls.chip.radius = "pill".
       shape: const RoundedRectangleBorder(

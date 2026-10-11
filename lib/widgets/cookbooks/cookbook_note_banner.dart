@@ -28,17 +28,17 @@ class CookbookNoteBanner extends StatelessWidget {
           border: Border(left: BorderSide(color: cs.primary, width: 3)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 context.l10n.cookbookNoteFrom(cookbookName),
-                style: AppTextStyles.sectionLabel.copyWith(
+                style: AppTextStyles.overline.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Text(note, style: AppTextStyles.bodyMedium),
             ],
           ),

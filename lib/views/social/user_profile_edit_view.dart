@@ -307,7 +307,7 @@ class _UserProfileEditViewContentState
             viewModel: viewModel,
             onUploadAvatar: _uploadAvatar,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           ProfileDisplayNameField(
             controller: _displayNameController,
             focusNode: _displayNameFocusNode,
@@ -324,17 +324,17 @@ class _UserProfileEditViewContentState
               }
             },
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           CookingIdentitySection(
             bioController: _bioController,
             viewModel: viewModel,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           CollectionInsightsCard(
             recipes: _recipesSnapshot,
             cuisineDisplayNames: _cuisineDisplayNames,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           PrivacySettingsSection(viewModel: viewModel),
           const SizedBox(height: AppDimensions.spacingXxl),
           ProfileActionButtons(

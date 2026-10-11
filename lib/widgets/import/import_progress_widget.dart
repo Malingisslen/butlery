@@ -110,7 +110,7 @@ class ImportProgressWidget extends StatelessWidget {
             // spinner (produktregler.md:163, :304; Skarmar v12 etapp 4
             // #imp2hamtar draws the line under "Hämtar recept").
             if (isLoading) ...[
-              const SizedBox(height: AppDimensions.paddingM),
+              const SizedBox(height: AppDimensions.space12),
               ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxWidth: PlateLineMessage.maxWidth,
@@ -126,7 +126,7 @@ class ImportProgressWidget extends StatelessWidget {
 
             // Progress message with optional elapsed time
             if (message.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.paddingM),
+              const SizedBox(height: AppDimensions.space12),
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                   context,
@@ -208,7 +208,7 @@ class _StepIndicator extends StatelessWidget {
                   ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Text(
           label,
           style:

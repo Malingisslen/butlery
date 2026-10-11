@@ -265,8 +265,8 @@ class ImageComponents {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Positioned(
-          top: AppDimensions.spacingSm,
-          right: AppDimensions.spacingSm,
+          top: AppDimensions.space8,
+          right: AppDimensions.space8,
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
@@ -314,12 +314,12 @@ class ImageComponents {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Positioned(
-          top: AppDimensions.spacingMd,
-          right: AppDimensions.spacingMd,
+          top: AppDimensions.space16,
+          right: AppDimensions.space16,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: context.modeColors.overlayPaperCard,
@@ -330,7 +330,7 @@ class ImageComponents {
             ),
             child: Text(
               '${currentIndex + 1}/$totalImages',
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: cs.primary,
               ),
             ),
@@ -353,7 +353,7 @@ class ImageComponents {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Positioned(
-          bottom: AppDimensions.spacingMd,
+          bottom: AppDimensions.space16,
           left: 0,
           right: 0,
           child: Row(
@@ -371,7 +371,7 @@ class ImageComponents {
                     width: AppDimensions.dotSize,
                     height: AppDimensions.dotSize,
                     margin: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
+                      horizontal: AppDimensions.space4,
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -406,7 +406,7 @@ class ImageComponents {
     final dimensions = config.getDimensions();
     // Handle infinite dimensions gracefully - use reasonable default size
     final indicatorSize = dimensions.width == double.infinity
-        ? AppDimensions.spacingMd + AppDimensions.spacingXs
+        ? AppDimensions.space16 + AppDimensions.space4
         : dimensions.width * 0.25;
 
     return Builder(

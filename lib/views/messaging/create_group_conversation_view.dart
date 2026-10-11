@@ -158,25 +158,25 @@ class _CreateGroupConversationViewState
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Group name input
             _buildGroupNameSection(viewModel),
 
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Selected members preview
             if (viewModel.hasSelectedMembers) ...[
               _buildSelectedMembersPreview(viewModel),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
             ],
 
             // Friend search
             _buildSearchSection(),
 
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
 
             // Friend list
             _buildFriendsList(viewModel),
@@ -236,7 +236,7 @@ class _CreateGroupConversationViewState
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Wrap(
           spacing: AppDimensions.space4,
           runSpacing: AppDimensions.space4,
@@ -296,7 +296,7 @@ class _CreateGroupConversationViewState
           context.l10n.messagingFriendsCount(displayFriends.length),
           style: AppTextStyles.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         ...displayFriends.map((friend) => _buildFriendItem(viewModel, friend)),
       ],
     );
@@ -322,7 +322,7 @@ class _CreateGroupConversationViewState
               displayName: friend.displayName,
               size: ImageSize.medium,
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +357,7 @@ class _CreateGroupConversationViewState
         children: [
           if (viewModel.error != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+              padding: const EdgeInsets.only(bottom: AppDimensions.space8),
               child: Text(
                 viewModel.error!,
                 style: AppTextStyles.bodyMedium.copyWith(

@@ -189,7 +189,10 @@ void main() {
         'recipe count, leaving plain tags off it', (tester) async {
       await pumpShelfWith(tester, [soppor, bakning, frukost]);
 
-      expect(find.text(l10n.cookbookShelfCount(2)), findsOneWidget);
+      expect(
+        find.text(l10n.cookbookShelfCount(2).toUpperCase()),
+        findsOneWidget,
+      );
       expect(find.text('Soppor'), findsOneWidget);
       expect(find.text('Bakning'), findsOneWidget);
       expect(find.text('Frukost'), findsNothing);

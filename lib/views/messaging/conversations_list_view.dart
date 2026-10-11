@@ -75,9 +75,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(
                     margin,
-                    AppDimensions.spacingMd,
+                    AppDimensions.space16,
                     margin,
-                    AppDimensions.spacingXs,
+                    AppDimensions.space4,
                   ),
                   child: ButlerySearchBox(
                     hintText: l10n.messagesSearchHint,
@@ -154,7 +154,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             padding: EdgeInsetsDirectional.only(
               start: margin,
               end: margin,
-              bottom: AppDimensions.spacingLg,
+              bottom: AppDimensions.space24,
             ),
             children: [
               if (pinned.isNotEmpty)

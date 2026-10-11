@@ -30,7 +30,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
@@ -45,16 +45,16 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         children: [
           _buildTitleSection(context),
           if (viewModel.hasDescription) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             _buildDescriptionSection(context),
           ],
           if (viewModel.hasActiveShoppers) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             _buildPresenceSection(context),
           ],
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildProgressSection(context),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildMetadataSection(context),
         ],
       ),
@@ -67,7 +67,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     final shoppers = viewModel.activeShoppers;
     return Wrap(
       spacing: AppDimensions.space4,
-      runSpacing: AppDimensions.spacingXs,
+      runSpacing: AppDimensions.space4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         for (final shopper in shoppers)
@@ -82,12 +82,12 @@ class CollaborativeShoppingHeader extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.handlarNu(
                   (shopper['displayName'] as String?).orEmpty(),
                 ),
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
@@ -121,7 +121,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -157,7 +157,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildProgressStats(context, progressColor),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         _buildProgressBar(context, progress, progressColor),
       ],
     );
@@ -199,7 +199,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Row(
       children: [
         _buildMemberCount(context),
-        const SizedBox(width: AppDimensions.spacingM),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           child: _buildActivitySummary(context),
         ),
@@ -216,10 +216,10 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Text(
           viewModel.memberCountText,
-          style: AppTextStyles.metadataEmphasized,
+          style: AppTextStyles.labelMedium,
         ),
       ],
     );
@@ -233,11 +233,11 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             viewModel.activitySummary,
-            style: AppTextStyles.metadataEmphasized,
+            style: AppTextStyles.labelMedium,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -249,17 +249,17 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   /// Get estimated header height for layout calculations
   double getEstimatedHeight(BuildContext context) {
-    double baseHeight = AppDimensions.paddingL * 2; // Top and bottom padding
+    double baseHeight = AppDimensions.space16 * 2; // Top and bottom padding
     baseHeight += 24; // Title (headlineSmall height)
 
     if (viewModel.hasDescription) {
-      baseHeight += AppDimensions.spacingXs;
+      baseHeight += AppDimensions.space4;
       baseHeight += 16 * 3; // Max 3 lines (bodyMedium height)
     }
 
-    baseHeight += AppDimensions.spacingM; // Before progress
+    baseHeight += AppDimensions.space8; // Before progress
     baseHeight += 40; // Progress section
-    baseHeight += AppDimensions.spacingM; // Before metadata
+    baseHeight += AppDimensions.space8; // Before metadata
     baseHeight += 20; // Metadata section
 
     return baseHeight;

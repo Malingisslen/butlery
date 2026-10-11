@@ -40,7 +40,7 @@ class LabeledField extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Semantics(label: label, child: field),
       ],
     );

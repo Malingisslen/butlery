@@ -109,7 +109,7 @@ class VeckomenyDialogs {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(context.l10n.menuNameBeforeShare),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: nameController,
               hint: context.l10n.menuNameHint,

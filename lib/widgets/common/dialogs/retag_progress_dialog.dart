@@ -79,7 +79,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeL,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(context.l10n.retagRetaggingRecipes),
           ),
@@ -96,7 +96,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
           ] else ...[
             if (_total > 0)
               Text(
@@ -110,7 +110,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             // The plate line: determinate "10 av 16" when the total is
             // known, else the still segment (Komponentark v1:305-306).
             PlateLine(
