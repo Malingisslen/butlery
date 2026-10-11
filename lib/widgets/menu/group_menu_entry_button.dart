@@ -22,6 +22,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class GroupMenuEntryButton extends StatelessWidget {
   const GroupMenuEntryButton({super.key});
@@ -97,7 +98,7 @@ class GroupMenuEntryButton extends StatelessWidget {
     BuildContext context,
     List<Conversation> groups,
   ) {
-    return showModalBottomSheet<Conversation>(
+    return showButlerySheet<Conversation>(
       context: context,
       builder: (sheetContext) => SafeArea(
         child: Column(

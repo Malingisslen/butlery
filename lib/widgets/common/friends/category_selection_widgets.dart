@@ -141,23 +141,6 @@ class CategorySelectionWidgets {
         ),
         selected: isSelected,
         onSelected: enabled ? (_) => onTap() : null,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        // Chosen is the drawn chip: an ink fill with paper text and check
-        // (Komponentark v1:142); ink text and check on it vanished in both
-        // modes. The text.primary edge is the dark drawing's paper edge
-        // (Komponentark v1:523) and ink-on-ink in light.
-        selectedColor: Theme.of(context).colorScheme.primary,
-        checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-        side: BorderSide(
-          color: isSelected
-              ? Theme.of(context).colorScheme.onSurface
-              : Theme.of(context).colorScheme.outline,
-        ),
-        labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: isSelected
-              ? Theme.of(context).colorScheme.onPrimary
-              : Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
       ),
     );
   }
@@ -171,7 +154,7 @@ class CategorySelectionWidgets {
     bool enabled = true,
   }) {
     return PressFill(
-      surface: isSelected ? PressSurface.raised : PressSurface.base,
+      surface: isSelected ? PressSurface.ink : PressSurface.base,
       child: FilterChip(
         label: Row(
           mainAxisSize: MainAxisSize.min,
@@ -188,8 +171,6 @@ class CategorySelectionWidgets {
                 vertical: AppDimensions.borderWidthStandard,
               ),
               decoration: BoxDecoration(
-                // The count stands on the page (unchosen) or on the paper
-                // plate (chosen), opaque both ways.
                 color: isSelected
                     ? Theme.of(context).colorScheme.surface
                     : Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -208,22 +189,6 @@ class CategorySelectionWidgets {
         ),
         selected: isSelected,
         onSelected: enabled ? (_) => onTap() : null,
-        // Chosen is surface.selected with a real border, never a tint.
-        // surfaceContainerHighest is surface.raised, which
-        // carries surface.selected's values in both modes; the border is
-        // text.primary (onSurface): ink on light, paper on dark.
-        selectedColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        checkmarkColor: Theme.of(context).colorScheme.onSurface,
-        labelStyle: AppTextStyles.labelMedium.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        side: BorderSide(
-          color: isSelected
-              ? Theme.of(context).colorScheme.onSurface
-              : Theme.of(context).colorScheme.onSurfaceVariant,
-          width: isSelected ? 1.5 : 1,
-        ),
       ),
     );
   }

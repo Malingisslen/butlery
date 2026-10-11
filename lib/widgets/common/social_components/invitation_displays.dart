@@ -53,9 +53,6 @@ class InvitationDisplays {
     VoidCallback? onTap,
     VoidCallback? onDeleted,
     bool selected = false,
-    Color? backgroundColor,
-    Color? selectedColor,
-    EdgeInsets? padding,
   }) {
     return SocialFacade.targetChip(
       target: target,

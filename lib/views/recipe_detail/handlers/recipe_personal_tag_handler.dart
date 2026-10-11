@@ -25,6 +25,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Handler for personal tag operations from recipe detail view.
 class RecipePersonalTagHandler {
@@ -39,10 +40,8 @@ class RecipePersonalTagHandler {
     final recipe = viewModel.recipe;
     final currentTagIds = recipe.core.personalTagIds ?? [];
 
-    final result = await showModalBottomSheet<List<String>>(
+    final result = await showButlerySheet<List<String>>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (context) => _PersonalTagQuickSelector(
         selectedTagIds: currentTagIds,
         recipe: recipe,
@@ -212,67 +211,45 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,
       maxChildSize: 0.9,
       expand: false,
       builder: (context, scrollController) {
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusCard),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusKnob,
+        return Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.tag),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Text(
+                      context.l10n.taggingPersonalTags,
+                      style: AppTextStyles.titleLarge,
+                    ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: _cancel,
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  FilledButton(
+                    onPressed: _save,
+                    child: Text(context.l10n.commonSave),
+                  ),
+                ],
               ),
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                child: Row(
-                  children: [
-                    const ButleryIcon(ButleryIcons.tag),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        context.l10n.taggingPersonalTags,
-                        style: AppTextStyles.titleLarge,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _cancel,
-                      child: Text(context.l10n.commonCancel),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    FilledButton(
-                      onPressed: _save,
-                      child: Text(context.l10n.commonSave),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              // Content
-              Expanded(
-                child: _buildContent(context, scrollController),
-              ),
-            ],
-          ),
+            ),
+            const Divider(height: 1),
+            // Content
+            Expanded(
+              child: _buildContent(context, scrollController),
+            ),
+          ],
         );
       },
     );
@@ -435,7 +412,7 @@ class _QuickTagChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return PressFill(
-      surface: isSelected ? PressSurface.raised : PressSurface.base,
+      surface: isSelected ? PressSurface.ink : PressSurface.base,
       child: FilterChip(
         label: Text(tag.name),
         avatar: isSelected
@@ -446,25 +423,6 @@ class _QuickTagChip extends StatelessWidget {
               ),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: cs.surface,
-        // surface.selected (surfaceContainerHighest in both schemes) with the
-        // real 2 px border below, never a tint.
-        selectedColor: cs.surfaceContainerHighest,
-        checkmarkColor: cs.onSurface,
-        side: BorderSide(
-          color: isSelected ? cs.onSurface : cs.outlineVariant,
-          width: isSelected ? 2 : 1,
-        ),
-        labelStyle:
-            (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
-                .copyWith(
-                  color: isSelected ? cs.onSurface : cs.onSurface,
-                ),
-        showCheckmark: isSelected,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs,
-        ),
       ),
     );
   }

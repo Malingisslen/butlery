@@ -34,6 +34,7 @@ import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Embeddable calendar widget. Reads `WeeklyMenuPlanViewModel` from the
 /// surrounding `MultiProvider` (set up by `VeckomenyView`).
@@ -345,7 +346,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   Future<(DayOfWeek, MealSlot)?> _showMoveTargetSheet(
     BuildContext context,
   ) async {
-    return showModalBottomSheet<(DayOfWeek, MealSlot)>(
+    return showButlerySheet<(DayOfWeek, MealSlot)>(
       context: context,
       builder: (sheetContext) {
         final cs = Theme.of(sheetContext).colorScheme;

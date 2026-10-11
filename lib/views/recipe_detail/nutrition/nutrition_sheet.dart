@@ -14,16 +14,15 @@ import 'package:butlery/views/recipe_detail/nutrition/nutrition_format.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_ingredient_lists.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 Future<void> showNutritionSheet(
   BuildContext context, {
   required NutritionViewModel viewModel,
 }) {
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => NutritionSheet(viewModel: viewModel),
   );
 }

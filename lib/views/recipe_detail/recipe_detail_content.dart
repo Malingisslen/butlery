@@ -33,6 +33,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -503,12 +504,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final service = ServiceLocator.get<StepTimerService>();
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final cs = Theme.of(context).colorScheme;
 
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      backgroundColor: cs.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => StepTimerWidget(
         service: service,
         initialDuration: match.duration,
@@ -594,12 +592,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
   void _showSubstitutionSheet(BuildContext context, String ingredientName) {
     if (ingredientName.isEmpty) return;
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.6,
-      ),
+      maxHeightFraction: 0.6,
       builder: (_) => IngredientSubstitutionSheet(
         ingredientName: ingredientName,
       ),

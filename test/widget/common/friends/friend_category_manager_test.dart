@@ -416,8 +416,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(capturedSelection, containsAll(['user1', 'user2']));
-        // BUT-2155: the chosen chip sits on surface.raised, so its label is
-        // ink, not the theme's paper label for the ink fill.
+        // The chosen chip takes the theme's ink fill and paper label.
         final label = DefaultTextStyle.of(
           tester.element(
             find.descendant(
@@ -426,7 +425,7 @@ void main() {
             ),
           ),
         ).style;
-        expect(label.color, AppTheme.lightTheme.colorScheme.onSurface);
+        expect(label.color, AppTheme.lightTheme.colorScheme.onPrimary);
       });
 
       testWidgets('deselects category on second tap', (

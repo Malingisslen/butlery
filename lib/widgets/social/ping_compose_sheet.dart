@@ -15,10 +15,11 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
-/// Helper matches the `showModalBottomSheet` convention used elsewhere in the
+/// Helper matches the `showButlerySheet` convention used elsewhere in the
 /// codebase — the long-press handler in [FamilyPresenceBar] just calls this.
 Future<void> showPingComposeSheet({
   required BuildContext context,
@@ -26,13 +27,8 @@ Future<void> showPingComposeSheet({
   required String targetUserId,
   PingService? pingServiceOverride,
 }) {
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.zero,
-    ),
-    isScrollControlled: true,
     builder: (_) => PingComposeSheet(
       groupId: groupId,
       targetUserId: targetUserId,

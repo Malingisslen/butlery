@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Shows a bottom sheet for selecting recipes to suggest as vote alternatives.
 class SuggestAlternativeSheet {
@@ -22,9 +23,8 @@ class SuggestAlternativeSheet {
     required List<Recipe> availableRecipes,
     List<String> excludeRecipeIds = const [],
   }) {
-    return showModalBottomSheet<Recipe>(
+    return showButlerySheet<Recipe>(
       context: context,
-      isScrollControlled: true,
       builder: (context) => _SheetContent(
         availableRecipes: availableRecipes,
         excludeRecipeIds: excludeRecipeIds,
@@ -97,25 +97,6 @@ class _SheetContentState extends State<_SheetContent> {
               ),
               child: Column(
                 children: [
-                  // Handle
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingM,
-                    ),
-                    child: Container(
-                      width: AppDimensions.spacingXl * 2,
-                      height: AppDimensions.space4,
-                      decoration: BoxDecoration(
-                        color: cs.onSurfaceVariant,
-                        // Komponentark v1:95, v1:325: height 4, radius 2
-                        // (tokens.json space.radius knob).
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusKnob,
-                        ),
-                      ),
-                    ),
-                  ),
-
                   // Title
                   Padding(
                     padding: const EdgeInsets.symmetric(

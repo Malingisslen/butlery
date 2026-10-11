@@ -1,6 +1,5 @@
-// BUT-2155: a chosen chip on the theme's ink fill takes a paper label, so a
-// chip that fills its chosen state with surface.raised instead must set its
-// own ink label, or the name turns paper on a pale plate in light mode.
+// A chosen chip takes the theme's ink fill and its paper label; the chip sets
+// no colour of its own.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +14,7 @@ void main() {
     ('dark', AppTheme.darkTheme),
   ]) {
     testWidgets(
-      'a chosen compact category chip takes onSurface for its label ($name)',
+      'a chosen compact category chip takes the paper label ($name)',
       (
         tester,
       ) async {
@@ -45,7 +44,7 @@ void main() {
         final style = DefaultTextStyle.of(
           tester.element(find.text('Familjen')),
         ).style;
-        expect(style.color, theme.colorScheme.onSurface);
+        expect(style.color, theme.colorScheme.onPrimary);
       },
     );
   }

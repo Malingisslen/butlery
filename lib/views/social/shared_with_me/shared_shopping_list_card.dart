@@ -16,6 +16,7 @@ import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// SharedShoppingListCard - Card for displaying shared shopping lists
@@ -263,9 +264,8 @@ class SharedShoppingListCard {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         maxChildSize: 0.9,
@@ -290,120 +290,98 @@ class SharedShoppingListCard {
       sharedShoppingList,
     );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            width: 32,
-            height: 4,
-            margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.space4,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            ),
-          ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  sharedShoppingList.listName,
-                  style: AppTextStyles.headlineSmall,
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                Text(
-                  sharedShoppingList.sharingContextText,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: AppDimensions.space4),
-                  _buildShareMessage(context, sharedShoppingList.shareMessage!),
-                ],
-              ],
-            ),
-          ),
-
-          // Items list
-          Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
+    return Column(
+      children: [
+        // Header
+        Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                sharedShoppingList.listName,
+                style: AppTextStyles.headlineSmall,
               ),
-              itemCount: 1,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const ButleryIcon(
-                    ButleryIcons.shoppingCart,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  title: Text(
-                    context.l10n.shoppingItemCountText(
-                      sharedShoppingList.itemCount,
-                    ),
-                  ),
-                  subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                  trailing: const ButleryChevron(),
-                );
-              },
-            ),
-          ),
-
-          // Action buttons
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ActionButtons.secondaryButton(
-                    context,
-                    label: context.l10n.commonClose,
-                    onPressed: () => Navigator.pop(context),
-                  ),
+              const SizedBox(height: AppDimensions.spacingXs),
+              Text(
+                sharedShoppingList.sharingContextText,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Expanded(
-                  child: ActionButtons.primaryButton(
-                    context,
-                    label: isJoined
-                        ? context.l10n.sharedAlreadyMember
-                        : context.l10n.sharedJoinList,
-                    icon: isJoined
-                        ? ButleryIcons.check
-                        : ButleryIcons.shoppingCart,
-                    isLoading: viewModel.shoppingViewModel.isOperating,
-                    onPressed:
-                        isJoined || viewModel.shoppingViewModel.isOperating
-                        ? null
-                        : () {
-                            SharedContentActions.joinShoppingList(
-                              context,
-                              viewModel,
-                              sharedShoppingList,
-                            );
-                            Navigator.pop(context);
-                          },
-                  ),
-                ),
+              ),
+              if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
+                const SizedBox(height: AppDimensions.space4),
+                _buildShareMessage(context, sharedShoppingList.shareMessage!),
               ],
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // Items list
+        Expanded(
+          child: ListView.builder(
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+            ),
+            itemCount: 1,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: const ButleryIcon(
+                  ButleryIcons.shoppingCart,
+                  size: AppDimensions.iconSizeM,
+                ),
+                title: Text(
+                  context.l10n.shoppingItemCountText(
+                    sharedShoppingList.itemCount,
+                  ),
+                ),
+                subtitle: Text(context.l10n.sharedTapToSeeAllItems),
+                trailing: const ButleryChevron(),
+              );
+            },
+          ),
+        ),
+
+        // Action buttons
+        Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Row(
+            children: [
+              Expanded(
+                child: ActionButtons.secondaryButton(
+                  context,
+                  label: context.l10n.commonClose,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: isJoined
+                      ? context.l10n.sharedAlreadyMember
+                      : context.l10n.sharedJoinList,
+                  icon: isJoined
+                      ? ButleryIcons.check
+                      : ButleryIcons.shoppingCart,
+                  isLoading: viewModel.shoppingViewModel.isOperating,
+                  onPressed: isJoined || viewModel.shoppingViewModel.isOperating
+                      ? null
+                      : () {
+                          SharedContentActions.joinShoppingList(
+                            context,
+                            viewModel,
+                            sharedShoppingList,
+                          );
+                          Navigator.pop(context);
+                        },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
