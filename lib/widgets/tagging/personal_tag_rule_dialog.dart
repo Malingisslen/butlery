@@ -15,6 +15,7 @@ import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/config/valid_properties.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/theme/error_text_style.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -615,9 +616,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           Expanded(
             child: Text(
               _error!,
-              style: AppTextStyles.errorText.copyWith(
-                color: cs.onErrorContainer,
-              ),
+              style: errorTextStyle(cs, onDangerTint: true),
             ),
           ),
         ],

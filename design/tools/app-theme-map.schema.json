@@ -31,6 +31,16 @@
     "$schemeNote": {
       "type": "string"
     },
+    "$slotMemberNote": {
+      "type": "string"
+    },
+    "textThemeSlotMembers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "$typeNote": {
       "type": "string"
     },
