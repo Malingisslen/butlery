@@ -4393,6 +4393,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'search...';
 
   @override
+  String get searchNothingYet => 'Nothing to search yet';
+
+  @override
   String shareFriendsSelectedCount(int count) {
     return '$count friend(s) selected';
   }
@@ -13149,6 +13152,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountSecurityPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get passwordsMatch => 'Passwords match';
 
   @override
   String get profileAccountSecurity => 'Account Security';

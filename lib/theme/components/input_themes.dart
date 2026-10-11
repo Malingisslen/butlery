@@ -33,17 +33,11 @@ class InputThemes {
         width: AppDimensions.borderWidthStandard,
       ),
     );
-    // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
-    // StyledInput and ButlerySearchBox are): the canonical ring colour and
-    // width, ink on light and paper on dark, never saffron. A theme's input
-    // border can only draw on the field's own edge, so this is the ring
-    // without its 3 px offset: the recorded fallback of decision D3, kept
-    // only until the remaining bare fields move onto the ring.
-    final focused = OutlineInputBorder(
+    final error = OutlineInputBorder(
       borderRadius: radius,
       borderSide: BorderSide(
-        color: AppModeColors.focusRing(cs.brightness),
-        width: AppDimensions.focusRingWidth,
+        color: cs.error,
+        width: AppDimensions.borderWidthOutlinedEdge,
       ),
     );
     return InputDecorationTheme(
@@ -57,17 +51,15 @@ class InputThemes {
       hoverColor: cs.surfaceContainerHighest,
       border: resting,
       enabledBorder: resting,
-      focusedBorder: focused,
+      // Focus is the ring outside the box (LabeledField, ButleryFocusRing),
+      // so the edge keeps its colour and width when focused (Komponentark
+      // v1:657); test/architecture/text_field_in_ring_test.dart keeps every
+      // field in the ring.
+      focusedBorder: resting,
       // Error: 1.5 px status-danger; the error is also told in text under
       // the field (Komponentark v1 §11).
-      errorBorder: OutlineInputBorder(
-        borderRadius: radius,
-        borderSide: BorderSide(
-          color: cs.error,
-          width: AppDimensions.borderWidthOutlinedEdge,
-        ),
-      ),
-      focusedErrorBorder: focused,
+      errorBorder: error,
+      focusedErrorBorder: error,
       // Disabled field: 1 px surface.disabled edge on surface.raised, never
       // opacity (Grafisk manual v6:423; Komponentark v1:423 light, :514 dark).
       disabledBorder: OutlineInputBorder(

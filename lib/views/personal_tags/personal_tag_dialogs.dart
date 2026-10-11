@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
 abstract final class PersonalTagDialogs {
@@ -191,16 +192,18 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateTag),
-            content: TextField(
-              style: fieldTextStyle(context, enabled: !isLoading),
-              onChanged: (v) => tagName = v,
-              enabled: !isLoading,
-              decoration: InputDecoration(
-                labelText: context.l10n.personalTagNameLabel,
-                hintText: context.l10n.personalTagNameHint,
+            content: LabeledField(
+              label: context.l10n.personalTagNameLabel,
+              child: TextField(
+                style: fieldTextStyle(context, enabled: !isLoading),
+                onChanged: (v) => tagName = v,
+                enabled: !isLoading,
+                decoration: InputDecoration(
+                  hintText: context.l10n.personalTagNameHint,
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
               ),
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
             ),
             actions: [
               TextButton(
@@ -294,16 +297,18 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateGroup),
-            content: TextField(
-              style: fieldTextStyle(context, enabled: !isLoading),
-              onChanged: (v) => groupName = v,
-              enabled: !isLoading,
-              decoration: InputDecoration(
-                labelText: context.l10n.personalTagGroupNameLabel,
-                hintText: context.l10n.personalTagGroupNameHint,
+            content: LabeledField(
+              label: context.l10n.personalTagGroupNameLabel,
+              child: TextField(
+                style: fieldTextStyle(context, enabled: !isLoading),
+                onChanged: (v) => groupName = v,
+                enabled: !isLoading,
+                decoration: InputDecoration(
+                  hintText: context.l10n.personalTagGroupNameHint,
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
               ),
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
             ),
             actions: [
               TextButton(
@@ -441,16 +446,18 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagCreateNewGroup),
-            content: TextField(
-              style: fieldTextStyle(context, enabled: !isLoading),
-              onChanged: (v) => groupName = v,
-              enabled: !isLoading,
-              decoration: InputDecoration(
-                labelText: context.l10n.personalTagGroupNameLabel,
-                hintText: context.l10n.personalTagGroupNameHint,
+            content: LabeledField(
+              label: context.l10n.personalTagGroupNameLabel,
+              child: TextField(
+                style: fieldTextStyle(context, enabled: !isLoading),
+                onChanged: (v) => groupName = v,
+                enabled: !isLoading,
+                decoration: InputDecoration(
+                  hintText: context.l10n.personalTagGroupNameHint,
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
               ),
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
             ),
             actions: [
               TextButton(
@@ -532,15 +539,15 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagRenameGroup),
-            content: TextFormField(
-              style: fieldTextStyle(context, enabled: !isLoading),
-              initialValue: group.name,
-              onChanged: (v) => groupName = v,
-              enabled: !isLoading,
-              decoration: InputDecoration(
-                labelText: context.l10n.personalTagGroupNameLabel,
+            content: LabeledField(
+              label: context.l10n.personalTagGroupNameLabel,
+              child: TextFormField(
+                style: fieldTextStyle(context, enabled: !isLoading),
+                initialValue: group.name,
+                onChanged: (v) => groupName = v,
+                enabled: !isLoading,
+                autofocus: true,
               ),
-              autofocus: true,
             ),
             actions: [
               TextButton(

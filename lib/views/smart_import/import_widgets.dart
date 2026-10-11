@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -89,41 +90,36 @@ class ImportInputSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return TextField(
-      style: fieldTextStyle(context, enabled: !viewModel.isImporting),
-      controller: controller,
-      focusNode: focusNode,
-      onChanged: onChanged,
-      enabled: !viewModel.isImporting,
-      maxLines: 5,
-      minLines: 3,
-      decoration: InputDecoration(
-        hintText: context.l10n.importPasteLinkOrText,
-        // The hint is text.secondary itself, never faded, and the field's
-        // borders come from the input theme: focus is never a thicker ink
-        // border, which vanished on dark (enhet-4 import_widgets.dart:101;
-        // tokens.json:40-53, :155-160).
-        hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+    return LabeledField(
+      child: TextField(
+        style: fieldTextStyle(context, enabled: !viewModel.isImporting),
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: onChanged,
+        enabled: !viewModel.isImporting,
+        maxLines: 5,
+        minLines: 3,
+        decoration: InputDecoration(
+          hintText: context.l10n.importPasteLinkOrText,
+          // The hint is text.secondary itself, never faded.
+          hintStyle: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
+          suffixIcon: controller.text.isNotEmpty
+              ? IconButton(
+                  icon: const ButleryIcon(ButleryIcons.x),
+                  onPressed: () {
+                    controller.clear();
+                    viewModel.clearInput();
+                  },
+                  tooltip: context.l10n.commonClear,
+                )
+              : null,
         ),
-        filled: true,
-        fillColor: theme.colorScheme.surfaceContainerLowest,
-        // A field on surface.base: hover takes surface.raised (BUT-2205).
-        hoverColor: theme.colorScheme.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
-        suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const ButleryIcon(ButleryIcons.x),
-                onPressed: () {
-                  controller.clear();
-                  viewModel.clearInput();
-                },
-                tooltip: context.l10n.commonClear,
-              )
-            : null,
+        textCapitalization: TextCapitalization.none,
+        keyboardType: TextInputType.multiline,
       ),
-      textCapitalization: TextCapitalization.none,
-      keyboardType: TextInputType.multiline,
     );
   }
 }

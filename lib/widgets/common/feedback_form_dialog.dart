@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {
@@ -116,20 +117,15 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Description
-              Text(
-                context.l10n.feedbackDescriptionLabel,
-                style: AppTextStyles.labelLarge,
-              ),
-              const SizedBox(height: AppDimensions.spacingSm),
-              TextField(
-                controller: _descriptionController,
-                maxLines: 5,
-                minLines: 3,
-                maxLength: 2000,
-                decoration: InputDecoration(
-                  hintText: context.l10n.feedbackDescriptionHint,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
+              LabeledField(
+                label: context.l10n.feedbackDescriptionLabel,
+                child: TextField(
+                  controller: _descriptionController,
+                  maxLines: 5,
+                  minLines: 3,
+                  maxLength: 2000,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.feedbackDescriptionHint,
                   ),
                 ),
               ),
@@ -137,19 +133,14 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Email (optional)
-              Text(
-                context.l10n.feedbackEmailLabel,
-                style: AppTextStyles.labelLarge,
-              ),
-              const SizedBox(height: AppDimensions.spacingSm),
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                maxLength: 100,
-                decoration: InputDecoration(
-                  hintText: context.l10n.feedbackEmailHint,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
+              LabeledField(
+                label: context.l10n.feedbackEmailLabel,
+                child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  maxLength: 100,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.feedbackEmailHint,
                   ),
                 ),
               ),

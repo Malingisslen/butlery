@@ -45,4 +45,37 @@ void main() {
     expect(queries.last, '');
     expect(find.byType(IngredientSuggestionList), findsNothing);
   });
+
+  testWidgets('tapping a chip removes that ingredient by its id', (
+    tester,
+  ) async {
+    final removed = <String>[];
+    IngredientData ingredient(String id, String swedish) => IngredientData(
+      id: id,
+      swedish: swedish,
+      english: id,
+      group: 'vegetables',
+      properties: const {},
+    );
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Material(
+          child: IngredientChipInput(
+            selectedIngredients: [
+              ingredient('ing-onion', 'Lök'),
+              ingredient('ing-garlic', 'Vitlök'),
+            ],
+            autocompleteResults: const [],
+            onSearchChanged: (_) {},
+            onIngredientSelected: (_) {},
+            onIngredientRemoved: removed.add,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Vitlök'));
+    await tester.pump();
+    expect(removed, ['ing-garlic']);
+  });
 }

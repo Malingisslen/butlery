@@ -276,7 +276,7 @@ class _AuthViewState extends State<AuthView> {
 
               // Name field (registration only)
               if (!viewModel.isLoginMode) ...[
-                _buildLabeledField(
+                LabeledField(
                   label: context.l10n.authYourName,
                   child: TextFormField(
                     style: fieldTextStyle(
@@ -292,6 +292,7 @@ class _AuthViewState extends State<AuthView> {
                       hint: context.l10n.authEnterYourName,
                     ),
                     validator: FormValidators.authName(),
+                    errorBuilder: FieldErrorLine.builder,
                     autofillHints: const [AutofillHints.name],
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(_emailFocus);
@@ -302,7 +303,7 @@ class _AuthViewState extends State<AuthView> {
               ],
 
               // Email field
-              _buildLabeledField(
+              LabeledField(
                 label: context.l10n.authEmail,
                 child: TextFormField(
                   style: fieldTextStyle(context, enabled: !viewModel.isLoading),
@@ -316,6 +317,7 @@ class _AuthViewState extends State<AuthView> {
                     hint: context.l10n.authEmailHint,
                   ),
                   validator: FormValidators.authEmail(),
+                  errorBuilder: FieldErrorLine.builder,
                   autofillHints: const [AutofillHints.email],
                   onFieldSubmitted: (_) {
                     FocusScope.of(context).requestFocus(_passwordFocus);
@@ -325,7 +327,7 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Password field
-              _buildLabeledField(
+              LabeledField(
                 label: context.l10n.authPassword,
                 child: TextFormField(
                   style: fieldTextStyle(context, enabled: !viewModel.isLoading),
@@ -358,6 +360,7 @@ class _AuthViewState extends State<AuthView> {
                   validator: viewModel.isLoginMode
                       ? FormValidators.authPassword()
                       : FormValidators.strongPassword(),
+                  errorBuilder: FieldErrorLine.builder,
                   autofillHints: const [AutofillHints.password],
                 ),
               ),
@@ -523,64 +526,10 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildLabeledField({required String label, required Widget child}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
-        child,
-      ],
-    );
-  }
-
-  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
-    final cs = Theme.of(context).colorScheme;
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
-      filled: true,
-      fillColor: cs.surfaceContainerLow,
-      // A field on surface.base: hover takes surface.raised (BUT-2205).
-      hoverColor: cs.surfaceContainerHighest,
-      suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.space12,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.outline),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.outline),
-      ),
-      // Focus is the canonical ring colour at the ring's width, ink on
-      // light and paper on dark, never saffron (tokens.json:155-160;
-      // Grafisk manual v6:209; enhet-4 auth_view.dart:528).
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(
-          color: context.modeColors.focusRing,
-          width: AppDimensions.focusRingWidth,
-        ),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.error),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.error),
-      ),
-    );
-  }
+  // The box, its edge and its focus ring come from the shared input theme
+  // and LabeledField (Komponentark v1 §11).
+  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) =>
+      InputDecoration(hintText: hint, suffixIcon: suffixIcon);
 
   /// A consent checkbox with a >=48dp tap target (WCAG 2.5.5 / EAA) while the
   /// visible box stays compact. BUT-1426: the old SizedBox(24,24) clamped the
