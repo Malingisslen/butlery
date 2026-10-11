@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -427,9 +425,7 @@ class RecipeCard extends StatelessWidget {
     // text.accent is bound to surface.base; a chosen card is surface.raised,
     // where text.accent.onRaised takes over.
     final accent = isSelected
-        ? (brightness == Brightness.dark
-              ? AppColorsDark.onWarningContainer
-              : AppColors.onWarningContainer)
+        ? context.modeColors.onWarningContainer
         : context.modeColors.textAccent;
 
     final line = Text.rich(
