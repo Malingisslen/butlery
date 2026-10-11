@@ -13,7 +13,10 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
+import 'package:butlery/views/unified_shopping/widgets/dialogs/pending_invitees_section.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -23,11 +26,15 @@ class ShoppingMemberManagementDialog extends StatefulWidget {
   final Map<String, String> userDisplayNames;
   final List<UserProfile> availableFriends;
 
+  /// Defaults to the friends service's; injectable for tests.
+  final ListInvitationOperations? invitations;
+
   const ShoppingMemberManagementDialog({
     super.key,
     required this.list,
     required this.userDisplayNames,
     required this.availableFriends,
+    this.invitations,
   });
 
   @override
@@ -44,6 +51,10 @@ class _ShoppingMemberManagementDialogState
   String? _error;
   List<UserProfile> _filteredFriends = [];
   final Set<String> _selectedFriends = {};
+  Set<String> _pendingInvitees = const {};
+  SharedListPermission _inviteLevel = SharedListPermission.edit;
+
+  late final ListInvitationOperations _invitations;
 
   late Map<String, SharedListPermission> _localPermissions;
   late Set<String> _localMemberIds;
@@ -66,6 +77,9 @@ class _ShoppingMemberManagementDialogState
   void initState() {
     super.initState();
 
+    _invitations =
+        widget.invitations ??
+        ServiceLocator.get<UnifiedFriendsService>().invitations.listInvitations;
     _declaredBase = widget.list;
     _localPermissions = Map<String, SharedListPermission>.from(
       widget.list.memberPermissions,
@@ -254,7 +268,9 @@ class _ShoppingMemberManagementDialogState
     }
   }
 
-  Future<void> _addSelectedMembers() async {
+  /// BUT-2089: nobody is seated by someone else, so this sends invitations and
+  /// the person joins when they accept.
+  Future<void> _inviteSelectedFriends() async {
     if (_selectedFriends.isEmpty || _isLoading) return;
 
     setState(() {
@@ -263,99 +279,49 @@ class _ShoppingMemberManagementDialogState
     });
 
     try {
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final addedMembers = <String>[];
-      // Read before the loop: _selectedFriends is cleared on success below.
-      // Iterate a COPY — a checkbox tapped mid-flight would otherwise mutate
-      // the set under the iterator.
       final selected = _selectedFriends.toList();
-      final attempted = selected.length;
-
-      // The reason slot holds ONE message and every iteration clears it on the
-      // way in, so reading it after the loop yields only the LAST friend's
-      // outcome — usually null, because a later success wiped the earlier
-      // failure's reason. Capture at the moment of failure instead, or a
-      // partial failure reports the cause-free fallback in every case except
-      // the one where the failing friend happened to be last.
-      String? firstFailureReason;
-
-      for (final friendId in selected) {
-        final friend = widget.availableFriends.firstWhere(
-          (f) => f.uid == friendId,
-        );
-        final success = await shoppingService.collaborative.addMember(
-          listId: widget.list.id,
-          userId: friendId,
-          userDisplayName: friend.displayName,
-          permission: SharedListPermission.edit,
-        );
-
-        if (success) {
-          addedMembers.add(friendId);
-        } else {
-          firstFailureReason ??= shoppingService.consumeMutationError();
-        }
-      }
-
-      if (addedMembers.isNotEmpty) {
-        // Not inside the `mounted` branch below: the base tracks what was
-        // WRITTEN, and a partial batch still moved the server's membership.
-        // Leaving it behind would make the next permission change in this
-        // session look like drift the user never caused.
-        _rebaseMembers({
-          ..._declaredBase.memberPermissions,
-          for (final friendId in addedMembers)
-            friendId: SharedListPermission.edit,
-        });
-      }
-
-      if (addedMembers.isNotEmpty && mounted) {
+      final summary = await _invitations.invite(
+        listId: widget.list.id,
+        userIds: selected,
+        permission: _inviteLevel.name,
+      );
+      if (!mounted) return;
+      final l10n = context.l10n;
+      if (summary.callFailed) {
         setState(() {
-          for (final friendId in addedMembers) {
-            _localPermissions[friendId] = SharedListPermission.edit;
-            _localMemberIds.add(friendId);
-          }
-          _selectedFriends.clear();
-          _updateFilteredFriends();
+          _error = summary.outcome == ListInvitationOutcome.offline
+              ? l10n.errorNetwork
+              : l10n.listInviteFailed;
         });
+        return;
       }
-
-      // Drain the slot regardless, so nothing stays parked for an unrelated
-      // later reader to display as its own cause.
-      final reason =
-          firstFailureReason ?? shoppingService.consumeMutationError();
-      if (mounted) {
-        if (addedMembers.isNotEmpty) {
-          SnackBarUtils.showSuccess(
-            context,
-            context.l10n.shoppingMembersAdded(addedMembers.length),
+      setState(() {
+        _selectedFriends.clear();
+        // One line for not a friend and for a block, so a block never shows.
+        if (summary.notInvited.isNotEmpty) {
+          _error = l10n.listInviteNotInvited(
+            summary.notInvited.map(_nameOf).join(', '),
           );
-          // Some selected friends were NOT added. Reporting only the
-          // successes reads as "all done" while _selectedFriends.clear()
-          // above has already dropped the failures out of the selection.
-          if (addedMembers.length < attempted) {
-            setState(() {
-              _error = reason ?? context.l10n.shoppingCouldNotAddMembers;
-            });
-          }
-        } else {
-          setState(() {
-            _error = reason ?? context.l10n.shoppingCouldNotAddMembers;
-          });
         }
+      });
+      if (summary.invited.isNotEmpty) {
+        SnackBarUtils.showSuccess(
+          context,
+          summary.invited.length == 1
+              ? l10n.listInviteSentOne(_nameOf(summary.invited.single))
+              : l10n.listInviteSentMany(summary.invited.length),
+        );
       }
     } catch (e) {
-      AppLogger.error('Adding shopping members failed', e);
+      AppLogger.error('Inviting to shopping list failed', e);
       if (mounted) {
         setState(() {
-          // What failed, never the exception (content-style-guide.md:95); the
-          // exception goes to the log.
-          _error = context.l10n.shoppingCouldNotAddMembers;
+          _error = context.l10n.listInviteFailed;
         });
       }
     } finally {
-      // `return` inside the try still runs this. The dialog is barrier-
-      // dismissible, so it can be gone before the round-trip lands.
+      // The dialog is barrier-dismissible, so it can be gone before the
+      // round-trip lands.
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -363,6 +329,14 @@ class _ShoppingMemberManagementDialogState
       }
     }
   }
+
+  String _nameOf(String userId) =>
+      widget.userDisplayNames[userId] ??
+      widget.availableFriends
+          .where((f) => f.uid == userId)
+          .map((f) => f.displayName)
+          .firstOrNull ??
+      context.l10n.shoppingUnknownUser;
 
   @override
   Widget build(BuildContext context) {
@@ -449,12 +423,27 @@ class _ShoppingMemberManagementDialogState
             ),
             const SizedBox(height: AppDimensions.spacingL),
             const Divider(),
-            const SizedBox(height: AppDimensions.spacingM),
+            PendingInviteesSection(
+              operations: _invitations,
+              listId: widget.list.id,
+              nameFor: _nameOf,
+              onPendingChanged: (ids) => setState(() {
+                _pendingInvitees = ids;
+                _selectedFriends.removeAll(ids);
+              }),
+            ),
             Text(
-              context.l10n.shoppingAddFriends,
+              context.l10n.listInviteHeading,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingSm),
+            InviteLevelPicker(
+              value: _inviteLevel,
+              onChanged: _isLoading
+                  ? null
+                  : (level) => setState(() => _inviteLevel = level),
+            ),
+            const SizedBox(height: AppDimensions.spacingSm),
             StyledInput(
               controller: _searchController,
               hint: context.l10n.shoppingSearchFriends,
@@ -497,12 +486,12 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 child: ActionButtons.primaryButton(
                   context,
-                  label: context.l10n.shoppingAddFriendsCount(
+                  label: context.l10n.listInviteButtonCount(
                     _selectedFriends.length,
                   ),
                   icon: ButleryIcons.userPlus,
                   isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _addSelectedMembers,
+                  onPressed: _isLoading ? null : _inviteSelectedFriends,
                   isExpanded: true,
                 ),
               ),
@@ -665,6 +654,7 @@ class _ShoppingMemberManagementDialogState
   Widget _buildFriendListTile(UserProfile friend) {
     final cs = Theme.of(context).colorScheme;
     final isSelected = _selectedFriends.contains(friend.uid);
+    final invited = _pendingInvitees.contains(friend.uid);
 
     return CheckboxListTile(
       secondary: CircleAvatar(
@@ -683,22 +673,26 @@ class _ShoppingMemberManagementDialogState
         friend.displayName,
         style: AppTextStyles.contentTitle,
       ),
-      subtitle: Text(
-        context.l10n.shoppingAddedWithEditPermission,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: cs.onSurfaceVariant,
-        ),
-      ),
+      subtitle: invited
+          ? Text(
+              context.l10n.listInviteAlreadyInvited,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            )
+          : null,
       value: isSelected,
-      onChanged: (selected) {
-        setState(() {
-          if (selected == true) {
-            _selectedFriends.add(friend.uid);
-          } else {
-            _selectedFriends.remove(friend.uid);
-          }
-        });
-      },
+      onChanged: invited
+          ? null
+          : (selected) {
+              setState(() {
+                if (selected == true) {
+                  _selectedFriends.add(friend.uid);
+                } else {
+                  _selectedFriends.remove(friend.uid);
+                }
+              });
+            },
     );
   }
 }
