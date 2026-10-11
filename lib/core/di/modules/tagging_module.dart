@@ -28,6 +28,7 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
 import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
+import 'package:butlery/services/tagging/cookbook_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
@@ -71,6 +72,7 @@ class TaggingModule implements DIModule {
     PersonalTagCrudService,
     PersonalTagRuleEvaluator,
     PersonalTagService,
+    CookbookService,
     TagEditingService,
     TagResolutionService,
     TagOverridesLogRepository,
@@ -138,6 +140,11 @@ class TaggingModule implements DIModule {
         groupRepository: app<FirebasePersonalTagGroupRepository>(),
       ),
       dispose: (s) => s.resetForLogout(),
+    );
+
+    container.registerLazySingleton<CookbookService>(
+      () => CookbookService(tagService: container<PersonalTagService>()),
+      dispose: (s) => s.dispose(),
     );
   }
 
