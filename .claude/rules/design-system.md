@@ -28,3 +28,17 @@ BUT-2202). It is the source of truth; `design/NULAGE.md` says where it stands.
   `node tools/gen-manifest.mjs` there, or the Fas 0 gate fails on the manifest.
 - **Mockups** are built from `design/mockup-kit/` (README there). After a token, glyph
   or component change, run `dart run tools/mockup_kit.dart`; CI runs `--check`.
+
+## Sketches stay alive
+
+`design/screen-register.json` ties every `lib/views/**/*_view.dart` to its sketch frames
+(`design/sketch-frames.json`) and a sketch-against-app image in `design/skiss-mot-app/`.
+`test/architecture/screen_register_test.dart` fails a view without a row, and the count of
+`ej-bedömd` rows only shrinks.
+
+- **A new view** gets its row in the same PR, with frames and an image rendered by the
+  golden harness (never hand-drawn). It cannot arrive as `ej-bedömd`.
+- **A PR touching a view** puts a sketch-against-app image in its description on the line
+  `Skiss mot app:` (or `ej berörd` with a reason); Malin approves the image before merge.
+- **A decision that changes a view** updates the sketch or sets the row to `ersatt` /
+  `avviker-beslutad`, and the decision log (`design/beslutslogg.md`) names the frames.

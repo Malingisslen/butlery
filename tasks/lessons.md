@@ -4714,3 +4714,9 @@ Date: 2026-10-10
 Trigger: Testgenomgången för Malin. Täckningsspärren låg som ett jobb i `test.yml`, vars `concurrency` har `cancel-in-progress: true` per gren. Varje ny merge till main avbröt den pågående körningen. Av de 30 senaste main-körningarna avbröts täckningsjobbet i 24 innan golvsteget nådde fram, och de 3 som hann klart föll alla på 49,0 % mot golvet 55 %. Ingen hade sett det, och koordinatorn hade sagt till Malin att vi låg över golvet.
 Rule: Innan du säger att en spärr håller, läs dess senaste FÄRDIGA körning (inte den senaste körningen) och räkna hur många körningar som avbröts. Ett långt jobb som ska vakta main behöver en egen avbrytningsgrupp utan `cancel-in-progress`.
 Example: 2026-10-10 — PR #680 flyttade jobbet till `coverage.yml`; Malin satte golvet till 48 %.
+
+### Ett förslag om hur en vy ska se ut utgår från skissens ram, inte från kitet eller appen (2026-10-11)
+Date: 2026-10-11
+Trigger: Skiss mot app. Förslagsbilderna ritades med mockup-kitet, och nästan hälften av skillnaderna fick "Behåll" med skälet att appen eller kitet redan gör något liknande. Malin: "Generellt vill jag att dina rekommendationer hamnar mycket närmare skisserna. Du missar viktiga nyanser i designkänslan."
+Rule: Skissen är utgångsläget. Rita förslaget genom att redigera skissramens egen HTML i `design/Butlery Skarmar v12*.dc.html` och ändra bara där Malin har beslutat annat. "Behåll" kräver ett namngivet beslut, en funktion som byggts med avsikt eller en testartefakt; att kitet eller appen redan liknar skissen är inget skäl.
+Example: 2026-10-11 — förslagen gjordes om från skissramarna i granskningsbordet "Skissgranskning".
