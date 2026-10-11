@@ -26,6 +26,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'design_variants.dart';
+
 // ---------------------------------------------------------------------------
 // Inputs
 
@@ -1201,6 +1203,30 @@ Map<String, Object?> buildCensus(CensusSource src) {
     'tickets': tickets,
     'ratchets': ratchets,
     'symbols': symbols,
+    'variants': _variants(src),
+  };
+}
+
+const _variantTest = 'test/architecture/component_variants_test.dart';
+
+/// BUT-2375: how many ways each component type is drawn today, against the
+/// ceiling component_variants_test holds it to.
+Map<String, Object?> _variants(CensusSource src) {
+  final ceilings =
+      readDartCollection(src.read(_variantTest) ?? '', 'variantCeilings') ??
+      const {};
+  final counts = countVariants(src);
+  return {
+    for (final s in variantSpecs)
+      s.key: {
+        'count': counts[s.key]!.count,
+        'ceiling': ceilings[s.key],
+        'target': s.target,
+        'ticket': s.ticket,
+        'description': s.description,
+        'files': counts[s.key]!.files.length,
+        'values': counts[s.key]!.values,
+      },
   };
 }
 
@@ -1550,6 +1576,30 @@ String renderMarkdown(Map<String, Object?> census) {
         ? files.map((f) => '`$f`').join(', ')
         : '${files.length} files';
     b.writeln('| `${e.key}` | ${m['count']} | $shown | ${m['note']} |');
+  }
+
+  b
+    ..writeln()
+    ..writeln('## Variants per component type')
+    ..writeln()
+    ..writeln(
+      'Places that draw a component type outside its canonical widget. '
+      'A count may only fall: component_variants_test fails when one rises '
+      'above its ceiling. Target is where the ticket brings it.',
+    )
+    ..writeln()
+    ..writeln(
+      '| Type | Count | Ceiling | Target | Files | Ticket | What is counted |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- |');
+  final variants = census['variants']! as Map<String, Object?>;
+  for (final e in variants.entries) {
+    final m = e.value! as Map;
+    b.writeln(
+      '| `${e.key}` | ${m['count']} | ${m['ceiling'] ?? 'none'} | '
+      '${m['target']} | ${m['files']} | ${m['ticket']} | '
+      '${m['description']} |',
+    );
   }
   return b.toString();
 }
