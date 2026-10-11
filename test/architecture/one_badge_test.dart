@@ -60,9 +60,10 @@ Set<String> _ownBadges() {
     final classes = _badgeClass.allMatches(code).toList();
     for (final m in classes) {
       if (m.group(2) == 'State') continue;
-      final next = RegExp(r'^class ', multiLine: true)
-          .allMatches(code, m.end)
-          .firstOrNull;
+      final next = RegExp(
+        r'^class ',
+        multiLine: true,
+      ).allMatches(code, m.end).firstOrNull;
       final body = code.substring(m.end, next?.start ?? code.length);
       if (!body.contains('UnifiedBadge.')) found.add('$path ${m.group(1)}');
     }

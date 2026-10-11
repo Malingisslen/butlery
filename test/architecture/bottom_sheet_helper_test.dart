@@ -52,7 +52,8 @@ void main() {
     expect(
       _rawSheet.hasMatch(_code(_helper)),
       isTrue,
-      reason: 'the helper no longer calls showModalBottomSheet; the scan is '
+      reason:
+          'the helper no longer calls showModalBottomSheet; the scan is '
           'aimed at the wrong place',
     );
     expect(_rawSheetCounts(), _notYetMoved);

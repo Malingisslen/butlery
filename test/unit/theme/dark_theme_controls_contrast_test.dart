@@ -391,7 +391,10 @@ void main() {
       // v1:141-144); the check keeps Material's default colour.
       final side = light.chipTheme.side! as WidgetStateBorderSide;
       expect(side.resolve({})!.color, const Color(0xFF7D897C));
-      expect(side.resolve({WidgetState.disabled})!.color, const Color(0xFFA9B2A0));
+      expect(
+        side.resolve({WidgetState.disabled})!.color,
+        const Color(0xFFA9B2A0),
+      );
       expect(side.resolve(_selected)!.color, _ink);
       expect(light.chipTheme.disabledColor, const Color(0xFFE6EAD9));
       expect(light.chipTheme.checkmarkColor, isNull);
