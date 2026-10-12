@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -15,7 +15,6 @@ import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -60,13 +59,10 @@ class _TrashContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final vm = context.watch<TrashViewModel>();
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: l10n.trashTitle,
-        backTo: l10n.moreTitle,
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: SafeArea(child: _body(context, vm)),
+    return ButleryPage.undersida(
+      title: l10n.trashTitle,
+      backTo: l10n.moreTitle,
+      body: _body(context, vm),
     );
   }
 
@@ -88,53 +84,50 @@ class _TrashContent extends StatelessWidget {
       );
     }
     final margin = ButleryTopBar.sideMargin(context);
-    return ButleryPageBody(
-      width: PageWidth.text,
-      child: ListView(
-        padding: EdgeInsetsDirectional.only(
-          start: margin,
-          end: margin,
-          bottom: AppDimensions.space24,
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.space16),
-            child: Text(
-              l10n.trashIntro(TrashItem.keptFor.inDays),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+    return ListView(
+      padding: EdgeInsetsDirectional.only(
+        start: margin,
+        end: margin,
+        bottom: AppDimensions.space24,
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space16),
+          child: Text(
+            l10n.trashIntro(TrashItem.keptFor.inDays),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            children: [
-              _action(
-                context,
-                l10n.trashRestoreAll,
-                ModeColors.of(Theme.of(context).brightness).textLink,
-                vm.isWorking ? null : () => _restoreAll(context, vm),
+        ),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          children: [
+            _action(
+              context,
+              l10n.trashRestoreAll,
+              ModeColors.of(Theme.of(context).brightness).textLink,
+              vm.isWorking ? null : () => _restoreAll(context, vm),
+            ),
+            _action(
+              context,
+              l10n.trashEmptyAction,
+              Theme.of(context).colorScheme.error,
+              vm.isWorking ? null : () => _empty(context, vm),
+            ),
+          ],
+        ),
+        ButleryListSection(
+          rows: [
+            for (final item in vm.items)
+              TrashRow(
+                key: ValueKey(item.id),
+                item: item,
+                onTap: () => _openRecipeSheet(context, vm, item),
               ),
-              _action(
-                context,
-                l10n.trashEmptyAction,
-                Theme.of(context).colorScheme.error,
-                vm.isWorking ? null : () => _empty(context, vm),
-              ),
-            ],
-          ),
-          ButleryListSection(
-            rows: [
-              for (final item in vm.items)
-                TrashRow(
-                  key: ValueKey(item.id),
-                  item: item,
-                  onTap: () => _openRecipeSheet(context, vm, item),
-                ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
