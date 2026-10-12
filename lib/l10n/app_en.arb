@@ -57,7 +57,9 @@
   "authResetPassword": "Reset password",
   "authForgotPassword": "Forgot password?",
   "authEnterPassword": "Enter your password",
-  "authPasswordMinLength": "Min 6 characters",
+  "authPasswordChoose": "Choose a strong password",
+  "passwordRuleHint": "At least twelve characters, or three words you remember. The rule stands here, not as an error after you have typed.",
+  "guestUpgradeNameHint": "What should I call you?",
   "authResetPasswordInstructions": "Enter your email address and we'll send you instructions to reset your password.",
   "imageAddImage": "Add image",
   "commentDeletedUndoMessage": "Comment deleted",
@@ -415,7 +417,6 @@
   "validationEmailRequired": "Email required",
   "validationPasswordRequired": "Password required",
   "validationInvalidAmount": "Invalid amount",
-  "validationPasswordTooShort": "Password must be at least 6 characters",
   "validationGenericRequired": "This field is required",
   "validationEmailInvalid": "Invalid email address",
   "errorGeneric": "An error occurred. Please try again.",
@@ -4586,7 +4587,7 @@
   "importPreviewTitle": "Preview import",
   "importSelectAll": "Select all",
   "importDeselectAll": "Deselect all",
-  "importConfirmButton": "Import ({count})",
+  "importConfirmButton": "Save {count} recipes",
   "@importConfirmButton": {
     "placeholders": {
       "count": {
@@ -8255,7 +8256,7 @@
     }
   },
   "buttonCreating": "Creating...",
-  "buttonCreateAndShare": "Create & Share",
+  "buttonCreateAndShare": "Create and share",
   "analysisNoContentExtracted": "No content extracted",
   "analysisContainsIngredients": "Contains ingredients",
   "analysisNoIngredientsFound": "No ingredients section found",
@@ -8772,7 +8773,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Password must be at least 8 characters",
+  "validationPasswordRule": "The password needs at least twelve characters, or three words you remember.",
   "validationDisplayNameLabel": "Display name",
   "validationCommentLabel": "Comment",
   "validationAmountMustBePositive": "Amount must be a positive number",
@@ -9388,6 +9389,9 @@
   "legalCommunityGuidelines": "Community Guidelines",
   "legalOpenSourceLicenses": "Open Source Licenses",
   "authTermsAcceptPrefix": "I accept the ",
+  "authTermsConsentPrefix": "I accept the ",
+  "authTermsConsentTermsLink": "terms of use",
+  "authTermsConsentPrivacyLink": "privacy policy",
   "authTermsAcceptMiddle": " and ",
   "authTermsAcceptRequired": "You must accept the terms to create an account",
   "a11yTermsOfServiceLink": "Terms of service",
@@ -10193,15 +10197,15 @@
   "@heirloomToggle": {
     "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe."
   },
-  "heirloomWriterLabel": "Who wrote the recipe?",
+  "heirloomWriterLabel": "Whose handwriting?",
   "@heirloomWriterLabel": {
     "description": "BUT-410: text field label for the name of the original recipe writer."
   },
-  "heirloomYearLabel": "Which year?",
+  "heirloomYearLabel": "Year",
   "@heirloomYearLabel": {
     "description": "BUT-410: text field label for the year the recipe was written down."
   },
-  "heirloomNoteLabel": "Short note",
+  "heirloomNoteLabel": "Note",
   "@heirloomNoteLabel": {
     "description": "BUT-410: multiline text field label for a short heirloom origin note."
   },
@@ -13766,7 +13770,7 @@
   },
   "setNewPasswordTitle": "Choose a new password",
   "setNewPasswordChecking": "Checking the link …",
-  "setNewPasswordForAccount": "For the account {email}.",
+  "setNewPasswordForAccount": "Choose a new password for {email}",
   "setNewPasswordRepeat": "Repeat new password",
   "setNewPasswordSave": "Save password",
   "setNewPasswordWeak": "The password is too simple. Choose a longer one, ideally with numbers and symbols.",
@@ -15438,10 +15442,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.",
+  "guestStartBody": "The same questions as for a new account. What you save as a guest comes with you if you create an account later.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "We only save the year, not the full date.",
+  "guestStartBackToSignIn": "Back to sign in",
   "guestStartPreparing": "Getting your guest account ready",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
@@ -16650,15 +16656,6 @@
   "@accountSecurityEmailNow": {
     "description": "Label before the current e-mail address at the top of the change e-mail page"
   },
-  "accountSecurityPasswordRule": "At least {count} characters.",
-  "@accountSecurityPasswordRule": {
-    "description": "Rule under the new password fields on the change password page",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "accountSecurityRepeatNewPassword": "Repeat new password",
   "@accountSecurityRepeatNewPassword": {
     "description": "Label of the second new-password field on the change password page"
@@ -17212,5 +17209,104 @@
         "type": "String"
       }
     }
-  }
+  },
+  "importLinkOrCaptionLabel": "Link or caption",
+  "importPasteHelp": "Paste the link to the post, or the whole caption if you have already copied it.",
+  "importCaptionWarningLead": "A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ",
+  "importCaptionWarningEmphasis": "you will often need to fix something",
+  "importVideoNotRead": "The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.",
+  "importFetchRecipe": "Get the recipe",
+  "shoppingNewSharedListTitle": "New shared list",
+  "shoppingSharedListNameLabel": "List name",
+  "shoppingShareWithHeading": "Share with",
+  "shoppingPermissionHeading": "Permission",
+  "shoppingPermissionCanEdit": "Can edit",
+  "shoppingPermissionReadOnlyTab": "Read only",
+  "shoppingPermissionCanEditHelp": "Everyone can add and tick off items in real time.",
+  "shoppingPermissionViewOnlyHelp": "The people you share with can see the list but not change it.",
+  "shoppingNoFriendsToShareWith": "You have no friends to share with yet.",
+  "importMoreFilters": "More",
+  "importArchivedHeading": "Archived recipes · {count}",
+  "@importArchivedHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importRestoreCount": "Restore {count} recipes",
+  "@importRestoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importFiltersTitle": "Filters",
+  "importTimeHeading": "Time",
+  "importTagsHeading": "Tags",
+  "importRecipeMinutes": "{minutes} min",
+  "@importRecipeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importUpToMinutes": "At most {minutes} min",
+  "@importUpToMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importArchiveTitle": "From the archive",
+  "importPreviewFoundCount": "{count} recipes found",
+  "@importPreviewFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewParsedCount": "{count} read",
+  "@importPreviewParsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewProgress": "{selected} of {total}",
+  "@importPreviewProgress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewUnreadHeading": "Could not be read",
+  "importPreviewReadyHeading": "Ready to save",
+  "voiceListeningWord": "listening …",
+  "importPhotoCameraButton": "Take photo",
+  "importPhotoLibraryButton": "From the library",
+  "importPhotoPagesHeading": "Pages · {count}",
+  "@importPhotoPagesHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heirloomToggleSubtitle": "The photo is saved with the recipe, as its source",
+  "importPhotoHeirloomHint": "Handwritten heirloom recipes? The original photo is saved on the recipe card.",
+  "recipeDescriptionOptional": "Description (optional)",
+  "recipeMethodHeading": "Method",
+  "importPhotoRestartTitle": "Start over?",
+  "importPhotoRestartMessage": "The pages you already took are removed if you choose a new picture.",
+  "importPhotoRestartAction": "Start over"
 }

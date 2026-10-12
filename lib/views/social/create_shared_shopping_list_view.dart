@@ -7,21 +7,20 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/list/person_check_row.dart';
+import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
   const CreateSharedShoppingListView({super.key});
 
@@ -128,8 +127,7 @@ class _CreateSharedShoppingListViewState
     // Navigator.maybePop, so the same PopScope guard applies to it as to the
     // system-back gesture.
     return ButleryTopBar.undersida(
-      title:
-          '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}',
+      title: context.l10n.shoppingNewSharedListTitle,
       onBack: () => Navigator.of(context).maybePop(),
     );
   }
@@ -139,26 +137,39 @@ class _CreateSharedShoppingListViewState
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header info
-            _buildHeaderInfo(context),
-            const SizedBox(height: AppDimensions.space32),
-
-            // Lista detaljer
-            _buildListDetails(context, viewModel),
-            const SizedBox(height: AppDimensions.space32),
-
-            // Friend selection
+            LabeledField(
+              label: context.l10n.shoppingSharedListNameLabel,
+              child: TextField(
+                controller: _titleController,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  hintText: context.l10n.shoppingSharedListTitleHint,
+                  errorText: viewModel.titleError,
+                ),
+                onChanged: viewModel.updateTitle,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space24),
+            LabeledField(
+              label: context.l10n.shoppingDescriptionOptional,
+              child: TextField(
+                controller: _descriptionController,
+                minLines: 1,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: context.l10n.shoppingDescriptionHint,
+                ),
+                onChanged: viewModel.updateDescription,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space24),
             _buildFriendSelection(context, viewModel),
-            const SizedBox(height: AppDimensions.space32),
-
-            // Info about what happens
-            _buildInfoSection(context),
-
-            // Error display
+            const SizedBox(height: AppDimensions.space24),
+            _buildPermission(context, viewModel),
             if (viewModel.hasError) ...[
-              const SizedBox(height: AppDimensions.space32),
+              const SizedBox(height: AppDimensions.space24),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.space16),
@@ -182,142 +193,64 @@ class _CreateSharedShoppingListViewState
     );
   }
 
-  Widget _buildHeaderInfo(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.users,
-                color: Theme.of(context).colorScheme.onSurface,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.space8),
-              Text(
-                context.l10n.shoppingCreateSharedList,
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            context.l10n.shoppingCreateSharedListDescription,
-            style: AppTextStyles.titleMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildListDetails(
-    BuildContext context,
-    CreateSharedListViewModel viewModel,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.shoppingListDetails,
-          style: AppTextStyles.headlineSmall,
-        ),
-        const SizedBox(height: AppDimensions.space32),
-
-        // Titel med real-time validation
-        StyledInput(
-          controller: _titleController,
-          label: context.l10n.shoppingSharedListTitle,
-          hint: context.l10n.shoppingSharedListTitleHint,
-          prefixIcon: const ButleryIcon(ButleryIcons.type),
-          errorText: viewModel.titleError,
-          onChanged: viewModel.updateTitle,
-        ),
-        const SizedBox(height: AppDimensions.space32),
-
-        // Beskrivning med validation
-        StyledInput(
-          controller: _descriptionController,
-          label: context.l10n.shoppingDescriptionOptional,
-          hint: context.l10n.shoppingDescriptionHint,
-          maxLines: 3,
-          minLines: 1,
-          onChanged: viewModel.updateDescription,
-        ),
-      ],
-    );
-  }
-
   Widget _buildFriendSelection(
     BuildContext context,
     CreateSharedListViewModel viewModel,
   ) {
+    final friends = context.watch<FriendsViewModel>().friends;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          context.l10n.shoppingSelectFriendsToShare,
-          style: AppTextStyles.headlineSmall,
-        ),
-        const SizedBox(height: AppDimensions.space32),
-        BorderedContainer(
-          height: 200,
-          child: UtilityComponents.friendCategoryManager(
-            selectedFriendIds: viewModel.selectedFriendIds,
-            onSelectionChanged: viewModel.updateSelectedFriends,
-            title: '',
-            subtitle: '',
-          ),
-        ),
+        SectionHeading(context.l10n.shoppingShareWithHeading),
+        const SizedBox(height: AppDimensions.space4),
+        if (friends.isEmpty)
+          Text(
+            context.l10n.shoppingNoFriendsToShareWith,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          )
+        else
+          for (final friend in friends)
+            PersonCheckRow(
+              key: ValueKey('createSharedList.friend.${friend.uid}'),
+              name: friend.displayName,
+              avatarUrl: friend.avatarUrl,
+              checked: viewModel.selectedFriendIds.contains(friend.uid),
+              onChanged: (_) => viewModel.toggleFriend(friend.uid),
+            ),
       ],
     );
   }
 
-  Widget _buildInfoSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: context.modeColors.surfaceTintSuccess,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.info,
-                color: context.modeColors.onSuccessContainer,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.space8),
-              Text(
-                context.l10n.shoppingWhatHappensWhenSharing,
-                style: AppTextStyles.titleBold.copyWith(
-                  color: context.modeColors.onSuccessContainer,
-                ),
-              ),
-            ],
+  Widget _buildPermission(
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeading(l10n.shoppingPermissionHeading),
+        const SizedBox(height: AppDimensions.space8),
+        UnderlineTabs<bool>(
+          values: const [true, false],
+          labelOf: (canEdit) => canEdit
+              ? l10n.shoppingPermissionCanEdit
+              : l10n.shoppingPermissionReadOnlyTab,
+          selected: viewModel.membersCanEdit,
+          onChanged: viewModel.setMembersCanEdit,
+        ),
+        const SizedBox(height: AppDimensions.space8),
+        Text(
+          viewModel.membersCanEdit
+              ? l10n.shoppingPermissionCanEditHelp
+              : l10n.shoppingPermissionViewOnlyHelp,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            context.l10n.shoppingShareInfoBullets,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: context.modeColors.onSuccessContainer,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -326,47 +259,16 @@ class _CreateSharedShoppingListViewState
     CreateSharedListViewModel viewModel,
   ) {
     return BottomActionContainer(
-      child: Row(
-        children: [
-          // Selection summary from ViewModel
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  viewModel.selectedFriendsText,
-                  style: AppTextStyles.labelLarge,
-                ),
-                if (viewModel.isTitleValid) ...[
-                  const SizedBox(height: AppDimensions.space4),
-                  Text(
-                    'Lista: "${viewModel.trimmedTitle}"',
-                    style: AppTextStyles.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: AppDimensions.space8),
-
-          SizedBox(
-            width: 120,
-            // The view's one saffron action (Skarmar v12 del 3 'Ny delad
-            // inköpslista', "Skapa och dela"; Grafisk manual v6:219).
-            child: HeroButton(
-              key: const ValueKey('createSharedList.create'),
-              label: viewModel.createButtonText,
-              onPressed: viewModel.canCreate
-                  ? () => _createSharedList(context, viewModel)
-                  : null,
-              busy: viewModel.isCreating,
-              expand: true,
-            ),
-          ),
-        ],
+      // The view's one saffron action (Skarmar v12 del 3 'Ny delad
+      // inköpslista', "Skapa och dela"; Grafisk manual v6:219).
+      child: HeroButton(
+        key: const ValueKey('createSharedList.create'),
+        label: viewModel.createButtonText,
+        onPressed: viewModel.canCreate
+            ? () => _createSharedList(context, viewModel)
+            : null,
+        busy: viewModel.isCreating,
+        expand: true,
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
@@ -153,12 +154,63 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpRegister(tester);
 
-      expect(find.bySemanticsLabel(RegExp('^Jag accepterar')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('^Jag godkänner')), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Jag accepterar Villkor och Integritetspolicy'),
+        find.bySemanticsLabel(
+          'Jag godkänner användarvillkoren och integritetspolicyn',
+        ),
         findsNothing,
       );
       handle.dispose();
+    });
+
+    testWidgets('sign-up shows the password rule up front and refuses a short '
+        'password; a three-word phrase passes the rule', (tester) async {
+      await pumpRegister(tester);
+      final sv = AppLocalizationsSv();
+      expect(find.text(sv.passwordRuleHint), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('password_field')), 'kort');
+      await pressSubmit(tester);
+      expect(find.text(sv.validationPasswordRule), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('password_field')),
+        'ab cd ef gh',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(sv.validationPasswordRule), findsNothing);
+    });
+
+    testWidgets('sign-in has no password rule: an older short password is '
+        'not refused and no rule hint is shown', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.lightTheme,
+          home: const AuthView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(viewModel.isLoginMode, isTrue);
+      final sv = AppLocalizationsSv();
+      expect(find.text(sv.passwordRuleHint), findsNothing);
+
+      await tester.enterText(
+        find.byKey(const Key('email_field')),
+        'anna@example.com',
+      );
+      await tester.enterText(find.byKey(const Key('password_field')), 'kort');
+      await pressSubmit(tester);
+
+      expect(find.text(sv.validationPasswordRule), findsNothing);
     });
 
     Finder passwordToggle(String tooltip) => find.byWidgetPredicate(

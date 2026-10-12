@@ -133,7 +133,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authEnterPassword => 'Ange ditt lösenord';
 
   @override
-  String get authPasswordMinLength => 'Minst 6 tecken';
+  String get authPasswordChoose => 'Välj ett starkt lösenord';
+
+  @override
+  String get passwordRuleHint =>
+      'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.';
+
+  @override
+  String get guestUpgradeNameHint => 'Vad ska jag kalla dig?';
 
   @override
   String get authResetPasswordInstructions =>
@@ -424,10 +431,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get validationInvalidAmount => 'Ogiltigt antal';
-
-  @override
-  String get validationPasswordTooShort =>
-      'Lösenordet måste vara minst 6 tecken';
 
   @override
   String get validationGenericRequired => 'Detta fält krävs';
@@ -6749,7 +6752,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String importConfirmButton(int count) {
-    return 'Importera ($count)';
+    return 'Spara $count recept';
   }
 
   @override
@@ -12218,7 +12221,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get buttonCreating => 'Skapar …';
 
   @override
-  String get buttonCreateAndShare => 'Skapa & Dela';
+  String get buttonCreateAndShare => 'Skapa och dela';
 
   @override
   String get analysisNoContentExtracted => 'Inget innehåll extraherat';
@@ -12825,8 +12828,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get validationPasswordMinEight =>
-      'Lösenordet måste vara minst 8 tecken';
+  String get validationPasswordRule =>
+      'Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.';
 
   @override
   String get validationDisplayNameLabel => 'Visningsnamn';
@@ -13521,6 +13524,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get authTermsAcceptPrefix => 'Jag accepterar ';
+
+  @override
+  String get authTermsConsentPrefix => 'Jag godkänner ';
+
+  @override
+  String get authTermsConsentTermsLink => 'användarvillkoren';
+
+  @override
+  String get authTermsConsentPrivacyLink => 'integritetspolicyn';
 
   @override
   String get authTermsAcceptMiddle => ' och ';
@@ -14705,16 +14717,16 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get heirloomToggle => 'Detta är ett arvegods';
+  String get heirloomToggle => 'Det här är ett arvegods';
 
   @override
-  String get heirloomWriterLabel => 'Vem skrev receptet?';
+  String get heirloomWriterLabel => 'Vems handskrift?';
 
   @override
-  String get heirloomYearLabel => 'Vilket år?';
+  String get heirloomYearLabel => 'År';
 
   @override
-  String get heirloomNoteLabel => 'Kort notering';
+  String get heirloomNoteLabel => 'Notis';
 
   @override
   String heirloomFrom(String name, int year) {
@@ -18183,7 +18195,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String setNewPasswordForAccount(String email) {
-    return 'Gäller kontot $email.';
+    return 'Välj ett nytt lösenord för $email';
   }
 
   @override
@@ -19682,7 +19694,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get guestStartBody =>
-      'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.';
+      'Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.';
+
+  @override
+  String get guestStartYearNote => 'Vi sparar bara året, inte hela datumet.';
+
+  @override
+  String get guestStartBackToSignIn => 'Tillbaka till inloggningen';
 
   @override
   String get guestStartPreparing => 'Gör i ordning ditt gästkonto';
@@ -20589,11 +20607,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accountSecurityEmailNow => 'Nu: ';
 
   @override
-  String accountSecurityPasswordRule(int count) {
-    return 'Minst $count tecken.';
-  }
-
-  @override
   String get accountSecurityRepeatNewPassword => 'Upprepa nytt lösenord';
 
   @override
@@ -21055,4 +21068,148 @@ class AppLocalizationsSv extends AppLocalizations {
   String recipeSuggestionKeptNote(String date) {
     return 'Förslaget sparas till $date. Sedan tas det bort.';
   }
+
+  @override
+  String get importLinkOrCaptionLabel => 'Länk eller bildtext';
+
+  @override
+  String get importPasteHelp =>
+      'Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.';
+
+  @override
+  String get importCaptionWarningLead =>
+      'Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men ';
+
+  @override
+  String get importCaptionWarningEmphasis => 'du får ofta rätta något';
+
+  @override
+  String get importVideoNotRead =>
+      'Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.';
+
+  @override
+  String get importFetchRecipe => 'Hämta receptet';
+
+  @override
+  String get shoppingNewSharedListTitle => 'Ny delad lista';
+
+  @override
+  String get shoppingSharedListNameLabel => 'Listans namn';
+
+  @override
+  String get shoppingShareWithHeading => 'Dela med';
+
+  @override
+  String get shoppingPermissionHeading => 'Behörighet';
+
+  @override
+  String get shoppingPermissionCanEdit => 'Kan redigera';
+
+  @override
+  String get shoppingPermissionReadOnlyTab => 'Endast läsa';
+
+  @override
+  String get shoppingPermissionCanEditHelp =>
+      'Alla kan lägga till och bocka av varor i realtid.';
+
+  @override
+  String get shoppingPermissionViewOnlyHelp =>
+      'De du delar med kan se listan men inte ändra den.';
+
+  @override
+  String get shoppingNoFriendsToShareWith =>
+      'Du har inga vänner att dela med än.';
+
+  @override
+  String get importMoreFilters => 'Fler';
+
+  @override
+  String importArchivedHeading(int count) {
+    return 'Arkiverade recept · $count';
+  }
+
+  @override
+  String importRestoreCount(int count) {
+    return 'Återställ $count recept';
+  }
+
+  @override
+  String get importFiltersTitle => 'Filter';
+
+  @override
+  String get importTimeHeading => 'Tid';
+
+  @override
+  String get importTagsHeading => 'Taggar';
+
+  @override
+  String importRecipeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String importUpToMinutes(int minutes) {
+    return 'Högst $minutes min';
+  }
+
+  @override
+  String get importArchiveTitle => 'Ur arkivet';
+
+  @override
+  String importPreviewFoundCount(int count) {
+    return '$count recept hittades';
+  }
+
+  @override
+  String importPreviewParsedCount(int count) {
+    return '$count tolkade';
+  }
+
+  @override
+  String importPreviewProgress(int selected, int total) {
+    return '$selected av $total';
+  }
+
+  @override
+  String get importPreviewUnreadHeading => 'Kunde inte tolkas';
+
+  @override
+  String get importPreviewReadyHeading => 'Klara att spara';
+
+  @override
+  String get voiceListeningWord => 'hör dig …';
+
+  @override
+  String get importPhotoCameraButton => 'Fota nu';
+
+  @override
+  String get importPhotoLibraryButton => 'Ur bildbiblioteket';
+
+  @override
+  String importPhotoPagesHeading(int count) {
+    return 'Sidor · $count';
+  }
+
+  @override
+  String get heirloomToggleSubtitle => 'Fotot sparas med receptet, som källa';
+
+  @override
+  String get importPhotoHeirloomHint =>
+      'Handskrivna arvsrecept? Originalbilden sparas på receptkortet.';
+
+  @override
+  String get recipeDescriptionOptional => 'Beskrivning (valfritt)';
+
+  @override
+  String get recipeMethodHeading => 'Gör så här';
+
+  @override
+  String get importPhotoRestartTitle => 'Börja om?';
+
+  @override
+  String get importPhotoRestartMessage =>
+      'Sidorna du redan tagit tas bort om du väljer en ny bild.';
+
+  @override
+  String get importPhotoRestartAction => 'Börja om';
 }

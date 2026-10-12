@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=931-->
+<!--manifest:files=935-->
 
 ## Reporoten
 
@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `543a4b438720ebf8cedfb0a8f0a3d37c30761fbbd67d1c4d1a45b659339bbe55` |
+| `beslutslogg.md` | `feb657338d411514a1a785410e93528ceef98e90220bcdf46360561b5d95b895` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `03582f9197b4fdd3c2c6983f615dfdb8456d533959c3c6daade126774e15faa5` |
+| `screen-register.json` | `7f863a431879573526d56f5644c687a7961dd93c8aff7c26e3cd4a7eeb29ca68` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -642,7 +642,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/106-shared-with-me.png` | `ad77b974b49a8d24e38f8bdd8233db45eb5c591ea66aa47f7478962cb4c02f75` |
 | `skiss-mot-app/107-user-profile-edit.png` | `740c99ddff501942682638ef758276c63a97a609b51d3176469b6c1abb0d3f9e` |
 | `skiss-mot-app/108-tag-detail.png` | `9aa65795010ea845ac50964bc0055bb4287f5fef1b33a9c5d3630cb2a8ca2624` |
-| `skiss-mot-app/109-voice-import.png` | `ac96cc10da5a2c0008f00ae288759eb6962bf6fb9cc3c7716f3eb5255402d143` |
+| `skiss-mot-app/109-voice-import.png` | `96bcaeed23cb651af17bf5dca4590c63cf0911532b4b397c305712df37788b32` |
 | `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
 | `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
 | `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
@@ -690,10 +690,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/70-set-new-password.png` | `82ecee7cd0094496b135965f46b60ad586028953f9fa3eca65987bc940ac5940` |
 | `skiss-mot-app/71-cookbook-detail.png` | `671aaee6d499fe399775aa4006f5ec62aa0bef67297517675d111d16c571828a` |
 | `skiss-mot-app/72-family-rating-entry.png` | `fe7fe4f424a2ec4acae2d57b1ab3ee3efe50c1adc347e5d992a254e873a56903` |
-| `skiss-mot-app/73-file-import.png` | `4713b56bf11af1ac0d7a461ce0db0e1e637cf8fc75507ee9ed9a0ac241374e48` |
-| `skiss-mot-app/74-fran-sociala-medier.png` | `7a9121f9c7f3a4b0d45480b6ee680551fe444578287be9c100c40826fb3893c6` |
+| `skiss-mot-app/73-file-import.png` | `80d8511482f898264164873e6b4cae7fe950c341683dced66035a54bfdd061ff` |
+| `skiss-mot-app/74-fran-sociala-medier.png` | `29ed22ebb9538e2bc3f00cb62dc3acd8b0fd5450959cbf4a1553288c3a2d991e` |
 | `skiss-mot-app/75-group-weekly-menu.png` | `39eaa6bd904e0aa22e18f1c610cf090529b079d056b92250111740c10f8c3da9` |
-| `skiss-mot-app/76-importera-fran-arkiv.png` | `72e020811b90336ff02dc9028754c9dde3a84b195a49ff08f2a8ea630db93a52` |
+| `skiss-mot-app/76-importera-fran-arkiv.png` | `615f1ae2c510787b152225850da483d8c51ec914faa4badeeb9a7e3c3505d642` |
 | `skiss-mot-app/77-community-guidelines.png` | `1e48a6b1788599b106b94cfa6c9fc8602e3801daf6bda45ad3bfb959b62601b9` |
 | `skiss-mot-app/78-menu-placement.png` | `1e15d5c7622a0539540dd381873892a76ccdd597572d62e086845d09d2281855` |
 | `skiss-mot-app/79-conversation-group-detail.png` | `f3db531e98d7b9bd10a631a702470182be172eb0992b5de21189512813971b6d` |
@@ -702,7 +702,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/82-account-password.png` | `53363f2a674a5e43670de6ec4464721cdb65008eb8a15195d0c5b34c26122766` |
 | `skiss-mot-app/83-help-area.png` | `59465a3c6bea08bc956df7aebcb09b09b65040d466ad19c5d586adc3de59fa73` |
 | `skiss-mot-app/84-personal-tags.png` | `77108a2794ff5def129fd1ff24957165bd9db22c51fa4c52c62ddc0e865dd7cd` |
-| `skiss-mot-app/85-photo-import.png` | `d21f2d2897de1feb1aea3a3e308084d85c2c1782a251899d40eaebff590ae681` |
+| `skiss-mot-app/85-photo-import.png` | `28c49f510c2988a17678df9eba83170aa31810e28f24e7a9830f3f618fe6a03d` |
 | `skiss-mot-app/86-conflict-diff.png` | `23eabdc9d51b7375c9e2869c2c3459c6650484a33944c310683766ef00d281c4` |
 | `skiss-mot-app/87-recipe-suggestion.png` | `2d3bd61a5df7540c9c0c4b04abfe60bf84fb70d493d197d8318fa95a4101c6d0` |
 | `skiss-mot-app/88-allergen-preferences.png` | `e4edd8525961176fcb651031f698ed9e253c0ce2da5c9c18588bf468dafb2266` |
@@ -713,8 +713,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/93-my-content-decisions.png` | `0adbdaebdd9521fc8f60c5b7781ebbeb7971d8d22cf3410fad6ddff74c404cc2` |
 | `skiss-mot-app/94-my-reports.png` | `a1ec1c9cc47964bca8f3a358d93092871280fe3d93ba2be372a5167145f5a3fa` |
 | `skiss-mot-app/95-trash.png` | `d7f8c8293caff66bdab2d531b9cbfe29cf2dad96648c22c19f2c7bb60ca2e46d` |
-| `skiss-mot-app/96-skriv-sjalv-recept.png` | `9d2d8ea8003403a8771ab6dc3ee4f8ad8cec4cdb115912c3c055453be48f5754` |
-| `skiss-mot-app/97-create-shared-shopping-list.png` | `c9ae662d2f76721b747139e9bc072c17e56249fdc4270cbb65c6d1792a0ff9e2` |
+| `skiss-mot-app/96-skriv-sjalv-recept.png` | `074641046c5847db25b7d81104d6d06d717fb9edaabb8b951335ec6f567a3b89` |
+| `skiss-mot-app/97-create-shared-shopping-list.png` | `67ad1ebccb8b6e424218e37cbc84ba6a8f9de148fcc79ee5df5b123a72f082f9` |
 | `skiss-mot-app/98-friend-profile.png` | `dc72b5e788adb81a961527c99ad1794d64bfb0fd25786467dcc5e60b273da112` |
 | `skiss-mot-app/99-friend-requests.png` | `f05b232614a7728313db86e80429e0819b93faef8dbd024b9668f1e4bbc845d1` |
 | `skiss-mot-app/spar4/allergen.png` | `6508fd2dea1465d70ec32e2382aa3dbc3439babad5b2eae71eb1449958e2c426` |
@@ -722,6 +722,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/spar4/setup_done.png` | `099d6352118a30abf185d9402557b3beb75061a6d88c4acf1807323dd0ef984d` |
 | `skiss-mot-app/spar4/splash.png` | `6a46ad84585d4c9604ec9e93282ec1b4ec912a21eefdfd08cd45bb73014a399e` |
 | `skiss-mot-app/spar4/welcome.png` | `4b3e22327056fb12589ffa45da80d25afdc9ae1c77b05d3525b289fb800f5df7` |
+| `skiss-mot-app/spar8/67-guest-start.png` | `db2589378cd31abe11711b82e558810c427178890b7c12dd9ac60c9dbbfac65f` |
+| `skiss-mot-app/spar8/68-guest-upgrade.png` | `cb2968bcfe7463da3d334b00f70d15e68c7adf28509c416325bb2e00db37fa58` |
+| `skiss-mot-app/spar8/69-mfa-challenge.png` | `37ec3c9a45b3b3f95d18d7e6bdaff47e200b73fce6344378e2e51980b1712872` |
+| `skiss-mot-app/spar8/70-set-new-password.png` | `df3d1e7616e0ff3cb1b12c4837f7c966066657e589e4f0f4ed75091ac9f76cd4` |
 | `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |

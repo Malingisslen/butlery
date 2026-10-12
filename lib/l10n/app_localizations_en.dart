@@ -133,7 +133,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEnterPassword => 'Enter your password';
 
   @override
-  String get authPasswordMinLength => 'Min 6 characters';
+  String get authPasswordChoose => 'Choose a strong password';
+
+  @override
+  String get passwordRuleHint =>
+      'At least twelve characters, or three words you remember. The rule stands here, not as an error after you have typed.';
+
+  @override
+  String get guestUpgradeNameHint => 'What should I call you?';
 
   @override
   String get authResetPasswordInstructions =>
@@ -424,10 +431,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationInvalidAmount => 'Invalid amount';
-
-  @override
-  String get validationPasswordTooShort =>
-      'Password must be at least 6 characters';
 
   @override
   String get validationGenericRequired => 'This field is required';
@@ -6754,7 +6757,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importConfirmButton(int count) {
-    return 'Import ($count)';
+    return 'Save $count recipes';
   }
 
   @override
@@ -12141,7 +12144,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonCreating => 'Creating...';
 
   @override
-  String get buttonCreateAndShare => 'Create & Share';
+  String get buttonCreateAndShare => 'Create and share';
 
   @override
   String get analysisNoContentExtracted => 'No content extracted';
@@ -12721,8 +12724,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get validationPasswordMinEight =>
-      'Password must be at least 8 characters';
+  String get validationPasswordRule =>
+      'The password needs at least twelve characters, or three words you remember.';
 
   @override
   String get validationDisplayNameLabel => 'Display name';
@@ -13421,6 +13424,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authTermsAcceptPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentTermsLink => 'terms of use';
+
+  @override
+  String get authTermsConsentPrivacyLink => 'privacy policy';
 
   @override
   String get authTermsAcceptMiddle => ' and ';
@@ -14605,13 +14617,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heirloomToggle => 'This is an heirloom recipe';
 
   @override
-  String get heirloomWriterLabel => 'Who wrote the recipe?';
+  String get heirloomWriterLabel => 'Whose handwriting?';
 
   @override
-  String get heirloomYearLabel => 'Which year?';
+  String get heirloomYearLabel => 'Year';
 
   @override
-  String get heirloomNoteLabel => 'Short note';
+  String get heirloomNoteLabel => 'Note';
 
   @override
   String heirloomFrom(String name, int year) {
@@ -18089,7 +18101,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String setNewPasswordForAccount(String email) {
-    return 'For the account $email.';
+    return 'Choose a new password for $email';
   }
 
   @override
@@ -19626,7 +19638,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guestStartBody =>
-      'The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.';
+      'The same questions as for a new account. What you save as a guest comes with you if you create an account later.';
+
+  @override
+  String get guestStartYearNote => 'We only save the year, not the full date.';
+
+  @override
+  String get guestStartBackToSignIn => 'Back to sign in';
 
   @override
   String get guestStartPreparing => 'Getting your guest account ready';
@@ -20538,11 +20556,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityEmailNow => 'Now: ';
 
   @override
-  String accountSecurityPasswordRule(int count) {
-    return 'At least $count characters.';
-  }
-
-  @override
   String get accountSecurityRepeatNewPassword => 'Repeat new password';
 
   @override
@@ -21003,4 +21016,150 @@ class AppLocalizationsEn extends AppLocalizations {
   String recipeSuggestionKeptNote(String date) {
     return 'The suggestion is kept until $date. Then it is removed.';
   }
+
+  @override
+  String get importLinkOrCaptionLabel => 'Link or caption';
+
+  @override
+  String get importPasteHelp =>
+      'Paste the link to the post, or the whole caption if you have already copied it.';
+
+  @override
+  String get importCaptionWarningLead =>
+      'A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ';
+
+  @override
+  String get importCaptionWarningEmphasis =>
+      'you will often need to fix something';
+
+  @override
+  String get importVideoNotRead =>
+      'The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.';
+
+  @override
+  String get importFetchRecipe => 'Get the recipe';
+
+  @override
+  String get shoppingNewSharedListTitle => 'New shared list';
+
+  @override
+  String get shoppingSharedListNameLabel => 'List name';
+
+  @override
+  String get shoppingShareWithHeading => 'Share with';
+
+  @override
+  String get shoppingPermissionHeading => 'Permission';
+
+  @override
+  String get shoppingPermissionCanEdit => 'Can edit';
+
+  @override
+  String get shoppingPermissionReadOnlyTab => 'Read only';
+
+  @override
+  String get shoppingPermissionCanEditHelp =>
+      'Everyone can add and tick off items in real time.';
+
+  @override
+  String get shoppingPermissionViewOnlyHelp =>
+      'The people you share with can see the list but not change it.';
+
+  @override
+  String get shoppingNoFriendsToShareWith =>
+      'You have no friends to share with yet.';
+
+  @override
+  String get importMoreFilters => 'More';
+
+  @override
+  String importArchivedHeading(int count) {
+    return 'Archived recipes · $count';
+  }
+
+  @override
+  String importRestoreCount(int count) {
+    return 'Restore $count recipes';
+  }
+
+  @override
+  String get importFiltersTitle => 'Filters';
+
+  @override
+  String get importTimeHeading => 'Time';
+
+  @override
+  String get importTagsHeading => 'Tags';
+
+  @override
+  String importRecipeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String importUpToMinutes(int minutes) {
+    return 'At most $minutes min';
+  }
+
+  @override
+  String get importArchiveTitle => 'From the archive';
+
+  @override
+  String importPreviewFoundCount(int count) {
+    return '$count recipes found';
+  }
+
+  @override
+  String importPreviewParsedCount(int count) {
+    return '$count read';
+  }
+
+  @override
+  String importPreviewProgress(int selected, int total) {
+    return '$selected of $total';
+  }
+
+  @override
+  String get importPreviewUnreadHeading => 'Could not be read';
+
+  @override
+  String get importPreviewReadyHeading => 'Ready to save';
+
+  @override
+  String get voiceListeningWord => 'listening …';
+
+  @override
+  String get importPhotoCameraButton => 'Take photo';
+
+  @override
+  String get importPhotoLibraryButton => 'From the library';
+
+  @override
+  String importPhotoPagesHeading(int count) {
+    return 'Pages · $count';
+  }
+
+  @override
+  String get heirloomToggleSubtitle =>
+      'The photo is saved with the recipe, as its source';
+
+  @override
+  String get importPhotoHeirloomHint =>
+      'Handwritten heirloom recipes? The original photo is saved on the recipe card.';
+
+  @override
+  String get recipeDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get recipeMethodHeading => 'Method';
+
+  @override
+  String get importPhotoRestartTitle => 'Start over?';
+
+  @override
+  String get importPhotoRestartMessage =>
+      'The pages you already took are removed if you choose a new picture.';
+
+  @override
+  String get importPhotoRestartAction => 'Start over';
 }

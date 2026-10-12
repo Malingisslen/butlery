@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
@@ -130,9 +129,7 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
                   ),
                   const SizedBox(height: AppDimensions.space8),
                   Text(
-                    l10n.accountSecurityPasswordRule(
-                      FormValidators.minPasswordLength,
-                    ),
+                    l10n.passwordRuleHint,
                     key: const ValueKey('accountPassword.rule'),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,

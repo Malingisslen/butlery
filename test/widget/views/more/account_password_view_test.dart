@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
@@ -103,7 +102,7 @@ void main() {
       tester
           .widget<Text>(find.byKey(const ValueKey('accountPassword.rule')))
           .data,
-      l10n.accountSecurityPasswordRule(FormValidators.minPasswordLength),
+      l10n.passwordRuleHint,
     );
     expect(find.text(l10n.accountSecurityRepeatNewPassword), findsOneWidget);
   });

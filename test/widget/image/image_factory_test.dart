@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_factory.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
@@ -212,14 +211,11 @@ void main() {
           ),
         );
 
-        // Single image uses carousel with EditActionsPanel showing add_photo_alternate_outlined
-        expect(
-          find.byIcon(ButleryIcons.camera),
-          findsOneWidget,
-        );
+        // The plus tile ends the row of tiles while there is room.
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
 
-      testWidgets('shows empty state when no images', (tester) async {
+      testWidgets('shows only the add tile when no images', (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ImageFactory.recipeEdit(
@@ -229,11 +225,8 @@ void main() {
           ),
         );
 
-        // Empty state shows add_photo_alternate_outlined icon
-        expect(
-          find.byIcon(ButleryIcons.camera),
-          findsOneWidget,
-        );
+        // With no picture the row is the plus tile alone.
+        expect(find.byIcon(ButleryIcons.plus), findsOneWidget);
       });
     });
 
@@ -351,8 +344,9 @@ void main() {
     });
   });
 
-  // BUT-2183 5c: badges on a photo are overlay.paperCard with ink; the grid's
-  // add control is not on a photo and takes surface.raised with border.subtle.
+  // BUT-2183 5c: badges on a photo are overlay.paperCard with ink. The edit
+  // tiles' own marker is paper with ink, and their add tile is not on a photo
+  // and takes border.subtle.
   for (final (name, theme) in [
     ('light', AppTheme.lightTheme),
     ('dark', AppTheme.darkTheme),
@@ -428,8 +422,10 @@ void main() {
         expect(tester.widget<Text>(counter).style?.color, cs.primary);
       });
 
-      testWidgets('edit grid: unchosen-primary badge is overlay.paperCard, '
-          'add control is raised with border.subtle', (tester) async {
+      testWidgets('edit tiles: the primary tile says "primär" in ink on '
+          'paper, and the add tile ends the row on border.subtle', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Theme(
@@ -447,21 +443,28 @@ void main() {
           ),
         );
 
-        final badge = tester
-            .widgetList<Container>(find.byType(Container))
+        final primary = find.text('primär');
+        expect(primary, findsOneWidget);
+        expect(tester.widget<Text>(primary).style?.color, cs.onSurface);
+        final marker = tester
+            .widgetList<DecoratedBox>(
+              find.ancestor(of: primary, matching: find.byType(DecoratedBox)),
+            )
+            .map((d) => d.decoration)
+            .whereType<BoxDecoration>()
+            .first;
+        expect(marker.color, cs.surface);
+
+        final add = tester
+            .widgetList<Container>(
+              find.ancestor(
+                of: find.byIcon(ButleryIcons.plus),
+                matching: find.byType(Container),
+              ),
+            )
             .map((c) => c.decoration)
             .whereType<BoxDecoration>()
-            .where((d) => d.color == modes.overlayPaperCard);
-        expect(badge, hasLength(1));
-        final star = tester.widget<ButleryIcon>(
-          find.byWidgetPredicate(
-            (w) => w is ButleryIcon && w.icon == ButleryIcons.primaryOutline,
-          ),
-        );
-        expect(star.color, cs.primary);
-
-        final add = fillAround(tester, find.text('Lägg till (3)'));
-        expect(add.color, cs.surfaceContainerHighest);
+            .first;
         expect((add.border! as Border).top.color, cs.outlineVariant);
       });
     });

@@ -344,11 +344,23 @@ abstract class AppLocalizations {
   /// **'Ange ditt lösenord'**
   String get authEnterPassword;
 
-  /// No description provided for @authPasswordMinLength.
+  /// No description provided for @authPasswordChoose.
   ///
   /// In sv, this message translates to:
-  /// **'Minst 6 tecken'**
-  String get authPasswordMinLength;
+  /// **'Välj ett starkt lösenord'**
+  String get authPasswordChoose;
+
+  /// No description provided for @passwordRuleHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.'**
+  String get passwordRuleHint;
+
+  /// No description provided for @guestUpgradeNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ska jag kalla dig?'**
+  String get guestUpgradeNameHint;
 
   /// No description provided for @authResetPasswordInstructions.
   ///
@@ -715,12 +727,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ogiltigt antal'**
   String get validationInvalidAmount;
-
-  /// No description provided for @validationPasswordTooShort.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 6 tecken'**
-  String get validationPasswordTooShort;
 
   /// No description provided for @validationGenericRequired.
   ///
@@ -11242,7 +11248,7 @@ abstract class AppLocalizations {
   /// No description provided for @importConfirmButton.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ({count})'**
+  /// **'Spara {count} recept'**
   String importConfirmButton(int count);
 
   /// No description provided for @importPreviewSubtitle.
@@ -20206,7 +20212,7 @@ abstract class AppLocalizations {
   /// No description provided for @buttonCreateAndShare.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa & Dela'**
+  /// **'Skapa och dela'**
   String get buttonCreateAndShare;
 
   /// No description provided for @analysisNoContentExtracted.
@@ -21082,11 +21088,11 @@ abstract class AppLocalizations {
   /// **'{fieldName} får inte vara tomt'**
   String validationFieldNotEmpty(String fieldName);
 
-  /// No description provided for @validationPasswordMinEight.
+  /// No description provided for @validationPasswordRule.
   ///
   /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 8 tecken'**
-  String get validationPasswordMinEight;
+  /// **'Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.'**
+  String get validationPasswordRule;
 
   /// No description provided for @validationDisplayNameLabel.
   ///
@@ -22228,6 +22234,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Jag accepterar '**
   String get authTermsAcceptPrefix;
+
+  /// No description provided for @authTermsConsentPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner '**
+  String get authTermsConsentPrefix;
+
+  /// No description provided for @authTermsConsentTermsLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'användarvillkoren'**
+  String get authTermsConsentTermsLink;
+
+  /// No description provided for @authTermsConsentPrivacyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'integritetspolicyn'**
+  String get authTermsConsentPrivacyLink;
 
   /// No description provided for @authTermsAcceptMiddle.
   ///
@@ -24194,25 +24218,25 @@ abstract class AppLocalizations {
   /// BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp).
   ///
   /// In sv, this message translates to:
-  /// **'Detta är ett arvegods'**
+  /// **'Det här är ett arvegods'**
   String get heirloomToggle;
 
   /// BUT-410: text field label for the name of the original recipe writer.
   ///
   /// In sv, this message translates to:
-  /// **'Vem skrev receptet?'**
+  /// **'Vems handskrift?'**
   String get heirloomWriterLabel;
 
   /// BUT-410: text field label for the year the recipe was written down.
   ///
   /// In sv, this message translates to:
-  /// **'Vilket år?'**
+  /// **'År'**
   String get heirloomYearLabel;
 
   /// BUT-410: multiline text field label for a short heirloom origin note.
   ///
   /// In sv, this message translates to:
-  /// **'Kort notering'**
+  /// **'Notis'**
   String get heirloomNoteLabel;
 
   /// BUT-410: corner stamp label showing writer and year on heirloom images.
@@ -29599,7 +29623,7 @@ abstract class AppLocalizations {
   /// BUT-2170: names the account the reset link belongs to.
   ///
   /// In sv, this message translates to:
-  /// **'Gäller kontot {email}.'**
+  /// **'Välj ett nytt lösenord för {email}'**
   String setNewPasswordForAccount(String email);
 
   /// BUT-2170: second password field, label from Skarmar v12 etapp 6.
@@ -31909,8 +31933,20 @@ abstract class AppLocalizations {
   /// Guest start screen: explains the two questions before a guest is signed in (BUT-920)
   ///
   /// In sv, this message translates to:
-  /// **'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.'**
+  /// **'Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.'**
   String get guestStartBody;
+
+  /// No description provided for @guestStartYearNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi sparar bara året, inte hela datumet.'**
+  String get guestStartYearNote;
+
+  /// No description provided for @guestStartBackToSignIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till inloggningen'**
+  String get guestStartBackToSignIn;
 
   /// Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)
   ///
@@ -33280,12 +33316,6 @@ abstract class AppLocalizations {
   /// **'Nu: '**
   String get accountSecurityEmailNow;
 
-  /// Rule under the new password fields on the change password page
-  ///
-  /// In sv, this message translates to:
-  /// **'Minst {count} tecken.'**
-  String accountSecurityPasswordRule(int count);
-
   /// Label of the second new-password field on the change password page
   ///
   /// In sv, this message translates to:
@@ -33927,6 +33957,246 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Förslaget sparas till {date}. Sedan tas det bort.'**
   String recipeSuggestionKeptNote(String date);
+
+  /// No description provided for @importLinkOrCaptionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk eller bildtext'**
+  String get importLinkOrCaptionLabel;
+
+  /// No description provided for @importPasteHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.'**
+  String get importPasteHelp;
+
+  /// No description provided for @importCaptionWarningLead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men '**
+  String get importCaptionWarningLead;
+
+  /// No description provided for @importCaptionWarningEmphasis.
+  ///
+  /// In sv, this message translates to:
+  /// **'du får ofta rätta något'**
+  String get importCaptionWarningEmphasis;
+
+  /// No description provided for @importVideoNotRead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.'**
+  String get importVideoNotRead;
+
+  /// No description provided for @importFetchRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämta receptet'**
+  String get importFetchRecipe;
+
+  /// No description provided for @shoppingNewSharedListTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny delad lista'**
+  String get shoppingNewSharedListTitle;
+
+  /// No description provided for @shoppingSharedListNameLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listans namn'**
+  String get shoppingSharedListNameLabel;
+
+  /// No description provided for @shoppingShareWithHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med'**
+  String get shoppingShareWithHeading;
+
+  /// No description provided for @shoppingPermissionHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighet'**
+  String get shoppingPermissionHeading;
+
+  /// No description provided for @shoppingPermissionCanEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan redigera'**
+  String get shoppingPermissionCanEdit;
+
+  /// No description provided for @shoppingPermissionReadOnlyTab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast läsa'**
+  String get shoppingPermissionReadOnlyTab;
+
+  /// No description provided for @shoppingPermissionCanEditHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla kan lägga till och bocka av varor i realtid.'**
+  String get shoppingPermissionCanEditHelp;
+
+  /// No description provided for @shoppingPermissionViewOnlyHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'De du delar med kan se listan men inte ändra den.'**
+  String get shoppingPermissionViewOnlyHelp;
+
+  /// No description provided for @shoppingNoFriendsToShareWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga vänner att dela med än.'**
+  String get shoppingNoFriendsToShareWith;
+
+  /// No description provided for @importMoreFilters.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler'**
+  String get importMoreFilters;
+
+  /// No description provided for @importArchivedHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade recept · {count}'**
+  String importArchivedHeading(int count);
+
+  /// No description provided for @importRestoreCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ {count} recept'**
+  String importRestoreCount(int count);
+
+  /// No description provided for @importFiltersTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filter'**
+  String get importFiltersTitle;
+
+  /// No description provided for @importTimeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid'**
+  String get importTimeHeading;
+
+  /// No description provided for @importTagsHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggar'**
+  String get importTagsHeading;
+
+  /// No description provided for @importRecipeMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String importRecipeMinutes(int minutes);
+
+  /// No description provided for @importUpToMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högst {minutes} min'**
+  String importUpToMinutes(int minutes);
+
+  /// No description provided for @importArchiveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur arkivet'**
+  String get importArchiveTitle;
+
+  /// No description provided for @importPreviewFoundCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept hittades'**
+  String importPreviewFoundCount(int count);
+
+  /// No description provided for @importPreviewParsedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tolkade'**
+  String importPreviewParsedCount(int count);
+
+  /// No description provided for @importPreviewProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'{selected} av {total}'**
+  String importPreviewProgress(int selected, int total);
+
+  /// No description provided for @importPreviewUnreadHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tolkas'**
+  String get importPreviewUnreadHeading;
+
+  /// No description provided for @importPreviewReadyHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klara att spara'**
+  String get importPreviewReadyHeading;
+
+  /// No description provided for @voiceListeningWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'hör dig …'**
+  String get voiceListeningWord;
+
+  /// No description provided for @importPhotoCameraButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fota nu'**
+  String get importPhotoCameraButton;
+
+  /// No description provided for @importPhotoLibraryButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur bildbiblioteket'**
+  String get importPhotoLibraryButton;
+
+  /// No description provided for @importPhotoPagesHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidor · {count}'**
+  String importPhotoPagesHeading(int count);
+
+  /// No description provided for @heirloomToggleSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotot sparas med receptet, som källa'**
+  String get heirloomToggleSubtitle;
+
+  /// No description provided for @importPhotoHeirloomHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Handskrivna arvsrecept? Originalbilden sparas på receptkortet.'**
+  String get importPhotoHeirloomHint;
+
+  /// No description provided for @recipeDescriptionOptional.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning (valfritt)'**
+  String get recipeDescriptionOptional;
+
+  /// No description provided for @recipeMethodHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör så här'**
+  String get recipeMethodHeading;
+
+  /// No description provided for @importPhotoRestartTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om?'**
+  String get importPhotoRestartTitle;
+
+  /// No description provided for @importPhotoRestartMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidorna du redan tagit tas bort om du väljer en ny bild.'**
+  String get importPhotoRestartMessage;
+
+  /// No description provided for @importPhotoRestartAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om'**
+  String get importPhotoRestartAction;
 }
 
 class _AppLocalizationsDelegate

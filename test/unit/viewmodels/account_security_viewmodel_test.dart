@@ -97,16 +97,60 @@ void main() {
         expect(viewModel.hasError, isTrue);
       });
 
-      // Behavior: rejects passwords shorter than minimum length
-      test('should return false when new password is too short', () async {
-        final result = await viewModel.changePassword(
-          currentPassword: 'current123',
-          newPassword: 'short',
-          confirmPassword: 'short',
-        );
+      // Behavior: a new password must meet the shared rule, before any
+      // re-authentication is attempted
+      test(
+        'should refuse a new password that does not meet the rule',
+        () async {
+          final result = await viewModel.changePassword(
+            currentPassword: 'current123',
+            newPassword: 'short',
+            confirmPassword: 'short',
+          );
 
-        expect(result, isFalse);
-        expect(viewModel.hasError, isTrue);
+          expect(result, isFalse);
+          expect(viewModel.error, AppLocale.current.validationPasswordRule);
+          verifyNever(() => mockAuthService.changePassword(any()));
+        },
+      );
+
+      test(
+        'should accept a three-word phrase under twelve characters',
+        () async {
+          when(
+            () => mockAuthService.changePassword(any()),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockAuthService.reauthenticateWithPassword(any()),
+          ).thenAnswer((_) async => true);
+
+          final result = await viewModel.changePassword(
+            currentPassword: 'current123',
+            newPassword: 'ab cd ef gh',
+            confirmPassword: 'ab cd ef gh',
+          );
+
+          expect(result, isTrue);
+        },
+      );
+
+      test('should check the rule before the match', () async {
+        await viewModel.changePassword(
+          currentPassword: 'current123',
+          newPassword: 'kort',
+          confirmPassword: 'kurt',
+        );
+        expect(viewModel.error, AppLocale.current.validationPasswordRule);
+
+        await viewModel.changePassword(
+          currentPassword: 'current123',
+          newPassword: 'x' * 12,
+          confirmPassword: 'y' * 12,
+        );
+        expect(
+          viewModel.error,
+          AppLocale.current.accountSecurityPasswordMismatch,
+        );
       });
 
       // Behavior: rejects when new and confirm passwords don't match

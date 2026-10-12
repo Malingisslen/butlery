@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
@@ -91,11 +91,14 @@ void main() {
       () async {
         expect(await vm.save(newPassword: '', repeated: ''), isFalse);
         expect(vm.error, AppLocale.current.errorPasswordCannotBeEmpty);
-        final short = 'x' * (FormValidators.minPasswordLength - 1);
+        final short = 'x' * (PasswordRule.minLength - 1);
         expect(await vm.save(newPassword: short, repeated: short), isFalse);
-        expect(vm.error, AppLocale.current.validationPasswordMinEight);
+        expect(vm.error, AppLocale.current.validationPasswordRule);
         expect(
-          await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-2'),
+          await vm.save(
+            newPassword: 'langt-nog-losen-1',
+            repeated: 'langt-nog-losen-2',
+          ),
           isFalse,
         );
         expect(vm.error, AppLocale.current.accountSecurityPasswordMismatch);
@@ -110,14 +113,17 @@ void main() {
 
     test('a password exactly the minimum length is sent', () async {
       saveAnswers(null);
-      final exact = 'x' * FormValidators.minPasswordLength;
+      final exact = 'x' * PasswordRule.minLength;
       expect(await vm.save(newPassword: exact, repeated: exact), isTrue);
     });
 
     test('a saved password hands over to sign-in with the address', () async {
       saveAnswers(null);
       expect(
-        await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1'),
+        await vm.save(
+          newPassword: 'langt-nog-losen-1',
+          repeated: 'langt-nog-losen-1',
+        ),
         isTrue,
       );
       expect(vm.stage, PasswordResetStage.done);
@@ -135,7 +141,10 @@ void main() {
       when(() => auth.forceSignOut()).thenAnswer((_) async {
         atSignOut = PasswordResetHandoff.pending;
       });
-      await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1');
+      await vm.save(
+        newPassword: 'langt-nog-losen-1',
+        repeated: 'langt-nog-losen-1',
+      );
       verify(() => auth.forceSignOut()).called(1);
       expect(atSignOut, isA<PasswordResetDone>());
     });
@@ -143,7 +152,10 @@ void main() {
     test('an account without an address counts as another account', () async {
       signedInAs(null);
       saveAnswers(null);
-      await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1');
+      await vm.save(
+        newPassword: 'langt-nog-losen-1',
+        repeated: 'langt-nog-losen-1',
+      );
       expect(vm.signedInElsewhere, isTrue);
       verifyNever(() => auth.forceSignOut());
       expect(PasswordResetHandoff.pending, isNull);
@@ -152,7 +164,10 @@ void main() {
     test('another account signed in here is left alone', () async {
       signedInAs('bertil@example.com');
       saveAnswers(null);
-      await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1');
+      await vm.save(
+        newPassword: 'langt-nog-losen-1',
+        repeated: 'langt-nog-losen-1',
+      );
       expect(vm.signedInElsewhere, isTrue);
       verifyNever(() => auth.forceSignOut());
       expect(PasswordResetHandoff.pending, isNull);
@@ -173,7 +188,10 @@ void main() {
       for (final entry in expected.entries) {
         saveAnswers(entry.key);
         expect(
-          await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1'),
+          await vm.save(
+            newPassword: 'langt-nog-losen-1',
+            repeated: 'langt-nog-losen-1',
+          ),
           isFalse,
         );
         expect(vm.stage, PasswordResetStage.ready, reason: '${entry.key}');
@@ -185,7 +203,10 @@ void main() {
     test('a refused password stays on the form with the reason', () async {
       saveAnswers(PasswordResetFailure.weakPassword);
       expect(
-        await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1'),
+        await vm.save(
+          newPassword: 'langt-nog-losen-1',
+          repeated: 'langt-nog-losen-1',
+        ),
         isFalse,
       );
       expect(vm.stage, PasswordResetStage.ready);
@@ -195,7 +216,10 @@ void main() {
 
     test('a link that died meanwhile turns into the new-link state', () async {
       saveAnswers(PasswordResetFailure.linkInvalid);
-      await vm.save(newPassword: 'langt-nog-1', repeated: 'langt-nog-1');
+      await vm.save(
+        newPassword: 'langt-nog-losen-1',
+        repeated: 'langt-nog-losen-1',
+      );
       expect(vm.stage, PasswordResetStage.linkInvalid);
     });
   });

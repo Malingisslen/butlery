@@ -57,7 +57,9 @@
   "authResetPassword": "Återställ lösenord",
   "authForgotPassword": "Glömt lösenord?",
   "authEnterPassword": "Ange ditt lösenord",
-  "authPasswordMinLength": "Minst 6 tecken",
+  "authPasswordChoose": "Välj ett starkt lösenord",
+  "passwordRuleHint": "Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.",
+  "guestUpgradeNameHint": "Vad ska jag kalla dig?",
   "authResetPasswordInstructions": "Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.",
   "imageAddImage": "Lägg till bild",
   "commentDeletedUndoMessage": "Kommentaren raderad",
@@ -421,7 +423,6 @@
   "validationEmailRequired": "E-post krävs",
   "validationPasswordRequired": "Lösenord krävs",
   "validationInvalidAmount": "Ogiltigt antal",
-  "validationPasswordTooShort": "Lösenordet måste vara minst 6 tecken",
   "validationGenericRequired": "Detta fält krävs",
   "validationEmailInvalid": "Ogiltig e-postadress",
   "errorGeneric": "Det gick inte att slutföra. Försök igen.",
@@ -4608,7 +4609,7 @@
   "importPreviewTitle": "Förhandsgranska import",
   "importSelectAll": "Markera alla",
   "importDeselectAll": "Avmarkera alla",
-  "importConfirmButton": "Importera ({count})",
+  "importConfirmButton": "Spara {count} recept",
   "@importConfirmButton": {
     "placeholders": {
       "count": {
@@ -8310,7 +8311,7 @@
     }
   },
   "buttonCreating": "Skapar …",
-  "buttonCreateAndShare": "Skapa & Dela",
+  "buttonCreateAndShare": "Skapa och dela",
   "analysisNoContentExtracted": "Inget innehåll extraherat",
   "analysisContainsIngredients": "Innehåller ingredienser",
   "analysisNoIngredientsFound": "Ingen ingredienssektion hittades",
@@ -8827,7 +8828,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Lösenordet måste vara minst 8 tecken",
+  "validationPasswordRule": "Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.",
   "validationDisplayNameLabel": "Visningsnamn",
   "validationCommentLabel": "Kommentar",
   "validationAmountMustBePositive": "Antal måste vara ett positivt nummer",
@@ -9454,6 +9455,9 @@
   "legalCommunityGuidelines": "Communityriktlinjer",
   "legalOpenSourceLicenses": "Öppen källkod-licenser",
   "authTermsAcceptPrefix": "Jag accepterar ",
+  "authTermsConsentPrefix": "Jag godkänner ",
+  "authTermsConsentTermsLink": "användarvillkoren",
+  "authTermsConsentPrivacyLink": "integritetspolicyn",
   "authTermsAcceptMiddle": " och ",
   "authTermsAcceptRequired": "Du måste acceptera villkoren för att skapa ett konto",
   "a11yTermsOfServiceLink": "Användarvillkor",
@@ -10308,19 +10312,19 @@
       }
     }
   },
-  "heirloomToggle": "Detta är ett arvegods",
+  "heirloomToggle": "Det här är ett arvegods",
   "@heirloomToggle": {
     "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp)."
   },
-  "heirloomWriterLabel": "Vem skrev receptet?",
+  "heirloomWriterLabel": "Vems handskrift?",
   "@heirloomWriterLabel": {
     "description": "BUT-410: text field label for the name of the original recipe writer."
   },
-  "heirloomYearLabel": "Vilket år?",
+  "heirloomYearLabel": "År",
   "@heirloomYearLabel": {
     "description": "BUT-410: text field label for the year the recipe was written down."
   },
-  "heirloomNoteLabel": "Kort notering",
+  "heirloomNoteLabel": "Notis",
   "@heirloomNoteLabel": {
     "description": "BUT-410: multiline text field label for a short heirloom origin note."
   },
@@ -14129,7 +14133,7 @@
   "@setNewPasswordChecking": {
     "description": "BUT-2170: shown while the reset link is checked."
   },
-  "setNewPasswordForAccount": "Gäller kontot {email}.",
+  "setNewPasswordForAccount": "Välj ett nytt lösenord för {email}",
   "@setNewPasswordForAccount": {
     "description": "BUT-2170: names the account the reset link belongs to.",
     "placeholders": {
@@ -16070,10 +16074,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.",
+  "guestStartBody": "Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "Vi sparar bara året, inte hela datumet.",
+  "guestStartBackToSignIn": "Tillbaka till inloggningen",
   "guestStartPreparing": "Gör i ordning ditt gästkonto",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
@@ -17282,15 +17288,6 @@
   "@accountSecurityEmailNow": {
     "description": "Label before the current e-mail address at the top of the change e-mail page"
   },
-  "accountSecurityPasswordRule": "Minst {count} tecken.",
-  "@accountSecurityPasswordRule": {
-    "description": "Rule under the new password fields on the change password page",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "accountSecurityRepeatNewPassword": "Upprepa nytt lösenord",
   "@accountSecurityRepeatNewPassword": {
     "description": "Label of the second new-password field on the change password page"
@@ -17844,5 +17841,104 @@
         "type": "String"
       }
     }
-  }
+  },
+  "importLinkOrCaptionLabel": "Länk eller bildtext",
+  "importPasteHelp": "Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.",
+  "importCaptionWarningLead": "Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men ",
+  "importCaptionWarningEmphasis": "du får ofta rätta något",
+  "importVideoNotRead": "Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.",
+  "importFetchRecipe": "Hämta receptet",
+  "shoppingNewSharedListTitle": "Ny delad lista",
+  "shoppingSharedListNameLabel": "Listans namn",
+  "shoppingShareWithHeading": "Dela med",
+  "shoppingPermissionHeading": "Behörighet",
+  "shoppingPermissionCanEdit": "Kan redigera",
+  "shoppingPermissionReadOnlyTab": "Endast läsa",
+  "shoppingPermissionCanEditHelp": "Alla kan lägga till och bocka av varor i realtid.",
+  "shoppingPermissionViewOnlyHelp": "De du delar med kan se listan men inte ändra den.",
+  "shoppingNoFriendsToShareWith": "Du har inga vänner att dela med än.",
+  "importMoreFilters": "Fler",
+  "importArchivedHeading": "Arkiverade recept · {count}",
+  "@importArchivedHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importRestoreCount": "Återställ {count} recept",
+  "@importRestoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importFiltersTitle": "Filter",
+  "importTimeHeading": "Tid",
+  "importTagsHeading": "Taggar",
+  "importRecipeMinutes": "{minutes} min",
+  "@importRecipeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importUpToMinutes": "Högst {minutes} min",
+  "@importUpToMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importArchiveTitle": "Ur arkivet",
+  "importPreviewFoundCount": "{count} recept hittades",
+  "@importPreviewFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewParsedCount": "{count} tolkade",
+  "@importPreviewParsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewProgress": "{selected} av {total}",
+  "@importPreviewProgress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewUnreadHeading": "Kunde inte tolkas",
+  "importPreviewReadyHeading": "Klara att spara",
+  "voiceListeningWord": "hör dig …",
+  "importPhotoCameraButton": "Fota nu",
+  "importPhotoLibraryButton": "Ur bildbiblioteket",
+  "importPhotoPagesHeading": "Sidor · {count}",
+  "@importPhotoPagesHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heirloomToggleSubtitle": "Fotot sparas med receptet, som källa",
+  "importPhotoHeirloomHint": "Handskrivna arvsrecept? Originalbilden sparas på receptkortet.",
+  "recipeDescriptionOptional": "Beskrivning (valfritt)",
+  "recipeMethodHeading": "Gör så här",
+  "importPhotoRestartTitle": "Börja om?",
+  "importPhotoRestartMessage": "Sidorna du redan tagit tas bort om du väljer en ny bild.",
+  "importPhotoRestartAction": "Börja om"
 }

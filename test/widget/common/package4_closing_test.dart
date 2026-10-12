@@ -138,7 +138,7 @@ void main() {
             theme: theme,
           ),
         );
-        // The subpage bar is paper like the root bar (B-58).
+        // The subpage bar is paper like the root bar (B-60).
         expect(_textColor(tester, 'Spara'), theme.colorScheme.onSurface);
       });
 

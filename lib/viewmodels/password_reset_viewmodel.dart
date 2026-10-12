@@ -1,5 +1,5 @@
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
@@ -24,7 +24,7 @@ enum PasswordResetStage {
 
 /// "Välj nytt lösenord" from a reset link (BUT-2170; flow 06
 /// `återställ → sätt nytt`). The password rule is sign-up's
-/// (`FormValidators.minPasswordLength`); Firebase's own policy may still
+/// (`PasswordRule`); Firebase's own policy may still
 /// refuse it, which comes back as [PasswordResetFailure.weakPassword].
 class PasswordResetViewModel extends BaseViewModel {
   PasswordResetViewModel({
@@ -98,8 +98,8 @@ class PasswordResetViewModel extends BaseViewModel {
       setError(l.errorPasswordCannotBeEmpty);
       return false;
     }
-    if (newPassword.length < FormValidators.minPasswordLength) {
-      setError(l.validationPasswordMinEight);
+    if (!PasswordRule.accepts(newPassword)) {
+      setError(l.validationPasswordRule);
       return false;
     }
     if (newPassword != repeated) {

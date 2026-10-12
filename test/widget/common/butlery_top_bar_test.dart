@@ -458,7 +458,7 @@ void main() {
               theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
             ),
           );
-          // B-58: the subpage bar is light, the same surface as the root bar.
+          // B-60: the subpage bar is light, the same surface as the root bar.
           expect(
             _barColor(tester),
             dark ? AppColorsDark.cream : AppColors.cream,

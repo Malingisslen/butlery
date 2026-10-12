@@ -371,7 +371,7 @@ void main() {
 
     await tester.tap(find.text(sv.signInMethodsSetPassword));
     await tester.pumpAndSettle();
-    await typePasswords(tester, 'hemligt123', 'hemligt123');
+    await typePasswords(tester, 'hemligt-losen-123', 'hemligt-losen-123');
 
     expect(find.text(sv.signInMethodsPasswordFailed), findsOneWidget);
     expect(find.text(sv.signInMethodsPasswordSet), findsNothing);
@@ -398,10 +398,10 @@ void main() {
 
     await tester.tap(find.text(sv.signInMethodsSetPassword));
     await tester.pumpAndSettle();
-    await typePasswords(tester, 'hemligt123', 'hemligt123');
+    await typePasswords(tester, 'hemligt-losen-123', 'hemligt-losen-123');
 
     expect(auth.reauthentications, 1);
-    expect(auth.passwords, ['hemligt123']);
+    expect(auth.passwords, ['hemligt-losen-123']);
     expect(find.text(sv.signInMethodsPasswordSet), findsOneWidget);
   });
 
@@ -413,7 +413,7 @@ void main() {
 
     await tester.tap(find.text(sv.signInMethodsSetPassword));
     await tester.pumpAndSettle();
-    await typePasswords(tester, 'hemligt123', 'hemligt123');
+    await typePasswords(tester, 'hemligt-losen-123', 'hemligt-losen-123');
 
     expect(auth.reauthentications, 1);
     expect(auth.passwords, isEmpty);
@@ -424,7 +424,7 @@ void main() {
 
     await tester.tap(find.text(sv.signInMethodsSetPassword));
     await tester.pumpAndSettle();
-    await typePasswords(tester, 'hemligt123', 'hemligt124');
+    await typePasswords(tester, 'hemligt-losen-123', 'hemligt-losen-124');
 
     expect(find.text(sv.accountSecurityPasswordMismatch), findsOneWidget);
     expect(auth.passwords, isEmpty);
@@ -448,7 +448,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(sv.validationPasswordTooShort), findsOneWidget);
+    expect(find.text(sv.validationPasswordRule), findsOneWidget);
     expect(auth.passwords, isEmpty);
   });
 

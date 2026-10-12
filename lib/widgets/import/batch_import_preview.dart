@@ -10,6 +10,7 @@ import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/utils/recipe_merge.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -17,6 +18,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/widgets/common/list/status_row.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/utility_components.dart';
 
 /// Preview screen for batch file import.
 /// Shows parsed recipes as a selectable checklist before saving.
@@ -175,103 +183,129 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final unreadRows = _rows.where((r) => r.unread > 0).toList();
+    final readyRows = _batchRows.toList();
 
     return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
-      // on the canonical top bar, left-aligned as drawn (v1:73).
       appBar: ButleryTopBar.undersida(
-        title: context.l10n.importPreviewTitle,
+        title: widget.backTo ?? l10n.importPreviewTitle,
         backTo: widget.backTo,
         actions: [
-          TextButton.icon(
-            onPressed: _toggleAll,
-            icon: ButleryIcon(
-              _allSelected ? ButleryIcons.square : ButleryIcons.checkSquare,
-              size: AppDimensions.iconSizeS,
-            ),
-            label: Text(
-              _allSelected
-                  ? context.l10n.importDeselectAll
-                  : context.l10n.importSelectAll,
+          Center(
+            child: UnifiedBadge.status(
+              label: l10n.importPreviewProgress(_selected.length, _rows.length),
             ),
           ),
         ],
       ),
-      body: ListView.builder(
+      body: ListView(
         padding: AppDimensions.responsiveContentPadding(context),
-        itemCount: _rows.length,
-        itemBuilder: (context, index) {
-          final row = _rows[index];
-          final recipe = row.recipe;
-          final unread = row.unread;
-
-          if (unread > 0) {
-            return ListTile(
-              key: ValueKey('batch-import-unread-$index'),
-              onTap: () => _openForReview(row),
-              title: Text(
-                recipe.title,
-                style: AppTextStyles.titleSmall,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                row.opened
-                    ? context.l10n.importPreviewOpenedForReview
-                    : context.l10n.importPreviewUnreadLines(unread),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              trailing: const ButleryIcon(ButleryIcons.chevronRight),
-            );
-          }
-
-          return CheckboxListTile(
-            value: _selected.contains(row),
-            onChanged: (_) => _toggle(row),
-            activeColor: cs.primary,
-            title: Text(
-              recipe.title,
-              style: AppTextStyles.titleSmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              context.l10n.importPreviewSubtitle(
-                recipe.ingredients.length,
-                recipe.instructions.length,
-              ),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          );
-        },
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_selected.length >= 2) ...[
-                OutlinedButton(
-                  onPressed: _mergeSelected,
-                  child: Text(
-                    context.l10n.importMergeSelected(_selected.length),
+        children: [
+          TintedNote(
+            child: Row(
+              children: [
+                ButleryIcon(ButleryIcons.file, color: cs.onSurface),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.importPreviewFoundCount(_rows.length),
+                        style: AppTextStyles.bodyBold.copyWith(
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      Text(
+                        l10n.importPreviewParsedCount(readyRows.length),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: AppDimensions.space8),
               ],
-              FilledButton.icon(
-                onPressed: _selected.isEmpty ? null : _confirm,
-                icon: const ButleryIcon(ButleryIcons.download),
-                label: Text(context.l10n.importConfirmButton(_selected.length)),
-              ),
-            ],
+            ),
           ),
+          if (unreadRows.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.space16),
+            SectionHeading(l10n.importPreviewUnreadHeading),
+            for (final row in unreadRows)
+              StatusRow(
+                key: ValueKey('batch-import-unread-${_rows.indexOf(row)}'),
+                leading: ButleryIcon(
+                  ButleryIcons.triangleAlert,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.error,
+                ),
+                title: row.recipe.title,
+                detail: row.opened
+                    ? l10n.importPreviewOpenedForReview
+                    : l10n.importPreviewUnreadLines(row.unread),
+                detailColor: row.opened ? null : cs.error,
+                onTap: () => _openForReview(row),
+              ),
+          ],
+          if (readyRows.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.space16),
+            Row(
+              children: [
+                Expanded(child: SectionHeading(l10n.importPreviewReadyHeading)),
+                ButleryLink(
+                  onTap: _toggleAll,
+                  child: Text(
+                    _allSelected
+                        ? l10n.importDeselectAll
+                        : l10n.importSelectAll,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: context.modeColors.textLink,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            for (final row in readyRows)
+              StatusRow(
+                leading: _selected.contains(row)
+                    ? ButleryIcon(
+                        ButleryIcons.check,
+                        size: AppDimensions.iconSizeS,
+                        color: context.modeColors.success,
+                      )
+                    : const SizedBox.shrink(),
+                title: row.recipe.title,
+                detail: l10n.importPreviewSubtitle(
+                  row.recipe.ingredients.length,
+                  row.recipe.instructions.length,
+                ),
+                checked: _selected.contains(row),
+                onTap: () => _toggle(row),
+              ),
+          ],
+        ],
+      ),
+      bottomNavigationBar: BottomActionContainer(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_selected.length >= 2) ...[
+              UtilityComponents.outlinedButton(
+                context,
+                label: l10n.importMergeSelected(_selected.length),
+                onPressed: _mergeSelected,
+              ),
+              const SizedBox(height: AppDimensions.space8),
+            ],
+            UtilityComponents.primaryButton(
+              context,
+              label: l10n.importConfirmButton(_selected.length),
+              onPressed: _selected.isEmpty ? null : _confirm,
+              isExpanded: true,
+            ),
+          ],
         ),
       ),
     );
