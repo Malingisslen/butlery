@@ -19866,6 +19866,110 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invitation sent. Recipients join once they accept.';
 
   @override
+  String get authContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get authContinueWithApple => 'Continue with Apple';
+
+  @override
+  String authProviderFailed(String provider) {
+    return 'Signing in with $provider did not work. Try again.';
+  }
+
+  @override
+  String get authProviderAccountExists =>
+      'There is already an account with that e-mail address. Sign in with e-mail and password.';
+
+  @override
+  String authProviderWrongAccount(String provider) {
+    return 'That was a different $provider account from the one this account uses. Choose the same account again.';
+  }
+
+  @override
+  String get providerTermsTitle => 'Welcome to Butlery';
+
+  @override
+  String get providerTermsSubtitle =>
+      'One step left before the account is created.';
+
+  @override
+  String get providerTermsNameHelp =>
+      'Others in your groups and shared lists see your name. You can change it later.';
+
+  @override
+  String get providerTermsCancelAndDelete => 'Cancel and remove the account';
+
+  @override
+  String get providerTermsSaveFailed =>
+      'The account could not be created. Try again.';
+
+  @override
+  String get providerTermsNoEmail =>
+      'The account could not be created because no e-mail address came from Google or Apple. Try again.';
+
+  @override
+  String get providerLinkTitle => 'Link accounts';
+
+  @override
+  String providerLinkBody(String email, String provider) {
+    return 'There is already a Butlery account for $email. Enter your Butlery password once and $provider is linked to the account.';
+  }
+
+  @override
+  String get providerLinkSubmit => 'Link';
+
+  @override
+  String providerLinkFailed(String provider) {
+    return '$provider could not be linked to the account. Try again with Continue with $provider.';
+  }
+
+  @override
+  String get mfaBackupCodeProviderRejected =>
+      'The backup code is not right. A used code cannot be used again.';
+
+  @override
+  String mfaBackupCodeProviderSupport(String provider) {
+    return 'With $provider on this device the backup code cannot be checked here. Write to us and we will help you into the account.';
+  }
+
+  @override
+  String get mfaBackupCodeContactSupport => 'Write to support';
+
+  @override
+  String get mfaBackupCodeSupportSubject => 'Signing in with a backup code';
+
+  @override
+  String accountSecurityEmailProviderReauth(String provider) {
+    return 'You confirm it is you with $provider before the address is changed.';
+  }
+
+  @override
+  String mfaBackupCodeRecoveredSignInAgain(String provider) {
+    return 'The backup code worked, so two-step verification is off. The sign-in did not finish: sign in with $provider again to get in.';
+  }
+
+  @override
+  String get mfaBackupCodeRecoveredSignInAgainPassword =>
+      'The backup code worked, so two-step verification is off. The sign-in did not finish: sign in again to get in.';
+
+  @override
+  String mfaBackupCodeSignInAgainWith(String provider) {
+    return 'Sign in with $provider';
+  }
+
+  @override
+  String get mfaBackupCodeSignInAgain => 'Sign in again';
+
+  @override
+  String mfaBackupCodeNoEmail(String address) {
+    return 'The email app could not be opened. Write to $address.';
+  }
+
+  @override
+  String get accountSecurityEmailCannotConfirmHere =>
+      'The change can\'t be confirmed on this device, because the account\'s sign-in isn\'t available here. Change the address on a device where you can sign in to the account.';
+
+  @override
   String get ingredientSearchHeading => 'What can I cook?';
 
   @override

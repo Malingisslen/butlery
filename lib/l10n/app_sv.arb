@@ -16433,6 +16433,158 @@
   "@listInviteShareSent": {
     "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
   },
+  "authContinueWithGoogle": "Fortsätt med Google",
+  "@authContinueWithGoogle": {
+    "description": "BUT-916: Google sign-in button on the sign-in screen"
+  },
+  "authContinueWithApple": "Fortsätt med Apple",
+  "@authContinueWithApple": {
+    "description": "BUT-549: Sign in with Apple button on the sign-in screen"
+  },
+  "authProviderFailed": "Inloggningen med {provider} gick inte. Försök igen.",
+  "@authProviderFailed": {
+    "description": "BUT-916: a Google/Apple sign-in failed for a reason without its own text",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authProviderAccountExists": "Det finns redan ett konto med den e-postadressen. Logga in med e-post och lösenord.",
+  "@authProviderAccountExists": {
+    "description": "BUT-916: the address has a password account and the provider did not vouch for it"
+  },
+  "authProviderWrongAccount": "Det var ett annat {provider}-konto än det här kontot använder. Välj samma konto igen.",
+  "@authProviderWrongAccount": {
+    "description": "BUT-916: re-authentication chose another Google/Apple account",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "providerTermsTitle": "Välkommen till Butlery",
+  "@providerTermsTitle": {
+    "description": "BUT-916: heading of the terms step after a new Google/Apple sign-in"
+  },
+  "providerTermsSubtitle": "Ett steg kvar innan kontot skapas.",
+  "@providerTermsSubtitle": {
+    "description": "BUT-916: line under the terms step heading"
+  },
+  "providerTermsNameHelp": "Andra i dina grupper och delade listor ser ditt namn. Du kan ändra det senare.",
+  "@providerTermsNameHelp": {
+    "description": "BUT-916: help text under the name field on the terms step"
+  },
+  "providerTermsCancelAndDelete": "Avbryt och ta bort kontot",
+  "@providerTermsCancelAndDelete": {
+    "description": "BUT-916: decline on the terms step when it is shown again after a restart (C3)"
+  },
+  "providerTermsSaveFailed": "Kontot kunde inte skapas. Försök igen.",
+  "@providerTermsSaveFailed": {
+    "description": "BUT-916: accepting the terms could not be saved"
+  },
+  "providerTermsNoEmail": "Kontot kunde inte skapas, för ingen e-postadress kom med från Google eller Apple. Försök igen.",
+  "@providerTermsNoEmail": {
+    "description": "BUT-916 C2: the provider gave no e-mail address; retryable"
+  },
+  "providerLinkTitle": "Koppla ihop",
+  "@providerLinkTitle": {
+    "description": "BUT-916: heading of the step that links Google/Apple to an existing password account"
+  },
+  "providerLinkBody": "Det finns redan ett Butlery-konto för {email}. Ange ditt Butlery-lösenord en gång så kopplas {provider} till kontot.",
+  "@providerLinkBody": {
+    "description": "BUT-916: body of the link step",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      },
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "providerLinkSubmit": "Koppla ihop",
+  "@providerLinkSubmit": {
+    "description": "BUT-916: primary button of the link step"
+  },
+  "providerLinkFailed": "{provider} kunde inte kopplas till kontot. Försök igen med Fortsätt med {provider}.",
+  "@providerLinkFailed": {
+    "description": "BUT-916: after sign-in, the waiting Google/Apple credential could not be linked to the account",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeProviderRejected": "Reservkoden stämmer inte. En använd kod går inte att använda igen.",
+  "@mfaBackupCodeProviderRejected": {
+    "description": "BUT-916: a backup code after a Google/Apple sign-in was refused"
+  },
+  "mfaBackupCodeProviderSupport": "Med {provider} på den här enheten kan reservkoden inte kontrolleras här. Skriv till oss så hjälper vi dig in på kontot.",
+  "@mfaBackupCodeProviderSupport": {
+    "description": "BUT-916 C8: backup codes cannot be proved through Apple on Android/web or Google on the web",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeContactSupport": "Skriv till support",
+  "@mfaBackupCodeContactSupport": {
+    "description": "BUT-916 C8: button opening a mail to support from the backup-code step"
+  },
+  "mfaBackupCodeSupportSubject": "Inloggning med reservkod",
+  "@mfaBackupCodeSupportSubject": {
+    "description": "BUT-916 C8: subject of the support mail from the backup-code step"
+  },
+  "accountSecurityEmailProviderReauth": "Du bekräftar att det är du med {provider} innan adressen byts.",
+  "@accountSecurityEmailProviderReauth": {
+    "description": "BUT-916 C7: e-mail change for an account without a password",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeRecoveredSignInAgain": "Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in med {provider} igen för att komma in.",
+  "@mfaBackupCodeRecoveredSignInAgain": {
+    "description": "BUT-916: a backup code removed the second factor, but the Google/Apple sign-in after it was cancelled or failed",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeRecoveredSignInAgainPassword": "Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in igen för att komma in.",
+  "@mfaBackupCodeRecoveredSignInAgainPassword": {
+    "description": "BUT-916: a backup code removed the second factor, but the password sign-in after it failed"
+  },
+  "mfaBackupCodeSignInAgainWith": "Logga in med {provider}",
+  "@mfaBackupCodeSignInAgainWith": {
+    "description": "BUT-916: retries only the Google/Apple sign-in after a backup code worked",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeSignInAgain": "Logga in igen",
+  "@mfaBackupCodeSignInAgain": {
+    "description": "BUT-916: retries only the password sign-in after a backup code worked"
+  },
+  "mfaBackupCodeNoEmail": "E-postappen gick inte att öppna. Skriv till {address}.",
+  "@mfaBackupCodeNoEmail": {
+    "description": "BUT-916 C8: the support mail from the backup-code step could not open",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "accountSecurityEmailCannotConfirmHere": "Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.",
+  "@accountSecurityEmailCannotConfirmHere": {
+    "description": "BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform"
+  },
   "ingredientSearchHeading": "Vad kan jag laga?",
   "cookingModeIngredientRows": "{count, plural, =1{1 rad} other{{count} rader}}",
   "@cookingModeIngredientRows": {

@@ -22,10 +22,11 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/views/auth/password_reset_done_notice.dart';
+import 'package:butlery/views/auth/post_sign_in_navigation.dart';
+import 'package:butlery/views/auth/social_sign_in_buttons.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
@@ -274,6 +275,7 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(
                 height: AppDimensions.space24 + AppDimensions.space4,
               ),
+              SocialSignInButtons(viewModel: viewModel, onSignedIn: _enterApp),
 
               // Name field (registration only)
               if (!viewModel.isLoginMode) ...[
@@ -613,34 +615,15 @@ class _AuthViewState extends State<AuthView> {
     // onboarding.
     if (success && wasLoginMode && mounted) {
       AppLogger.debug('AuthView: LOGIN SUCCESS');
-
-      final navigator = Navigator.of(context);
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
-      );
-      SessionEndNotice.clear();
-      PasswordResetHandoff.clear();
-      // After a timeout, the same account lands where it was
-      // (TR::FLOW::06::session::utgang; Q-P6-E07).
-      final userId = ServiceLocator.get<AuthService>().currentUserId;
-      final returnTo = userId == null
-          ? null
-          : SessionReturnPath.takeFor(userId);
-      if (returnTo != null) {
-        navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
-      }
-      // A backup code switched the second factor off; say so, and where to
-      // switch it on again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
-      if (signedInWithBackupCode) {
-        SnackBarUtils.showInfo(
-          context,
-          context.l10n.mfaBackupCodeRecovered,
-          duration: const Duration(seconds: 10),
-          showCloseButton: true,
-        );
-      }
+      _enterApp(signedInWithBackupCode: signedInWithBackupCode);
     }
   }
+
+  void _enterApp({bool signedInWithBackupCode = false}) => navigateAfterSignIn(
+    context,
+    destination: AuthView.postLoginDestinationBuilder,
+    signedInWithBackupCode: signedInWithBackupCode,
+  );
 
   Future<void> _showPasswordResetDialog(
     BuildContext context,

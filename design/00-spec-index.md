@@ -28,7 +28,7 @@
 | Rapportschema <!--auth:report-schema:version,file,status--> | **2.0** | `fas0/verify-report.schema.json` | gällande · ägare DS | **verifieringsrapportens struktur** |
 | API-mappning <!--auth:legacy-dart-api-map:version,file,status--> | **1.4** | `tools/app-theme-map.json` | gällande · ägare DEV | **äldre Dart-API-namn → semantiska token-id**, ColorScheme-slottar, typroller, typalias och semantiska textvarianter — inte en designkälla, men det enda stället där mappningsbesluten står |
 | Mappningsschema | **1.3** · 2026-08-03 | `tools/app-theme-map.schema.json` | gällande · versionen står i `$id` | **mappningens struktur** — fältnivå, typer och gränser för colors, aliases, scheme, typroller |
-| Varumärkesfärger <!--auth:brand-colors:version,file,status--> | **1.0** | `assets/brand-colors.json` | gällande · ägare PRODUKT | **externa varumärken** — citat, inte design |
+| Varumärkesfärger <!--auth:brand-colors:version,file,status--> | **1.1** | `assets/brand-colors.json` | gällande · ägare PRODUKT | **externa varumärken** — citat, inte design |
 | **Legacy-API-kontrakt** <!--auth:legacy-api-surface:version,file,status--> | **1.0** | `legacy-api-contract.json` | gällande · fryst · ägare DEV | **den publika Dart-ytan** — AppColors-medlemmar, ColorScheme-fält, AppTextStyles-getters. Fryst ur den levererade koden, **inte** ur app-repot: att den motsvarar de 50 vyernas faktiska användning bevisas i Fas 2 |
 | Grundgranskning | 2026-07-26 | `grundgranskning.md` | **historisk** | **avvikelser mot manual v6 och grund v12** — dess tre öppna beslut är avgjorda (B-36…B-38, B-40, B-41) |
 | Arbetsplan | **1.1** · 2026-07-29 | `arbetsplan.md` | **historisk** | etapp 0–11 är ritade; planen är genomförd och styr inget längre |

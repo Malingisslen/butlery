@@ -32356,6 +32356,162 @@ abstract class AppLocalizations {
   /// **'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.'**
   String get listInviteShareSent;
 
+  /// BUT-916: Google sign-in button on the sign-in screen
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt med Google'**
+  String get authContinueWithGoogle;
+
+  /// BUT-549: Sign in with Apple button on the sign-in screen
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt med Apple'**
+  String get authContinueWithApple;
+
+  /// BUT-916: a Google/Apple sign-in failed for a reason without its own text
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningen med {provider} gick inte. Försök igen.'**
+  String authProviderFailed(String provider);
+
+  /// BUT-916: the address has a password account and the provider did not vouch for it
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns redan ett konto med den e-postadressen. Logga in med e-post och lösenord.'**
+  String get authProviderAccountExists;
+
+  /// BUT-916: re-authentication chose another Google/Apple account
+  ///
+  /// In sv, this message translates to:
+  /// **'Det var ett annat {provider}-konto än det här kontot använder. Välj samma konto igen.'**
+  String authProviderWrongAccount(String provider);
+
+  /// BUT-916: heading of the terms step after a new Google/Apple sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'Välkommen till Butlery'**
+  String get providerTermsTitle;
+
+  /// BUT-916: line under the terms step heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett steg kvar innan kontot skapas.'**
+  String get providerTermsSubtitle;
+
+  /// BUT-916: help text under the name field on the terms step
+  ///
+  /// In sv, this message translates to:
+  /// **'Andra i dina grupper och delade listor ser ditt namn. Du kan ändra det senare.'**
+  String get providerTermsNameHelp;
+
+  /// BUT-916: decline on the terms step when it is shown again after a restart (C3)
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt och ta bort kontot'**
+  String get providerTermsCancelAndDelete;
+
+  /// BUT-916: accepting the terms could not be saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot kunde inte skapas. Försök igen.'**
+  String get providerTermsSaveFailed;
+
+  /// BUT-916 C2: the provider gave no e-mail address; retryable
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot kunde inte skapas, för ingen e-postadress kom med från Google eller Apple. Försök igen.'**
+  String get providerTermsNoEmail;
+
+  /// BUT-916: heading of the step that links Google/Apple to an existing password account
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla ihop'**
+  String get providerLinkTitle;
+
+  /// BUT-916: body of the link step
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns redan ett Butlery-konto för {email}. Ange ditt Butlery-lösenord en gång så kopplas {provider} till kontot.'**
+  String providerLinkBody(String email, String provider);
+
+  /// BUT-916: primary button of the link step
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla ihop'**
+  String get providerLinkSubmit;
+
+  /// BUT-916: after sign-in, the waiting Google/Apple credential could not be linked to the account
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} kunde inte kopplas till kontot. Försök igen med Fortsätt med {provider}.'**
+  String providerLinkFailed(String provider);
+
+  /// BUT-916: a backup code after a Google/Apple sign-in was refused
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden stämmer inte. En använd kod går inte att använda igen.'**
+  String get mfaBackupCodeProviderRejected;
+
+  /// BUT-916 C8: backup codes cannot be proved through Apple on Android/web or Google on the web
+  ///
+  /// In sv, this message translates to:
+  /// **'Med {provider} på den här enheten kan reservkoden inte kontrolleras här. Skriv till oss så hjälper vi dig in på kontot.'**
+  String mfaBackupCodeProviderSupport(String provider);
+
+  /// BUT-916 C8: button opening a mail to support from the backup-code step
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv till support'**
+  String get mfaBackupCodeContactSupport;
+
+  /// BUT-916 C8: subject of the support mail from the backup-code step
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning med reservkod'**
+  String get mfaBackupCodeSupportSubject;
+
+  /// BUT-916 C7: e-mail change for an account without a password
+  ///
+  /// In sv, this message translates to:
+  /// **'Du bekräftar att det är du med {provider} innan adressen byts.'**
+  String accountSecurityEmailProviderReauth(String provider);
+
+  /// BUT-916: a backup code removed the second factor, but the Google/Apple sign-in after it was cancelled or failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in med {provider} igen för att komma in.'**
+  String mfaBackupCodeRecoveredSignInAgain(String provider);
+
+  /// BUT-916: a backup code removed the second factor, but the password sign-in after it failed
+  ///
+  /// In sv, this message translates to:
+  /// **'Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in igen för att komma in.'**
+  String get mfaBackupCodeRecoveredSignInAgainPassword;
+
+  /// BUT-916: retries only the Google/Apple sign-in after a backup code worked
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in med {provider}'**
+  String mfaBackupCodeSignInAgainWith(String provider);
+
+  /// BUT-916: retries only the password sign-in after a backup code worked
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in igen'**
+  String get mfaBackupCodeSignInAgain;
+
+  /// BUT-916 C8: the support mail from the backup-code step could not open
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postappen gick inte att öppna. Skriv till {address}.'**
+  String mfaBackupCodeNoEmail(String address);
+
+  /// BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform
+  ///
+  /// In sv, this message translates to:
+  /// **'Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.'**
+  String get accountSecurityEmailCannotConfirmHere;
+
   /// No description provided for @ingredientSearchHeading.
   ///
   /// In sv, this message translates to:

@@ -177,6 +177,11 @@ class AccountDeletionService extends BaseService {
     if (_authService.currentUserId == null) {
       return const DeletionScheduleResult(DeletionScheduleStatus.failed);
     }
+    // App Store 5.1.1(v), BUT-916 C10: Apple's tokens are revoked at the
+    // request, before scheduling. It never throws and never blocks the
+    // deletion; undoing within the grace period means signing in with Apple
+    // again.
+    await _authService.revokeAppleSignIn();
     final DateTime? scheduledFor;
     try {
       final response = await _functions

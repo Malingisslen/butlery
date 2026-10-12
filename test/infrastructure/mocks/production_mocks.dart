@@ -36,6 +36,7 @@ import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
@@ -164,6 +165,9 @@ class FakeAuthRepository extends Fake implements AuthRepository {
 
   @override
   User? getCurrentUser() => _currentUser;
+
+  @override
+  List<String> get providerIds => const [];
 
   // Other AuthRepository methods are intentionally unimplemented; calls
   // throw via Fake.noSuchMethod, surfacing tests that depend on behavior
@@ -355,6 +359,31 @@ class MockAuthService extends Mock with ChangeNotifier implements AuthService {
     }
   }
 
+  // BUT-916: no Google/Apple here unless a test overrides these.
+  @override
+  bool isProviderOffered(SignInProvider provider) => false;
+
+  @override
+  PendingProviderLink? get pendingProviderLink => null;
+
+  @override
+  bool get hasPasswordSignIn => true;
+
+  @override
+  SignInProvider? reauthenticationProvider({bool forDeletion = false}) => null;
+
+  @override
+  bool canRecoverThroughProvider(SignInProvider provider) => false;
+
+  @override
+  bool get providerAccountCreatedHere => false;
+
+  @override
+  SignInProvider? takeFailedProviderLink() => null;
+
+  @override
+  Future<void> revokeAppleSignIn() async {}
+
   @override
   void clearError() {
     _error = null;
@@ -413,6 +442,12 @@ class MockAuthViewModel extends Mock
     _isPasswordVisible = !_isPasswordVisible;
     notifyListeners();
   }
+
+  @override
+  bool isProviderOffered(SignInProvider provider) => false;
+
+  @override
+  PendingProviderLink? get pendingProviderLink => null;
 
   @override
   void clearError() {

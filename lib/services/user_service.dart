@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
@@ -79,6 +80,14 @@ class UserService extends ChangeNotifier
   /// swallows a failed sub-doc fetch into null).
   static const Object householdSizeUntouched = _unset;
 
+  bool _termsPending = false;
+
+  /// BUT-916 C1: a Google/Apple account with no profile. Nothing is created
+  /// for it until [acceptProviderTerms]; AuthWrapper shows the terms step
+  /// instead. Read from Firestore on every load, so it holds across a
+  /// restart.
+  bool get termsPending => _termsPending;
+
   // Getters
   UserProfile? get currentUserProfile => _currentUserProfile;
   bool get isLoading => _isLoading;
@@ -149,6 +158,7 @@ class UserService extends ChangeNotifier
           _loadCurrentUserProfile();
         } else {
           _currentUserProfile = null;
+          _termsPending = false;
           _profileCache.clear();
           _cacheTimestamps.clear();
           notifyListeners();
@@ -635,13 +645,33 @@ class UserService extends ChangeNotifier
     if (user == null) return;
 
     try {
+      // BUT-916 C1: checked BEFORE anything is written for the account.
+      UserProfile? fetched;
+      if (_signsInWithProviderOnly(user)) {
+        fetched = await _repository.fetchProfile(user.uid);
+        if (fetched == null && user.email == null) {
+          _setError(AppLocale.current.providerTermsNoEmail);
+          return;
+        }
+        // The profile decides, not a terms record: an earlier answer whose
+        // profile was never made is asked again, so the profile is only made
+        // from the name the user confirmed, never the provider's full name.
+        if (fetched == null) {
+          _termsPending = true;
+          notifyListeners();
+          return;
+        }
+      }
+      _termsPending = false;
+
       // NYTT: Skapa base user document i 'users' collection för friends system
       await _ensureBaseUserDocument(user.uid);
 
       // BUT-2264: the address is not on the public document; Auth holds it.
-      _currentUserProfile = (await _repository.fetchProfile(
-        user.uid,
-      ))?.copyWith(email: user.email.orEmpty());
+      _currentUserProfile =
+          (fetched ?? await _repository.fetchProfile(user.uid))?.copyWith(
+            email: user.email.orEmpty(),
+          );
 
       // NY: Om profil inte finns, skapa en automatiskt
       if (_currentUserProfile == null && NewProfileDefaults.appliesTo(user)) {
@@ -684,6 +714,11 @@ class UserService extends ChangeNotifier
         AppLogger.info(
           '👤 Nuvarande profil laddad: ${_currentUserProfile!.displayName}',
         );
+      } else if (user.email == null && !user.isAnonymous) {
+        // C2: no address means no profile can be made; a retryable error,
+        // never the endless busy screen. A guest (anonymous) has no address
+        // by design and is not a failed Google/Apple sign-up (BUT-920).
+        _setError(AppLocale.current.providerTermsNoEmail);
       } else {
         AppLogger.warning(
           '⚠️ Kunde inte ladda eller skapa profil för användare',
@@ -696,6 +731,41 @@ class UserService extends ChangeNotifier
       _setError(AppLocale.current.errorCouldNotLoadProfile);
       notifyListeners();
     }
+  }
+
+  static bool _signsInWithProviderOnly(User user) {
+    final ids = user.providerData.map((info) => info.providerId);
+    return ids.isNotEmpty && !ids.contains('password');
+  }
+
+  /// BUT-916: the terms step's "Skapa konto". The acceptance is recorded
+  /// first and awaited (not the best-effort record of an e-mail sign-up),
+  /// then the profile is made with the name the user confirmed. False when
+  /// either write failed; [error] then says so and nothing is half-made
+  /// that would let the next load skip the step without a record.
+  Future<bool> acceptProviderTerms({required String displayName}) async {
+    final user = _authRepository.currentUser;
+    if (user == null) return false;
+    _clearError();
+    try {
+      await _repository.recordTermsAcceptance(user.uid, currentTermsVersion);
+    } catch (e) {
+      AppLogger.warning('Terms acceptance not recorded: $e');
+      _setError(AppLocale.current.providerTermsSaveFailed);
+      return false;
+    }
+    _termsPending = false;
+    final created = await createOrUpdateProfile(
+      displayName: displayName,
+      isSearchable: true,
+      allowEmailSearch: false,
+    );
+    if (created == null) {
+      if (!hasError) _setError(AppLocale.current.providerTermsSaveFailed);
+      return false;
+    }
+    await _loadCurrentUserProfile();
+    return true;
   }
 
   /// BUG-13: Clear the load/create error and re-run the profile load.
@@ -806,6 +876,7 @@ class UserService extends ChangeNotifier
 
   void resetForLogout() {
     _isInitialized = false;
+    _termsPending = false;
     _currentUserProfile = null;
     _profileCache.clear();
     _cacheTimestamps.clear();

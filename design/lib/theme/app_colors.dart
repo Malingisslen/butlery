@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:0ed40d513d789b85c8172112126e444e3f9717cfe36d5b84c85ac9048639d579 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:a8e804ef61d4a3c2393eb7bbf11b10c6239157a5f4cb3622bd6a3c8c06116d55 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -332,4 +332,16 @@ class AppColors {
   static const Color brandArla = Color(0xFFE30613);
   static const Color brandKoketSe = Color(0xFF000000);
   static const Color brandGeneric = Color(0xFF6B7280);
+  static const Color brandGoogle = Color(0xFF4285F4);
+  static const Color brandGoogleRed = Color(0xFFEA4335);
+  static const Color brandGoogleYellow = Color(0xFFFBBC05);
+  static const Color brandGoogleGreen = Color(0xFF34A853);
+  static const Color brandGoogleButtonLight = Color(0xFF747775);
+  static const Color brandGoogleButtonLightBackground = Color(0xFFFFFFFF);
+  static const Color brandGoogleButtonLightText = Color(0xFF1F1F1F);
+  static const Color brandGoogleButtonDark = Color(0xFF8E918F);
+  static const Color brandGoogleButtonDarkBackground = Color(0xFF131314);
+  static const Color brandGoogleButtonDarkText = Color(0xFFE3E3E3);
+  static const Color brandAppleBlack = Color(0xFF000000);
+  static const Color brandAppleWhite = Color(0xFFFFFFFF);
 }
