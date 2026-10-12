@@ -283,7 +283,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuAutoPlacedChangeAction => 'Change';
 
   @override
-  String get menuPlacementTitle => 'place in the week';
+  String get menuPlacementTitle => 'Place in the week';
 
   @override
   String menuPlacementProgress(int placed, int total) {
@@ -292,22 +292,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuPlacementTrayLabel(int count) {
-    return 'Left to place ($count)';
+    return '$count left to place';
   }
 
   @override
   String menuPlacementHint(String recipe) {
-    return 'Tap a free cell to place $recipe.';
+    return 'Tap a free place for $recipe. Lunch and dinner take one dish, other takes several.';
   }
 
   @override
-  String get menuPlacementHintSelect => 'Select a recipe below to place it.';
+  String get menuPlacementHintSelect =>
+      'Select a dish below to place it. Lunch and dinner take one dish, other takes several.';
 
   @override
   String get menuPlacementPlaceHere => 'place here';
 
   @override
-  String get menuPlacementAutoRest => 'Place the rest automatically';
+  String get menuPlacementAutoRest => 'Randomise the rest';
 
   @override
   String menuPlacementOverflow(int count) {
@@ -1974,12 +1975,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String personalTagRuleCount(int count) {
-    return '$count rules';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rules',
+      one: '1 rule',
+    );
+    return '$_temp0';
   }
 
   @override
   String personalTagRuleCountActive(int enabled, int total) {
-    return '$enabled/$total rules active';
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'rules',
+      one: 'rule',
+    );
+    return '$enabled of $total $_temp0 on';
   }
 
   @override
@@ -4405,7 +4418,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shareGroupMembersCount(int count) {
-    return '$count members';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14170,6 +14189,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyMenuTodayBadge => 'Today';
 
   @override
+  String get weeklyMenuNewMark => 'new';
+
+  @override
+  String get weeklyMenuLegendNew => 'new';
+
+  @override
+  String get weeklyMenuLegendAllergen => 'can\'t eat';
+
+  @override
+  String get weeklyMenuLegendPresence => 'home, if not everyone';
+
+  @override
+  String a11yWeeklyMenuAddDish(String slot, String day) {
+    return 'Add a dish for $slot on $day';
+  }
+
+  @override
+  String a11yWeeklyMenuOpenOvrigt(String day) {
+    return 'Show other dishes on $day';
+  }
+
+  @override
   String get weeklyMenuEmptyTitle => 'No plan yet';
 
   @override
@@ -14178,6 +14219,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weeklyMenuOvrigtAddMore => '+ add';
+
+  @override
+  String weeklyMenuOvrigtSheetTitle(String day) {
+    return 'Other dishes on $day';
+  }
+
+  @override
+  String get weeklyMenuOvrigtSheetAdd => 'Add a dish';
 
   @override
   String get weeklyMenuOverwriteConfirm =>
@@ -14189,6 +14238,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String weeklyMenuWeekLabel(int weekNum, String start, String end) {
     return 'Week $weekNum · $start–$end';
+  }
+
+  @override
+  String weeklyMenuWeekTitle(int weekNum) {
+    return 'Week $weekNum';
+  }
+
+  @override
+  String weeklyMenuWeekRange(String start, String end) {
+    return '$start–$end';
   }
 
   @override
@@ -15286,22 +15345,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get whoAteSkip => 'skip';
+  String get whoAteSkip => 'Skip';
 
   @override
   String get a11yToggleDiner => 'Mark as eating';
 
   @override
-  String get menuPresenceSheetTitle => 'who\'s home?';
+  String get menuPresenceSheetTitle => 'Who\'s home?';
 
   @override
-  String get menuPresenceThisMeal => 'this meal';
+  String get menuPresenceThisMeal => 'This meal';
 
   @override
-  String get menuPresenceWholeDay => 'whole day';
+  String get menuPresenceWholeDay => 'Whole day';
 
   @override
   String get menuPresenceNobody => 'nobody home';
+
+  @override
+  String get menuPresenceHome => 'home';
+
+  @override
+  String get menuPresenceAway => 'away';
+
+  @override
+  String menuPresenceHomeSummary(int home, int portions) {
+    return '$home home · $portions servings';
+  }
+
+  @override
+  String get menuPresenceOpenRecipe => 'Open the recipe';
 
   @override
   String menuPresencePortions(int count) {
@@ -15321,7 +15394,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuPresenceSummaryTitle => 'who\'s home?';
 
   @override
-  String get menuPresenceSummaryAllHome => 'everyone home all week';
+  String get menuPresenceSummaryAllHome => 'Everyone home all week';
 
   @override
   String menuPresenceSummaryAway(String names) {
@@ -15334,7 +15407,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyRatingTitle => 'what did you think?';
+  String get familyRatingTitle => 'What did you think?';
 
   @override
   String get familyRatingIntro =>
@@ -15344,7 +15417,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get familyRatingYou => 'you';
 
   @override
-  String get familyRatingSave => 'save ratings';
+  String get familyRatingSave => 'Save';
 
   @override
   String get familyRatingPrivateNote =>
@@ -15569,6 +15642,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yShowVoters => 'Show who voted';
+
+  @override
+  String get a11yGroupMenuDishDetails => 'Show proposal and votes';
 
   @override
   String get groupMenuUnknownVoter => 'Unknown member';
@@ -15831,6 +15907,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String menuPreviewSharedLine(String name, String menu) {
+    return '$name shared the menu $menu with you · read only';
+  }
+
+  @override
+  String get menuPreviewDecline => 'Decline';
 
   @override
   String get emailVerificationResendFailed =>
@@ -17216,20 +17300,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSuggestionTitle => 'Suggested change';
 
   @override
-  String recipeSuggestionIntroOwner(String name, String date) {
-    return '$name suggests this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroOwner(String name, String title) {
+    return '$name suggests a change to $title. Your recipe only changes if you use the suggestion.';
   }
 
   @override
-  String recipeSuggestionIntroMine(String date) {
-    return 'You suggested this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroMine(String title) {
+    return 'You suggested a change to $title. The recipe only changes if the owner uses the suggestion.';
   }
 
   @override
   String get recipeSuggestionSuggestedLabel => 'Suggestion';
 
   @override
-  String get recipeSuggestionCurrentLabel => 'Recipe now';
+  String get recipeSuggestionCurrentLabel => 'Now';
 
   @override
   String get recipeSuggestionAccept => 'Use the suggestion';
@@ -17618,13 +17702,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
-    return '$name has updated their suggestion to this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroOwnerUpdated(String name, String title) {
+    return '$name has updated their suggestion for $title. Your recipe only changes if you use the suggestion.';
   }
 
   @override
-  String recipeSuggestionIntroMineUpdated(String date) {
-    return 'You suggested this, and it replaced your earlier suggestion. The suggestion is kept until $date.';
+  String recipeSuggestionIntroMineUpdated(String title) {
+    return 'You suggested a change to $title, and it replaced your earlier suggestion. The recipe only changes if the owner uses the suggestion.';
   }
 
   @override
@@ -17682,6 +17766,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hemStartCooking => 'Start cooking';
+
+  @override
+  String get hemSuggestion => 'Suggestion';
+
+  @override
+  String get hemSwapSuggestion => 'Change suggestion';
 
   @override
   String get hemSwapDish => 'Change dish';
@@ -18795,7 +18885,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagDetailAddRule => 'Add rule';
 
   @override
-  String get tagDetailRunRulesAll => 'Run the rules on all recipes';
+  String get tagDetailRunRulesAll => 'Run the rules now';
 
   @override
   String get tagDetailShareTag => 'Share tag';
@@ -20329,4 +20419,198 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'The password couldn\'t be set. Try again.';
+
+  @override
+  String get adminOpsSectionTitle => 'Operations · recent events';
+
+  @override
+  String get adminOpsSparseTitle => 'Sparse on purpose.';
+
+  @override
+  String get adminOpsSparseBody =>
+      'The log fills once the app has users. A short log does not mean anything is missing.';
+
+  @override
+  String get adminOpsEventNotificationCleanup => 'Notifications cleaned';
+
+  @override
+  String get adminOpsEventIngredientCleanup => 'Ingredients cleaned';
+
+  @override
+  String get adminOpsEventSystemEventsCleanup => 'Ops log cleaned';
+
+  @override
+  String get adminOpsEventSocialRequestsCleanup => 'Old requests cleaned';
+
+  @override
+  String get adminOpsEventAuditLogCleanup => 'Audit log cleaned';
+
+  @override
+  String get adminOpsEventDeletionAuditLogCleanup => 'Deletion log cleaned';
+
+  @override
+  String get adminParsingSectionTitle => 'Parsing by domain';
+
+  @override
+  String get adminParsingColSuccess => 'Succeeded';
+
+  @override
+  String get adminParsingColStuck => 'Stuck on';
+
+  @override
+  String get adminParsingTableNote =>
+      'Tap a row to see its imports. The field in the last column is the one corrected most often for the domain.';
+
+  @override
+  String get moderatorContentTypeRecipe => 'Recipe';
+
+  @override
+  String get moderatorContentTypeComment => 'Comment';
+
+  @override
+  String get moderatorContentTypeMessage => 'Message';
+
+  @override
+  String get moderatorContentTypeProfile => 'Profile';
+
+  @override
+  String get moderatorContentTypeCookSnap => 'Cook snap';
+
+  @override
+  String get moderatorContentTypeGroup => 'Group';
+
+  @override
+  String get moderatorStatusNew => 'New';
+
+  @override
+  String get moderatorStatusInReview => 'In review';
+
+  @override
+  String get moderatorStatusActioned => 'Actioned';
+
+  @override
+  String get moderatorStatusClosed => 'Closed';
+
+  @override
+  String get moderatorCloseTooltip => 'Close the report';
+
+  @override
+  String get familyRatingNotSet => 'not set';
+
+  @override
+  String get familyRatingNoteSkip =>
+      'Anyone you skip gets no row and is left out of the average. A rating can always be changed, and the latest replaces the earlier one.';
+
+  @override
+  String get familyRatingNoteCounts =>
+      'The rating counts toward the recipe\'s public average';
+
+  @override
+  String get familyRatingNoteAnonymous =>
+      ', anonymously and without showing anyone\'s identity.';
+
+  @override
+  String get cookbookStatRecipes => 'recipes';
+
+  @override
+  String get cookbookStatSort => 'order';
+
+  @override
+  String get cookbookStatSortAlphabetical => 'A–Z';
+
+  @override
+  String get cookbookStatSortCustom => 'Own';
+
+  @override
+  String get cookbookStatUpdated => 'last changed';
+
+  @override
+  String get tagDetailNewRule => '+ New rule';
+
+  @override
+  String get tagDetailRulesHeading => 'Automatic rules';
+
+  @override
+  String get tagDetailStatChanged => 'last changed';
+
+  @override
+  String tagDetailRuleTagged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'tagged $count recipes',
+      one: 'tagged 1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRecipesHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes with the tag',
+      one: '1 recipe with the tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRuleSummaryNumber(
+    String type,
+    String operator,
+    String value,
+  ) {
+    return '$type $operator $value';
+  }
+
+  @override
+  String get tagEditSheetTitle => 'Edit the tag';
+
+  @override
+  String tagDetailStatRulesValue(int enabled, int total) {
+    return '$enabled of $total';
+  }
+
+  @override
+  String tagDetailStatRules(int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'rules on',
+      one: 'rule on',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagUnusedHeading(int count) {
+    return 'Unused ($count)';
+  }
+
+  @override
+  String get personalTagDeleteAllShort => 'Delete all';
+
+  @override
+  String get conflictDiffMineName => 'Yours';
+
+  @override
+  String get conflictDiffTheirsName => 'Theirs';
+
+  @override
+  String get conflictDiffApplies => 'Applies';
+
+  @override
+  String conflictDiffIntro(String name, String title) {
+    return 'You and $name edited $title at the same time. Only one of the versions applies – here is how they differ.';
+  }
+
+  @override
+  String get conflictDiffIntroPlain =>
+      'You edited at the same time. Only one of the versions applies – here is how they differ.';
+
+  @override
+  String recipeSuggestionKeptNote(String date) {
+    return 'The suggestion is kept until $date. Then it is removed.';
+  }
 }

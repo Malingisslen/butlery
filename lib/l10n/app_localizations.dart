@@ -521,7 +521,7 @@ abstract class AppLocalizations {
   /// BUT-1241: app-bar title of the manual placement mode (lowercase per design language).
   ///
   /// In sv, this message translates to:
-  /// **'placera i veckan'**
+  /// **'Placera i veckan'**
   String get menuPlacementTitle;
 
   /// BUT-1241: progress pill in the placement-mode header.
@@ -533,19 +533,19 @@ abstract class AppLocalizations {
   /// BUT-1241: label above the tray of recipes waiting to be placed.
   ///
   /// In sv, this message translates to:
-  /// **'Kvar att placera ({count})'**
+  /// **'{count} kvar att placera'**
   String menuPlacementTrayLabel(int count);
 
   /// BUT-1241: hint banner while a tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Tryck på en ledig ruta för att placera {recipe}.'**
+  /// **'Tryck på en ledig plats för {recipe}. Lunch och middag tar en rätt, övrigt tar flera.'**
   String menuPlacementHint(String recipe);
 
   /// BUT-1241: hint banner when no tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Välj ett recept nedan för att placera det.'**
+  /// **'Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.'**
   String get menuPlacementHintSelect;
 
   /// BUT-1241: text inside eligible (highlighted) cells in placement mode.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// BUT-1241: tray action that auto-distributes the still-unplaced recipes.
   ///
   /// In sv, this message translates to:
-  /// **'Placera resten automatiskt'**
+  /// **'Slumpa resten'**
   String get menuPlacementAutoRest;
 
   /// BUT-1241: warning after auto-rest when some recipes did not fit the week.
@@ -3275,13 +3275,13 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagRuleCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} regler'**
+  /// **'{count, plural, =1{1 regel} other{{count} regler}}'**
   String personalTagRuleCount(int count);
 
   /// No description provided for @personalTagRuleCountActive.
   ///
   /// In sv, this message translates to:
-  /// **'{enabled}/{total} regler aktiva'**
+  /// **'{enabled} av {total} {total, plural, =1{regel} other{regler}} på'**
   String personalTagRuleCountActive(int enabled, int total);
 
   /// No description provided for @personalTagNoUsage.
@@ -7336,7 +7336,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareGroupMembersCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}}'**
   String shareGroupMembersCount(int count);
 
   /// No description provided for @shareTabFriends.
@@ -23549,6 +23549,42 @@ abstract class AppLocalizations {
   /// **'I dag'**
   String get weeklyMenuTodayBadge;
 
+  /// No description provided for @weeklyMenuNewMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuNewMark;
+
+  /// No description provided for @weeklyMenuLegendNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuLegendNew;
+
+  /// No description provided for @weeklyMenuLegendAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'tål inte'**
+  String get weeklyMenuLegendAllergen;
+
+  /// No description provided for @weeklyMenuLegendPresence.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma, om inte alla'**
+  String get weeklyMenuLegendPresence;
+
+  /// No description provided for @a11yWeeklyMenuAddDish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt på {slot} {day}'**
+  String a11yWeeklyMenuAddDish(String slot, String day);
+
+  /// No description provided for @a11yWeeklyMenuOpenOvrigt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa övrigt på {day}'**
+  String a11yWeeklyMenuOpenOvrigt(String day);
+
   /// No description provided for @weeklyMenuEmptyTitle.
   ///
   /// In sv, this message translates to:
@@ -23567,6 +23603,18 @@ abstract class AppLocalizations {
   /// **'+ lägg till'**
   String get weeklyMenuOvrigtAddMore;
 
+  /// No description provided for @weeklyMenuOvrigtSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt på {day}'**
+  String weeklyMenuOvrigtSheetTitle(String day);
+
+  /// No description provided for @weeklyMenuOvrigtSheetAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt'**
+  String get weeklyMenuOvrigtSheetAdd;
+
   /// No description provided for @weeklyMenuOverwriteConfirm.
   ///
   /// In sv, this message translates to:
@@ -23584,6 +23632,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vecka {weekNum} · {start}–{end}'**
   String weeklyMenuWeekLabel(int weekNum, String start, String end);
+
+  /// No description provided for @weeklyMenuWeekTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {weekNum}'**
+  String weeklyMenuWeekTitle(int weekNum);
+
+  /// No description provided for @weeklyMenuWeekRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'{start}–{end}'**
+  String weeklyMenuWeekRange(String start, String end);
 
   /// No description provided for @weeklyMenuChipsHeading.
   ///
@@ -24374,7 +24434,7 @@ abstract class AppLocalizations {
   /// BUT-417: label prefix for the reporter's user id.
   ///
   /// In sv, this message translates to:
-  /// **'Rapporterat av'**
+  /// **'Anmäld av'**
   String get moderatorReporterLabel;
 
   /// Shown in place of the reporter line when the reporter deleted their account while the case was open; the report is kept without their id.
@@ -25411,7 +25471,7 @@ abstract class AppLocalizations {
   /// No description provided for @whoAteSkip.
   ///
   /// In sv, this message translates to:
-  /// **'hoppa över'**
+  /// **'Hoppa över'**
   String get whoAteSkip;
 
   /// Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:).
@@ -25423,19 +25483,19 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSheetTitle.
   ///
   /// In sv, this message translates to:
-  /// **'vem är hemma?'**
+  /// **'Vem är hemma?'**
   String get menuPresenceSheetTitle;
 
   /// No description provided for @menuPresenceThisMeal.
   ///
   /// In sv, this message translates to:
-  /// **'denna måltid'**
+  /// **'Den här måltiden'**
   String get menuPresenceThisMeal;
 
   /// No description provided for @menuPresenceWholeDay.
   ///
   /// In sv, this message translates to:
-  /// **'hela dagen'**
+  /// **'Hela dagen'**
   String get menuPresenceWholeDay;
 
   /// No description provided for @menuPresenceNobody.
@@ -25443,6 +25503,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'ingen hemma'**
   String get menuPresenceNobody;
+
+  /// No description provided for @menuPresenceHome.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma'**
+  String get menuPresenceHome;
+
+  /// No description provided for @menuPresenceAway.
+  ///
+  /// In sv, this message translates to:
+  /// **'borta'**
+  String get menuPresenceAway;
+
+  /// No description provided for @menuPresenceHomeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{home} hemma · {portions} port.'**
+  String menuPresenceHomeSummary(int home, int portions);
+
+  /// No description provided for @menuPresenceOpenRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna receptet'**
+  String get menuPresenceOpenRecipe;
 
   /// No description provided for @menuPresencePortions.
   ///
@@ -25471,7 +25555,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSummaryAllHome.
   ///
   /// In sv, this message translates to:
-  /// **'alla hemma hela veckan'**
+  /// **'Alla hemma hela veckan'**
   String get menuPresenceSummaryAllHome;
 
   /// No description provided for @menuPresenceSummaryAway.
@@ -25489,7 +25573,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingTitle.
   ///
   /// In sv, this message translates to:
-  /// **'vad tyckte ni?'**
+  /// **'Vad tyckte ni?'**
   String get familyRatingTitle;
 
   /// No description provided for @familyRatingIntro.
@@ -25507,7 +25591,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingSave.
   ///
   /// In sv, this message translates to:
-  /// **'spara betyg'**
+  /// **'Spara'**
   String get familyRatingSave;
 
   /// No description provided for @familyRatingPrivateNote.
@@ -25845,6 +25929,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa vilka som röstade'**
   String get a11yShowVoters;
+
+  /// No description provided for @a11yGroupMenuDishDetails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa förslag och röster'**
+  String get a11yGroupMenuDishDetails;
 
   /// BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed.
   ///
@@ -26289,6 +26379,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// No description provided for @menuPreviewSharedLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} delade menyn {menu} med dig · endast läsa'**
+  String menuPreviewSharedLine(String name, String menu);
+
+  /// No description provided for @menuPreviewDecline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avböj'**
+  String get menuPreviewDecline;
 
   /// P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR).
   ///
@@ -28258,17 +28360,17 @@ abstract class AppLocalizations {
   /// **'Förslag till ändring'**
   String get recipeSuggestionTitle;
 
-  /// P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.
+  /// Intro line for the owner; name = suggester, title = the recipe.
   ///
   /// In sv, this message translates to:
-  /// **'{name} föreslår det här. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroOwner(String name, String date);
+  /// **'{name} föreslår en ändring i {title}. Ditt recept ändras bara om du använder förslaget.'**
+  String recipeSuggestionIntroOwner(String name, String title);
 
-  /// P5-U27b: intro line for the suggester; date = when the 7 days end.
+  /// Intro line for the suggester; title = the recipe.
   ///
   /// In sv, this message translates to:
-  /// **'Det här föreslog du. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroMine(String date);
+  /// **'Du föreslog en ändring i {title}. Receptet ändras bara om ägaren använder förslaget.'**
+  String recipeSuggestionIntroMine(String title);
 
   /// P5-U27b: label over the suggested value of a field.
   ///
@@ -28276,10 +28378,10 @@ abstract class AppLocalizations {
   /// **'Förslaget'**
   String get recipeSuggestionSuggestedLabel;
 
-  /// P5-U27b: label over the recipe's current value of a field.
+  /// Label over the recipe's current value of a field.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet nu'**
+  /// **'Nu'**
   String get recipeSuggestionCurrentLabel;
 
   /// P5-U27b: the owner accepts the suggestion (produktregler.md:241).
@@ -28846,17 +28948,17 @@ abstract class AppLocalizations {
   /// **'{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}'**
   String recipeSuggestionFromManyUpdated(int count, int updated);
 
-  /// Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.
+  /// Intro line for the owner when the suggestion replaced an earlier one.
   ///
   /// In sv, this message translates to:
-  /// **'{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroOwnerUpdated(String name, String date);
+  /// **'{name} har uppdaterat sitt förslag till {title}. Ditt recept ändras bara om du använder förslaget.'**
+  String recipeSuggestionIntroOwnerUpdated(String name, String title);
 
-  /// Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.
+  /// Intro line for the suggester when the suggestion replaced an earlier one.
   ///
   /// In sv, this message translates to:
-  /// **'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroMineUpdated(String date);
+  /// **'Du föreslog en ändring i {title}, och den ersatte ditt förra förslag. Receptet ändras bara om ägaren använder förslaget.'**
+  String recipeSuggestionIntroMineUpdated(String title);
 
   /// Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng.
   ///
@@ -28947,6 +29049,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Börja laga'**
   String get hemStartCooking;
+
+  /// HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag'**
+  String get hemSuggestion;
+
+  /// HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt förslag'**
+  String get hemSwapSuggestion;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
   ///
@@ -30643,7 +30757,7 @@ abstract class AppLocalizations {
   /// Secondary button on the tag page that applies the rules to existing recipes
   ///
   /// In sv, this message translates to:
-  /// **'Kör reglerna på alla recept'**
+  /// **'Kör reglerna nu'**
   String get tagDetailRunRulesAll;
 
   /// Row in the menu of the tag page
@@ -32961,6 +33075,306 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet kunde inte sättas. Försök igen.'**
   String get signInMethodsPasswordFailed;
+
+  /// Skiss spår 9 (v65): heading above the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Drift · senaste händelser'**
+  String get adminOpsSectionTitle;
+
+  /// Skiss spår 9 (v65): bold lead of the note closing the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Glest med flit.'**
+  String get adminOpsSparseTitle;
+
+  /// Skiss spår 9 (v65): body of the note closing the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Loggen fylls när appen har användare. Att den är kort betyder inte att något saknas.'**
+  String get adminOpsSparseBody;
+
+  /// Ops-log event name for the notification_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser städade'**
+  String get adminOpsEventNotificationCleanup;
+
+  /// Ops-log event name for the ingredient_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser städade'**
+  String get adminOpsEventIngredientCleanup;
+
+  /// Ops-log event name for the system_events_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Driftloggen städad'**
+  String get adminOpsEventSystemEventsCleanup;
+
+  /// Ops-log event name for the cleanup_expired_social_requests job
+  ///
+  /// In sv, this message translates to:
+  /// **'Gamla förfrågningar städade'**
+  String get adminOpsEventSocialRequestsCleanup;
+
+  /// Ops-log event name for the audit_log_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskningslogg städad'**
+  String get adminOpsEventAuditLogCleanup;
+
+  /// Ops-log event name for the deletion_audit_log_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingslogg städad'**
+  String get adminOpsEventDeletionAuditLogCleanup;
+
+  /// Skiss spår 9 (v66): heading above the parsing table
+  ///
+  /// In sv, this message translates to:
+  /// **'Parsning per domän'**
+  String get adminParsingSectionTitle;
+
+  /// Skiss spår 9 (v66): column with the import success rate per domain
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckat'**
+  String get adminParsingColSuccess;
+
+  /// Skiss spår 9 (v66): column with the field corrected most per domain
+  ///
+  /// In sv, this message translates to:
+  /// **'Fastnar på'**
+  String get adminParsingColStuck;
+
+  /// Skiss spår 9 (v66): note under the parsing table
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck på en rad för att se importerna. Fältet i sista kolumnen är det som oftast rättas för domänen.'**
+  String get adminParsingTableNote;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get moderatorContentTypeRecipe;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get moderatorContentTypeComment;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelande'**
+  String get moderatorContentTypeMessage;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Profil'**
+  String get moderatorContentTypeProfile;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Matbild'**
+  String get moderatorContentTypeCookSnap;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get moderatorContentTypeGroup;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny'**
+  String get moderatorStatusNew;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskas'**
+  String get moderatorStatusInReview;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get moderatorStatusActioned;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Stängd'**
+  String get moderatorStatusClosed;
+
+  /// Skiss spår 9 (v64): tooltip on the X that closes a report
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng rapporten'**
+  String get moderatorCloseTooltip;
+
+  /// Skiss spår 9 (v72): shown instead of a score for a diner with no stars yet
+  ///
+  /// In sv, this message translates to:
+  /// **'inte satt'**
+  String get familyRatingNotSet;
+
+  /// Skiss spår 9 (v72): first part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **'Den som hoppar över får ingen rad och räknas inte in i snittet. Betyget går alltid att ändra, och det senaste ersätter det tidigare.'**
+  String get familyRatingNoteSkip;
+
+  /// Skiss spår 9 (v72): bold part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget räknas in i receptets publika snitt'**
+  String get familyRatingNoteCounts;
+
+  /// Skiss spår 9 (v72): closing part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **', anonymt och utan att någon identitet visas.'**
+  String get familyRatingNoteAnonymous;
+
+  /// Skiss spår 9 (v71): label under the recipe count in a cookbook's key figures
+  ///
+  /// In sv, this message translates to:
+  /// **'recept'**
+  String get cookbookStatRecipes;
+
+  /// Skiss spår 9 (v71): label under the sort order in a cookbook's key figures
+  ///
+  /// In sv, this message translates to:
+  /// **'sortering'**
+  String get cookbookStatSort;
+
+  /// Skiss spår 9 (v71): the cookbook is sorted alphabetically
+  ///
+  /// In sv, this message translates to:
+  /// **'A–Ö'**
+  String get cookbookStatSortAlphabetical;
+
+  /// Skiss spår 9 (v71): the cookbook has the user's own order
+  ///
+  /// In sv, this message translates to:
+  /// **'Egen'**
+  String get cookbookStatSortCustom;
+
+  /// Skiss spår 9 (v71): label under the date the cookbook last changed
+  ///
+  /// In sv, this message translates to:
+  /// **'senast ändrad'**
+  String get cookbookStatUpdated;
+
+  /// Skiss spår 9 (v108): link at the end of the rules heading on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Ny regel'**
+  String get tagDetailNewRule;
+
+  /// Skiss spår 9 (v108): heading over the rules on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Automatiska regler'**
+  String get tagDetailRulesHeading;
+
+  /// Skiss spår 9 (v108): label under the date the tag last changed
+  ///
+  /// In sv, this message translates to:
+  /// **'senast ändrad'**
+  String get tagDetailStatChanged;
+
+  /// Skiss spår 9 (v108): what a rule has tagged
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{taggade 1 recept} other{taggade {count} recept}}'**
+  String tagDetailRuleTagged(int count);
+
+  /// Skiss spår 9 (v108): line over the recipe list on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept med taggen} other{{count} recept med taggen}}'**
+  String tagDetailRecipesHeading(int count);
+
+  /// Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes
+  ///
+  /// In sv, this message translates to:
+  /// **'{type} {operator} {value}'**
+  String tagDetailRuleSummaryNumber(String type, String operator, String value);
+
+  /// Skiss spår 9 (v108): title of the sheet the Redigera link on a tag page opens
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera taggen'**
+  String get tagEditSheetTitle;
+
+  /// Skiss spår 9 (v108): how many of the tag's rules are on
+  ///
+  /// In sv, this message translates to:
+  /// **'{enabled} av {total}'**
+  String tagDetailStatRulesValue(int enabled, int total);
+
+  /// Skiss spår 9 (v108): label under how many of the tag's rules are on
+  ///
+  /// In sv, this message translates to:
+  /// **'{total, plural, =1{regel på} other{regler på}}'**
+  String tagDetailStatRules(int total);
+
+  /// Skiss spår 9 (v84): heading over the unused tags shown as pills
+  ///
+  /// In sv, this message translates to:
+  /// **'Oanvända ({count})'**
+  String personalTagUnusedHeading(int count);
+
+  /// Skiss spår 9 (v84): red link at the end of the unused-tags heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera alla'**
+  String get personalTagDeleteAllShort;
+
+  /// Name of the user's own version in the conflict view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din'**
+  String get conflictDiffMineName;
+
+  /// Name of the other version in the conflict view when no name is known.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras'**
+  String get conflictDiffTheirsName;
+
+  /// Badge on the version that applies now.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller'**
+  String get conflictDiffApplies;
+
+  /// Intro of the conflict view; name = the other editor, title = the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du och {name} ändrade samtidigt i {title}. Bara en av versionerna gäller – så här skiljer de sig.'**
+  String conflictDiffIntro(String name, String title);
+
+  /// Intro of the conflict view when the other editor or the title is not known.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ni ändrade samtidigt. Bara en av versionerna gäller – så här skiljer de sig.'**
+  String get conflictDiffIntroPlain;
+
+  /// Note above the decision buttons; the Firestore TTL policy on recipe_suggestions removes it at expiresAt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget sparas till {date}. Sedan tas det bort.'**
+  String recipeSuggestionKeptNote(String date);
 }
 
 class _AppLocalizationsDelegate

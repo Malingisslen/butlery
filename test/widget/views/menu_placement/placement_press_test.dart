@@ -66,6 +66,7 @@ void main() {
     when(() => vm.isEligible(DayOfWeek.tue, MealSlot.ovrigt)).thenReturn(true);
     when(() => vm.isSessionEntry(any())).thenReturn(true);
     when(() => vm.isSessionEntry('earlier')).thenReturn(false);
+    when(() => vm.weekStart).thenReturn(now);
     when(() => vm.items).thenReturn([item, item]);
     when(() => vm.selectedIndex).thenReturn(1);
   });
@@ -129,8 +130,7 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('a free cell announces its action only, not the "placera här" '
-      'text drawn in it', (tester) async {
+  testWidgets('a free cell announces its action only', (tester) async {
     final handle = tester.ensureSemantics();
     await pump(tester, AppTheme.lightTheme, PlacementGrid(vm: vm));
 
@@ -139,11 +139,6 @@ void main() {
     final lines = announcedLines(tester, cell);
     expect(lines, hasLength(1), reason: '$lines');
     expect(lines.single, startsWith('Placera på'));
-    expect(
-      lines.map((l) => l.toLowerCase()),
-      isNot(contains('placera här')),
-      reason: '$lines',
-    );
     handle.dispose();
   });
 
@@ -155,27 +150,20 @@ void main() {
       tester,
     ) async {
       await pump(tester, theme, PlacementGrid(vm: vm));
-      // The free cell sits in the övrigt column's fill and draws its dashed
-      // outline as a foreground, not a border.
+      // The free cell draws its dashed outline as a foreground, not a border.
       await expectPressFill(
         tester,
-        find.text('placera här'),
+        find.byType(InkWell).last,
         theme.colorScheme.surfaceContainerHighest,
         bordered: false,
       );
-      await expectPressFill(
-        tester,
-        find.text('köttbullar'),
-        modeColors.pressedOnRaised,
-      );
-      await expectPressFill(
-        tester,
-        find.text('smoothie'),
-        theme.colorScheme.surfaceContainerHighest,
-      );
-      // A dish from before this session is not pressable, but its fill still
-      // needs a layer above the column's.
-      expect(pressIsCovered(tester, find.text('gröt')), isFalse);
+      for (final title in ['Köttbullar', 'Smoothie']) {
+        await expectPressFill(
+          tester,
+          find.text(title),
+          theme.colorScheme.surfaceContainerHighest,
+        );
+      }
     });
 
     testWidgets('pressed tray cards show their surface\'s fill ($mode)', (

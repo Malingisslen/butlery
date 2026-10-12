@@ -184,11 +184,9 @@ void main() {
         await tester.pump();
 
         await tester.tap(
-          find.text(
-            action == 'advance'
-                ? sv.moderatorActionAdvance
-                : sv.moderatorActionClose,
-          ),
+          action == 'advance'
+              ? find.text(sv.moderatorActionAdvance)
+              : find.byTooltip(sv.moderatorCloseTooltip),
         );
         await tester.pump();
         if (action == 'close') {
@@ -243,7 +241,7 @@ void main() {
       stream.add([report]);
       await tester.pump();
 
-      await tester.tap(find.text(sv.moderatorActionClose));
+      await tester.tap(find.byTooltip(sv.moderatorCloseTooltip));
       await tester.pump();
       await tester.pumpAndSettle();
       await tester.tap(

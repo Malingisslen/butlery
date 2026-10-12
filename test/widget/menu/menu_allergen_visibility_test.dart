@@ -81,7 +81,7 @@ void main() {
         find.text('2 recept dolda på grund av hushållets allergier'),
         findsOneWidget,
       );
-      expect(find.text('allergener okända'), findsOneWidget);
+      expect(find.text('ALLERGENER OKÄNDA'), findsOneWidget);
     },
   );
 
@@ -122,7 +122,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('hushållets allergier'), findsNothing);
-      expect(find.text('allergener okända'), findsNothing);
+      expect(find.text('ALLERGENER OKÄNDA'), findsNothing);
     },
   );
 

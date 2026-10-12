@@ -20,7 +20,7 @@ import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
-import 'package:butlery/widgets/menu/menu_content_widgets.dart';
+import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 
 Widget _app(ThemeData theme, Widget child) => MaterialApp(
   theme: theme,
@@ -58,12 +58,14 @@ void main() {
           _app(
             theme,
             Builder(
-              builder: (context) => MenuContentWidgets.buildPromptInput(
-                context,
+              builder: (context) => VeckomenyPromptRow(
                 controller: controller,
                 isGenerating: false,
+                hasMenu: false,
+                compact: false,
                 onClear: () {},
                 onChanged: () {},
+                onGenerate: () {},
               ),
             ),
           ),

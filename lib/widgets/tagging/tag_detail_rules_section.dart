@@ -1,5 +1,5 @@
-/// The Regler section of a tag's page: one row per rule and a last row that
-/// adds one.
+/// The automatic rules of a tag's page: a heading with its "+ Ny regel" link,
+/// then one row per rule with its words, what it has tagged and a switch.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,10 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 class TagDetailRulesSection extends StatelessWidget {
   final PersonalTag tag;
@@ -33,26 +37,39 @@ class TagDetailRulesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ButleryListSection(
-      title: l10n.tagDetailRulesSection,
-      rows: [
-        for (final rule in tag.rules)
-          ButleryListRow(
-            key: ValueKey(rule.id),
-            label: rule.name,
-            subtitle: _subtitle(context, rule),
-            value: rule.isEnabled
-                ? l10n.tagDetailRuleStateOn
-                : l10n.tagDetailRuleStateOff,
-            // A rule can be switched, edited and deleted, so its row opens
-            // a sheet of those instead of carrying only one of them.
-            onTap: () => _openRuleSheet(context, rule),
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
           ),
-        ButleryListRow(
-          label: l10n.tagDetailAddRule,
-          leading: ButleryIcons.plus,
-          onTap: onAddRule,
+          child: Row(
+            children: [
+              Expanded(child: SectionHeading(l10n.tagDetailRulesHeading)),
+              TextButton(
+                onPressed: onAddRule,
+                child: Text(
+                  l10n.tagDetailNewRule,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: context.modeColors.textAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+        for (final rule in tag.rules)
+          _RuleRow(
+            key: ValueKey(rule.id),
+            rule: rule,
+            subtitle: _subtitle(context, rule),
+            onToggle: () => onToggleRule(rule),
+            // A rule can be edited and deleted, so its words open a sheet of
+            // those; the switch beside them is the on/off.
+            onOpen: () => _openRuleSheet(context, rule),
+          ),
       ],
     );
   }
@@ -63,15 +80,6 @@ class TagDetailRulesSection extends StatelessWidget {
       context,
       title: rule.name,
       rows: (sheetContext) => [
-        ButleryListRow(
-          label: rule.isEnabled
-              ? l10n.tagDetailRuleDisable
-              : l10n.tagDetailRuleEnable,
-          onTap: () {
-            Navigator.pop(sheetContext);
-            onToggleRule(rule);
-          },
-        ),
         ButleryListRow(
           label: l10n.tagDetailRuleEdit,
           onTap: () {
@@ -93,29 +101,103 @@ class TagDetailRulesSection extends StatelessWidget {
   String _subtitle(BuildContext context, PersonalTagRule rule) {
     final summary = _conditionSummary(context, rule);
     if (viewModel.isLoadingRuleStats) return summary;
-    return '$summary · ${context.l10n.tagDetailRuleMatches(viewModel.getRuleMatchCount(rule.id))}';
+    return '$summary · ${context.l10n.tagDetailRuleTagged(viewModel.getRuleMatchCount(rule.id))}';
   }
 
   static String _conditionSummary(BuildContext context, PersonalTagRule rule) {
-    if (rule.conditions.isEmpty) return context.l10n.tagDetailRuleNoConditions;
+    final l10n = context.l10n;
+    if (rule.conditions.isEmpty) return l10n.tagDetailRuleNoConditions;
 
     final parts = rule.conditions.take(3).map((c) {
-      final value = c.type.isNumeric
-          ? c.numericValue.toString()
-          : c.stringValue;
-      return '${c.type.label} ${c.operator.label} "$value"';
+      if (c.type.isNumeric) {
+        final n = c.numericValue;
+        return l10n.tagDetailRuleSummaryNumber(
+          c.type.label,
+          c.operator.label,
+          n == n.roundToDouble() ? '${n.round()}' : '$n',
+        );
+      }
+      return '${c.type.label} ${c.operator.label} "${c.stringValue}"';
     }).toList();
 
     final summary = parts.join(
       rule.matchMode == MatchMode.all
-          ? context.l10n.tagDetailRuleOperatorAnd
-          : context.l10n.tagDetailRuleOperatorOr,
+          ? l10n.tagDetailRuleOperatorAnd
+          : l10n.tagDetailRuleOperatorOr,
     );
 
     if (rule.conditions.length > 3) {
       final count = rule.conditions.length - 3;
-      return '$summary ${context.l10n.tagDetailRuleMoreConditions(count)}';
+      return '$summary ${l10n.tagDetailRuleMoreConditions(count)}';
     }
     return summary;
+  }
+}
+
+class _RuleRow extends StatelessWidget {
+  const _RuleRow({
+    required this.rule,
+    required this.subtitle,
+    required this.onToggle,
+    required this.onOpen,
+    super.key,
+  });
+
+  final PersonalTagRule rule;
+  final String subtitle;
+  final VoidCallback onToggle;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              button: true,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: InkWell(
+                  onTap: onOpen,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.space16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rule.name,
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.space8),
+          Semantics(
+            label: rule.name,
+            child: Switch(value: rule.isEnabled, onChanged: (_) => onToggle()),
+          ),
+        ],
+      ),
+    );
   }
 }

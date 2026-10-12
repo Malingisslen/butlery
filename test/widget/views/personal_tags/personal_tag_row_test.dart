@@ -80,7 +80,7 @@ void main() {
       _tag('a', 'Aktiv', rules: [_rule('r1'), _rule('r2', enabled: false)]),
     ]);
 
-    expect(find.text('34 recept · 1/2 regler aktiva'), findsOneWidget);
+    expect(find.text('34 recept · 1 av 2 regler på'), findsOneWidget);
   });
 
   testWidgets('a tag nothing uses says so instead of an empty subtitle', (
