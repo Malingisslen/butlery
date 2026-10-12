@@ -5835,7 +5835,6 @@
   "onboardingAllergenTreeNut": "Tree nuts",
   "onboardingAllergenCrustacean": "Crustaceans",
   "onboardingAllergenMollusc": "Molluscs",
-  "onboardingShowAllAllergens": "Show all allergens",
   "onboardingShowFewerAllergens": "Show fewer",
   "filterVegetarian": "Vegetarian",
   "filterVegan": "Vegan",
@@ -6157,29 +6156,29 @@
     }
   },
   "onboardingSkipConfirmTitle": "Skip the intro?",
-  "onboardingSkipConfirmMessage": "You won't set up allergies and dietary preferences now. You can do it anytime in settings.",
+  "onboardingSkipConfirmMessage": "You won't set up allergies now. You can do it anytime in settings.",
   "onboardingSkip": "Skip",
   "onboardingBack": "Back",
   "onboardingNext": "Next",
-  "onboardingComplete": "Finish",
-  "onboardingAgeGateTitle": "How old are you?",
-  "onboardingAgeGateSubtitle": "We need your birth year to follow Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4).",
+  "onboardingComplete": "Done",
+  "onboardingAgeGateTitle": "What year were you born?",
+  "onboardingAgeGateSubtitle": "Butlery is for people aged 15 and over. I only ask for the year, not the date.",
   "onboardingAgeGateBirthYearLabel": "Birth year",
-  "onboardingAgeGateBirthYearHint": "Choose your birth year",
-  "onboardingAgeGatePrivacyNote": "We only store the year, not the full date.",
+  "onboardingAgeGateBirthYearHint": "Choose a year",
+  "onboardingAgeGatePrivacyNote": "The year is saved on your account. It is used for the age limit and is not visible to anyone else.",
   "onboardingAgeGateTooYoungTitle": "Butlery is for ages 15 and up",
-  "onboardingAgeGateTooYoungBody": "Under Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4) you need to be at least 15 to have your own account. You're welcome to come back when you turn 15.",
+  "onboardingAgeGateTooYoungBody": "We didn't choose this ourselves. Swedish law sets the limit for services with a social side, and Butlery has one.",
   "onboardingAgeGateSignOut": "Sign out",
   "onboardingAgeGateParentOption": "A grown-up can sign up for you",
   "onboardingAgeGateParentInfoTitle": "Ask a grown-up for help",
   "onboardingAgeGateParentInfoBody": "Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.",
   "onboardingAgeRejectedTitle": "We couldn't create your account",
   "onboardingAgeRejectedBody": "Butlery is available to those aged 15 and over. We're unable to create your account at this time.",
-  "onboardingWelcomeTitle": "Welcome. Butlery stands ready.",
-  "onboardingWelcomeDescription": "Let us set up your preferences so you get the best experience from the start.",
-  "onboardingWelcomeNote": "You can always change these in settings later.",
-  "onboardingAllergenTitle": "Allergies & intolerances",
-  "onboardingAllergenDescription": "Choose the allergens you want to track and filter recipes by.",
+  "onboardingWelcomeTitle": "Welcome. I'll run the week.",
+  "onboardingWelcomeDescription": "Gather the recipes you already cook, and let me build the weekly menu and the shopping list from them.",
+  "onboardingWelcomeNote": "Two questions left. Then you're in.",
+  "onboardingAllergenTitle": "Anything you avoid?",
+  "onboardingAllergenDescription": "Then I'll keep it out everywhere — in recipes, in the menu and in the shopping list.",
   "onboardingAllergenGluten": "Gluten",
   "onboardingAllergenMilk": "Milk",
   "onboardingAllergenNuts": "Nuts",
@@ -6188,35 +6187,100 @@
   "onboardingAllergenFish": "Fish",
   "onboardingAllergenShellfish": "Shellfish",
   "onboardingAllergenSesame": "Sesame",
-  "onboardingDietaryTitle": "Dietary preferences",
-  "onboardingDietaryDescription": "Do you have any dietary preferences? We can filter recipes for you.",
-  "onboardingDietaryVegetarian": "Vegetarian",
-  "onboardingDietaryVegan": "Vegan",
-  "onboardingDietaryPescetarian": "Pescetarian",
-  "onboardingDietaryVegetarianDesc": "No meat or fish products",
-  "onboardingDietaryVeganDesc": "No animal products",
-  "onboardingDietaryPescetarianDesc": "Fish but no meat",
-  "onboardingDietaryGlutenFree": "Gluten-free",
-  "onboardingDietaryLactoseFree": "Lactose-free",
-  "onboardingDietaryHalal": "Halal",
-  "onboardingDietaryKosher": "Kosher",
-  "onboardingDietaryGlutenFreeDesc": "No gluten-containing ingredients",
-  "onboardingDietaryLactoseFreeDesc": "No dairy products with lactose",
-  "onboardingDietaryHalalDesc": "Follows halal food guidelines",
-  "onboardingDietaryKosherDesc": "Follows kosher food guidelines",
   "onboardingSkippedBanner": "You skipped the introduction. Want to set up allergens and dietary preferences?",
   "onboardingSkippedBannerAction": "Open settings",
   "onboardingWelcomeBanner": "Welcome to Butlery. You're all set — add your first recipe to get started.",
   "onboardingWelcomeBannerAction": "Add recipe",
-  "onboardingImportTitle": "Import your first recipe",
-  "onboardingImportDescription": "Get started quickly by importing a recipe from the web or a photo.",
-  "onboardingImportUrlTitle": "From a web address",
-  "onboardingImportPhotoTitle": "Import from photo",
-  "onboardingImportPhotoDescription": "Take a photo or choose from gallery",
-  "onboardingImportSkipNote": "You can skip this step and import later.",
+  "onboardingImportTitle": "Bring a recipe you already cook",
+  "onboardingImportDescription": "Paste a link. I'll read it and you review it before anything is saved.",
+  "onboardingImportUrlTitle": "Link to the recipe",
+  "onboardingImportPhotoTitle": "Photograph a page",
+  "onboardingImportPhotoDescription": "From a cookbook or a handwritten note",
   "onboardingResumeTitle": "Finish your profile",
   "onboardingResumeBody": "30 seconds left",
   "onboardingResumeCta": "Continue",
+  "onboardingAgeGateParentTitle": "An adult can create the account",
+  "onboardingAgeGateParentBody": "A parent creates their own account and adds you as a guest in the household. Then meals are planned with you in mind.",
+  "onboardingAgeGateNothingSaved": "The account you started creating is deleted. Nothing is saved.",
+  "onboardingWelcomeQuestionAllergens": "What the household can't eat",
+  "onboardingWelcomeQuestionRecipe": "A recipe you already cook",
+  "onboardingAllergenNote": "This applies to you. You can add allergies for others in the household later. If you choose any, recipes with unknown allergen content are never planned automatically.",
+  "onboardingShowAllAllergens": "{kind, select, other{Show {count} more}}",
+  "@onboardingShowAllAllergens": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingImportFromClipboard": "Taken from your clipboard. Change it if it was the wrong link.",
+  "onboardingImportSkipNote": "{kind, select, one{If you skip, you get one starter recipe and a ready-made example week. You never start in an empty app.} other{If you skip, you get {count} starter recipes and a ready-made example week. You never start in an empty app.}}",
+  "@onboardingImportSkipNote": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStepOf": "Step {current} of {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupTitle": "I'm setting the table",
+  "onboardingSetupBody": "A few seconds. Then you have an app with something in it.",
+  "onboardingSetupSaving": "Saving your allergens",
+  "onboardingSetupSaved": "Allergens saved",
+  "onboardingSetupSavedNone": "No allergens chosen",
+  "onboardingSetupRecipes": "Adding starter recipes to My recipes",
+  "onboardingSetupRecipesDone": "{kind, select, one{One starter recipe added to My recipes} other{{count} starter recipes added to My recipes}}",
+  "@onboardingSetupRecipesDone": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupRecipesFailed": "The starter recipes couldn't be added",
+  "onboardingSetupWeek": "Laying out an example week and its shopping list",
+  "onboardingSetupWeekDone": "Example week and shopping list ready",
+  "onboardingSetupWeekFailed": "No example week was added",
+  "onboardingSetupProgress": "{count, plural, =0{None of three done} =1{One of three done} =2{Two of three done} other{Three of three done}}",
+  "@onboardingSetupProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneTitle": "There you are. It's served.",
+  "onboardingDoneBody": "{kind, select, zero{Everything can be changed whenever you like.} one{One recipe and an example week are waiting for you. Everything can be changed whenever you like.} other{{count} recipes and an example week are waiting for you. Everything can be changed whenever you like.}}",
+  "@onboardingDoneBody": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneRedirect": "Taking you to your recipes …",
   "cookingModePortions": "Portions",
   "feedbackSendLabel": "Send feedback",
   "feedbackCategoryLabel": "Category",
@@ -9375,8 +9439,8 @@
       }
     }
   },
-  "emailVerificationTitle": "Verify your email",
-  "emailVerificationMessage": "Open the link in the verification email to {email}. If you can't find it, you can send a new one.",
+  "emailVerificationTitle": "Confirm your email",
+  "emailVerificationMessage": "We've sent a link to {email}. The screen moves on by itself once you've clicked it.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
@@ -9385,7 +9449,7 @@
     }
   },
   "emailVerificationResend": "Send again",
-  "emailVerificationResendCountdown": "You can send again in {seconds} s",
+  "emailVerificationResendCountdown": "Send again ({seconds} s)",
   "@emailVerificationResendCountdown": {
     "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
     "placeholders": {
@@ -9394,7 +9458,7 @@
       }
     }
   },
-  "emailVerificationContinue": "Continue anyway",
+  "emailVerificationContinue": "Continue without confirming",
   "emailVerificationSuccess": "Email verified.",
   "a11yCookingModeFontScale": "Change text size",
   "a11yCookingModeClose": "Close cooking mode",
@@ -11393,6 +11457,8 @@
   "buttonBusySaving": "Saving …",
   "loadingProfileBusy": "Loading your profile …",
   "loadingOnboardingResume": "Finding where you left off …",
+  "startSplashTagline": "Your butler in the kitchen",
+  "startSplashBusy": "Setting up your kitchen …",
   "loadingOpeningPage": "Opening the page …",
   "loadingStartingApp": "Starting Butlery …",
   "recipeSaveToMyKitchen": "Save to my kitchen",

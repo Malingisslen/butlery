@@ -16,6 +16,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/services/onboarding/starter_recipe_seeder.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
@@ -35,6 +36,21 @@ enum AgeGateAdvanceResult {
   /// Infrastructure failure (CF unreachable / timeout / internal). The gate is
   /// NOT passed; the view shows a retry error and keeps the user on page 0.
   error,
+}
+
+/// How far completion has come, in the order the setup screen lists it.
+enum OnboardingSetupPhase {
+  /// Saving the allergens and marking onboarding done.
+  preferences,
+
+  /// Putting the starter recipes into Mina recept.
+  recipes,
+
+  /// Laying out the example week and its shopping list.
+  week,
+
+  /// Everything the screen lists has been tried.
+  done,
 }
 
 class OnboardingViewModel extends BaseViewModel {
@@ -72,7 +88,6 @@ class OnboardingViewModel extends BaseViewModel {
 
   int _currentPage;
   final Set<String> _selectedAllergens = {};
-  final Set<String> _selectedDietaryPrefs = {};
   int? _selectedBirthYear;
   bool _started = false;
   // BUT-1386 (ADR-0002): set when the verifySignupAge CF rejected the account
@@ -100,6 +115,12 @@ class OnboardingViewModel extends BaseViewModel {
   // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
   // when the user advances past the import page without importing.
   bool _onboardingImportSucceeded = false;
+  // The "Jag dukar upp" screen: shown from the moment completion starts until
+  // it fails; [setupPhase] says how far the three jobs have come.
+  bool _showsSetup = false;
+  OnboardingSetupPhase _setupPhase = OnboardingSetupPhase.preferences;
+  int _starterRecipeCount = 0;
+  bool _weekSeeded = false;
   // BUT-538: per-session dedup so onboarding_page_viewed fires once per
   // unique page. Back-nav and skip-jumps no longer inflate funnel drop-off.
   final Set<int> _viewedPages = <int>{};
@@ -108,18 +129,26 @@ class OnboardingViewModel extends BaseViewModel {
 
   int get currentPage => _currentPage;
   Set<String> get selectedAllergens => Set.unmodifiable(_selectedAllergens);
-  Set<String> get selectedDietaryPrefs =>
-      Set.unmodifiable(_selectedDietaryPrefs);
   int? get selectedBirthYear => _selectedBirthYear;
   bool get isCompleting => isLoading;
+
+  /// True while the setup screens stand in for the wizard.
+  bool get showsSetup => _showsSetup;
+  OnboardingSetupPhase get setupPhase => _setupPhase;
+  int get starterRecipeCount => _starterRecipeCount;
+  bool get weekSeeded => _weekSeeded;
+
+  /// Whether the user chose any allergen; the first line of the setup screen
+  /// says so only when there is something saved.
+  bool get hasAllergens => _selectedAllergens.isNotEmpty;
 
   /// BUT-1386: true when the last [completeOnboarding] failed because the
   /// server-side age check rejected the account as under-15. Distinguishes the
   /// rejection path (show butler rejection + route to start) from a generic
   /// infrastructure failure (show retry error).
   bool get ageRejected => _ageRejected;
-  // Page order: age-gate (0), welcome (1), allergen (2), dietary (3), import (4)
-  static const int _lastPageIndex = 4;
+  // Page order: age-gate (0), welcome (1), allergen (2), import (3)
+  static const int _lastPageIndex = 3;
   bool get isLastPage => _currentPage == _lastPageIndex;
   bool get isFirstPage => _currentPage == 0;
   bool get isAgeGatePage => _currentPage == 0;
@@ -278,26 +307,25 @@ class OnboardingViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  void toggleDietaryPref(String pref) {
-    if (_selectedDietaryPrefs.contains(pref)) {
-      _selectedDietaryPrefs.remove(pref);
-    } else {
-      _selectedDietaryPrefs.add(pref);
-    }
-    notifyListeners();
-  }
-
   bool isAllergenSelected(String allergen) =>
       _selectedAllergens.contains(allergen);
 
-  bool isDietaryPrefSelected(String pref) =>
-      _selectedDietaryPrefs.contains(pref);
+  void _leaveSetup() {
+    _showsSetup = false;
+    OnboardingHold.active.value = false;
+  }
 
   /// Saves preferences and marks onboarding as completed.
   /// Returns true on success.
   Future<bool> completeOnboarding() async {
     setLoading(true);
     _ageRejected = false;
+    _showsSetup = true;
+    OnboardingHold.active.value = true;
+    _setupPhase = OnboardingSetupPhase.preferences;
+    _starterRecipeCount = 0;
+    _weekSeeded = false;
+    notifyListeners();
 
     try {
       // BUT-1386 (ADR-0002): the PRIMARY age mint happens at the gate
@@ -318,11 +346,13 @@ class OnboardingViewModel extends BaseViewModel {
               .timeout(_completionTimeout);
         } catch (e) {
           AppLogger.error('Age verification failed', e);
+          _leaveSetup();
           return false;
         }
         if (!ageResult.compliant) {
           AppLogger.info('Age verification rejected the account (under-15)');
           _ageRejected = true;
+          _leaveSetup();
           return false;
         }
         // BUT-1454: capture minor status on this rare belt path too.
@@ -332,11 +362,10 @@ class OnboardingViewModel extends BaseViewModel {
       final userService = ServiceLocator.get<UserService>();
 
       // Save preferences and mark onboarding complete in a single write
-      final prefs =
-          (_selectedAllergens.isNotEmpty || _selectedDietaryPrefs.isNotEmpty)
+      final prefs = _selectedAllergens.isNotEmpty
           ? UserAllergenPreferences(
               trackedAllergens: _selectedAllergens,
-              trackedDietary: _selectedDietaryPrefs,
+              trackedDietary: const {},
             )
           : null;
       final isSkip = _currentPage < _lastPageIndex;
@@ -373,13 +402,20 @@ class OnboardingViewModel extends BaseViewModel {
       // caught by the method's outer try/catch, and that just degrades to
       // zero-seeded silently. Outcome is surfaced via analytics so a
       // post-launch failure-rate is observable.
+      _setupPhase = OnboardingSetupPhase.recipes;
+      notifyListeners();
       final seededRecipeIds = await _seedStarterRecipes();
+      _starterRecipeCount = seededRecipeIds.length;
+      _setupPhase = OnboardingSetupPhase.week;
+      notifyListeners();
 
       // BUT-930: turn the freshly seeded recipes into a sample weekly menu
       // plan plus a matching shopping list, so the new user lands on a
       // populated menu and shopping list instead of two empty screens. Best
       // effort and idempotent — never blocks onboarding completion.
-      await _seedSampleMenu(seededRecipeIds, prefs);
+      _weekSeeded = await _seedSampleMenu(seededRecipeIds, prefs);
+      _setupPhase = OnboardingSetupPhase.done;
+      notifyListeners();
 
       if (isSkip) {
         _analytics?.logEvent(
@@ -391,7 +427,6 @@ class OnboardingViewModel extends BaseViewModel {
           name: AnalyticsEvents.onboardingCompleted,
           parameters: {
             'allergen_count': _selectedAllergens.length,
-            'dietary_count': _selectedDietaryPrefs.length,
           },
         );
       }
@@ -411,6 +446,7 @@ class OnboardingViewModel extends BaseViewModel {
       return true;
     } catch (e) {
       AppLogger.error('Failed to complete onboarding', e);
+      _leaveSetup();
       return false;
     } finally {
       setLoading(false);
@@ -460,13 +496,14 @@ class OnboardingViewModel extends BaseViewModel {
   /// (lunch/middag) hold one per day across the seven days; övrigt is a
   /// multi-recipe bucket that stacks, so it always has room.
   ///
-  /// BUT-2299: the recipes go through the same allergen and dietary filter as
-  /// a generated menu, fed by the choices made in this onboarding.
-  Future<void> _seedSampleMenu(
+  /// BUT-2299: the recipes go through the same allergen filter as a generated
+  /// menu, fed by the allergens chosen in this onboarding (the diet is asked
+  /// after the first menu, B-39).
+  Future<bool> _seedSampleMenu(
     List<String> seededRecipeIds,
     UserAllergenPreferences? prefs,
   ) async {
-    if (seededRecipeIds.isEmpty) return;
+    if (seededRecipeIds.isEmpty) return false;
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
@@ -481,12 +518,12 @@ class OnboardingViewModel extends BaseViewModel {
         AppLogger.warning(
           'Sample menu: skipped, the week could not be read',
         );
-        return;
+        return false;
       }
       var plan = read.plan;
       // Idempotency: never overwrite or stack onto a plan the user already
       // has for this week (covers onboarding re-entry / partial retries).
-      if (plan.isNotEmpty) return;
+      if (plan.isNotEmpty) return true;
 
       // Track the next free day per single-recipe slot so each gets its own
       // Monday→Sunday fill independent of the other slots. Multi slots (övrigt)
@@ -496,11 +533,6 @@ class OnboardingViewModel extends BaseViewModel {
       ];
       if (prefs != null) {
         recipes = MenuGenerator.filterByPrefs(recipes, prefs, allergens: true);
-        recipes = MenuGenerator.filterByPrefs(
-          recipes,
-          prefs,
-          allergens: false,
-        );
       }
 
       final nextDayForSlot = <MealSlot, int>{};
@@ -539,7 +571,7 @@ class OnboardingViewModel extends BaseViewModel {
           'Sample menu: $dropped seeded recipe(s) had no free single-slot day',
         );
       }
-      if (placed == 0) return;
+      if (placed == 0) return false;
       await menuService.save(plan);
 
       // BUT-1983: `generateForWeek` is wrapped in `executeServiceOperation`, so
@@ -568,6 +600,7 @@ class OnboardingViewModel extends BaseViewModel {
             ? 'Seeded sample menu: $placed entries, shopping list FAILED'
             : 'Seeded sample menu: $placed entries, $shoppingItems shopping items',
       );
+      return true;
     } catch (e) {
       AppLogger.warning('Failed to seed sample menu: $e');
       // Measured, not narrated. The seed stays silent to the user (see the
@@ -575,6 +608,7 @@ class OnboardingViewModel extends BaseViewModel {
       // always swallowed, and since BUT-1962 made a refused save throw, a
       // permission failure lands here too rather than being lost a layer down.
       _analytics?.logEvent(name: AnalyticsEvents.onboardingMenuSeedFailed);
+      return false;
     }
   }
 }

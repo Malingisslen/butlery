@@ -8358,9 +8358,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingAllergenMollusc => 'Blötdjur';
 
   @override
-  String get onboardingShowAllAllergens => 'Visa alla allergener';
-
-  @override
   String get onboardingShowFewerAllergens => 'Visa färre';
 
   @override
@@ -8833,7 +8830,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingSkipConfirmMessage =>
-      'Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.';
+      'Du hinner inte ställa in allergier nu. Du kan göra det när som helst i inställningarna.';
 
   @override
   String get onboardingSkip => 'Hoppa över';
@@ -8845,31 +8842,31 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingNext => 'Nästa';
 
   @override
-  String get onboardingComplete => 'Slutför';
+  String get onboardingComplete => 'Klar';
 
   @override
-  String get onboardingAgeGateTitle => 'Hur gammal är du?';
+  String get onboardingAgeGateTitle => 'Vilket år är du född?';
 
   @override
   String get onboardingAgeGateSubtitle =>
-      'Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).';
+      'Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.';
 
   @override
   String get onboardingAgeGateBirthYearLabel => 'Födelseår';
 
   @override
-  String get onboardingAgeGateBirthYearHint => 'Välj ditt födelseår';
+  String get onboardingAgeGateBirthYearHint => 'Välj ett år';
 
   @override
   String get onboardingAgeGatePrivacyNote =>
-      'Vi lagrar bara året, inte hela datumet.';
+      'Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.';
 
   @override
   String get onboardingAgeGateTooYoungTitle => 'Butlery är för 15 år och uppåt';
 
   @override
   String get onboardingAgeGateTooYoungBody =>
-      'Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.';
+      'Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.';
 
   @override
   String get onboardingAgeGateSignOut => 'Logga ut';
@@ -8893,22 +8890,21 @@ class AppLocalizationsSv extends AppLocalizations {
       'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan inte skapa ditt konto just nu.';
 
   @override
-  String get onboardingWelcomeTitle => 'Välkommen. Butlery står redo.';
+  String get onboardingWelcomeTitle => 'Välkommen. Jag sköter veckan.';
 
   @override
   String get onboardingWelcomeDescription =>
-      'Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.';
+      'Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.';
 
   @override
-  String get onboardingWelcomeNote =>
-      'Du kan alltid ändra dessa i inställningarna senare.';
+  String get onboardingWelcomeNote => 'Två frågor kvar. Sedan är du inne.';
 
   @override
-  String get onboardingAllergenTitle => 'Allergier & intoleranser';
+  String get onboardingAllergenTitle => 'Något ni undviker?';
 
   @override
   String get onboardingAllergenDescription =>
-      'Välj de allergener du vill spara och filtrera recept efter.';
+      'Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.';
 
   @override
   String get onboardingAllergenGluten => 'Gluten';
@@ -8935,58 +8931,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingAllergenSesame => 'Sesam';
 
   @override
-  String get onboardingDietaryTitle => 'Kostpreferenser';
-
-  @override
-  String get onboardingDietaryDescription =>
-      'Har du några kostpreferenser? Vi kan filtrera recept åt dig.';
-
-  @override
-  String get onboardingDietaryVegetarian => 'Vegetarian';
-
-  @override
-  String get onboardingDietaryVegan => 'Vegan';
-
-  @override
-  String get onboardingDietaryPescetarian => 'Pescetarian';
-
-  @override
-  String get onboardingDietaryVegetarianDesc =>
-      'Inga kött- eller fiskprodukter';
-
-  @override
-  String get onboardingDietaryVeganDesc => 'Inga animaliska produkter';
-
-  @override
-  String get onboardingDietaryPescetarianDesc => 'Fisk men inget kött';
-
-  @override
-  String get onboardingDietaryGlutenFree => 'Glutenfri';
-
-  @override
-  String get onboardingDietaryLactoseFree => 'Laktosfri';
-
-  @override
-  String get onboardingDietaryHalal => 'Halalanpassad';
-
-  @override
-  String get onboardingDietaryKosher => 'Kosheranpassad';
-
-  @override
-  String get onboardingDietaryGlutenFreeDesc =>
-      'Inga gluteninnehållande ingredienser';
-
-  @override
-  String get onboardingDietaryLactoseFreeDesc =>
-      'Inga mejeriprodukter med laktos';
-
-  @override
-  String get onboardingDietaryHalalDesc => 'Följer halalregler för mat';
-
-  @override
-  String get onboardingDietaryKosherDesc => 'Följer kosherregler för mat';
-
-  @override
   String get onboardingSkippedBanner =>
       'Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?';
 
@@ -9001,25 +8945,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingWelcomeBannerAction => 'Lägg till recept';
 
   @override
-  String get onboardingImportTitle => 'Importera ditt första recept';
+  String get onboardingImportTitle => 'Ta med ett recept du redan lagar';
 
   @override
   String get onboardingImportDescription =>
-      'Kom igång snabbt genom att importera ett recept från webben eller ett foto.';
+      'Klistra in en länk. Jag läser den och du får granska innan något sparas.';
 
   @override
-  String get onboardingImportUrlTitle => 'Från en webbadress';
+  String get onboardingImportUrlTitle => 'Länk till receptet';
 
   @override
-  String get onboardingImportPhotoTitle => 'Importera från foto';
+  String get onboardingImportPhotoTitle => 'Fotografera en sida';
 
   @override
   String get onboardingImportPhotoDescription =>
-      'Ta ett foto eller välj från galleriet';
-
-  @override
-  String get onboardingImportSkipNote =>
-      'Du kan hoppa över detta steg och importera senare.';
+      'Ur en kokbok eller en handskriven lapp';
 
   @override
   String get onboardingResumeTitle => 'Avsluta din profil';
@@ -9029,6 +8969,186 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingResumeCta => 'Fortsätt';
+
+  @override
+  String get onboardingAgeGateParentTitle => 'En vuxen kan skapa kontot';
+
+  @override
+  String get onboardingAgeGateParentBody =>
+      'En förälder skapar ett eget konto och lägger till dig som matgäst i hushållet. Då planeras maten med dig i räkningen.';
+
+  @override
+  String get onboardingAgeGateNothingSaved =>
+      'Kontot du började skapa tas bort. Inget sparas.';
+
+  @override
+  String get onboardingWelcomeQuestionAllergens => 'Vad hushållet inte tål';
+
+  @override
+  String get onboardingWelcomeQuestionRecipe => 'Ett recept du redan lagar';
+
+  @override
+  String get onboardingAllergenNote =>
+      'Det här gäller dig. Allergier för fler i hushållet lägger du till senare. Har du valt något planeras recept med okänt allergeninnehåll aldrig automatiskt.';
+
+  @override
+  String onboardingShowAllAllergens(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'nine': 'Visa alla nio till',
+        'other': 'Visa alla $count till',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingImportFromClipboard =>
+      'Hämtad ur ditt urklipp. Byt om det var fel länk.';
+
+  @override
+  String onboardingImportSkipNote(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'one':
+            'Hoppar du över får du ett startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'two':
+            'Hoppar du över får du två startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'three':
+            'Hoppar du över får du tre startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'four':
+            'Hoppar du över får du fyra startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'five':
+            'Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'six':
+            'Hoppar du över får du sex startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'seven':
+            'Hoppar du över får du sju startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'eight':
+            'Hoppar du över får du åtta startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'nine':
+            'Hoppar du över får du nio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'ten':
+            'Hoppar du över får du tio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+        'other':
+            'Hoppar du över får du $count startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String onboardingStepOf(int current, int total) {
+    return 'Steg $current av $total';
+  }
+
+  @override
+  String get onboardingSetupTitle => 'Jag dukar upp';
+
+  @override
+  String get onboardingSetupBody =>
+      'Ett par sekunder. Sedan har du en app med innehåll i.';
+
+  @override
+  String get onboardingSetupSaving => 'Sparar allergenerna';
+
+  @override
+  String get onboardingSetupSaved => 'Allergenerna sparade';
+
+  @override
+  String get onboardingSetupSavedNone => 'Inga allergener angivna';
+
+  @override
+  String get onboardingSetupRecipes => 'Lägger startrecept i Mina recept';
+
+  @override
+  String onboardingSetupRecipesDone(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'one': 'Ett startrecept lagt i Mina recept',
+        'two': 'Två startrecept lagda i Mina recept',
+        'three': 'Tre startrecept lagda i Mina recept',
+        'four': 'Fyra startrecept lagda i Mina recept',
+        'five': 'Fem startrecept lagda i Mina recept',
+        'six': 'Sex startrecept lagda i Mina recept',
+        'seven': 'Sju startrecept lagda i Mina recept',
+        'eight': 'Åtta startrecept lagda i Mina recept',
+        'nine': 'Nio startrecept lagda i Mina recept',
+        'ten': 'Tio startrecept lagda i Mina recept',
+        'other': '$count startrecept lagda i Mina recept',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingSetupRecipesFailed =>
+      'Startrecepten kunde inte läggas till';
+
+  @override
+  String get onboardingSetupWeek =>
+      'Lägger en exempelvecka och dess inköpslista';
+
+  @override
+  String get onboardingSetupWeekDone => 'Exempelvecka och inköpslista klara';
+
+  @override
+  String get onboardingSetupWeekFailed => 'Ingen exempelvecka lades till';
+
+  @override
+  String onboardingSetupProgress(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tre av tre klara',
+      two: 'Två av tre klara',
+      one: 'En av tre klara',
+      zero: 'Noll av tre klara',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingDoneTitle => 'Varsågod. Det är dukat.';
+
+  @override
+  String onboardingDoneBody(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'zero': 'Allt går att ändra när du vill.',
+        'one':
+            'Ett recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'two':
+            'Två recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'three':
+            'Tre recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'four':
+            'Fyra recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'five':
+            'Fem recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'six':
+            'Sex recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'seven':
+            'Sju recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'eight':
+            'Åtta recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'nine':
+            'Nio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'ten':
+            'Tio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+        'other':
+            '$count recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingDoneRedirect => 'Tar dig till dina recept …';
 
   @override
   String get cookingModePortions => 'Portioner';
@@ -13515,11 +13635,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get emailVerificationTitle => 'Verifiera din e-post';
+  String get emailVerificationTitle => 'Bekräfta din e-post';
 
   @override
   String emailVerificationMessage(String email) {
-    return 'Öppna länken i bekräftelsemejlet till $email. Hittar du det inte kan du skicka ett nytt.';
+    return 'Vi har skickat en länk till $email. Skärmen går vidare av sig själv när du klickat.';
   }
 
   @override
@@ -13527,11 +13647,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String emailVerificationResendCountdown(int seconds) {
-    return 'Du kan skicka igen om $seconds s';
+    return 'Skicka igen ($seconds s)';
   }
 
   @override
-  String get emailVerificationContinue => 'Fortsätt ändå';
+  String get emailVerificationContinue => 'Fortsätt utan att bekräfta';
 
   @override
   String get emailVerificationSuccess => 'E-posten är verifierad.';
@@ -15674,6 +15794,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loadingOnboardingResume => 'Hämtar var du slutade …';
+
+  @override
+  String get startSplashTagline => 'Din butler i köket';
+
+  @override
+  String get startSplashBusy => 'Dukar upp ditt kök …';
 
   @override
   String get loadingOpeningPage => 'Öppnar sidan …';

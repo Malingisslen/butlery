@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=924-->
+<!--manifest:files=929-->
 
 ## Reporoten
 
@@ -79,7 +79,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
 | `NULAGE.md` | `294da55911010d13117571455b3acfc1ed799bab7083f9e7e8f9ed308857a748` |
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
-| `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
+| `arbetsplan.md` | `4acd6834b870dab789e3bac826eb497de68df5346e043e4038ad88cdf1ad2dd4` |
 | `artifacts.json` | `c631797a965d29c126347fcb50c3fb48876c26456067094b5d099e3530dd8b37` |
 | `artifacts.schema.json` | `2cafc43ab6a147642447b21c4eb45aac9d38176f659021897ae67f13f86ebc57` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
@@ -715,6 +715,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/97-create-shared-shopping-list.png` | `c9ae662d2f76721b747139e9bc072c17e56249fdc4270cbb65c6d1792a0ff9e2` |
 | `skiss-mot-app/98-friend-profile.png` | `ba99a1e8c94e83fd00771986ecb9a1fd88ef25211d2f80d51beaddb80553a295` |
 | `skiss-mot-app/99-friend-requests.png` | `ea8b030c4913b4e40f22752149cc162fa10590aa0dae5db1cfad211f19574e69` |
+| `skiss-mot-app/spar4/allergen.png` | `6508fd2dea1465d70ec32e2382aa3dbc3439babad5b2eae71eb1449958e2c426` |
+| `skiss-mot-app/spar4/setup_active.png` | `c49b5229459437b1fa931a90ce1090025038e9d6999cfbe613f1ca7bad6c5a2b` |
+| `skiss-mot-app/spar4/setup_done.png` | `099d6352118a30abf185d9402557b3beb75061a6d88c4acf1807323dd0ef984d` |
+| `skiss-mot-app/spar4/splash.png` | `6a46ad84585d4c9604ec9e93282ec1b4ec912a21eefdfd08cd45bb73014a399e` |
+| `skiss-mot-app/spar4/welcome.png` | `4b3e22327056fb12589ffa45da80d25afdc9ae1c77b05d3525b289fb800f5df7` |
 | `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |

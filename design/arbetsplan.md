@@ -81,7 +81,6 @@ Finns helt i kod, saknas helt i design. Hög risk: det är här användare förs
 | Välkomst | `onboarding_welcome_page.dart` | 2 |
 | Åldersgrind + blockerad | `onboarding_age_gate_page.dart`, `..._blocked_view.dart` | 3 |
 | Allergener | `onboarding_allergen_page.dart` | 3 |
-| Kost | `onboarding_dietary_page.dart` | 2 |
 | Första importen | `onboarding_import_page.dart` | 3 |
 | Hushållets storlek | `household_size_view.dart` | 2 |
 | Auth + e-postverifiering + MFA-utmaning | `auth_view.dart`, `email_verification_view.dart` | 5 |

@@ -1099,7 +1099,7 @@
         },
         {
           "file": "test/views/flows/flow_06_transitions_test.dart",
-          "name": "the wait is shown under the button, not in its name, and the button comes back after the 60 s",
+          "name": "the wait is drawn in the button, its name stays the same, and the button comes back after the 60 s",
           "group": "TR::FLOW::06::verifieringslank::utgangen"
         }
       ],

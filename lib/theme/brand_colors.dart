@@ -88,4 +88,9 @@ abstract class BrandColors {
 
   static const Color appleBlack = AppColors.brandAppleBlack;
   static const Color appleWhite = AppColors.brandAppleWhite;
+
+  // Butlery's own mark and start screen keep these in every theme.
+  static const Color markGround = AppColors.forestGreen;
+  static const Color markInk = AppColors.cream;
+  static const Color markAccent = AppColors.rust;
 }

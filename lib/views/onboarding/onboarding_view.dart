@@ -1,6 +1,5 @@
 /// Main onboarding wizard view with PageView navigation.
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -11,14 +10,16 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_age_gate_blocked_view.dart';
 import 'package:butlery/views/onboarding/onboarding_age_gate_page.dart';
 import 'package:butlery/views/onboarding/onboarding_welcome_page.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
-import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
+import 'package:butlery/views/onboarding/onboarding_setup_page.dart';
+import 'package:butlery/widgets/common/brand/butlery_cloche.dart';
+import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 import 'package:butlery/views/onboarding/onboarding_import_page.dart';
-import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 class OnboardingView extends StatelessWidget {
   /// When non-null, the wizard jumps to this page index on first frame
@@ -57,9 +58,10 @@ class _OnboardingContent extends StatefulWidget {
 
 class _OnboardingContentState extends State<_OnboardingContent> {
   late final PageController _pageController;
-  // age-gate → welcome → allergen → dietary → import. Keep in sync with the
-  // PageView children list and the viewmodel's _lastPageIndex (pageCount-1).
-  static const int _pageCount = 5;
+  // age-gate → welcome → allergen → import. Keep in sync with the PageView
+  // children list and the viewmodel's _lastPageIndex (pageCount-1).
+  static const int _pageCount = 4;
+  static const Duration _doneScreenTime = Duration(milliseconds: 1800);
 
   @override
   void initState() {
@@ -69,6 +71,10 @@ class _OnboardingContentState extends State<_OnboardingContent> {
 
   @override
   void dispose() {
+    // Not during the unmount: the wrapper listening to the hold rebuilds.
+    if (OnboardingHold.active.value) {
+      Future.microtask(() => OnboardingHold.active.value = false);
+    }
     _pageController.dispose();
     super.dispose();
   }
@@ -90,26 +96,21 @@ class _OnboardingContentState extends State<_OnboardingContent> {
         body: SafeArea(
           child: ButleryPageBody(
             width: PageWidth.text,
-            child: Column(
+            // The wizard stays mounted under the setup page so a failed
+            // completion lands on the page the user left, not on page 0.
+            child: Stack(
               children: [
-                // Top bar with skip button
-                _buildTopBar(context, viewModel),
-                // Page content
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: viewModel.setPage,
-                    children: const [
-                      OnboardingAgeGatePage(),
-                      OnboardingWelcomePage(),
-                      OnboardingAllergenPage(),
-                      OnboardingDietaryPage(),
-                      OnboardingImportPage(),
-                    ],
+                Offstage(
+                  offstage: viewModel.showsSetup,
+                  child: TickerMode(
+                    enabled: !viewModel.showsSetup,
+                    child: ExcludeFocus(
+                      excluding: viewModel.showsSetup,
+                      child: _buildWizard(context, viewModel),
+                    ),
                   ),
                 ),
-                // Bottom section: dot indicators + navigation button
-                _buildBottomSection(context, viewModel),
+                if (viewModel.showsSetup) const OnboardingSetupPage(),
               ],
             ),
           ),
@@ -118,126 +119,100 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, OnboardingViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-
+  Widget _buildWizard(BuildContext context, OnboardingViewModel viewModel) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space8,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMarginOf(context),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Age-gating is compliance, not an optional step — no skip.
-          if (!viewModel.isAgeGatePage)
-            TextButton(
-              onPressed: viewModel.isCompleting
-                  ? null
-                  : () => _skipOnboarding(context, viewModel),
-              child: Text(
-                context.l10n.onboardingSkip,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
+          _buildTopBar(context, viewModel),
+          const Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ButleryClocheMark(),
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          const OnboardingPlateRule(),
+          const SizedBox(height: AppDimensions.space24),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: viewModel.setPage,
+              children: const [
+                OnboardingAgeGatePage(),
+                OnboardingWelcomePage(),
+                OnboardingAllergenPage(),
+                OnboardingImportPage(),
+              ],
             ),
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          OnboardingStepDashes(
+            count: _pageCount,
+            current: viewModel.currentPage,
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          _buildNavigation(context, viewModel),
+          const SizedBox(height: AppDimensions.space16),
         ],
       ),
     );
   }
 
-  Widget _buildBottomSection(
-    BuildContext context,
-    OnboardingViewModel viewModel,
-  ) {
+  // The skip link keeps its row on the age gate, so the mark stands at the
+  // same height on every step.
+  Widget _buildTopBar(BuildContext context, OnboardingViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.layoutMarginOf(context),
-        vertical: AppDimensions.space16,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Dot indicators (square style)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_pageCount, (index) {
-              final isActive = index == viewModel.currentPage;
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space4,
-                ),
-                child: AnimatedContainer(
-                  duration: AnimationUtils.getDuration(
-                    context,
-                    const Duration(milliseconds: 200),
+    return SizedBox(
+      height: AppDimensions.minTouchTarget,
+      child: Align(
+        alignment: AlignmentDirectional.centerEnd,
+        // Age-gating is compliance, not an optional step — no skip.
+        child: viewModel.isAgeGatePage
+            ? null
+            : TextButton(
+                onPressed: viewModel.isCompleting
+                    ? null
+                    : () => _skipOnboarding(context, viewModel),
+                child: Text(
+                  context.l10n.onboardingSkip,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: cs.onSurfaceVariant,
                   ),
-                  width: isActive ? 24 : 8,
-                  height: 8,
-                  // The current page is text.primary and wider; the others
-                  // take border.control (colorScheme.outline), a token of its
-                  // own, never a faded copy (tokens.json:41, :128-131).
-                  decoration: BoxDecoration(
-                    color: isActive ? cs.onSurface : cs.outline,
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: AppDimensions.space24),
-          // Navigation buttons
-          Row(
-            children: [
-              // Back button (hidden on first page)
-              if (!viewModel.isFirstPage)
-                Expanded(
-                  child: ActionButtons.outlinedButton(
-                    context,
-                    label: context.l10n.onboardingBack,
-                    isExpanded: true,
-                    onPressed: () {
-                      viewModel.previousPage();
-                      _pageController.previousPage(
-                        duration: AnimationUtils.getDuration(
-                          context,
-                          const Duration(milliseconds: 300),
-                        ),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
-                ),
-              if (!viewModel.isFirstPage)
-                const SizedBox(width: AppDimensions.space8),
-              // Next / Complete: the step's one saffron action ("Nästa",
-              // "Klar"; Skarmar v12 etapp 3 'Onboarding — allergenerna,
-              // mörkt läge', del 3 'Onboarding — import'; Grafisk manual
-              // v6:219). Before a birth year is chosen on the age gate it
-              // takes the hero's own disabled surface, never ink at 50 %
-              // (enhet-3 onboarding_view.dart:238-240; Komponentark v1:373).
-              // Completing keeps the name and draws the plate line.
-              Expanded(
-                child: HeroButton(
-                  key: const ValueKey('onboarding.next'),
-                  label: viewModel.isLastPage
-                      ? context.l10n.onboardingComplete
-                      : context.l10n.onboardingNext,
-                  onPressed:
-                      viewModel.isAgeGatePage &&
-                          viewModel.selectedBirthYear == null
-                      ? null
-                      : () => _handleNext(context, viewModel),
-                  busy: viewModel.isCompleting,
-                  expand: true,
                 ),
               ),
-            ],
-          ),
-        ],
       ),
+    );
+  }
+
+  // Next / Complete is ink, square-cornered, as the bell sketch draws it
+  // (Skarmar v12 del 2 #onboarding). Before a birth year is chosen on the age
+  // gate it is an empty frame, never ink at 50 %. Completing keeps the name
+  // and draws the plate line.
+  Widget _buildNavigation(BuildContext context, OnboardingViewModel viewModel) {
+    return OnboardingNavButtons(
+      nextKey: const ValueKey('onboarding.next'),
+      nextLabel: viewModel.isLastPage
+          ? context.l10n.onboardingComplete
+          : context.l10n.onboardingNext,
+      onNext: viewModel.isAgeGatePage && viewModel.selectedBirthYear == null
+          ? null
+          : () => _handleNext(context, viewModel),
+      busy: viewModel.isCompleting,
+      onBack: viewModel.isFirstPage
+          ? null
+          : () {
+              viewModel.previousPage();
+              _pageController.previousPage(
+                duration: AnimationUtils.getDuration(
+                  context,
+                  const Duration(milliseconds: 300),
+                ),
+                curve: Curves.easeInOut,
+              );
+            },
     );
   }
 
@@ -317,6 +292,11 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     final success = await viewModel.completeOnboarding();
     if (!context.mounted) return;
     if (success) {
+      // Let "Varsågod. Det är dukat." be read before the app opens.
+      // Reading time, so reduced motion keeps it.
+      await Future<void>.delayed(_doneScreenTime);
+      if (!context.mounted) return;
+      OnboardingHold.active.value = false;
       Navigator.of(context).pushNamedAndRemoveUntil(
         Routes.home,
         (route) => false,
