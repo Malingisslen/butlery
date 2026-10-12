@@ -39,7 +39,7 @@ class FriendRequestsHeaderBuilder {
   }) {
     // A subpage under Vänner & grupper (Skarmar v12 del 3 #forfragningar draws
     // the back arrow; Komponentark v1 §01 pattern 2). The tab strip stands on the
-    // page's own surface below the ink bar, as the friends list draws its
+    // page's own surface below the bar, as the friends list draws its
     // tabs, so its colours and focus ring are the light page's.
     return ButleryTopBar.undersida(
       title: context.l10n.socialFriendRequestsTitle,
@@ -77,7 +77,6 @@ class FriendRequestsHeaderBuilder {
             surface: PressSurface.base,
             child: PopupMenuButton<String>(
               enabled: !batchRunning,
-              // Paper on the ink bar (the bar's icon theme).
               icon: const ButleryIcon(ButleryIcons.listCheck),
               onSelected: (value) {
                 if (value == 'accept_all') {

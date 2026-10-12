@@ -3,7 +3,7 @@
 /// * ButleryTab reports Material's own tab height, so a tab with an icon
 ///   above its label gets the 72 dp Material draws, not 48.
 /// * A TextButton among the subpage top bar's actions takes the bar's
-///   foreground: paper on surface.ink (Komponentark v1:73), never ink on ink.
+///   foreground.
 /// * The selected tab carries the 3 px saffron plate line (Komponentark
 ///   v1:106-112; tokens.json:165-168 progressIndicator), visible on the dark
 ///   page too.
@@ -17,8 +17,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
@@ -124,7 +122,7 @@ void main() {
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('$mode: a TextButton on the subpage bar is paper', (
+      testWidgets('$mode: a TextButton on the subpage bar is ink', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -140,10 +138,8 @@ void main() {
             theme: theme,
           ),
         );
-        // Paper #F5F4ED on surface.ink #24382C in both modes
-        // (Komponentark v1:73).
-        expect(_textColor(tester, 'Spara'), AppColors.textOnPrimary);
-        expect(AppColorsDark.textOnPrimary, AppColors.textOnPrimary);
+        // The subpage bar is paper like the root bar (B-56).
+        expect(_textColor(tester, 'Spara'), theme.colorScheme.onSurface);
       });
 
       testWidgets('$mode: a TextButton on the root bar is text.primary', (

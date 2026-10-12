@@ -116,17 +116,12 @@ class _CreateGroupConversationViewState
     BuildContext context,
     CreateGroupConversationViewModel viewModel,
   ) {
-    // A subpage (Skarmar v12 del 3 'Ny gruppchatt'). The bar is
-    // surface.ink in both modes, so its text action is paper (onPrimary,
-    // #F5F4ED in both schemes; butlery_top_bar.dart).
+    // A subpage (Skarmar v12 del 3 'Ny gruppchatt').
     return ButleryTopBar.undersida(
       title: context.l10n.messagingCreateGroup,
       actions: [
         if (viewModel.hasSelectedMembers)
           TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            ),
             onPressed: viewModel.clearSelection,
             child: Text(context.l10n.commonClear),
           ),

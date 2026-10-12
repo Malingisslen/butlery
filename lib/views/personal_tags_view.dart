@@ -241,13 +241,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     // Multi-select keeps the bar and changes its content: "Avbryt" on the
     // left instead of an X, the count in tabular figures (produktregler.md
     // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
-    // samman taggar"). The text is the bar's paper foreground on ink.
+    // samman taggar").
     return ButleryTopBar.undersida(
       leading: TextButton(
         key: const ValueKey('personal-tags-selection-cancel'),
-        style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        ),
         onPressed: selection.exitSelection,
         child: Text(context.l10n.commonCancel),
       ),
