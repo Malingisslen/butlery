@@ -92,30 +92,30 @@
    ]
   },
   "lib/views/auth/guest_start_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#1"
    ],
    "images": [
-    "design/skiss-mot-app/67-guest-start.png"
+    "design/skiss-mot-app/spar8/67-guest-start.png"
    ]
   },
   "lib/views/auth/guest_upgrade_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#2"
    ],
    "images": [
-    "design/skiss-mot-app/68-guest-upgrade.png"
+    "design/skiss-mot-app/spar8/68-guest-upgrade.png"
    ]
   },
   "lib/views/auth/mfa_challenge_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#6"
    ],
    "images": [
-    "design/skiss-mot-app/69-mfa-challenge.png"
+    "design/skiss-mot-app/spar8/69-mfa-challenge.png"
    ]
   },
   "lib/views/auth/provider_link_view.dart": {
@@ -129,13 +129,13 @@
    "images": []
   },
   "lib/views/auth/set_new_password_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#3",
     "etapp_3_onboarding#1"
    ],
    "images": [
-    "design/skiss-mot-app/70-set-new-password.png"
+    "design/skiss-mot-app/spar8/70-set-new-password.png"
    ]
   },
   "lib/views/auth_view.dart": {

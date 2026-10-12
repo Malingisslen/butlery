@@ -133,7 +133,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEnterPassword => 'Enter your password';
 
   @override
-  String get authPasswordMinLength => 'Min 6 characters';
+  String get authPasswordChoose => 'Choose a strong password';
+
+  @override
+  String get passwordRuleHint =>
+      'At least twelve characters, or three words you remember. The rule stands here, not as an error after you have typed.';
+
+  @override
+  String get guestUpgradeNameHint => 'What should I call you?';
 
   @override
   String get authResetPasswordInstructions =>
@@ -424,10 +431,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationInvalidAmount => 'Invalid amount';
-
-  @override
-  String get validationPasswordTooShort =>
-      'Password must be at least 6 characters';
 
   @override
   String get validationGenericRequired => 'This field is required';
@@ -12828,8 +12831,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get validationPasswordMinEight =>
-      'Password must be at least 8 characters';
+  String get validationPasswordRule =>
+      'The password needs at least twelve characters, or three words you remember.';
 
   @override
   String get validationDisplayNameLabel => 'Display name';
@@ -13528,6 +13531,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authTermsAcceptPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentTermsLink => 'terms of use';
+
+  @override
+  String get authTermsConsentPrivacyLink => 'privacy policy';
 
   @override
   String get authTermsAcceptMiddle => ' and ';
@@ -18196,7 +18208,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String setNewPasswordForAccount(String email) {
-    return 'For the account $email.';
+    return 'Choose a new password for $email';
   }
 
   @override
@@ -19833,7 +19845,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guestStartBody =>
-      'The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.';
+      'The same questions as for a new account. What you save as a guest comes with you if you create an account later.';
+
+  @override
+  String get guestStartYearNote => 'We only save the year, not the full date.';
+
+  @override
+  String get guestStartBackToSignIn => 'Back to sign in';
 
   @override
   String get guestStartPreparing => 'Getting your guest account ready';

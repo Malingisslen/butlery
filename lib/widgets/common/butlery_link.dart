@@ -5,8 +5,8 @@
 // CSR::ROLE::link::FOCUSED; tokens.json touchTarget och focusRing;
 // tillgänglighetshandoff HA285-A).
 //
-// En länk i löpande text blir lika hög som träffytan, så raden den står på
-// blir högre. Texten står kvar på radens baslinje.
+// En länk med egen rad blir lika hög som träffytan. En länk i en mening
+// (ButleryLink.inline) behåller radens höjd.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -19,7 +19,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// to a screen reader.
 ///
 /// [child] carries the link's look (text.link and an underline). Inside
-/// running text, put it in a [WidgetSpan] with
+/// running text, use [ButleryLink.inline] in a [WidgetSpan] with
 /// `PlaceholderAlignment.baseline`.
 class ButleryLink extends StatelessWidget {
   const ButleryLink({
@@ -28,7 +28,19 @@ class ButleryLink extends StatelessWidget {
     this.semanticLabel,
     this.surface = PressSurface.base,
     super.key,
-  });
+  }) : inline = false;
+
+  /// A link inside a sentence. It keeps the line's height instead of the
+  /// minimum box; WCAG 2.2 exempts a link in running text from the size rule.
+  const ButleryLink.inline({
+    required this.onTap,
+    required this.child,
+    this.semanticLabel,
+    this.surface = PressSurface.base,
+    super.key,
+  }) : inline = true;
+
+  final bool inline;
 
   final VoidCallback? onTap;
   final Widget child;
@@ -42,6 +54,7 @@ class ButleryLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ButleryControlFocus(
+      enforceMinSize: !inline,
       child: PressFill(
         surface: surface,
         child: InkWell(

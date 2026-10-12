@@ -8,9 +8,10 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/auth/auth_surface.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/styled/field_helper_line.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// "Välj nytt lösenord", opened by the link in the "glömt lösenord" mail
@@ -100,31 +101,27 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<PasswordResetViewModel>();
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(title: context.l10n.setNewPasswordTitle),
-      body: ButleryPageBody(
-        width: PageWidth.compact,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: switch (vm.stage) {
-            PasswordResetStage.checking => Center(
-              child: PlateLineMessage(
-                message: context.l10n.setNewPasswordChecking,
-              ),
-            ),
-            PasswordResetStage.done => const SizedBox.shrink(),
-            PasswordResetStage.checkFailed => InlineError(
-              key: const ValueKey('setNewPassword.checkFailed'),
-              what: _checkFailedText(context, vm.checkFailure),
-              preserved: context.l10n.setNewPasswordNothingChanged,
-              actionLabel: context.l10n.commonRetry,
-              onAction: vm.retryCheck,
-            ),
-            PasswordResetStage.linkInvalid => _buildLinkInvalid(context, vm),
-            PasswordResetStage.ready => _buildForm(context, vm),
-          },
+    final l = context.l10n;
+    final ready = vm.stage == PasswordResetStage.ready;
+    return AuthSurface(
+      subtitle: ready
+          ? l.setNewPasswordForAccount(vm.email!)
+          : l.setNewPasswordTitle,
+      child: switch (vm.stage) {
+        PasswordResetStage.checking => Center(
+          child: PlateLineMessage(message: l.setNewPasswordChecking),
         ),
-      ),
+        PasswordResetStage.done => const SizedBox.shrink(),
+        PasswordResetStage.checkFailed => InlineError(
+          key: const ValueKey('setNewPassword.checkFailed'),
+          what: _checkFailedText(context, vm.checkFailure),
+          preserved: l.setNewPasswordNothingChanged,
+          actionLabel: l.commonRetry,
+          onAction: vm.retryCheck,
+        ),
+        PasswordResetStage.linkInvalid => _buildLinkInvalid(context, vm),
+        PasswordResetStage.ready => _buildForm(context, vm),
+      },
     );
   }
 
@@ -165,10 +162,11 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
             child: Text(context.l10n.setNewPasswordClose),
           )
         else
-          FilledButton(
+          HeroButton(
             key: const ValueKey('setNewPassword.requestNew'),
+            label: context.l10n.setNewPasswordRequestNew,
             onPressed: _requestNewLink,
-            child: Text(context.l10n.setNewPasswordRequestNew),
+            expand: true,
           ),
       ],
     );
@@ -176,20 +174,12 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
 
   Widget _buildForm(BuildContext context, PasswordResetViewModel vm) {
     final l = context.l10n;
-    final tt = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
     final busy = vm.isLoading;
     return AutofillGroup(
       child: FocusTraversalGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l.setNewPasswordForAccount(vm.email!),
-              key: const ValueKey('setNewPassword.account'),
-              style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppDimensions.space16),
             ButleryPasswordField(
               fieldKey: const ValueKey('setNewPassword.password'),
               label: l.accountSecurityNewPassword,
@@ -197,7 +187,8 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               autofillHints: const [AutofillHints.newPassword],
               onSubmitted: (_) => _repeatFocus.requestFocus(),
             ),
-            const SizedBox(height: AppDimensions.space8),
+            FieldHelperLine(l.passwordRuleHint),
+            const SizedBox(height: AppDimensions.space16),
             ListenableBuilder(
               listenable: Listenable.merge([
                 _passwordController,
@@ -227,23 +218,13 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
                 preserved: l.setNewPasswordNothingChanged,
               ),
             ],
-            const SizedBox(height: AppDimensions.space12),
-            // The plate line along the button's edge while saving, never a
-            // spinner (Komponentark v1:365, :372).
-            BusyButtonSemantics(
+            const SizedBox(height: AppDimensions.space16),
+            HeroButton(
+              key: const ValueKey('setNewPassword.save'),
+              label: l.setNewPasswordSave,
+              onPressed: _save,
               busy: busy,
-              name: l.setNewPasswordSave,
-              child: FilledButton(
-                key: const ValueKey('setNewPassword.save'),
-                onPressed: busy ? PlateLineButton.ignore : _save,
-                style: busy
-                    ? PlateLineButton.busyStyle(
-                        null,
-                        Theme.of(context).filledButtonTheme.style,
-                      )
-                    : null,
-                child: Text(l.setNewPasswordSave),
-              ),
+              expand: true,
             ),
           ],
         ),

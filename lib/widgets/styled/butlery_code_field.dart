@@ -9,7 +9,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 
 /// The field for a one-time code: one logical text field shown as six boxes
 /// (mockup "Butlerys inmatningsfält", del 4 "Kodfält", chosen as direction A
-/// on 2026-10-10).
+/// on 2026-10-10), six equal boxes with no divider (Skarmar v12 etapp 3
+/// #authmfa).
 ///
 /// The boxes draw the digits. A transparent text field lies over them and
 /// takes the touches, the keyboard, paste and autofill, so a
@@ -112,17 +113,8 @@ class _ButleryCodeFieldState extends State<ButleryCodeField> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (var i = 0; i < 3; i++) ...[
+          for (var i = 0; i < ButleryCodeField.length; i++) ...[
             if (i > 0) const SizedBox(width: AppDimensions.space8),
-            box(i),
-          ],
-          const SizedBox(width: AppDimensions.space8),
-          SizedBox(
-            width: 14,
-            child: Center(child: Container(height: 2, color: cs.outline)),
-          ),
-          for (var i = 3; i < ButleryCodeField.length; i++) ...[
-            const SizedBox(width: AppDimensions.space8),
             box(i),
           ],
         ],
@@ -222,7 +214,8 @@ class _CodeBox extends StatelessWidget {
             width: AppDimensions.borderWidthOutlinedEdge,
           )
         : BorderSide(
-            color: cs.outline,
+            // A box with a digit in it is drawn darker than an empty one.
+            color: digit.isEmpty ? cs.outline : cs.onSurfaceVariant,
             width: AppDimensions.borderWidthStandard,
           );
     final face = DecoratedBox(

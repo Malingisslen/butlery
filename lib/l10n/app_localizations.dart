@@ -344,11 +344,23 @@ abstract class AppLocalizations {
   /// **'Ange ditt lösenord'**
   String get authEnterPassword;
 
-  /// No description provided for @authPasswordMinLength.
+  /// No description provided for @authPasswordChoose.
   ///
   /// In sv, this message translates to:
-  /// **'Minst 6 tecken'**
-  String get authPasswordMinLength;
+  /// **'Välj ett starkt lösenord'**
+  String get authPasswordChoose;
+
+  /// No description provided for @passwordRuleHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.'**
+  String get passwordRuleHint;
+
+  /// No description provided for @guestUpgradeNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ska jag kalla dig?'**
+  String get guestUpgradeNameHint;
 
   /// No description provided for @authResetPasswordInstructions.
   ///
@@ -715,12 +727,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ogiltigt antal'**
   String get validationInvalidAmount;
-
-  /// No description provided for @validationPasswordTooShort.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 6 tecken'**
-  String get validationPasswordTooShort;
 
   /// No description provided for @validationGenericRequired.
   ///
@@ -21208,11 +21214,11 @@ abstract class AppLocalizations {
   /// **'{fieldName} får inte vara tomt'**
   String validationFieldNotEmpty(String fieldName);
 
-  /// No description provided for @validationPasswordMinEight.
+  /// No description provided for @validationPasswordRule.
   ///
   /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 8 tecken'**
-  String get validationPasswordMinEight;
+  /// **'Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.'**
+  String get validationPasswordRule;
 
   /// No description provided for @validationDisplayNameLabel.
   ///
@@ -22354,6 +22360,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Jag accepterar '**
   String get authTermsAcceptPrefix;
+
+  /// No description provided for @authTermsConsentPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner '**
+  String get authTermsConsentPrefix;
+
+  /// No description provided for @authTermsConsentTermsLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'användarvillkoren'**
+  String get authTermsConsentTermsLink;
+
+  /// No description provided for @authTermsConsentPrivacyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'integritetspolicyn'**
+  String get authTermsConsentPrivacyLink;
 
   /// No description provided for @authTermsAcceptMiddle.
   ///
@@ -29725,7 +29749,7 @@ abstract class AppLocalizations {
   /// BUT-2170: names the account the reset link belongs to.
   ///
   /// In sv, this message translates to:
-  /// **'Gäller kontot {email}.'**
+  /// **'Välj ett nytt lösenord för {email}'**
   String setNewPasswordForAccount(String email);
 
   /// BUT-2170: second password field, label from Skarmar v12 etapp 6.
@@ -32149,8 +32173,20 @@ abstract class AppLocalizations {
   /// Guest start screen: explains the two questions before a guest is signed in (BUT-920)
   ///
   /// In sv, this message translates to:
-  /// **'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.'**
+  /// **'Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.'**
   String get guestStartBody;
+
+  /// No description provided for @guestStartYearNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi sparar bara året, inte hela datumet.'**
+  String get guestStartYearNote;
+
+  /// No description provided for @guestStartBackToSignIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till inloggningen'**
+  String get guestStartBackToSignIn;
 
   /// Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)
   ///

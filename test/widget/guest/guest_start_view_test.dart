@@ -79,6 +79,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(guestApp(const GuestStartView()));
+    expect(find.text(_sv.guestStartYearNote), findsOneWidget);
 
     await pickYear(tester, clock.now().year - 14);
     await acceptTerms(tester);
@@ -86,6 +87,31 @@ void main() {
 
     expect(find.text(_sv.onboardingAgeGateTooYoungTitle), findsOneWidget);
     verifyNever(() => guestAuth.signInAsGuest());
+  });
+
+  testWidgets('"Tillbaka till inloggningen" leaves the screen', (tester) async {
+    await tester.pumpWidget(
+      guestApp(
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const GuestStartView()),
+            ),
+            child: const Text('sign-in'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('sign-in'));
+    await tester.pumpAndSettle();
+    expect(find.byType(GuestStartView), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(GuestStartView.backKey));
+    await tester.tap(find.byKey(GuestStartView.backKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GuestStartView), findsNothing);
+    expect(find.text('sign-in'), findsOneWidget);
   });
 
   testWidgets('the terms must be accepted before a guest is made', (

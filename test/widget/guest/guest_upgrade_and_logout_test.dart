@@ -244,7 +244,10 @@ void main() {
       when(() => age.finishGuestUpgrade()).thenAnswer((_) async {});
     });
 
-    Future<void> fillAndSubmit(WidgetTester tester) async {
+    Future<void> fillAndSubmit(
+      WidgetTester tester, {
+      bool acceptTerms = true,
+    }) async {
       await tester.enterText(find.byKey(GuestUpgradeView.nameKey), 'Malin');
       await tester.enterText(
         find.byKey(GuestUpgradeView.emailKey),
@@ -254,6 +257,10 @@ void main() {
         find.byKey(GuestUpgradeView.passwordKey),
         'Hemligt123!x',
       );
+      if (acceptTerms) {
+        await tester.ensureVisible(find.byType(Checkbox));
+        await tester.tap(find.byType(Checkbox));
+      }
       await tester.ensureVisible(find.byKey(GuestUpgradeView.submitKey));
       await tester.tap(find.byKey(GuestUpgradeView.submitKey));
       await tester.pumpAndSettle();
@@ -309,6 +316,50 @@ void main() {
       verify(() => age.finishGuestUpgrade()).called(1);
       expect(find.byType(GuestUpgradeView), findsNothing);
       expect(find.text(_sv.guestUpgradeDone), findsOneWidget);
+    });
+
+    testWidgets('no account is made until the terms are accepted', (
+      tester,
+    ) async {
+      when(
+        () => guestAuth.upgradeGuest(
+          displayName: any(named: 'displayName'),
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async {});
+      await openUpgrade(tester);
+      expect(find.text(_sv.passwordRuleHint), findsOneWidget);
+
+      await fillAndSubmit(tester, acceptTerms: false);
+
+      verifyNever(
+        () => guestAuth.upgradeGuest(
+          displayName: any(named: 'displayName'),
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      );
+      expect(find.text(_sv.authTermsAcceptRequired), findsOneWidget);
+
+      // The warning snackbar sits over the submit button.
+      ScaffoldMessenger.of(
+        tester.element(find.byType(GuestUpgradeView)),
+      ).clearSnackBars();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(Checkbox));
+      await tester.tap(find.byType(Checkbox));
+      await tester.ensureVisible(find.byKey(GuestUpgradeView.submitKey));
+      await tester.tap(find.byKey(GuestUpgradeView.submitKey));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => guestAuth.upgradeGuest(
+          displayName: 'Malin',
+          email: 'malin@exempel.se',
+          password: 'Hemligt123!x',
+        ),
+      ).called(1);
     });
 
     testWidgets('a failed last step stays open and retries only that step', (

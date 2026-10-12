@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/field_helper_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/brand/butlery_lockup.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -31,6 +31,7 @@ import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/auth/auth_surface.dart';
 import 'package:butlery/widgets/auth/auth_field_theme.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/views/auth/guest_start_view.dart';
@@ -115,7 +116,10 @@ class _AuthViewState extends State<AuthView> {
           builder: (context, viewModel, _) {
             return Column(
               children: [
-                SafeArea(bottom: false, child: _buildHeader(context)),
+                SafeArea(
+                  bottom: false,
+                  child: AuthWordmarkHeader(subtitle: context.l10n.authTagline),
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     child: ButleryPageBody.centered(
@@ -149,35 +153,6 @@ class _AuthViewState extends State<AuthView> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  /// The locked logo lockup on the page background, per the drawing
-  /// (Skarmar v12 del 2 #inloggning rad 1467-1490, #inloggningmorkt rad
-  /// 1205-1228): a centred 148 px lockup in a `padding:56px 28px 0` block,
-  /// the tagline 10 px below it, no divider underneath. The green header and
-  /// the broccoli illustration are gone; the logo is never written as text
-  /// (beslut 2026-09-30, B96-2 = A).
-  Widget _buildHeader(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 56, 28, 0),
-      child: Column(
-        children: [
-          const ButleryLockup(),
-          const SizedBox(height: 10),
-          Text(
-            context.l10n.authTagline,
-            textAlign: TextAlign.center,
-            // The drawing's 13/400 has no role; bodyMedium (14/400) keeps the
-            // weight. The 12/400 caption role failed the rendered
-            // text-contrast check at 360 dp in both modes.
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -355,7 +330,7 @@ class _AuthViewState extends State<AuthView> {
                     decoration: InputDecoration(
                       hintText: viewModel.isLoginMode
                           ? context.l10n.authEnterPassword
-                          : context.l10n.authPasswordMinLength,
+                          : context.l10n.authPasswordChoose,
                       suffixIcon: IconButton(
                         icon: ButleryIcon(
                           viewModel.isPasswordVisible
@@ -378,6 +353,8 @@ class _AuthViewState extends State<AuthView> {
                     autofillHints: const [AutofillHints.password],
                   ),
                 ),
+                if (!viewModel.isLoginMode)
+                  FieldHelperLine(context.l10n.passwordRuleHint),
 
                 // Forgot password (login mode only)
                 if (viewModel.isLoginMode) ...[

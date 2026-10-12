@@ -59,7 +59,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
-import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -184,7 +184,6 @@ class AuthViewModel extends ChangeNotifier
   /// ensuring data integrity and providing immediate feedback for validation errors with Swedish localization.
   /// **Validation Features:**
   /// - Email format validation with Unicode support for international characters
-  /// - Password strength validation with minimum length requirements
   /// - Automatic error message management with user-friendly feedback
   /// **Usage Example:**
   /// ```dart
@@ -213,7 +212,7 @@ class AuthViewModel extends ChangeNotifier
       return false;
     }
 
-    if (!_validatePassword(password)) {
+    if (!_validatePassword(password, isNewPassword: false)) {
       return false;
     }
 
@@ -286,7 +285,7 @@ class AuthViewModel extends ChangeNotifier
       return false;
     }
 
-    if (!_validatePassword(password)) {
+    if (!_validatePassword(password, isNewPassword: true)) {
       return false;
     }
 
@@ -370,17 +369,17 @@ class AuthViewModel extends ChangeNotifier
   /// Validates password strength with security requirements and Swedish localized feedback.
   /// [password] Password to validate
   /// Returns true if password meets security requirements, false otherwise with error feedback.
-  /// Enforces minimum password length requirements and provides immediate user feedback
-  /// for password security compliance during authentication flows.
-  bool _validatePassword(String password) {
+  bool _validatePassword(String password, {required bool isNewPassword}) {
     final l = AppLocale.current;
     if (password.isEmpty) {
       _setError(l.errorPasswordCannotBeEmpty);
       return false;
     }
 
-    if (password.length < FormValidators.minPasswordLength) {
-      _setError(l.validationPasswordMinEight);
+    // Signing in checks nothing but presence: an older, shorter password
+    // must still work, and Firebase makes the call.
+    if (isNewPassword && !PasswordRule.accepts(password)) {
+      _setError(l.validationPasswordRule);
       return false;
     }
 

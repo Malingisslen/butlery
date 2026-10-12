@@ -23,6 +23,8 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/widgets/auth/terms_consent_row.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -277,9 +279,9 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpRegisterMode(tester);
 
-      final consent = find.bySemanticsLabel(RegExp('^Jag accepterar'));
+      final consent = find.bySemanticsLabel(RegExp('^Jag godkänner'));
       expect(consent, findsOneWidget);
-      expect(announcedLines(tester, consent), ['Jag accepterar']);
+      expect(announcedLines(tester, consent), ['Jag godkänner', 'och']);
       expectActivatable(tester, consent);
       expect(
         tester
@@ -290,7 +292,7 @@ void main() {
         ui.CheckedState.isFalse,
       );
       expect(
-        find.bySemanticsLabel(RegExp('Villkor.*Integritetspolicy')),
+        find.bySemanticsLabel(RegExp('användarvillkoren.*integritetspolicyn')),
         findsNothing,
         reason: 'no paraphrase of the whole sentence on the checkbox',
       );
@@ -316,7 +318,9 @@ void main() {
 
       await tester.ensureVisible(consent);
       await tester.pumpAndSettle(_kPumpCap);
-      await tester.tap(consent);
+      // The node spans the links too; the centre may land on one, so tap the
+      // opening words.
+      await tester.tapAt(tester.getTopLeft(consent) + const Offset(8, 20));
       await tester.pump();
       expect(
         tester
@@ -334,36 +338,59 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('consent checkboxes provide a >=48dp tap target', (
+    testWidgets('the consent links keep the sentence on its own line height', (
       tester,
     ) async {
       await pumpRegisterMode(tester);
 
-      // BUT-1426 / WCAG 2.5.5: the consent boxes were SizedBox(24,24), which
-      // clamped the hit area to half the minimum. The terms-accept checkbox
-      // must now sit in a >=48dp box. Asserting the
-      // rendered size (not a literal in the widget) keeps this honest against
-      // a refactor that swaps the SizedBox for Padding/constraints.
-      final checkboxFinders = find.byType(Checkbox);
+      final links = find.descendant(
+        of: find.byType(TermsConsentRow),
+        matching: find.byType(ButleryLink),
+      );
+      expect(links, findsNWidgets(2));
+      for (final link in links.evaluate()) {
+        expect(
+          tester.getSize(find.byWidget(link.widget)).height,
+          lessThan(_kMinTapTarget),
+          reason: 'a link in running text does not stretch its line',
+        );
+      }
       expect(
-        checkboxFinders,
+        tester.getSize(find.byType(TermsConsentRow)).height,
+        lessThan(_kMinTapTarget * 2),
+        reason: 'the row is the box and the sentence, not a tall link line',
+      );
+    });
+
+    testWidgets('the consent box is tappable across a full-height target', (
+      tester,
+    ) async {
+      await pumpRegisterMode(tester);
+
+      // BUT-1426 / WCAG 2.5.5: the box itself is drawn small, so the padded
+      // region around it is the target. Measure the rendered region, and tap
+      // its lower edge, away from the drawn box.
+      final checkbox = find.byType(Checkbox);
+      expect(
+        checkbox,
         findsOneWidget,
         reason: 'register mode shows the terms consent checkbox',
       );
+      final target = find.ancestor(
+        of: checkbox,
+        matching: find.byWidgetPredicate(
+          (w) => w is GestureDetector && w.behavior == HitTestBehavior.opaque,
+        ),
+      );
+      await tester.ensureVisible(checkbox);
+      await tester.pumpAndSettle(_kPumpCap);
+      final rect = tester.getRect(target);
+      expect(rect.height, greaterThanOrEqualTo(_kMinTapTarget));
+      expect(tester.widget<Checkbox>(checkbox).value, isFalse);
 
-      for (final element in checkboxFinders.evaluate()) {
-        final size = tester.getSize(find.byWidget(element.widget));
-        expect(
-          size.width,
-          greaterThanOrEqualTo(_kMinTapTarget),
-          reason: 'checkbox tap target width must be >=48dp',
-        );
-        expect(
-          size.height,
-          greaterThanOrEqualTo(_kMinTapTarget),
-          reason: 'checkbox tap target height must be >=48dp',
-        );
-      }
+      await tester.tapAt(rect.bottomLeft + const Offset(4, -4));
+      await tester.pump();
+      expect(tester.widget<Checkbox>(checkbox).value, isTrue);
     });
   });
 }
