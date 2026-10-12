@@ -144,11 +144,17 @@ void main() {
       expect(find.text(_sv.decisionDetailReporterTitle), findsOneWidget);
       expect(find.text(_sv.decisionYouReportedLabel), findsOneWidget);
       expect(find.text('Ett recept för upphovsrättsintrång'), findsOneWidget);
-      expect(find.text(_sv.decisionHeadlineContentRemoved), findsOneWidget);
-      expect(find.text(_sv.motivationRemovedCopyright), findsOneWidget);
+      expect(
+        find.textContaining(_sv.decisionHeadlineContentRemoved),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(_sv.motivationRemovedCopyright),
+        findsOneWidget,
+      );
       expect(find.text(_sv.appealPromptTitle), findsOneWidget);
       expect(find.textContaining('10 apr. 2099'), findsOneWidget);
-      expect(find.text(_sv.appealButton), findsOneWidget);
+      expect(find.text(_sv.decisionAppealLink), findsOneWidget);
     });
 
     testWidgets('the appeal button opens the form with role and outcome', (
@@ -160,7 +166,7 @@ void main() {
         detail(AppealRole.reporter, outcome),
       );
 
-      await tester.tap(find.text(_sv.appealButton));
+      await tester.tap(find.text(_sv.decisionAppealLink));
       await tester.pumpAndSettle();
 
       expect(pushed.last.name, Routes.appealForm);
@@ -180,7 +186,7 @@ void main() {
         ),
       );
 
-      expect(find.text(_sv.appealButton), findsNothing);
+      expect(find.text(_sv.decisionAppealLink), findsNothing);
       expect(find.text(_sv.appealWindowClosedInfo), findsOneWidget);
     });
 
@@ -203,7 +209,7 @@ void main() {
 
       expect(find.text('Det står fortfarande ordagrant'), findsOneWidget);
       expect(find.text(_sv.appealUnderReview), findsOneWidget);
-      expect(find.text(_sv.appealButton), findsNothing);
+      expect(find.text(_sv.decisionAppealLink), findsNothing);
       expect(find.text(_sv.appealAnswerFinal), findsNothing);
     });
 
@@ -228,7 +234,7 @@ void main() {
       expect(find.text(_sv.appealAnswerUpheldHeadline), findsOneWidget);
       expect(find.text(_sv.appealAnswerUpheldBody), findsOneWidget);
       expect(find.text(_sv.appealAnswerFinal), findsOneWidget);
-      expect(find.text(_sv.appealButton), findsNothing);
+      expect(find.text(_sv.decisionAppealLink), findsNothing);
       expect(find.text(_sv.appealAnswerReversedOwnerRemoved), findsNothing);
     });
 
@@ -311,7 +317,7 @@ void main() {
       );
 
       expect(find.text('Din kommentar'), findsOneWidget);
-      expect(find.text(_sv.appealButton), findsOneWidget);
+      expect(find.text(_sv.decisionAppealLink), findsOneWidget);
     });
 
     testWidgets('an id the caller has no decision for says so', (tester) async {
@@ -337,8 +343,9 @@ void main() {
 
       expect(find.text(_sv.myContentDecisionsTitle), findsOneWidget);
       expect(find.text('Ditt recept'), findsOneWidget);
+      expect(find.textContaining('Upphovsrättsintrång'), findsOneWidget);
       expect(
-        find.textContaining('Anmält för upphovsrättsintrång'),
+        find.textContaining(_sv.decisionHeadlineContentRemoved),
         findsOneWidget,
       );
       expect(
@@ -346,13 +353,29 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(find.byKey(const ValueKey('decision-r1')));
+      await tester.tap(find.text('Ditt recept'));
       await tester.pumpAndSettle();
 
       expect(pushed.last.name, Routes.decisionDetail);
       final args = pushed.last.arguments! as DecisionDetailArgs;
       expect(args.role, AppealRole.owner);
       expect(args.reportId, 'r1');
+    });
+
+    testWidgets('the appeal link opens the form for the owner', (tester) async {
+      final outcome = _outcome(type: ContentType.recipe, reason: 'copyright');
+      when(
+        () => outcomes.getMyContentDecisions(),
+      ).thenAnswer((_) async => [outcome]);
+      final pushed = await pumpApp(tester, const MyContentDecisionsView());
+
+      await tester.tap(find.text(_sv.decisionAppealLink));
+      await tester.pumpAndSettle();
+
+      expect(pushed.last.name, Routes.appealForm);
+      final args = pushed.last.arguments! as AppealFormArgs;
+      expect(args.role, AppealRole.owner);
+      expect(args.outcome, same(outcome));
     });
 
     testWidgets('an open appeal shows the Överklagad badge', (tester) async {
@@ -374,6 +397,8 @@ void main() {
         find.text(_sv.decisionStatusAppealed.toUpperCase()),
         findsOneWidget,
       );
+      // The deadline is far off, so only the existing appeal hides the link.
+      expect(find.text(_sv.decisionAppealLink), findsNothing);
     });
 
     testWidgets('Back names Hjälp & om', (tester) async {

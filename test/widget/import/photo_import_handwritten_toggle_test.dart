@@ -55,6 +55,14 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   }
 
   @override
+  int pageCount = 0;
+
+  int picks = 0;
+
+  @override
+  Future<void> pickImageFromCamera() async => picks++;
+
+  @override
   bool get hasImage => false;
 
   @override
@@ -161,8 +169,8 @@ void main() {
     final l10n = await pumpView(tester);
 
     expect(find.text(l10n.importHandwrittenToggle), findsOneWidget);
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(switchWidget.value, isFalse);
     expect(fakeVm.isHandwritten, isFalse);
@@ -184,7 +192,7 @@ void main() {
     registerFake(fakeVm);
     await pumpView(tester);
 
-    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.byType(Switch));
     await tester.pump();
 
     expect(
@@ -192,8 +200,8 @@ void main() {
       isTrue,
       reason: 'tapping the toggle must flow through to setHandwritten',
     );
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(switchWidget.value, isTrue);
   });
@@ -208,13 +216,47 @@ void main() {
     registerFake(fakeVm);
     await pumpView(tester);
 
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(
       switchWidget.onChanged,
       isNull,
       reason: 'a processing import must not be interruptible via the toggle',
     );
+  });
+
+  testWidgets('the camera button asks before dropping staged pages', (
+    tester,
+  ) async {
+    fakeVm = _FakePhotoImportViewModel()..pageCount = 3;
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Fota nu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Börja om?'), findsOneWidget);
+    expect(
+      find.text('Sidorna du redan tagit tas bort om du väljer en ny bild.'),
+      findsOneWidget,
+    );
+    expect(fakeVm.picks, 0);
+
+    await tester.tap(find.text('Börja om').last);
+    await tester.pumpAndSettle();
+    expect(fakeVm.picks, 1);
+  });
+
+  testWidgets('with no pages staged the camera button starts at once', (
+    tester,
+  ) async {
+    fakeVm = _FakePhotoImportViewModel();
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Fota nu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Börja om?'), findsNothing);
+    expect(fakeVm.picks, 1);
   });
 }

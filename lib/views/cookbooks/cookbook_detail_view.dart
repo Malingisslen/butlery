@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -10,7 +11,6 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/cookbooks/cookbook_recipe_sheets.dart';
@@ -19,13 +19,13 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
+import 'package:butlery/widgets/common/stat_row.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
-/// One cookbook opened (BUT-1325): cover, description, and its recipes in
-/// the book's order, each with the book's own note.
+/// One cookbook opened (BUT-1325): its key figures, description, and its
+/// recipes in the book's order, each with the book's own note.
 class CookbookDetailView extends StatefulWidget {
   const CookbookDetailView({required this.tagId, super.key});
 
@@ -34,9 +34,6 @@ class CookbookDetailView extends StatefulWidget {
   static const reorderKey = ValueKey('cookbook-reorder');
   static const sortKey = ValueKey('cookbook-sort-alphabetical');
   static const addKey = ValueKey('cookbook-add-recipes');
-
-  /// The cover's height above the recipes.
-  static const double coverHeight = 180;
 
   @override
   State<CookbookDetailView> createState() => _CookbookDetailViewState();
@@ -122,10 +119,9 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
       appBar: ButleryTopBar.undersida(
         title: tag.name,
         actions: [
-          IconButton(
-            tooltip: l10n.cookbookEdit,
-            icon: const ButleryIcon(ButleryIcons.pencil),
+          TextButton(
             onPressed: () => showCookbookEditSheet(context, vm: vm, tag: tag),
+            child: Text(l10n.cookbookEdit),
           ),
         ],
       ),
@@ -135,22 +131,31 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
           Expanded(
             child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: CookbookDetailView.coverHeight,
-                    child: CookbookCoverView(
-                      name: tag.name,
-                      cover: cookbook.cover,
-                      imageUrl: vm.coverImageUrl(tag),
-                      subtitle: l10n.cookbookRecipeCount(recipes.length),
-                      titleStyle: AppTextStyles.headlineSmall,
-                    ),
-                  ),
-                ),
                 SliverPadding(
                   padding: padding,
                   sliver: SliverList.list(
                     children: [
+                      StatRow(
+                        items: [
+                          StatRowItem(
+                            value: '${recipes.length}',
+                            label: l10n.cookbookStatRecipes,
+                          ),
+                          StatRowItem(
+                            value: cookbook.hasCustomOrder
+                                ? l10n.cookbookStatSortCustom
+                                : l10n.cookbookStatSortAlphabetical,
+                            label: l10n.cookbookStatSort,
+                          ),
+                          StatRowItem(
+                            value: DateFormat.MMMd(
+                              Localizations.localeOf(context).toString(),
+                            ).format(tag.updatedAt),
+                            label: l10n.cookbookStatUpdated,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.space16),
                       if (cookbook.description.isNotEmpty) ...[
                         Text(
                           cookbook.description,
@@ -171,6 +176,9 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                       ),
                       const SizedBox(height: AppDimensions.space16),
                       _Toolbar(
+                        hint: cookbook.hasCustomOrder
+                            ? l10n.cookbookOrderHintCustom
+                            : l10n.cookbookOrderHintAlphabetical,
                         hasCustomOrder: cookbook.hasCustomOrder,
                         reordering: _reordering,
                         canReorder: recipes.length > 1,
@@ -178,15 +186,6 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                         onToggleReorder: () =>
                             setState(() => _reordering = !_reordering),
                       ),
-                      Text(
-                        cookbook.hasCustomOrder
-                            ? l10n.cookbookOrderHintCustom
-                            : l10n.cookbookOrderHintAlphabetical,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.space8),
                       if (recipes.isEmpty)
                         StateWidget.empty(
                           title: l10n.cookbookEmpty,
@@ -223,6 +222,7 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
 
 class _Toolbar extends StatelessWidget {
   const _Toolbar({
+    required this.hint,
     required this.hasCustomOrder,
     required this.reordering,
     required this.canReorder,
@@ -230,6 +230,7 @@ class _Toolbar extends StatelessWidget {
     required this.onToggleReorder,
   });
 
+  final String hint;
   final bool hasCustomOrder;
   final bool reordering;
   final bool canReorder;
@@ -239,32 +240,46 @@ class _Toolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Row(
-      children: [
-        Expanded(
-          child: SectionHeading(l10n.cookbookRecipesHeading),
+    final cs = Theme.of(context).colorScheme;
+    final accent = context.modeColors.textAccent;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: accent, width: AppDimensions.borderWidthThick),
         ),
-        if (hasCustomOrder)
-          KeyedSubtree(
-            key: CookbookDetailView.sortKey,
-            child: ActionButtons.textButton(
-              context,
-              label: l10n.cookbookSortAlphabetical,
-              onPressed: onSort,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              hint,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ),
-        if (canReorder)
-          KeyedSubtree(
-            key: CookbookDetailView.reorderKey,
-            child: ActionButtons.textButton(
-              context,
-              label: reordering
-                  ? l10n.cookbookReorderDone
-                  : l10n.cookbookReorder,
-              onPressed: onToggleReorder,
+          if (hasCustomOrder)
+            KeyedSubtree(
+              key: CookbookDetailView.sortKey,
+              child: ActionButtons.textButton(
+                context,
+                label: l10n.cookbookSortAlphabetical,
+                onPressed: onSort,
+              ),
             ),
-          ),
-      ],
+          if (canReorder)
+            KeyedSubtree(
+              key: CookbookDetailView.reorderKey,
+              child: ActionButtons.textButton(
+                context,
+                label: reordering
+                    ? l10n.cookbookReorderDone
+                    : l10n.cookbookReorder,
+                onPressed: onToggleReorder,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -293,91 +308,37 @@ class _RecipeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    final note = this.note;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                button: !reordering,
-                child: PressFill(
-                  surface: PressSurface.raised,
-                  child: InkWell(
-                    onTap: reordering ? null : onOpen,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.space8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: AppDimensions.iconSizeL,
-                            child: Text(
-                              '${index + 1}',
-                              style: AppTextStyles.listTileTitle.copyWith(
-                                color: context.modeColors.textAccent,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  recipe.title,
-                                  style: AppTextStyles.listTileTitle,
-                                ),
-                                if (note != null) ...[
-                                  const SizedBox(
-                                    height: AppDimensions.space4,
-                                  ),
-                                  Text(
-                                    note,
-                                    style: AppTextStyles.bodyMedium,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+    return RecipeThumbRow(
+      recipe: recipe,
+      note: note,
+      onTap: reordering ? null : onOpen,
+      // BUT-948 exception: long-press writes the book's note for the recipe;
+      // the list is not a multi-select surface.
+      onLongPress: reordering ? null : onEditNote,
+      trailing: reordering
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: l10n.a11yMoveRecipeUp(recipe.title),
+                  icon: const ButleryIcon(ButleryIcons.arrowUp),
+                  onPressed: index == 0 ? null : () => onMove(-1),
                 ),
-              ),
+                IconButton(
+                  tooltip: l10n.a11yMoveRecipeDown(recipe.title),
+                  icon: const ButleryIcon(ButleryIcons.arrowDown),
+                  onPressed: index == count - 1 ? null : () => onMove(1),
+                ),
+              ],
+            )
+          : IconButton(
+              tooltip: note == null
+                  ? l10n.cookbookWriteNote
+                  : l10n.cookbookEditNote,
+              icon: const ButleryIcon(ButleryIcons.pencil),
+              onPressed: onEditNote,
             ),
-            if (reordering) ...[
-              IconButton(
-                tooltip: l10n.a11yMoveRecipeUp(recipe.title),
-                icon: const ButleryIcon(ButleryIcons.arrowUp),
-                onPressed: index == 0 ? null : () => onMove(-1),
-              ),
-              IconButton(
-                tooltip: l10n.a11yMoveRecipeDown(recipe.title),
-                icon: const ButleryIcon(ButleryIcons.arrowDown),
-                onPressed: index == count - 1 ? null : () => onMove(1),
-              ),
-            ] else
-              IconButton(
-                tooltip: note == null
-                    ? l10n.cookbookWriteNote
-                    : l10n.cookbookEditNote,
-                icon: const ButleryIcon(ButleryIcons.pencil),
-                onPressed: onEditNote,
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -311,7 +311,7 @@ class AuthActionHandler {
   }
 
   /// Opens a mail to the privacy address with the audit id in the subject.
-  /// The same address the legal views use (legal_contact_footer.dart).
+  /// The same address the legal views use (support_mail.dart).
   static Future<void> contactSupportAboutDeletion(
     BuildContext context,
     String? auditLogId,

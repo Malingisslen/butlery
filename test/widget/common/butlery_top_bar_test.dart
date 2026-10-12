@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -449,7 +450,7 @@ void main() {
 
     for (final dark in [false, true]) {
       testWidgets(
-        'subpage: ink surface and paper text in ${dark ? 'dark' : 'light'} mode',
+        'subpage: paper surface and ink text in ${dark ? 'dark' : 'light'} mode',
         (tester) async {
           await tester.pumpWidget(
             _app(
@@ -457,19 +458,14 @@ void main() {
               theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
             ),
           );
-          // Komponentark v1 rad 73: undersidan står på surface.ink med
-          // papperstext, samma i båda lägena.
-          expect(_barColor(tester), const Color(0xFF24382C));
-          expect(_textColor(tester, _titleKey), const Color(0xFFF5F4ED));
-          final icon = find.descendant(
-            of: find.byKey(_backKey),
-            matching: find.byWidgetPredicate(
-              (w) => w is CustomPaint && w.painter is ButleryGlyphPainter,
-            ),
+          // B-60: the subpage bar is light, the same surface as the root bar.
+          expect(
+            _barColor(tester),
+            dark ? AppColorsDark.cream : AppColors.cream,
           );
           expect(
-            _glyphColor(tester, icon),
-            const Color(0xFFF5F4ED),
+            _textColor(tester, _titleKey),
+            dark ? AppColorsDark.textDark : AppColors.textDark,
           );
           expect(
             tester
@@ -477,7 +473,7 @@ void main() {
                   find.byType(AnnotatedRegion<SystemUiOverlayStyle>).first,
                 )
                 .value,
-            SystemUiOverlayStyle.light,
+            dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
           );
         },
       );
@@ -485,7 +481,7 @@ void main() {
 
     for (final dark in [false, true]) {
       testWidgets(
-        'undersida(light: true): paper surface, ink text and arrow in '
+        'subpage: the back arrow takes the ink colour in '
         '${dark ? 'dark' : 'light'} mode',
         (tester) async {
           await tester.pumpWidget(
@@ -493,7 +489,6 @@ void main() {
               ButleryTopBar.undersida(
                 title: 'Receptet',
                 onBack: () {},
-                light: true,
               ),
               theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
             ),
@@ -531,21 +526,6 @@ void main() {
       );
     }
 
-    testWidgets('undersida without light stays on ink in both modes', (
-      tester,
-    ) async {
-      for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
-        await tester.pumpWidget(
-          _app(
-            ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
-            theme: theme,
-          ),
-        );
-        expect(_barColor(tester), const Color(0xFF24382C));
-        expect(_textColor(tester, _titleKey), const Color(0xFFF5F4ED));
-      }
-    });
-
     testWidgets('overrides win over the defaults', (tester) async {
       await tester.pumpWidget(
         _app(
@@ -575,7 +555,7 @@ void main() {
       'dark': AppTheme.darkTheme,
     }.entries) {
       testWidgets(
-        '${theme.key}: the focused back arrow gets a paper ring on ink',
+        '${theme.key}: the focused back arrow gets a visible ring',
         (
           tester,
         ) async {
@@ -599,8 +579,6 @@ void main() {
           ).requestFocus();
           await tester.pumpAndSettle();
 
-          // The subpage stands on ink in both modes (Komponentark v1:73), so
-          // the ring is paper there even in light mode (tokens.json:155-160).
           final r = tester.getRect(find.byKey(_backKey));
           // The stroke is 2 px wide; sample across it so a half-pixel layout
           // offset cannot land the probe on the anti-aliased edge.
@@ -609,7 +587,10 @@ void main() {
             for (final dy in [-1.0, 0.0, 1.0])
               await _pixel(tester, Offset(r.center.dx, y + dy)),
           ];
-          expect(across, contains(const Color(0xFFF5F4ED)));
+          final ring = AppModeColors.focusRing(
+            theme.key == 'dark' ? Brightness.dark : Brightness.light,
+          );
+          expect(across, contains(ring));
 
           // 48 dp minimum from the app theme survives.
           expect(r.width, greaterThanOrEqualTo(48));

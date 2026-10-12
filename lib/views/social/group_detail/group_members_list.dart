@@ -21,7 +21,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
-import 'package:butlery/widgets/common/section_heading.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -193,17 +192,21 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
     final members = widget.members;
     final pendingInvitations = widget.pendingInvitations;
 
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // The members section header: the one overline style, with Välj in
-        // its row (Avbryt in selection mode).
+        // The members heading with "+ Bjud in" in its row (Välj in selection
+        // mode takes its place; Avbryt leaves it).
         Row(
           children: [
             Expanded(
-              child: SectionHeading(
-                context.l10n.groupMembersSection(members.length),
-                tone: SectionHeadingTone.emphasis,
+              child: Semantics(
+                header: true,
+                child: Text(
+                  context.l10n.groupMembersHeading,
+                  style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+                ),
               ),
             ),
             // P5-U31: the list lives in the group view's scroll, so the
@@ -214,95 +217,69 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             if (_selectionMode)
               ButleryCancelSelectionButton(
                 key: const ValueKey('group-members-selection-cancel'),
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                foregroundColor: cs.onSurface,
                 onPressed: _cancelSelection,
               )
-            else if (ButlerySelectButton.shownFor(_selectableCount))
-              ButlerySelectButton(
-                key: const ValueKey('group-members-select-enter'),
-                semanticLabel: context.l10n.selectionEnterMembers,
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-                onPressed: _startSelection,
-              ),
+            else ...[
+              if (ButlerySelectButton.shownFor(_selectableCount))
+                ButlerySelectButton(
+                  key: const ValueKey('group-members-select-enter'),
+                  semanticLabel: context.l10n.selectionEnterMembers,
+                  foregroundColor: cs.onSurface,
+                  onPressed: _startSelection,
+                ),
+              if (_canAddMembers)
+                TextButton(
+                  onPressed: widget.onAddMembers,
+                  child: Semantics(
+                    label: context.l10n.groupAddMembers,
+                    excludeSemantics: true,
+                    child: Text(context.l10n.groupInviteLink),
+                  ),
+                ),
+            ],
           ],
         ),
-        const SizedBox(height: AppDimensions.space4),
 
-        if (members.isNotEmpty) ...[
+        if (members.isNotEmpty || pendingInvitations.isNotEmpty) ...[
           if (_selectionMode) _buildSelectionBar(context),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: members.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.space4),
-            itemBuilder: (context, index) {
-              final member = members[index];
-              return KeyedSubtree(
-                key: ValueKey(member.uid),
-                child: GroupMemberCard.build(
-                  context,
-                  member,
-                  widget.group,
-                  widget.onMemberRemoved,
-                  isSelectionMode: _selectionMode,
-                  isSelected: _selectedIds.contains(member.uid),
-                  onSelectionToggle: () => _toggle(member.uid),
-                  onEnterSelection: () => _enterSelection(member.uid),
-                  removalFailure: _selectedIds.contains(member.uid)
-                      ? _partial?.reasons[member.uid]
-                      : null,
-                ),
-              );
-            },
-          ),
-        ],
-
-        if (_canAddMembers && !_selectionMode)
           ButleryListSection(
             rows: [
-              ButleryListRow(
-                label: context.l10n.groupAddMembers,
-                leading: ButleryIcons.plus,
-                onTap: widget.onAddMembers,
-              ),
+              for (final member in members)
+                KeyedSubtree(
+                  key: ValueKey(member.uid),
+                  child: GroupMemberCard.build(
+                    context,
+                    member,
+                    widget.group,
+                    widget.onMemberRemoved,
+                    isSelectionMode: _selectionMode,
+                    isSelected: _selectedIds.contains(member.uid),
+                    onSelectionToggle: () => _toggle(member.uid),
+                    onEnterSelection: () => _enterSelection(member.uid),
+                    removalFailure: _selectedIds.contains(member.uid)
+                        ? _partial?.reasons[member.uid]
+                        : null,
+                  ),
+                ),
+              // The invited sit at the end of the same list, marked "Inbjuden".
+              for (final invitation in pendingInvitations)
+                KeyedSubtree(
+                  key: ValueKey(invitation.id),
+                  child: GroupInvitationCard.build(
+                    context,
+                    invitation,
+                    widget.onInvitationCancelled,
+                    inviteeName: widget.inviteeNames[invitation.toUserId],
+                  ),
+                ),
             ],
           ),
+        ],
 
         if (_partial != null) ...[
           const SizedBox(height: AppDimensions.space12),
           _buildPartialOutcome(context, _partial!),
-        ],
-
-        // Pending invitations section
-        if (pendingInvitations.isNotEmpty) ...[
-          if (members.isNotEmpty) const SizedBox(height: AppDimensions.space32),
-          SectionHeading(
-            context.l10n.groupPendingInvitationsSection(
-              pendingInvitations.length,
-            ),
-            tone: SectionHeadingTone.emphasis,
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: pendingInvitations.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: AppDimensions.space4),
-            itemBuilder: (context, index) {
-              final invitation = pendingInvitations[index];
-              return KeyedSubtree(
-                key: ValueKey(invitation.id),
-                child: GroupInvitationCard.build(
-                  context,
-                  invitation,
-                  widget.onInvitationCancelled,
-                  inviteeName: widget.inviteeNames[invitation.toUserId],
-                ),
-              );
-            },
-          ),
         ],
 
         // Empty state

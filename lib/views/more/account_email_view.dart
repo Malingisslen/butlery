@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/views/more/account_form_parts.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/styled/butlery_password_field.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -133,21 +134,19 @@ class _AccountEmailViewState extends State<AccountEmailView> {
               children: [
                 const SizedBox(height: AppDimensions.space16),
                 if (currentEmail != null)
-                  Text(
-                    currentEmail,
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: l10n.accountSecurityEmailNow),
+                        TextSpan(
+                          text: currentEmail,
+                          style: AppTextStyles.bodyLargeBold,
+                        ),
+                      ],
+                    ),
                     key: const ValueKey('accountEmail.current'),
                     style: AppTextStyles.bodyLarge,
                   ),
-                const SizedBox(height: AppDimensions.space8),
-                // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms
-                // only the new address; the old one is told afterwards and
-                // can undo. The user reads that before asking for the
-                // change, not in a two-line snackbar.
-                Text(
-                  l10n.accountSecurityEmailChangeHow,
-                  key: const ValueKey('accountEmail.changeHow'),
-                  style: muted,
-                ),
                 const SizedBox(height: AppDimensions.space12),
                 switch (confirmation) {
                   EmailChangeConfirmation.password => ButleryPasswordField(
@@ -190,6 +189,17 @@ class _AccountEmailViewState extends State<AccountEmailView> {
                   onPressed: confirmation == EmailChangeConfirmation.unavailable
                       ? null
                       : _submit,
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms
+                // only the new address; the old one is told afterwards and
+                // can undo.
+                TintedNote(
+                  child: Text(
+                    l10n.accountSecurityEmailChangeHow,
+                    key: const ValueKey('accountEmail.changeHow'),
+                    style: TintedNote.textStyle(context),
+                  ),
                 ),
               ],
             ),

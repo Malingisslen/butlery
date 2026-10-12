@@ -390,7 +390,7 @@ void main() {
       addTearDown(pane.dispose);
       await pumpCalendar(tester, pane);
 
-      await tester.tap(find.text('pasta'));
+      await tester.tap(find.text('Pasta'));
       await tester.pumpAndSettle();
 
       expect(pane.selected?.name, Routes.recipeDetail);
@@ -404,7 +404,7 @@ void main() {
     ) async {
       await pumpCalendar(tester, null);
 
-      await tester.tap(find.text('pasta'));
+      await tester.tap(find.text('Pasta'));
       await tester.pumpAndSettle();
 
       expect(pushed?.name, Routes.recipeDetail);

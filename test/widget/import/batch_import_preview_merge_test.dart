@@ -13,6 +13,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/list/status_row.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 
 import '../../infrastructure/builders/recipe_builder.dart';
@@ -77,7 +78,7 @@ void main() {
   }
 
   Future<void> confirm(WidgetTester tester) async {
-    await tester.tap(find.byWidgetPredicate((w) => w is FilledButton));
+    await tester.tap(find.byWidgetPredicate((w) => w is ElevatedButton));
     await tester.pumpAndSettle();
   }
 
@@ -95,7 +96,10 @@ void main() {
 
     expect(find.text('2 recept slogs ihop till ett'), findsOneWidget);
     expect(find.text('Glasyr'), findsNothing);
-    expect(find.byType(CheckboxListTile), findsNWidgets(2));
+    expect(
+      find.byWidgetPredicate((w) => w is StatusRow && w.checked != null),
+      findsNWidgets(2),
+    );
 
     await confirm(tester);
     // The undo goes with the picker instead of lingering over the save result.

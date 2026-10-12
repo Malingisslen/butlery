@@ -57,8 +57,6 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
     return Dialog.fullscreen(
       child: Scaffold(
         // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
-        // Skarmar v12 etapp 9 #fbformular draws it on ink with paper text,
-        // which is the subpage bar's own surface.
         appBar: ButleryTopBar.undersida(
           title: context.l10n.feedbackSendLabel,
           leading: IconButton(

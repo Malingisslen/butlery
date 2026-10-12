@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/legal/legal_document.dart';
+import 'package:butlery/widgets/legal/legal_link_foot.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -74,7 +75,7 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ButleryTopBar.undersida(
-        title: context.l10n.legalCommunityGuidelines,
+        title: context.l10n.legalCommunityGuidelinesTitle,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
@@ -110,6 +111,9 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
 
     if (_content == null) return const SizedBox.shrink();
 
-    return LegalDocument(content: _content!);
+    return LegalDocument(
+      content: _content!,
+      current: LegalDocumentKind.guidelines,
+    );
   }
 }

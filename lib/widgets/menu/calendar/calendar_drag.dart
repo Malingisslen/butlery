@@ -130,6 +130,7 @@ Widget wrapAsDropTarget({
       return DecoratedBox(
         decoration: BoxDecoration(
           border: Border.all(color: cs.secondary, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           color: cs.secondary.withValues(alpha: AppOpacity.onPaper04),
         ),
         child: child,

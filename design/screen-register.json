@@ -2,7 +2,7 @@
  "comment": "En rad per vy: vilka skissramar den ska följa, bild med skiss mot app, och status. Statusar: godkänd, avviker-beslutad, ersatt (skissen är bytt mot ett beslut), skillnader-listade (jämförd, Malin har inte valt), ej-bedömd (aldrig jämförd; antalet får bara minska). Se .claude/rules/design-system.md.",
  "views": {
   "lib/views/account/consent_management_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_6_konto_och_integritet#1",
     "etapp_6_konto_och_integritet#2",
@@ -13,7 +13,7 @@
    ]
   },
   "lib/views/account/data_export_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#30",
     "etapp_6_konto_och_integritet#4"
@@ -23,7 +23,7 @@
    ]
   },
   "lib/views/account/pending_deletion_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_5-7#5",
     "etapp_5-7#7"
@@ -53,7 +53,7 @@
    ]
   },
   "lib/views/admin/moderator_review_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_5-7#11",
     "etapp_5-7#12",
@@ -92,30 +92,30 @@
    ]
   },
   "lib/views/auth/guest_start_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#1"
    ],
    "images": [
-    "design/skiss-mot-app/67-guest-start.png"
+    "design/skiss-mot-app/spar8/67-guest-start.png"
    ]
   },
   "lib/views/auth/guest_upgrade_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#2"
    ],
    "images": [
-    "design/skiss-mot-app/68-guest-upgrade.png"
+    "design/skiss-mot-app/spar8/68-guest-upgrade.png"
    ]
   },
   "lib/views/auth/mfa_challenge_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#6"
    ],
    "images": [
-    "design/skiss-mot-app/69-mfa-challenge.png"
+    "design/skiss-mot-app/spar8/69-mfa-challenge.png"
    ]
   },
   "lib/views/auth/provider_link_view.dart": {
@@ -129,13 +129,13 @@
    "images": []
   },
   "lib/views/auth/set_new_password_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#3",
     "etapp_3_onboarding#1"
    ],
    "images": [
-    "design/skiss-mot-app/70-set-new-password.png"
+    "design/skiss-mot-app/spar8/70-set-new-password.png"
    ]
   },
   "lib/views/auth_view.dart": {
@@ -151,7 +151,7 @@
    ]
   },
   "lib/views/cookbooks/cookbook_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#18"
    ],
@@ -191,7 +191,7 @@
    ]
   },
   "lib/views/family/family_rating_entry_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#2",
     "del_4_morkt_lage_och_etapp_0-1#25",
@@ -220,7 +220,7 @@
    ]
   },
   "lib/views/file_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_4_import#12"
    ],
@@ -229,7 +229,7 @@
    ]
   },
   "lib/views/fran_sociala_medier_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_4_import#10"
    ],
@@ -238,7 +238,7 @@
    ]
   },
   "lib/views/group_weekly_menu_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_2#28",
     "etapp_2#21"
@@ -266,7 +266,7 @@
    ]
   },
   "lib/views/importera_fran_arkiv_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#15",
     "etapp_4_import#21"
@@ -285,7 +285,7 @@
    ]
   },
   "lib/views/legal/community_guidelines_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#14",
     "del_3_sok_och_skalbevis#26",
@@ -316,7 +316,7 @@
    ]
   },
   "lib/views/menu_placement_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_2_familj_och_socialt#3",
     "etapp_2#17",
@@ -327,7 +327,7 @@
    ]
   },
   "lib/views/messaging/conversation_group_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#9"
    ],
@@ -346,7 +346,7 @@
    ]
   },
   "lib/views/messaging/create_group_conversation_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#11"
    ],
@@ -374,7 +374,7 @@
    ]
   },
   "lib/views/more/account_email_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#27",
     "etapp_6_konto_och_integritet#6"
@@ -384,7 +384,7 @@
    ]
   },
   "lib/views/more/account_password_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#27",
     "etapp_6_konto_och_integritet#6"
@@ -417,7 +417,7 @@
    ]
   },
   "lib/views/more/help_area_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_1_recept_och_veckomeny#14"
    ],
@@ -490,7 +490,7 @@
    ]
   },
   "lib/views/personal_tags_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#16"
    ],
@@ -499,7 +499,7 @@
    ]
   },
   "lib/views/photo_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#14",
     "etapp_4_import#11"
@@ -518,7 +518,7 @@
    ]
   },
   "lib/views/realtime/conflict_diff_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#28",
     "etapp_11_breda_vyer#5"
@@ -528,7 +528,7 @@
    ]
   },
   "lib/views/realtime/recipe_suggestion_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#28"
    ],
@@ -546,7 +546,7 @@
    ]
   },
   "lib/views/settings/allergen_preferences_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#17"
    ],
@@ -555,7 +555,7 @@
    ]
   },
   "lib/views/settings/appeal_form_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_6_konto_och_integritet#13"
    ],
@@ -573,7 +573,7 @@
    ]
   },
   "lib/views/settings/decision_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_6_konto_och_integritet#13"
    ],
@@ -582,7 +582,7 @@
    ]
   },
   "lib/views/settings/licenses_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#26"
    ],
@@ -591,7 +591,7 @@
    ]
   },
   "lib/views/settings/mfa_settings_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#22",
     "etapp_6_konto_och_integritet#9",
@@ -602,7 +602,7 @@
    ]
   },
   "lib/views/settings/my_content_decisions_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_6_konto_och_integritet#13",
     "del_3_sok_och_skalbevis#24"
@@ -612,7 +612,7 @@
    ]
   },
   "lib/views/settings/my_reports_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#24",
     "del_3_sok_och_skalbevis#25",
@@ -632,7 +632,7 @@
    ]
   },
   "lib/views/settings/trash_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#24"
    ],
@@ -641,7 +641,7 @@
    ]
   },
   "lib/views/skriv_sjalv_recept_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#13",
     "etapp_4_import#7"
@@ -678,7 +678,7 @@
    ]
   },
   "lib/views/social/create_shared_shopping_list_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#14"
    ],
@@ -687,7 +687,7 @@
    ]
   },
   "lib/views/social/friend_profile_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#8",
     "etapp_5-7#18"
@@ -697,7 +697,7 @@
    ]
   },
   "lib/views/social/friend_requests/friend_requests_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#7"
    ],
@@ -706,7 +706,7 @@
    ]
   },
   "lib/views/social/friend_requests_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#7"
    ],
@@ -715,7 +715,7 @@
    ]
   },
   "lib/views/social/friends_list_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#9",
     "etapp_9_socialt_och_komponenter#1",
@@ -726,7 +726,7 @@
    ]
   },
   "lib/views/social/group_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#29"
    ],
@@ -735,7 +735,7 @@
    ]
   },
   "lib/views/social/menu_preview_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_3_sok_och_skalbevis#12"
    ],
@@ -744,7 +744,7 @@
    ]
   },
   "lib/views/social/public_profile_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#9"
    ],
@@ -762,7 +762,7 @@
    ]
   },
   "lib/views/social/shared_with_me/shared_recipes_by_friend_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#11"
    ],
@@ -771,7 +771,7 @@
    ]
   },
   "lib/views/social/shared_with_me_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#19"
    ],
@@ -780,7 +780,7 @@
    ]
   },
   "lib/views/social/user_profile_edit_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#4"
    ],
@@ -798,7 +798,7 @@
    ]
   },
   "lib/views/tag_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#18"
    ],
@@ -816,7 +816,7 @@
    ]
   },
   "lib/views/veckomeny_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_2#17",
     "etapp_2#10"
@@ -826,7 +826,7 @@
    ]
   },
   "lib/views/voice_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#22"
    ],

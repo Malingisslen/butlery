@@ -1,8 +1,7 @@
 // lib/views/social/user_profile_edit_view.dart
 //
 // Orchestrates the profile editing screen. Build sections are extracted into
-// lib/views/social/user_profile_edit/ to keep this file under the 634-line
-// baseline.
+// lib/views/social/user_profile_edit/.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -10,9 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -259,31 +256,25 @@ class _UserProfileEditViewContentState
           }
         }
       },
-      child: LayoutComponents.mainMenu(
-        currentIndex: null,
-        body: SafeArea(
-          child: ButleryPageBody(
-            width: PageWidth.text,
-            child: FormScaffold(
-              title: context.l10n.profileEditProfile,
-              form: _buildForm(viewModel),
-              onSave: viewModel.isLoading || !viewModel.isFormValid
-                  ? null
-                  : _saveProfile,
-              isLoading: viewModel.isLoading,
-              showSaveButton: false,
-              showCancelButton: false,
-              additionalActions: [
-                if (viewModel.hasError)
-                  IconButton(
-                    icon: const ButleryIcon(ButleryIcons.refreshCw),
-                    onPressed: viewModel.clearError,
-                    tooltip: context.l10n.commonClearError,
-                  ),
-              ],
+      child: ButleryPage.undersida(
+        title: context.l10n.profileEditProfile,
+        backTo: context.l10n.moreTitle,
+        ruleUnderBar: false,
+        // A form: the save bar takes the tab bar's place (B-54).
+        showTabBar: false,
+        actions: [
+          if (viewModel.hasError)
+            IconButton(
+              icon: const ButleryIcon(ButleryIcons.refreshCw),
+              onPressed: viewModel.clearError,
+              tooltip: context.l10n.commonClearError,
             ),
-          ),
+        ],
+        bottomNavigationBar: ProfileSaveBar(
+          viewModel: viewModel,
+          onSave: _saveProfile,
         ),
+        body: _buildForm(viewModel),
       ),
     );
   }
@@ -300,53 +291,62 @@ class _UserProfileEditViewContentState
         if (viewModel.isLoading || !viewModel.isFormValid) return;
         _saveProfile();
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ProfileAvatarSection(
-            viewModel: viewModel,
-            onUploadAvatar: _uploadAvatar,
-          ),
-          const SizedBox(height: AppDimensions.space32),
-          ProfileDisplayNameField(
-            controller: _displayNameController,
-            focusNode: _displayNameFocusNode,
-            viewModel: viewModel,
-            onChanged: (value) {
-              viewModel.updateDisplayName(value);
-              // Clear previous validation errors when user types
-              if (viewModel.displayNameError != null) {
-                Future.delayed(_errorClearWait, () {
-                  if (mounted && _displayNameController.text == value) {
-                    _checkDisplayNameAvailability();
-                  }
-                });
-              }
-            },
-          ),
-          const SizedBox(height: AppDimensions.space32),
-          CookingIdentitySection(
-            bioController: _bioController,
-            viewModel: viewModel,
-          ),
-          const SizedBox(height: AppDimensions.space32),
-          CollectionInsightsCard(
-            recipes: _recipesSnapshot,
-            cuisineDisplayNames: _cuisineDisplayNames,
-          ),
-          const SizedBox(height: AppDimensions.space32),
-          PrivacySettingsSection(viewModel: viewModel),
-          const SizedBox(height: AppDimensions.spacingXxl),
-          ProfileActionButtons(
-            viewModel: viewModel,
-            onSave: _saveProfile,
-            onReset: () {
-              viewModel.resetForm();
-              _initializeForm(viewModel, force: true);
-              SnackBarUtils.showSuccess(context, context.l10n.profileFormReset);
-            },
-          ),
-        ],
+      child: SingleChildScrollView(
+        padding: ButleryPageBody.margin(
+          context,
+          top: AppDimensions.space16,
+          bottom: AppDimensions.space32,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ProfileAvatarSection(
+              viewModel: viewModel,
+              onUploadAvatar: _uploadAvatar,
+            ),
+            const SizedBox(height: AppDimensions.space24),
+            ProfileDisplayNameField(
+              controller: _displayNameController,
+              focusNode: _displayNameFocusNode,
+              viewModel: viewModel,
+              onChanged: (value) {
+                viewModel.updateDisplayName(value);
+                // Clear previous validation errors when user types
+                if (viewModel.displayNameError != null) {
+                  Future.delayed(_errorClearWait, () {
+                    if (mounted && _displayNameController.text == value) {
+                      _checkDisplayNameAvailability();
+                    }
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: AppDimensions.space24),
+            CookingIdentitySection(
+              bioController: _bioController,
+              viewModel: viewModel,
+            ),
+            const SizedBox(height: AppDimensions.space24),
+            PrivacySettingsSection(viewModel: viewModel),
+            const SizedBox(height: AppDimensions.space24),
+            CollectionInsightsCard(
+              recipes: _recipesSnapshot,
+              cuisineDisplayNames: _cuisineDisplayNames,
+            ),
+            const SizedBox(height: AppDimensions.space24),
+            ProfileUnsavedNotice(
+              viewModel: viewModel,
+              onReset: () {
+                viewModel.resetForm();
+                _initializeForm(viewModel, force: true);
+                SnackBarUtils.showSuccess(
+                  context,
+                  context.l10n.profileFormReset,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

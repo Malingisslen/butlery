@@ -17,7 +17,6 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/views/account/data_export_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../views/helpers/view_test_helpers.dart';
@@ -92,13 +91,8 @@ T _above<T extends Widget>(
 Card _cardAbove(WidgetTester tester, Finder of) =>
     _above<Card>(tester, of, (_) => true);
 
-BorderSide _cardSide(Card card) => (card.shape! as RoundedRectangleBorder).side;
-
 Color? _textColor(WidgetTester tester, Finder text) =>
     tester.widget<Text>(text).style?.color;
-
-Color? _glyphColor(WidgetTester tester, IconData icon) =>
-    tester.widget<Icon>(find.byIcon(icon).first).color;
 
 void main() {
   setUpAll(() async {
@@ -120,41 +114,45 @@ void main() {
     ('dark', AppTheme.darkTheme),
   ]) {
     final cs = theme.colorScheme;
-    final modeColors = ModeColors.of(theme.brightness);
 
     group('data export view, $mode', () {
       testWidgets(
-        'the success card is the success tint with no border; glyph is '
-        'onSuccessContainer and the secondary lines stay secondary',
+        'the finished file is on the page card with its edge, the warning '
+        'line is warning text, and the size line stays secondary',
         (tester) async {
           await _pumpExport(tester, theme);
 
-          final title = find.text(_sv.dataExportSuccess);
+          final title = find.text(_sv.dataExportFileTitle);
           expect(title, findsOneWidget);
           final card = _cardAbove(tester, title);
-          expect(card.color, modeColors.surfaceTintSuccess);
-          expect(_cardSide(card), BorderSide.none);
           expect(
-            _glyphColor(tester, ButleryIcons.circleCheck),
-            modeColors.onSuccessContainer,
+            card.color,
+            isNull,
+            reason: 'the surface comes from the theme',
           );
           expect(
-            _textColor(tester, find.textContaining(_sv.dataExportFileSize)),
-            AppModeColors.textSecondaryOnRaised(theme.brightness),
+            _textColor(tester, find.text(_sv.dataExportMemoryNotice)),
+            AppModeColors.textWarning(theme.brightness),
+          );
+          expect(
+            _textColor(tester, find.textContaining(' · ')),
+            cs.onSurfaceVariant,
           );
         },
       );
 
-      testWidgets('the what-is-included card is the raised surface', (
+      testWidgets('what comes with the file is plain rows, not a card', (
         tester,
       ) async {
         await _pumpExport(tester, theme);
 
-        final title = find.text(_sv.dataExportWhatsIncluded);
+        final title = find.text(_sv.dataExportWhatsIncluded.toUpperCase());
         await tester.ensureVisible(title);
+        expect(title, findsOneWidget);
+        expect(find.text(_sv.dataExportIncludesProfile), findsOneWidget);
         expect(
-          _cardAbove(tester, title).color,
-          cs.surfaceContainerHighest,
+          find.ancestor(of: title, matching: find.byType(Card)),
+          findsNothing,
         );
       });
     });

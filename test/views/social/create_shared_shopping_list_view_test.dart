@@ -30,7 +30,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
-import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
@@ -51,11 +51,9 @@ import '../helpers/view_test_helpers.dart';
 
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
 // behaviour regression — not a copy tweak — is what fails the assertion.
-const _appBarTitle =
-    'Dela inköpslista'; // commonShare + shoppingList.toLowerCase()
-const _friendSectionHeader = 'Välj vänner att dela med';
-const _createButtonLabel = 'Skapa & Dela';
-const _noFriendsSelected = 'Inga vänner valda';
+const _appBarTitle = 'Ny delad lista';
+const _friendSectionHeader = 'DELA MED';
+const _createButtonLabel = 'Skapa och dela';
 
 class _MockCollaborativeOps extends Mock
     implements CollaborativeShoppingOperations {}
@@ -131,6 +129,7 @@ void main() {
         memberIds: any(named: 'memberIds'),
         items: any(named: 'items'),
         categoryIds: any(named: 'categoryIds'),
+        allowGuestEditing: any(named: 'allowGuestEditing'),
       ),
     ).thenAnswer(
       (_) async => (listId: 'new-list-id', notInvited: const <String>[]),
@@ -171,13 +170,7 @@ void main() {
     );
   }
 
-  // Pump the real view on a tall surface and absorb the ONE known production
-  // RenderFlex overflow: FriendCategoryManager packs a fixed 320px friends
-  // section into the view's fixed-height (200px) BorderedContainer, which
-  // overflows by design on any surface. That overflow is a pre-existing
-  // layout artifact of the production widget, orthogonal to the behaviour
-  // under test — so we ignore RenderFlex-overflow FlutterErrors only, and
-  // let every other error fail the test as normal.
+  // Pump the real view on a tall surface.
   Future<void> pumpView(
     WidgetTester tester, {
     ThemeData? theme,
@@ -189,17 +182,6 @@ void main() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
-
-    final previousOnError = FlutterError.onError;
-    FlutterError.onError = (FlutterErrorDetails details) {
-      final summary = details.exceptionAsString();
-      // String-matches the framework's exact 'A RenderFlex overflowed' wording;
-      // if a future Flutter SDK rewords that message this filter stops matching
-      // and the (still pre-existing) overflow will resurface as a test failure.
-      if (summary.contains('A RenderFlex overflowed')) return;
-      previousOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = previousOnError);
 
     await tester.pumpWidget(testApp(theme: theme, pushed: pushed));
     await tester.pumpAndSettle();
@@ -217,36 +199,17 @@ void main() {
     find.widgetWithText(FilledButton, _createButtonLabel),
   );
 
-  // Select a friend by name in the FriendCategoryManager's checkbox list.
-  // The list sits inside the view's fixed-height BorderedContainer (which
-  // overflows), so a friend row can land outside the hit-test region — scroll
-  // it into view first, then toggle its checkbox.
-  Future<void> pickFriend(WidgetTester tester, String name) async {
-    final tile = find.widgetWithText(CheckboxListTile, name);
-    // Scroll the row into the hittable region (the fixed-height friend
-    // selector clips rows near its bottom edge), then toggle its checkbox.
-    // Pin the scroll target to the FriendCategoryManager's OWN inner list
-    // (its ListView.builder of friend rows). `find.byType(Scrollable).first`
-    // picks by widget-tree order, and the view's outer page SingleChildScrollView
-    // precedes the friend list in the tree — so `.first` would scroll the wrong
-    // scrollable. That no-op passed on Windows-local but flaked on ubuntu/macos
-    // CI (timeout / StateError). Scoping to the friend manager makes it
-    // deterministic across all three OSes.
-    final friendList = find.descendant(
-      of: find.byType(FriendCategoryManager),
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(tile, 100, scrollable: friendList.first);
-    await tester.pumpAndSettle();
-    final checkbox = find.descendant(of: tile, matching: find.byType(Checkbox));
-    await tester.tap(checkbox, warnIfMissed: false);
+  // Select a friend by tapping their row; the row's box draws the tick.
+  Future<void> pickFriend(WidgetTester tester, String uid) async {
+    final row = find.byKey(ValueKey('createSharedList.friend.$uid'));
+    await tester.tap(row);
     await tester.pumpAndSettle();
     // Self-check: the toggle must have registered, else downstream side-effect
     // assertions would silently test an unselected state.
     expect(
-      find.text('1 vän vald'),
-      findsWidgets,
-      reason: 'Tapping "$name" did not register as a friend selection',
+      find.descendant(of: row, matching: find.byType(ButleryIcon)),
+      findsOneWidget,
+      reason: 'Tapping "$uid" did not register as a friend selection',
     );
   }
 
@@ -267,8 +230,9 @@ void main() {
         expect(find.text('Anna'), findsOneWidget);
         expect(find.text('Björn'), findsOneWidget);
 
-        // Nothing picked yet → summary says so.
-        expect(find.text(_noFriendsSelected), findsOneWidget);
+        // Both permission choices are offered.
+        expect(find.text('Kan redigera'), findsOneWidget);
+        expect(find.text('Endast läsa'), findsOneWidget);
       },
     );
 
@@ -286,7 +250,7 @@ void main() {
 
         // Title only: still disabled (a shared list needs someone to share with).
         await tester.enterText(
-          find.byType(TextFormField).first,
+          find.byType(TextField).first,
           'Veckans handling',
         );
         await tester.pumpAndSettle();
@@ -297,7 +261,7 @@ void main() {
         );
 
         // Pick a friend too: now enabled.
-        await pickFriend(tester, 'Anna');
+        await pickFriend(tester, 'friend_anna');
         expect(
           createButton(tester).onPressed,
           isNotNull,
@@ -321,6 +285,7 @@ void main() {
             memberIds: any(named: 'memberIds'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
           ),
         ).thenAnswer((invocation) async {
           capturedName = invocation.namedArguments[#name] as String;
@@ -330,27 +295,14 @@ void main() {
           return (listId: 'new-list-id', notInvited: const <String>[]);
         });
 
-        await pickFriend(tester, 'Anna');
+        await pickFriend(tester, 'friend_anna');
         await tester.enterText(
-          find.byType(TextFormField).first,
+          find.byType(TextField).first,
           'Middag hos Anna',
         );
         await tester.pumpAndSettle();
 
-        // Guard: the friend selection must still be live right before we create.
-        expect(
-          find.text('1 vän vald'),
-          findsWidgets,
-          reason: 'Friend selection lost after typing the title',
-        );
-
-        // The form is now valid, so the create action is enabled. We invoke its
-        // real onPressed callback directly rather than tapping: the friend
-        // selector's fixed-height container overflows and paints clipped rows
-        // over the bottom bar, so a positional tap on the create button can
-        // instead land on an overflowing friend checkbox (toggling the selection
-        // off). Calling the wired callback exercises the same real
-        // view → VM → service path without that hit-test hazard.
+        // The form is now valid, so the create action is enabled.
         final onCreate = createButton(tester).onPressed;
         expect(
           onCreate,
@@ -379,6 +331,7 @@ void main() {
             memberIds: any(named: 'memberIds'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
           ),
         ).thenAnswer(
           (_) async => (listId: 'new-list-id', notInvited: ['friend_anna']),
@@ -389,8 +342,8 @@ void main() {
           tester.element(find.byType(CreateSharedShoppingListView)),
         );
 
-        await pickFriend(tester, 'Anna');
-        await tester.enterText(find.byType(TextFormField).first, 'Middag');
+        await pickFriend(tester, 'friend_anna');
+        await tester.enterText(find.byType(TextField).first, 'Middag');
         await tester.pumpAndSettle();
         createButton(tester).onPressed!();
         await tester.pumpAndSettle();
@@ -414,14 +367,15 @@ void main() {
             memberIds: any(named: 'memberIds'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
           ),
         ).thenAnswer(
           (_) async => (listId: 'new-list-id', notInvited: const <String>[]),
         );
         await pumpView(tester, pushed: true);
 
-        await pickFriend(tester, 'Anna');
-        await tester.enterText(find.byType(TextFormField).first, 'Middag');
+        await pickFriend(tester, 'friend_anna');
+        await tester.enterText(find.byType(TextField).first, 'Middag');
         await tester.pumpAndSettle();
         createButton(tester).onPressed!();
         await tester.pumpAndSettle();
@@ -437,10 +391,10 @@ void main() {
         await pumpView(tester);
 
         // Pick a friend so ONLY the title is the blocker.
-        await pickFriend(tester, 'Anna');
+        await pickFriend(tester, 'friend_anna');
 
         // Type only spaces — isTitleValid is false (trim().isEmpty).
-        await tester.enterText(find.byType(TextFormField).first, '   ');
+        await tester.enterText(find.byType(TextField).first, '   ');
         await tester.pumpAndSettle();
 
         expect(
@@ -460,60 +414,75 @@ void main() {
             memberIds: any(named: 'memberIds'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
           ),
         );
       },
     );
 
-    testWidgets(
-      'picking a friend updates the bottom selection summary from "none" to a count',
-      (tester) async {
-        await pumpView(tester);
+    testWidgets('picking a friend twice takes the friend off again', (
+      tester,
+    ) async {
+      await pumpView(tester);
 
-        expect(find.text(_noFriendsSelected), findsOneWidget);
+      await pickFriend(tester, 'friend_anna');
+      await tester.tap(
+        find.byKey(const ValueKey('createSharedList.friend.friend_anna')),
+      );
+      await tester.pumpAndSettle();
 
-        await pickFriend(tester, 'Anna');
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('createSharedList.friend.friend_anna')),
+          matching: find.byType(ButleryIcon),
+        ),
+        findsNothing,
+      );
+    });
 
-        // Swedish singular plural form: "1 vän vald". It appears in BOTH the
-        // friend selector's own summary AND the bottom action bar's summary —
-        // the point is the "none" state is gone and the count is shown.
-        expect(find.text(_noFriendsSelected), findsNothing);
-        expect(find.text('1 vän vald'), findsWidgets);
-      },
-    );
+    testWidgets('read only is passed on as no editing for the invited', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      bool? capturedAllowEditing;
+      when(
+        () => collabOps.createListAndInvite(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          items: any(named: 'items'),
+          categoryIds: any(named: 'categoryIds'),
+          allowGuestEditing: any(named: 'allowGuestEditing'),
+        ),
+      ).thenAnswer((invocation) async {
+        capturedAllowEditing =
+            invocation.namedArguments[#allowGuestEditing] as bool;
+        return (listId: 'new-list-id', notInvited: const <String>[]);
+      });
+
+      await pickFriend(tester, 'friend_anna');
+      await tester.tap(find.text('Endast läsa'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('De du delar med kan se listan men inte ändra den.'),
+        findsOneWidget,
+      );
+      await tester.enterText(find.byType(TextField).first, 'Middag');
+      await tester.pumpAndSettle();
+      createButton(tester).onPressed!();
+      await tester.pumpAndSettle();
+
+      expect(capturedAllowEditing, isFalse);
+    });
   });
 
-  // B83-2: the "what happens when you share" box is a surface.tint.success
-  // fill with no border (BUT-2183).
+  // B83-2: a refused create is a surface.tint.danger box with no border
+  // (BUT-2183).
   group('CreateSharedShoppingListView — notice box (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('$name: a surface.tint.success fill with no border', (
-        tester,
-      ) async {
-        await pumpView(tester, theme: theme);
-
-        final context = tester.element(
-          find.byType(CreateSharedShoppingListView),
-        );
-        final title = find.text(
-          AppLocalizations.of(context).shoppingWhatHappensWhenSharing,
-        );
-        expect(title, findsOneWidget);
-        final box = tester.widget<Container>(
-          find.ancestor(of: title, matching: find.byType(Container)).first,
-        );
-        final decoration = box.decoration! as BoxDecoration;
-        expect(decoration.color, context.modeColors.surfaceTintSuccess);
-        expect(decoration.border, isNull);
-        expect(
-          tester.widget<Text>(title).style?.color,
-          context.modeColors.onSuccessContainer,
-        );
-      });
-
       // A refused create (the service answers null) shows the error box. The
       // dark run carries the text assertion: in light, the old static error
       // colour and onErrorContainer are the same value.
@@ -527,13 +496,14 @@ void main() {
             memberIds: any(named: 'memberIds'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
+            allowGuestEditing: any(named: 'allowGuestEditing'),
           ),
         ).thenAnswer((_) async => (listId: null, notInvited: const <String>[]));
         await pumpView(tester, theme: theme);
 
-        await pickFriend(tester, 'Anna');
+        await pickFriend(tester, 'friend_anna');
         await tester.enterText(
-          find.byType(TextFormField).first,
+          find.byType(TextField).first,
           'Middag hos Anna',
         );
         await tester.pumpAndSettle();

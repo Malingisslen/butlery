@@ -28,6 +28,8 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/styled/butlery_code_field.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -292,9 +294,17 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   List<Widget> _buildChallenge(BuildContext context, ColorScheme cs) {
     final l10n = context.l10n;
     return [
-      Text(
-        l10n.mfaChallengeHeading,
-        style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
+      Row(
+        children: [
+          ButleryIcon(ButleryIcons.shieldCheck, color: cs.onSurface),
+          const SizedBox(width: AppDimensions.space12),
+          Expanded(
+            child: Text(
+              l10n.mfaChallengeHeading,
+              style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
+            ),
+          ),
+        ],
       ),
       const SizedBox(height: AppDimensions.space8),
       Text(
@@ -338,7 +348,10 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
                   _backupMode = true;
                   _error = null;
                 }),
-          child: Text(l10n.mfaBackupCodeUse),
+          child: Text(
+            l10n.mfaBackupCodeUse,
+            style: const TextStyle(decoration: TextDecoration.underline),
+          ),
         ),
       ],
     ];

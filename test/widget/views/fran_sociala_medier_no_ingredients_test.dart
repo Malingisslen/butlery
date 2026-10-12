@@ -104,7 +104,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final button = find.text('Förhandsgranska och redigera');
+    final button = find.text('Hämta receptet');
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pumpAndSettle();

@@ -31,6 +31,7 @@
 /// form validation throughout the Swedish cooking application while ensuring data integrity and providing
 /// helpful user guidance for successful form completion across all application features and interactions.
 
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -66,9 +67,6 @@ import 'package:butlery/services/moderation/content_filter_service.dart';
 /// final passwordValidator = FormValidators.strongPassword();
 /// ```
 class FormValidators {
-  /// Minimum password length (NIST SP 800-63B Rev 4 — no complexity rules).
-  static const int minPasswordLength = 8;
-
   /// Regex patterns
   static final RegExp _displayNameRegex = RegExp(
     r'^[\p{L}\p{N}\s\-_\.]+$',
@@ -299,8 +297,8 @@ class FormValidators {
       if (value == null || value.isEmpty) {
         return AppLocale.current.validationPasswordRequired;
       }
-      if (isSignUp && value.length < minPasswordLength) {
-        return AppLocale.current.validationPasswordMinEight;
+      if (isSignUp && !PasswordRule.accepts(value)) {
+        return AppLocale.current.validationPasswordRule;
       }
       return null;
     };
@@ -366,8 +364,8 @@ class FormValidators {
         return AppLocale.current.validationPasswordRequired;
       }
 
-      if (value.length < minPasswordLength) {
-        return AppLocale.current.validationPasswordMinEight;
+      if (!PasswordRule.accepts(value)) {
+        return AppLocale.current.validationPasswordRule;
       }
 
       return null;

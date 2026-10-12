@@ -23,6 +23,7 @@ import 'package:butlery/views/settings/decision_detail_view.dart';
 import 'package:butlery/views/settings/my_content_decisions_view.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../state_host.dart';
 
@@ -65,7 +66,14 @@ void _decisionServices(List<ModerationOutcome> decisions) {
 }
 
 void _security() {
-  final auth = MockAuthService()..setAuthState(isAuthenticated: true);
+  final auth = MockAuthService()
+    ..setAuthState(
+      currentUser: MockFactory.createMockUser(
+        uid: 'u1',
+        email: 'malin@exempel.se',
+      ),
+      isAuthenticated: true,
+    );
   TestServiceLocator.registerMock<AuthService>(auth);
   final mfa = _MockMfa();
   when(mfa.getEnrolledFactors).thenAnswer((_) async => []);

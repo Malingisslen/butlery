@@ -1,48 +1,32 @@
 // lib/views/messaging/create_group_conversation_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/cards/selection_card.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
-/// View for creating new group conversations with friend selection.
-/// Provides comprehensive interface for users to create group messaging conversations
-/// with multi-friend selection, group naming, and validation. Follows MVVM architecture
-/// with CreateGroupConversationViewModel handling business logic and state.
-/// **Key Features:**
-/// - Friend discovery and multi-selection with checkboxes
-/// - Group name input with real-time validation
-/// - Selected members preview with count
-/// - Search functionality for large friend lists
-/// - Real-time validation feedback (min 2 members required)
-/// - Navigation to created group chat
-/// **Usage Example:**
-/// ```dart
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => const CreateGroupConversationView(),
-///   ),
-/// );
-/// ```
+/// View for creating new group conversations: a name, the friends to invite
+/// (at least two) and one saffron "Skapa konversation".
 class CreateGroupConversationView extends StatefulWidget {
   const CreateGroupConversationView({super.key});
 
@@ -96,41 +80,24 @@ class _CreateGroupConversationViewState
                 Navigator.of(context).pop();
               }
             },
-            child: Scaffold(
-              appBar: _buildAppBar(context, viewModel),
-              body: SafeArea(
-                child: ButleryPageBody(
-                  width: PageWidth.text,
-                  child: _buildBody(context, viewModel),
-                ),
-              ),
+            // A form with its own bottom action (B-54): no tab bar.
+            child: ButleryPage.undersida(
+              title: context.l10n.messagingNewGroupChat,
+              ruleUnderBar: false,
+              showTabBar: false,
+              actions: [
+                if (viewModel.hasSelectedMembers)
+                  TextButton(
+                    onPressed: viewModel.clearSelection,
+                    child: Text(context.l10n.commonClear),
+                  ),
+              ],
+              body: _buildBody(context, viewModel),
               bottomNavigationBar: _buildBottomBar(context, viewModel),
             ),
           );
         },
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context,
-    CreateGroupConversationViewModel viewModel,
-  ) {
-    // A subpage (Skarmar v12 del 3 'Ny gruppchatt'). The bar is
-    // surface.ink in both modes, so its text action is paper (onPrimary,
-    // #F5F4ED in both schemes; butlery_top_bar.dart).
-    return ButleryTopBar.undersida(
-      title: context.l10n.messagingCreateGroup,
-      actions: [
-        if (viewModel.hasSelectedMembers)
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            ),
-            onPressed: viewModel.clearSelection,
-            child: Text(context.l10n.commonClear),
-          ),
-      ],
     );
   }
 
@@ -157,31 +124,19 @@ class _CreateGroupConversationViewState
     }
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Group name input
-            _buildGroupNameSection(viewModel),
-
-            const SizedBox(height: AppDimensions.space32),
-
-            // Selected members preview
-            if (viewModel.hasSelectedMembers) ...[
-              _buildSelectedMembersPreview(viewModel),
-              const SizedBox(height: AppDimensions.space32),
-            ],
-
-            // Friend search
-            _buildSearchSection(),
-
-            const SizedBox(height: AppDimensions.space8),
-
-            // Friend list
-            _buildFriendsList(viewModel),
-          ],
-        ),
+      padding: ButleryPageBody.margin(context, bottom: AppDimensions.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppDimensions.space16),
+          _buildGroupNameSection(viewModel),
+          const SizedBox(height: AppDimensions.space24),
+          _buildParticipantsSection(viewModel),
+          const SizedBox(height: AppDimensions.space16),
+          _buildSearchSection(),
+          const SizedBox(height: AppDimensions.space8),
+          _buildFriendsList(viewModel),
+        ],
       ),
     );
   }
@@ -190,79 +145,47 @@ class _CreateGroupConversationViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.messagingGroupName,
-          style: AppTextStyles.titleMedium,
-        ),
-        const SizedBox(height: AppDimensions.space4),
+        SectionHeading(context.l10n.messagingGroupName),
+        const SizedBox(height: AppDimensions.space8),
         StyledInput.text(
           controller: _groupNameController,
           hint: context.l10n.messagingGroupNameHint,
           onChanged: (value) => viewModel.updateGroupName(value),
           errorText: viewModel.validationError,
         ),
-        const SizedBox(height: AppDimensions.space4),
-        Text(
-          context.l10n.messagingSelectAtLeastTwoMembers,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildSelectedMembersPreview(
-    CreateGroupConversationViewModel viewModel,
-  ) {
+  Widget _buildParticipantsSection(CreateGroupConversationViewModel viewModel) {
+    if (!viewModel.hasSelectedMembers) {
+      return Text(
+        context.l10n.messagingSelectAtLeastTwoMembers,
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            ButleryIcon(
-              ButleryIcons.users,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            const SizedBox(width: AppDimensions.space4),
-            Text(
-              context.l10n.messagingSelectedMembers(
-                viewModel.selectedMemberCount,
-              ),
-              style: AppTextStyles.titleMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-          ],
+        SectionHeading(
+          context.l10n.messagingSelectedMembers(viewModel.selectedMemberCount),
         ),
         const SizedBox(height: AppDimensions.space8),
         Wrap(
-          spacing: AppDimensions.space4,
-          runSpacing: AppDimensions.space4,
-          children: viewModel.selectedMembers.map((member) {
-            return PressFill(
-              surface: PressSurface.base,
-              child: Chip(
-                avatar: UserDisplayWidgets.avatar(
-                  imageUrl: member.avatarUrl,
-                  displayName: member.displayName,
-                  size: ImageSize.small,
-                  announceName: false,
-                ),
-                label: Text(member.displayName),
-                deleteIcon: const ButleryIcon(
-                  ButleryIcons.x,
-                  size: AppDimensions.iconSizeS,
-                ),
-                onDeleted: () => viewModel.toggleMemberSelection(member.uid),
-                // Flutter's default is a bare "Radera" on every chip.
-                deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
+          children: [
+            for (final member in viewModel.selectedMembers)
+              _SelectedFriendChip(
+                name: member.displayName,
+                removeTooltip: context.l10n.a11yRemoveMember(
                   member.displayName,
                 ),
+                onRemove: () => viewModel.toggleMemberSelection(member.uid),
               ),
-            );
-          }).toList(),
+          ],
         ),
       ],
     );
@@ -289,15 +212,10 @@ class _CreateGroupConversationViewState
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.messagingFriendsCount(displayFriends.length),
-          style: AppTextStyles.titleMedium,
-        ),
-        const SizedBox(height: AppDimensions.space8),
-        ...displayFriends.map((friend) => _buildFriendItem(viewModel, friend)),
+    return ButleryListSection(
+      rows: [
+        for (final friend in displayFriends)
+          _buildFriendItem(viewModel, friend),
       ],
     );
   }
@@ -307,43 +225,20 @@ class _CreateGroupConversationViewState
     UserProfile friend,
   ) {
     final isSelected = viewModel.isMemberSelected(friend.uid);
-
-    // One node per friend: the card carries the name, the selected state and
+    // One node per friend: the row carries the name, the selected state and
     // the tap.
-    return SelectionCard(
-      isSelected: isSelected,
-      semanticLabel: friend.displayName,
-      onTap: () => viewModel.toggleMemberSelection(friend.uid),
-      child: ExcludeSemantics(
-        child: Row(
-          children: [
-            UserDisplayWidgets.avatar(
-              imageUrl: friend.avatarUrl,
-              displayName: friend.displayName,
-              size: ImageSize.medium,
-            ),
-            const SizedBox(width: AppDimensions.space8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    friend.displayName,
-                    style: isSelected
-                        ? AppTextStyles.bodyLargeBold
-                        : AppTextStyles.bodyLarge,
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              ButleryIcon(
-                ButleryIcons.circleCheck,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-          ],
-        ),
+    return ButleryMediaRow(
+      leading: UserAvatar(
+        imageUrl: friend.avatarUrl,
+        displayName: friend.displayName,
+        explicitSize: 40,
+        round: true,
+        announceName: false,
       ),
+      title: friend.displayName,
+      selected: isSelected,
+      onTap: () => viewModel.toggleMemberSelection(friend.uid),
+      trailing: ExcludeSemantics(child: _CheckBox(checked: isSelected)),
     );
   }
 
@@ -409,5 +304,94 @@ class _CreateGroupConversationViewState
     } else if (viewModel.error != null) {
       SnackBarUtils.showFailure(this.context, what: viewModel.error!);
     }
+  }
+}
+
+/// A chosen participant: the name on an ink pill with a ×, as drawn.
+class _SelectedFriendChip extends StatelessWidget {
+  const _SelectedFriendChip({
+    required this.name,
+    required this.removeTooltip,
+    required this.onRemove,
+  });
+
+  final String name;
+  final String removeTooltip;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
+      ),
+      padding: const EdgeInsetsDirectional.only(start: AppDimensions.space16),
+      decoration: BoxDecoration(
+        color: cs.primary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            container: true,
+            child: Text(
+              name,
+              style: AppTextStyles.bodyBold.copyWith(color: cs.onPrimary),
+            ),
+          ),
+          Tooltip(
+            message: removeTooltip,
+            child: PressFill(
+              surface: PressSurface.ink,
+              child: InkWell(
+                onTap: onRemove,
+                customBorder: const CircleBorder(),
+                child: SizedBox(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  child: Center(
+                    child: ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSizeS,
+                      color: cs.onPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The square tick at the end of a friend row; the row says the state.
+class _CheckBox extends StatelessWidget {
+  const _CheckBox({required this.checked});
+
+  final bool checked;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: checked ? cs.primary : null,
+        borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
+        border: Border.all(color: checked ? cs.primary : cs.outline),
+      ),
+      child: checked
+          ? ButleryIcon(
+              ButleryIcons.check,
+              size: AppDimensions.iconSizeS,
+              color: cs.onPrimary,
+            )
+          : null,
+    );
   }
 }

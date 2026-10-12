@@ -93,10 +93,10 @@ void main() {
     await pump(tester, report(ContentType.menuDish));
 
     expect(
-      find.textContaining(sv.moderatorContentTypeMenuDish),
+      find.textContaining(sv.moderatorContentTypeMenuDish.toUpperCase()),
       findsOneWidget,
     );
-    expect(find.text('Rätt i delad meny · menu-1'), findsOneWidget);
+    expect(find.text('RÄTT I DELAD MENY · menu-1'), findsOneWidget);
     expect(find.text(sv.moderatorMenuDishSharerNote), findsOneWidget);
     expect(find.text('Ta bort rätten ur menyn'), findsOneWidget);
     expect(find.text(sv.moderatorActionDelete), findsNothing);

@@ -344,11 +344,23 @@ abstract class AppLocalizations {
   /// **'Ange ditt lösenord'**
   String get authEnterPassword;
 
-  /// No description provided for @authPasswordMinLength.
+  /// No description provided for @authPasswordChoose.
   ///
   /// In sv, this message translates to:
-  /// **'Minst 6 tecken'**
-  String get authPasswordMinLength;
+  /// **'Välj ett starkt lösenord'**
+  String get authPasswordChoose;
+
+  /// No description provided for @passwordRuleHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.'**
+  String get passwordRuleHint;
+
+  /// No description provided for @guestUpgradeNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ska jag kalla dig?'**
+  String get guestUpgradeNameHint;
 
   /// No description provided for @authResetPasswordInstructions.
   ///
@@ -509,7 +521,7 @@ abstract class AppLocalizations {
   /// BUT-1241: app-bar title of the manual placement mode (lowercase per design language).
   ///
   /// In sv, this message translates to:
-  /// **'placera i veckan'**
+  /// **'Placera i veckan'**
   String get menuPlacementTitle;
 
   /// BUT-1241: progress pill in the placement-mode header.
@@ -521,19 +533,19 @@ abstract class AppLocalizations {
   /// BUT-1241: label above the tray of recipes waiting to be placed.
   ///
   /// In sv, this message translates to:
-  /// **'Kvar att placera ({count})'**
+  /// **'{count} kvar att placera'**
   String menuPlacementTrayLabel(int count);
 
   /// BUT-1241: hint banner while a tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Tryck på en ledig ruta för att placera {recipe}.'**
+  /// **'Tryck på en ledig plats för {recipe}. Lunch och middag tar en rätt, övrigt tar flera.'**
   String menuPlacementHint(String recipe);
 
   /// BUT-1241: hint banner when no tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Välj ett recept nedan för att placera det.'**
+  /// **'Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.'**
   String get menuPlacementHintSelect;
 
   /// BUT-1241: text inside eligible (highlighted) cells in placement mode.
@@ -545,7 +557,7 @@ abstract class AppLocalizations {
   /// BUT-1241: tray action that auto-distributes the still-unplaced recipes.
   ///
   /// In sv, this message translates to:
-  /// **'Placera resten automatiskt'**
+  /// **'Slumpa resten'**
   String get menuPlacementAutoRest;
 
   /// BUT-1241: warning after auto-rest when some recipes did not fit the week.
@@ -715,12 +727,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ogiltigt antal'**
   String get validationInvalidAmount;
-
-  /// No description provided for @validationPasswordTooShort.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 6 tecken'**
-  String get validationPasswordTooShort;
 
   /// No description provided for @validationGenericRequired.
   ///
@@ -3269,13 +3275,13 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagRuleCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} regler'**
+  /// **'{count, plural, =1{1 regel} other{{count} regler}}'**
   String personalTagRuleCount(int count);
 
   /// No description provided for @personalTagRuleCountActive.
   ///
   /// In sv, this message translates to:
-  /// **'{enabled}/{total} regler aktiva'**
+  /// **'{enabled} av {total} {total, plural, =1{regel} other{regler}} på'**
   String personalTagRuleCountActive(int enabled, int total);
 
   /// No description provided for @personalTagNoUsage.
@@ -6316,7 +6322,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupSharedContent.
   ///
   /// In sv, this message translates to:
-  /// **'Delat innehåll'**
+  /// **'Delat i gruppen'**
   String get groupSharedContent;
 
   /// No description provided for @groupShareShoppingList.
@@ -6676,13 +6682,13 @@ abstract class AppLocalizations {
   /// No description provided for @consentAnalytics.
   ///
   /// In sv, this message translates to:
-  /// **'Analysdata'**
+  /// **'Analys'**
   String get consentAnalytics;
 
   /// No description provided for @consentAnalyticsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.'**
+  /// **'Hur appen används, aldrig vad du lagar.'**
   String get consentAnalyticsDescription;
 
   /// No description provided for @consentWhatWeLog.
@@ -6742,7 +6748,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentPushNotificationsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.'**
+  /// **'Systemets tillåtelse styrs separat, i inställningarna.'**
   String get consentPushNotificationsDescription;
 
   /// No description provided for @consentGoodToKnow.
@@ -6844,7 +6850,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportGdprDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.'**
+  /// **'Du har rätt att få ut dina uppgifter i ett format som går att läsa och flytta. Filen är JSON.'**
   String get dataExportGdprDescription;
 
   /// No description provided for @dataExportExporting.
@@ -6898,7 +6904,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportWhatsIncluded.
   ///
   /// In sv, this message translates to:
-  /// **'Vad ingår i exporten?'**
+  /// **'Det här följer med'**
   String get dataExportWhatsIncluded;
 
   /// No description provided for @dataExportIncludesProfile.
@@ -7330,7 +7336,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareGroupMembersCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}}'**
   String shareGroupMembersCount(int count);
 
   /// No description provided for @shareTabFriends.
@@ -7912,7 +7918,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingSelectedMembers.
   ///
   /// In sv, this message translates to:
-  /// **'Valda medlemmar ({count})'**
+  /// **'Deltagare · {count} valda'**
   String messagingSelectedMembers(int count);
 
   /// No description provided for @messagingTryAnotherKeyword.
@@ -8008,7 +8014,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaRegistered.
   ///
   /// In sv, this message translates to:
-  /// **'Registrerad: {time}'**
+  /// **'Registrerad {time}'**
   String mfaRegistered(String time);
 
   /// No description provided for @mfaRegisteredMethods.
@@ -8530,13 +8536,13 @@ abstract class AppLocalizations {
   /// No description provided for @householdToggle.
   ///
   /// In sv, this message translates to:
-  /// **'Markera som hushåll'**
+  /// **'Det här är hushållet'**
   String get householdToggle;
 
   /// No description provided for @householdToggleDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Hushållets allergier sammanställs för menyplanering'**
+  /// **'Hushållets allergier räknas med i menyn'**
   String get householdToggleDescription;
 
   /// BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet
@@ -10318,7 +10324,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileBio.
   ///
   /// In sv, this message translates to:
-  /// **'Beskrivning'**
+  /// **'Om mig'**
   String get profileBio;
 
   /// No description provided for @profileBioHint.
@@ -10444,7 +10450,7 @@ abstract class AppLocalizations {
   /// No description provided for @profilePrivacySettings.
   ///
   /// In sv, this message translates to:
-  /// **'Integritetsinställningar'**
+  /// **'Integritet'**
   String get profilePrivacySettings;
 
   /// No description provided for @profileResetChanges.
@@ -10462,7 +10468,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileSaveProfile.
   ///
   /// In sv, this message translates to:
-  /// **'Spara profil'**
+  /// **'Spara ändringar'**
   String get profileSaveProfile;
 
   /// No description provided for @profileSearchableByEmail.
@@ -11242,7 +11248,7 @@ abstract class AppLocalizations {
   /// No description provided for @importConfirmButton.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ({count})'**
+  /// **'Spara {count} recept'**
   String importConfirmButton(int count);
 
   /// No description provided for @importPreviewSubtitle.
@@ -12214,19 +12220,19 @@ abstract class AppLocalizations {
   /// No description provided for @sharedTabRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Recept ({count})'**
+  /// **'Recept · {count}'**
   String sharedTabRecipes(int count);
 
   /// No description provided for @sharedTabMenus.
   ///
   /// In sv, this message translates to:
-  /// **'Menyer ({count})'**
+  /// **'Menyer · {count}'**
   String sharedTabMenus(int count);
 
   /// No description provided for @sharedTabShoppingLists.
   ///
   /// In sv, this message translates to:
-  /// **'Inköpslistor ({count})'**
+  /// **'Listor · {count}'**
   String sharedTabShoppingLists(int count);
 
   /// No description provided for @sharedShowImported.
@@ -20206,7 +20212,7 @@ abstract class AppLocalizations {
   /// No description provided for @buttonCreateAndShare.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa & Dela'**
+  /// **'Skapa och dela'**
   String get buttonCreateAndShare;
 
   /// No description provided for @analysisNoContentExtracted.
@@ -21082,11 +21088,11 @@ abstract class AppLocalizations {
   /// **'{fieldName} får inte vara tomt'**
   String validationFieldNotEmpty(String fieldName);
 
-  /// No description provided for @validationPasswordMinEight.
+  /// No description provided for @validationPasswordRule.
   ///
   /// In sv, this message translates to:
-  /// **'Lösenordet måste vara minst 8 tecken'**
-  String get validationPasswordMinEight;
+  /// **'Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.'**
+  String get validationPasswordRule;
 
   /// No description provided for @validationDisplayNameLabel.
   ///
@@ -22214,7 +22220,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalCommunityGuidelines.
   ///
   /// In sv, this message translates to:
-  /// **'Gemenskapsriktlinjer'**
+  /// **'Communityriktlinjer'**
   String get legalCommunityGuidelines;
 
   /// No description provided for @legalOpenSourceLicenses.
@@ -22228,6 +22234,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Jag accepterar '**
   String get authTermsAcceptPrefix;
+
+  /// No description provided for @authTermsConsentPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner '**
+  String get authTermsConsentPrefix;
+
+  /// No description provided for @authTermsConsentTermsLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'användarvillkoren'**
+  String get authTermsConsentTermsLink;
+
+  /// No description provided for @authTermsConsentPrivacyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'integritetspolicyn'**
+  String get authTermsConsentPrivacyLink;
 
   /// No description provided for @authTermsAcceptMiddle.
   ///
@@ -23525,6 +23549,42 @@ abstract class AppLocalizations {
   /// **'I dag'**
   String get weeklyMenuTodayBadge;
 
+  /// No description provided for @weeklyMenuNewMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuNewMark;
+
+  /// No description provided for @weeklyMenuLegendNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuLegendNew;
+
+  /// No description provided for @weeklyMenuLegendAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'tål inte'**
+  String get weeklyMenuLegendAllergen;
+
+  /// No description provided for @weeklyMenuLegendPresence.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma, om inte alla'**
+  String get weeklyMenuLegendPresence;
+
+  /// No description provided for @a11yWeeklyMenuAddDish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt på {slot} {day}'**
+  String a11yWeeklyMenuAddDish(String slot, String day);
+
+  /// No description provided for @a11yWeeklyMenuOpenOvrigt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa övrigt på {day}'**
+  String a11yWeeklyMenuOpenOvrigt(String day);
+
   /// No description provided for @weeklyMenuEmptyTitle.
   ///
   /// In sv, this message translates to:
@@ -23543,6 +23603,18 @@ abstract class AppLocalizations {
   /// **'+ lägg till'**
   String get weeklyMenuOvrigtAddMore;
 
+  /// No description provided for @weeklyMenuOvrigtSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt på {day}'**
+  String weeklyMenuOvrigtSheetTitle(String day);
+
+  /// No description provided for @weeklyMenuOvrigtSheetAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt'**
+  String get weeklyMenuOvrigtSheetAdd;
+
   /// No description provided for @weeklyMenuOverwriteConfirm.
   ///
   /// In sv, this message translates to:
@@ -23560,6 +23632,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vecka {weekNum} · {start}–{end}'**
   String weeklyMenuWeekLabel(int weekNum, String start, String end);
+
+  /// No description provided for @weeklyMenuWeekTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {weekNum}'**
+  String weeklyMenuWeekTitle(int weekNum);
+
+  /// No description provided for @weeklyMenuWeekRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'{start}–{end}'**
+  String weeklyMenuWeekRange(String start, String end);
 
   /// No description provided for @weeklyMenuChipsHeading.
   ///
@@ -24134,25 +24218,25 @@ abstract class AppLocalizations {
   /// BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp).
   ///
   /// In sv, this message translates to:
-  /// **'Detta är ett arvegods'**
+  /// **'Det här är ett arvegods'**
   String get heirloomToggle;
 
   /// BUT-410: text field label for the name of the original recipe writer.
   ///
   /// In sv, this message translates to:
-  /// **'Vem skrev receptet?'**
+  /// **'Vems handskrift?'**
   String get heirloomWriterLabel;
 
   /// BUT-410: text field label for the year the recipe was written down.
   ///
   /// In sv, this message translates to:
-  /// **'Vilket år?'**
+  /// **'År'**
   String get heirloomYearLabel;
 
   /// BUT-410: multiline text field label for a short heirloom origin note.
   ///
   /// In sv, this message translates to:
-  /// **'Kort notering'**
+  /// **'Notis'**
   String get heirloomNoteLabel;
 
   /// BUT-410: corner stamp label showing writer and year on heirloom images.
@@ -24350,7 +24434,7 @@ abstract class AppLocalizations {
   /// BUT-417: label prefix for the reporter's user id.
   ///
   /// In sv, this message translates to:
-  /// **'Rapporterat av'**
+  /// **'Anmäld av'**
   String get moderatorReporterLabel;
 
   /// Shown in place of the reporter line when the reporter deleted their account while the case was open; the report is kept without their id.
@@ -25387,7 +25471,7 @@ abstract class AppLocalizations {
   /// No description provided for @whoAteSkip.
   ///
   /// In sv, this message translates to:
-  /// **'hoppa över'**
+  /// **'Hoppa över'**
   String get whoAteSkip;
 
   /// Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:).
@@ -25399,19 +25483,19 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSheetTitle.
   ///
   /// In sv, this message translates to:
-  /// **'vem är hemma?'**
+  /// **'Vem är hemma?'**
   String get menuPresenceSheetTitle;
 
   /// No description provided for @menuPresenceThisMeal.
   ///
   /// In sv, this message translates to:
-  /// **'denna måltid'**
+  /// **'Den här måltiden'**
   String get menuPresenceThisMeal;
 
   /// No description provided for @menuPresenceWholeDay.
   ///
   /// In sv, this message translates to:
-  /// **'hela dagen'**
+  /// **'Hela dagen'**
   String get menuPresenceWholeDay;
 
   /// No description provided for @menuPresenceNobody.
@@ -25419,6 +25503,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'ingen hemma'**
   String get menuPresenceNobody;
+
+  /// No description provided for @menuPresenceHome.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma'**
+  String get menuPresenceHome;
+
+  /// No description provided for @menuPresenceAway.
+  ///
+  /// In sv, this message translates to:
+  /// **'borta'**
+  String get menuPresenceAway;
+
+  /// No description provided for @menuPresenceHomeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{home} hemma · {portions} port.'**
+  String menuPresenceHomeSummary(int home, int portions);
+
+  /// No description provided for @menuPresenceOpenRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna receptet'**
+  String get menuPresenceOpenRecipe;
 
   /// No description provided for @menuPresencePortions.
   ///
@@ -25447,7 +25555,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSummaryAllHome.
   ///
   /// In sv, this message translates to:
-  /// **'alla hemma hela veckan'**
+  /// **'Alla hemma hela veckan'**
   String get menuPresenceSummaryAllHome;
 
   /// No description provided for @menuPresenceSummaryAway.
@@ -25465,7 +25573,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingTitle.
   ///
   /// In sv, this message translates to:
-  /// **'vad tyckte ni?'**
+  /// **'Vad tyckte ni?'**
   String get familyRatingTitle;
 
   /// No description provided for @familyRatingIntro.
@@ -25483,7 +25591,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingSave.
   ///
   /// In sv, this message translates to:
-  /// **'spara betyg'**
+  /// **'Spara'**
   String get familyRatingSave;
 
   /// No description provided for @familyRatingPrivateNote.
@@ -25821,6 +25929,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa vilka som röstade'**
   String get a11yShowVoters;
+
+  /// No description provided for @a11yGroupMenuDishDetails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa förslag och röster'**
+  String get a11yGroupMenuDishDetails;
 
   /// BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed.
   ///
@@ -26265,6 +26379,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// No description provided for @menuPreviewSharedLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} delade menyn {menu} med dig · endast läsa'**
+  String menuPreviewSharedLine(String name, String menu);
+
+  /// No description provided for @menuPreviewDecline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avböj'**
+  String get menuPreviewDecline;
 
   /// P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR).
   ///
@@ -28234,17 +28360,17 @@ abstract class AppLocalizations {
   /// **'Förslag till ändring'**
   String get recipeSuggestionTitle;
 
-  /// P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.
+  /// Intro line for the owner; name = suggester, title = the recipe.
   ///
   /// In sv, this message translates to:
-  /// **'{name} föreslår det här. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroOwner(String name, String date);
+  /// **'{name} föreslår en ändring i {title}. Ditt recept ändras bara om du använder förslaget.'**
+  String recipeSuggestionIntroOwner(String name, String title);
 
-  /// P5-U27b: intro line for the suggester; date = when the 7 days end.
+  /// Intro line for the suggester; title = the recipe.
   ///
   /// In sv, this message translates to:
-  /// **'Det här föreslog du. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroMine(String date);
+  /// **'Du föreslog en ändring i {title}. Receptet ändras bara om ägaren använder förslaget.'**
+  String recipeSuggestionIntroMine(String title);
 
   /// P5-U27b: label over the suggested value of a field.
   ///
@@ -28252,10 +28378,10 @@ abstract class AppLocalizations {
   /// **'Förslaget'**
   String get recipeSuggestionSuggestedLabel;
 
-  /// P5-U27b: label over the recipe's current value of a field.
+  /// Label over the recipe's current value of a field.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet nu'**
+  /// **'Nu'**
   String get recipeSuggestionCurrentLabel;
 
   /// P5-U27b: the owner accepts the suggestion (produktregler.md:241).
@@ -28822,17 +28948,17 @@ abstract class AppLocalizations {
   /// **'{count} förslag på ändringar väntar på dig. {updated, plural, =1{Ett av dem är uppdaterat.} other{{updated} av dem är uppdaterade.}}'**
   String recipeSuggestionFromManyUpdated(int count, int updated);
 
-  /// Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.
+  /// Intro line for the owner when the suggestion replaced an earlier one.
   ///
   /// In sv, this message translates to:
-  /// **'{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroOwnerUpdated(String name, String date);
+  /// **'{name} har uppdaterat sitt förslag till {title}. Ditt recept ändras bara om du använder förslaget.'**
+  String recipeSuggestionIntroOwnerUpdated(String name, String title);
 
-  /// Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.
+  /// Intro line for the suggester when the suggestion replaced an earlier one.
   ///
   /// In sv, this message translates to:
-  /// **'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.'**
-  String recipeSuggestionIntroMineUpdated(String date);
+  /// **'Du föreslog en ändring i {title}, och den ersatte ditt förra förslag. Receptet ändras bara om ägaren använder förslaget.'**
+  String recipeSuggestionIntroMineUpdated(String title);
 
   /// Q6-12 = B: the owner's decision was not made because the suggester replaced the suggestion while it was open; followed by Stäng.
   ///
@@ -28923,6 +29049,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Börja laga'**
   String get hemStartCooking;
+
+  /// HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag'**
+  String get hemSuggestion;
+
+  /// HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt förslag'**
+  String get hemSwapSuggestion;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
   ///
@@ -29485,7 +29623,7 @@ abstract class AppLocalizations {
   /// BUT-2170: names the account the reset link belongs to.
   ///
   /// In sv, this message translates to:
-  /// **'Gäller kontot {email}.'**
+  /// **'Välj ett nytt lösenord för {email}'**
   String setNewPasswordForAccount(String email);
 
   /// BUT-2170: second password field, label from Skarmar v12 etapp 6.
@@ -30619,7 +30757,7 @@ abstract class AppLocalizations {
   /// Secondary button on the tag page that applies the rules to existing recipes
   ///
   /// In sv, this message translates to:
-  /// **'Kör reglerna på alla recept'**
+  /// **'Kör reglerna nu'**
   String get tagDetailRunRulesAll;
 
   /// Row in the menu of the tag page
@@ -31795,8 +31933,20 @@ abstract class AppLocalizations {
   /// Guest start screen: explains the two questions before a guest is signed in (BUT-920)
   ///
   /// In sv, this message translates to:
-  /// **'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.'**
+  /// **'Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.'**
   String get guestStartBody;
+
+  /// No description provided for @guestStartYearNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi sparar bara året, inte hela datumet.'**
+  String get guestStartYearNote;
+
+  /// No description provided for @guestStartBackToSignIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka till inloggningen'**
+  String get guestStartBackToSignIn;
 
   /// Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)
   ///
@@ -32215,7 +32365,7 @@ abstract class AppLocalizations {
   /// BUT-2353: appeal form explanation
   ///
   /// In sv, this message translates to:
-  /// **'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.'**
+  /// **'Beslutet granskas igen och du får ett nytt besked i appen.'**
   String get appealFormIntro;
 
   /// BUT-2353: appeal text field hint
@@ -32955,6 +33105,1128 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Nästa: {step}'**
   String cookingModeNextStepPreview(String step);
+
+  /// Spår 6, v60: heading over the box with the two consents that cannot be switched off
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkor för att appen finns'**
+  String get consentTermsHeading;
+
+  /// Spår 6, v60: title of the locked consent for essential services
+  ///
+  /// In sv, this message translates to:
+  /// **'Nödvändig drift'**
+  String get consentEssentialTitle;
+
+  /// Spår 6, v60: reason for the essential-services consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning, dina recept, synk mellan dina enheter.'**
+  String get consentEssentialBody;
+
+  /// Spår 6, v60: reason for the data-processing consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Att spara det du skriver in, så att det finns kvar i morgon.'**
+  String get consentDataProcessingBody;
+
+  /// Spår 6, v60: first part of the note under the locked consents; the bold part follows
+  ///
+  /// In sv, this message translates to:
+  /// **'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen '**
+  String get consentRequiredNoteBefore;
+
+  /// Spår 6, v60: bold part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **'radera kontot'**
+  String get consentRequiredNoteBold;
+
+  /// Spår 6, v60: last part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **', inte ett reglage här.'**
+  String get consentRequiredNoteAfter;
+
+  /// Spår 6, v60: heading over the optional consent switches
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val'**
+  String get consentYourChoices;
+
+  /// Spår 6, v60: marketing consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Utskick'**
+  String get consentMarketing;
+
+  /// Spår 6, v60: what the marketing consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyheter om appen. Aldrig andras erbjudanden.'**
+  String get consentMarketingDescription;
+
+  /// Spår 6, v60: social-features consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Socialt'**
+  String get consentSocial;
+
+  /// Spår 6, v60: what the social consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, delade listor, kommentarer.'**
+  String get consentSocialDescription;
+
+  /// Spår 6, v60: the line that says which version, when and on which device the consent was saved; device is empty or starts with ' · '
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat version {version} · {date}{device}. Vi behåller versionen för att kunna visa vad du sa ja till, inte bara att du gjorde det.'**
+  String consentSavedVersion(String version, String date, String device);
+
+  /// Spår 6, v60: row that opens the consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Historik'**
+  String get consentHistory;
+
+  /// Spår 6, v60: subtitle of the consent history row
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad du sagt ja och nej till, och när'**
+  String get consentHistorySubtitle;
+
+  /// Spår 6, v60: empty consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade val ännu.'**
+  String get consentHistoryEmpty;
+
+  /// Spår 6, v60: red text button under the save button
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkalla allt valfritt'**
+  String get consentRevokeAllOptional;
+
+  /// Spår 6, v60: history line when no optional consent was on
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga valfria samtycken'**
+  String get consentHistoryNoneOn;
+
+  /// Spår 6, v61: page title of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämta ut dina uppgifter'**
+  String get dataExportPageTitle;
+
+  /// Spår 6, v61: heading of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt du lagt in, i en fil'**
+  String get dataExportHeadline;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept, kommentarer och betyg'**
+  String get dataExportIncludesRecipesComments;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, meddelanden och aktivitetshistorik'**
+  String get dataExportIncludesSocial;
+
+  /// Spår 6, v61: title of the finished export file card
+  ///
+  /// In sv, this message translates to:
+  /// **'Din export (JSON)'**
+  String get dataExportFileTitle;
+
+  /// Spår 6, v62: title of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}'**
+  String pendingDeletionNoticeTitle(String date);
+
+  /// Spår 6, v62: body of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Tills dess finns allt kvar, och du kan ångra raderingen. Efter det går inget att återskapa.'**
+  String get pendingDeletionNoticeBody;
+
+  /// Spår 6, v62: heading over the list of what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här raderas den {date}'**
+  String pendingDeletionListHeading(String date);
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept, menyer och listor'**
+  String get pendingDeletionItemRecipes;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'allt du skapat'**
+  String get pendingDeletionItemRecipesNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg, kommentarer och cook snaps'**
+  String get pendingDeletionItemRatings;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'även i andras recept'**
+  String get pendingDeletionItemRatingsNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll och delningar'**
+  String get pendingDeletionItemHousehold;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'du lyfts ur, listorna finns kvar hos de andra'**
+  String get pendingDeletionItemHouseholdNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Sökindex och lokal cache'**
+  String get pendingDeletionItemCache;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'rensas först av allt'**
+  String get pendingDeletionItemCacheNote;
+
+  /// Link at the foot of a legal document to the terms of service
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkoren'**
+  String get legalLinkTerms;
+
+  /// Link at the foot of a legal document to the privacy policy
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet'**
+  String get legalLinkPrivacy;
+
+  /// Link at the foot of a legal document to the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Riktlinjer'**
+  String get legalLinkGuidelines;
+
+  /// Link at the foot of a legal document that opens a mail to support
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontakt'**
+  String get legalLinkContact;
+
+  /// Page title of the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Så gör vi mot varandra'**
+  String get legalCommunityGuidelinesTitle;
+
+  /// Label before the current e-mail address at the top of the change e-mail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Nu: '**
+  String get accountSecurityEmailNow;
+
+  /// Label of the second new-password field on the change password page
+  ///
+  /// In sv, this message translates to:
+  /// **'Upprepa nytt lösenord'**
+  String get accountSecurityRepeatNewPassword;
+
+  /// Bold label opening the outcome note of a moderation matter
+  ///
+  /// In sv, this message translates to:
+  /// **'Utfall:'**
+  String get decisionOutcomeLabel;
+
+  /// Link in a moderation row or decision that opens the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag vill överklaga'**
+  String get decisionAppealLink;
+
+  /// Status pill on a report that led to an action
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get myReportsStatusActioned;
+
+  /// Intro line under the title of Beslut om mitt innehåll
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om sådant du lagt upp. Varje beslut kan överklagas en gång.'**
+  String get myContentDecisionsIntro;
+
+  /// Intro line under the title of Mina rapporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du anmält och vad som hänt sedan. Vi berättar utfallet, också när det gick emot dig.'**
+  String get myReportsIntro;
+
+  /// Heading above the appeal text field
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför tycker du att beslutet är fel?'**
+  String get appealFormQuestion;
+
+  /// Subtitle of a trash row: when it was deleted and how long is left
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderad {when} · {left}'**
+  String trashRowDeleted(String when, String left);
+
+  /// 'When' of a trash row deleted today
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag'**
+  String get trashDeletedToday;
+
+  /// Subtitle of a trash row with little time left; day is the weekday
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott på {day}'**
+  String trashUrgentLeft(String left, String day);
+
+  /// Subtitle of a trash row that expires today
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott i dag'**
+  String trashUrgentToday(String left);
+
+  /// Intro line under the title of the licences page
+  ///
+  /// In sv, this message translates to:
+  /// **'Det Butlery bygger på, och villkoren det följer med.'**
+  String get licensesIntro;
+
+  /// Title of the note on the two-step verification page when it is on
+  ///
+  /// In sv, this message translates to:
+  /// **'Påslagen'**
+  String get mfaOnTitle;
+
+  /// Title of the note on the two-step verification page when it is off
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte påslagen'**
+  String get mfaOffTitle;
+
+  /// Section heading about backup codes on the two-step verification page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om telefonen är borta'**
+  String get mfaLostPhoneTitle;
+
+  /// Body under the backup codes heading
+  ///
+  /// In sv, this message translates to:
+  /// **'När du slog på skyddet fick du tio engångskoder att skriva ned. Med en av dem kommer du in även utan telefonen.'**
+  String get mfaLostPhoneBody;
+
+  /// Text link that removes a registered two-step method
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get mfaRemoveLink;
+
+  /// No description provided for @groupSharedRecipesLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{recept} other{recept}}'**
+  String groupSharedRecipesLabel(int count);
+
+  /// No description provided for @groupSharedMenusLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{meny} other{menyer}}'**
+  String groupSharedMenusLabel(int count);
+
+  /// No description provided for @groupSharedListsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{inköpslista} other{inköpslistor}}'**
+  String groupSharedListsLabel(int count);
+
+  /// No description provided for @groupInvitedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjuden'**
+  String get groupInvitedLabel;
+
+  /// No description provided for @groupInviteLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Bjud in'**
+  String get groupInviteLink;
+
+  /// No description provided for @groupMembersHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmar'**
+  String get groupMembersHeading;
+
+  /// No description provided for @groupShareSheetButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela recept, meny eller lista'**
+  String get groupShareSheetButton;
+
+  /// No description provided for @messagingNewGroupChat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny gruppchatt'**
+  String get messagingNewGroupChat;
+
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra bild'**
+  String get profileChangePhoto;
+
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free
+  ///
+  /// In sv, this message translates to:
+  /// **'Ledigt'**
+  String get profileDisplayNameAvailable;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get sharedSaveAction;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad'**
+  String get sharedSavedState;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'från {name} · {time}'**
+  String sharedFromNameAgo(String name, String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'delad {time}'**
+  String sharedSharedAgo(String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get sharedNewMark;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'Från {name}'**
+  String sharedFromHeading(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, one{{count} recept} other{{count} recept}} · senast {time}'**
+  String sharedFromSummary(int count, String time);
+
+  /// No description provided for @socialFriendsSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner · {count}'**
+  String socialFriendsSection(int count);
+
+  /// No description provided for @socialRequestsSelect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get socialRequestsSelect;
+
+  /// No description provided for @socialRequestsIncomingSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkommande · {count}'**
+  String socialRequestsIncomingSection(int count);
+
+  /// No description provided for @socialRequestsSentSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickade · {count}'**
+  String socialRequestsSentSection(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om samtalet'**
+  String get messagingAboutConversation;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}'**
+  String messagingConversationSubline(String name, int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtalets namn'**
+  String get messagingConversationNameRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the friend picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till någon'**
+  String get messagingAddSomeoneRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): section title above the members
+  ///
+  /// In sv, this message translates to:
+  /// **'Med i samtalet'**
+  String get messagingInConversationSection;
+
+  /// Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list
+  ///
+  /// In sv, this message translates to:
+  /// **'du'**
+  String get messagingMemberYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): question in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name} ur samtalet?'**
+  String messagingRemoveFromConversationTitle(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.'**
+  String messagingRemoveFromConversationBody(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna samtalet'**
+  String get messagingLeaveConversationRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the leave row
+  ///
+  /// In sv, this message translates to:
+  /// **'Du slutar se nya meddelanden. Det du skrivit ligger kvar.'**
+  String get messagingLeaveConversationSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String recipeRowMinutes(int minutes);
+
+  /// Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 publikt recept} other{{count} publika recept}}'**
+  String publicProfileRecipeCount(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): section title on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Mellan er'**
+  String get friendProfileBetweenYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row
+  ///
+  /// In sv, this message translates to:
+  /// **'Ligger under Delat med mig'**
+  String get friendProfileSharedWithYouSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the public recipes row
+  ///
+  /// In sv, this message translates to:
+  /// **'Synliga för alla, inte bara för dig'**
+  String get friendProfilePublicRecipesSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela en länk till {owner} profil'**
+  String friendProfileShareLinkRow(String owner);
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the share-link row
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar den publika sidan, inget ni delat'**
+  String get friendProfileShareLinkSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{vän} other{vänner}}'**
+  String profileFriendsLabel(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{publikt recept} other{publika recept}}'**
+  String profilePublicRecipesLabel(int count);
+
+  /// Skiss spår 9 (v65): heading above the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Drift · senaste händelser'**
+  String get adminOpsSectionTitle;
+
+  /// Skiss spår 9 (v65): bold lead of the note closing the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Glest med flit.'**
+  String get adminOpsSparseTitle;
+
+  /// Skiss spår 9 (v65): body of the note closing the ops-log table
+  ///
+  /// In sv, this message translates to:
+  /// **'Loggen fylls när appen har användare. Att den är kort betyder inte att något saknas.'**
+  String get adminOpsSparseBody;
+
+  /// Ops-log event name for the notification_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiser städade'**
+  String get adminOpsEventNotificationCleanup;
+
+  /// Ops-log event name for the ingredient_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser städade'**
+  String get adminOpsEventIngredientCleanup;
+
+  /// Ops-log event name for the system_events_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Driftloggen städad'**
+  String get adminOpsEventSystemEventsCleanup;
+
+  /// Ops-log event name for the cleanup_expired_social_requests job
+  ///
+  /// In sv, this message translates to:
+  /// **'Gamla förfrågningar städade'**
+  String get adminOpsEventSocialRequestsCleanup;
+
+  /// Ops-log event name for the audit_log_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskningslogg städad'**
+  String get adminOpsEventAuditLogCleanup;
+
+  /// Ops-log event name for the deletion_audit_log_cleanup job
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingslogg städad'**
+  String get adminOpsEventDeletionAuditLogCleanup;
+
+  /// Skiss spår 9 (v66): heading above the parsing table
+  ///
+  /// In sv, this message translates to:
+  /// **'Parsning per domän'**
+  String get adminParsingSectionTitle;
+
+  /// Skiss spår 9 (v66): column with the import success rate per domain
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckat'**
+  String get adminParsingColSuccess;
+
+  /// Skiss spår 9 (v66): column with the field corrected most per domain
+  ///
+  /// In sv, this message translates to:
+  /// **'Fastnar på'**
+  String get adminParsingColStuck;
+
+  /// Skiss spår 9 (v66): note under the parsing table
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck på en rad för att se importerna. Fältet i sista kolumnen är det som oftast rättas för domänen.'**
+  String get adminParsingTableNote;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get moderatorContentTypeRecipe;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get moderatorContentTypeComment;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelande'**
+  String get moderatorContentTypeMessage;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Profil'**
+  String get moderatorContentTypeProfile;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Matbild'**
+  String get moderatorContentTypeCookSnap;
+
+  /// Skiss spår 9 (v64): content type in a report card header
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get moderatorContentTypeGroup;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny'**
+  String get moderatorStatusNew;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskas'**
+  String get moderatorStatusInReview;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get moderatorStatusActioned;
+
+  /// Skiss spår 9 (v64): report status pill
+  ///
+  /// In sv, this message translates to:
+  /// **'Stängd'**
+  String get moderatorStatusClosed;
+
+  /// Skiss spår 9 (v64): tooltip on the X that closes a report
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng rapporten'**
+  String get moderatorCloseTooltip;
+
+  /// Skiss spår 9 (v72): shown instead of a score for a diner with no stars yet
+  ///
+  /// In sv, this message translates to:
+  /// **'inte satt'**
+  String get familyRatingNotSet;
+
+  /// Skiss spår 9 (v72): first part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **'Den som hoppar över får ingen rad och räknas inte in i snittet. Betyget går alltid att ändra, och det senaste ersätter det tidigare.'**
+  String get familyRatingNoteSkip;
+
+  /// Skiss spår 9 (v72): bold part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget räknas in i receptets publika snitt'**
+  String get familyRatingNoteCounts;
+
+  /// Skiss spår 9 (v72): closing part of the note under the family rating rows
+  ///
+  /// In sv, this message translates to:
+  /// **', anonymt och utan att någon identitet visas.'**
+  String get familyRatingNoteAnonymous;
+
+  /// Skiss spår 9 (v71): label under the recipe count in a cookbook's key figures
+  ///
+  /// In sv, this message translates to:
+  /// **'recept'**
+  String get cookbookStatRecipes;
+
+  /// Skiss spår 9 (v71): label under the sort order in a cookbook's key figures
+  ///
+  /// In sv, this message translates to:
+  /// **'sortering'**
+  String get cookbookStatSort;
+
+  /// Skiss spår 9 (v71): the cookbook is sorted alphabetically
+  ///
+  /// In sv, this message translates to:
+  /// **'A–Ö'**
+  String get cookbookStatSortAlphabetical;
+
+  /// Skiss spår 9 (v71): the cookbook has the user's own order
+  ///
+  /// In sv, this message translates to:
+  /// **'Egen'**
+  String get cookbookStatSortCustom;
+
+  /// Skiss spår 9 (v71): label under the date the cookbook last changed
+  ///
+  /// In sv, this message translates to:
+  /// **'senast ändrad'**
+  String get cookbookStatUpdated;
+
+  /// Skiss spår 9 (v108): link at the end of the rules heading on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Ny regel'**
+  String get tagDetailNewRule;
+
+  /// Skiss spår 9 (v108): heading over the rules on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Automatiska regler'**
+  String get tagDetailRulesHeading;
+
+  /// Skiss spår 9 (v108): label under the date the tag last changed
+  ///
+  /// In sv, this message translates to:
+  /// **'senast ändrad'**
+  String get tagDetailStatChanged;
+
+  /// Skiss spår 9 (v108): what a rule has tagged
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{taggade 1 recept} other{taggade {count} recept}}'**
+  String tagDetailRuleTagged(int count);
+
+  /// Skiss spår 9 (v108): line over the recipe list on a tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept med taggen} other{{count} recept med taggen}}'**
+  String tagDetailRecipesHeading(int count);
+
+  /// Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes
+  ///
+  /// In sv, this message translates to:
+  /// **'{type} {operator} {value}'**
+  String tagDetailRuleSummaryNumber(String type, String operator, String value);
+
+  /// Skiss spår 9 (v108): title of the sheet the Redigera link on a tag page opens
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera taggen'**
+  String get tagEditSheetTitle;
+
+  /// Skiss spår 9 (v108): how many of the tag's rules are on
+  ///
+  /// In sv, this message translates to:
+  /// **'{enabled} av {total}'**
+  String tagDetailStatRulesValue(int enabled, int total);
+
+  /// Skiss spår 9 (v108): label under how many of the tag's rules are on
+  ///
+  /// In sv, this message translates to:
+  /// **'{total, plural, =1{regel på} other{regler på}}'**
+  String tagDetailStatRules(int total);
+
+  /// Skiss spår 9 (v84): heading over the unused tags shown as pills
+  ///
+  /// In sv, this message translates to:
+  /// **'Oanvända ({count})'**
+  String personalTagUnusedHeading(int count);
+
+  /// Skiss spår 9 (v84): red link at the end of the unused-tags heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera alla'**
+  String get personalTagDeleteAllShort;
+
+  /// Name of the user's own version in the conflict view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din'**
+  String get conflictDiffMineName;
+
+  /// Name of the other version in the conflict view when no name is known.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras'**
+  String get conflictDiffTheirsName;
+
+  /// Badge on the version that applies now.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller'**
+  String get conflictDiffApplies;
+
+  /// Intro of the conflict view; name = the other editor, title = the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du och {name} ändrade samtidigt i {title}. Bara en av versionerna gäller – så här skiljer de sig.'**
+  String conflictDiffIntro(String name, String title);
+
+  /// Intro of the conflict view when the other editor or the title is not known.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ni ändrade samtidigt. Bara en av versionerna gäller – så här skiljer de sig.'**
+  String get conflictDiffIntroPlain;
+
+  /// Note above the decision buttons; the Firestore TTL policy on recipe_suggestions removes it at expiresAt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget sparas till {date}. Sedan tas det bort.'**
+  String recipeSuggestionKeptNote(String date);
+
+  /// No description provided for @importLinkOrCaptionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk eller bildtext'**
+  String get importLinkOrCaptionLabel;
+
+  /// No description provided for @importPasteHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.'**
+  String get importPasteHelp;
+
+  /// No description provided for @importCaptionWarningLead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men '**
+  String get importCaptionWarningLead;
+
+  /// No description provided for @importCaptionWarningEmphasis.
+  ///
+  /// In sv, this message translates to:
+  /// **'du får ofta rätta något'**
+  String get importCaptionWarningEmphasis;
+
+  /// No description provided for @importVideoNotRead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.'**
+  String get importVideoNotRead;
+
+  /// No description provided for @importFetchRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämta receptet'**
+  String get importFetchRecipe;
+
+  /// No description provided for @shoppingNewSharedListTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny delad lista'**
+  String get shoppingNewSharedListTitle;
+
+  /// No description provided for @shoppingSharedListNameLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listans namn'**
+  String get shoppingSharedListNameLabel;
+
+  /// No description provided for @shoppingShareWithHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med'**
+  String get shoppingShareWithHeading;
+
+  /// No description provided for @shoppingPermissionHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighet'**
+  String get shoppingPermissionHeading;
+
+  /// No description provided for @shoppingPermissionCanEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan redigera'**
+  String get shoppingPermissionCanEdit;
+
+  /// No description provided for @shoppingPermissionReadOnlyTab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast läsa'**
+  String get shoppingPermissionReadOnlyTab;
+
+  /// No description provided for @shoppingPermissionCanEditHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla kan lägga till och bocka av varor i realtid.'**
+  String get shoppingPermissionCanEditHelp;
+
+  /// No description provided for @shoppingPermissionViewOnlyHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'De du delar med kan se listan men inte ändra den.'**
+  String get shoppingPermissionViewOnlyHelp;
+
+  /// No description provided for @shoppingNoFriendsToShareWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga vänner att dela med än.'**
+  String get shoppingNoFriendsToShareWith;
+
+  /// No description provided for @importMoreFilters.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler'**
+  String get importMoreFilters;
+
+  /// No description provided for @importArchivedHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade recept · {count}'**
+  String importArchivedHeading(int count);
+
+  /// No description provided for @importRestoreCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ {count} recept'**
+  String importRestoreCount(int count);
+
+  /// No description provided for @importFiltersTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filter'**
+  String get importFiltersTitle;
+
+  /// No description provided for @importTimeHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid'**
+  String get importTimeHeading;
+
+  /// No description provided for @importTagsHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggar'**
+  String get importTagsHeading;
+
+  /// No description provided for @importRecipeMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String importRecipeMinutes(int minutes);
+
+  /// No description provided for @importUpToMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högst {minutes} min'**
+  String importUpToMinutes(int minutes);
+
+  /// No description provided for @importArchiveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur arkivet'**
+  String get importArchiveTitle;
+
+  /// No description provided for @importPreviewFoundCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept hittades'**
+  String importPreviewFoundCount(int count);
+
+  /// No description provided for @importPreviewParsedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tolkade'**
+  String importPreviewParsedCount(int count);
+
+  /// No description provided for @importPreviewProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'{selected} av {total}'**
+  String importPreviewProgress(int selected, int total);
+
+  /// No description provided for @importPreviewUnreadHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tolkas'**
+  String get importPreviewUnreadHeading;
+
+  /// No description provided for @importPreviewReadyHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klara att spara'**
+  String get importPreviewReadyHeading;
+
+  /// No description provided for @voiceListeningWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'hör dig …'**
+  String get voiceListeningWord;
+
+  /// No description provided for @importPhotoCameraButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fota nu'**
+  String get importPhotoCameraButton;
+
+  /// No description provided for @importPhotoLibraryButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur bildbiblioteket'**
+  String get importPhotoLibraryButton;
+
+  /// No description provided for @importPhotoPagesHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidor · {count}'**
+  String importPhotoPagesHeading(int count);
+
+  /// No description provided for @heirloomToggleSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotot sparas med receptet, som källa'**
+  String get heirloomToggleSubtitle;
+
+  /// No description provided for @importPhotoHeirloomHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Handskrivna arvsrecept? Originalbilden sparas på receptkortet.'**
+  String get importPhotoHeirloomHint;
+
+  /// No description provided for @recipeDescriptionOptional.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning (valfritt)'**
+  String get recipeDescriptionOptional;
+
+  /// No description provided for @recipeMethodHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör så här'**
+  String get recipeMethodHeading;
+
+  /// No description provided for @importPhotoRestartTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om?'**
+  String get importPhotoRestartTitle;
+
+  /// No description provided for @importPhotoRestartMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidorna du redan tagit tas bort om du väljer en ny bild.'**
+  String get importPhotoRestartMessage;
+
+  /// No description provided for @importPhotoRestartAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om'**
+  String get importPhotoRestartAction;
 }
 
 class _AppLocalizationsDelegate

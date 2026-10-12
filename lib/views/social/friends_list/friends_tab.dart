@@ -5,9 +5,11 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
-import 'package:butlery/widgets/common/animations/animated_list_item.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -40,28 +42,39 @@ class FriendsTab {
         onRefresh: () async {
           await viewModel.refresh();
         },
-        child: ListView.separated(
-          padding: const EdgeInsets.all(AppDimensions.space12),
-          itemCount: friends.length,
-          separatorBuilder: (context, index) =>
-              const SizedBox(height: AppDimensions.space4),
-          itemBuilder: (context, index) {
-            final friend = friends[index];
-            return AnimatedListItem(
-              key: ValueKey(friend.uid),
-              index: index,
-              child: FriendCard(
-                user: friend,
-                style: FriendCardStyle.list,
-                subtitle: friend.bio?.isNotEmpty == true ? friend.bio : null,
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  Routes.friendProfile,
-                  arguments: friend,
-                ),
-              ),
-            );
-          },
+        child: ListView(
+          padding: ButleryPageBody.margin(
+            context,
+            bottom: AppDimensions.space32,
+          ),
+          children: [
+            ButleryListSection(
+              title: context.l10n.socialFriendsSection(friends.length),
+              rows: [
+                for (final friend in friends)
+                  ButleryMediaRow(
+                    key: ValueKey(friend.uid),
+                    leading: UserAvatar(
+                      imageUrl: friend.avatarUrl,
+                      displayName: friend.displayName,
+                      explicitSize: 48,
+                      round: true,
+                      announceName: false,
+                    ),
+                    title: friend.displayName,
+                    subtitle: friend.bio?.isNotEmpty == true
+                        ? friend.bio
+                        : null,
+                    chevron: true,
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      Routes.friendProfile,
+                      arguments: friend,
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );

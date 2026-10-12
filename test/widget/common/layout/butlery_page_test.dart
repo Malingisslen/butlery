@@ -110,30 +110,31 @@ void main() {
       expect(find.byType(ButleryBottomNavigation), findsNothing);
     });
 
-    testWidgets('lightBar draws the rule under the bar unless told not to', (
-      tester,
-    ) async {
-      await pushPage(
+    testWidgets(
+      'an undersida draws the rule under the bar unless told not to',
+      (
         tester,
-        const ButleryPage.undersida(
-          title: 'Ljus',
-          lightBar: true,
-          body: SizedBox(),
-        ),
-      );
-      expect(find.byType(PageRule), findsOneWidget);
+      ) async {
+        await pushPage(
+          tester,
+          const ButleryPage.undersida(
+            title: 'Ljus',
+            body: SizedBox(),
+          ),
+        );
+        expect(find.byType(PageRule), findsOneWidget);
 
-      await pushPage(
-        tester,
-        const ButleryPage.undersida(
-          title: 'Ljus',
-          lightBar: true,
-          ruleUnderBar: false,
-          body: SizedBox(),
-        ),
-      );
-      expect(find.byType(PageRule), findsNothing);
-    });
+        await pushPage(
+          tester,
+          const ButleryPage.undersida(
+            title: 'Ljus',
+            ruleUnderBar: false,
+            body: SizedBox(),
+          ),
+        );
+        expect(find.byType(PageRule), findsNothing);
+      },
+    );
 
     testWidgets('undersida without backTo keeps the plain Back name', (
       tester,

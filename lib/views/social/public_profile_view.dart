@@ -1,25 +1,26 @@
 /// Public profile view showing a user's display name, avatar, bio, cooking skill, and public recipes.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/recipe_row_meta.dart';
+import 'package:butlery/widgets/common/recipe_thumb.dart';
+import 'package:butlery/widgets/social/profile_header.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/viewmodels/public_profile_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -30,8 +31,6 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/social/public_profile_friend_button.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
-import 'package:butlery/widgets/common/section_heading.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 class PublicProfileView extends StatefulWidget {
   final String userId;
@@ -91,24 +90,21 @@ class _PublicProfileContent extends StatelessWidget {
     final profile = vm.profile;
     final isOwnProfile = friends.currentUserId == vm.userId;
 
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: ButleryTopBar.undersida(
-        title: profile?.displayName ?? context.l10n.publicProfileTitle,
-        actions: [
-          if (profile != null && !isOwnProfile) _MoreActions(profile: profile),
+    return ButleryPage.undersida(
+      // The sketch's bar holds the back arrow and the menu only; the name
+      // is the page's own heading. A page reached from a link or a search
+      // result has no tab to stand under, so the tab bar is left out.
+      title: '',
+      ruleUnderBar: false,
+      showTabBar: false,
+      actions: [
+        if (profile != null && !isOwnProfile) _MoreActions(profile: profile),
+      ],
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          Expanded(child: _buildBody(context, vm, friends)),
         ],
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: Column(
-            children: [
-              LayoutComponents.offlineIndicator(),
-              Expanded(child: _buildBody(context, vm, friends)),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -139,30 +135,56 @@ class _PublicProfileContent extends StatelessWidget {
       );
     }
 
+    final margin = ButleryTopBar.sideMargin(context);
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          children: [
-            _ProfileHeader(profile: profile),
-            const SizedBox(height: AppDimensions.space12),
-            PublicProfileFriendButton(
-              profile: profile,
-              isSearchable: vm.isSearchable,
-              friends: friends,
-              friendsLoaded: context
-                  .read<UnifiedFriendsService>()
-                  .isInitialized,
-            ),
-            const SizedBox(height: AppDimensions.space12),
-            _ProfileStats(profile: profile),
-            const SizedBox(height: AppDimensions.space12),
-            _PublicRecipesSection(
-              recipes: vm.publicRecipes,
-              hasRecipes: vm.hasPublicRecipes,
+      padding: EdgeInsetsDirectional.fromSTEB(
+        margin,
+        AppDimensions.space8,
+        margin,
+        AppDimensions.space32,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ProfileHeader(
+            displayName: profile.displayName,
+            avatarUrl: profile.avatarUrl,
+            subline: profile.memberSinceText,
+            bio: profile.bio,
+            statsLayout: ProfileStatsLayout.inline,
+            stats: [
+              ProfileStat(
+                value: profile.friendsCount,
+                label: context.l10n.profileFriendsLabel(profile.friendsCount),
+              ),
+              ProfileStat(
+                value: profile.publicRecipeCount,
+                label: context.l10n.profilePublicRecipesLabel(
+                  profile.publicRecipeCount,
+                ),
+              ),
+            ],
+          ),
+          if (profile.cookingSkillLevel != null) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: _CookingSkillBadge(level: profile.cookingSkillLevel!),
             ),
           ],
-        ),
+          const SizedBox(height: AppDimensions.space16),
+          PublicProfileFriendButton(
+            profile: profile,
+            isSearchable: vm.isSearchable,
+            friends: friends,
+            friendsLoaded: context.read<UnifiedFriendsService>().isInitialized,
+          ),
+          const AccentRule.inline(),
+          _PublicRecipesSection(
+            recipes: vm.publicRecipes,
+            hasRecipes: vm.hasPublicRecipes,
+          ),
+        ],
       ),
     );
   }
@@ -198,50 +220,6 @@ class _MoreActions extends StatelessWidget {
   }
 }
 
-class _ProfileHeader extends StatelessWidget {
-  final UserProfile profile;
-
-  const _ProfileHeader({required this.profile});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          UserDisplayWidgets.avatar(
-            imageUrl: profile.avatarUrl,
-            displayName: profile.displayName,
-            size: ImageSize.extraLarge,
-          ),
-          const SizedBox(height: AppDimensions.space12),
-          Text(
-            profile.displayName,
-            style: AppTextStyles.headlineMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.space8),
-            Text(
-              profile.bio!,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          if (profile.cookingSkillLevel != null) ...[
-            const SizedBox(height: AppDimensions.space8),
-            _CookingSkillBadge(level: profile.cookingSkillLevel!),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 class _CookingSkillBadge extends StatelessWidget {
   final CookingSkillLevel level;
 
@@ -257,52 +235,6 @@ class _CookingSkillBadge extends StatelessWidget {
     };
 
     return UnifiedBadge.status(label: label, icon: ButleryIcons.utensils);
-  }
-}
-
-class _ProfileStats extends StatelessWidget {
-  final UserProfile profile;
-
-  const _ProfileStats({required this.profile});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return CardContent.standard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Semantics(
-            header: true,
-            child: Text(
-              context.l10n.socialStatistics,
-              style: AppTextStyles.cardTitle,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              StatItemWidget(
-                label: context.l10n.socialFriends,
-                value: '${profile.friendsCount}',
-                icon: ButleryIcons.users,
-                color: cs.onSurface,
-                labelColor: cs.onSurfaceVariant,
-              ),
-              StatItemWidget(
-                label: context.l10n.publicProfilePublicRecipes,
-                value: '${profile.publicRecipeCount}',
-                icon: ButleryIcons.utensils,
-                color: cs.onSurface,
-                labelColor: cs.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -324,117 +256,44 @@ class _PublicRecipesSection extends StatelessWidget {
       );
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeading(context.l10n.publicProfilePublicRecipes),
-        const SizedBox(height: AppDimensions.space8),
-        ...recipes.map(
-          (recipe) => _PublicRecipeCard(
-            key: ValueKey(recipe.id),
-            recipe: recipe,
-          ),
+        Text(
+          context.l10n.publicProfileRecipeCount(recipes.length),
+          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+        ),
+        ButleryListSection(
+          rows: [
+            for (final recipe in recipes)
+              _PublicRecipeRow(key: ValueKey(recipe.id), recipe: recipe),
+          ],
         ),
       ],
     );
   }
 }
 
-class _PublicRecipeCard extends StatelessWidget {
+class _PublicRecipeRow extends StatelessWidget {
   final Recipe recipe;
 
-  const _PublicRecipeCard({super.key, required this.recipe});
+  const _PublicRecipeRow({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
-      child: CardContent(
-        padding: EdgeInsets.zero,
-        child: Semantics(
-          label: context.l10n.a11yPublicProfileRecipeCard,
-          button: true,
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).pushNamed(
-                Routes.recipeDetail,
-                arguments: recipe,
-              );
-            },
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.space8),
-              child: Row(
-                children: [
-                  // Recipe image or placeholder
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                    child: SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: recipe.primaryImageUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: recipe.primaryImageUrl!,
-                              cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                recipe.primaryImageUrl!,
-                              ),
-                              fit: BoxFit.cover,
-                              placeholder: (_, __) => _imagePlaceholder(cs),
-                              errorWidget: (_, __, ___) =>
-                                  _imagePlaceholder(cs),
-                            )
-                          : _imagePlaceholder(cs),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.space8),
-                  // Title and meal type
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recipe.title,
-                          style: AppTextStyles.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (recipe.mealType.isNotEmpty) ...[
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            recipe.mealType,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  ButleryIcon(
-                    ButleryIcons.chevronRight,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _imagePlaceholder(ColorScheme cs) {
-    return ColoredBox(
-      color: cs.surfaceContainerHighest,
-      child: Center(
-        child: ButleryIcon(
-          ButleryIcons.utensils,
-          color: cs.onSurfaceVariant,
-        ),
+    final minutes = recipe.timeMinutes;
+    final rating = recipe.core.averageRating;
+    return Semantics(
+      label: context.l10n.a11yPublicProfileRecipeCard,
+      container: true,
+      child: ButleryMediaRow(
+        leading: RecipeThumb(imageUrl: recipe.primaryImageUrl),
+        title: recipe.title,
+        meta: RecipeRowMeta(minutes: minutes, rating: rating),
+        onTap: () => Navigator.of(
+          context,
+        ).pushNamed(Routes.recipeDetail, arguments: recipe),
       ),
     );
   }

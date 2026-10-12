@@ -13,19 +13,17 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
-import 'package:butlery/views/social/shared_with_me/shared_content_app_bar.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_search_bar.dart';
-import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_tabs.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 
-/// Shared content view: filter chips over recipes, menus and shopping lists.
+/// Shared content view: tabs over recipes, menus and shopping lists.
 class SharedWithMeView extends StatefulWidget {
   const SharedWithMeView({super.key});
 
@@ -67,7 +65,7 @@ class _SharedWithMeViewContent extends StatefulWidget {
 
 class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
   final _searchController = TextEditingController();
-  SharedContentFilter _filter = SharedContentFilter.all;
+  SharedContentFilter _filter = SharedContentFilter.recipes;
 
   @override
   void initState() {
@@ -91,35 +89,31 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SharedContentCoordinatorViewModel>(
-      builder: (context, viewModel, _) => Scaffold(
-        appBar: SharedContentAppBar.build(context),
-        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-        body: SafeArea(
-          child: ButleryPageBody(
-            width: PageWidth.wide,
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                if (viewModel.hasAnyContent) ...[
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: SharedContentFilterChips(
-                      selected: _filter,
-                      onSelected: (filter) => setState(() => _filter = filter),
-                    ),
-                  ),
-                  SharedContentSearchBar.build(
-                    context,
-                    viewModel,
-                    _searchController,
-                  ),
-                ],
-                Expanded(child: _buildContent(context, viewModel)),
-              ],
+    final viewModel = context.watch<SharedContentCoordinatorViewModel>();
+    return ButleryPage.undersida(
+      title: context.l10n.profileSharedWithMe,
+      backTo: context.l10n.moreTitle,
+      ruleUnderBar: false,
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          if (viewModel.hasAnyContent) ...[
+            SharedContentSearchBar.build(
+              context,
+              viewModel,
+              _searchController,
             ),
-          ),
-        ),
+            Padding(
+              padding: ButleryPageBody.margin(context),
+              child: SharedContentTabs(
+                viewModel: viewModel,
+                selected: _filter,
+                onSelected: (filter) => setState(() => _filter = filter),
+              ),
+            ),
+          ],
+          Expanded(child: _buildContent(context, viewModel)),
+        ],
       ),
     );
   }
@@ -151,8 +145,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
       );
     }
 
-    final entries = SharedContentLists.entriesFor(viewModel, _filter);
-    if (entries.isEmpty) {
+    final rows = SharedContentLists.rowsFor(viewModel, _filter);
+    if (rows.isEmpty) {
       if (viewModel.searchViewModel.hasSearchQuery) {
         return StateWidget.noSearchResults(
           actionLabel: context.l10n.commonClearSearch,
@@ -165,7 +159,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
       return _buildEmptyForFilter(context);
     }
 
-    return SharedContentLists.build(context, viewModel, _filter, entries);
+    return SharedContentLists.build(context, viewModel, _filter, rows);
   }
 
   Widget _buildEmptyForFilter(BuildContext context) {
@@ -189,13 +183,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
         title: l10n.sharedNoShoppingLists,
         subtitle: l10n.sharedNoShoppingListsDescription,
         icon: ButleryIcons.shoppingCart,
-        actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, Routes.friends),
-      ),
-      SharedContentFilter.all => StateWidget.empty(
-        title: l10n.sharedNoContentYet,
-        subtitle: l10n.sharedEmptyStateExplanation,
-        icon: ButleryIcons.share2,
         actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, Routes.friends),
       ),

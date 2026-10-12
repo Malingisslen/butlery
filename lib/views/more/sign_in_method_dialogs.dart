@@ -7,7 +7,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
@@ -46,8 +46,8 @@ class _SetPasswordDialogState extends State<_SetPasswordDialog> {
   void _submit() {
     final l10n = context.l10n;
     final password = _password.text;
-    if (password.length < FormValidators.minPasswordLength) {
-      setState(() => _problem = l10n.validationPasswordTooShort);
+    if (!PasswordRule.accepts(password)) {
+      setState(() => _problem = l10n.validationPasswordRule);
     } else if (password != _repeat.text) {
       setState(() => _problem = l10n.accountSecurityPasswordMismatch);
     } else {

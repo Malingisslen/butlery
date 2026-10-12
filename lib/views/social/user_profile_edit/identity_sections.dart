@@ -1,13 +1,10 @@
-// Avatar and display-name sections extracted from user_profile_edit_view.dart
-// to keep the parent under the 634-line baseline. Pure relocation — no logic
-// or wiring changes.
+// The avatar and display-name sections of the profile editor.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -18,7 +15,8 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// Avatar display with upload/remove buttons.
+/// The round avatar and the saffron "Ändra bild" under it; "Ta bort" only
+/// when there is a picture to remove.
 class ProfileAvatarSection extends StatelessWidget {
   final UserProfileViewModel viewModel;
   final VoidCallback onUploadAvatar;
@@ -29,56 +27,68 @@ class ProfileAvatarSection extends StatelessWidget {
     required this.onUploadAvatar,
   });
 
+  static const double _avatarSize = 108;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final accent = ButtonStyle(
+      foregroundColor: WidgetStatePropertyAll(context.modeColors.textAccent),
+      textStyle: WidgetStatePropertyAll(AppTextStyles.bodyBold),
+    );
     return Center(
       child: Column(
         children: [
-          // Avatar with edit overlay
           Stack(
+            alignment: Alignment.center,
             children: [
-              UserDisplayWidgets.editableAvatar(
-                imageUrl: viewModel.avatarUrl,
-                displayName: viewModel.displayName.isNotEmpty
-                    ? viewModel.displayName
-                    : context.l10n.profileNewUser,
-                onEditTap: onUploadAvatar,
+              Semantics(
+                label: l10n.a11yChangeProfileImage,
+                button: true,
+                child: PressFill(
+                  surface: PressSurface.base,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: viewModel.isUploadingAvatar ? null : onUploadAvatar,
+                    child: UserAvatar(
+                      imageUrl: viewModel.avatarUrl,
+                      displayName: viewModel.displayName.isNotEmpty
+                          ? viewModel.displayName
+                          : l10n.profileNewUser,
+                      explicitSize: _avatarSize,
+                      round: true,
+                      announceName: false,
+                    ),
+                  ),
+                ),
               ),
-              // Upload progress overlay
               if (viewModel.isUploadingAvatar)
-                ProgressOverlay.avatar(text: context.l10n.commonUploading),
+                ProgressOverlay.avatar(text: l10n.commonUploading),
             ],
           ),
-
-          const SizedBox(height: AppDimensions.space12),
-
-          // Avatar action buttons
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: AppDimensions.space12,
+            spacing: AppDimensions.space16,
             children: [
-              ActionButtons.outlinedButton(
-                context,
-                label: viewModel.avatarUrl != null
-                    ? context.l10n.profileChangeAvatar
-                    : context.l10n.profileAddAvatar,
-                icon: ButleryIcons.camera,
+              TextButton(
+                style: accent,
                 onPressed: viewModel.isUploadingAvatar ? null : onUploadAvatar,
+                child: Text(l10n.profileChangePhoto),
               ),
               if (viewModel.avatarUrl != null)
-                ActionButtons.outlinedButton(
-                  context,
-                  label: context.l10n.commonRemove,
-                  icon: ButleryIcons.trash2,
+                TextButton(
+                  style: accent,
                   onPressed: viewModel.isUploadingAvatar
                       ? null
                       : () {
                           viewModel.removeAvatar();
                           SnackBarUtils.showSuccess(
                             context,
-                            context.l10n.profileAvatarRemoved,
+                            l10n.profileAvatarRemoved,
                           );
                         },
+                  child: Text(l10n.commonRemove),
                 ),
             ],
           ),
@@ -108,26 +118,16 @@ class ProfileDisplayNameField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.profileDisplayName,
-          style: AppTextStyles.labelMedium,
-        ),
+        SectionHeading(context.l10n.profileDisplayName),
         const SizedBox(height: AppDimensions.space4),
         StyledInput(
           controller: controller,
           focusNode: focusNode,
           hint: context.l10n.profileDisplayNameHint,
-          prefixIcon: const ButleryIcon(ButleryIcons.user),
-          suffixIcon: viewModel.displayNameError != null
-              ? ButleryIcon(
-                  ButleryIcons.triangleAlert,
-                  color: Theme.of(context).colorScheme.error,
-                )
-              : controller.text.isNotEmpty && viewModel.displayNameError == null
-              ? ButleryIcon(
-                  ButleryIcons.circleCheck,
-                  color: context.modeColors.success,
-                )
+          errorText: viewModel.displayNameError,
+          validText:
+              viewModel.displayNameError == null && controller.text.isNotEmpty
+              ? context.l10n.profileDisplayNameAvailable
               : null,
           // BUT-517: required + content-filter chain on displayName.
           validator: FormValidators.combine([
@@ -139,15 +139,6 @@ class ProfileDisplayNameField extends StatelessWidget {
           ]),
           onChanged: onChanged,
         ),
-        if (viewModel.displayNameError != null) ...[
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            viewModel.displayNameError!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
-        ],
       ],
     );
   }

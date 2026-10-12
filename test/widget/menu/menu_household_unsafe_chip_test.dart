@@ -105,7 +105,10 @@ void main() {
   ) async {
     await pumpList(tester, [nutDish]);
 
-    expect(find.text(sv.menuAllergenUnsafeForHousehold), findsOneWidget);
+    expect(
+      find.text(sv.menuAllergenUnsafeForHousehold.toUpperCase()),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a dish free of the allergen carries no chip', (tester) async {
@@ -113,7 +116,10 @@ void main() {
 
     // Positive control: the dish itself rendered.
     expect(find.textContaining('freedish', findRichText: true), findsWidgets);
-    expect(find.text(sv.menuAllergenUnsafeForHousehold), findsNothing);
+    expect(
+      find.text(sv.menuAllergenUnsafeForHousehold.toUpperCase()),
+      findsNothing,
+    );
   });
 
   testWidgets('the chip marks only the unsafe dish of a mixed menu', (
@@ -121,9 +127,12 @@ void main() {
   ) async {
     await pumpList(tester, [freeDish, nutDish]);
 
-    expect(find.text(sv.menuAllergenUnsafeForHousehold), findsOneWidget);
+    expect(
+      find.text(sv.menuAllergenUnsafeForHousehold.toUpperCase()),
+      findsOneWidget,
+    );
     final chip = tester.getCenter(
-      find.text(sv.menuAllergenUnsafeForHousehold),
+      find.text(sv.menuAllergenUnsafeForHousehold.toUpperCase()),
     );
     final unsafe = tester.getCenter(find.textContaining('nutdish'));
     final safe = tester.getCenter(find.textContaining('freedish'));

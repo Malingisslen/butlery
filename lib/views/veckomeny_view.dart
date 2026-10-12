@@ -27,7 +27,6 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -50,14 +49,15 @@ import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
     show VeckomenyDialogs;
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
+import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// Weekly menu planning view with natural language input and social sharing.
 /// The week menu's root-bar overflow actions.
 enum _VeckomenyRootAction { load, save, clear }
 
+/// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
 
@@ -547,35 +547,41 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         title: context.l10n.menuWeek,
         secondaryLine: _weekLine(context, planVm),
         actions: _buildHeaderActions(context, viewModel),
-        // A live menu has no calendar placement, so only the list is shown.
-        bottom: widget.realtimeMenuId == null
-            ? VeckomenyViewModeToggle(
-                mode: _viewMode,
-                onSelect: (mode) => unawaited(_setViewMode(mode)),
-              )
-            : null,
       ),
       body: _buildBody(context, viewModel),
-      floatingActionButton: _buildShoppingFab(context, viewModel),
-      // BUT-2275: in the Scaffold's bottom slot the shopping button floats
-      // above the footer; inside the body it covered "Jag placerar själv".
-      bottomNavigationBar: _buildPlacementFooter(context, viewModel),
+      // BUT-2275: the footer is the Scaffold's bottom slot, so the shopping
+      // button never covers "Jag placerar själv".
+      bottomNavigationBar: _buildFooter(context, viewModel),
     );
   }
 
-  /// BUT-1241: explicit placement choice for the generated result.
-  Widget? _buildPlacementFooter(BuildContext context, MenuViewModel viewModel) {
-    if (_viewMode != VeckomenyViewMode.lista ||
-        widget.realtimeMenuId != null ||
-        !viewModel.hasMenu ||
-        viewModel.isGenerating ||
-        viewModel.hasError ||
-        // BUT-2275: the Scaffold lifts the body over the keyboard but not
-        // this slot, so the buttons would sit unreachable under it.
-        MediaQuery.viewInsetsOf(context).bottom > 0) {
+  /// The calendar's "Till inköpslista", or under a generated list the
+  /// placement choice with the same way on (BUT-1241).
+  Widget? _buildFooter(BuildContext context, MenuViewModel viewModel) {
+    // BUT-2275: the Scaffold lifts the body over the keyboard but not this
+    // slot, so the buttons would sit unreachable under it.
+    if (viewModel.isGenerating || MediaQuery.viewInsetsOf(context).bottom > 0) {
       return null;
     }
+    final planVm = context.watch<WeeklyMenuPlanViewModel>();
+    if (_viewMode == VeckomenyViewMode.kalender &&
+        widget.realtimeMenuId == null) {
+      if (!planVm.hasEntries) return null;
+      return VeckomenyShoppingFooter(
+        isBusy: planVm.isShoppingFlowRunning,
+        onPressed: () => unawaited(_openShoppingMerge()),
+      );
+    }
+    if (!viewModel.hasMenu || viewModel.hasError) return null;
+    if (widget.realtimeMenuId != null) {
+      return VeckomenyShoppingFooter(
+        isBusy: planVm.isShoppingFlowRunning,
+        onPressed: () => unawaited(_openShoppingMerge()),
+      );
+    }
     return MenuPlacementChoiceFooter(
+      isShoppingBusy: planVm.isShoppingFlowRunning,
+      onToShopping: () => unawaited(_openShoppingMerge()),
       // BUT-1987: the placement state lives on the CALENDAR viewmodel, which
       // owns the write.
       isPlacing: context
@@ -586,30 +592,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// P6-U02: "Till inköpslistan" opens the merge sheet from both view modes,
-  /// "enda vägen från veckomeny till lista" (Skarmar v12 del 2 #inkopmerge;
-  /// flows-roles-budget.md:46). Calendar mode merges the visible week's
-  /// plan; list mode merges the generated menu into the current week's list.
-  Widget? _buildShoppingFab(BuildContext context, MenuViewModel viewModel) {
-    final planVm = context.watch<WeeklyMenuPlanViewModel>();
-    final hasSource = _viewMode == VeckomenyViewMode.kalender
-        ? planVm.hasEntries
-        : viewModel.hasMenu;
-    if (!hasSource) return null;
-    return ActionButtons.actionButton(
-      context,
-      label: context.l10n.menuToShoppingList,
-      icon: ButleryIcons.shoppingCart,
-      isLoading: planVm.isShoppingFlowRunning,
-      onPressed: () => unawaited(_openShoppingMerge()),
-      style: ActionButtonStyle.primary,
-    );
-  }
-
-  /// P6-U02: flow 02. Three outcomes stay apart (produktregler.md:705):
+  /// P6-U02: flow 02. Calendar mode merges the visible week's plan; list mode
+  /// merges the generated menu into the current week's list.
+  ///
+  /// Three outcomes stay apart (produktregler.md):
   /// nothing to generate (a warning), failed (what happened, what is kept,
   /// Försök igen) and already running (silence). A confirmed merge opens the
-  /// list and offers Ångra for 7 s (produktregler.md:131, § 2.4).
+  /// list and offers Ångra for 7 s (produktregler.md, § 2.4).
   ///
   /// One flow at a time, from the tap until the sheet has closed and the
   /// write has finished (WeeklyMenuPlanViewModel.runShoppingFlow): a second
@@ -777,23 +766,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// The view's one saffron action, switched off offline with the reason
-  /// in text (P6-U01, [VeckomenyGenerateButton]).
-  Widget _buildGenerateButton(BuildContext context, MenuViewModel viewModel) {
-    final hasPrompt = _promptController.text.isNotEmpty;
-    return Center(
-      key: const ValueKey('test-veckomeny-generate'),
-      child: VeckomenyGenerateButton(
-        label: viewModel.hasMenu
-            ? context.l10n.menuGenerateNew
-            : context.l10n.menuGenerate,
-        busy: viewModel.isGenerating,
-        busyLabel: context.l10n.weekMenuPlanningTitle,
-        onGenerate: hasPrompt ? () => unawaited(_generateMenu()) : null,
-      ),
-    );
-  }
-
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
     return ButleryPageBody(
       width: PageWidth.wide,
@@ -830,17 +802,33 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                           context,
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: AppDimensions.space12,
                           children: [
-                            MenuContentWidgets.buildPromptInput(
-                              context,
+                            VeckomenyViewModeToggle(
+                              mode: _viewMode,
+                              onSelect: (mode) => unawaited(_setViewMode(mode)),
+                            ),
+                            VeckomenyPromptRow(
                               controller: _promptController,
                               focusNode: _promptFocusNode,
                               isGenerating: viewModel.isGenerating,
+                              hasMenu: viewModel.hasMenu,
+                              // A planned week asks its question in the field
+                              // alone; the label and button come back once
+                              // there is text or no week yet.
+                              compact:
+                                  _viewMode == VeckomenyViewMode.kalender &&
+                                  context
+                                      .watch<WeeklyMenuPlanViewModel>()
+                                      .hasEntries &&
+                                  _promptController.text.isEmpty,
                               onClear: () {
                                 _promptController.clear();
                                 setState(() {});
                               },
                               onChanged: () => setState(() {}),
+                              onGenerate: () => unawaited(_generateMenu()),
                               // Voice prompt (kb-whisper plan): transcript lands
                               // EDITABLE here — the user reviews before generating.
                               voiceButton: VoicePromptButton(
@@ -854,23 +842,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                                   _promptFocusNode.requestFocus();
                                   setState(() {});
                                 },
-                              ),
-                            ),
-                            SizedBox(
-                              height: LayoutComponents.valueFor(
-                                context: context,
-                                mobile: AppDimensions.space12,
-                                tablet: AppDimensions.space32,
-                                desktop: AppDimensions.space32,
-                              ),
-                            ),
-                            _buildGenerateButton(context, viewModel),
-                            SizedBox(
-                              height: LayoutComponents.valueFor(
-                                context: context,
-                                mobile: AppDimensions.space32,
-                                tablet: AppDimensions.space32 * 1.5,
-                                desktop: AppDimensions.spacingXxl,
                               ),
                             ),
                           ],

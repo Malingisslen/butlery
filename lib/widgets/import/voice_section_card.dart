@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/voice/voice_mic_button.dart';
 
-/// One checklist card of the "Tala in recept" wizard (direction B with A's
-/// big microphone in the active card — Malin's pick 2026-07-13).
-///
-/// States: waiting (quiet mic), recording (large central stop),
-/// preparing/transcribing (the plate line with text), done (checkmark). The text
-/// field is ALWAYS typable — typing is the permission-denial and
-/// transcription-failure fallback, so the card never dead-ends.
+/// One part of the "Tala in recept" page (Skarmar v12 'Tala in recept'): the
+/// numbered heading, its prompt, then the field with the microphone beside it
+/// and a hairline under. The field is ALWAYS typable — typing is the
+/// permission-denial and transcription-failure fallback, so a part never
+/// dead-ends; while it listens the field waits and the button says so.
 class VoiceSectionCard extends StatelessWidget {
   const VoiceSectionCard({
     super.key,
@@ -38,7 +37,7 @@ class VoiceSectionCard extends StatelessWidget {
   final VoiceSectionState state;
   final bool isDone;
 
-  /// False while another card records or the import runs — the mic is
+  /// False while another part records or the import runs — the mic is
   /// paused but typing stays available.
   final bool enabled;
   final TextEditingController controller;
@@ -54,138 +53,89 @@ class VoiceSectionCard extends StatelessWidget {
         state == VoiceSectionState.preparing ||
         state == VoiceSectionState.transcribing;
 
-    // Square design language: no rounded corners; green left accent, done
-    // cards keep the rust bottom accent used by content cards.
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space12),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(
-            color: recording
-                ? cs.error
-                : isDone
-                ? cs.onSurface
-                : cs.outlineVariant,
-            width: 4,
-          ),
-          bottom: BorderSide(
-            color: isDone ? cs.secondary : cs.outlineVariant,
-            width: isDone ? 3 : 1,
-          ),
-          top: BorderSide(color: cs.outlineVariant),
-          right: BorderSide(color: cs.outlineVariant),
-        ),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '$index · $title',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.space16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '$index · $title',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: cs.onSurface,
+                    ),
                   ),
                 ),
-              ),
-              // Checkmark and mic COEXIST on a done card: re-dictating a
-              // single section is direction B's core promise ("gör om bara
-              // ingredienserna" = one tap), so the mic never disappears
-              // (review finding #5).
-              if (isDone) ButleryIcon(ButleryIcons.check, color: cs.onSurface),
-              if (!recording && !busy)
-                Semantics(
-                  identifier: 'btn-voice-record-$index',
-                  button: true,
-                  label: prompt,
-                  child: IconButton(
-                    icon: ButleryIcon(ButleryIcons.mic, color: cs.onSurface),
-                    tooltip: prompt,
-                    onPressed: enabled ? onMicTap : null,
-                  ),
-                ),
-            ],
-          ),
-          Text(
-            prompt,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: cs.onSurfaceVariant,
+                // Done and re-dictatable at once: "gör om bara ingredienserna"
+                // is one tap, so the mic stays beside a finished part.
+                if (isDone)
+                  ButleryIcon(ButleryIcons.check, color: cs.onSurface),
+              ],
             ),
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          if (recording)
-            // Direction A's big central microphone, grafted into the active
-            // card: one large stop control, impossible to miss mid-speech.
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.space8,
+            Text(
+              prompt,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space12),
+            if (busy)
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.space8),
+                // The plate line with its text, never a spinner
+                // (produktregler.md; B-18).
+                child: Center(
+                  child: PlateLineMessage(
+                    message: state == VoiceSectionState.preparing
+                        ? context.l10n.voicePromptPreparing
+                        : context.l10n.voicePromptTranscribing,
+                  ),
                 ),
-                child: Semantics(
-                  identifier: 'btn-voice-stop-$index',
-                  button: true,
-                  label: context.l10n.voicePromptStop,
-                  // The one red filled button here (R8-5 = B, BUT-2232):
-                  // action.danger, one opaque step darker while pressed.
-                  child: Material(
-                    color: context.modeColors.actionDanger,
-                    child: InkWell(
-                      onTap: onMicTap,
-                      overlayColor: WidgetStatePropertyAll(
-                        context.modeColors.actionDangerPressed,
-                      ),
-                      child: SizedBox(
-                        width: 88,
-                        height: 88,
-                        child: ButleryIcon(
-                          ButleryIcons.stop,
-                          size: AppDimensions.iconSizeXxl,
-                          color: context.modeColors.onActionDanger,
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: LabeledField(
+                      child: TextField(
+                        controller: controller,
+                        onChanged: onChanged,
+                        enabled: !recording,
+                        maxLines: multiline ? null : 1,
+                        minLines: multiline ? 3 : 1,
+                        style: fieldTextStyle(
+                          context,
+                          enabled: !recording,
+                          base: AppTextStyles.bodyMedium,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: context.l10n.voiceImportTypeHint,
+                          isDense: true,
                         ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: AppDimensions.space12),
+                  VoiceMicButton(
+                    identifier: recording
+                        ? 'btn-voice-stop-$index'
+                        : 'btn-voice-record-$index',
+                    listening: recording,
+                    label: recording ? context.l10n.voicePromptStop : prompt,
+                    listeningWord: context.l10n.voiceListeningWord,
+                    onTap: recording || enabled ? onMicTap : null,
+                  ),
+                ],
               ),
-            )
-          else if (busy)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.space8),
-                // The plate line with its text, never a spinner
-                // (produktregler.md:163; B-18).
-                child: PlateLineMessage(
-                  message: state == VoiceSectionState.preparing
-                      ? context.l10n.voicePromptPreparing
-                      : context.l10n.voicePromptTranscribing,
-                ),
-              ),
-            )
-          else
-            LabeledField(
-              child: TextField(
-                controller: controller,
-                onChanged: onChanged,
-                maxLines: multiline ? null : 1,
-                minLines: multiline ? 3 : 1,
-                style: AppTextStyles.bodyMedium,
-                decoration: InputDecoration(
-                  hintText: context.l10n.voiceImportTypeHint,
-                  isDense: true,
-                ),
-              ),
-            ),
-          if (recording)
-            Center(
-              child: Text(
-                context.l10n.voiceImportRecordingHint,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.error),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
