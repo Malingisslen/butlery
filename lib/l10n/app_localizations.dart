@@ -353,8 +353,14 @@ abstract class AppLocalizations {
   /// No description provided for @passwordRuleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Tolv eller fler tecken, eller tre ord du minns.'**
+  /// **'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.'**
   String get passwordRuleHint;
+
+  /// No description provided for @guestUpgradeNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ska jag kalla dig?'**
+  String get guestUpgradeNameHint;
 
   /// No description provided for @authResetPasswordInstructions.
   ///
@@ -22210,6 +22216,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Jag accepterar '**
   String get authTermsAcceptPrefix;
+
+  /// No description provided for @authTermsConsentPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag godkänner '**
+  String get authTermsConsentPrefix;
+
+  /// No description provided for @authTermsConsentTermsLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'användarvillkoren'**
+  String get authTermsConsentTermsLink;
+
+  /// No description provided for @authTermsConsentPrivacyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'integritetspolicyn'**
+  String get authTermsConsentPrivacyLink;
 
   /// No description provided for @authTermsAcceptMiddle.
   ///

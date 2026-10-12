@@ -137,7 +137,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordRuleHint =>
-      'At least twelve characters, or three words you remember.';
+      'At least twelve characters, or three words you remember. The rule stands here, not as an error after you have typed.';
+
+  @override
+  String get guestUpgradeNameHint => 'What should I call you?';
 
   @override
   String get authResetPasswordInstructions =>
@@ -13391,6 +13394,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authTermsAcceptPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentPrefix => 'I accept the ';
+
+  @override
+  String get authTermsConsentTermsLink => 'terms of use';
+
+  @override
+  String get authTermsConsentPrivacyLink => 'privacy policy';
 
   @override
   String get authTermsAcceptMiddle => ' and ';

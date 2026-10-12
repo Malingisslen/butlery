@@ -277,9 +277,9 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpRegisterMode(tester);
 
-      final consent = find.bySemanticsLabel(RegExp('^Jag accepterar'));
+      final consent = find.bySemanticsLabel(RegExp('^Jag godkänner'));
       expect(consent, findsOneWidget);
-      expect(announcedLines(tester, consent), ['Jag accepterar']);
+      expect(announcedLines(tester, consent), ['Jag godkänner', 'och']);
       expectActivatable(tester, consent);
       expect(
         tester
@@ -290,7 +290,7 @@ void main() {
         ui.CheckedState.isFalse,
       );
       expect(
-        find.bySemanticsLabel(RegExp('Villkor.*Integritetspolicy')),
+        find.bySemanticsLabel(RegExp('användarvillkoren.*integritetspolicyn')),
         findsNothing,
         reason: 'no paraphrase of the whole sentence on the checkbox',
       );
@@ -316,7 +316,9 @@ void main() {
 
       await tester.ensureVisible(consent);
       await tester.pumpAndSettle(_kPumpCap);
-      await tester.tap(consent);
+      // The node spans the links too; the centre may land on one, so tap the
+      // opening words.
+      await tester.tapAt(tester.getTopLeft(consent) + const Offset(8, 20));
       await tester.pump();
       expect(
         tester

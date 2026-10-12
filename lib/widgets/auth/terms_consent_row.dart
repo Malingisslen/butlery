@@ -7,8 +7,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 
-/// "Jag accepterar Villkor och Integritetspolicy": the consent a new account
-/// gives, on the sign-up form and before a guest start.
+/// The consent a new account gives, on the sign-up form, before a guest start
+/// and when a guest creates an account.
 class TermsConsentRow extends StatelessWidget {
   const TermsConsentRow({
     required this.accepted,
@@ -30,9 +30,9 @@ class TermsConsentRow extends StatelessWidget {
       children: [
         // A >=48dp tap target (WCAG 2.5.5 / EAA) while the visible box stays
         // compact. BUT-1426: the old SizedBox(24,24) clamped the hit area to
-        // half the minimum touch target. The visible "I accept" text beside
-        // the box is the screen-reader stop for this checkbox, so the box
-        // itself stays out of the tree.
+        // half the minimum touch target. The visible text beside the box is
+        // the screen-reader stop for this checkbox, so the box itself stays
+        // out of the tree.
         ExcludeSemantics(
           child: SizedBox(
             width: 48,
@@ -47,51 +47,59 @@ class TermsConsentRow extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.space8),
         Expanded(
-          // BUT-1426: the inline ToS / Privacy links were
-          // TapGestureRecognizer spans — no link role, no accessible name.
-          // The plain-label words toggle the checkbox.
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Semantics(
-                checked: accepted,
-                child: GestureDetector(
-                  onTap: onChanged == null ? null : () => onChanged(!accepted),
-                  child: Text(
-                    context.l10n.authTermsAcceptPrefix,
+          // Links are baseline WidgetSpans in one sentence: ButleryLink keeps
+          // its hit area. The words around them toggle the box.
+          child: Semantics(
+            checked: accepted,
+            child: GestureDetector(
+              onTap: onChanged == null ? null : () => onChanged(!accepted),
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppDimensions.space12),
+                child: Text.rich(
+                  TextSpan(
                     style: AppTextStyles.bodySmall.copyWith(
                       color: cs.onSurface,
                     ),
+                    children: [
+                      TextSpan(text: context.l10n.authTermsConsentPrefix),
+                      _link(
+                        context,
+                        label: context.l10n.a11yTermsOfServiceLink,
+                        text: context.l10n.authTermsConsentTermsLink,
+                        route: Routes.termsOfService,
+                      ),
+                      TextSpan(text: context.l10n.authTermsAcceptMiddle),
+                      _link(
+                        context,
+                        label: context.l10n.a11yPrivacyPolicyLink,
+                        text: context.l10n.authTermsConsentPrivacyLink,
+                        route: Routes.privacyPolicy,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              ButleryLink(
-                semanticLabel: context.l10n.a11yTermsOfServiceLink,
-                onTap: () =>
-                    Navigator.pushNamed(context, Routes.termsOfService),
-                child: Text(
-                  context.l10n.authTermsOfService,
-                  style: _linkStyle(context),
-                ),
-              ),
-              Text(
-                context.l10n.authTermsAcceptMiddle,
-                style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-              ),
-              ButleryLink(
-                semanticLabel: context.l10n.a11yPrivacyPolicyLink,
-                onTap: () => Navigator.pushNamed(context, Routes.privacyPolicy),
-                child: Text(
-                  context.l10n.profilePrivacyPolicy,
-                  style: _linkStyle(context),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ],
     );
   }
+
+  InlineSpan _link(
+    BuildContext context, {
+    required String label,
+    required String text,
+    required String route,
+  }) => WidgetSpan(
+    alignment: PlaceholderAlignment.baseline,
+    baseline: TextBaseline.alphabetic,
+    child: ButleryLink(
+      semanticLabel: label,
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Text(text, style: _linkStyle(context)),
+    ),
+  );
 
   // text.link (R8-11 = A).
   TextStyle _linkStyle(BuildContext context) =>

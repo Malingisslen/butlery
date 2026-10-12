@@ -154,9 +154,9 @@ void main() {
       final handle = tester.ensureSemantics();
       await pumpRegister(tester);
 
-      expect(find.bySemanticsLabel(RegExp('^Jag accepterar')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('^Jag godkänner')), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Jag accepterar Villkor och Integritetspolicy'),
+        find.bySemanticsLabel('Jag godkänner användarvillkoren och integritetspolicyn'),
         findsNothing,
       );
       handle.dispose();

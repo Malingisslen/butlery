@@ -330,7 +330,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
           enabled: enabled,
           textInputAction: TextInputAction.next,
           decoration: InputDecoration(
-            hintText: l10n.authEnterYourName,
+            hintText: l10n.guestUpgradeNameHint,
           ),
           errorBuilder: FieldErrorLine.builder,
           validator: FormValidators.authName(),

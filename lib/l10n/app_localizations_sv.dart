@@ -137,7 +137,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get passwordRuleHint =>
-      'Tolv eller fler tecken, eller tre ord du minns.';
+      'Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.';
+
+  @override
+  String get guestUpgradeNameHint => 'Vad ska jag kalla dig?';
 
   @override
   String get authResetPasswordInstructions =>
@@ -13492,6 +13495,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get authTermsAcceptPrefix => 'Jag accepterar ';
+
+  @override
+  String get authTermsConsentPrefix => 'Jag godkänner ';
+
+  @override
+  String get authTermsConsentTermsLink => 'användarvillkoren';
+
+  @override
+  String get authTermsConsentPrivacyLink => 'integritetspolicyn';
 
   @override
   String get authTermsAcceptMiddle => ' och ';

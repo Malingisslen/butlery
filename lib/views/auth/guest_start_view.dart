@@ -149,7 +149,7 @@ class _GuestStartViewState extends State<GuestStartView> {
       children: [
         Text(
           l10n.guestStartBody,
-          style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
+          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: AppDimensions.space24),
         BirthYearDropdown(
