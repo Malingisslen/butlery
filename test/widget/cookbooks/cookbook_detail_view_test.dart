@@ -211,9 +211,6 @@ void main() {
       greaterThanOrEqualTo(tester.getBottomLeft(title).dy),
     );
     expect(tester.getTopLeft(find.text(note)).dx, tester.getTopLeft(title).dx);
-    // The row with a note offers to edit it; the others offer to write one.
-    expect(find.byTooltip(l10n.cookbookEditNote), findsOneWidget);
-    expect(find.byTooltip(l10n.cookbookWriteNote), findsNWidgets(2));
   });
 
   testWidgets('the book closes when its tag stops being a cookbook', (

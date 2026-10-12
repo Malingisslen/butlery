@@ -104,7 +104,7 @@ void main() {
     expect(find.text(l10n.recipeSuggestionTitle), findsOneWidget);
     expect(find.text('Pannkakor med sylt'), findsOneWidget);
     // The field is named as a person reads it, never by its stored key.
-    expect(find.text(l10n.recipeTitle), findsOneWidget);
+    expect(find.text(l10n.recipeTitle.toUpperCase()), findsOneWidget);
     expect(find.text('title'), findsNothing);
     expect(find.text(l10n.recipeSuggestionSuggestedLabel), findsOneWidget);
     expect(find.text(l10n.recipeSuggestionCurrentLabel), findsOneWidget);
@@ -145,7 +145,10 @@ void main() {
     await open(tester, asOwner: false, suggestion: replaced);
     expect(
       find.textContaining(
-        l10n.recipeSuggestionIntroMineUpdated('').split('.').first,
+        l10n
+            .recipeSuggestionIntroMineUpdated('Pannkakor')
+            .split('.')
+            .first,
       ),
       findsOneWidget,
     );

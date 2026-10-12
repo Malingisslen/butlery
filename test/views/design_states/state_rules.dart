@@ -542,18 +542,17 @@ Color? _nearestFill(RenderObject start) {
 }
 
 /// CONFLICT on the own recipe: both versions are on offer (the banner's
-/// title, and after its action the two labelled columns).
+/// title, and after its action the two named versions).
 List<Violation> recipeConflictRule() {
   final texts = paintedTexts().map((t) => t.text).toList();
   final both =
-      texts.any((t) => t.contains(sv.conflictDiffLocalLabel)) &&
-      texts.any((t) => t.contains(sv.conflictDiffRemoteLabel));
+      texts.any((t) => t == sv.conflictDiffMineName) &&
+      texts.any((t) => t == sv.conflictDiffApplies.toUpperCase());
   return [
     if (!both)
       Violation(
         'NO_BOTH_VERSIONS',
-        'no "${sv.conflictDiffLocalLabel}" and '
-            '"${sv.conflictDiffRemoteLabel}" side by side',
+        'no "${sv.conflictDiffMineName}" beside the version that applies',
       ),
   ];
 }

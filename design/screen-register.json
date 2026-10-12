@@ -53,7 +53,7 @@
    ]
   },
   "lib/views/admin/moderator_review_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_5-7#11",
     "etapp_5-7#12",
@@ -151,7 +151,7 @@
    ]
   },
   "lib/views/cookbooks/cookbook_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#18"
    ],
@@ -191,7 +191,7 @@
    ]
   },
   "lib/views/family/family_rating_entry_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#2",
     "del_4_morkt_lage_och_etapp_0-1#25",
@@ -498,7 +498,7 @@
    ]
   },
   "lib/views/personal_tags_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#16"
    ],
@@ -526,7 +526,7 @@
    ]
   },
   "lib/views/realtime/conflict_diff_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#28",
     "etapp_11_breda_vyer#5"
@@ -536,7 +536,7 @@
    ]
   },
   "lib/views/realtime/recipe_suggestion_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#28"
    ],
@@ -806,7 +806,7 @@
    ]
   },
   "lib/views/tag_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#18"
    ],

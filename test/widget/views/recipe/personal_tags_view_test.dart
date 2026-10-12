@@ -27,7 +27,6 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -259,7 +258,7 @@ void main() {
     });
 
     testWidgets('groups, ungrouped and unused tags are separate sections, '
-        'and the unused one ends with the danger row', (tester) async {
+        'and the unused one carries the danger action', (tester) async {
       final group = PersonalTagGroup.create(name: 'Kvällsmat');
       fakeVm.setState(
         tags: [
@@ -274,9 +273,9 @@ void main() {
 
       expect(find.text('KVÄLLSMAT'), findsOneWidget);
       expect(find.text('UTAN GRUPP'), findsOneWidget);
-      expect(find.text('OANVÄNDA · 1'), findsOneWidget);
+      expect(find.text('Oanvända (1)'), findsOneWidget);
       expect(find.text('34 recept'), findsOneWidget);
-      expect(find.text('Radera oanvända taggar'), findsOneWidget);
+      expect(find.text('Radera alla'), findsOneWidget);
       // An unused tag is listed once, in its own section.
       expect(find.text('Glömd'), findsOneWidget);
     });
@@ -340,7 +339,7 @@ void main() {
       );
       await pumpView(tester);
 
-      await tester.tap(find.text('Radera oanvända taggar'));
+      await tester.tap(find.text('Radera alla'));
       await tester.pumpAndSettle();
       expect(find.text('Radera oanvända taggar?'), findsOneWidget);
       expect(fakeVm.deleteUnusedCalls, 0);
@@ -349,7 +348,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(fakeVm.deleteUnusedCalls, 0);
 
-      await tester.tap(find.text('Radera oanvända taggar'));
+      await tester.tap(find.text('Radera alla'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.ancestor(
@@ -366,7 +365,7 @@ void main() {
       fakeVm.setState(tags: [tag], usageCounts: {'Snabbt': 1});
       await pumpView(tester);
 
-      await tester.tap(find.widgetWithText(ButleryListRow, 'Snabbt'));
+      await tester.tap(find.text('Snabbt'));
       await tester.pumpAndSettle();
 
       expect(
@@ -385,7 +384,7 @@ void main() {
       );
       await pumpView(tester);
 
-      await tester.longPress(find.widgetWithText(ButleryListRow, 'Snabbt'));
+      await tester.longPress(find.text('Snabbt'));
       await tester.pump();
 
       expect(find.text('1 valda'), findsOneWidget);

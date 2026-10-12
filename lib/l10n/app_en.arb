@@ -1416,7 +1416,7 @@
       }
     }
   },
-  "personalTagRuleCount": "{count} rules",
+  "personalTagRuleCount": "{count, plural, =1{1 rule} other{{count} rules}}",
   "@personalTagRuleCount": {
     "placeholders": {
       "count": {
@@ -1424,7 +1424,7 @@
       }
     }
   },
-  "personalTagRuleCountActive": "{enabled}/{total} rules active",
+  "personalTagRuleCountActive": "{enabled} of {total} {total, plural, =1{rule} other{rules}} on",
   "@personalTagRuleCountActive": {
     "placeholders": {
       "enabled": {
@@ -11041,7 +11041,7 @@
       }
     }
   },
-  "whoAteSkip": "skip",
+  "whoAteSkip": "Skip",
   "a11yToggleDiner": "Mark as eating",
   "@a11yToggleDiner": {
     "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
@@ -11091,10 +11091,10 @@
       }
     }
   },
-  "familyRatingTitle": "what did you think?",
+  "familyRatingTitle": "What did you think?",
   "familyRatingIntro": "Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.",
   "familyRatingYou": "you",
-  "familyRatingSave": "save ratings",
+  "familyRatingSave": "Save",
   "familyRatingPrivateNote": "Your individual ratings are private — no one else sees who gave what. Each rating does, though, count toward the recipe's overall average.",
   "familyRatingManualButton": "Rate as a family",
   "familyRatingProxyNote": "entered by {name} · doesn't change their own rating",
@@ -12617,23 +12617,23 @@
   "@recipeSuggestionTitle": {
     "description": "P5-U27b: title of the view that shows one suggestion."
   },
-  "recipeSuggestionIntroOwner": "{name} suggests this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroOwner": "{name} suggests a change to {title}. Your recipe only changes if you use the suggestion.",
   "@recipeSuggestionIntroOwner": {
-    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner; name = suggester, title = the recipe.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMine": "You suggested this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroMine": "You suggested a change to {title}. The recipe only changes if the owner uses the suggestion.",
   "@recipeSuggestionIntroMine": {
-    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "description": "Intro line for the suggester; title = the recipe.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -12642,9 +12642,9 @@
   "@recipeSuggestionSuggestedLabel": {
     "description": "P5-U27b: label over the suggested value of a field."
   },
-  "recipeSuggestionCurrentLabel": "Recipe now",
+  "recipeSuggestionCurrentLabel": "Now",
   "@recipeSuggestionCurrentLabel": {
-    "description": "P5-U27b: label over the recipe's current value of a field."
+    "description": "Label over the recipe's current value of a field."
   },
   "recipeSuggestionAccept": "Use the suggestion",
   "@recipeSuggestionAccept": {
@@ -13148,23 +13148,23 @@
       }
     }
   },
-  "recipeSuggestionIntroOwnerUpdated": "{name} has updated their suggestion to this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroOwnerUpdated": "{name} has updated their suggestion for {title}. Your recipe only changes if you use the suggestion.",
   "@recipeSuggestionIntroOwnerUpdated": {
-    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner when the suggestion replaced an earlier one.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMineUpdated": "You suggested this, and it replaced your earlier suggestion. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroMineUpdated": "You suggested a change to {title}, and it replaced your earlier suggestion. The recipe only changes if the owner uses the suggestion.",
   "@recipeSuggestionIntroMineUpdated": {
-    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "description": "Intro line for the suggester when the suggestion replaced an earlier one.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -14323,7 +14323,7 @@
   "@tagDetailAddRule": {
     "description": "Row that opens the rule builder"
   },
-  "tagDetailRunRulesAll": "Run the rules on all recipes",
+  "tagDetailRunRulesAll": "Run the rules now",
   "@tagDetailRunRulesAll": {
     "description": "Secondary button on the tag page that applies the rules to existing recipes"
   },
@@ -16358,5 +16358,257 @@
   "signInMethodsPasswordFailed": "The password couldn't be set. Try again.",
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
+  },
+  "adminOpsSectionTitle": "Operations · recent events",
+  "@adminOpsSectionTitle": {
+    "description": "Skiss spår 9 (v65): heading above the ops-log table"
+  },
+  "adminOpsSparseTitle": "Sparse on purpose.",
+  "@adminOpsSparseTitle": {
+    "description": "Skiss spår 9 (v65): bold lead of the note closing the ops-log table"
+  },
+  "adminOpsSparseBody": "The log fills once the app has users. A short log does not mean anything is missing.",
+  "@adminOpsSparseBody": {
+    "description": "Skiss spår 9 (v65): body of the note closing the ops-log table"
+  },
+  "adminOpsEventNotificationCleanup": "Notifications cleaned",
+  "@adminOpsEventNotificationCleanup": {
+    "description": "Ops-log event name for the notification_cleanup job"
+  },
+  "adminOpsEventIngredientCleanup": "Ingredients cleaned",
+  "@adminOpsEventIngredientCleanup": {
+    "description": "Ops-log event name for the ingredient_cleanup job"
+  },
+  "adminOpsEventSystemEventsCleanup": "Ops log cleaned",
+  "@adminOpsEventSystemEventsCleanup": {
+    "description": "Ops-log event name for the system_events_cleanup job"
+  },
+  "adminOpsEventSocialRequestsCleanup": "Old requests cleaned",
+  "@adminOpsEventSocialRequestsCleanup": {
+    "description": "Ops-log event name for the cleanup_expired_social_requests job"
+  },
+  "adminOpsEventAuditLogCleanup": "Audit log cleaned",
+  "@adminOpsEventAuditLogCleanup": {
+    "description": "Ops-log event name for the audit_log_cleanup job"
+  },
+  "adminOpsEventDeletionAuditLogCleanup": "Deletion log cleaned",
+  "@adminOpsEventDeletionAuditLogCleanup": {
+    "description": "Ops-log event name for the deletion_audit_log_cleanup job"
+  },
+  "adminParsingSectionTitle": "Parsing by domain",
+  "@adminParsingSectionTitle": {
+    "description": "Skiss spår 9 (v66): heading above the parsing table"
+  },
+  "adminParsingColSuccess": "Succeeded",
+  "@adminParsingColSuccess": {
+    "description": "Skiss spår 9 (v66): column with the import success rate per domain"
+  },
+  "adminParsingColStuck": "Stuck on",
+  "@adminParsingColStuck": {
+    "description": "Skiss spår 9 (v66): column with the field corrected most per domain"
+  },
+  "adminParsingTableNote": "Tap a row to see its imports. The field in the last column is the one corrected most often for the domain.",
+  "@adminParsingTableNote": {
+    "description": "Skiss spår 9 (v66): note under the parsing table"
+  },
+  "moderatorContentTypeRecipe": "Recipe",
+  "@moderatorContentTypeRecipe": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeComment": "Comment",
+  "@moderatorContentTypeComment": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeMessage": "Message",
+  "@moderatorContentTypeMessage": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeProfile": "Profile",
+  "@moderatorContentTypeProfile": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeCookSnap": "Cook snap",
+  "@moderatorContentTypeCookSnap": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeGroup": "Group",
+  "@moderatorContentTypeGroup": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorStatusNew": "New",
+  "@moderatorStatusNew": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusInReview": "In review",
+  "@moderatorStatusInReview": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusActioned": "Actioned",
+  "@moderatorStatusActioned": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusClosed": "Closed",
+  "@moderatorStatusClosed": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorCloseTooltip": "Close the report",
+  "@moderatorCloseTooltip": {
+    "description": "Skiss spår 9 (v64): tooltip on the X that closes a report"
+  },
+  "familyRatingNotSet": "not set",
+  "@familyRatingNotSet": {
+    "description": "Skiss spår 9 (v72): shown instead of a score for a diner with no stars yet"
+  },
+  "familyRatingNoteSkip": "Anyone you skip gets no row and is left out of the average. A rating can always be changed, and the latest replaces the earlier one.",
+  "@familyRatingNoteSkip": {
+    "description": "Skiss spår 9 (v72): first part of the note under the family rating rows"
+  },
+  "familyRatingNoteCounts": "The rating counts toward the recipe's public average",
+  "@familyRatingNoteCounts": {
+    "description": "Skiss spår 9 (v72): bold part of the note under the family rating rows"
+  },
+  "familyRatingNoteAnonymous": ", anonymously and without showing anyone's identity.",
+  "@familyRatingNoteAnonymous": {
+    "description": "Skiss spår 9 (v72): closing part of the note under the family rating rows"
+  },
+  "cookbookStatRecipes": "recipes",
+  "@cookbookStatRecipes": {
+    "description": "Skiss spår 9 (v71): label under the recipe count in a cookbook's key figures"
+  },
+  "cookbookStatSort": "order",
+  "@cookbookStatSort": {
+    "description": "Skiss spår 9 (v71): label under the sort order in a cookbook's key figures"
+  },
+  "cookbookStatSortAlphabetical": "A–Z",
+  "@cookbookStatSortAlphabetical": {
+    "description": "Skiss spår 9 (v71): the cookbook is sorted alphabetically"
+  },
+  "cookbookStatSortCustom": "Own",
+  "@cookbookStatSortCustom": {
+    "description": "Skiss spår 9 (v71): the cookbook has the user's own order"
+  },
+  "cookbookStatUpdated": "last changed",
+  "@cookbookStatUpdated": {
+    "description": "Skiss spår 9 (v71): label under the date the cookbook last changed"
+  },
+  "tagDetailNewRule": "+ New rule",
+  "@tagDetailNewRule": {
+    "description": "Skiss spår 9 (v108): link at the end of the rules heading on a tag page"
+  },
+  "tagDetailRulesHeading": "Automatic rules",
+  "@tagDetailRulesHeading": {
+    "description": "Skiss spår 9 (v108): heading over the rules on a tag page"
+  },
+  "tagDetailStatChanged": "last changed",
+  "@tagDetailStatChanged": {
+    "description": "Skiss spår 9 (v108): label under the date the tag last changed"
+  },
+  "tagDetailRuleTagged": "{count, plural, =1{tagged 1 recipe} other{tagged {count} recipes}}",
+  "@tagDetailRuleTagged": {
+    "description": "Skiss spår 9 (v108): what a rule has tagged",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRecipesHeading": "{count, plural, =1{1 recipe with the tag} other{{count} recipes with the tag}}",
+  "@tagDetailRecipesHeading": {
+    "description": "Skiss spår 9 (v108): line over the recipe list on a tag page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRuleSummaryNumber": "{type} {operator} {value}",
+  "@tagDetailRuleSummaryNumber": {
+    "description": "Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "operator": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "tagEditSheetTitle": "Edit the tag",
+  "@tagEditSheetTitle": {
+    "description": "Skiss spår 9 (v108): title of the sheet the Redigera link on a tag page opens"
+  },
+  "tagDetailStatRulesValue": "{enabled} of {total}",
+  "@tagDetailStatRulesValue": {
+    "description": "Skiss spår 9 (v108): how many of the tag's rules are on",
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailStatRules": "{total, plural, =1{rule on} other{rules on}}",
+  "@tagDetailStatRules": {
+    "description": "Skiss spår 9 (v108): label under how many of the tag's rules are on",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagUnusedHeading": "Unused ({count})",
+  "@personalTagUnusedHeading": {
+    "description": "Skiss spår 9 (v84): heading over the unused tags shown as pills",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteAllShort": "Delete all",
+  "@personalTagDeleteAllShort": {
+    "description": "Skiss spår 9 (v84): red link at the end of the unused-tags heading"
+  },
+  "conflictDiffMineName": "Yours",
+  "@conflictDiffMineName": {
+    "description": "Name of the user's own version in the conflict view."
+  },
+  "conflictDiffTheirsName": "Theirs",
+  "@conflictDiffTheirsName": {
+    "description": "Name of the other version in the conflict view when no name is known."
+  },
+  "conflictDiffApplies": "Applies",
+  "@conflictDiffApplies": {
+    "description": "Badge on the version that applies now."
+  },
+  "conflictDiffIntro": "You and {name} edited {title} at the same time. Only one of the versions applies – here is how they differ.",
+  "@conflictDiffIntro": {
+    "description": "Intro of the conflict view; name = the other editor, title = the recipe.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictDiffIntroPlain": "You edited at the same time. Only one of the versions applies – here is how they differ.",
+  "@conflictDiffIntroPlain": {
+    "description": "Intro of the conflict view when the other editor or the title is not known."
+  },
+  "recipeSuggestionKeptNote": "The suggestion is kept until {date}. Then it is removed.",
+  "@recipeSuggestionKeptNote": {
+    "description": "Note above the decision buttons; the Firestore TTL policy on recipe_suggestions removes it at expiresAt.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

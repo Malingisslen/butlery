@@ -421,11 +421,11 @@ void main() {
       ];
     });
 
-    testWidgets('the app bar pencil opens the edit sheet', (tester) async {
+    testWidgets('the app bar "Redigera" opens the edit sheet', (tester) async {
       await openBook(tester);
       expect(find.text(l10n.cookbookEditTitle), findsNothing);
 
-      await tester.tap(find.byTooltip(l10n.cookbookEdit));
+      await tester.tap(find.text(l10n.cookbookEdit));
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.cookbookEditTitle), findsOneWidget);
@@ -502,41 +502,43 @@ void main() {
     });
 
     group('note dialog', () {
-      testWidgets('a row pencil opens the dialog for that recipe, empty', (
-        tester,
-      ) async {
-        await openBook(
+      testWidgets(
+        'a long press on a row opens the dialog for that recipe, empty',
+        (
           tester,
-          details: const CookbookDetails(recipeNotes: {'r1': 'Gammal'}),
-        );
+        ) async {
+          await openBook(
+            tester,
+            details: const CookbookDetails(recipeNotes: {'r1': 'Gammal'}),
+          );
 
-        // r1 has a note; the first "Skriv text" belongs to r2.
-        await tester.tap(find.byTooltip(l10n.cookbookWriteNote).first);
-        await tester.pumpAndSettle();
+          await tester.longPress(find.text('Köttbullar'));
+          await tester.pumpAndSettle();
 
-        final dialog = find.byType(AlertDialog);
-        expect(
-          find.descendant(of: dialog, matching: find.text('Köttbullar')),
-          findsOneWidget,
-        );
-        expect(
-          tester
-              .widget<EditableText>(find.byType(EditableText))
-              .controller
-              .text,
-          isEmpty,
-        );
+          final dialog = find.byType(AlertDialog);
+          expect(
+            find.descendant(of: dialog, matching: find.text('Köttbullar')),
+            findsOneWidget,
+          );
+          expect(
+            tester
+                .widget<EditableText>(find.byType(EditableText))
+                .controller
+                .text,
+            isEmpty,
+          );
 
-        await tester.enterText(find.byType(EditableText), '  Ny text  ');
-        await tester.tap(find.text(l10n.cookbookSave));
-        await tester.pumpAndSettle();
+          await tester.enterText(find.byType(EditableText), '  Ny text  ');
+          await tester.tap(find.text(l10n.cookbookSave));
+          await tester.pumpAndSettle();
 
-        final saved = capturedSave();
-        expect(saved.details.recipeNotes, {
-          'r1': 'Gammal',
-          'r2': 'Ny text',
-        });
-      });
+          final saved = capturedSave();
+          expect(saved.details.recipeNotes, {
+            'r1': 'Gammal',
+            'r2': 'Ny text',
+          });
+        },
+      );
 
       testWidgets('pre-fills the existing note; empty text removes only it', (
         tester,
@@ -548,7 +550,7 @@ void main() {
           ),
         );
 
-        await tester.tap(find.byTooltip(l10n.cookbookEditNote).first);
+        await tester.longPress(find.text('Kanelbullar'));
         await tester.pumpAndSettle();
         expect(
           tester
@@ -573,7 +575,7 @@ void main() {
           details: const CookbookDetails(recipeNotes: {'r1': 'Gammal'}),
         );
 
-        await tester.tap(find.byTooltip(l10n.cookbookEditNote));
+        await tester.longPress(find.text('Kanelbullar'));
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(EditableText), 'Ändrad men ångrad');
         await tester.tap(find.text(l10n.commonCancel));
