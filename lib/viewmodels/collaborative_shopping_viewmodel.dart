@@ -215,6 +215,26 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   // Status and metadata - delegate to display manager
   String get statusText =>
       _displayManager.getStatusText(hasData, totalItems, completedItems);
+
+  /// The names the list shows for its people: the owner, then everyone an
+  /// item is claimed by. The list holds no profile for a member who has
+  /// claimed nothing, so the header adds the rest as a count.
+  List<String> get participantNames {
+    final owner = _currentList?.ownerDisplayName;
+    final names = <String>{if (owner != null && owner.isNotEmpty) owner};
+    for (final i in [...activeItems, ...completedItemsList]) {
+      final name = i.assignedToDisplayName;
+      if (name != null && name.isNotEmpty) names.add(name);
+    }
+    return names.toList();
+  }
+
+  /// Members the names above do not cover.
+  int get participantsWithoutName {
+    final missing = (_currentList?.memberCount ?? 0) - participantNames.length;
+    return missing > 0 ? missing : 0;
+  }
+
   String get memberCountText =>
       _displayManager.getMemberCountText(_currentList);
   String get activitySummary =>
@@ -427,8 +447,6 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
       _displayManager.getStatusColor(cs, modeColors, hasData, statusText);
   Color getProgressColor(ColorScheme cs, ModeColors modeColors) =>
       _displayManager.getProgressColor(cs, modeColors, completionPercentage);
-  String? getItemSubtitle(UnifiedShoppingItem item) =>
-      _displayManager.getItemSubtitle(item);
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>
       _displayManager.getItemTrailingWidgets(item);
 

@@ -3,7 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -33,28 +33,6 @@ class ShoppingDisplayManager {
     if (completionPercentage == 100) return modeColors.success;
     if (completionPercentage > 50) return modeColors.warning;
     return cs.onSurface;
-  }
-
-  String? getItemSubtitle(UnifiedShoppingItem item) {
-    final parts = <String>[];
-
-    if (item.amount > 1 || item.unit.isNotEmpty) {
-      final quantityText = item.amount > 1 ? '${item.amount}' : '';
-      final unitText = item.unit.isNotEmpty ? item.unit : '';
-      if (quantityText.isNotEmpty || unitText.isNotEmpty) {
-        parts.add('$quantityText $unitText'.trim());
-      }
-    }
-
-    if (item.category.isNotEmpty && item.category != ShoppingCategory.other) {
-      parts.add(ShoppingCategory.displayName(item.category));
-    }
-
-    if (item.bought) {
-      parts.add('✓ ${AppLocale.current.statusPurchased}');
-    }
-
-    return parts.isNotEmpty ? parts.join(' • ') : null;
   }
 
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) {

@@ -483,6 +483,69 @@ void main() {
       );
     }
 
+    for (final dark in [false, true]) {
+      testWidgets(
+        'undersida(light: true): paper surface, ink text and arrow in '
+        '${dark ? 'dark' : 'light'} mode',
+        (tester) async {
+          await tester.pumpWidget(
+            _app(
+              ButleryTopBar.undersida(
+                title: 'Receptet',
+                onBack: () {},
+                light: true,
+              ),
+              theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            ),
+          );
+          // The same tokens as the root bar, not the subpage's ink.
+          expect(
+            _barColor(tester),
+            dark ? AppColorsDark.cream : AppColors.cream,
+          );
+          expect(
+            _textColor(tester, _titleKey),
+            dark ? AppColorsDark.textDark : AppColors.textDark,
+          );
+          final icon = find.descendant(
+            of: find.byKey(_backKey),
+            matching: find.byWidgetPredicate(
+              (w) => w is CustomPaint && w.painter is ButleryGlyphPainter,
+            ),
+          );
+          expect(
+            _glyphColor(tester, icon),
+            dark ? AppColorsDark.textDark : AppColors.textDark,
+          );
+          // Paper in light mode wants dark status-bar icons; ink in dark mode
+          // wants light ones.
+          expect(
+            tester
+                .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+                  find.byType(AnnotatedRegion<SystemUiOverlayStyle>).first,
+                )
+                .value,
+            dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+          );
+        },
+      );
+    }
+
+    testWidgets('undersida without light stays on ink in both modes', (
+      tester,
+    ) async {
+      for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+        await tester.pumpWidget(
+          _app(
+            ButleryTopBar.undersida(title: 'Receptet', onBack: () {}),
+            theme: theme,
+          ),
+        );
+        expect(_barColor(tester), const Color(0xFF24382C));
+        expect(_textColor(tester, _titleKey), const Color(0xFFF5F4ED));
+      }
+    });
+
     testWidgets('overrides win over the defaults', (tester) async {
       await tester.pumpWidget(
         _app(

@@ -32,6 +32,7 @@ import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
 
@@ -296,6 +297,17 @@ void main() {
         vm.dispose();
       });
     }
+
+    testWidgets('the saffron action opens the add sheet', (tester) async {
+      await tester.pumpWidget(_app(const Scaffold(body: HemEmptyState())));
+      await tester.pumpAndSettle();
+      expect(find.byType(ButleryAddSheet), findsNothing);
+
+      await tester.tap(find.byKey(HemEmptyState.addRecipeKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ButleryAddSheet), findsOneWidget);
+    });
 
     testWidgets('a shortcut opens its own route', (tester) async {
       await tester.pumpWidget(_app(const Scaffold(body: HemEmptyState())));

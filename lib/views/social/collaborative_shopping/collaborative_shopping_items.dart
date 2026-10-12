@@ -21,17 +21,24 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/list/section_band.dart';
+import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
+import 'package:butlery/widgets/shopping/shopping_row.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
 class CollaborativeShoppingItems extends StatelessWidget {
   final CollaborativeShoppingViewModel viewModel;
   final Function(String itemId) onToggleItem;
 
+  /// "Rensa köpta" beside the bought count; null leaves it out, as for a
+  /// reader.
+  final VoidCallback? onClearCompleted;
+
   const CollaborativeShoppingItems({
     super.key,
     required this.viewModel,
     required this.onToggleItem,
+    this.onClearCompleted,
   });
 
   @override
@@ -75,7 +82,10 @@ class CollaborativeShoppingItems extends StatelessWidget {
     final completedItems = viewModel.completedItemsList;
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMargin,
+        vertical: AppDimensions.space4,
+      ),
       itemCount:
           activeItems.length +
           (completedItems.isNotEmpty ? completedItems.length + 1 : 0),
@@ -101,7 +111,10 @@ class CollaborativeShoppingItems extends StatelessWidget {
     final completed = viewModel.completedItemsList;
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMargin,
+        vertical: AppDimensions.space4,
+      ),
       children: [
         if (mine.isNotEmpty) ...[
           _SectionHeader(text: context.l10n.minDel, count: mine.length),
@@ -111,7 +124,6 @@ class CollaborativeShoppingItems extends StatelessWidget {
           _SectionHeader(
             text: _othersSectionTitle(context, others),
             count: others.length,
-            greyed: true,
           ),
           ...others.map((i) => _buildItemCard(context, i, false, greyed: true)),
         ],
@@ -163,7 +175,10 @@ class CollaborativeShoppingItems extends StatelessWidget {
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.layoutMargin,
+        vertical: AppDimensions.space4,
+      ),
       children: [
         for (final zone in orderedZones) ...[
           _SectionHeader(
@@ -192,29 +207,29 @@ class CollaborativeShoppingItems extends StatelessWidget {
     );
   }
 
+  /// "Köpt (N)" over a hairline with "Rensa köpta" at the right (#inkop).
   Widget _buildCompletedSeparator(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space4,
+      margin: const EdgeInsets.only(top: AppDimensions.space16),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Divider(color: Theme.of(context).colorScheme.outline),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space4,
-            ),
             child: Text(
-              '${context.l10n.collaborativeCompleted} (${viewModel.completedItemsCount})',
-              style: AppTextStyles.bodyBold,
+              context.l10n.shoppingBoughtCount(viewModel.completedItemsCount),
+              style: AppTextStyles.labelLarge.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ),
-          Expanded(
-            child: Divider(color: Theme.of(context).colorScheme.outline),
-          ),
+          if (onClearCompleted != null)
+            TextButton(
+              onPressed: onClearCompleted,
+              child: Text(context.l10n.shoppingClearBought),
+            ),
         ],
       ),
     );
@@ -305,30 +320,17 @@ class _ViewModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space4,
+        horizontal: AppDimensions.layoutMargin,
       ),
-      child: SegmentedButton<ShoppingViewMode>(
-        showSelectedIcon: false,
-        style: SegmentedButton.styleFrom(
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        ),
-        segments: [
-          ButtonSegment(
-            value: ShoppingViewMode.all,
-            label: Text(context.l10n.alla),
-          ),
-          ButtonSegment(
-            value: ShoppingViewMode.myPart,
-            label: Text(context.l10n.minDel),
-          ),
-          ButtonSegment(
-            value: ShoppingViewMode.byZone,
-            label: Text(context.l10n.efterZon),
-          ),
-        ],
-        selected: {mode},
-        onSelectionChanged: (set) => onChanged(set.first),
+      child: UnderlineTabs<ShoppingViewMode>(
+        values: ShoppingViewMode.values,
+        labelOf: (m) => switch (m) {
+          ShoppingViewMode.all => context.l10n.alla,
+          ShoppingViewMode.myPart => context.l10n.minDel,
+          ShoppingViewMode.byZone => context.l10n.efterZon,
+        },
+        selected: mode,
+        onChanged: onChanged,
       ),
     );
   }
@@ -337,27 +339,14 @@ class _ViewModeToggle extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String text;
   final int count;
-  final bool greyed;
 
-  const _SectionHeader({
-    required this.text,
-    required this.count,
-    this.greyed = false,
-  });
+  const _SectionHeader({required this.text, required this.count});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimensions.space12,
-        AppDimensions.space8,
-        AppDimensions.space12,
-        AppDimensions.space4,
-      ),
-      child: SectionHeading(
-        '$text ($count)',
-        tone: greyed ? SectionHeadingTone.standard : SectionHeadingTone.strong,
-      ),
+      padding: const EdgeInsets.only(top: AppDimensions.space12),
+      child: SectionBand(title: text, count: '$count'),
     );
   }
 }
@@ -380,7 +369,6 @@ class _CollaborativeItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final uid = viewModel.currentUserId;
     final isMine =
         item.assignedToUserId != null &&
@@ -390,32 +378,21 @@ class _CollaborativeItemCard extends StatelessWidget {
         !isCompleted && item.assignedToUserId == null && viewModel.canEdit;
     final canRelease = isMine && viewModel.canEdit;
 
-    final bodyColor = (greyed || isCompleted) ? cs.surface : null;
-
-    return Card(
+    return KeyedSubtree(
       key: ValueKey('collab-item-${item.id}'),
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space4,
-      ),
-      elevation: (isCompleted || greyed) ? 0 : AppDimensions.elevationLow,
-      color: bodyColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: _maybeWrapSwipe(
         context: context,
         isClaimableByMe: isClaimableByMe,
         canRelease: canRelease,
-        child: ListTile(
-          leading: _buildCheckbox(context),
-          title: _buildTitle(context),
-          subtitle: _buildSubtitle(context),
-          trailing: _buildTrailing(context),
+        child: ShoppingRow(
+          name: item.name,
+          amount: item.quantityText,
+          note: item.note,
+          checked: item.bought,
+          muted: greyed,
           onTap: viewModel.canView ? () => onToggleItem(item.id) : null,
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space12,
-          ),
+          semanticLabel: item.displayText,
+          trailing: _buildTrailing(context),
         ),
       ),
     );
@@ -451,45 +428,20 @@ class _CollaborativeItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCheckbox(BuildContext context) {
-    return Checkbox(
-      value: item.bought,
-      semanticLabel: item.displayText,
-      onChanged: viewModel.canView ? (_) => onToggleItem(item.id) : null,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-    );
-  }
-
-  Widget _buildTitle(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final style = item.bought
-        ? AppTextStyles.bodyMedium.copyWith(
-            decoration: TextDecoration.lineThrough,
-            color: cs.onSurfaceVariant,
-          )
-        : AppTextStyles.contentLabel;
-    return Text(
-      item.displayText,
-      style: greyed ? style.copyWith(color: cs.onSurfaceVariant) : style,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  Widget? _buildSubtitle(BuildContext context) {
-    final subtitle = viewModel.getItemSubtitle(item);
-    return subtitle != null
-        ? Text(
-            subtitle,
-            style: AppTextStyles.labelMedium,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          )
-        : null;
-  }
-
   Widget _buildTrailing(BuildContext context) {
     final widgets = <Widget>[];
+    final buyer = item.purchasedByDisplayName;
+    if (item.bought && buyer != null && buyer.isNotEmpty) {
+      // #inkop: a bought row names who bought it, in the secondary tone.
+      widgets.add(
+        Text(
+          buyer,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
     if (item.assignedToUserId != null) {
       widgets.add(
         _AssigneeBadge(

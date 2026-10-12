@@ -284,15 +284,6 @@
     "design/skiss-mot-app/13-ingredienssok.png"
    ]
   },
-  "lib/views/lagg_till_recept_view.dart": {
-   "status": "skillnader-listade",
-   "frames": [
-    "del_1_recept_och_veckomeny#9"
-   ],
-   "images": [
-    "design/skiss-mot-app/39-lagg-till-recept.png"
-   ]
-  },
   "lib/views/legal/community_guidelines_view.dart": {
    "status": "skillnader-listade",
    "frames": [
@@ -821,7 +812,7 @@
     "del_2_familj_och_socialt#18"
    ],
    "images": [
-    "design/skiss-mot-app/10-delad-inkopslista.png"
+    "design/skiss-mot-app/10-inkopslista.png"
    ]
   },
   "lib/views/veckomeny_view.dart": {

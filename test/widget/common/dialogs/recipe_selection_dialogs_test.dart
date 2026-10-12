@@ -38,6 +38,15 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_sele
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_colors_dark.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
+
+import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -97,6 +106,20 @@ BoxDecoration _boxAround(WidgetTester tester, Finder of) => tester
     .map((c) => c.decoration)
     .whereType<BoxDecoration>()
     .firstWhere((d) => d.color != null);
+
+/// A recipe list that has loaded and holds nothing.
+class _EmptyRecipeList extends Fake
+    with ChangeNotifier
+    implements RecipeListViewModel {
+  @override
+  bool get isLoading => false;
+
+  @override
+  bool get hasError => false;
+
+  @override
+  List<Recipe> get recipes => const [];
+}
 
 void main() {
   // Touch the facade members so a compile error in their signatures fails
@@ -610,5 +633,79 @@ void main() {
         expect(box.color, raised);
       });
     }
+  });
+
+  group('the empty-recipes action opens the add sheet', () {
+    setUp(() async {
+      await TestServiceLocator.reset();
+      await TestServiceLocator.initialize();
+      production.ServiceLocator.initialize(DIContainer());
+    });
+
+    tearDown(TestServiceLocator.reset);
+
+    final addRecipes = AppLocalizationsSv().stateAddRecipes;
+
+    Future<void> openDialog(WidgetTester tester, Widget dialog) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  showDialog<void>(context: context, builder: (_) => dialog),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'MenuRecipeSelectionDialog: closes itself and opens the sheet',
+      (
+        tester,
+      ) async {
+        TestServiceLocator.registerMock<RecipeListViewModel>(
+          _EmptyRecipeList(),
+        );
+
+        await openDialog(
+          tester,
+          const MenuRecipeSelectionDialog(categoryName: 'Lunch'),
+        );
+        // Positive anchor: the empty state is what is on screen.
+        expect(find.text(addRecipes), findsOneWidget);
+        expect(find.byType(ButleryAddSheet), findsNothing);
+
+        await tester.tap(find.text(addRecipes));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ButleryAddSheet), findsOneWidget);
+        expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'FriendRecipeSharingDialog: closes itself and opens the sheet',
+      (
+        tester,
+      ) async {
+        final recipes = MockUnifiedRecipeService()
+          ..setRecipeState(recipes: const [], isInitialized: true);
+        TestServiceLocator.registerMock<UnifiedRecipeService>(recipes);
+
+        await openDialog(tester, FriendRecipeSharingDialog(friend: _friend()));
+        expect(find.text(addRecipes), findsOneWidget);
+        expect(find.byType(ButleryAddSheet), findsNothing);
+
+        await tester.tap(find.text(addRecipes));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ButleryAddSheet), findsOneWidget);
+        expect(find.byType(FriendRecipeSharingDialog), findsNothing);
+      },
+    );
   });
 }
