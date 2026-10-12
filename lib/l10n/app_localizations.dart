@@ -23978,13 +23978,13 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'Sök ingrediens …'**
+  /// **'lägg till …'**
   String get ingredientSearchHint;
 
   /// No description provided for @ingredientSearchButton.
   ///
   /// In sv, this message translates to:
-  /// **'Visa recept'**
+  /// **'Sök recept'**
   String get ingredientSearchButton;
 
   /// No description provided for @ingredientSearchChip.
@@ -24014,7 +24014,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchResultCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 recept hittat} other{{count} recept hittade}}'**
+  /// **'{count, plural, =1{1 recept matchar} other{{count} recept matchar}}'**
   String ingredientSearchResultCount(int count);
 
   /// No description provided for @ingredientMatchCount.
@@ -25621,13 +25621,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'betyg'**
+  /// **'Hushållets betyg'**
   String get familyRatingSectionTitle;
 
   /// No description provided for @familyRatingAverageLabel.
   ///
   /// In sv, this message translates to:
-  /// **'hushållets snitt'**
+  /// **'Hushållets snitt'**
   String get familyRatingAverageLabel;
 
   /// No description provided for @familyRatingCount.
@@ -25639,25 +25639,25 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingUpdated.
   ///
   /// In sv, this message translates to:
-  /// **'uppdaterad {date}'**
+  /// **'Uppdaterad {date}'**
   String familyRatingUpdated(String date);
 
   /// No description provided for @familyRatingCommunityLabel.
   ///
   /// In sv, this message translates to:
-  /// **'alla'**
+  /// **'Alla som lagat'**
   String get familyRatingCommunityLabel;
 
   /// No description provided for @familyRatingYourOwnLabel.
   ///
   /// In sv, this message translates to:
-  /// **'ditt eget betyg'**
+  /// **'Ditt eget betyg'**
   String get familyRatingYourOwnLabel;
 
   /// No description provided for @familyRatingLegend.
   ///
   /// In sv, this message translates to:
-  /// **'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.'**
+  /// **'Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.'**
   String get familyRatingLegend;
 
   /// No description provided for @recipeFamilyRatingPill.
@@ -25717,7 +25717,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingProxyEntered.
   ///
   /// In sv, this message translates to:
-  /// **'inmatat av {name}'**
+  /// **'Ifylld av {name}'**
   String familyRatingProxyEntered(String name);
 
   /// No description provided for @a11yToggleRatingBreakdown.
@@ -33075,6 +33075,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet kunde inte sättas. Försök igen.'**
   String get signInMethodsPasswordFailed;
+
+  /// No description provided for @familyRatingHouseholdPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll {value}'**
+  String familyRatingHouseholdPill(String value);
+
+  /// No description provided for @ingredientSearchHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad kan jag laga?'**
+  String get ingredientSearchHeading;
+
+  /// No description provided for @cookingModeIngredientRows.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rad} other{{count} rader}}'**
+  String cookingModeIngredientRows(int count);
+
+  /// No description provided for @cookingModeSwapHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Håll på en rad för att byta ingrediens'**
+  String get cookingModeSwapHint;
+
+  /// No description provided for @cookingModeNextStepPreview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa: {step}'**
+  String cookingModeNextStepPreview(String step);
 
   /// Spår 6, v60: heading over the box with the two consents that cannot be switched off
   ///

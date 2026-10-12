@@ -12,7 +12,9 @@ import 'package:butlery/models/admin/parsing_domain_stat.dart';
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
+import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
+import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/viewmodels/admin/parsing_details_viewmodel.dart';
 
 import '../../../test_support/base_unit_test.dart';
@@ -40,6 +42,20 @@ class _FakeParsingRepo extends ParsingCorrectionRepository {
     int limit = 100,
   }) async {
     return byDomain[domain] ?? const [];
+  }
+}
+
+class _FakeSiteConfigs extends SiteConfigRepository {
+  _FakeSiteConfigs(this.configs, {this.fail = false})
+    : super(firestore: FakeFirebaseFirestore());
+
+  final List<SiteConfig> configs;
+  final bool fail;
+
+  @override
+  Future<List<SiteConfig>> getAllConfigs({int limit = 200}) async {
+    if (fail) throw Exception('boom');
+    return configs;
   }
 }
 
@@ -163,5 +179,32 @@ void main() {
     await vm.refresh();
     expect(vm.topDomain, 'a.se');
     vm.dispose();
+  });
+
+  group('import success share', () {
+    test('comes from the import records, rounded to whole percent', () async {
+      final vm = ParsingDetailsViewModel(
+        repository: _FakeParsingRepo(domainStats: {'a.se': 2, 'b.se': 1}),
+        siteConfigs: _FakeSiteConfigs([
+          const SiteConfig(domain: 'a.se', successCount: 2, failureCount: 1),
+          const SiteConfig(domain: 'b.se'),
+        ]),
+      );
+      await vm.load();
+      expect(vm.stats.first.successPercent, 67); // 66.7 rounds up, not down
+      expect(vm.stats.last.successPercent, isNull); // no import record yet
+      vm.dispose();
+    });
+
+    test('a failed read leaves the column empty, not the tab', () async {
+      final vm = ParsingDetailsViewModel(
+        repository: _FakeParsingRepo(domainStats: {'a.se': 2}),
+        siteConfigs: _FakeSiteConfigs(const [], fail: true),
+      );
+      await vm.load();
+      expect(vm.error, isNull);
+      expect(vm.stats.single.successPercent, isNull);
+      vm.dispose();
+    });
   });
 }

@@ -14462,10 +14462,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ingredientSearchTitle => 'Search by ingredients';
 
   @override
-  String get ingredientSearchHint => 'Search ingredient...';
+  String get ingredientSearchHint => 'add...';
 
   @override
-  String get ingredientSearchButton => 'Show recipes';
+  String get ingredientSearchButton => 'Search recipes';
 
   @override
   String get ingredientSearchChip => 'By ingredients';
@@ -14484,8 +14484,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recipes found',
-      one: '1 recipe found',
+      other: '$count recipes match',
+      one: '1 recipe matches',
     );
     return '$_temp0';
   }
@@ -15437,10 +15437,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyRatingSectionTitle => 'ratings';
+  String get familyRatingSectionTitle => 'Household ratings';
 
   @override
-  String get familyRatingAverageLabel => 'family average';
+  String get familyRatingAverageLabel => 'Household average';
 
   @override
   String familyRatingCount(int count) {
@@ -15449,18 +15449,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String familyRatingUpdated(String date) {
-    return 'updated $date';
+    return 'Updated $date';
   }
 
   @override
-  String get familyRatingCommunityLabel => 'everyone';
+  String get familyRatingCommunityLabel => 'Everyone who cooked it';
 
   @override
-  String get familyRatingYourOwnLabel => 'your own rating';
+  String get familyRatingYourOwnLabel => 'Your own rating';
 
   @override
   String get familyRatingLegend =>
-      'Green = your household\'s average (private). Rust = all users\' rating. Gold = your own rating.';
+      'Household ratings are private. Ink = household, grey = everyone, saffron = yours.';
 
   @override
   String recipeFamilyRatingPill(String rating) {
@@ -15503,7 +15503,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String familyRatingProxyEntered(String name) {
-    return 'entered by $name';
+    return 'Entered by $name';
   }
 
   @override
@@ -20419,6 +20419,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'The password couldn\'t be set. Try again.';
+
+  @override
+  String familyRatingHouseholdPill(String value) {
+    return 'Household $value';
+  }
+
+  @override
+  String get ingredientSearchHeading => 'What can I cook?';
+
+  @override
+  String cookingModeIngredientRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rows',
+      one: '1 row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingModeSwapHint =>
+      'Press and hold a row to swap an ingredient';
+
+  @override
+  String cookingModeNextStepPreview(String step) {
+    return 'Next: $step';
+  }
 
   @override
   String get consentTermsHeading => 'Conditions for the app to exist';

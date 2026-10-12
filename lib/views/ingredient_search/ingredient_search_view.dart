@@ -12,11 +12,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 import 'package:butlery/views/ingredient_search/ingredient_chip_input.dart';
+import 'package:butlery/views/ingredient_search/ingredient_match_row.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
-import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -60,8 +60,13 @@ class _IngredientSearchContent extends StatelessWidget {
     final l10n = context.l10n;
 
     return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45): the canonical top bar.
-      appBar: ButleryTopBar.undersida(title: l10n.ingredientSearchTitle),
+      // A subpage (Komponentark v1:71-78; B-45), drawn with a light bar as
+      // Skarmar v12 del 3 #ingredienssok has it.
+      appBar: ButleryTopBar.undersida(
+        title: l10n.ingredientSearchHeading,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
       bottomNavigationBar: ButleryBottomNavigation(
         currentIndex: 0,
         items: ButleryAdaptiveNavigation.getNavigationItems(context),
@@ -107,8 +112,8 @@ class _IngredientSearchContent extends StatelessWidget {
               const SizedBox(height: AppDimensions.space24),
 
               // Search button
-              ActionButtons.primaryButton(
-                context,
+              HeroButton(
+                expand: true,
                 label: l10n.ingredientSearchButton,
                 onPressed: vm.selectedIngredients.isEmpty
                     ? null
@@ -183,74 +188,20 @@ class _IngredientSearchContent extends StatelessWidget {
     IngredientSearchViewModel vm,
     IngredientMatchResult result,
   ) {
-    final l10n = context.l10n;
-
-    // "Saknas: grädde, vitlök"
-    String? missingText;
-    if (result.missingIngredientIds.isNotEmpty) {
-      final names = result.missingIngredientIds
-          .map((id) => vm.ingredientName(id))
-          .toList();
-      missingText = l10n.ingredientMissing(names.join(', '));
-    }
-
-    return Column(
+    return IngredientMatchRow(
       key: ValueKey(result.recipe.id),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ContentCard(
-          item: result.recipe,
-          type: ContentCardType.recipe,
-          style: ContentCardStyle.detailed,
-          margin: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-          ),
-          matchPercent: result.matchPercent,
-          subtitle: l10n.ingredientMatchCount(
-            result.matchedCount,
-            result.totalCount,
-          ),
-          onTap: () => Navigator.pushNamed(
-            context,
-            Routes.recipeDetail,
-            arguments: result.recipe,
-          ),
-        ),
-        if (missingText != null || result.recipe.isCollaborative)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.space16,
-              bottom: AppDimensions.space8,
-            ),
-            child: Row(
-              children: [
-                if (result.recipe.isCollaborative)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      end: AppDimensions.space8,
-                    ),
-                    child: Text(
-                      l10n.ingredientSearchSharedBadge,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                if (missingText != null)
-                  Expanded(
-                    child: Text(
-                      missingText,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
-            ),
-          ),
+      recipe: result.recipe,
+      matchPercent: result.matchPercent,
+      matchedCount: result.matchedCount,
+      totalCount: result.totalCount,
+      missingNames: [
+        for (final id in result.missingIngredientIds) vm.ingredientName(id),
       ],
+      onTap: () => Navigator.pushNamed(
+        context,
+        Routes.recipeDetail,
+        arguments: result.recipe,
+      ),
     );
   }
 }

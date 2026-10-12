@@ -10014,13 +10014,13 @@
     }
   },
   "ingredientSearchTitle": "Search by ingredients",
-  "ingredientSearchHint": "Search ingredient...",
-  "ingredientSearchButton": "Show recipes",
+  "ingredientSearchHint": "add...",
+  "ingredientSearchButton": "Search recipes",
   "ingredientSearchChip": "By ingredients",
   "ingredientSearchEmpty": "Add ingredients to find recipes",
   "ingredientSearchNoResults": "No recipes match your ingredients",
   "ingredientSearchError": "Could not search recipes",
-  "ingredientSearchResultCount": "{count, plural, =1{1 recipe found} other{{count} recipes found}}",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recipe matches} other{{count} recipes match}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {
@@ -11205,8 +11205,8 @@
       }
     }
   },
-  "familyRatingSectionTitle": "ratings",
-  "familyRatingAverageLabel": "family average",
+  "familyRatingSectionTitle": "Household ratings",
+  "familyRatingAverageLabel": "Household average",
   "familyRatingCount": "{count} ratings",
   "@familyRatingCount": {
     "placeholders": {
@@ -11215,7 +11215,7 @@
       }
     }
   },
-  "familyRatingUpdated": "updated {date}",
+  "familyRatingUpdated": "Updated {date}",
   "@familyRatingUpdated": {
     "placeholders": {
       "date": {
@@ -11223,9 +11223,9 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "everyone",
-  "familyRatingYourOwnLabel": "your own rating",
-  "familyRatingLegend": "Green = your household's average (private). Rust = all users' rating. Gold = your own rating.",
+  "familyRatingCommunityLabel": "Everyone who cooked it",
+  "familyRatingYourOwnLabel": "Your own rating",
+  "familyRatingLegend": "Household ratings are private. Ink = household, grey = everyone, saffron = yours.",
   "recipeFamilyRatingPill": "family {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -11280,7 +11280,7 @@
   "pooledCommunityLabel": "butlery rating",
   "pooledHouseholdLabel": "everyone in your kitchen",
   "a11yPooledHouseholdPill": "Your kitchen's rating",
-  "familyRatingProxyEntered": "entered by {name}",
+  "familyRatingProxyEntered": "Entered by {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
       "name": {
@@ -16474,6 +16474,32 @@
   "signInMethodsPasswordFailed": "The password couldn't be set. Try again.",
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
+  },
+  "familyRatingHouseholdPill": "Household {value}",
+  "@familyRatingHouseholdPill": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ingredientSearchHeading": "What can I cook?",
+  "cookingModeIngredientRows": "{count, plural, =1{1 row} other{{count} rows}}",
+  "@cookingModeIngredientRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingModeSwapHint": "Press and hold a row to swap an ingredient",
+  "cookingModeNextStepPreview": "Next: {step}",
+  "@cookingModeNextStepPreview": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
   },
   "consentTermsHeading": "Conditions for the app to exist",
   "@consentTermsHeading": {
