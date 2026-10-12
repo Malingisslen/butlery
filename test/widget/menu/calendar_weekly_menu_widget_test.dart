@@ -13,6 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod_di;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -28,13 +31,16 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
+import '../../infrastructure/mocks/widget_mocks.dart';
 import '../../test_support/base_unit_test.dart';
 import '../golden/golden_helper.dart';
 import '../../test_support/semantics_announcement.dart';
@@ -55,7 +61,7 @@ class _MockMenuShoppingListGenerator extends Mock
 
 class _FakeWeeklyMenuPlan extends Fake implements WeeklyMenuPlan {}
 
-// BUT-1982: the presence row and the "vem är hemma?" sheet both resolve the
+// BUT-1982: the presence row and the "Vem är hemma?" sheet both resolve the
 // household stack off the ServiceLocator; these back it for that one group.
 class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
 
@@ -102,8 +108,10 @@ WeeklyMenuPlanEntry _entry({
 Widget _host({
   required WeeklyMenuPlanViewModel vm,
   required Widget child,
+  RouteFactory? onGenerateRoute,
 }) {
   return MaterialApp(
+    onGenerateRoute: onGenerateRoute,
     locale: const Locale('sv'),
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -137,7 +145,7 @@ void main() {
       when(() => service.saveRevision(any())).thenAnswer((_) async {});
     });
 
-    testWidgets('renders the empty-hint state (arrow + StateWidget.empty) when '
+    testWidgets('renders the empty-hint notice card when '
         'the fetched plan has no entries and overflow is empty', (
       tester,
     ) async {
@@ -159,10 +167,9 @@ void main() {
       // Let the post-frame callback + async load resolve.
       await tester.pumpAndSettle();
 
-      // Empty-hint path: up-arrow icon (nudges user to the prompt above)
-      // + StateWidget.empty with the l10n "Ingen planering än" title.
-      expect(find.byIcon(ButleryIcons.arrowUp), findsOneWidget);
-      expect(find.byType(StateWidget), findsOneWidget);
+      // Empty-hint path: the Hem-style notice card with the l10n "Ingen
+      // planering än" title, pointing at the prompt above in words.
+      expect(find.byType(EmptyNoticeCard), findsOneWidget);
       expect(find.text('Ingen planering än'), findsOneWidget);
     });
 
@@ -267,9 +274,9 @@ void main() {
         );
       }
 
-      // The two populated cells surface their recipe titles (lowercased).
-      expect(find.text('pasta'), findsOneWidget);
-      expect(find.text('tacos'), findsOneWidget);
+      // The two populated cells surface their recipe titles as written.
+      expect(find.text('Pasta'), findsOneWidget);
+      expect(find.text('Tacos'), findsOneWidget);
     });
 
     testWidgets('overflow tray is visible with one draggable chip per overflow '
@@ -353,10 +360,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // "I dag" badge (weeklyMenuTodayBadge) only renders for the current
-      // ISO week. Because `nowWeekStart == weekStartOf(DateTime.now())`,
-      // exactly one day header carries the I dag badge.
-      expect(find.text('I dag'), findsOneWidget);
+      // "I DAG" badge (weeklyMenuTodayBadge, drawn in capitals) only renders
+      // for the current ISO week. Because `nowWeekStart ==
+      // weekStartOf(DateTime.now())`, exactly one day carries it.
+      expect(find.text('I DAG'), findsOneWidget);
     });
 
     testWidgets(
@@ -395,7 +402,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('I dag'), findsNothing);
+        // Premise: the past week is on screen, so the absence means something.
+        expect(find.text('MÅN'), findsOneWidget);
+        expect(find.text('I DAG'), findsNothing);
       },
     );
 
@@ -629,8 +638,8 @@ void main() {
           expect(find.byIcon(ButleryIcons.square), findsOneWidget);
           expect(find.byIcon(ButleryIcons.checkSquare), findsNothing);
 
-          // Tap the assigned cell (its lowercased title surfaces the recipe).
-          await tester.tap(find.text('pasta'));
+          // Tap the assigned cell (its title surfaces the recipe).
+          await tester.tap(find.text('Pasta'));
           await tester.pumpAndSettle();
 
           // The entry is now selected: filled checkbox, VM agrees, count is 1.
@@ -674,7 +683,7 @@ void main() {
         // Enter selection mode and select the one populated cell.
         await tester.tap(find.byIcon(ButleryIcons.listCheck));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('pasta'));
+        await tester.tap(find.text('Pasta'));
         await tester.pumpAndSettle();
         expect(vm.selectedCount, 1);
         return vm;
@@ -880,7 +889,7 @@ void main() {
     // it. The presence row is the only surface that announces the write, so
     // these drive the real tap -> sheet -> confirm path.
     //
-    // "denna måltid" and "hela dagen" are separate confirms in the sheet.
+    // "Den här måltiden" and "Hela dagen" are separate confirms in the sheet.
     //
     // The presence row only renders for a household roster of MORE THAN ONE,
     // and `showWhoIsHomeSheet` builds its own `WhoIsEatingViewModel` off the
@@ -890,14 +899,13 @@ void main() {
       const notice = 'närvaron uppdaterad — planerade rätter ligger kvar';
       final presenceWeekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
       // The week already has a menu, which is what makes the notice reachable
-      // at all. The dish is in `ovrigt`, not lunch/middag, because of BUT-1991
-      // — see `tapPresenceAndConfirm`.
+      // at all. A dish in a lunch or middag cell is what opens the sheet.
       final presenceWeekPlan = _plan(
         weekStart: presenceWeekStart,
         entries: [
           _entry(
             day: DayOfWeek.mon,
-            slot: MealSlot.ovrigt,
+            slot: MealSlot.middag,
             id: 'mon-o',
             recipeId: 'r-mon',
             title: 'Pasta',
@@ -952,23 +960,10 @@ void main() {
 
       /// Pumps a week that already has a dish (so `hadMenu` is true — the
       /// notice is only ever shown for a week with a generated menu), then taps
-      /// the first slot's presence row and confirms "denna måltid".
-      ///
-      /// The dish sits in `ovrigt` rather than lunch/middag deliberately:
-      /// `hadMenu` is a WEEK-level condition, and a filled lunch/middag cell
-      /// under a roster of more than one throws
-      /// `RenderFlex ... incoming height constraints are unbounded` at
-      /// `calendar_cells.dart` — **BUT-1991**, a separate and live production
-      /// defect on the same mounting path the app uses, not a test artefact.
-      /// It would make this group fail for a reason unrelated to the notice
-      /// gate.
-      ///
-      /// **When BUT-1991 is fixed, move this fixture to `middag`.** Until then
-      /// the gate is pinned only against the `ovrigt` layout, and a household
-      /// with family sees the other one.
+      /// the first slot's presence row and confirms "Den här måltiden".
       Future<void> tapPresenceAndConfirm(
         WidgetTester tester, {
-        String confirmLabel = 'denna måltid',
+        String confirmLabel = 'Den här måltiden',
         List<String> uncheck = const [],
       }) async {
         when(() => service.readWeek(any())).thenAnswer(
@@ -1000,7 +995,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // The sheet is open, seeded with the whole roster.
-        expect(find.text('vem är hemma?'), findsOneWidget);
+        expect(find.text('Vem är hemma?'), findsOneWidget);
         for (final name in uncheck) {
           await tester.tap(find.text(name));
           await tester.pumpAndSettle();
@@ -1008,6 +1003,110 @@ void main() {
         await tester.tap(find.text(confirmLabel));
         await tester.pumpAndSettle();
       }
+
+      /// Opens the meal sheet on the first presence stop and taps "Öppna
+      /// receptet", returning the route the calendar pushed.
+      Future<RouteSettings?> openRecipeFromSheet(
+        WidgetTester tester,
+        WeeklyMenuPlan plan,
+      ) async {
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        when(
+          () => recipeService.getRecipeById('r-mon'),
+        ).thenReturn(RecipeFactory.build(id: 'r-mon'));
+        RouteSettings? pushed;
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(
+            vm: vm,
+            child: const CalendarWeeklyMenuWidget(),
+            onGenerateRoute: (settings) {
+              pushed = settings;
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const Text('RECIPE PAGE'),
+              );
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.bySemanticsLabel(RegExp('^Välj vilka som är hemma')).first,
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Vem är hemma?'), findsOneWidget);
+        await tester.tap(find.text('Öppna receptet'));
+        await tester.pumpAndSettle();
+        return pushed;
+      }
+
+      testWidgets('"Öppna receptet" in the meal sheet opens the dish', (
+        tester,
+      ) async {
+        final pushed = await openRecipeFromSheet(tester, presenceWeekPlan);
+
+        expect(pushed?.name, Routes.recipeDetail);
+        expect(find.text('RECIPE PAGE'), findsOneWidget);
+        // Nobody is marked away, so no portion count rides along.
+        expect(pushed?.arguments, isNot(isA<Map<String, Object?>>()));
+        verifyNever(() => service.saveRevision(any()));
+      });
+
+      testWidgets('it carries the number of people home as servings', (
+        tester,
+      ) async {
+        final plan = presenceWeekPlan.copyWith(
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: ['test-user-123'],
+            },
+          },
+        );
+        final pushed = await openRecipeFromSheet(tester, plan);
+
+        expect(pushed?.name, Routes.recipeDetail);
+        expect(
+          (pushed?.arguments as Map<String, Object?>)['presentServings'],
+          1,
+        );
+      });
+
+      testWidgets('an empty meal\'s sheet offers no recipe to open', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async =>
+              WeeklyMenuPlanRead(plan: presenceWeekPlan, readFailed: false),
+        );
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+
+        // Presence of an empty place is a long press; Tuesday has no dish.
+        await tester.longPress(
+          find.bySemanticsLabel(RegExp('^Lägg till.*lunch')).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Vem är hemma?'), findsOneWidget);
+        expect(find.text('Öppna receptet'), findsNothing);
+        handle.dispose();
+      });
 
       testWidgets('a REFUSED presence save shows no notice', (tester) async {
         final handle = tester.ensureSemantics();
@@ -1044,7 +1143,7 @@ void main() {
         final handle = tester.ensureSemantics();
         when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
 
-        await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
+        await tapPresenceAndConfirm(tester, confirmLabel: 'Hela dagen');
 
         expect(find.text(notice), findsNothing);
         handle.dispose();
@@ -1056,7 +1155,7 @@ void main() {
         final handle = tester.ensureSemantics();
         when(() => service.saveRevision(any())).thenAnswer((_) async {});
 
-        await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
+        await tapPresenceAndConfirm(tester, confirmLabel: 'Hela dagen');
 
         expect(find.text(notice), findsOneWidget);
         handle.dispose();
@@ -1096,7 +1195,7 @@ void main() {
 
         await tapPresenceAndConfirm(
           tester,
-          confirmLabel: 'hela dagen',
+          confirmLabel: 'Hela dagen',
           uncheck: ['Ester'],
         );
 
@@ -1198,7 +1297,7 @@ void main() {
           reason: '$lines',
         );
         expect(
-          lines.where((l) => l.contains('pasta')),
+          lines.where((l) => l.contains('Pasta')),
           hasLength(1),
           reason: 'the recipe name comes from the cell text, once: $lines',
         );
@@ -1213,7 +1312,7 @@ void main() {
           ui.Tristate.isFalse,
         );
 
-        await tester.tap(find.text('pasta'));
+        await tester.tap(find.text('Pasta'));
         await tester.pumpAndSettle();
 
         expect(
@@ -1227,8 +1326,172 @@ void main() {
         handle.dispose();
       });
 
-      testWidgets('the övrigt add-more row announces its action only, not the '
-          'visible "+ lägg till"', (tester) async {
+      /// A Monday with [titles] as övrigt dishes, on screen, and its view model.
+      Future<WeeklyMenuPlanViewModel> pumpOvrigt(
+        WidgetTester tester, [
+        List<String> titles = const ['Smoothie', 'Fika'],
+        RouteFactory? onGenerateRoute,
+      ]) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final plan = _plan(
+          weekStart: weekStart,
+          entries: [
+            for (var i = 0; i < titles.length; i++)
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.ovrigt,
+                id: 'o${i + 1}',
+                recipeId: 'r-o${i + 1}',
+                title: titles[i],
+              ),
+          ],
+        );
+        when(() => service.readWeek(any())).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: plan, readFailed: false),
+        );
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(
+            vm: vm,
+            child: const CalendarWeeklyMenuWidget(),
+            onGenerateRoute: onGenerateRoute,
+          ),
+        );
+        await tester.pumpAndSettle();
+        return vm;
+      }
+
+      final draggable = find.byType(LongPressDraggable<CalendarDragPayload>);
+
+      testWidgets('extra övrigt dishes are counted on the cell', (
+        tester,
+      ) async {
+        await pumpOvrigt(tester);
+
+        expect(find.text('Smoothie +1'), findsOneWidget);
+      });
+
+      testWidgets('a place with two dishes cannot be dragged', (tester) async {
+        await pumpOvrigt(tester);
+        // Premise: both dishes are in the one place.
+        expect(find.text('Smoothie +1'), findsOneWidget);
+
+        expect(draggable, findsNothing);
+      });
+
+      testWidgets('a lone övrigt dish has no count and can be dragged, but '
+          'not while selecting', (tester) async {
+        final vm = await pumpOvrigt(tester, ['Smoothie']);
+        expect(find.text('Smoothie'), findsOneWidget);
+        expect(find.textContaining('+'), findsNothing);
+        expect(draggable, findsOneWidget);
+
+        // Selecting turns the drag off, so it does not fight the tap.
+        vm.beginSelection();
+        await tester.pump();
+        expect(draggable, findsNothing);
+      });
+
+      testWidgets('a tap on the övrigt cell opens its sheet', (tester) async {
+        await pumpOvrigt(tester);
+        // Premise: the cell shows the first dish and the other as +1.
+        expect(find.textContaining('Smoothie'), findsOneWidget);
+        expect(find.byType(BottomSheet), findsNothing);
+
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(BottomSheet), findsOneWidget);
+        expect(find.text('Fika'), findsOneWidget);
+      });
+
+      testWidgets('a dish chosen in the övrigt sheet is opened', (
+        tester,
+      ) async {
+        when(
+          () => recipeService.getRecipeById('r-o2'),
+        ).thenReturn(RecipeFactory.build(id: 'r-o2'));
+        RouteSettings? pushed;
+        await pumpOvrigt(tester, const ['Smoothie', 'Fika'], (settings) {
+          pushed = settings;
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const Text('RECIPE PAGE'),
+          );
+        });
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Fika'));
+        await tester.pumpAndSettle();
+
+        expect(pushed?.name, Routes.recipeDetail);
+        expect(find.text('RECIPE PAGE'), findsOneWidget);
+        verify(() => recipeService.getRecipeById('r-o2')).called(1);
+      });
+
+      testWidgets('"Lägg till rätt" in the övrigt sheet opens the recipe '
+          'picker for the place', (tester) async {
+        // The picker resolves its list view model from the production locator.
+        prod_di.ServiceLocator.initialize(DIContainer());
+        addTearDown(prod_di.ServiceLocator.reset);
+        final pickerVm = MockRecipeListViewModel()
+          ..setRecipeListState(recipes: const [], isLoading: false);
+        TestServiceLocator.registerMock<RecipeListViewModel>(pickerVm);
+        await pumpOvrigt(tester);
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pumpAndSettle();
+        expect(find.byType(MenuRecipeSelectionDialog), findsNothing);
+
+        await tester.tap(find.text('Lägg till rätt'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MenuRecipeSelectionDialog), findsOneWidget);
+        expect(find.text('Fika'), findsNothing);
+      });
+
+      testWidgets('while selecting, a tap on the övrigt cell chooses every '
+          'dish in it and the next tap clears them', (tester) async {
+        final vm = await pumpOvrigt(tester);
+        vm.beginSelection();
+        await tester.pump();
+
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pump();
+        expect(vm.isSelected('o1'), isTrue);
+        expect(vm.isSelected('o2'), isTrue);
+        expect(find.byType(BottomSheet), findsNothing);
+
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pump();
+        expect(vm.isSelected('o1'), isFalse);
+        expect(vm.isSelected('o2'), isFalse);
+      });
+
+      testWidgets('a half-chosen övrigt cell becomes fully chosen on a tap', (
+        tester,
+      ) async {
+        final vm = await pumpOvrigt(tester);
+        vm.beginSelection();
+        vm.toggleSelection('o1');
+        await tester.pump();
+        expect(vm.isSelected('o2'), isFalse);
+
+        await tester.tap(find.textContaining('Smoothie'));
+        await tester.pump();
+
+        expect(vm.isSelected('o1'), isTrue);
+        expect(vm.isSelected('o2'), isTrue);
+      });
+
+      testWidgets('the övrigt cell names its action once and the dish once', (
+        tester,
+      ) async {
         final handle = tester.ensureSemantics();
         final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
         final plan = _plan(
@@ -1257,14 +1520,21 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final addMore = find.bySemanticsLabel(
-          RegExp(r'^Lägg till mer i övrigt'),
+        final cell = find.bySemanticsLabel(RegExp(r'^Visa övrigt på'));
+        expect(cell, findsOneWidget);
+        expectActivatable(tester, cell);
+        final lines = announcedLines(tester, cell);
+        expect(
+          lines.where((l) => l.startsWith('Visa övrigt på')),
+          hasLength(1),
+          reason: '$lines',
         );
-        expect(addMore, findsOneWidget);
-        expectActivatable(tester, addMore);
-        final lines = announcedLines(tester, addMore);
-        expect(lines, hasLength(1), reason: '$lines');
-        expect(lines, isNot(contains('+ lägg till')));
+        expect(
+          lines.where((l) => l.contains('Smoothie')),
+          hasLength(1),
+          reason: '$lines',
+        );
+        expectNothingAnnouncedTwice(tester, cell);
         handle.dispose();
       });
 

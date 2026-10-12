@@ -276,7 +276,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuAutoPlacedChangeAction => 'Ändra';
 
   @override
-  String get menuPlacementTitle => 'placera i veckan';
+  String get menuPlacementTitle => 'Placera i veckan';
 
   @override
   String menuPlacementProgress(int placed, int total) {
@@ -285,23 +285,23 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuPlacementTrayLabel(int count) {
-    return 'Kvar att placera ($count)';
+    return '$count kvar att placera';
   }
 
   @override
   String menuPlacementHint(String recipe) {
-    return 'Tryck på en ledig ruta för att placera $recipe.';
+    return 'Tryck på en ledig plats för $recipe. Lunch och middag tar en rätt, övrigt tar flera.';
   }
 
   @override
   String get menuPlacementHintSelect =>
-      'Välj ett recept nedan för att placera det.';
+      'Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.';
 
   @override
   String get menuPlacementPlaceHere => 'placera här';
 
   @override
-  String get menuPlacementAutoRest => 'Placera resten automatiskt';
+  String get menuPlacementAutoRest => 'Slumpa resten';
 
   @override
   String menuPlacementOverflow(int count) {
@@ -4413,7 +4413,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shareGroupMembersCount(int count) {
-    return '$count medlemmar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14274,6 +14280,28 @@ class AppLocalizationsSv extends AppLocalizations {
   String get weeklyMenuTodayBadge => 'I dag';
 
   @override
+  String get weeklyMenuNewMark => 'ny';
+
+  @override
+  String get weeklyMenuLegendNew => 'ny';
+
+  @override
+  String get weeklyMenuLegendAllergen => 'tål inte';
+
+  @override
+  String get weeklyMenuLegendPresence => 'hemma, om inte alla';
+
+  @override
+  String a11yWeeklyMenuAddDish(String slot, String day) {
+    return 'Lägg till rätt på $slot $day';
+  }
+
+  @override
+  String a11yWeeklyMenuOpenOvrigt(String day) {
+    return 'Visa övrigt på $day';
+  }
+
+  @override
   String get weeklyMenuEmptyTitle => 'Ingen planering än';
 
   @override
@@ -14282,6 +14310,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get weeklyMenuOvrigtAddMore => '+ lägg till';
+
+  @override
+  String weeklyMenuOvrigtSheetTitle(String day) {
+    return 'Övrigt på $day';
+  }
+
+  @override
+  String get weeklyMenuOvrigtSheetAdd => 'Lägg till rätt';
 
   @override
   String get weeklyMenuOverwriteConfirm =>
@@ -14293,6 +14329,16 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String weeklyMenuWeekLabel(int weekNum, String start, String end) {
     return 'Vecka $weekNum · $start–$end';
+  }
+
+  @override
+  String weeklyMenuWeekTitle(int weekNum) {
+    return 'Vecka $weekNum';
+  }
+
+  @override
+  String weeklyMenuWeekRange(String start, String end) {
+    return '$start–$end';
   }
 
   @override
@@ -15398,16 +15444,30 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yToggleDiner => 'Markera som äter';
 
   @override
-  String get menuPresenceSheetTitle => 'vem är hemma?';
+  String get menuPresenceSheetTitle => 'Vem är hemma?';
 
   @override
-  String get menuPresenceThisMeal => 'denna måltid';
+  String get menuPresenceThisMeal => 'Den här måltiden';
 
   @override
-  String get menuPresenceWholeDay => 'hela dagen';
+  String get menuPresenceWholeDay => 'Hela dagen';
 
   @override
   String get menuPresenceNobody => 'ingen hemma';
+
+  @override
+  String get menuPresenceHome => 'hemma';
+
+  @override
+  String get menuPresenceAway => 'borta';
+
+  @override
+  String menuPresenceHomeSummary(int home, int portions) {
+    return '$home hemma · $portions port.';
+  }
+
+  @override
+  String get menuPresenceOpenRecipe => 'Öppna receptet';
 
   @override
   String menuPresencePortions(int count) {
@@ -15427,7 +15487,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuPresenceSummaryTitle => 'vem är hemma?';
 
   @override
-  String get menuPresenceSummaryAllHome => 'alla hemma hela veckan';
+  String get menuPresenceSummaryAllHome => 'Alla hemma hela veckan';
 
   @override
   String menuPresenceSummaryAway(String names) {
@@ -15676,6 +15736,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yShowVoters => 'Visa vilka som röstade';
+
+  @override
+  String get a11yGroupMenuDishDetails => 'Visa förslag och röster';
 
   @override
   String get groupMenuUnknownVoter => 'Okänd medlem';
@@ -15938,6 +16001,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Delad meny';
+
+  @override
+  String menuPreviewSharedLine(String name, String menu) {
+    return '$name delade menyn $menu med dig · endast läsa';
+  }
+
+  @override
+  String get menuPreviewDecline => 'Avböj';
 
   @override
   String get emailVerificationResendFailed =>
@@ -17780,6 +17851,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get hemStartCooking => 'Börja laga';
+
+  @override
+  String get hemSuggestion => 'Förslag';
+
+  @override
+  String get hemSwapSuggestion => 'Byt förslag';
 
   @override
   String get hemSwapDish => 'Byt rätt';

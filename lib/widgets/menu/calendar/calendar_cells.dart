@@ -1,967 +1,234 @@
-/// Day-row cell widgets for the weekly-menu calendar view.
+/// The week table: a header row naming the meals, then one row per day with
+/// lunch, middag and övrigt as cells.
 ///
-/// Extracted from `calendar_weekly_menu_widget.dart` (BUT-542). Provides:
-/// - [DayCell] — one day's lunch / middag / övrigt row, plus its private
-///   slot-cell sub-widgets.
-///
-/// All widgets stateless; navigation + slot-tap callbacks injected so the
-/// orchestrator stays the only thing that knows about Provider/routing.
+/// Extracted from `calendar_weekly_menu_widget.dart` (BUT-542). The cells
+/// themselves are in `calendar_slot_cells.dart` and their marks in
+/// `calendar_markers.dart`; every callback is injected.
 /// Week-nav header + overflow tray live in `calendar_header.dart`.
 library;
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
-import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
-import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
-import 'package:butlery/widgets/menu/menu_new_badge.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_week_grid.dart';
 
-const double _kSlotMinHeight = 80;
+export 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart'
+    show PresenceTapCallback, RecipeNavCallback, SlotTapCallback;
 
-/// The assigned-slot icons: text.secondary, #5B6959 light and #A9B2A0 dark
-/// (tokens.json semantic text.secondary; onSurfaceVariant in both schemes).
-Color _slotIconColor(BuildContext context) =>
-    Theme.of(context).colorScheme.onSurfaceVariant;
-
-/// Shared border pattern for assigned lunch/middag/övrigt cells.
-Border _accentedBorder(BuildContext context, Color left) {
-  final outline = Theme.of(context).colorScheme.outlineVariant;
-  return Border(
-    left: BorderSide(color: left, width: 3),
-    top: BorderSide(color: outline),
-    right: BorderSide(color: outline),
-    bottom: BorderSide(
-      color: context.modeColors.recipeCardBottomBorder,
-      width: 2,
-    ),
-  );
-}
-
-/// Small-caps slot label used at the top of every cell.
-Text _slotLabel(String text, Color color) => Text(
-  text.toUpperCase(),
-  style: AppTextStyles.overline.copyWith(color: color),
-);
-
-/// Callback fired when an empty slot is tapped — orchestrator owns the
-/// recipe-picker dialog flow.
-typedef SlotTapCallback = void Function(DayOfWeek day, MealSlot slot);
-
-/// Callback fired when an assigned recipe cell is tapped — orchestrator
-/// owns navigation routing. [presentServings] (BUT-1613) is the number of
-/// members home for this meal when the lunch/middag slot has an explicit,
-/// non-empty presence selection — carried through so cooking mode can open
-/// pre-scaled to who's home. Null for övrigt, solo accounts, and unset/empty
-/// presence (→ cooking mode falls back to its household default).
-typedef RecipeNavCallback =
-    void Function(String recipeId, {int? presentServings});
-
-/// BUT-1611: fired when a lunch/middag cell's presence faces are tapped —
-/// orchestrator owns the "vem är hemma?" sheet + persistence + notice flow.
-typedef PresenceTapCallback = void Function(DayOfWeek day, MealSlot slot);
-
-class DayCell extends StatelessWidget {
-  final WeeklyMenuPlanViewModel vm;
-  final WeeklyMenuPlan plan;
-  final DayOfWeek day;
-  final bool isToday;
-  final SlotTapCallback onTapEmptySlot;
-  final RecipeNavCallback onTapRecipe;
-
-  /// BUT-1611: household roster for the present-diner faces. Empty for a solo
-  /// account, which hides the presence row entirely.
-  final List<HouseholdRosterMember> roster;
-  final PresenceTapCallback onTapPresence;
-
-  const DayCell({
+class CalendarWeekTable extends StatelessWidget {
+  const CalendarWeekTable({
     super.key,
     required this.vm,
     required this.plan,
-    required this.day,
-    required this.isToday,
+    required this.todayIndex,
+    required this.roster,
     required this.onTapEmptySlot,
     required this.onTapRecipe,
-    required this.roster,
+    required this.onTapOvrigt,
     required this.onTapPresence,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(
-        top: AppDimensions.space8,
-        start: AppDimensions.space16,
-        end: AppDimensions.space16,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _DayHeader(day: day, isToday: isToday),
-          const SizedBox(height: AppDimensions.space4),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _SingleSlotCell(
-                    vm: vm,
-                    plan: plan,
-                    day: day,
-                    slot: MealSlot.lunch,
-                    onTapEmptySlot: onTapEmptySlot,
-                    onTapRecipe: onTapRecipe,
-                    roster: roster,
-                    onTapPresence: onTapPresence,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space4),
-                Expanded(
-                  child: _SingleSlotCell(
-                    vm: vm,
-                    plan: plan,
-                    day: day,
-                    slot: MealSlot.middag,
-                    onTapEmptySlot: onTapEmptySlot,
-                    onTapRecipe: onTapRecipe,
-                    roster: roster,
-                    onTapPresence: onTapPresence,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space4),
-                Expanded(
-                  flex: 1,
-                  child: _OvrigtCell(
-                    vm: vm,
-                    plan: plan,
-                    day: day,
-                    onTapEmptySlot: onTapEmptySlot,
-                    onTapRecipe: onTapRecipe,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DayHeader extends StatelessWidget {
-  final DayOfWeek day;
-  final bool isToday;
-
-  const _DayHeader({required this.day, required this.isToday});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: isToday ? cs.onSurface : cs.secondary,
-            width: 3,
-          ),
-        ),
-      ),
-      padding: const EdgeInsetsDirectional.only(start: AppDimensions.space8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            day.displayLabel.toUpperCase(),
-            style: AppTextStyles.labelMediumBold.copyWith(
-              letterSpacing: 2,
-              color: isToday ? cs.onPrimaryContainer : cs.onSurface,
-            ),
-          ),
-          if (isToday) ...[
-            const SizedBox(width: AppDimensions.space8),
-            Container(
-              padding: AppDimensions.badgePadding,
-              // surface.raised, never a tint (tokens.json:40-53).
-              color: cs.primaryContainer,
-              child: Text(
-                context.l10n.weeklyMenuTodayBadge,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: cs.onPrimaryContainer,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SingleSlotCell extends StatelessWidget {
   final WeeklyMenuPlanViewModel vm;
   final WeeklyMenuPlan plan;
-  final DayOfWeek day;
-  final MealSlot slot;
+
+  /// -1 when the visible week is not the current one.
+  final int todayIndex;
+
+  /// Empty for a solo account, which hides all presence UI.
+  final List<HouseholdRosterMember> roster;
   final SlotTapCallback onTapEmptySlot;
   final RecipeNavCallback onTapRecipe;
-  final List<HouseholdRosterMember> roster;
+  final void Function(DayOfWeek day) onTapOvrigt;
   final PresenceTapCallback onTapPresence;
 
-  const _SingleSlotCell({
+  bool get _family => roster.length > 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = plan.entries;
+    final showPresence =
+        _family &&
+        DayOfWeek.values.any(
+          (d) =>
+              kPresenceSlots.any((s) => plan.presentMemberIdsFor(d, s) != null),
+        );
+    return CalendarWeekGrid(
+      weekStart: plan.weekStartDate,
+      todayIndex: todayIndex,
+      cellBuilder: (context, day, slot) => _DayCells(
+        vm: vm,
+        plan: plan,
+        day: day,
+        family: _family,
+        roster: roster,
+        onTapEmptySlot: onTapEmptySlot,
+        onTapRecipe: onTapRecipe,
+        onTapOvrigt: onTapOvrigt,
+        onTapPresence: onTapPresence,
+      ).cell(context, slot),
+      footer: CalendarLegend(
+        showNew: entries.any((e) => vm.isRecentlyPlaced(e.id)),
+        showAllergen: entries.any((e) => vm.isAllergenUnsafe(e.id)),
+        showPresence: showPresence,
+      ),
+    );
+  }
+}
+
+/// The cells of one day, built from the plan and the view model.
+class _DayCells {
+  const _DayCells({
     required this.vm,
     required this.plan,
     required this.day,
-    required this.slot,
+    required this.family,
+    required this.roster,
     required this.onTapEmptySlot,
     required this.onTapRecipe,
-    required this.roster,
+    required this.onTapOvrigt,
     required this.onTapPresence,
   });
 
-  @override
-  Widget build(BuildContext context) {
+  final WeeklyMenuPlanViewModel vm;
+  final WeeklyMenuPlan plan;
+  final DayOfWeek day;
+  final bool family;
+  final List<HouseholdRosterMember> roster;
+  final SlotTapCallback onTapEmptySlot;
+  final RecipeNavCallback onTapRecipe;
+  final void Function(DayOfWeek day) onTapOvrigt;
+  final PresenceTapCallback onTapPresence;
+
+  Widget cell(BuildContext context, MealSlot slot) =>
+      slot == MealSlot.ovrigt ? _ovrigtCell(context) : _mealCell(context, slot);
+
+  /// Members home for this meal, or null when it is everyone (or a solo
+  /// account), so only a deviation is marked.
+  int? _presentCount(MealSlot slot) {
+    if (!family) return null;
+    final ids = plan.presentMemberIdsFor(day, slot);
+    if (ids == null) return null;
+    return roster.where((m) => ids.contains(m.memberId)).length;
+  }
+
+  Widget _mealCell(BuildContext context, MealSlot slot) {
     final entry = plan.entryAt(day, slot);
-    final inner = entry == null
-        ? _EmptySlot(day: day, slot: slot, onTap: onTapEmptySlot)
-        : _AssignedSlot(
-            entry: entry,
-            onTap: onTapRecipe,
-            // BUT-1613: the number present for this meal (roster-filtered so it
-            // matches the portion count shown on the presence row), or null
-            // when there's no explicit non-empty selection — carried into the
-            // tap so cooking mode opens pre-scaled to who's home.
-            presentServings: _presentServings(),
-            // BUT-1241: "NY" badge on entries from the latest generation.
-            showNewBadge: vm.isRecentlyPlaced(entry.id),
-            // P5-U23: the order the automatic placement followed.
-            placementOrder: vm.placementOrderOf(entry.id),
-            // BUT-1043: in multi-select mode, tap toggles selection.
-            selectionMode: vm.selectionMode,
-            isSelected: vm.isSelected(entry.id),
-            onToggleSelection: vm.toggleSelection,
-            // BUT-2362: someone eating this meal cannot eat the dish. The
-            // warning opens who is home, the one thing that can change it.
-            allergenUnsafe: vm.isAllergenUnsafe(entry.id),
-            onTapAllergenWarning: roster.length > 1
-                ? () => onTapPresence(day, slot)
-                : null,
-          );
-    final cell = wrapAsDropTarget(
+    if (entry == null) {
+      return wrapAsDropTarget(
+        context: context,
+        vm: vm,
+        day: day,
+        slot: slot,
+        child: CalendarEmptyCell(
+          day: day,
+          slot: slot,
+          onTap: onTapEmptySlot,
+          // Presence can be set before a dish exists, but a tap on the plus
+          // adds a dish, so who is home is a long press here.
+          onLongPress: family && !vm.selectionMode
+              ? () => onTapPresence(day, slot)
+              : null,
+        ),
+      );
+    }
+    final present = _presentCount(slot);
+    final order = vm.placementOrderOf(entry.id);
+    final selecting = vm.selectionMode;
+    final l10n = context.l10n;
+    return wrapAsDropTarget(
       context: context,
       vm: vm,
       day: day,
       slot: slot,
-      child: inner,
-    );
-    // BUT-1611: presence lives per meal — a dedicated faces row below the slot,
-    // its own tap target so the dish area keeps navigate/add. Hidden for a solo
-    // account (roster ≤ 1), and suppressed during multi-select to avoid two tap
-    // meanings on one cell. Faces show even on an empty slot so presence can be
-    // set before a dish exists.
-    if (roster.length <= 1 || vm.selectionMode) return cell;
-    // BUT-1991: `cell` must be a FLEX child here. As a plain child of this
-    // Column it was handed an unbounded main-axis constraint, and the dish
-    // cell's own `Expanded` then had nothing finite to divide — which is why
-    // this threw only for a household with family: the roster-1 path returns
-    // above and never builds this wrapper at all. Expanded also says what the
-    // layout means, that the dish takes the height the presence row leaves.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: cell),
-        _SlotPresenceRow(
-          roster: roster,
-          presentIds: plan.presentMemberIdsFor(day, slot),
-          onTap: () => onTapPresence(day, slot),
-          semanticsLabel: context.l10n.a11yMenuSlotPresence(
-            slot.displayLabel,
-            day.displayLabel,
-          ),
+      child: CalendarDishCell(
+        title: entry.recipeTitle,
+        marks: CalendarCellMarks(
+          isNew: vm.isRecentlyPlaced(entry.id),
+          allergenUnsafe: vm.isAllergenUnsafe(entry.id),
+          presentCount: present,
+          placementOrder: order,
         ),
-      ],
-    );
-  }
-
-  /// BUT-1613: members present for this meal, roster-filtered so it matches the
-  /// portion count shown on the presence row. Null when solo (roster ≤ 1), no
-  /// selection, or nobody home — cooking mode then uses its household default.
-  int? _presentServings() {
-    if (roster.length <= 1) return null;
-    final presentIds = plan.presentMemberIdsFor(day, slot);
-    if (presentIds == null || presentIds.isEmpty) return null;
-    final count = roster.where((m) => presentIds.contains(m.memberId)).length;
-    return count > 0 ? count : null;
-  }
-}
-
-/// BUT-1611: the per-slot present-diner faces row. Shows the faces of whoever
-/// is home for this meal (all of them when the slot has no explicit selection
-/// = everyone), plus a portion count = number present (B's "portionssiffran"
-/// graft — cook for who's actually there). Tapping opens the presence sheet.
-class _SlotPresenceRow extends StatelessWidget {
-  final List<HouseholdRosterMember> roster;
-  final List<String>? presentIds;
-  final VoidCallback onTap;
-  final String semanticsLabel;
-
-  const _SlotPresenceRow({
-    required this.roster,
-    required this.presentIds,
-    required this.onTap,
-    required this.semanticsLabel,
-  });
-
-  static const int _maxFaces = 4;
-  static const double _faceSize = 16;
-
-  /// How many faces fit beside the "+N" and the portion count in [maxWidth],
-  /// and whether the "+N" still fits. Faces stay while they fit and degrade
-  /// to one face plus the count (decision B-40), so a large household never
-  /// overflows a narrow cell or cuts the count short.
-  static ({int faces, bool showRest}) _facesThatFit({
-    required double maxWidth,
-    required int present,
-    required double Function(String) textWidth,
-    required double portionsWidth,
-  }) {
-    final fixed = AppDimensions.iconSizeXs + portionsWidth;
-    for (var k = math.min(_maxFaces, present); k >= 1; k--) {
-      final rest = present - k;
-      final width =
-          k * _faceSize +
-          (k - 1) * AppDimensions.space4 +
-          (rest > 0 ? AppDimensions.space4 + textWidth('+$rest') : 0) +
-          fixed;
-      if (width <= maxWidth) return (faces: k, showRest: true);
-    }
-    return (faces: 1, showRest: false);
-  }
-
-  /// The presence row's label: 10.5/700 with no tracking (tokens.json
-  /// controls.calendarPresenceRow labelSize 10.5, labelWeight 700). Built
-  /// from overline for the size and weight, without overline's category
-  /// tracking, which widened the texts.
-  static TextStyle _label(Color color) =>
-      AppTextStyles.overline.copyWith(letterSpacing: 0, color: color);
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    // null selection = everyone home (the default); an explicit list is honored
-    // exactly, including an empty "nobody home".
-    final present = presentIds == null
-        ? roster
-        : roster.where((m) => presentIds!.contains(m.memberId)).toList();
-    // Over the whole roster, not `present`, so a person keeps the same chip in
-    // every cell.
-    final initials = distinctInitials([
-      for (final m in roster) m.displayName,
-    ]);
-    final portions = context.l10n.menuPresencePortions(present.length);
-    final textScaler = MediaQuery.textScalerOf(context);
-    final textDirection = Directionality.of(context);
-    Size measure(String text) {
-      final painter = TextPainter(
-        text: TextSpan(text: text, style: _label(cs.onSurfaceVariant)),
-        textScaler: textScaler,
-        textDirection: textDirection,
-        maxLines: 1,
-      )..layout();
-      final size = painter.size;
-      painter.dispose();
-      return size;
-    }
-
-    double textWidth(String text) => measure(text).width;
-    // The day row sizes itself with IntrinsicHeight, which a LayoutBuilder
-    // cannot answer; a fixed height (the taller of a face and a text line)
-    // answers it without running the builder.
-    final portionsSize = measure(portions);
-    final rowHeight = math.max(_faceSize, portionsSize.height);
-
-    return Semantics(
-      button: true,
-      label: semanticsLabel,
-      child: Material(
-        type: MaterialType.transparency,
-        child: PressFill(
-          surface: PressSurface.base,
-          child: InkWell(
-            onTap: onTap,
-            child: Ink(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-              ),
-              child: Container(
-                padding: AppDimensions.paddingAll4,
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: cs.outlineVariant),
-                    left: BorderSide(color: cs.outlineVariant),
-                    right: BorderSide(color: cs.outlineVariant),
-                  ),
-                ),
-                child: SizedBox(
-                  height: rowHeight,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final fit = _facesThatFit(
-                        maxWidth: constraints.maxWidth,
-                        present: present.length,
-                        textWidth: textWidth,
-                        portionsWidth: portionsSize.width,
-                      );
-                      final shown = present.take(fit.faces).toList();
-                      final overflow = fit.showRest
-                          ? present.length - shown.length
-                          : 0;
-                      return Row(
-                        children: [
-                          if (present.isEmpty)
-                            Expanded(
-                              child: Text(
-                                context.l10n.menuPresenceNobody,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: _label(cs.onSurfaceVariant),
-                              ),
-                            )
-                          else
-                            for (var i = 0; i < shown.length; i++)
-                              Padding(
-                                padding: EdgeInsetsDirectional.only(
-                                  start: i == 0 ? 0 : AppDimensions.space4,
-                                ),
-                                child: FamilyAvatar(
-                                  name: shown[i].displayName,
-                                  color: parseAvatarColor(
-                                    context,
-                                    shown[i].avatarColor,
-                                  ),
-                                  size: _faceSize,
-                                  initials: initials[roster.indexOf(shown[i])],
-                                ),
-                              ),
-                          if (overflow > 0)
-                            Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                start: AppDimensions.space4,
-                              ),
-                              child: Text(
-                                '+$overflow',
-                                style: _label(cs.onSurfaceVariant),
-                              ),
-                            ),
-                          if (present.isNotEmpty)
-                            Expanded(
-                              child: Text(
-                                portions,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.end,
-                                style: _label(context.modeColors.textAccent),
-                              ),
-                            ),
-                          ButleryIcon(
-                            ButleryIcons.chevronDown,
-                            size: AppDimensions.iconSizeXs,
-                            color: cs.outline,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        semanticsLabel: selecting
+            ? l10n.a11yWeeklyMenuSelectEntry
+            : family
+            ? l10n.a11yMenuSlotPresence(slot.displayLabel, day.displayLabel)
+            : l10n.a11yMenuPlanRecipeOpen,
+        semanticsValue: order == null
+            ? null
+            : l10n.a11yWeeklyMenuPlacementOrder(order),
+        selectionMode: selecting,
+        selected: vm.isSelected(entry.id),
+        onTap: () {
+          if (selecting) {
+            vm.toggleSelection(entry.id);
+          } else if (family) {
+            onTapPresence(day, slot);
+          } else {
+            onTapRecipe(entry.recipeId);
+          }
+        },
+        dragPayload: MovePayload(entry),
       ),
     );
   }
-}
 
-class _EmptySlot extends StatelessWidget {
-  final DayOfWeek day;
-  final MealSlot slot;
-  final SlotTapCallback onTap;
-
-  const _EmptySlot({
-    required this.day,
-    required this.slot,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // BUT-403: enum `name` (not displayLabel) keeps the identifier stable
-    // across locale changes.
-    final identifier = 'menu-slot-${day.name}-${slot.name}';
-    return Semantics(
-      identifier: identifier,
-      button: true,
-      child: GestureDetector(
-        key: ValueKey('test-$identifier'),
-        onTap: () => onTap(day, slot),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.all(AppDimensions.space4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border.all(color: Theme.of(context).dividerColor),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                child: _slotLabel(
-                  slot.displayLabel,
-                  Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              // border.subtle (outlineVariant): #CCD1C2 light, the token's
-              // dark value in dark mode.
-              Center(
-                child: ExcludeSemantics(
-                  child: Text(
-                    '+',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AssignedSlot extends StatelessWidget {
-  final WeeklyMenuPlanEntry entry;
-  final RecipeNavCallback onTap;
-  final bool showNewBadge;
-
-  /// P5-U23: 1-based order of the automatic placement, or null.
-  final int? placementOrder;
-
-  /// BUT-1613: members home for this meal, forwarded into the recipe tap so
-  /// cooking mode opens pre-scaled. Null → cooking mode's household default.
-  final int? presentServings;
-
-  // BUT-1043: multi-select state. When [selectionMode] is on, tap toggles
-  // selection instead of navigating, a checkbox overlay appears, and the
-  // cell is no longer draggable (selection and drag must not collide).
-  final bool selectionMode;
-  final bool isSelected;
-  final ValueChanged<String> onToggleSelection;
-
-  /// BUT-2362: draw the allergen warning in place of the dish icon.
-  final bool allergenUnsafe;
-  final VoidCallback? onTapAllergenWarning;
-
-  const _AssignedSlot({
-    required this.entry,
-    required this.onTap,
-    required this.onToggleSelection,
-    this.presentServings,
-    this.showNewBadge = false,
-    this.placementOrder,
-    this.selectionMode = false,
-    this.isSelected = false,
-    this.allergenUnsafe = false,
-    this.onTapAllergenWarning,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final accent = isSelected ? cs.secondary : cs.onSurface;
-    final order = placementOrder;
-    final cell = Semantics(
-      label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry
-          : context.l10n.a11yMenuPlanRecipeOpen,
-      value: order == null
-          ? null
-          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
-      button: true,
-      selected: selectionMode ? isSelected : null,
-      child: GestureDetector(
-        onTap: () => selectionMode
-            ? onToggleSelection(entry.id)
-            : onTap(entry.recipeId, presentServings: presentServings),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: AppDimensions.paddingAll4,
-          decoration: BoxDecoration(
-            color: isSelected
-                ? cs.primaryContainer
-                : Theme.of(context).cardColor,
-            border: _accentedBorder(context, accent),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  if (selectionMode)
-                    ButleryIcon(
-                      isSelected
-                          ? ButleryIcons.checkSquare
-                          : ButleryIcons.square,
-                      size: AppDimensions.iconSize14,
-                      color: cs.secondary,
-                    ),
-                  if (order != null) _PlacementOrderNumber(order: order),
-                  Expanded(
-                    child: _slotLabel(
-                      entry.slot.displayLabel,
-                      cs.onPrimaryContainer,
-                    ),
-                  ),
-                  if (showNewBadge) const MenuNewBadge(),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.space4),
-              if (allergenUnsafe)
-                _AllergenWarning(
-                  height: 28,
-                  iconSize: AppDimensions.iconSize18,
-                  onTap: selectionMode ? null : onTapAllergenWarning,
-                )
-              else
-                Container(
-                  height: 28,
-                  color: cs.surface,
-                  alignment: Alignment.center,
-                  child: ButleryIcon(
-                    ButleryIcons.utensils,
-                    size: AppDimensions.iconSize18,
-                    color: _slotIconColor(context),
-                  ),
-                ),
-              const SizedBox(height: AppDimensions.space4),
-              Expanded(
-                child: Text(
-                  entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.calendarCell.copyWith(
-                    color: cs.onSurface,
-                    height: 1.15,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    // Drag is suppressed in selection mode so the two long-press/tap gestures
-    // don't fight over the same cell.
-    if (selectionMode) return cell;
-    return wrapAsDraggable(
-      context: context,
-      payload: MovePayload(entry),
-      child: cell,
-    );
-  }
-}
-
-class _OvrigtCell extends StatelessWidget {
-  final WeeklyMenuPlanViewModel vm;
-  final WeeklyMenuPlan plan;
-  final DayOfWeek day;
-  final SlotTapCallback onTapEmptySlot;
-  final RecipeNavCallback onTapRecipe;
-
-  const _OvrigtCell({
-    required this.vm,
-    required this.plan,
-    required this.day,
-    required this.onTapEmptySlot,
-    required this.onTapRecipe,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget _ovrigtCell(BuildContext context) {
     final entries = plan.entriesAt(day, MealSlot.ovrigt);
-    final inner = entries.isEmpty
-        ? _EmptySlot(
-            day: day,
-            slot: MealSlot.ovrigt,
-            onTap: onTapEmptySlot,
-          )
-        : Container(
-            constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-            padding: AppDimensions.paddingAll4,
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              border: _accentedBorder(context, cs.secondary),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _slotLabel(
-                  MealSlot.ovrigt.displayLabel,
-                  context.modeColors.onWarningContainer,
-                ),
-                const SizedBox(height: AppDimensions.space4),
-                for (final entry in entries) ...[
-                  _OvrigtEntry(
-                    entry: entry,
-                    onTap: onTapRecipe,
-                    showNewBadge: vm.isRecentlyPlaced(entry.id),
-                    placementOrder: vm.placementOrderOf(entry.id),
-                    selectionMode: vm.selectionMode,
-                    isSelected: vm.isSelected(entry.id),
-                    onToggleSelection: vm.toggleSelection,
-                    allergenUnsafe: vm.isAllergenUnsafe(entry.id),
-                  ),
-                  const SizedBox(height: AppDimensions.space4),
-                ],
-                Semantics(
-                  label: context.l10n.a11yMenuPlanOvrigtAddMore(
-                    day.displayLabel,
-                  ),
-                  button: true,
-                  child: GestureDetector(
-                    onTap: () => onTapEmptySlot(day, MealSlot.ovrigt),
-                    child: Container(
-                      padding: AppDimensions.paddingVertical4,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: cs.outlineVariant),
-                      ),
-                      child: ExcludeSemantics(
-                        child: Text(
-                          context.l10n.weeklyMenuOvrigtAddMore,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.overline.copyWith(
-                            color: context.modeColors.onWarningContainer,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+    if (entries.isEmpty) {
+      return wrapAsDropTarget(
+        context: context,
+        vm: vm,
+        day: day,
+        slot: MealSlot.ovrigt,
+        child: CalendarEmptyCell(
+          day: day,
+          slot: MealSlot.ovrigt,
+          onTap: onTapEmptySlot,
+        ),
+      );
+    }
+    final selecting = vm.selectionMode;
+    final allSelected = entries.every((e) => vm.isSelected(e.id));
+    final order = entries
+        .map((e) => vm.placementOrderOf(e.id))
+        .whereType<int>()
+        .firstOrNull;
+    final l10n = context.l10n;
     return wrapAsDropTarget(
       context: context,
       vm: vm,
       day: day,
       slot: MealSlot.ovrigt,
-      child: inner,
-    );
-  }
-}
-
-class _OvrigtEntry extends StatelessWidget {
-  final WeeklyMenuPlanEntry entry;
-  final RecipeNavCallback onTap;
-  final bool showNewBadge;
-
-  /// P5-U23: 1-based order of the automatic placement, or null.
-  final int? placementOrder;
-
-  // BUT-1043: see _AssignedSlot — in selection mode tap toggles selection
-  // and the chip shows a checkbox; drag is suppressed.
-  final bool selectionMode;
-  final bool isSelected;
-  final ValueChanged<String> onToggleSelection;
-
-  /// BUT-2362: see [_AssignedSlot.allergenUnsafe]. Övrigt has no presence,
-  /// so the warning only explains.
-  final bool allergenUnsafe;
-
-  const _OvrigtEntry({
-    required this.entry,
-    required this.onTap,
-    required this.onToggleSelection,
-    this.showNewBadge = false,
-    this.placementOrder,
-    this.selectionMode = false,
-    this.isSelected = false,
-    this.allergenUnsafe = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final order = placementOrder;
-    final chip = Semantics(
-      label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry
-          : context.l10n.a11yMenuPlanRecipeOpen,
-      value: order == null
-          ? null
-          : context.l10n.a11yWeeklyMenuPlacementOrder(order),
-      button: true,
-      selected: selectionMode ? isSelected : null,
-      child: GestureDetector(
-        onTap: () =>
-            selectionMode ? onToggleSelection(entry.id) : onTap(entry.recipeId),
-        child: Container(
-          padding: AppDimensions.paddingAll4,
-          decoration: BoxDecoration(
-            color: isSelected ? cs.primaryContainer : cs.surface,
-            border: Border(
-              left: BorderSide(color: cs.secondary, width: 2),
-            ),
-          ),
-          child: Row(
-            children: [
-              if (selectionMode)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.space4,
-                  ),
-                  child: ButleryIcon(
-                    isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
-                    size: AppDimensions.iconSizeXs,
-                    color: cs.secondary,
-                  ),
-                )
-              else ...[
-                if (allergenUnsafe)
-                  const _AllergenWarning(
-                    height: 16,
-                    width: 16,
-                    iconSize: AppDimensions.iconSizeXs,
-                  )
-                else
-                  Container(
-                    width: 16,
-                    height: 16,
-                    color: cs.surfaceContainerHighest,
-                    alignment: Alignment.center,
-                    child: ButleryIcon(
-                      ButleryIcons.utensils,
-                      size: AppDimensions.iconSizeXs,
-                      color: _slotIconColor(context),
-                    ),
-                  ),
-                const SizedBox(width: AppDimensions.space4),
-              ],
-              if (order != null) _PlacementOrderNumber(order: order),
-              Expanded(
-                child: Text(
-                  entry.recipeTitle.toLowerCase(),
-                  style: AppTextStyles.calendarCell.copyWith(
-                    color: cs.onSurface,
-                    height: 1.1,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (showNewBadge) const MenuNewBadge(),
-            ],
-          ),
+      child: CalendarDishCell(
+        title: entries.first.recipeTitle,
+        extraCount: entries.length - 1,
+        marks: CalendarCellMarks(
+          isNew: entries.any((e) => vm.isRecentlyPlaced(e.id)),
+          allergenUnsafe: entries.any((e) => vm.isAllergenUnsafe(e.id)),
+          placementOrder: order,
         ),
-      ),
-    );
-    if (selectionMode) return chip;
-    return wrapAsDraggable(
-      context: context,
-      payload: MovePayload(entry),
-      child: chip,
-    );
-  }
-}
-
-/// BUT-2362: a dish someone eating this meal cannot eat. Icon and words, not
-/// colour alone: the tooltip and the screen-reader label say what is wrong,
-/// and name nobody.
-class _AllergenWarning extends StatelessWidget {
-  const _AllergenWarning({
-    required this.height,
-    required this.iconSize,
-    this.width,
-    this.onTap,
-  });
-
-  final double height;
-  final double? width;
-  final double iconSize;
-  final VoidCallback? onTap;
-
-  static const Key boxKey = ValueKey('menu-allergen-warning');
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.modeColors;
-    final label = context.l10n.menuAllergenUnsafeAtMeal;
-    final box = Container(
-      key: boxKey,
-      height: height,
-      width: width,
-      color: colors.warningContainer,
-      alignment: Alignment.center,
-      child: ButleryIcon(
-        ButleryIcons.triangleAlert,
-        size: iconSize,
-        color: colors.onWarningContainer,
-      ),
-    );
-    return Tooltip(
-      message: label,
-      excludeFromSemantics: true,
-      child: Semantics(
-        container: true,
-        label: label,
-        button: onTap != null,
-        child: onTap == null ? box : GestureDetector(onTap: onTap, child: box),
-      ),
-    );
-  }
-}
-
-/// P5-U23: the placement order as a number in the cell (produktregler.md:1126
-/// "Placeringsordningen visas som siffror i rutorna"; :890 "ordningen visas i
-/// rutnätet"). Drawn in Skarmar v12 etapp 11 breda vyer:249-254 as 10.5/700
-/// with 1 px tracking in the warning text colour. Read here as the overline
-/// role (10.5/700) in text.accent.onRaised (`onSecondaryContainer`: #8A5212
-/// light, #DCA968 dark), which holds on paper and on surface.raised in both
-/// modes (tokens.json text.link note). The number is announced through the
-/// cell's semantics value, so it is excluded here.
-class _PlacementOrderNumber extends StatelessWidget {
-  const _PlacementOrderNumber({required this.order});
-
-  final int order;
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
-        child: Text(
-          '$order',
-          key: ValueKey('placement-order-$order'),
-          style: AppTextStyles.overline.copyWith(
-            letterSpacing: 1,
-            color: Theme.of(context).colorScheme.onSecondaryContainer,
-          ),
-        ),
+        semanticsLabel: selecting
+            ? l10n.a11yWeeklyMenuSelectEntry
+            : l10n.a11yWeeklyMenuOpenOvrigt(day.displayLabel),
+        semanticsValue: order == null
+            ? null
+            : l10n.a11yWeeklyMenuPlacementOrder(order),
+        selectionMode: selecting,
+        selected: allSelected,
+        onTap: () {
+          if (!selecting) return onTapOvrigt(day);
+          // One tap chooses or clears every dish in the place.
+          for (final e in entries) {
+            if (vm.isSelected(e.id) == allSelected) vm.toggleSelection(e.id);
+          }
+        },
+        dragPayload: entries.length == 1 ? MovePayload(entries.first) : null,
       ),
     );
   }

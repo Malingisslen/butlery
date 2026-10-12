@@ -11,6 +11,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -30,10 +31,12 @@ import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/cards/empty_notice_card.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
+import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
+import 'package:butlery/widgets/menu/calendar/ovrigt_sheet.dart';
 import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -117,23 +120,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   }
 
   Widget _buildEmptyHint(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.space32),
-          child: ButleryIcon(
-            ButleryIcons.arrowUp,
-            size: AppDimensions.iconSizeXl,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        StateWidget.empty(
-          title: context.l10n.weeklyMenuEmptyTitle,
-          subtitle: context.l10n.weeklyMenuEmptyHint,
-          icon: ButleryIcons.calendar,
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.space16),
+      child: EmptyNoticeCard(
+        title: context.l10n.weeklyMenuEmptyTitle,
+        body: context.l10n.weeklyMenuEmptyHint,
+      ),
     );
   }
 
@@ -152,7 +144,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       onRefinePrompt: widget.onRefinePrompt,
     );
 
-    // Compute today's index once — avoids 7× clock.now() in DayCell.
+    // Compute today's index once.
     // -1 when the visible week isn't the current ISO week.
     final now = clock.now();
     final todayIndex = plan.weekStartDate == IsoWeekUtils.weekStartOf(now)
@@ -172,7 +164,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           )
         else
           WeekNavHeader(
-            label: _formatWeekLabel(context, vm.currentWeekStart),
+            title: context.l10n.weeklyMenuWeekTitle(
+              IsoWeekUtils.isoWeekNumber(vm.currentWeekStart),
+            ),
+            range: formatWeekRange(context, vm.currentWeekStart),
             onPrev: vm.previousWeek,
             onNext: vm.nextWeek,
             onClearWeek: vm.hasEntries || vm.hasOverflow
@@ -205,21 +200,20 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             onToggleExpanded: () =>
                 setState(() => _overviewExpanded = !_overviewExpanded),
           ),
-        for (final day in DayOfWeek.values)
-          DayCell(
-            vm: vm,
-            plan: plan,
-            day: day,
-            isToday: day.index == todayIndex,
-            onTapEmptySlot: (d, s) => _onTapEmptySlot(context, vm, d, s),
-            onTapRecipe: (id, {presentServings}) => _navigateToRecipe(
-              context,
-              id,
-              presentServings: presentServings,
-            ),
-            roster: _roster,
-            onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
+        CalendarWeekTable(
+          vm: vm,
+          plan: plan,
+          todayIndex: todayIndex,
+          roster: _roster,
+          onTapEmptySlot: (d, s) => _onTapEmptySlot(context, vm, d, s),
+          onTapRecipe: (id, {presentServings}) => _navigateToRecipe(
+            context,
+            id,
+            presentServings: presentServings,
           ),
+          onTapOvrigt: (d) => _onTapOvrigt(context, vm, plan, d),
+          onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
+        ),
       ],
     );
   }
@@ -425,11 +419,38 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     }
   }
 
-  /// BUT-1611: tap a slot's presence faces → the seeded "vem är hemma?" sheet,
-  /// then persist (one slot, or both on "Hela dagen"). Selecting the whole
-  /// roster stores null (the "everyone" default) to keep the map sparse. When
-  /// the week already has a generated menu, a discreet notice explains that
-  /// placed dishes stay put — presence never reshuffles an existing menu.
+  /// A tap on an Övrigt cell lists its dishes: the cell only has room for the
+  /// first, and this is where a dish is opened or another added.
+  Future<void> _onTapOvrigt(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+    WeeklyMenuPlan plan,
+    DayOfWeek day,
+  ) async {
+    final locale = Localizations.localeOf(context).toString();
+    final date = plan.weekStartDate.add(Duration(days: day.index));
+    final result = await showOvrigtSheet(
+      context,
+      dayName: DateFormat.EEEE(locale).format(date),
+      entries: plan.entriesAt(day, MealSlot.ovrigt),
+    );
+    if (!context.mounted) return;
+    switch (result) {
+      case OvrigtOpenDish(:final recipeId):
+        await _navigateToRecipe(context, recipeId);
+      case OvrigtAddDish():
+        await _onTapEmptySlot(context, vm, day, MealSlot.ovrigt);
+      case null:
+        break;
+    }
+  }
+
+  /// BUT-1611: tap a meal → the seeded "vem är hemma?" sheet, then persist (one
+  /// slot, or both on "Hela dagen"). Selecting the whole roster stores null
+  /// (the "everyone" default) to keep the map sparse. When the week already has
+  /// a generated menu, a discreet notice explains that placed dishes stay put —
+  /// presence never reshuffles an existing menu. A meal with a dish also offers
+  /// the dish itself, since the tap no longer opens it directly (B-40).
   Future<void> _onTapPresence(
     BuildContext context,
     WeeklyMenuPlanViewModel vm,
@@ -438,16 +459,35 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   ) async {
     final allIds = _roster.map((m) => m.memberId).toList();
     final seed = vm.presentMemberIdsFor(day, slot) ?? allIds;
-    final slotLabel = context.l10n.menuPresenceSlotSubtitle(
-      slot.displayLabel,
-      day.displayLabel,
-    );
+    final entry = vm.plan?.entryAt(day, slot);
+    final locale = Localizations.localeOf(context).toString();
+    final date = vm.currentWeekStart.add(Duration(days: day.index));
+    final slotLabel = [
+      context.l10n.menuPresenceSlotSubtitle(
+        toBeginningOfSentenceCase(slot.displayLabel, locale),
+        DateFormat.EEEE(locale).format(date),
+      ),
+      ?entry?.recipeTitle,
+    ].join(' · ');
     final result = await showWhoIsHomeSheet(
       context,
       slotLabel: slotLabel,
       seedMemberIds: seed,
+      offerRecipe: entry != null,
     );
     if (result == null || result.skipped || !context.mounted) return;
+    if (result.openRecipe) {
+      if (entry == null) return;
+      final present = vm.presentMemberIdsFor(day, slot);
+      final count = present == null
+          ? 0
+          : _roster.where((m) => present.contains(m.memberId)).length;
+      return _navigateToRecipe(
+        context,
+        entry.recipeId,
+        presentServings: count > 0 ? count : null,
+      );
+    }
 
     final hadMenu = vm.hasEntries;
     final picked = result.attendeeMemberIds;
@@ -497,31 +537,4 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       );
     }
   }
-
-  String _formatWeekLabel(BuildContext context, DateTime weekStart) {
-    final weekEnd = weekStart.add(const Duration(days: 6));
-    return context.l10n.weeklyMenuWeekLabel(
-      IsoWeekUtils.isoWeekNumber(weekStart),
-      _formatDayMonth(weekStart),
-      _formatDayMonth(weekEnd),
-    );
-  }
-
-  static const List<String> _svMonths = [
-    'jan',
-    'feb',
-    'mar',
-    'apr',
-    'maj',
-    'jun',
-    'jul',
-    'aug',
-    'sep',
-    'okt',
-    'nov',
-    'dec',
-  ];
-
-  String _formatDayMonth(DateTime date) =>
-      '${date.day} ${_svMonths[date.month - 1]}';
 }

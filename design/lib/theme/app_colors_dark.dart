@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:9ca138fedd350c15d726f6423e79739b10c2da49dee410bc5d6b8276432d8136 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:254cd5b3970036c08f0aa2f4f25f63bb32bb80c7421c8904ab130e9b0b10d541 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det

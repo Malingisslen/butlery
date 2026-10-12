@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/views/menu_placement/placement_widgets.dart';
+import 'package:butlery/widgets/common/bold_names_text.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -29,6 +30,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
 
 class MenuPlacementView extends StatefulWidget {
   /// Generated menu (`Map<mealType, List<Recipe>>`) to place.
@@ -249,10 +251,10 @@ class _WeekNavRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // ÄNDRA-redo sessions pin the week the auto layout landed on —
           // navigating would duplicate the menu across two weeks.
@@ -261,10 +263,30 @@ class _WeekNavRow extends StatelessWidget {
               icon: const ButleryIcon(ButleryIcons.chevronLeft),
               tooltip: context.l10n.slotPickerPreviousWeek,
               onPressed: vm.isLoading ? null : vm.previousWeek,
+            )
+          else
+            const SizedBox(width: AppDimensions.space8),
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: context.l10n.weeklyMenuWeekTitle(
+                      IsoWeekUtils.isoWeekNumber(vm.weekStart),
+                    ),
+                    style: AppTextStyles.titleBold.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '  ${formatWeekRange(context, vm.weekStart)}',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          Text(
-            _formatWeekLabel(context, vm.weekStart),
-            style: AppTextStyles.titleSmall,
           ),
           if (vm.canNavigateWeeks)
             IconButton(
@@ -274,12 +296,6 @@ class _WeekNavRow extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-
-  String _formatWeekLabel(BuildContext context, DateTime weekStart) {
-    return context.l10n.slotPickerWeekLabel(
-      IsoWeekUtils.isoWeekNumber(weekStart),
     );
   }
 }
@@ -296,23 +312,32 @@ class _HintBanner extends StatelessWidget {
     final text = selected == null
         ? context.l10n.menuPlacementHintSelect
         : context.l10n.menuPlacementHint(selected.recipe.title);
+    final style = AppTextStyles.bodySmall.copyWith(
+      color: cs.onSecondaryContainer,
+    );
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
-      padding: const EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
         vertical: AppDimensions.space8,
       ),
-      // #placera draws the hint between two border.subtle hairlines in
-      // text.body, with no fill (Skarmar v12 del 2). outlineVariant is
-      // border.subtle and onSurface text.primary in both schemes.
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
-        border: Border.symmetric(
-          horizontal: BorderSide(color: cs.outlineVariant),
-        ),
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
-      child: Text(
-        text,
-        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
+      child: Text.rich(
+        TextSpan(
+          style: style,
+          children: boldNameSpans(
+            text,
+            [
+              ?selected?.recipe.title,
+            ],
+            AppTextStyles.bodySmallBold.copyWith(
+              color: cs.onSecondaryContainer,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -363,15 +388,17 @@ class PlacementTray extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.space8),
-            SizedBox(
-              height: 64,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: vm.items.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: AppDimensions.space8),
-                itemBuilder: (context, index) =>
-                    PlacementTrayCard(vm: vm, index: index),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 112),
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: AppDimensions.space8,
+                  runSpacing: AppDimensions.space8,
+                  children: [
+                    for (var i = 0; i < vm.items.length; i++)
+                      PlacementTrayCard(vm: vm, index: i),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: AppDimensions.space8),
