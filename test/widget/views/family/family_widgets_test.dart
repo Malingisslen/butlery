@@ -207,6 +207,21 @@ void main() {
       );
       expect(find.text('E'), findsOneWidget);
     });
+
+    testWidgets('is a circle, like every other profile icon', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const FamilyAvatar(name: 'Emma', color: Colors.purple),
+        ),
+      );
+      final box = tester.widget<Container>(
+        find.descendant(
+          of: find.byType(FamilyAvatar),
+          matching: find.byType(Container),
+        ),
+      );
+      expect((box.decoration! as BoxDecoration).shape, BoxShape.circle);
+    });
   });
 
   // BUT-2205: the row's own fill used to sit above the ink layer, so a

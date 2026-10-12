@@ -36,7 +36,6 @@ Color parseAvatarColor(BuildContext context, String? hex) {
   return Theme.of(context).colorScheme.primary;
 }
 
-/// Square colored avatar with initials (SQUARE design language).
 class FamilyAvatar extends StatelessWidget {
   final String name;
   final Color color;
@@ -56,7 +55,7 @@ class FamilyAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      color: color,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
