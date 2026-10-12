@@ -57,7 +57,8 @@
   "authResetPassword": "Återställ lösenord",
   "authForgotPassword": "Glömt lösenord?",
   "authEnterPassword": "Ange ditt lösenord",
-  "authPasswordMinLength": "Minst 6 tecken",
+  "authPasswordChoose": "Välj ett starkt lösenord",
+  "passwordRuleHint": "Tolv eller fler tecken, eller tre ord du minns.",
   "authResetPasswordInstructions": "Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.",
   "imageAddImage": "Lägg till bild",
   "commentDeletedUndoMessage": "Kommentaren raderad",
@@ -421,7 +422,6 @@
   "validationEmailRequired": "E-post krävs",
   "validationPasswordRequired": "Lösenord krävs",
   "validationInvalidAmount": "Ogiltigt antal",
-  "validationPasswordTooShort": "Lösenordet måste vara minst 6 tecken",
   "validationGenericRequired": "Detta fält krävs",
   "validationEmailInvalid": "Ogiltig e-postadress",
   "errorGeneric": "Det gick inte att slutföra. Försök igen.",
@@ -8808,7 +8808,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Lösenordet måste vara minst 8 tecken",
+  "validationPasswordRule": "Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.",
   "validationDisplayNameLabel": "Visningsnamn",
   "validationCommentLabel": "Kommentar",
   "validationAmountMustBePositive": "Antal måste vara ett positivt nummer",
@@ -14023,7 +14023,7 @@
   "@setNewPasswordChecking": {
     "description": "BUT-2170: shown while the reset link is checked."
   },
-  "setNewPasswordForAccount": "Gäller kontot {email}.",
+  "setNewPasswordForAccount": "Välj ett nytt lösenord för {email}",
   "@setNewPasswordForAccount": {
     "description": "BUT-2170: names the account the reset link belongs to.",
     "placeholders": {
@@ -15964,10 +15964,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.",
+  "guestStartBody": "Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "Vi sparar bara året, inte hela datumet.",
+  "guestStartBackToSignIn": "Tillbaka till inloggningen",
   "guestStartPreparing": "Gör i ordning ditt gästkonto",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"

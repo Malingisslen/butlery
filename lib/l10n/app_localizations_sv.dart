@@ -133,7 +133,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authEnterPassword => 'Ange ditt lösenord';
 
   @override
-  String get authPasswordMinLength => 'Minst 6 tecken';
+  String get authPasswordChoose => 'Välj ett starkt lösenord';
+
+  @override
+  String get passwordRuleHint =>
+      'Tolv eller fler tecken, eller tre ord du minns.';
 
   @override
   String get authResetPasswordInstructions =>
@@ -424,10 +428,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get validationInvalidAmount => 'Ogiltigt antal';
-
-  @override
-  String get validationPasswordTooShort =>
-      'Lösenordet måste vara minst 6 tecken';
 
   @override
   String get validationGenericRequired => 'Detta fält krävs';
@@ -12791,8 +12791,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get validationPasswordMinEight =>
-      'Lösenordet måste vara minst 8 tecken';
+  String get validationPasswordRule =>
+      'Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.';
 
   @override
   String get validationDisplayNameLabel => 'Visningsnamn';
@@ -18074,7 +18074,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String setNewPasswordForAccount(String email) {
-    return 'Gäller kontot $email.';
+    return 'Välj ett nytt lösenord för $email';
   }
 
   @override
@@ -19573,7 +19573,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get guestStartBody =>
-      'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.';
+      'Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.';
+
+  @override
+  String get guestStartYearNote => 'Vi sparar bara året, inte hela datumet.';
+
+  @override
+  String get guestStartBackToSignIn => 'Tillbaka till inloggningen';
 
   @override
   String get guestStartPreparing => 'Gör i ordning ditt gästkonto';

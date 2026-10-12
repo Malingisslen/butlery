@@ -57,7 +57,8 @@
   "authResetPassword": "Reset password",
   "authForgotPassword": "Forgot password?",
   "authEnterPassword": "Enter your password",
-  "authPasswordMinLength": "Min 6 characters",
+  "authPasswordChoose": "Choose a strong password",
+  "passwordRuleHint": "At least twelve characters, or three words you remember.",
   "authResetPasswordInstructions": "Enter your email address and we'll send you instructions to reset your password.",
   "imageAddImage": "Add image",
   "commentDeletedUndoMessage": "Comment deleted",
@@ -415,7 +416,6 @@
   "validationEmailRequired": "Email required",
   "validationPasswordRequired": "Password required",
   "validationInvalidAmount": "Invalid amount",
-  "validationPasswordTooShort": "Password must be at least 6 characters",
   "validationGenericRequired": "This field is required",
   "validationEmailInvalid": "Invalid email address",
   "errorGeneric": "An error occurred. Please try again.",
@@ -8753,7 +8753,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Password must be at least 8 characters",
+  "validationPasswordRule": "The password needs at least twelve characters, or three words you remember.",
   "validationDisplayNameLabel": "Display name",
   "validationCommentLabel": "Comment",
   "validationAmountMustBePositive": "Amount must be a positive number",
@@ -13660,7 +13660,7 @@
   },
   "setNewPasswordTitle": "Choose a new password",
   "setNewPasswordChecking": "Checking the link …",
-  "setNewPasswordForAccount": "For the account {email}.",
+  "setNewPasswordForAccount": "Choose a new password for {email}",
   "setNewPasswordRepeat": "Repeat new password",
   "setNewPasswordSave": "Save password",
   "setNewPasswordWeak": "The password is too simple. Choose a longer one, ideally with numbers and symbols.",
@@ -15332,10 +15332,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.",
+  "guestStartBody": "The same questions as for a new account. What you save as a guest comes with you if you create an account later.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "We only save the year, not the full date.",
+  "guestStartBackToSignIn": "Back to sign in",
   "guestStartPreparing": "Getting your guest account ready",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"

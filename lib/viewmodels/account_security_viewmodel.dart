@@ -6,7 +6,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth/auth_provider_flows.dart';
@@ -144,8 +144,8 @@ class AccountSecurityViewModel extends ChangeNotifier
       setError(AppLocale.current.validationPasswordRequired);
       return false;
     }
-    if (newPassword.length < FormValidators.minPasswordLength) {
-      setError(AppLocale.current.validationPasswordTooShort);
+    if (!PasswordRule.accepts(newPassword)) {
+      setError(AppLocale.current.validationPasswordRule);
       return false;
     }
     if (newPassword != confirmPassword) {

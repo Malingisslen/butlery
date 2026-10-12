@@ -133,7 +133,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEnterPassword => 'Enter your password';
 
   @override
-  String get authPasswordMinLength => 'Min 6 characters';
+  String get authPasswordChoose => 'Choose a strong password';
+
+  @override
+  String get passwordRuleHint =>
+      'At least twelve characters, or three words you remember.';
 
   @override
   String get authResetPasswordInstructions =>
@@ -423,10 +427,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationInvalidAmount => 'Invalid amount';
-
-  @override
-  String get validationPasswordTooShort =>
-      'Password must be at least 6 characters';
 
   @override
   String get validationGenericRequired => 'This field is required';
@@ -12686,8 +12686,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get validationPasswordMinEight =>
-      'Password must be at least 8 characters';
+  String get validationPasswordRule =>
+      'The password needs at least twelve characters, or three words you remember.';
 
   @override
   String get validationDisplayNameLabel => 'Display name';
@@ -17979,7 +17979,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String setNewPasswordForAccount(String email) {
-    return 'For the account $email.';
+    return 'Choose a new password for $email';
   }
 
   @override
@@ -19516,7 +19516,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guestStartBody =>
-      'The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.';
+      'The same questions as for a new account. What you save as a guest comes with you if you create an account later.';
+
+  @override
+  String get guestStartYearNote => 'We only save the year, not the full date.';
+
+  @override
+  String get guestStartBackToSignIn => 'Back to sign in';
 
   @override
   String get guestStartPreparing => 'Getting your guest account ready';

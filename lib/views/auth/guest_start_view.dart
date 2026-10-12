@@ -11,12 +11,13 @@ import 'package:butlery/services/guest/guest_start_coordinator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
+import 'package:butlery/widgets/auth/auth_surface.dart';
 import 'package:butlery/widgets/auth/birth_year_dropdown.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/styled/field_helper_line.dart';
 
 /// Says that the server refused the age, when the guest start screen is no
 /// longer there to show it.
@@ -58,6 +59,7 @@ class GuestStartView extends StatefulWidget {
 
   static const Key birthYearKey = ValueKey('guestStart.birthYear');
   static const Key submitKey = ValueKey('guestStart.submit');
+  static const Key backKey = ValueKey('guestStart.back');
 
   /// Where a started guest goes: the same gate a sign-in leads to, whichever
   /// route this screen was pushed over. Overridable in tests.
@@ -132,11 +134,9 @@ class _GuestStartViewState extends State<GuestStartView> {
     final l10n = context.l10n;
     return PopScope(
       canPop: !_busy,
-      child: ButleryPage.undersida(
-        title: l10n.guestTryWithoutAccount,
-        width: PageWidth.compact,
-        showTabBar: false,
-        body: _tooYoung ? const _TooYoungPanel() : _buildForm(context),
+      child: AuthSurface(
+        subtitle: l10n.guestTryWithoutAccount,
+        child: _tooYoung ? const _TooYoungPanel() : _buildForm(context),
       ),
     );
   }
@@ -144,42 +144,40 @@ class _GuestStartViewState extends State<GuestStartView> {
   Widget _buildForm(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    return ListView(
-      padding: ButleryPageBody.margin(
-        context,
-        top: AppDimensions.space24,
-        bottom: AppDimensions.space24,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           l10n.guestStartBody,
           style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: AppDimensions.space32),
+        const SizedBox(height: AppDimensions.space24),
         BirthYearDropdown(
           dropdownKey: GuestStartView.birthYearKey,
           selected: _birthYear,
           onChanged: _busy ? null : (year) => setState(() => _birthYear = year),
         ),
-        const SizedBox(height: AppDimensions.space8),
-        Text(
-          l10n.onboardingAgeGatePrivacyNote,
-          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-        ),
-        const SizedBox(height: AppDimensions.space24),
+        FieldHelperLine(l10n.guestStartYearNote),
+        const SizedBox(height: AppDimensions.space16),
         TermsConsentRow(
           accepted: _termsAccepted,
           onChanged: _busy
               ? null
               : (value) => setState(() => _termsAccepted = value),
         ),
-        const SizedBox(height: AppDimensions.space24),
+        const SizedBox(height: AppDimensions.space16),
         HeroButton(
           key: GuestStartView.submitKey,
           label: l10n.commonContinue,
           onPressed: _submit,
           busy: _busy,
           expand: true,
+        ),
+        const SizedBox(height: AppDimensions.space8),
+        TextButton(
+          key: GuestStartView.backKey,
+          onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
+          child: Text(l10n.guestStartBackToSignIn),
         ),
       ],
     );
@@ -195,12 +193,8 @@ class _TooYoungPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    return ListView(
-      padding: ButleryPageBody.margin(
-        context,
-        top: AppDimensions.space32,
-        bottom: AppDimensions.space24,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ButleryIcon(
           ButleryIcons.lock,

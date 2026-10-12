@@ -14,14 +14,15 @@ import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/auth/guest_auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/auth/auth_surface.dart';
+import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/field_helper_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/guest/guest_erasure.dart';
 
@@ -49,6 +50,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
   UserService? _userService;
 
   bool _submitAttempted = false;
+  bool _termsAccepted = false;
   bool _passwordVisible = false;
   bool _busy = false;
   bool _emailInUse = false;
@@ -80,6 +82,10 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
 
     if (!_submitAttempted) setState(() => _submitAttempted = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_termsAccepted) {
+      SnackBarUtils.showWarning(context, context.l10n.authTermsAcceptRequired);
+      return;
+    }
     final guestAuth = _guestAuth;
     if (guestAuth == null) {
       setState(() => _error = context.l10n.errorUnexpected);
@@ -171,57 +177,48 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     return PopScope(
       canPop: !_busy,
-      child: ButleryPage.undersida(
-        title: l10n.guestCreateAccount,
-        width: PageWidth.compact,
-        showTabBar: false,
-        body: Form(
+      child: AuthSurface(
+        subtitle: l10n.guestUpgradeBody,
+        child: Form(
           key: _formKey,
           autovalidateMode: _submitAttempted
               ? AutovalidateMode.onUserInteraction
               : AutovalidateMode.disabled,
-          child: AutofillGroup(
-            child: ListView(
-              padding: ButleryPageBody.margin(
-                context,
-                top: AppDimensions.space24,
-                bottom: AppDimensions.space24,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ..._fields(context),
+              const SizedBox(height: AppDimensions.space16),
+              TermsConsentRow(
+                accepted: _termsAccepted,
+                onChanged: _busy || _linked
+                    ? null
+                    : (value) => setState(() => _termsAccepted = value),
               ),
-              children: [
-                Text(
-                  l10n.guestUpgradeBody,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+              const SizedBox(height: AppDimensions.space16),
+              if (_emailInUse) ...[
+                StateWidget.error(message: l10n.errorEmailAlreadyInUse),
+                TextButton(
+                  key: GuestUpgradeView.signInInsteadKey,
+                  onPressed: _busy ? null : _signInInstead,
+                  child: Text(l10n.guestSignInInstead),
                 ),
-                const SizedBox(height: AppDimensions.space32),
-                ..._fields(context),
-                const SizedBox(height: AppDimensions.space24),
-                if (_emailInUse) ...[
-                  StateWidget.error(message: l10n.errorEmailAlreadyInUse),
-                  TextButton(
-                    key: GuestUpgradeView.signInInsteadKey,
-                    onPressed: _busy ? null : _signInInstead,
-                    child: Text(l10n.guestSignInInstead),
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-                ],
-                if (_error != null) ...[
-                  StateWidget.error(message: _error!),
-                  const SizedBox(height: AppDimensions.space16),
-                ],
-                HeroButton(
-                  key: GuestUpgradeView.submitKey,
-                  label: _linked ? l10n.commonRetry : l10n.guestCreateAccount,
-                  onPressed: _submit,
-                  busy: _busy,
-                  expand: true,
-                ),
+                const SizedBox(height: AppDimensions.space16),
               ],
-            ),
+              if (_error != null) ...[
+                StateWidget.error(message: _error!),
+                const SizedBox(height: AppDimensions.space16),
+              ],
+              HeroButton(
+                key: GuestUpgradeView.submitKey,
+                label: _linked ? l10n.commonRetry : l10n.guestCreateAccount,
+                onPressed: _submit,
+                busy: _busy,
+                expand: true,
+              ),
+            ],
           ),
         ),
       ),
@@ -279,7 +276,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => _submit(),
           decoration: InputDecoration(
-            hintText: l10n.authPasswordMinLength,
+            hintText: l10n.authPasswordChoose,
             suffixIcon: IconButton(
               icon: ButleryIcon(
                 _passwordVisible ? ButleryIcons.eyeOff : ButleryIcons.eye,
@@ -295,9 +292,10 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
           ),
           errorBuilder: FieldErrorLine.builder,
           validator: FormValidators.strongPassword(),
-          autofillHints: const [AutofillHints.password],
+          autofillHints: const [AutofillHints.newPassword],
         ),
       ),
+      FieldHelperLine(l10n.passwordRuleHint),
     ];
   }
 }
