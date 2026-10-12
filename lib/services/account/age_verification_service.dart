@@ -120,7 +120,7 @@ class AgeVerificationService extends BaseService {
 
   /// BUT-920: one quiet retry of [finishGuestUpgrade] for an account whose
   /// upgrade screen was left after that step failed. Such an account signs
-  /// in with a password, has the birth year the guest start stored, and has
+  /// in with a password, Google or Apple, has the birth year the guest start stored, and has
   /// no `ageCompliant` claim. The retry is spent on this device once the
   /// server has answered, so an account the server will not finish costs one
   /// call, not one per start; a start without a connection does not spend it.
@@ -131,7 +131,9 @@ class AgeVerificationService extends BaseService {
     SharedPreferences? prefs;
     final key = '$_upgradeRetryKeyPrefix${user.uid}';
     try {
-      if (!user.providerData.any((p) => p.providerId == 'password')) {
+      if (!user.providerData.any(
+        (p) => _upgradeProviders.contains(p.providerId),
+      )) {
         return false;
       }
       prefs = await SharedPreferences.getInstance();
@@ -157,6 +159,13 @@ class AgeVerificationService extends BaseService {
       return false;
     }
   }
+
+  /// The providers a guest can link, as `finishGuestUpgrade` accepts them.
+  static const Set<String> _upgradeProviders = {
+    'password',
+    'google.com',
+    'apple.com',
+  };
 
   /// Codes that mean the server never decided the call.
   static const Set<String> _unansweredCodes = {
