@@ -177,6 +177,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
       child: ButleryPage.undersida(
         title: l10n.guestCreateAccount,
         width: PageWidth.compact,
+        showTabBar: false,
         body: Form(
           key: _formKey,
           autovalidateMode: _submitAttempted

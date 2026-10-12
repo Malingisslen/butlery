@@ -3966,6 +3966,15 @@
   "importWebRecipeLinkDetected": "Recipe link from website detected.",
   "importWebsite": "Website",
   "groupAddMembers": "Add members",
+  "groupAddToGroup": "Add to {group}",
+  "@groupAddToGroup": {
+    "description": "Title of the add-members page, naming the group",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupSharedContentLoadFailed": "The shared content could not be loaded.",
   "@groupSharedContentLoadFailed": {
@@ -9426,6 +9435,15 @@
   "statsTotalCooks": "Total Cooks",
   "statsNoMealTypes": "No meal types recorded",
   "statsNoTags": "No tags used yet",
+  "statsCountedNote": "Counted over {count} recipes on this phone. The figures cover your collection as it has been fetched here – not a calculation on the server.",
+  "@statsCountedNote": {
+    "description": "Note at the bottom of the collection statistics page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statsDistinctMealTypes": "Meal Types",
   "statsDistinctTags": "Tags",
   "importPendingRetryPrompt": "You have a pending import — retry now?",
@@ -9611,6 +9629,23 @@
   "notificationsErrorLoad": "Could not load notifications",
   "notificationsSelectedCount": "{count} selected",
   "notificationsMarkAllRead": "Mark all as read",
+  "notificationsMarkAllReadShort": "Mark all as read",
+  "@notificationsMarkAllReadShort": {
+    "description": "Label of the band that marks every notification as read"
+  },
+  "notificationsUnreadCount": "{count, plural, =1{1 unread} other{{count} unread}}",
+  "@notificationsUnreadCount": {
+    "description": "Count of unread notifications on the mark-all-read band",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsNote": "Twenty at a time, older ones load as you scroll. Long-press to select several.",
+  "@notificationsNote": {
+    "description": "Note under the notification inbox list"
+  },
   "notificationsDismissed": "{count, plural, =1{Notification removed} other{{count} notifications removed}}",
   "@notificationsDismissed": {
     "placeholders": {
@@ -14050,6 +14085,24 @@
   "@familyProfilesSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account"
   },
+  "familyAccountsCount": "{count, plural, =1{1 account} other{{count} accounts}}",
+  "@familyAccountsCount": {
+    "description": "Size of the household accounts list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "familyProfilesCount": "{count, plural, =1{1 profile} other{{count} profiles}}",
+  "@familyProfilesCount": {
+    "description": "Size of the family member profiles list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyAddMemberRow": "Add family member",
   "@familyAddMemberRow": {
     "description": "Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form"
@@ -14121,6 +14174,10 @@
   "notifCategoriesSection": "What you get notifications about",
   "@notifCategoriesSection": {
     "description": "Section overline above the notification category toggles"
+  },
+  "notifCategoriesFootnote": "Muted categories still show in the notification inbox – they are only not sent as push.",
+  "@notifCategoriesFootnote": {
+    "description": "Note under the notification category toggles"
   },
   "notifDigestSection": "Summary",
   "@notifDigestSection": {

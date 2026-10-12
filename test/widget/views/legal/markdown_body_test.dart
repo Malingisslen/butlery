@@ -56,7 +56,7 @@ void main() {
   testWidgets('strips heading/bold markers from the rendered text', (
     tester,
   ) async {
-    await pump(tester, '# Rubrik\n\nLite **fet** text.');
+    await pump(tester, '## Rubrik\n\nLite **fet** text.');
 
     // Header text shows without the leading '# '.
     expect(find.textContaining('Rubrik'), findsWidgets);
@@ -65,6 +65,15 @@ void main() {
     expect(find.textContaining('# '), findsNothing);
     // The bold word is still part of the rendered paragraph.
     expect(find.textContaining('fet'), findsWidgets);
+  });
+
+  testWidgets('leaves out the document title, which the top bar names', (
+    tester,
+  ) async {
+    await pump(tester, '# Dokumenttitel\n\nBrödtext.');
+
+    expect(find.textContaining('Dokumenttitel'), findsNothing);
+    expect(find.textContaining('Brödtext'), findsWidgets);
   });
 
   testWidgets('renders bullets with a marker and no leading dash', (

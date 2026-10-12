@@ -7,6 +7,8 @@ import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/views/settings/collection_stats/completeness_distribution.dart';
 import 'package:butlery/views/settings/collection_stats/meal_type_bar.dart';
 import 'package:butlery/views/settings/collection_stats/stat_tiles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -56,27 +58,30 @@ class _CollectionStatsContent extends StatelessWidget {
 
     return MoreAreaScaffold(
       title: l10n.moreCollectionStats,
+      header: StatTiles(
+        totalRecipes: insights.totalRecipes,
+        favorites: insights.favoriteCount,
+        recentlyCooked: insights.recentlyCookedCount,
+        withImages: insights.withImagesCount,
+      ),
       sections: [
-        StatTiles(
-          totalRecipes: insights.totalRecipes,
-          favorites: insights.favoriteCount,
-          recentlyCooked: insights.recentlyCookedCount,
-          withImages: insights.withImagesCount,
-        ),
         ButleryListSection(
           title: l10n.statsRecipeCollection,
           rows: [
             ButleryListRow.info(
               label: l10n.statsPersonalRecipes,
               value: '${insights.personalRecipes}',
+              strongValue: true,
             ),
             ButleryListRow.info(
               label: l10n.statsCollaborativeRecipes,
               value: '${insights.collaborativeRecipes}',
+              strongValue: true,
             ),
             ButleryListRow.info(
               label: l10n.statsHighRated,
               value: '${insights.highRatedCount}',
+              strongValue: true,
             ),
           ],
         ),
@@ -86,11 +91,13 @@ class _CollectionStatsContent extends StatelessWidget {
             if (mealTypes.isEmpty)
               StateWidget.empty(title: l10n.statsNoMealTypes)
             else
-              for (final entry in mealTypes)
+              for (var i = 0; i < mealTypes.length; i++)
                 MealTypeBar(
-                  label: entry.key,
-                  value: entry.value,
+                  label: mealTypes[i].key,
+                  value: mealTypes[i].value,
                   maxValue: mealTypes.first.value,
+                  rank: i,
+                  ranks: mealTypes.length,
                 ),
           ],
         ),
@@ -104,6 +111,7 @@ class _CollectionStatsContent extends StatelessWidget {
                 ButleryListRow.info(
                   label: '${i + 1}. ${tags[i].key}',
                   value: '${tags[i].value}',
+                  strongValue: true,
                 ),
           ],
         ),
@@ -162,6 +170,15 @@ class _CollectionStatsContent extends StatelessWidget {
                 ),
             ],
           ),
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space24),
+          child: TintedNote(
+            child: Text(
+              l10n.statsCountedNote(insights.totalRecipes),
+              style: TintedNote.textStyle(context),
+            ),
+          ),
+        ),
       ],
     );
   }

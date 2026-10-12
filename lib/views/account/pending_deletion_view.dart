@@ -142,6 +142,7 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
     return ButleryPage.undersida(
       title: l10n.pendingDeletionTitle,
       width: PageWidth.compact,
+      showTabBar: false,
       body: SingleChildScrollView(
         padding: ButleryPageBody.margin(
           context,

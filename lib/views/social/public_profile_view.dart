@@ -31,6 +31,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/social/public_profile_friend_button.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 class PublicProfileView extends StatefulWidget {
   final String userId;
@@ -91,6 +92,7 @@ class _PublicProfileContent extends StatelessWidget {
     final isOwnProfile = friends.currentUserId == vm.userId;
 
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: ButleryTopBar.undersida(
         title: profile?.displayName ?? context.l10n.publicProfileTitle,
         actions: [

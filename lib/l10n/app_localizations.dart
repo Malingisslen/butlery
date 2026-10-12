@@ -8560,7 +8560,7 @@ abstract class AppLocalizations {
   /// BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave
   ///
   /// In sv, this message translates to:
-  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.'**
+  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Mitt hushåll. Du lämnar hushållet genom att lämna gruppen.'**
   String get householdJoinConfirmBody;
 
   /// BUT-2267: joining the household failed
@@ -8578,7 +8578,7 @@ abstract class AppLocalizations {
   /// BUT-2267: under householdJoinedTitle; points to the sharing setting
   ///
   /// In sv, this message translates to:
-  /// **'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.'**
+  /// **'Dela dina allergier under Mitt hushåll, så räknar menyn med dem.'**
   String get householdJoinedSubtitle;
 
   /// BUT-2267: opens Settings, where the allergy-sharing switch is
@@ -9744,6 +9744,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lägg till medlemmar'**
   String get groupAddMembers;
+
+  /// Title of the add-members page, naming the group
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till i {group}'**
+  String groupAddToGroup(String group);
 
   /// No description provided for @groupAllFriendsAlreadyMembers.
   ///
@@ -14446,7 +14452,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCategoryFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Vänner'**
+  /// **'Vänner & förfrågningar'**
   String get notificationCategoryFriends;
 
   /// No description provided for @notificationCategoryRecipes.
@@ -14458,19 +14464,19 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCategoryCollaboration.
   ///
   /// In sv, this message translates to:
-  /// **'Samarbete'**
+  /// **'Samarbete i realtid'**
   String get notificationCategoryCollaboration;
 
   /// No description provided for @notificationCategoryShopping.
   ///
   /// In sv, this message translates to:
-  /// **'Inköp'**
+  /// **'Inköpslistor'**
   String get notificationCategoryShopping;
 
   /// No description provided for @notificationCategorySocial.
   ///
   /// In sv, this message translates to:
-  /// **'Social aktivitet'**
+  /// **'Socialt flöde'**
   String get notificationCategorySocial;
 
   /// No description provided for @notificationCategorySystem.
@@ -22562,31 +22568,31 @@ abstract class AppLocalizations {
   /// No description provided for @statsRecipeCollection.
   ///
   /// In sv, this message translates to:
-  /// **'Receptsamling'**
+  /// **'Samlingen'**
   String get statsRecipeCollection;
 
   /// No description provided for @statsTotalRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Totalt recept'**
+  /// **'recept'**
   String get statsTotalRecipes;
 
   /// No description provided for @statsFavorites.
   ///
   /// In sv, this message translates to:
-  /// **'Favoriter'**
+  /// **'favoriter'**
   String get statsFavorites;
 
   /// No description provided for @statsRecentlyCooked.
   ///
   /// In sv, this message translates to:
-  /// **'Nyligen lagat'**
+  /// **'lagade senaste veckan'**
   String get statsRecentlyCooked;
 
   /// No description provided for @statsWithImages.
   ///
   /// In sv, this message translates to:
-  /// **'Med bilder'**
+  /// **'med bild'**
   String get statsWithImages;
 
   /// No description provided for @statsPersonalRecipes.
@@ -22604,19 +22610,19 @@ abstract class AppLocalizations {
   /// No description provided for @statsHighRated.
   ///
   /// In sv, this message translates to:
-  /// **'Högt betyg'**
+  /// **'Högt betygsatta'**
   String get statsHighRated;
 
   /// No description provided for @statsMealTypes.
   ///
   /// In sv, this message translates to:
-  /// **'Måltidstyper'**
+  /// **'Vad du lagar'**
   String get statsMealTypes;
 
   /// No description provided for @statsPopularTags.
   ///
   /// In sv, this message translates to:
-  /// **'Populära taggar'**
+  /// **'Vanligaste taggarna'**
   String get statsPopularTags;
 
   /// No description provided for @statsCookingActivity.
@@ -22642,6 +22648,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inga taggar använda än'**
   String get statsNoTags;
+
+  /// Note at the bottom of the collection statistics page
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat på {count} recept i telefonen. Siffrorna gäller din samling som den är hämtad hit – inte en beräkning på servern.'**
+  String statsCountedNote(int count);
 
   /// No description provided for @statsDistinctMealTypes.
   ///
@@ -23150,19 +23162,19 @@ abstract class AppLocalizations {
   /// No description provided for @notificationsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Aviseringar'**
+  /// **'Notiser'**
   String get notificationsTitle;
 
   /// No description provided for @notificationsEmpty.
   ///
   /// In sv, this message translates to:
-  /// **'Inga aviseringar än'**
+  /// **'Inga notiser än'**
   String get notificationsEmpty;
 
   /// No description provided for @notificationsErrorLoad.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda aviseringar'**
+  /// **'Kunde inte ladda notiser'**
   String get notificationsErrorLoad;
 
   /// No description provided for @notificationsSelectedCount.
@@ -23177,10 +23189,28 @@ abstract class AppLocalizations {
   /// **'Markera alla som lästa'**
   String get notificationsMarkAllRead;
 
+  /// Label of the band that marks every notification as read
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla lästa'**
+  String get notificationsMarkAllReadShort;
+
+  /// Count of unread notifications on the mark-all-read band
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 oläst} other{{count} olästa}}'**
+  String notificationsUnreadCount(int count);
+
+  /// Note under the notification inbox list
+  ///
+  /// In sv, this message translates to:
+  /// **'Tjugo i taget, äldre hämtas när du rullar. Långtryck för att välja flera.'**
+  String get notificationsNote;
+
   /// No description provided for @notificationsDismissed.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Aviseringen togs bort} other{{count} aviseringar togs bort}}'**
+  /// **'{count, plural, =1{Notisen togs bort} other{{count} notiser togs bort}}'**
   String notificationsDismissed(int count);
 
   /// No description provided for @allergenIncludeUnknownTitle.
@@ -25057,13 +25087,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Familj & hushåll'**
+  /// **'Mitt hushåll'**
   String get familyTitle;
 
   /// No description provided for @familyIntro.
   ///
   /// In sv, this message translates to:
-  /// **'Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.'**
+  /// **'Hushållet delar recept, meny och inköpslistor. Familjemedlemmar utan konto kan ändå betygsätta maten.'**
   String get familyIntro;
 
   /// No description provided for @familyHouseholdSection.
@@ -25141,7 +25171,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyAddTitle.
   ///
   /// In sv, this message translates to:
-  /// **'ny familjemedlem'**
+  /// **'Lägg till familjemedlem'**
   String get familyAddTitle;
 
   /// No description provided for @familyEditTitle.
@@ -25153,7 +25183,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyNameLabel.
   ///
   /// In sv, this message translates to:
-  /// **'namn'**
+  /// **'Namn'**
   String get familyNameLabel;
 
   /// No description provided for @familyNameHint.
@@ -25165,31 +25195,31 @@ abstract class AppLocalizations {
   /// No description provided for @familyColorLabel.
   ///
   /// In sv, this message translates to:
-  /// **'färg'**
+  /// **'Färg'**
   String get familyColorLabel;
 
   /// No description provided for @familyAgeBandLabel.
   ///
   /// In sv, this message translates to:
-  /// **'åldersgrupp'**
+  /// **'Åldersband'**
   String get familyAgeBandLabel;
 
   /// No description provided for @familyAgeBandHint.
   ///
   /// In sv, this message translates to:
-  /// **'Bara grov åldersgrupp — inget födelsedatum sparas.'**
+  /// **'Vi lagrar aldrig födelsedatum – bara ett ungefärligt band.'**
   String get familyAgeBandHint;
 
   /// No description provided for @familyConsentSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'samtycke'**
+  /// **'Vårdnadshavarsamtycke'**
   String get familyConsentSectionTitle;
 
   /// No description provided for @familyConsentRequiredBadge.
   ///
   /// In sv, this message translates to:
-  /// **'krävs'**
+  /// **'Krävs'**
   String get familyConsentRequiredBadge;
 
   /// No description provided for @familyGuardianConsentText.
@@ -25201,13 +25231,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyAllergenSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'allergier & specialkost'**
+  /// **'Allergener'**
   String get familyAllergenSectionTitle;
 
   /// No description provided for @familyOptionalBadge.
   ///
   /// In sv, this message translates to:
-  /// **'valfritt'**
+  /// **'Valfritt'**
   String get familyOptionalBadge;
 
   /// No description provided for @familyAllergenHealthNote.
@@ -25231,7 +25261,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyWithdrawAllergenConsent.
   ///
   /// In sv, this message translates to:
-  /// **'Återkalla samtycke & radera allergiuppgifter'**
+  /// **'Ta tillbaka samtycke och radera allergener'**
   String get familyWithdrawAllergenConsent;
 
   /// No description provided for @familyDeleteMember.
@@ -25549,7 +25579,7 @@ abstract class AppLocalizations {
   /// Section title in the family-member form for the soft disliked-ingredients preference (distinct from allergies). Butler voice, lowercase like the sibling section headers (BUT-1610)
   ///
   /// In sv, this message translates to:
-  /// **'ogillade ingredienser'**
+  /// **'Ogillade ingredienser'**
   String get familyDislikesSectionTitle;
 
   /// Helper text under the disliked-ingredients picker clarifying it is a soft preference, not an allergy/safety constraint (BUT-1610)
@@ -28309,7 +28339,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
   ///
   /// In sv, this message translates to:
-  /// **'Familj & hushåll'**
+  /// **'Mitt hushåll'**
   String get moreFamily;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
@@ -28321,7 +28351,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
   ///
   /// In sv, this message translates to:
-  /// **'Statistik'**
+  /// **'Min samling'**
   String get moreCollectionStats;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
@@ -30271,14 +30301,26 @@ abstract class AppLocalizations {
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
   ///
   /// In sv, this message translates to:
-  /// **'Konton i hushållet'**
+  /// **'Hushållets konton'**
   String get familyAccountsSection;
 
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account
   ///
   /// In sv, this message translates to:
-  /// **'Familjeprofiler'**
+  /// **'Familjemedlemmar'**
   String get familyProfilesSection;
+
+  /// Size of the household accounts list
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 konto} other{{count} konton}}'**
+  String familyAccountsCount(int count);
+
+  /// Size of the family member profiles list
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 profil} other{{count} profiler}}'**
+  String familyProfilesCount(int count);
 
   /// Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form
   ///
@@ -30387,6 +30429,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vad du får notiser om'**
   String get notifCategoriesSection;
+
+  /// Note under the notification category toggles
+  ///
+  /// In sv, this message translates to:
+  /// **'Avstängda kategorier syns fortfarande i notisinkorgen – de skickas bara inte som push.'**
+  String get notifCategoriesFootnote;
 
   /// Section overline for the digest frequency row
   ///

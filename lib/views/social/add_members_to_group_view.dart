@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -24,11 +25,10 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -84,6 +84,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       },
       child: Consumer<AddMembersToGroupViewModel>(
         builder: (context, viewModel, child) {
+          // No tab bar: the invite button holds the bottom slot while friends
+          // are picked (B-54).
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
             body: SafeArea(
@@ -111,9 +113,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
     );
     return ButleryTopBar.undersida(
-      title: context.l10n.groupAddMembers,
-      secondaryLine: viewModel.group?.name,
-      secondaryLineIsLive: false,
+      title: viewModel.group == null
+          ? context.l10n.groupAddMembers
+          : context.l10n.groupAddToGroup(viewModel.group!.name),
       backTo: viewModel.group?.name,
       actions: [
         if (viewModel.hasSelectedFriends)
@@ -161,10 +163,6 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         // Search bar
         _buildSearchBar(viewModel),
 
-        // Selection controls
-        if (viewModel.filteredFriends.isNotEmpty)
-          _buildSelectionControls(viewModel),
-
         // Friends list
         Expanded(
           child: _buildFriendsList(viewModel),
@@ -183,39 +181,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     );
   }
 
-  Widget _buildSelectionControls(AddMembersToGroupViewModel viewModel) {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.space16).copyWith(top: 0),
-      child: Row(
-        children: [
-          ButleryIcon(
-            ButleryIcons.info,
-            size: AppDimensions.iconSizeS,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppDimensions.space8),
-          Expanded(
-            child: Text(
-              viewModel.hasSelectedFriends
-                  ? context.l10n.groupSelectedOfTotal(
-                      viewModel.selectedCount,
-                      viewModel.filteredFriends.length,
-                    )
-                  : context.l10n.groupSelectFriendsToInvite,
-              style: AppTextStyles.titleMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFriendsList(AddMembersToGroupViewModel viewModel) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.space16),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
       itemCount: viewModel.filteredFriends.length,
-      separatorBuilder: (context, index) =>
-          const SizedBox(height: AppDimensions.space8),
       itemBuilder: (context, index) {
         final friend = viewModel.filteredFriends[index];
         return KeyedSubtree(
@@ -234,33 +203,60 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     final hasInvitation = viewModel.hasInvitationStatus(friend.uid);
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
 
-    // One node per friend: the card carries the name, the invitation
-    // status when there is one, the selected state and the tap.
-    return SelectionCard(
-      isSelected: isSelected,
-      semanticLabel: hasInvitation
+    // One node per friend: the row carries the name, the invitation status
+    // when there is one, the selected state and the tap.
+    return Semantics(
+      label: hasInvitation
           ? '${friend.displayName}, ${_invitationStatusText(invitationStatus)}'
           : friend.displayName,
-      onTap: () {
-        viewModel.toggleFriendSelection(friend.uid);
-      },
-      child: ExcludeSemantics(
-        child: ListTile(
-          leading: SocialAvatarComponents.avatar(
-            user: friend,
-            size: ImageSize.medium,
-          ),
-          title: Text(
-            friend.displayName,
-            style: AppTextStyles.titleMedium,
-          ),
-          subtitle: null,
-          trailing: _buildFriendTileTrailing(
-            friend,
-            viewModel,
-            isSelected,
-            hasInvitation,
-            invitationStatus,
+      button: true,
+      selected: isSelected,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => viewModel.toggleFriendSelection(friend.uid),
+          child: ExcludeSemantics(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.space12,
+                ),
+                child: Row(
+                  children: [
+                    FamilyAvatar(
+                      name: friend.displayName,
+                      initials: friend.displayName.isEmpty
+                          ? '?'
+                          : friend.displayName.characters.first.toUpperCase(),
+                      color: Theme.of(context).colorScheme.primary,
+                      size: AppDimensions.avatarSizeLg,
+                      round: true,
+                    ),
+                    const SizedBox(width: AppDimensions.space16),
+                    Expanded(
+                      child: Text(
+                        friend.displayName,
+                        style: AppTextStyles.titleBold,
+                      ),
+                    ),
+                    _buildFriendTileTrailing(
+                      friend,
+                      viewModel,
+                      isSelected,
+                      hasInvitation,
+                      invitationStatus,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
