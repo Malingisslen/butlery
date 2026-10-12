@@ -19650,6 +19650,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.';
 
   @override
+  String get guestUpgradeDoneProvider =>
+      'Kontot är skapat. Allt du gjort som gäst finns kvar.';
+
+  @override
   String get guestUpgradeFinishFailed =>
       'Kontot är skapat men kunde inte göras klart. Försök igen.';
 

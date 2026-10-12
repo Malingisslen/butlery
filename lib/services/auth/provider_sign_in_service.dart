@@ -386,6 +386,10 @@ class ProviderSignInService {
   String? providerEmail(SignInProvider provider) =>
       _repo.providerEmail(provider.providerId);
 
+  /// The name a linked provider holds.
+  String? providerDisplayName(SignInProvider provider) =>
+      _repo.providerDisplayName(provider.providerId);
+
   /// Whether one method can go without leaving the account unable to sign
   /// in.
   bool get canUnlinkAny => signInMethods.length > 1;

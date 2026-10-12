@@ -31894,6 +31894,12 @@ abstract class AppLocalizations {
   /// **'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.'**
   String get guestUpgradeDone;
 
+  /// Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat. Allt du gjort som gäst finns kvar.'**
+  String get guestUpgradeDoneProvider;
+
   /// Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)
   ///
   /// In sv, this message translates to:

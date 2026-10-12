@@ -19594,6 +19594,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The account is created. An e-mail with a link to confirm the address has been sent.';
 
   @override
+  String get guestUpgradeDoneProvider =>
+      'The account is created. Everything you did as a guest is kept.';
+
+  @override
   String get guestUpgradeFinishFailed =>
       'The account is created but could not be finished. Try again.';
 

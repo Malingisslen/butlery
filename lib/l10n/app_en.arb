@@ -15376,6 +15376,10 @@
   "@guestUpgradeDone": {
     "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
   },
+  "guestUpgradeDoneProvider": "The account is created. Everything you did as a guest is kept.",
+  "@guestUpgradeDoneProvider": {
+    "description": "Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)"
+  },
   "guestUpgradeFinishFailed": "The account is created but could not be finished. Try again.",
   "@guestUpgradeFinishFailed": {
     "description": "Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)"
