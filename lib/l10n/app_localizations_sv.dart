@@ -5848,6 +5848,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get groupAlreadyMember => 'Redan medlem';
+
+  @override
   String get groupAllFriendsAlreadyMembers =>
       'Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.';
 

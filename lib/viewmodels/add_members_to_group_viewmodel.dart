@@ -38,6 +38,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   FriendCategory? _group;
 
   List<UserProfile> _availableFriends = [];
+  List<UserProfile> _memberFriends = [];
   StreamSubscription<FriendsServiceState>? _friendsServiceSubscription;
 
   /// isLoading, error, hasError provided by StateNotifierMixin
@@ -109,6 +110,19 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       List.unmodifiable(_availableFriends);
   int get availableFriendsCount => _availableFriends.length;
 
+  /// Friends who already belong to the group, shown unselectable so the list
+  /// reads as the whole friend list; the search narrows them like the rest.
+  List<UserProfile> get memberFriends {
+    final query = _searchManager.searchQuery;
+    return List.unmodifiable(
+      query.isEmpty
+          ? _memberFriends
+          : _memberFriends.where(
+              (friend) => friend.displayName.toLowerCase().contains(query),
+            ),
+    );
+  }
+
   // Search manager delegations
   List<UserProfile> get filteredFriends => _searchManager.filteredFriends;
   String get searchQuery => _searchManager.searchQuery;
@@ -135,7 +149,9 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
   bool get canSendInvitations => hasSelectedFriends && !_isSendingInvitations;
   bool get showEmptyState =>
-      _searchManager.filteredFriends.isEmpty && !isLoading;
+      _searchManager.filteredFriends.isEmpty &&
+      memberFriends.isEmpty &&
+      !isLoading;
   Future<void> _initializeData() async {
     try {
       await executeNamedOperation('initializeData', () async {
@@ -183,6 +199,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     final currentMemberIds = _group!.friendUserIds.toSet();
     final currentUserId =
         _friendsService.currentUserId; // ✅ FIXED: Filter out group owner
+
+    _memberFriends = allFriends
+        .where(
+          (friend) =>
+              currentMemberIds.contains(friend.uid) &&
+              friend.uid != currentUserId,
+        )
+        .toList();
 
     _availableFriends = allFriends
         .where(

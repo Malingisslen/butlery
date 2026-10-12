@@ -3975,6 +3975,10 @@
       }
     }
   },
+  "groupAlreadyMember": "Already a member",
+  "@groupAlreadyMember": {
+    "description": "Row label for a friend who already belongs to the group"
+  },
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupSharedContentLoadFailed": "The shared content could not be loaded.",
   "@groupSharedContentLoadFailed": {

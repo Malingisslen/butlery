@@ -9751,6 +9751,12 @@ abstract class AppLocalizations {
   /// **'Lägg till i {group}'**
   String groupAddToGroup(String group);
 
+  /// Row label for a friend who already belongs to the group
+  ///
+  /// In sv, this message translates to:
+  /// **'Redan medlem'**
+  String get groupAlreadyMember;
+
   /// No description provided for @groupAllFriendsAlreadyMembers.
   ///
   /// In sv, this message translates to:

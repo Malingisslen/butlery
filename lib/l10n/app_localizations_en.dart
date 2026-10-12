@@ -5850,6 +5850,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get groupAlreadyMember => 'Already a member';
+
+  @override
   String get groupAllFriendsAlreadyMembers =>
       'All your friends are already members of this group, or you have already sent invitations to them.';
 
