@@ -238,7 +238,7 @@
    ]
   },
   "lib/views/group_weekly_menu_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_2#28",
     "etapp_2#21"
@@ -316,7 +316,7 @@
    ]
   },
   "lib/views/menu_placement_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_2_familj_och_socialt#3",
     "etapp_2#17",
@@ -735,7 +735,7 @@
    ]
   },
   "lib/views/social/menu_preview_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_3_sok_och_skalbevis#12"
    ],
@@ -816,7 +816,7 @@
    ]
   },
   "lib/views/veckomeny_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_2#17",
     "etapp_2#10"

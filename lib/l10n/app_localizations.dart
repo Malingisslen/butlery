@@ -509,7 +509,7 @@ abstract class AppLocalizations {
   /// BUT-1241: app-bar title of the manual placement mode (lowercase per design language).
   ///
   /// In sv, this message translates to:
-  /// **'placera i veckan'**
+  /// **'Placera i veckan'**
   String get menuPlacementTitle;
 
   /// BUT-1241: progress pill in the placement-mode header.
@@ -521,19 +521,19 @@ abstract class AppLocalizations {
   /// BUT-1241: label above the tray of recipes waiting to be placed.
   ///
   /// In sv, this message translates to:
-  /// **'Kvar att placera ({count})'**
+  /// **'{count} kvar att placera'**
   String menuPlacementTrayLabel(int count);
 
   /// BUT-1241: hint banner while a tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Tryck på en ledig ruta för att placera {recipe}.'**
+  /// **'Tryck på en ledig plats för {recipe}. Lunch och middag tar en rätt, övrigt tar flera.'**
   String menuPlacementHint(String recipe);
 
   /// BUT-1241: hint banner when no tray recipe is selected.
   ///
   /// In sv, this message translates to:
-  /// **'Välj ett recept nedan för att placera det.'**
+  /// **'Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.'**
   String get menuPlacementHintSelect;
 
   /// BUT-1241: text inside eligible (highlighted) cells in placement mode.
@@ -545,7 +545,7 @@ abstract class AppLocalizations {
   /// BUT-1241: tray action that auto-distributes the still-unplaced recipes.
   ///
   /// In sv, this message translates to:
-  /// **'Placera resten automatiskt'**
+  /// **'Slumpa resten'**
   String get menuPlacementAutoRest;
 
   /// BUT-1241: warning after auto-rest when some recipes did not fit the week.
@@ -7330,7 +7330,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareGroupMembersCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}}'**
   String shareGroupMembersCount(int count);
 
   /// No description provided for @shareTabFriends.
@@ -23525,6 +23525,42 @@ abstract class AppLocalizations {
   /// **'I dag'**
   String get weeklyMenuTodayBadge;
 
+  /// No description provided for @weeklyMenuNewMark.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuNewMark;
+
+  /// No description provided for @weeklyMenuLegendNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get weeklyMenuLegendNew;
+
+  /// No description provided for @weeklyMenuLegendAllergen.
+  ///
+  /// In sv, this message translates to:
+  /// **'tål inte'**
+  String get weeklyMenuLegendAllergen;
+
+  /// No description provided for @weeklyMenuLegendPresence.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma, om inte alla'**
+  String get weeklyMenuLegendPresence;
+
+  /// No description provided for @a11yWeeklyMenuAddDish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt på {slot} {day}'**
+  String a11yWeeklyMenuAddDish(String slot, String day);
+
+  /// No description provided for @a11yWeeklyMenuOpenOvrigt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa övrigt på {day}'**
+  String a11yWeeklyMenuOpenOvrigt(String day);
+
   /// No description provided for @weeklyMenuEmptyTitle.
   ///
   /// In sv, this message translates to:
@@ -23543,6 +23579,18 @@ abstract class AppLocalizations {
   /// **'+ lägg till'**
   String get weeklyMenuOvrigtAddMore;
 
+  /// No description provided for @weeklyMenuOvrigtSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt på {day}'**
+  String weeklyMenuOvrigtSheetTitle(String day);
+
+  /// No description provided for @weeklyMenuOvrigtSheetAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rätt'**
+  String get weeklyMenuOvrigtSheetAdd;
+
   /// No description provided for @weeklyMenuOverwriteConfirm.
   ///
   /// In sv, this message translates to:
@@ -23560,6 +23608,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vecka {weekNum} · {start}–{end}'**
   String weeklyMenuWeekLabel(int weekNum, String start, String end);
+
+  /// No description provided for @weeklyMenuWeekTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {weekNum}'**
+  String weeklyMenuWeekTitle(int weekNum);
+
+  /// No description provided for @weeklyMenuWeekRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'{start}–{end}'**
+  String weeklyMenuWeekRange(String start, String end);
 
   /// No description provided for @weeklyMenuChipsHeading.
   ///
@@ -25399,19 +25459,19 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSheetTitle.
   ///
   /// In sv, this message translates to:
-  /// **'vem är hemma?'**
+  /// **'Vem är hemma?'**
   String get menuPresenceSheetTitle;
 
   /// No description provided for @menuPresenceThisMeal.
   ///
   /// In sv, this message translates to:
-  /// **'denna måltid'**
+  /// **'Den här måltiden'**
   String get menuPresenceThisMeal;
 
   /// No description provided for @menuPresenceWholeDay.
   ///
   /// In sv, this message translates to:
-  /// **'hela dagen'**
+  /// **'Hela dagen'**
   String get menuPresenceWholeDay;
 
   /// No description provided for @menuPresenceNobody.
@@ -25419,6 +25479,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'ingen hemma'**
   String get menuPresenceNobody;
+
+  /// No description provided for @menuPresenceHome.
+  ///
+  /// In sv, this message translates to:
+  /// **'hemma'**
+  String get menuPresenceHome;
+
+  /// No description provided for @menuPresenceAway.
+  ///
+  /// In sv, this message translates to:
+  /// **'borta'**
+  String get menuPresenceAway;
+
+  /// No description provided for @menuPresenceHomeSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'{home} hemma · {portions} port.'**
+  String menuPresenceHomeSummary(int home, int portions);
+
+  /// No description provided for @menuPresenceOpenRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna receptet'**
+  String get menuPresenceOpenRecipe;
 
   /// No description provided for @menuPresencePortions.
   ///
@@ -25447,7 +25531,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuPresenceSummaryAllHome.
   ///
   /// In sv, this message translates to:
-  /// **'alla hemma hela veckan'**
+  /// **'Alla hemma hela veckan'**
   String get menuPresenceSummaryAllHome;
 
   /// No description provided for @menuPresenceSummaryAway.
@@ -25821,6 +25905,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa vilka som röstade'**
   String get a11yShowVoters;
+
+  /// No description provided for @a11yGroupMenuDishDetails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa förslag och röster'**
+  String get a11yGroupMenuDishDetails;
 
   /// BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed.
   ///
@@ -26265,6 +26355,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delad meny'**
   String get menuPreviewTitle;
+
+  /// No description provided for @menuPreviewSharedLine.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} delade menyn {menu} med dig · endast läsa'**
+  String menuPreviewSharedLine(String name, String menu);
+
+  /// No description provided for @menuPreviewDecline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avböj'**
+  String get menuPreviewDecline;
 
   /// P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR).
   ///

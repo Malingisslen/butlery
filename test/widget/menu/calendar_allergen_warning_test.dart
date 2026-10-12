@@ -138,13 +138,13 @@ void main() {
         wrapInScrollView: true,
         child: ListenableBuilder(
           listenable: vm,
-          builder: (_, _) => DayCell(
+          builder: (_, _) => CalendarWeekTable(
             vm: vm,
             plan: vm.plan!,
-            day: DayOfWeek.mon,
-            isToday: false,
+            todayIndex: -1,
             onTapEmptySlot: (_, _) {},
             onTapRecipe: (_, {presentServings}) {},
+            onTapOvrigt: (_) {},
             roster: roster ?? [_member('a'), _member('b')],
             onTapPresence: (day, slot) => presenceTaps.add((day, slot)),
           ),
@@ -165,7 +165,8 @@ void main() {
 
       expect(find.byKey(warning), findsOneWidget);
       expect(
-        find.bySemanticsLabel(sv.menuAllergenUnsafeAtMeal),
+        // The mark's words join the cell's own announcement.
+        find.bySemanticsLabel(RegExp(sv.menuAllergenUnsafeAtMeal)),
         findsOneWidget,
       );
       handle.dispose();
@@ -182,7 +183,10 @@ void main() {
     // Positive control: both dishes rendered, so the absence is a verdict.
     expect(find.text('freedish'), findsNWidgets(2));
     expect(find.byKey(warning), findsNothing);
-    expect(find.bySemanticsLabel(sv.menuAllergenUnsafeAtMeal), findsNothing);
+    expect(
+      find.bySemanticsLabel(RegExp(sv.menuAllergenUnsafeAtMeal)),
+      findsNothing,
+    );
     handle.dispose();
   });
 
@@ -207,19 +211,18 @@ void main() {
     expect(find.byKey(warning), findsOneWidget);
   });
 
-  testWidgets('tapping the warning with a roster opens who is home for that '
-      'meal', (tester) async {
+  testWidgets('tapping the marked dish with a roster opens who is home for '
+      'that meal', (tester) async {
     final taps = await pumpMonday(tester, [_entry(MealSlot.middag, _nutDish)]);
 
-    await tester.tap(find.byKey(warning));
+    await tester.tap(find.text('nutdish'));
     await tester.pump();
 
     expect(taps, [(DayOfWeek.mon, MealSlot.middag)]);
   });
 
-  testWidgets('a solo account sees the warning but it opens nothing', (
-    tester,
-  ) async {
+  testWidgets('a solo account sees the warning but its dish opens no '
+      'presence', (tester) async {
     final taps = await pumpMonday(
       tester,
       [
@@ -229,7 +232,7 @@ void main() {
     );
 
     expect(find.byKey(warning), findsOneWidget);
-    await tester.tap(find.byKey(warning), warnIfMissed: false);
+    await tester.tap(find.text('nutdish'), warnIfMissed: false);
     await tester.pump();
 
     expect(taps, isEmpty);

@@ -737,6 +737,16 @@
    "color": null,
    "bold": true
   },
+  "labelLargeBold": {
+   "base": "labelLarge",
+   "color": null,
+   "bold": true
+  },
+  "labelSmallBold": {
+   "base": "labelSmall",
+   "color": null,
+   "bold": true
+  },
   "bodySmallBold": {
    "base": "bodySmall",
    "color": null,

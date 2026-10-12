@@ -1,15 +1,19 @@
-/// BUT-1241: the bottom tray's recipe card for the manual placement mode.
+/// BUT-1241: the tray's dish chip for the manual placement mode.
 library;
 
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// One recipe card in the bottom tray. Tap to select (unplaced) or
-/// un-place (placed).
+/// One dish in the tray, a pill: the chosen one filled with ink and a check,
+/// the others outlined (approved picture 78-menu-placement). A placed dish is
+/// struck through, never faded. Tap to choose (unplaced) or un-place (placed).
 class PlacementTrayCard extends StatelessWidget {
   final MenuPlacementViewModel vm;
   final int index;
@@ -21,6 +25,11 @@ class PlacementTrayCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final item = vm.items[index];
     final isSelected = vm.selectedIndex == index;
+    final textColor = isSelected
+        ? cs.surface
+        : item.isPlaced
+        ? cs.onSurfaceVariant
+        : cs.onSurface;
     return Semantics(
       label: context.l10n.a11yPlacementTrayCard,
       button: true,
@@ -30,49 +39,51 @@ class PlacementTrayCard extends StatelessWidget {
         child: PressFill(
           surface: isSelected ? PressSurface.ink : PressSurface.raised,
           child: InkWell(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             onTap: () => vm.tapItem(index),
-            // #placera draws the chosen dish in the tray as ink with paper text,
-            // and the others on surface.raised with a 1 px border.control
-            // (Skarmar v12 del 2). A placed dish is struck through, never
-            // faded. tokens.json gives the struck text text.completed (#37453A
-            // light, #93A48D dark); no scheme slot carries it, so onSurfaceVariant
-            // stands in until text.completed is delivered as a member (open, D1).
             child: Ink(
-              width: 132,
               decoration: BoxDecoration(
-                color: isSelected ? cs.primary : cs.primaryContainer,
+                color: isSelected ? cs.onSurface : null,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               ),
+              // The border is a box above the ink, so a press shows beneath it.
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  border: isSelected ? null : Border.all(color: cs.outline),
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space8,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected ? cs.onSurface : cs.outline,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusPill,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      item.slot.displayLabel.toUpperCase(),
-                      style: AppTextStyles.overline.copyWith(
-                        color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                    if (isSelected || item.isPlaced) ...[
+                      ButleryIcon(
+                        ButleryIcons.check,
+                        size: AppDimensions.iconSizeS,
+                        color: textColor,
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Expanded(
+                      const SizedBox(width: AppDimensions.space8),
+                    ],
+                    Flexible(
                       child: Text(
                         item.recipe.title,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: isSelected
-                              ? cs.onPrimary
-                              : (item.isPlaced
-                                    ? cs.onSurfaceVariant
-                                    : cs.onPrimaryContainer),
+                        style: AppTextStyles.labelLargeBold.copyWith(
+                          color: textColor,
                           decoration: item.isPlaced
                               ? TextDecoration.lineThrough
                               : null,
-                          height: 1.2,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
