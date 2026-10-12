@@ -13706,6 +13706,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yCookingModeFontScale => 'Ändra textstorlek';
 
   @override
+  String get a11yCookingModeRotate => 'Vrid skärmen';
+
+  @override
   String get a11yCookingModeClose => 'Stäng tillagningsläge';
 
   @override

@@ -49,6 +49,9 @@ class _FakeEffects implements CookingSessionEffects {
   void lockLandscape() => calls.add('lock');
 
   @override
+  void lockPortrait() => calls.add('portrait');
+
+  @override
   void releaseOrientation() => calls.add('release');
 
   @override
@@ -201,6 +204,34 @@ void main() {
       expect(effects.calls, isNot(contains('lock')));
       expect(effects.calls, isNot(contains('release')));
       expect(effects.calls, containsAllInOrder(['awake', 'sleep']));
+    });
+
+    test('a phone can flip between the forced landscape and upright', () {
+      final effects = _FakeEffects();
+      final vm = _SpyVm(recipe: _recipe());
+      addTearDown(vm.dispose);
+      final lifecycle = CookingSessionLifecycle(vm: vm, effects: effects);
+
+      lifecycle.start(const Size(400, 860));
+      expect(lifecycle.canRotate, isTrue);
+
+      lifecycle.toggleOrientation();
+      lifecycle.toggleOrientation();
+
+      expect(effects.calls.skip(3), ['portrait', 'lock']);
+    });
+
+    test('a tablet has nothing to flip', () {
+      final effects = _FakeEffects();
+      final vm = _SpyVm(recipe: _recipe());
+      addTearDown(vm.dispose);
+      final lifecycle = CookingSessionLifecycle(vm: vm, effects: effects);
+
+      lifecycle.start(const Size(800, 1280));
+      lifecycle.toggleOrientation();
+
+      expect(lifecycle.canRotate, isFalse);
+      expect(effects.calls, isNot(contains('portrait')));
     });
 
     test('the rule is the shortest side, under 768', () {
@@ -403,6 +434,18 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('cooking-mode-next-step')));
       await tester.pumpAndSettle();
     }
+
+    testWidgets('the rotate button on a phone flips to upright', (
+      tester,
+    ) async {
+      final effects = _FakeEffects();
+      await openCooking(tester, effects: effects);
+
+      await tester.tap(find.bySemanticsLabel(sv.a11yCookingModeRotate));
+      await tester.pumpAndSettle();
+
+      expect(effects.calls, contains('portrait'));
+    });
 
     testWidgets('back on step 2 leaves at once', (tester) async {
       final results = <Object?>[];
