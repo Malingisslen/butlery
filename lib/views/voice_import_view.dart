@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +13,7 @@ import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/import/voice_section_card.dart';
 
@@ -201,35 +200,33 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
       ),
     ];
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(title: context.l10n.voiceImportTitle),
-      body: ButleryPageBody(
-        width: PageWidth.text,
-        child: ListView(
-          padding: AppDimensions.responsiveContentPadding(context),
-          children: [
-            Text(
-              context.l10n.voiceImportIntro,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+    return ButleryPage.undersida(
+      title: context.l10n.voiceImportTitle,
+      showTabBar: false,
+      body: ListView(
+        padding: AppDimensions.responsiveContentPadding(context),
+        children: [
+          Text(
+            context.l10n.voiceImportIntro,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
             ),
-            for (final s in sections)
-              VoiceSectionCard(
-                key: ValueKey('voice-section-${s.section.name}'),
-                index: s.section.index + 1,
-                title: s.title,
-                prompt: s.prompt,
-                state: vm.stateOf(s.section),
-                isDone: vm.isDone(s.section),
-                enabled: !vm.hasActiveCapture && !vm.isImporting,
-                controller: _controllers[s.section]!,
-                multiline: s.multiline,
-                onMicTap: () => _onMicTap(s.section),
-                onChanged: (v) => vm.updateText(s.section, v),
-              ),
-          ],
-        ),
+          ),
+          for (final s in sections)
+            VoiceSectionCard(
+              key: ValueKey('voice-section-${s.section.name}'),
+              index: s.section.index + 1,
+              title: s.title,
+              prompt: s.prompt,
+              state: vm.stateOf(s.section),
+              isDone: vm.isDone(s.section),
+              enabled: !vm.hasActiveCapture && !vm.isImporting,
+              controller: _controllers[s.section]!,
+              multiline: s.multiline,
+              onMicTap: () => _onMicTap(s.section),
+              onChanged: (v) => vm.updateText(s.section, v),
+            ),
+        ],
       ),
       bottomNavigationBar: BottomActionContainer(
         child: Column(
