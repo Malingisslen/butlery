@@ -42,7 +42,7 @@
    ]
   },
   "lib/views/admin/metric_tab_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#29",
     "etapp_5-7#9",
@@ -64,7 +64,7 @@
    ]
   },
   "lib/views/admin/ops_log_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#17",
     "del_2_familj_och_socialt#24"
@@ -74,7 +74,7 @@
    ]
   },
   "lib/views/admin/parsing_details_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#17"
    ],

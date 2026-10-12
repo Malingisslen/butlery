@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `956df797a64e2713b80938aaf38709fdb9096a8bc491a6aa2142acfec2da76cf` |
+| `screen-register.json` | `ec17495b12132f807af18ed70dc286bff412a8afdaa0a0ecf5d7d980a756493d` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -680,10 +680,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/60-consent-management.png` | `cc87953d0411692fe863493ecb2ff70c8f7311a0d87270e1ce0636d49eda267c` |
 | `skiss-mot-app/61-data-export.png` | `62e2d014b32d6bbff8903a245dc6fa8a116e48ad682cdd81847f54b49d1170e1` |
 | `skiss-mot-app/62-pending-deletion.png` | `17d0a6dbf990d2f153d268b010a99da98cb44a071d581bdc8a03ee9e9a375fe3` |
-| `skiss-mot-app/63-metric-tab.png` | `ae02233b663d587a66ffc9e5f2dbfffb87e8356d21b0031f108bb40a9d859fea` |
+| `skiss-mot-app/63-metric-tab.png` | `f7423c08b6d7f651569e71a2d3b0f93917313319f82a6960a82b1fedf395a295` |
 | `skiss-mot-app/64-moderator-review.png` | `209cad6285e3f95cfbdb810168d21036aa001549c9fa2b99a800c5e66bf9f656` |
-| `skiss-mot-app/65-ops-log.png` | `c48e7995d1ad7d4b1bf2516d6aa9eb2fc62364d999687b93d420694e769314c8` |
-| `skiss-mot-app/66-parsing-details.png` | `5ea6f753d2cbe9b260bcba735d72a495a5d9d28822fd2282402578edffda7621` |
+| `skiss-mot-app/65-ops-log.png` | `f52d6a36ac6dee6a27a0a55bb0bd86e011227b2a704096eee45d5b240019015b` |
+| `skiss-mot-app/66-parsing-details.png` | `d1904fdc09327d435c30fff15c41906ac8f951143c55012f8b1c98bf00e0c2a0` |
 | `skiss-mot-app/67-guest-start.png` | `485d9d9ecf4e1d726b924124e63956f65f4cf82fbee554b3e8fdd1aedef1d18e` |
 | `skiss-mot-app/68-guest-upgrade.png` | `d698ab97b41902214ad70b8d758e20a5579c923c64f14b82c41d30d038714b8e` |
 | `skiss-mot-app/69-mfa-challenge.png` | `2cea24da00839929ae555661820ac1f2fd4839fe772465611f9835cb9ac4f102` |
