@@ -58,6 +58,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
       child: Scaffold(
         // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
         appBar: ButleryTopBar.undersida(
+          accentRule: false,
           title: context.l10n.feedbackSendLabel,
           leading: IconButton(
             icon: const ButleryIcon(ButleryIcons.x),

@@ -18,9 +18,6 @@
 //
 // Beslut B-45 (beslutslogg.md rad 52): ingen Cupertino-gren. Plattformskänslan
 // sitter i rörelse och gest, inte i fältets form.
-//
-// Ingen accentlinje och ingen dekorillustration — de fyra mönstren är
-// uttömmande, och det är en tolkning av en tystnad.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,7 +73,8 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   }) : pattern = ButleryTopBarPattern.rot,
        backTo = null,
        onBack = null,
-       implyBack = false;
+       implyBack = false,
+       accentRule = false;
 
   /// Mönster 2 · Undersida (Komponentark v1 rad 71–78).
   ///
@@ -95,6 +93,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.backTo,
     this.onBack,
     this.implyBack = true,
+    this.accentRule = true,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
     this.actions = const [],
@@ -134,6 +133,12 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// undersida utan pil, för en vy som själv säger att den inte har någon
   /// väg tillbaka (BaseScaffold.showBackButton). [onBack] ger alltid en pil.
   final bool implyBack;
+
+  /// Saffransstrecket med den tunna linjen efter, tätt under titeln (Malin
+  /// 2026-10-12). Hör till fältet så att ingen vy ritar det själv; falskt för
+  /// en sida som ritar det lägre ned, som Mitt hushåll under sin ingress.
+  /// Bara undersidan har det.
+  final bool accentRule;
 
   /// Åtgärder till höger. Var och en får minst 48 × 48 dp träffyta och 8 dp
   /// till grannen (tokens.json touchTarget, rad 485–492).
@@ -228,6 +233,13 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Komponentark rad 64: sekundärraden står 2 px under titeln.
   static const double _secondaryGap = AppDimensions.topBarSecondaryGap;
 
+  /// Strecket är 4 dp högt och står 4 dp under fältet, med 8 dp luft under.
+  static const double _ruleHeight = AppDimensions.space4;
+  static const double _ruleGapAbove = AppDimensions.space4;
+  static const double _ruleGapBelow = AppDimensions.space8;
+
+  bool get _hasRule => !_isRoot && accentRule;
+
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 
   /// Titelns stil. En [titleStyle] läggs ovanpå mönstrets roll, så att det
@@ -260,6 +272,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
         ? _padTop + content + _padBottom
         : _subpagePadVertical + content + _subpagePadVertical;
     if (!_isRoot && height < subpageMinHeight) height = subpageMinHeight;
+    if (_hasRule) height += _ruleGapAbove + _ruleHeight + _ruleGapBelow;
     return Size.fromHeight(height + (bottom?.preferredSize.height ?? 0));
   }
 
@@ -434,6 +447,11 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                         ),
                         ?bottom,
+                        if (_hasRule)
+                          _AccentRuleRow(
+                            key: const ValueKey('butleryTopBar.accentRule'),
+                            margin: padSide,
+                          ),
                       ],
                     ),
                   ),
@@ -593,6 +611,51 @@ class _Hitbox extends StatelessWidget {
         minHeight: ButleryTopBar.hitbox,
       ),
       child: Center(widthFactor: 1, heightFactor: 1, child: child),
+    );
+  }
+}
+
+/// Saffransstrecket och linjen efter det. Linjen är ink på papper och
+/// kantfärgen i mörkt läge, där ink på mörk yta är för ljus.
+class _AccentRuleRow extends StatelessWidget {
+  const _AccentRuleRow({required this.margin, super.key});
+
+  final double margin;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final dark = cs.brightness == Brightness.dark;
+    return ExcludeSemantics(
+      child: Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(
+          margin,
+          ButleryTopBar._ruleGapAbove,
+          margin,
+          ButleryTopBar._ruleGapBelow,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: AppDimensions.space24,
+              height: ButleryTopBar._ruleHeight,
+              decoration: BoxDecoration(
+                color: cs.secondary,
+                borderRadius: BorderRadius.circular(
+                  ButleryTopBar._ruleHeight / 2,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppDimensions.space12),
+            Expanded(
+              child: Container(
+                height: AppDimensions.borderWidthStandard,
+                color: dark ? cs.outline : cs.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

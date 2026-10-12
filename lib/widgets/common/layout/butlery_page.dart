@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
-import 'package:butlery/widgets/common/layout/page_rule.dart';
 
 export 'package:butlery/widgets/common/layout/butlery_page_body.dart'
     show ButleryPageBody, PageWidth;
@@ -68,7 +67,7 @@ class ButleryPage extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final bool showTabBar;
 
-  /// The 2 px ink rule under the bar; false where the page puts its own
+  /// The saffron dash and hairline under the bar (drawn by the bar); false where the page puts its own
   /// rule lower, as Mitt hushåll does under its intro text.
   final bool ruleUnderBar;
   final ButleryTopBarPattern _pattern;
@@ -86,6 +85,7 @@ class ButleryPage extends StatelessWidget {
         backTo: backTo,
         secondaryLine: secondaryLine,
         actions: actions,
+        accentRule: ruleUnderBar,
       ),
     };
     return Scaffold(
@@ -97,15 +97,7 @@ class ButleryPage extends StatelessWidget {
       body: SafeArea(
         child: ButleryPageBody(
           width: width,
-          child: ruleUnderBar && _pattern == ButleryTopBarPattern.undersida
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const PageRule(),
-                    Expanded(child: body),
-                  ],
-                )
-              : body,
+          child: body,
         ),
       ),
     );
