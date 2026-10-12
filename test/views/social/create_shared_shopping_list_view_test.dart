@@ -43,6 +43,7 @@ import 'package:butlery/models/user_profile.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -222,7 +223,7 @@ void main() {
   // overflows), so a friend row can land outside the hit-test region — scroll
   // it into view first, then toggle its checkbox.
   Future<void> pickFriend(WidgetTester tester, String name) async {
-    final tile = find.widgetWithText(CheckboxListTile, name);
+    final tile = find.widgetWithText(ButleryCheckboxTile, name);
     // Scroll the row into the hittable region (the fixed-height friend
     // selector clips rows near its bottom edge), then toggle its checkbox.
     // Pin the scroll target to the FriendCategoryManager's OWN inner list

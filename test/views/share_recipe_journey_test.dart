@@ -42,6 +42,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/mocks/production_mocks.dart';
@@ -97,7 +98,7 @@ class _ShareDialogBodyState extends State<_ShareDialogBody> {
               child: ListView(
                 children: widget.availableFriends.map((f) {
                   final selected = _selected.contains(f.id);
-                  return CheckboxListTile(
+                  return ButleryCheckboxTile(
                     key: Key('friend_${f.id}'),
                     title: Text(f.name),
                     value: selected,

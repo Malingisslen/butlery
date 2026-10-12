@@ -241,12 +241,7 @@ class _SwitchRow extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      value: value,
-                      onChanged: onChanged == null
-                          ? null
-                          : (v) => onChanged!(v ?? false),
-                    ),
+                    ButleryCheckbox(value: value, onChanged: onChanged),
                     const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Padding(

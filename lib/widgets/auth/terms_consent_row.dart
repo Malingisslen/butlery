@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// The consent a new account gives, on the sign-up form, before a guest start
 /// and when a guest creates an account.
@@ -31,39 +32,28 @@ class TermsConsentRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // The box stands on the form's left edge at the checkbox token's
-          // size (tokens.json controls.checkbox, B-37); the padding around it
-          // is the touch target, so it stays at least the minimum tall. The
-          // visible text beside the box is the screen-reader stop for this
+          // The visible text beside the box is the screen-reader stop for this
           // checkbox, so the box itself stays out of the tree.
+          // The box stands on the form's left edge (tokens.json
+          // controls.checkbox, B-37): the 48 dp square is pulled 12 dp left so
+          // its padding hangs outside the row.
           ExcludeSemantics(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onChanged == null ? null : () => onChanged(!accepted),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  0,
-                  AppDimensions.space12,
-                  AppDimensions.space8,
-                  AppDimensions.space12,
-                ),
-                child: SizedBox.square(
-                  dimension: _boxSize,
-                  child: Center(
-                    child: Transform.scale(
-                      scale: _boxSize / _materialBox,
-                      child: SizedBox.square(
-                        dimension: _materialBox,
-                        child: Checkbox(
-                          value: accepted,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          onChanged: onChanged == null
-                              ? null
-                              : (value) => onChanged(value ?? false),
-                        ),
-                      ),
-                    ),
+            child: SizedBox(
+              width: ButleryCheckbox.boxSize + AppDimensions.space8,
+              height: ButleryControlFocus.minSize,
+              child: OverflowBox(
+                alignment: Alignment.centerLeft,
+                minWidth: ButleryControlFocus.minSize,
+                maxWidth: ButleryControlFocus.minSize,
+                child: Transform.translate(
+                  offset: const Offset(
+                    -(ButleryControlFocus.minSize - ButleryCheckbox.boxSize) /
+                        2,
+                    0,
+                  ),
+                  child: ButleryCheckbox(
+                    value: accepted,
+                    onChanged: onChanged,
                   ),
                 ),
               ),
@@ -108,10 +98,6 @@ class TermsConsentRow extends StatelessWidget {
       ),
     );
   }
-
-  // Material draws its box at this size; the token's box is scaled from it.
-  static const double _materialBox = 18;
-  static const double _boxSize = 24;
 
   InlineSpan _link(
     BuildContext context, {

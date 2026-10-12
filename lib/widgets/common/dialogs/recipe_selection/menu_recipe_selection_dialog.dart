@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Dialog for selecting recipes for menu categories
 class MenuRecipeSelectionDialog extends StatefulWidget {
@@ -262,13 +263,9 @@ class MenuRecipeListItem extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: _buildSubtitle(context),
-      trailing: Checkbox(
+      trailing: ButleryCheckbox(
         value: isSelected,
-        onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor: Theme.of(context).colorScheme.primary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
+        onChanged: onSelectionChanged,
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );

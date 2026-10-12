@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Friend Category Manager
 /// Handles ONLY interactive friend category management with state.
@@ -339,7 +340,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                                 ),
                               )
                             : null,
-                        child: CheckboxListTile(
+                        child: ButleryCheckboxTile(
                           value: isSelected,
                           onChanged: (selected) => _toggleFriend(friend.uid),
                           title: Text(
@@ -348,17 +349,11 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                                 ? AppTextStyles.bodyBold
                                 : AppTextStyles.bodyMedium,
                           ),
-                          subtitle: null,
                           dense: true,
-                          controlAffinity: ListTileControlAffinity.trailing,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppDimensions.space4,
                             vertical: AppDimensions.space4,
                           ),
-                          activeColor: Theme.of(context).colorScheme.primary,
-                          checkColor: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary,
                         ),
                       );
                     },

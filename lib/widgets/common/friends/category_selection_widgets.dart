@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Category Selection Widgets
 /// Handles ONLY category selection UI components and interaction widgets.
@@ -339,7 +340,7 @@ class CategorySelectionWidgets {
           ),
           children: categories.map((category) {
             final isSelected = selectedCategoryIds.contains(category.id);
-            return CheckboxListTile(
+            return ButleryCheckboxTile(
               value: isSelected,
               onChanged: (_) => onCategoryToggled(category.id),
               title: Text(category.name),
@@ -347,7 +348,6 @@ class CategorySelectionWidgets {
                 context.l10n.friendFriendsCount(category.friendUserIds.length),
               ),
               dense: true,
-              activeColor: Theme.of(context).colorScheme.primary,
             );
           }).toList(),
         ),

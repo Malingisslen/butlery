@@ -15,6 +15,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/messaging/create_group_conversation_view.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Styled dialog for creating new conversations
 class NewConversationDialog extends StatefulWidget {
@@ -269,14 +270,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         final friend = _filteredFriends[index];
         final isSelected = _selectedFriendIds.contains(friend.uid);
 
-        return CheckboxListTile(
+        return ButleryCheckboxTile(
           key: ValueKey(friend.uid),
           title: Text(friend.displayName),
           value: isSelected,
-          onChanged: (bool? selected) {
+          onChanged: (bool selected) {
             if (mounted) {
               setState(() {
-                if (selected == true) {
+                if (selected) {
                   _selectedFriendIds.add(friend.uid);
                 } else {
                   _selectedFriendIds.remove(friend.uid);
