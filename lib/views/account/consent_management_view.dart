@@ -165,7 +165,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
           child: Text(
             _savedLine(context, viewModel.currentConsent!),
-            style: AppTextStyles.captionBase.copyWith(color: cs.onSurfaceVariant),
+            style: AppTextStyles.captionBase.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ),
       ButleryListSection(
