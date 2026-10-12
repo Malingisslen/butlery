@@ -219,3 +219,5 @@ brag-output-*/
 # Role-org dossier-freshness markers (auto-written by the dossier-freshness hook,
 # consumed + deleted by /refresh-dossiers or the weekly /janitor — never committed)
 docs/org/dossier-staleness/*.stale
+!tools/sketch_scan.py
+test/views/design_states/shots/

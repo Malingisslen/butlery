@@ -225,7 +225,7 @@ class _FileImportViewState extends State<FileImportView> {
             color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.space4),
-          Text(text, style: AppTextStyles.bodySmall),
+          Expanded(child: Text(text, style: AppTextStyles.bodySmall)),
         ],
       ),
     );
@@ -245,7 +245,7 @@ class _FileImportViewState extends State<FileImportView> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.space4),
-          Text(text, style: AppTextStyles.bodySmall),
+          Expanded(child: Text(text, style: AppTextStyles.bodySmall)),
         ],
       ),
     );

@@ -71,12 +71,18 @@ class AdminTable extends StatelessWidget {
               child: _line(
                 [
                   for (final c in columns)
-                    Text(
-                      c.label.toUpperCase(),
-                      style: AppTextStyles.overline.copyWith(
-                        color: cs.onSurfaceVariant,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: c.alignEnd
+                          ? AlignmentDirectional.centerEnd
+                          : AlignmentDirectional.centerStart,
+                      child: Text(
+                        c.label.toUpperCase(),
+                        style: AppTextStyles.overline.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
                       ),
-                      textAlign: c.alignEnd ? TextAlign.end : TextAlign.start,
                     ),
                 ],
               ),

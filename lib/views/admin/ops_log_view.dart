@@ -89,9 +89,13 @@ class _OpsLogContent extends StatelessWidget {
         const SizedBox(height: AppDimensions.space8),
         AdminTable(
           columns: [
-            AdminTableColumn(label: l10n.adminOpsColTime, flex: 2),
+            AdminTableColumn(label: l10n.adminOpsColTime, flex: 3),
             AdminTableColumn(label: l10n.adminOpsColType, flex: 5),
-            AdminTableColumn(label: l10n.adminOpsColDeleted, alignEnd: true),
+            AdminTableColumn(
+              label: l10n.adminOpsColDeleted,
+              flex: 2,
+              alignEnd: true,
+            ),
           ],
           rows: [
             for (final e in vm.events)

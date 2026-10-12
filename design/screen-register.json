@@ -819,7 +819,8 @@
    "status": "avviker-beslutad",
    "frames": [
     "etapp_2#17",
-    "etapp_2#10"
+    "etapp_2#10",
+    "etapp_2#21"
    ],
    "images": [
     "design/skiss-mot-app/21-veckomeny.png"

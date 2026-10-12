@@ -96,7 +96,11 @@ class _ParsingDetailsContent extends StatelessWidget {
               label: l10n.adminParsingColSuccess,
               alignEnd: true,
             ),
-            AdminTableColumn(label: l10n.adminParsingColStuck, alignEnd: true),
+            AdminTableColumn(
+              label: l10n.adminParsingColStuck,
+              flex: 2,
+              alignEnd: true,
+            ),
           ],
           rows: [
             for (final s in vm.stats)
