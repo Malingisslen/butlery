@@ -37,8 +37,8 @@ class StatRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: cs.outline,
-                      width: AppDimensions.borderWidthStandard,
+                      color: cs.onSurface,
+                      width: AppDimensions.borderWidthThick,
                     ),
                   ),
                 ),
@@ -47,13 +47,13 @@ class StatRow extends StatelessWidget {
                   children: [
                     Text(
                       items[i].value,
-                      style: AppTextStyles.headlineSmall.copyWith(
+                      style: AppTextStyles.titleLargeBold.copyWith(
                         color: cs.onSurface,
                       ),
                     ),
                     Text(
                       items[i].label,
-                      style: AppTextStyles.bodyMedium.copyWith(
+                      style: AppTextStyles.captionText.copyWith(
                         color: cs.onSurfaceVariant,
                       ),
                     ),

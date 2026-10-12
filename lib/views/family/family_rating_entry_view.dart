@@ -257,7 +257,7 @@ class _DinerRatingRow extends StatelessWidget {
         ? '${member.displayName} · ${l10n.familyRatingYou}'
         : member.displayName;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space16),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
@@ -277,24 +277,23 @@ class _DinerRatingRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   name,
-                  style: AppTextStyles.titleMedium,
+                  style: AppTextStyles.bodySmallBold,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Text(
                 stars == 0 ? l10n.familyRatingNotSet : score,
                 style: stars == 0
-                    ? AppTextStyles.bodyMedium.copyWith(
+                    ? AppTextStyles.captionText.copyWith(
                         color: cs.onSurfaceVariant,
                       )
-                    : AppTextStyles.titleMedium,
+                    : AppTextStyles.bodySmallBold,
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.space8),
           StarRatingRow(
             rating: stars.toDouble(),
-            size: AppDimensions.iconSizeL,
+            size: AppDimensions.iconSizeS,
             slot: AppDimensions.minTouchTarget,
             solidEmpty: true,
             onRatingChanged: (v) => onChanged(v.toInt()),

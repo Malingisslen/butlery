@@ -73,10 +73,10 @@ class DiffFieldRow extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.space8),
                 SizedBox(
-                  width: AppDimensions.space32 * 3,
+                  width: AppDimensions.space32 * 2 + AppDimensions.space8,
                   child: Text(
                     v.name,
-                    style: AppTextStyles.labelLarge.copyWith(
+                    style: AppTextStyles.labelMediumBold.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
@@ -86,8 +86,8 @@ class DiffFieldRow extends StatelessWidget {
                     (v.text == null || v.text!.isEmpty) ? emptyText : v.text!,
                     style:
                         (v.emphasised
-                                ? AppTextStyles.titleMedium
-                                : AppTextStyles.bodyLarge)
+                                ? AppTextStyles.bodySmallBold
+                                : AppTextStyles.bodyMedium)
                             .copyWith(
                               color: cs.onSurface,
                               fontStyle: (v.text == null || v.text!.isEmpty)

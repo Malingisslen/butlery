@@ -85,7 +85,7 @@ class PersonalTagRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         tag.name,
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.bodySmallBold.copyWith(
                           color: cs.onSurface,
                         ),
                       ),
@@ -95,7 +95,7 @@ class PersonalTagRow extends StatelessWidget {
                       child: Text(
                         summary,
                         textAlign: TextAlign.end,
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: AppTextStyles.captionText.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
                       ),
@@ -277,7 +277,7 @@ class UnusedTagsSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.personalTagUnusedHeading(unusedTags.length),
-                  style: AppTextStyles.titleMedium.copyWith(
+                  style: AppTextStyles.labelMediumBold.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
                 ),
@@ -286,7 +286,7 @@ class UnusedTagsSection extends StatelessWidget {
                 onPressed: onDeleteAll,
                 child: Text(
                   l10n.personalTagDeleteAllShort,
-                  style: AppTextStyles.labelLarge.copyWith(color: cs.error),
+                  style: AppTextStyles.labelMediumBold.copyWith(color: cs.error),
                 ),
               ),
             ],
