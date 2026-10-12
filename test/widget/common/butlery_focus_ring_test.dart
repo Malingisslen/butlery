@@ -79,6 +79,11 @@ Widget _button(FocusNode node) => SizedBox(
   child: ElevatedButton(
     focusNode: node,
     onPressed: () {},
+    // The containers hug the button, so the padded 48 dp tap target would
+    // leave the ring's top inside the container instead of outside it.
+    style: ElevatedButton.styleFrom(
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
     child: const Text('Spara'),
   ),
 );

@@ -19,6 +19,7 @@ class LabeledField extends StatelessWidget {
     // The ring goes around the input box only, not the helper, error or
     // counter line under it, and shows for keyboard focus (decision D3).
     final field = _TapTargetFrame(
+      semanticLabel: label,
       child: ButleryFocusRing(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         bounds: FocusRingBounds.textFieldBox,
@@ -45,7 +46,7 @@ class LabeledField extends StatelessWidget {
         const SizedBox(
           height: AppDimensions.space8 - AppDimensions.fieldTapPad,
         ),
-        Semantics(label: label, child: field),
+        field,
       ],
     );
   }
@@ -56,20 +57,27 @@ class LabeledField extends StatelessWidget {
 /// to the field inside.
 class _TapTargetFrame extends StatelessWidget {
   final Widget child;
+  final String? semanticLabel;
 
-  const _TapTargetFrame({required this.child});
+  const _TapTargetFrame({required this.child, this.semanticLabel});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      excludeFromSemantics: true,
-      onTap: () => _focusField(context),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.fieldTapPad,
+    // MergeSemantics gives the field's node the frame's 48 dp rect, so a
+    // screen reader's touch target is the same as the hit area.
+    return MergeSemantics(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        excludeFromSemantics: true,
+        onTap: () => _focusField(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.fieldTapPad,
+          ),
+          child: semanticLabel == null
+              ? child
+              : Semantics(label: semanticLabel, child: child),
         ),
-        child: child,
       ),
     );
   }

@@ -32,6 +32,16 @@ void main() {
       );
     });
 
+    testWidgets('$mode: the semantics node of the field is the 48 frame', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pump(tester, const LabeledField(child: TextField()));
+      final node = tester.getSemantics(find.byType(TextField));
+      expect(node.rect.height, AppDimensions.minTouchTarget);
+      handle.dispose();
+    });
+
     testWidgets('$mode: a tap in the pad above or below the box focuses it', (
       tester,
     ) async {
