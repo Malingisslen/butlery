@@ -130,14 +130,15 @@ void main() {
         ],
       },
     );
-    final recipesTab = '${sv.groupContentTypeRecipe} (1)';
+    final recipesCount = find.text('1');
 
     await pump(tester, service);
-    expect(find.text(recipesTab), findsNothing);
+    expect(recipesCount, findsNothing);
 
     await pump(tester, service, shown: other);
 
     expect(service.recipeGroups.last, other.id);
-    expect(find.text(recipesTab), findsOneWidget);
+    expect(recipesCount, findsOneWidget);
+    expect(find.text(sv.groupSharedRecipesLabel(1)), findsWidgets);
   });
 }

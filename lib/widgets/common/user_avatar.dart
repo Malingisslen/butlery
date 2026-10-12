@@ -9,6 +9,9 @@ class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String displayName;
   final ImageSize size;
+
+  /// A pixel size the [ImageSize] steps do not carry; wins over [size].
+  final double? explicitSize;
   final VoidCallback? onTap;
   final Color? borderColor;
   final double? borderWidth;
@@ -18,11 +21,15 @@ class UserAvatar extends StatelessWidget {
   final bool isOnline;
   final bool announceName;
 
+  /// A circle, as the sketch draws people in lists and headers.
+  final bool round;
+
   const UserAvatar({
     super.key,
     this.imageUrl,
     required this.displayName,
     this.size = ImageSize.medium,
+    this.explicitSize,
     this.onTap,
     this.borderColor,
     this.borderWidth,
@@ -31,6 +38,7 @@ class UserAvatar extends StatelessWidget {
     this.showStatus = false,
     this.isOnline = false,
     this.announceName = true,
+    this.round = false,
   });
 
   @override
@@ -39,6 +47,7 @@ class UserAvatar extends StatelessWidget {
       imageUrl: imageUrl,
       displayName: displayName,
       size: size,
+      explicitSize: explicitSize,
       onTap: onTap,
       borderColor: borderColor,
       borderWidth: borderWidth,
@@ -47,6 +56,7 @@ class UserAvatar extends StatelessWidget {
       showStatus: showStatus,
       isOnline: isOnline,
       announceName: announceName,
+      round: round,
     );
   }
 }

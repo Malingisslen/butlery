@@ -9,18 +9,12 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/social/shared_card_header.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/social/shared_content_row.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
-/// SharedMenuCard - Card for displaying shared menus
-/// Displays shared menu information with action buttons.
+/// A shared menu as a [SharedContentRow].
 class SharedMenuCard {
   // A collaborative menu the user has joined opens live. An invitation not yet
   // joined opens the preview, whose join step adds them as a participant.
@@ -66,272 +60,37 @@ class SharedMenuCard {
     SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) {
-    final isRead = viewModel.menuViewModel.isMenuViewed(sharedMenu);
-    final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
-
-    return Material(
-      elevation: isRead
-          ? AppDimensions.elevationLow
-          : AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      child: Semantics(
-        label: context.l10n.a11ySharedMenu,
-        button: true,
-        child: PressFill(
-          surface: PressSurface.base,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            onTap: () => _open(context, viewModel, sharedMenu, isRead),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.space16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-                border: !isRead
-                    ? Border.all(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        width: 2,
-                      )
-                    : null,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header med delningsinfo
-                  SharedCardHeader(
-                    displayName: sharedMenu.sharedByDisplayName,
-                    timestampText: timeago.format(
-                      sharedMenu.sharedAt,
-                      locale: 'sv',
-                    ),
-                    isRead: isRead,
-                    onDismiss: () => SharedContentActions.dismissMenu(
-                      context,
-                      viewModel,
-                      sharedMenu,
-                    ),
-                    onUnshare: () => SharedContentActions.unshareMenu(
-                      context,
-                      viewModel,
-                      sharedMenu,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.space4),
-
-                  // Meny content
-                  _buildMenuContent(context, sharedMenu),
-
-                  // Message from the sharer
-                  if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-                    const SizedBox(height: AppDimensions.space4),
-                    _buildShareMessage(context, sharedMenu.shareMessage!),
-                  ],
-
-                  const SizedBox(height: AppDimensions.space4),
-
-                  // Action buttons
-                  _buildActionButtons(
-                    context,
-                    viewModel,
-                    sharedMenu,
-                    isRead,
-                    isImported,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Widget _buildMenuContent(BuildContext context, SharedMenu sharedMenu) {
+    final l10n = context.l10n;
+    final menus = viewModel.menuViewModel;
+    final isRead = menus.isMenuViewed(sharedMenu);
     final isCollaborative =
         sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
-
-    return Row(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: isCollaborative
-                ? Theme.of(context).colorScheme.tertiaryContainer
-                : Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          ),
-          child: ButleryIcon(
-            isCollaborative ? ButleryIcons.users : ButleryIcons.calendar,
-            size: AppDimensions.iconSizeXl,
-            color: isCollaborative
-                ? Theme.of(context).colorScheme.onTertiaryContainer
-                : Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-        ),
-        const SizedBox(width: AppDimensions.space4),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      sharedMenu.menuTitle,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.space4,
-                      vertical: AppDimensions.badgePaddingY,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isCollaborative
-                          ? Theme.of(context).colorScheme.tertiaryContainer
-                          : Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ButleryIcon(
-                          isCollaborative
-                              ? ButleryIcons.refreshCw
-                              : ButleryIcons.copy,
-                          size: AppDimensions.iconSizeXs,
-                          color: isCollaborative
-                              ? Theme.of(
-                                  context,
-                                ).colorScheme.onTertiaryContainer
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: AppDimensions.space4),
-                        Text(
-                          isCollaborative
-                              ? context.l10n.sharedLive
-                              : context.l10n.sharedCopy,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: isCollaborative
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onTertiaryContainer
-                                : Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.space4),
-              Text(
-                sharedMenu.menuSummary,
-                style: AppTextStyles.bodySmall,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: AppDimensions.space4),
-              Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.utensils,
-                    size: AppDimensions.iconSizeS,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Text(
-                    context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  ButleryIcon(
-                    ButleryIcons.grid,
-                    size: AppDimensions.iconSizeS,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Text(
-                    context.l10n.sharedCategoryCount(
-                      sharedMenu.categories.length,
-                    ),
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
+    final fromAgo = l10n.sharedFromNameAgo(
+      sharedMenu.sharedByDisplayName,
+      timeago.format(sharedMenu.sharedAt, locale: 'sv'),
     );
-  }
 
-  static Widget _buildShareMessage(BuildContext context, String message) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+    return SharedContentRow(
+      leading: SharedKindThumb(
+        icon: isCollaborative ? ButleryIcons.users : ButleryIcons.calendar,
       ),
-      child: Text(
-        '"$message"',
-        style: AppTextStyles.bodySmall.copyWith(
-          fontStyle: FontStyle.italic,
-        ),
+      title: sharedMenu.menuTitle,
+      subtitle: isCollaborative ? '$fromAgo · ${l10n.sharedLive}' : fromAgo,
+      message: sharedMenu.shareMessage,
+      unread: !isRead,
+      saved: menus.isMenuImported(sharedMenu),
+      saving: menus.isItemOperating(sharedMenu.id),
+      onSave: () =>
+          SharedContentActions.importMenu(context, viewModel, sharedMenu),
+      onOpen: () => _open(context, viewModel, sharedMenu, isRead),
+      onActions: () => showSharedContentActions(
+        context,
+        title: sharedMenu.menuTitle,
+        onDismiss: () =>
+            SharedContentActions.dismissMenu(context, viewModel, sharedMenu),
+        onUnshare: () =>
+            SharedContentActions.unshareMenu(context, viewModel, sharedMenu),
       ),
-    );
-  }
-
-  static Widget _buildActionButtons(
-    BuildContext context,
-    SharedContentCoordinatorViewModel viewModel,
-    SharedMenu sharedMenu,
-    bool isRead,
-    bool isImported,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonView,
-            icon: ButleryIcons.eye,
-            onPressed: () => _open(context, viewModel, sharedMenu, isRead),
-          ),
-        ),
-        const SizedBox(width: AppDimensions.space4),
-        Expanded(
-          child: Builder(
-            builder: (context) {
-              // Use per-item loading state to avoid spinner on all items
-              final isThisMenuOperating = viewModel.menuViewModel
-                  .isItemOperating(sharedMenu.id);
-              return ActionButtons.primaryButton(
-                context,
-                label: isImported
-                    ? context.l10n.sharedImported
-                    : context.l10n.sharedImport,
-                icon: isImported ? ButleryIcons.check : ButleryIcons.download,
-                isLoading: isThisMenuOperating,
-                onPressed: isImported || isThisMenuOperating
-                    ? null
-                    : () => SharedContentActions.importMenu(
-                        context,
-                        viewModel,
-                        sharedMenu,
-                      ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 }

@@ -195,13 +195,15 @@ void main() {
           body: ChangeNotifierProvider<FriendsViewModel>.value(
             value: vm,
             child: Consumer<FriendsViewModel>(
-              builder: (context, vm, _) => IncomingRequestsTabBuilder.build(
+              builder: (context, vm, _) => FriendRequestsListBuilder.build(
                 context,
                 vm,
                 <String>{},
-                (_, _) {},
-                () {},
-                () {},
+                <String>{},
+                selecting: false,
+                onIncomingChanged: (_, _) {},
+                onSentChanged: (_, _) {},
+                onRefreshed: () {},
               ),
             ),
           ),

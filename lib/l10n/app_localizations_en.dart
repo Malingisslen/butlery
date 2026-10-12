@@ -3798,7 +3798,52 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get groupSharedContent => 'Shared content';
+  String groupSharedRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recipes',
+      one: 'recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedMenusLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'menus',
+      one: 'menu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedListsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'shopping lists',
+      one: 'shopping list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInvitedLabel => 'Invited';
+
+  @override
+  String get groupInviteLink => '+ Invite';
+
+  @override
+  String get groupMembersHeading => 'Members';
+
+  @override
+  String get groupShareSheetButton => 'Share a recipe, menu or list';
+
+  @override
+  String get groupSharedContent => 'Shared in the group';
 
   @override
   String get groupShareShoppingList => 'Share shopping list';
@@ -4735,6 +4780,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get messagingNewGroupChat => 'New group chat';
+
+  @override
   String get messagingNoFriendsAvailable => 'No friends available';
 
   @override
@@ -4749,7 +4797,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String messagingSelectedMembers(int count) {
-    return 'Selected members ($count)';
+    return 'Participants · $count selected';
   }
 
   @override
@@ -5118,11 +5166,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indicatorBackOnline => 'Back online';
 
   @override
-  String get householdToggle => 'Mark as household';
+  String get householdToggle => 'This is the household';
 
   @override
   String get householdToggleDescription =>
-      'Household allergens are combined for menu planning';
+      'The household\'s allergens count in the menu';
 
   @override
   String get householdJoinTitle => 'Join the household';
@@ -6177,7 +6225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAvatarUploaded => 'Avatar uploaded.';
 
   @override
-  String get profileBio => 'Bio';
+  String get profileBio => 'About me';
 
   @override
   String get profileBioHint =>
@@ -6223,6 +6271,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileDisplayName => 'Display name';
 
   @override
+  String get profileChangePhoto => 'Change picture';
+
+  @override
+  String get profileDisplayNameAvailable => 'Available';
+
+  @override
   String get profileDisplayNameHint => 'Your name as others see it';
 
   @override
@@ -6243,7 +6297,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileNewUser => 'New user';
 
   @override
-  String get profilePrivacySettings => 'Privacy settings';
+  String get profilePrivacySettings => 'Privacy';
 
   @override
   String get profileResetChanges => 'Reset changes';
@@ -6252,7 +6306,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaved => 'Profile saved.';
 
   @override
-  String get profileSaveProfile => 'Save profile';
+  String get profileSaveProfile => 'Save changes';
 
   @override
   String get profileSearchableByEmail => 'Searchable by email';
@@ -7302,18 +7356,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedSearchHint => 'Search shared content...';
 
   @override
+  String get sharedSaveAction => 'Save';
+
+  @override
+  String get sharedSavedState => 'Saved';
+
+  @override
+  String sharedFromNameAgo(String name, String time) {
+    return 'from $name · $time';
+  }
+
+  @override
+  String sharedSharedAgo(String time) {
+    return 'shared $time';
+  }
+
+  @override
+  String get sharedNewMark => 'new';
+
+  @override
+  String sharedFromHeading(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String sharedFromSummary(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '$count recipe',
+    );
+    return '$_temp0 · latest $time';
+  }
+
+  @override
   String sharedTabRecipes(int count) {
-    return 'Recipes ($count)';
+    return 'Recipes · $count';
   }
 
   @override
   String sharedTabMenus(int count) {
-    return 'Menus ($count)';
+    return 'Menus · $count';
   }
 
   @override
   String sharedTabShoppingLists(int count) {
-    return 'Shopping lists ($count)';
+    return 'Lists · $count';
   }
 
   @override
@@ -7832,6 +7921,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialGroups => 'Groups';
+
+  @override
+  String socialFriendsSection(int count) {
+    return 'Friends · $count';
+  }
+
+  @override
+  String get socialRequestsSelect => 'Select';
+
+  @override
+  String socialRequestsIncomingSection(int count) {
+    return 'Incoming · $count';
+  }
+
+  @override
+  String socialRequestsSentSection(int count) {
+    return 'Sent · $count';
+  }
 
   @override
   String get socialIncoming => 'Incoming';
@@ -18621,6 +18728,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendProfileRemoveFriend => 'Remove as friend';
+
+  @override
+  String get messagingAboutConversation => 'About the conversation';
+
+  @override
+  String messagingConversationSubline(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count in the conversation',
+      one: '1 in the conversation',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get messagingConversationNameRow => 'Conversation name';
+
+  @override
+  String get messagingAddSomeoneRow => 'Add someone';
+
+  @override
+  String get messagingInConversationSection => 'In the conversation';
+
+  @override
+  String get messagingMemberYou => 'you';
+
+  @override
+  String messagingRemoveFromConversationTitle(String name) {
+    return 'Remove $name from the conversation?';
+  }
+
+  @override
+  String messagingRemoveFromConversationBody(String name) {
+    return '$name stops seeing new messages. What has already been written stays, and the account is not affected. You can invite them again.';
+  }
+
+  @override
+  String get messagingLeaveConversationRow => 'Leave the conversation';
+
+  @override
+  String get messagingLeaveConversationSub =>
+      'You stop seeing new messages. What you wrote stays.';
+
+  @override
+  String recipeRowMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String publicProfileRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count public recipes',
+      one: '1 public recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get friendProfileBetweenYou => 'Between you';
+
+  @override
+  String get friendProfileSharedWithYouSub => 'Found under Shared with me';
+
+  @override
+  String get friendProfilePublicRecipesSub =>
+      'Visible to everyone, not only you';
+
+  @override
+  String friendProfileShareLinkRow(String owner) {
+    return 'Share a link to $owner profile';
+  }
+
+  @override
+  String get friendProfileShareLinkSub =>
+      'Shows the public page, nothing you have shared';
+
+  @override
+  String profileFriendsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'friends',
+      one: 'friend',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePublicRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'public recipes',
+      one: 'public recipe',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get familyAccountsSection => 'Accounts in the household';

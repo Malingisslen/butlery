@@ -1,6 +1,7 @@
 /// Opening a shared menu from the shared-with-me list: a collaborative menu the
 /// user has joined opens live; anything else opens the preview, whose join
-/// step is how an invitation is accepted. Both the card body and "Visa" open.
+/// step is how an invitation is accepted. The row itself is what opens: there
+/// is no separate "Visa" button.
 library;
 
 import 'package:flutter/material.dart';
@@ -104,49 +105,45 @@ void main() {
     );
   }
 
-  final triggers = <String, Finder Function()>{
-    'the card': () => find.text('Snabb vardag'),
-    'Visa': () => find.text('Visa'),
-  };
+  // An unread menu is named "Snabb vardag · ny", so match the name inside it.
+  Finder row() => find.textContaining('Snabb vardag', findRichText: true);
 
-  for (final entry in triggers.entries) {
-    group('opening from ${entry.key}', () {
-      testWidgets('a joined collaborative menu opens live on its realtime id', (
-        tester,
-      ) async {
-        await pumpCard(tester, shared(collaborative: true), joined: true);
+  group('opening from the row', () {
+    testWidgets('a joined collaborative menu opens live on its realtime id', (
+      tester,
+    ) async {
+      await pumpCard(tester, shared(collaborative: true), joined: true);
 
-        await tester.tap(entry.value());
-        await tester.pumpAndSettle();
+      await tester.tap(row());
+      await tester.pumpAndSettle();
 
-        expect(namedPushes.map((s) => s.name), [Routes.realtimeMenu]);
-        expect(namedPushes.single.arguments, {'menuId': 'live-42'});
-        expect(find.byType(MenuPreviewView), findsNothing);
-        verify(() => menus.markAsViewed(any())).called(1);
-      });
-
-      testWidgets('a collaborative menu not yet joined opens the preview', (
-        tester,
-      ) async {
-        await pumpCard(tester, shared(collaborative: true), joined: false);
-
-        await tester.tap(entry.value());
-        await tester.pumpAndSettle();
-
-        expect(namedPushes, isEmpty);
-        expect(find.byType(MenuPreviewView), findsOneWidget);
-      });
-
-      testWidgets('a non-collaborative menu opens the preview even when '
-          'already imported', (tester) async {
-        await pumpCard(tester, shared(collaborative: false), joined: true);
-
-        await tester.tap(entry.value());
-        await tester.pumpAndSettle();
-
-        expect(namedPushes, isEmpty);
-        expect(find.byType(MenuPreviewView), findsOneWidget);
-      });
+      expect(namedPushes.map((s) => s.name), [Routes.realtimeMenu]);
+      expect(namedPushes.single.arguments, {'menuId': 'live-42'});
+      expect(find.byType(MenuPreviewView), findsNothing);
+      verify(() => menus.markAsViewed(any())).called(1);
     });
-  }
+
+    testWidgets('a collaborative menu not yet joined opens the preview', (
+      tester,
+    ) async {
+      await pumpCard(tester, shared(collaborative: true), joined: false);
+
+      await tester.tap(row());
+      await tester.pumpAndSettle();
+
+      expect(namedPushes, isEmpty);
+      expect(find.byType(MenuPreviewView), findsOneWidget);
+    });
+
+    testWidgets('a non-collaborative menu opens the preview even when '
+        'already imported', (tester) async {
+      await pumpCard(tester, shared(collaborative: false), joined: true);
+
+      await tester.tap(row());
+      await tester.pumpAndSettle();
+
+      expect(namedPushes, isEmpty);
+      expect(find.byType(MenuPreviewView), findsOneWidget);
+    });
+  });
 }

@@ -11,12 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/views/social/user_profile_edit/cooking_preference_controls.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// Skill level selector, cuisine affinity chips, and bio text field.
+/// The bio field, then skill level and favourite cuisines.
 class CookingIdentitySection extends StatelessWidget {
   final TextEditingController bioController;
   final UserProfileViewModel viewModel;
@@ -30,26 +30,9 @@ class CookingIdentitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profileCookingIdentity,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space12),
-
-        // Skill level + cuisine affinities (profile bio data; no longer menu-tuning)
-        CookingPreferenceControls(viewModel: viewModel),
-        const SizedBox(height: AppDimensions.space12),
-
-        // Bio
-        Text(
-          context.l10n.profileBio,
-          style: AppTextStyles.labelMedium,
-        ),
+        SectionHeading(context.l10n.profileBio),
         const SizedBox(height: AppDimensions.space4),
         StyledInput(
           controller: bioController,
@@ -63,6 +46,9 @@ class CookingIdentitySection extends StatelessWidget {
           // BUT-517: profanity gate on bio (optional field — empty passes).
           validator: FormValidators.contentFilter(context.l10n.profileBio),
         ),
+        const SizedBox(height: AppDimensions.space24),
+        // Skill level + cuisine affinities (profile bio data; no longer menu-tuning)
+        CookingPreferenceControls(viewModel: viewModel),
       ],
     );
   }

@@ -3802,7 +3802,52 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get groupSharedContent => 'Delat innehåll';
+  String groupSharedRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recept',
+      one: 'recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedMenusLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'menyer',
+      one: 'meny',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedListsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'inköpslistor',
+      one: 'inköpslista',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInvitedLabel => 'Inbjuden';
+
+  @override
+  String get groupInviteLink => '+ Bjud in';
+
+  @override
+  String get groupMembersHeading => 'Medlemmar';
+
+  @override
+  String get groupShareSheetButton => 'Dela recept, meny eller lista';
+
+  @override
+  String get groupSharedContent => 'Delat i gruppen';
 
   @override
   String get groupShareShoppingList => 'Dela inköpslista';
@@ -4736,6 +4781,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get messagingNewGroupChat => 'Ny gruppchatt';
+
+  @override
   String get messagingNoFriendsAvailable => 'Inga vänner tillgängliga';
 
   @override
@@ -4749,7 +4797,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String messagingSelectedMembers(int count) {
-    return 'Valda medlemmar ($count)';
+    return 'Deltagare · $count valda';
   }
 
   @override
@@ -5116,11 +5164,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get indicatorBackOnline => 'Ansluten igen';
 
   @override
-  String get householdToggle => 'Markera som hushåll';
+  String get householdToggle => 'Det här är hushållet';
 
   @override
   String get householdToggleDescription =>
-      'Hushållets allergier sammanställs för menyplanering';
+      'Hushållets allergier räknas med i menyn';
 
   @override
   String get householdJoinTitle => 'Gå med i hushållet';
@@ -6174,7 +6222,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileAvatarUploaded => 'Avataren är uppladdad.';
 
   @override
-  String get profileBio => 'Beskrivning';
+  String get profileBio => 'Om mig';
 
   @override
   String get profileBioHint => 'Beskriv dig som matlagare (max 160 tecken)';
@@ -6219,6 +6267,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileDisplayName => 'Visningsnamn';
 
   @override
+  String get profileChangePhoto => 'Ändra bild';
+
+  @override
+  String get profileDisplayNameAvailable => 'Ledigt';
+
+  @override
   String get profileDisplayNameHint => 'Ditt namn som andra ser';
 
   @override
@@ -6239,7 +6293,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileNewUser => 'Ny användare';
 
   @override
-  String get profilePrivacySettings => 'Integritetsinställningar';
+  String get profilePrivacySettings => 'Integritet';
 
   @override
   String get profileResetChanges => 'Återställ ändringar';
@@ -6248,7 +6302,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileSaved => 'Profilen är sparad.';
 
   @override
-  String get profileSaveProfile => 'Spara profil';
+  String get profileSaveProfile => 'Spara ändringar';
 
   @override
   String get profileSearchableByEmail => 'Sökbar via e-post';
@@ -7297,18 +7351,53 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedSearchHint => 'Sök delat innehåll …';
 
   @override
+  String get sharedSaveAction => 'Spara';
+
+  @override
+  String get sharedSavedState => 'Sparad';
+
+  @override
+  String sharedFromNameAgo(String name, String time) {
+    return 'från $name · $time';
+  }
+
+  @override
+  String sharedSharedAgo(String time) {
+    return 'delad $time';
+  }
+
+  @override
+  String get sharedNewMark => 'ny';
+
+  @override
+  String sharedFromHeading(String name) {
+    return 'Från $name';
+  }
+
+  @override
+  String sharedFromSummary(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '$count recept',
+    );
+    return '$_temp0 · senast $time';
+  }
+
+  @override
   String sharedTabRecipes(int count) {
-    return 'Recept ($count)';
+    return 'Recept · $count';
   }
 
   @override
   String sharedTabMenus(int count) {
-    return 'Menyer ($count)';
+    return 'Menyer · $count';
   }
 
   @override
   String sharedTabShoppingLists(int count) {
-    return 'Inköpslistor ($count)';
+    return 'Listor · $count';
   }
 
   @override
@@ -7833,6 +7922,24 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialGroups => 'Grupper';
+
+  @override
+  String socialFriendsSection(int count) {
+    return 'Vänner · $count';
+  }
+
+  @override
+  String get socialRequestsSelect => 'Välj';
+
+  @override
+  String socialRequestsIncomingSection(int count) {
+    return 'Inkommande · $count';
+  }
+
+  @override
+  String socialRequestsSentSection(int count) {
+    return 'Skickade · $count';
+  }
 
   @override
   String get socialIncoming => 'Inkommande';
@@ -18685,6 +18792,106 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get friendProfileRemoveFriend => 'Ta bort som vän';
+
+  @override
+  String get messagingAboutConversation => 'Om samtalet';
+
+  @override
+  String messagingConversationSubline(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count med i samtalet',
+      one: '1 med i samtalet',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get messagingConversationNameRow => 'Samtalets namn';
+
+  @override
+  String get messagingAddSomeoneRow => 'Lägg till någon';
+
+  @override
+  String get messagingInConversationSection => 'Med i samtalet';
+
+  @override
+  String get messagingMemberYou => 'du';
+
+  @override
+  String messagingRemoveFromConversationTitle(String name) {
+    return 'Ta bort $name ur samtalet?';
+  }
+
+  @override
+  String messagingRemoveFromConversationBody(String name) {
+    return '$name slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.';
+  }
+
+  @override
+  String get messagingLeaveConversationRow => 'Lämna samtalet';
+
+  @override
+  String get messagingLeaveConversationSub =>
+      'Du slutar se nya meddelanden. Det du skrivit ligger kvar.';
+
+  @override
+  String recipeRowMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String publicProfileRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count publika recept',
+      one: '1 publikt recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get friendProfileBetweenYou => 'Mellan er';
+
+  @override
+  String get friendProfileSharedWithYouSub => 'Ligger under Delat med mig';
+
+  @override
+  String get friendProfilePublicRecipesSub =>
+      'Synliga för alla, inte bara för dig';
+
+  @override
+  String friendProfileShareLinkRow(String owner) {
+    return 'Dela en länk till $owner profil';
+  }
+
+  @override
+  String get friendProfileShareLinkSub =>
+      'Visar den publika sidan, inget ni delat';
+
+  @override
+  String profileFriendsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'vänner',
+      one: 'vän',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePublicRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'publika recept',
+      one: 'publikt recept',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get familyAccountsSection => 'Hushållets konton';
