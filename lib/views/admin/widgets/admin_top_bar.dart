@@ -31,55 +31,60 @@ class AdminTopBar extends StatelessWidget {
     final l10n = context.l10n;
     return Material(
       color: cs.primary,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space16,
-            ),
-            child: Text(
-              l10n.adminBarTitle,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.onPrimary),
-            ),
-          ),
-          Expanded(
-            child: Theme(
-              data: ButleryControlFocus.themeWithoutFocusTint(
-                Theme.of(context),
-              ),
-              child: TabBar(
-                controller: controller,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                dividerColor: Colors.transparent,
-                overlayColor: ButleryControlFocus.withoutFocusTint(null),
-                labelColor: cs.onPrimary,
-                unselectedLabelColor: AppModeColors.textDisabledOnInk(),
-                indicatorColor: context.modeColors.accentOnInk,
-                indicatorWeight: AppDimensions.borderWidthThick,
-                tabs: [for (final label in labels) ButleryTab(text: label)],
-              ),
-            ),
-          ),
-          if (email != null)
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space8,
-                ),
-                child: Text(
-                  l10n.adminBarSignedIn(email!),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppModeColors.textDisabledOnInk(),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppDimensions.space16,
+                    right: AppDimensions.space8,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  child: Text(
+                    l10n.adminBarTitle,
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      color: cs.onPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
+              if (email != null)
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    l10n.adminBarSignedIn(email!),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppModeColors.textDisabledOnInk(),
+                    ),
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              IconButton(
+                icon: ButleryIcon(ButleryIcons.logOut, color: cs.onPrimary),
+                tooltip: l10n.adminSignOut,
+                onPressed: onSignOut,
+              ),
+            ],
+          ),
+          Theme(
+            data: ButleryControlFocus.themeWithoutFocusTint(Theme.of(context)),
+            child: TabBar(
+              controller: controller,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerColor: Colors.transparent,
+              overlayColor: ButleryControlFocus.withoutFocusTint(null),
+              labelColor: cs.onPrimary,
+              unselectedLabelColor: AppModeColors.textDisabledOnInk(),
+              indicatorColor: context.modeColors.accentOnInk,
+              indicatorWeight: AppDimensions.borderWidthThick,
+              tabs: [for (final label in labels) ButleryTab(text: label)],
             ),
-          IconButton(
-            icon: ButleryIcon(ButleryIcons.logOut, color: cs.onPrimary),
-            tooltip: l10n.adminSignOut,
-            onPressed: onSignOut,
           ),
         ],
       ),

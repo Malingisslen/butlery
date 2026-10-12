@@ -182,8 +182,11 @@ void main() {
       await tester.pumpWidget(_app(const _TopBarHarness()));
       await tester.pumpAndSettle();
 
-      final rings = find.byType(ButleryFocusRing);
-      expect(rings, findsNWidgets(7));
+      final rings = find.descendant(
+        of: find.byType(TabBar),
+        matching: find.byType(ButleryFocusRing),
+      );
+      expect(rings, findsNWidgets(6));
 
       List<bool?> focused() => [
         for (final e in rings.evaluate())
@@ -192,15 +195,15 @@ void main() {
 
       expect(focused().where((f) => f == true), isEmpty);
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pumpAndSettle();
-      expect(focused().where((f) => f == true), hasLength(1));
-      expect(focused().first, isTrue);
-
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pumpAndSettle();
-      expect(focused()[1], isTrue);
-      expect(focused().first, isFalse);
+      final ringed = <int>{};
+      for (var i = 0; i < 8; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
+        expect(focused().where((f) => f == true).length, lessThanOrEqualTo(1));
+        final at = focused().indexOf(true);
+        if (at >= 0) ringed.add(at);
+      }
+      expect(ringed, {0, 1, 2, 3, 4, 5});
     });
 
     testWidgets('the bar draws no focus tint under the ring', (tester) async {

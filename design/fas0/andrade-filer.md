@@ -648,7 +648,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/14-notisval.png` | `5a65f408a3095a228ed5c9bc2019990a813649194c7fc5ac90fcb3afe12ec5df` |
 | `skiss-mot-app/15-epostverifiering.png` | `b73f2f78cbd708dbd145b7085d2ecc22af1f2cc7cecf209d377cbdca254087b4` |
 | `skiss-mot-app/16-juridik.png` | `53ec0bfa73a902de7b0bfe0532687d34a876f9a8e0a3bb8ac4f98a5369f8ba04` |
-| `skiss-mot-app/17-admin.png` | `75298ede9ab0711d464aa156b1657fa9baf45f7a36c3cbf8cebceb86b501083e` |
+| `skiss-mot-app/17-admin.png` | `2f42660bc5005bfc96e1dffc603c591233b0d7bf010118c2d0daf3fffe5fd7e0` |
 | `skiss-mot-app/19-medlemmar-grupp.png` | `c0ca0895eef4128122c7753c59824eca47d97cb6773dc78703b969bd82106d48` |
 | `skiss-mot-app/20-ko.png` | `0e751efdfc1ce9fa70dc88290f3c43b855276df64fcb7b5743a53aaa04a14531` |
 | `skiss-mot-app/21-veckomeny.png` | `9e1e5ac3f131ddaf77387b38df01c0529430a9308cbde68f975cc1f4b8599155` |
