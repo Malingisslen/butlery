@@ -84,6 +84,9 @@ class _NoEffects implements CookingSessionEffects {
   void lockLandscape() {}
 
   @override
+  void lockPortrait() {}
+
+  @override
   void releaseOrientation() {}
 
   @override

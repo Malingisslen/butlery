@@ -63,6 +63,7 @@ enum CookingModeExit { finished, editRecipe, saveCopy, toShoppingList }
 /// rules can be proven without platform channels.
 abstract class CookingSessionEffects {
   void lockLandscape();
+  void lockPortrait();
   void releaseOrientation();
   void keepScreenAwake({required bool on});
   void edgeToEdge();
@@ -78,6 +79,11 @@ class DefaultCookingSessionEffects implements CookingSessionEffects {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  @override
+  void lockPortrait() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
   @override
@@ -123,6 +129,21 @@ class CookingSessionLifecycle {
   bool _started = false;
   bool _active = false;
   bool _lockedOrientation = false;
+  bool _portrait = false;
+
+  /// Whether rotation is forced for this session, so the cook can flip it.
+  bool get canRotate => _lockedOrientation;
+
+  /// Flips between the forced landscape and an upright phone.
+  void toggleOrientation() {
+    if (!_lockedOrientation) return;
+    _portrait = !_portrait;
+    if (_portrait) {
+      effects.lockPortrait();
+    } else {
+      effects.lockLandscape();
+    }
+  }
 
   /// Starts the session once, for a screen of [screen] size.
   void start(Size screen) {
@@ -320,7 +341,9 @@ class _CookingModeViewState extends State<CookingModeView> {
           value: CookingTimerGate(_warnBeforeTimer),
         ),
       ],
-      child: const _CookingModeContent(),
+      child: _CookingModeContent(
+        onRotate: _lifecycle.canRotate ? _lifecycle.toggleOrientation : null,
+      ),
     );
   }
 }
@@ -497,7 +520,10 @@ class CookingNoStepsState extends StatelessWidget {
 }
 
 class _CookingModeContent extends StatelessWidget {
-  const _CookingModeContent();
+  const _CookingModeContent({this.onRotate});
+
+  /// Null when rotation is not forced, so there is nothing to flip.
+  final VoidCallback? onRotate;
 
   @override
   Widget build(BuildContext context) {
@@ -670,6 +696,18 @@ class _CookingModeContent extends StatelessWidget {
           ),
           _buildSpeakerToggle(context, voiceController),
           const SizedBox(width: AppDimensions.space4),
+          if (onRotate != null) ...[
+            _OutlinedBarButton(
+              onTap: onRotate!,
+              semanticLabel: context.l10n.a11yCookingModeRotate,
+              child: ButleryIcon(
+                ButleryIcons.smartphone,
+                color: cs.onPrimary,
+                size: AppDimensions.iconSizeM,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.space8),
+          ],
           // Outlined on the ink, as Skarmar v12 del 1 #lagastaende draws
           // them (B-49): the label is the NEXT action, so "A+" grows the text
           // and the last size says "A" for back to normal.
