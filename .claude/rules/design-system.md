@@ -42,3 +42,29 @@ BUT-2202). It is the source of truth; `design/NULAGE.md` says where it stands.
   `Skiss mot app:` (or `ej berörd` with a reason); Malin approves the image before merge.
 - **A decision that changes a view** updates the sketch or sets the row to `ersatt` /
   `avviker-beslutad`, and the decision log (`design/beslutslogg.md`) names the frames.
+
+## The top of a screen
+
+One rule per kind of view. A view does not pick its own bar, colour, title size or rule
+line; it picks the kind, and the shared component draws it (`ButleryPage`,
+`ButleryTopBar`). Decided by Malin 2026-10-11/12: Hem has no bar, every subpage has the
+light bar (B-56), the tab bar shows on every page reached from a tab (B-54).
+
+| Kind of view | Top | Carried by |
+|---|---|---|
+| Hem | No bar. Only the heading "Dina recept · N" in the page. | page heading, never a bar |
+| Main tab (Meny, Inköp, Mer) | Root bar: paper, 26/700 title, optional second line, at most two actions, tabs directly under as underlined text tabs | `ButleryPage.rot` |
+| Subpage (anything reached from a tab) | Light bar: back arrow named "Tillbaka till X", 14/700 title, at most two actions, then the saffron dash with a hairline, close under the title (drawn by the bar, `accentRule`) | `ButleryPage.undersida` |
+| Form (recipe editor, family member, new group) | The subpage bar, no tab bar, Spara in the footer, never in the bar | `ButleryPage.undersida(showTabBar: false)` |
+| Selection mode | The same bar changes content, never height: "Avbryt" replaces the arrow, "N valda" replaces the title | `ButleryCancelSelectionButton` as the bar's `leading`; the selection bar is still built per view |
+| Media page (recipe with photo) | Arrow and actions as round buttons over the photo, title under it. Without a photo the same buttons sit bare on paper | `RecipeHeroButton` row |
+| Focus mode (cooking, onboarding, sign-in, guest) | No `ButleryTopBar`. Cooking keeps its ink band; onboarding and sign-in at most one text action on the right | the view's own focus surface |
+
+- A new view starts from this table. A bar that fits none of the rows is a question for
+  Malin, not a new variant.
+- The rule is on by default for every `ButleryTopBar.undersida`. A modal bar (the photo
+  viewer) or a main-tab bar built with `implyBack: false` passes `accentRule: false`.
+- `titleStyle`, `backgroundColor` and `foregroundColor` on `ButleryTopBar` are not for
+  views. A view that needs one has found a missing row.
+- `test/architecture/top_bar_choice_test.dart` lists the files that still construct
+  `ButleryTopBar` themselves. The list only shrinks: a new view uses `ButleryPage`.

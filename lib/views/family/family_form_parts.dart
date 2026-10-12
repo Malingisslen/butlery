@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// The small capitals above a field: "NAMN", "FÄRG".
 class FormFieldLabel extends StatelessWidget {
@@ -119,10 +120,7 @@ class FormCheckRow extends StatelessWidget {
               child: Row(
                 children: [
                   ExcludeSemantics(
-                    child: Checkbox(
-                      value: value,
-                      onChanged: (v) => onChanged(v ?? false),
-                    ),
+                    child: ButleryCheckbox(value: value, onChanged: onChanged),
                   ),
                   const SizedBox(width: AppDimensions.space4),
                   Expanded(

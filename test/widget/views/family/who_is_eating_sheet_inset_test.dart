@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -92,7 +93,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    final checkBoxes = find.byType(Checkbox);
+    final checkBoxes = find.byType(ButleryCheckbox);
     expect(
       checkBoxes.evaluate().length,
       greaterThanOrEqualTo(2),

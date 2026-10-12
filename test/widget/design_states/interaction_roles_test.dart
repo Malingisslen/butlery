@@ -305,8 +305,7 @@ final _controls = <String, _Control>{
   'checkbox': _Control(
     build: ({required enabled}) => _stateful<bool>(
       false,
-      (value, set) =>
-          DebouncedCheckbox(value: value, onChanged: (v) => set(v ?? false)),
+      (value, set) => DebouncedCheckbox(value: value, onChanged: set),
     ),
     target: () => find.byType(Checkbox),
     box: () => find.byType(ButleryControlFocus).first,

@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// "Välkommen till Butlery" (BUT-916 mockup screen 2): the name the account
 /// will show, prefilled from Google or Apple, and the terms. AuthWrapper
@@ -138,15 +139,10 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                     children: [
                       // The words beside the box are its screen-reader stop.
                       ExcludeSemantics(
-                        child: SizedBox.square(
-                          dimension: AppDimensions.minTouchTarget,
-                          child: Checkbox(
-                            key: const ValueKey('providerTerms.accept'),
-                            value: vm.termsAccepted,
-                            onChanged: vm.isLoading
-                                ? null
-                                : (v) => vm.setTermsAccepted(v ?? false),
-                          ),
+                        child: ButleryCheckbox(
+                          key: const ValueKey('providerTerms.accept'),
+                          value: vm.termsAccepted,
+                          onChanged: vm.isLoading ? null : vm.setTermsAccepted,
                         ),
                       ),
                       const SizedBox(width: AppDimensions.space8),

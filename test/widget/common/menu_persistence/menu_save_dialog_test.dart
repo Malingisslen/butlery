@@ -26,6 +26,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 class _FakeMenuViewModel extends Mock implements MenuViewModel {}
 
@@ -157,7 +158,7 @@ void main() {
     );
 
     testWidgets(
-      'non-empty availableFriends renders one CheckboxListTile per friend',
+      'non-empty availableFriends renders one ButleryCheckboxTile per friend',
       (tester) async {
         _useLargeSurface(tester);
         final vm = _vm();
@@ -173,7 +174,7 @@ void main() {
         await tester.tap(find.byType(Switch));
         await tester.pumpAndSettle();
 
-        expect(find.byType(CheckboxListTile), findsNWidgets(2));
+        expect(find.byType(ButleryCheckboxTile), findsNWidgets(2));
         expect(find.text('Anna'), findsOneWidget);
         expect(find.text('Bertil'), findsOneWidget);
       },

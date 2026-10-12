@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// "Lägg till recept": tick several recipes that are not in the book yet.
 Future<void> showAddRecipesSheet(
@@ -93,13 +94,13 @@ class _CookbookRecipePickerSheetState extends State<CookbookRecipePickerSheet> {
                   shrinkWrap: true,
                   children: [
                     for (final r in candidates)
-                      CheckboxListTile(
+                      ButleryCheckboxTile(
                         value: _ticked.contains(r.id),
                         title: Text(r.title),
                         onChanged: _busy
                             ? null
                             : (on) => setState(
-                                () => on == true
+                                () => on
                                     ? _ticked.add(r.id)
                                     : _ticked.remove(r.id),
                               ),

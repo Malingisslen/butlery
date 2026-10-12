@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -664,7 +665,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(CheckboxListTile), findsOneWidget);
+        expect(find.byType(ButleryCheckboxTile), findsOneWidget);
         expect(find.text('Godkann villkor'), findsOneWidget);
       });
 
@@ -679,7 +680,7 @@ void main() {
                   value: value,
                   title: 'Godkann villkor',
                   onChanged: (newValue) {
-                    setState(() => value = newValue ?? false);
+                    setState(() => value = newValue);
                   },
                 );
               },

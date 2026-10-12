@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -122,7 +121,10 @@ void main() {
             body: SizedBox(),
           ),
         );
-        expect(find.byType(PageRule), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('butleryTopBar.accentRule')),
+          findsOneWidget,
+        );
 
         await pushPage(
           tester,
@@ -132,9 +134,23 @@ void main() {
             body: SizedBox(),
           ),
         );
-        expect(find.byType(PageRule), findsNothing);
+        expect(
+          find.byKey(const ValueKey('butleryTopBar.accentRule')),
+          findsNothing,
+        );
       },
     );
+
+    testWidgets('a root page draws no rule under its bar', (tester) async {
+      await pushPage(
+        tester,
+        const ButleryPage.rot(title: 'Rot', body: SizedBox()),
+      );
+      expect(
+        find.byKey(const ValueKey('butleryTopBar.accentRule')),
+        findsNothing,
+      );
+    });
 
     testWidgets('undersida without backTo keeps the plain Back name', (
       tester,

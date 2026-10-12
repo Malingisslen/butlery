@@ -30,7 +30,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
@@ -207,8 +206,12 @@ void main() {
     // Self-check: the toggle must have registered, else downstream side-effect
     // assertions would silently test an unselected state.
     expect(
-      find.descendant(of: row, matching: find.byType(ButleryIcon)),
-      findsOneWidget,
+      tester
+          .widget<Checkbox>(
+            find.descendant(of: row, matching: find.byType(Checkbox)),
+          )
+          .value,
+      isTrue,
       reason: 'Tapping "$uid" did not register as a friend selection',
     );
   }
@@ -432,11 +435,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.descendant(
-          of: find.byKey(const ValueKey('createSharedList.friend.friend_anna')),
-          matching: find.byType(ButleryIcon),
-        ),
-        findsNothing,
+        tester
+            .widget<Checkbox>(
+              find.descendant(
+                of: find.byKey(
+                  const ValueKey('createSharedList.friend.friend_anna'),
+                ),
+                matching: find.byType(Checkbox),
+              ),
+            )
+            .value,
+        isFalse,
       );
     });
 

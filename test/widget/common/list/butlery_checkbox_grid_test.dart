@@ -6,7 +6,6 @@ import 'dart:ui' show CheckedState;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_checkbox_grid.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -29,16 +28,24 @@ void main() {
   testWidgets('only the chosen word carries a tick', (tester) async {
     await pump(tester);
 
-    expect(find.byIcon(ButleryIcons.check), findsOneWidget);
+    bool ticked(Finder within) => tester
+        .widgetList<Checkbox>(
+          find.descendant(of: within, matching: find.byType(Checkbox)),
+        )
+        .single
+        .value!;
+
     expect(
-      find.descendant(
-        of: find.ancestor(
-          of: find.text('Mjölk'),
-          matching: find.byType(InkWell),
-        ),
-        matching: find.byIcon(ButleryIcons.check),
+      tester
+          .widgetList<Checkbox>(find.byType(Checkbox))
+          .where((box) => box.value == true),
+      hasLength(1),
+    );
+    expect(
+      ticked(
+        find.ancestor(of: find.text('Mjölk'), matching: find.byType(InkWell)),
       ),
-      findsOneWidget,
+      isTrue,
     );
   });
 

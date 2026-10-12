@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// One recipe in the friend and group sharing dialogs: tap or tick to
 /// select it; a recipe already shared shows the success badge.
@@ -27,7 +28,6 @@ class RecipeShareListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
@@ -75,13 +75,9 @@ class RecipeShareListItem extends StatelessWidget {
         ],
       ),
       subtitle: _buildSubtitle(context),
-      trailing: Checkbox(
+      trailing: ButleryCheckbox(
         value: isSelected,
-        onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor: isAlreadyShared ? cs.onSurfaceVariant : cs.primary,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
+        onChanged: onSelectionChanged,
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );

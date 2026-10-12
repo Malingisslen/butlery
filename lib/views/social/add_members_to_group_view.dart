@@ -34,6 +34,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// A view for adding new members to an existing social group.
 /// Provides an interface for group administrators to discover and invite
@@ -353,12 +354,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     }
 
     // Visa selection checkbox
-    return Checkbox(
+    return ButleryCheckbox(
       value: isSelected,
-      onChanged: (value) {
-        viewModel.toggleFriendSelection(friend.uid);
-      },
-      activeColor: Theme.of(context).colorScheme.primary,
+      onChanged: (_) => viewModel.toggleFriendSelection(friend.uid),
     );
   }
 

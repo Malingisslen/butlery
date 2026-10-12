@@ -14,6 +14,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
 /// This dialog allows users to save their generated menus with custom names,
@@ -229,15 +230,15 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                     final friendName = friend.displayName;
                     final isSelected = _selectedFriendIds.contains(friendId);
 
-                    return CheckboxListTile(
+                    return ButleryCheckboxTile(
                       title: Text(friendName),
                       value: isSelected,
                       onChanged: _isLoading
                           ? null
-                          : (bool? selected) {
+                          : (bool selected) {
                               if (mounted) {
                                 setState(() {
-                                  if (selected == true) {
+                                  if (selected) {
                                     _selectedFriendIds.add(friendId);
                                   } else {
                                     _selectedFriendIds.remove(friendId);

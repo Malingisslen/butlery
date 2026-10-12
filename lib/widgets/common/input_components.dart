@@ -50,14 +50,12 @@ class InputComponents {
   /// Creates a debounced checkbox to prevent spam interactions.
   static Widget debouncedCheckbox({
     required bool value,
-    required ValueChanged<bool?>? onChanged,
-    Color? activeColor,
+    required ValueChanged<bool>? onChanged,
     Duration debounceDuration = DebouncedCheckbox.defaultDebounce,
   }) {
     return DebouncedCheckbox(
       value: value,
       onChanged: onChanged,
-      activeColor: activeColor,
       debounceDuration: debounceDuration,
     );
   }

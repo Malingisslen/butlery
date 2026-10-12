@@ -9,8 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ButleryCheckboxGrid extends StatelessWidget {
@@ -91,24 +90,7 @@ class _Cell extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: AppDimensions.iconSizeL,
-                      height: AppDimensions.iconSizeL,
-                      decoration: BoxDecoration(
-                        color: selected ? cs.onSurface : null,
-                        border: Border.all(color: cs.outline),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusControl / 2,
-                        ),
-                      ),
-                      child: selected
-                          ? ButleryIcon(
-                              ButleryIcons.check,
-                              size: AppDimensions.iconSize18,
-                              color: cs.surface,
-                            )
-                          : null,
-                    ),
+                    ButleryCheckboxMark(checked: selected),
                     const SizedBox(width: AppDimensions.space12),
                     Expanded(
                       child: Padding(

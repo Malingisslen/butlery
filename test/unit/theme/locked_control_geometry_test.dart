@@ -5,8 +5,8 @@
 // tests measure what the theme can lock and keep it from drifting.
 //
 // Not measured here, because Flutter's Material controls hard-code them and
-// no ThemeData field reaches them: the checkbox's 24 px box (Flutter draws
-// 18), the radio's 19 px (Flutter 20 with a 2 px ring), and the toggle's
+// no ThemeData field reaches them: the radio's 19 px (Flutter 20 with a 2 px
+// ring), and the toggle's
 // 34 × 20 track with a 16 px knob (Material 3 draws 52 × 32). Those need
 // Butlery's own controls; see the track report.
 

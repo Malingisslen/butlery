@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/semantics_announcement.dart';
@@ -30,7 +31,7 @@ void main() {
       ),
     );
 
-    final row = find.widgetWithText(CheckboxListTile, 'Anna Lindgren');
+    final row = find.widgetWithText(ButleryCheckboxTile, 'Anna Lindgren');
     final lines = announcedLines(tester, row);
     expect(lines.where((l) => l.contains('Anna Lindgren')), hasLength(1));
     expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
@@ -69,18 +70,18 @@ void main() {
       await tester.enterText(find.byType(TextField), 'bert');
       await tester.pump();
       expect(
-        find.widgetWithText(CheckboxListTile, 'Anna Lindgren'),
+        find.widgetWithText(ButleryCheckboxTile, 'Anna Lindgren'),
         findsNothing,
       );
       expect(
-        find.widgetWithText(CheckboxListTile, 'Bertil Ek'),
+        find.widgetWithText(ButleryCheckboxTile, 'Bertil Ek'),
         findsOneWidget,
       );
 
       await tester.tap(find.byIcon(ButleryIcons.x));
       await tester.pump();
       expect(
-        find.widgetWithText(CheckboxListTile, 'Anna Lindgren'),
+        find.widgetWithText(ButleryCheckboxTile, 'Anna Lindgren'),
         findsOneWidget,
       );
     },
