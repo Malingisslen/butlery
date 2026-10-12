@@ -5862,6 +5862,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get groupAlreadyMember => 'Already a member';
+
+  @override
   String get groupAllFriendsAlreadyMembers =>
       'All your friends are already members of this group, or you have already sent invitations to them.';
 
@@ -9162,6 +9165,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminNotAuthorized => 'You do not have access to the admin panel.';
+
+  @override
+  String get adminBarTitle => 'Butlery Admin';
+
+  @override
+  String adminBarSignedIn(String email) {
+    return 'Signed in as $email';
+  }
 
   @override
   String get adminSignOut => 'Log out';

@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `f15c433fab4177fd2821ba8cd490362591289c2f650d0cdeea0c9a4224c136c4` |
+| `screen-register.json` | `6eb498f137664825ff2ead0f3e32b650a12c4ff88b73846cb590ca644c06ae9c` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -648,8 +648,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/14-notisval.png` | `5a65f408a3095a228ed5c9bc2019990a813649194c7fc5ac90fcb3afe12ec5df` |
 | `skiss-mot-app/15-epostverifiering.png` | `b73f2f78cbd708dbd145b7085d2ecc22af1f2cc7cecf209d377cbdca254087b4` |
 | `skiss-mot-app/16-juridik.png` | `53ec0bfa73a902de7b0bfe0532687d34a876f9a8e0a3bb8ac4f98a5369f8ba04` |
-| `skiss-mot-app/17-admin.png` | `3f06548804db301d4adfd55671a7b0f89c3feec6bbd0936a37951ab735e85c64` |
-| `skiss-mot-app/19-medlemmar-grupp.png` | `1f2f914d687e5fda7b4eac3b46553d8194987a55b60b85220d2fec03ef670789` |
+| `skiss-mot-app/17-admin.png` | `2f42660bc5005bfc96e1dffc603c591233b0d7bf010118c2d0daf3fffe5fd7e0` |
+| `skiss-mot-app/19-medlemmar-grupp.png` | `c0ca0895eef4128122c7753c59824eca47d97cb6773dc78703b969bd82106d48` |
 | `skiss-mot-app/20-ko.png` | `0e751efdfc1ce9fa70dc88290f3c43b855276df64fcb7b5743a53aaa04a14531` |
 | `skiss-mot-app/21-veckomeny.png` | `9e1e5ac3f131ddaf77387b38df01c0529430a9308cbde68f975cc1f4b8599155` |
 | `skiss-mot-app/22-receptdetalj.png` | `da6dfeabba703820c6328276eb59a0764dfd505eca887c7dc1727d6f0d763f83` |

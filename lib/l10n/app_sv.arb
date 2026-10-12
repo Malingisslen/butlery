@@ -3981,6 +3981,10 @@
       }
     }
   },
+  "groupAlreadyMember": "Redan medlem",
+  "@groupAlreadyMember": {
+    "description": "Row label for a friend who already belongs to the group"
+  },
   "groupAllFriendsAlreadyMembers": "Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.",
   "groupSharedContentLoadFailed": "Det delade innehållet kunde inte hämtas.",
   "@groupSharedContentLoadFailed": {
@@ -6339,6 +6343,13 @@
   "adminPasswordLabel": "Lösenord",
   "adminLoginFailed": "Inloggning misslyckades",
   "adminNotAuthorized": "Du har inte behörighet till adminpanelen.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Inloggad som {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Logga ut",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "Ingen feedback än",
