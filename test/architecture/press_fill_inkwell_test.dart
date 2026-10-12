@@ -12,11 +12,8 @@ final _fab = RegExp(r'(?<![\w.])FloatingActionButton(\.\w+)?\(');
 
 /// InkWells per file that carry no fill of their own.
 const _waiting = <String, int>{
-  // Rests on surface.raised: the theme's default fill is the step on raised.
-  'lib/views/admin/feedback_inbox_view.dart': 1,
   'lib/views/social/friend_requests/friend_request_card.dart': 2,
   'lib/views/social/public_profile_view.dart': 1,
-  'lib/views/unified_shopping/widgets/shopping_item_tiles.dart': 1,
   'lib/widgets/common/cards/selection_card.dart': 1,
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
   'lib/widgets/common/friends/category_display_widgets.dart': 2,

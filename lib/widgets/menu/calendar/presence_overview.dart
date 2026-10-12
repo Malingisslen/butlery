@@ -285,7 +285,7 @@ class _AwayFaces extends StatelessWidget {
                     color: parseAvatarColor(context, shown[i].avatarColor),
                     size: _face,
                     initials: initials[i],
-                    circular: true,
+                    round: true,
                   ),
                 ),
               ),

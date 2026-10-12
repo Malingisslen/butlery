@@ -43,9 +43,9 @@ class FamilyAvatar extends StatelessWidget {
   final double size;
   final String? initials;
 
-  /// A round face, as the week menu draws who is home. The square one stays
-  /// the family pages' own (Mer del 2).
-  final bool circular;
+  /// A circle instead of the square, as the household and member lists are
+  /// drawn (Skärmar v12 #familj, #medlemmar).
+  final bool round;
 
   const FamilyAvatar({
     super.key,
@@ -53,7 +53,7 @@ class FamilyAvatar extends StatelessWidget {
     required this.color,
     this.size = 42,
     this.initials,
-    this.circular = false,
+    this.round = false,
   });
 
   @override
@@ -62,15 +62,14 @@ class FamilyAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: circular ? BoxShape.circle : BoxShape.rectangle,
-      ),
+      decoration: round
+          ? BoxDecoration(color: color, shape: BoxShape.circle)
+          : BoxDecoration(color: color),
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
         // A small face keeps its letters inside the circle.
-        style: circular && size < 32
+        style: round && size < 32
             ? style.copyWith(fontSize: size * 0.42)
             : style,
       ),
@@ -178,6 +177,7 @@ class FamilyAccountRow extends StatelessWidget {
       container: true,
       child: _FamilyRowContent(
         avatar: FamilyAvatar(
+          round: true,
           name: member.displayName,
           color: parseAvatarColor(context, member.avatarColor),
           size: _avatarSize,
@@ -222,6 +222,7 @@ class FamilyMemberRow extends StatelessWidget {
           onTap: onTap,
           child: _FamilyRowContent(
             avatar: FamilyAvatar(
+              round: true,
               name: profile.name,
               color: parseAvatarColor(context, profile.avatarColor),
               size: _avatarSize,

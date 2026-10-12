@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// One decision: what it was about, what was decided and why, and the appeal
 /// (offer, own text, or the final answer). Reporter and owner share this view.
@@ -79,6 +80,7 @@ class _Content extends StatelessWidget {
       title: owner
           ? l10n.decisionDetailOwnerTitle
           : l10n.decisionDetailReporterTitle,
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: _body(context, vm),
     );
   }

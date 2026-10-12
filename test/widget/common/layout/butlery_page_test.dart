@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -71,6 +73,66 @@ void main() {
       expect(bar.pattern, ButleryTopBarPattern.undersida);
       expect(find.text('Aviseringar'), findsOneWidget);
       expect(find.byTooltip('Tillbaka till Mer'), findsOneWidget);
+    });
+
+    testWidgets('undersida keeps the tab bar unless a focus mode opts out', (
+      tester,
+    ) async {
+      await pushPage(
+        tester,
+        const ButleryPage.undersida(title: 'Sida', body: SizedBox()),
+      );
+      expect(find.byType(ButleryBottomNavigation), findsOneWidget);
+
+      await pushPage(
+        tester,
+        const ButleryPage.undersida(
+          title: 'Fokus',
+          showTabBar: false,
+          body: SizedBox(),
+        ),
+      );
+      expect(find.byType(ButleryBottomNavigation), findsNothing);
+    });
+
+    testWidgets('a given bottomNavigationBar takes the tab bar place', (
+      tester,
+    ) async {
+      await pushPage(
+        tester,
+        const ButleryPage.undersida(
+          title: 'Formulär',
+          bottomNavigationBar: SizedBox(key: ValueKey('footer'), height: 20),
+          body: SizedBox(),
+        ),
+      );
+      expect(find.byKey(const ValueKey('footer')), findsOneWidget);
+      expect(find.byType(ButleryBottomNavigation), findsNothing);
+    });
+
+    testWidgets('lightBar draws the rule under the bar unless told not to', (
+      tester,
+    ) async {
+      await pushPage(
+        tester,
+        const ButleryPage.undersida(
+          title: 'Ljus',
+          lightBar: true,
+          body: SizedBox(),
+        ),
+      );
+      expect(find.byType(PageRule), findsOneWidget);
+
+      await pushPage(
+        tester,
+        const ButleryPage.undersida(
+          title: 'Ljus',
+          lightBar: true,
+          ruleUnderBar: false,
+          body: SizedBox(),
+        ),
+      );
+      expect(find.byType(PageRule), findsNothing);
     });
 
     testWidgets('undersida without backTo keeps the plain Back name', (

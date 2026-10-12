@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// View listing recipes shared with the current user by one specific friend.
 class SharedRecipesByFriendView extends StatefulWidget {
@@ -79,6 +80,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: ButleryTopBar.undersida(
         title: context.l10n.sharedRecipesByFriendTitle(friendDisplayName),
         backTo: friendDisplayName,

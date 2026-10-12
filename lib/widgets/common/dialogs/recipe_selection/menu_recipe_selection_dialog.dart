@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -96,8 +96,10 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
     if (viewModel.recipes.isEmpty) {
       return StateWidget.noRecipes(
         onAction: () {
+          // The navigator outlives this dialog, so the sheet can open from it.
+          final navigatorContext = Navigator.of(context).context;
           Navigator.pop(context);
-          Navigator.pushNamed(context, Routes.addRecipe);
+          showButleryAddSheet(navigatorContext);
         },
       );
     }

@@ -40,7 +40,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 ///   data: viewModel.recipes,
 ///   builder: (context, recipes) => RecipeListView(recipes: recipes),
 ///   emptyState: EmptyStateVariant.noRecipes,
-///   onEmptyAction: () => Navigator.pushNamed(context, Routes.addRecipe),
 /// )
 /// // With custom loading message
 /// LoadingStateBuilder<MenuData>(

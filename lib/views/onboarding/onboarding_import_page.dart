@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -18,6 +19,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 class OnboardingImportPage extends StatelessWidget {
@@ -44,6 +47,7 @@ class _OnboardingImportContent extends StatefulWidget {
 
 class _OnboardingImportContentState extends State<_OnboardingImportContent> {
   final _urlController = TextEditingController();
+  bool _fromClipboard = false;
 
   @override
   void initState() {
@@ -55,6 +59,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
       if (!mounted) return;
       final url = viewModel.clipboardUrl;
       if (url != null) {
+        setState(() => _fromClipboard = true);
         _urlController.text = url;
         viewModel.updateInput(url);
       }
@@ -70,81 +75,94 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final viewModel = context.watch<SmartImportViewModel>();
+    final border = onboardingFieldBorder(cs);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.layoutMarginOf(context),
-      ),
+    return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppDimensions.space32),
-          Text(
-            context.l10n.onboardingImportTitle,
-            style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.onSurface,
-            ),
+          OnboardingIntro(
+            title: l10n.onboardingImportTitle,
+            description: l10n.onboardingImportDescription,
           ),
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            context.l10n.onboardingImportDescription,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space32),
+          const SizedBox(height: AppDimensions.space24),
 
           // Inline URL input
           LabeledField(
             child: TextField(
               controller: _urlController,
-              onChanged: viewModel.updateInput,
+              onChanged: (value) {
+                _fromClipboard = false;
+                viewModel.updateInput(value);
+              },
               decoration: InputDecoration(
-                hintText: context.l10n.onboardingImportUrlTitle,
+                hintText: l10n.onboardingImportUrlTitle,
                 prefixIcon: const ButleryIcon(ButleryIcons.link),
                 suffixIcon: IconButton(
-                  icon: const ButleryIcon(ButleryIcons.clipboard),
-                  tooltip: context.l10n.commonPaste,
+                  icon: const ButleryIcon(ButleryIcons.copy),
+                  tooltip: l10n.commonPaste,
                   onPressed: () => _pasteFromClipboard(viewModel),
                 ),
+                border: border,
+                enabledBorder: border,
+                focusedBorder: border,
               ),
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.go,
               onSubmitted: (_) => _handleImport(viewModel),
             ),
           ),
+          if (_fromClipboard) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Row(
+              children: [
+                ButleryIcon(
+                  ButleryIcons.info,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: AppDimensions.space8),
+                Expanded(
+                  child: Text(
+                    l10n.onboardingImportFromClipboard,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: AppDimensions.space16),
 
-          // Import button
           // Importing says what it does and draws the plate line along the
           // button's bottom edge, never a spinner (Komponentark v1:365,
-          // :372). The page's saffron action is "Klar" in the guide's own
-          // row (Skarmar v12 del 3 'Onboarding — import'), so this stays ink.
+          // :372). The step's one filled action is "Klar" in the nav row.
           BusyButtonSemantics(
             busy: viewModel.isImporting,
-            name: context.l10n.importRecipeTitle,
+            name: l10n.importRecipeTitle,
             busyLabel: viewModel.progressMessage,
-            child: SizedBox(
-              width: double.infinity,
-              child: viewModel.isImporting
-                  ? FilledButton(
-                      onPressed: PlateLineButton.ignore,
-                      style: PlateLineButton.busyStyle(
-                        null,
-                        Theme.of(context).filledButtonTheme.style,
-                      ),
-                      child: Text(viewModel.progressMessage),
-                    )
-                  : FilledButton.icon(
-                      onPressed: viewModel.canImport
-                          ? () => _handleImport(viewModel)
-                          : null,
-                      icon: const ButleryIcon(ButleryIcons.download),
-                      label: Text(context.l10n.importRecipeTitle),
+            child: viewModel.isImporting
+                ? OutlinedButton(
+                    onPressed: PlateLineButton.ignore,
+                    style: PlateLineButton.busyStyle(
+                      _importButtonStyle(context),
+                      Theme.of(context).outlinedButtonTheme.style,
+                      onFill: false,
                     ),
-            ),
+                    child: Text(viewModel.progressMessage),
+                  )
+                : OutlinedButton.icon(
+                    onPressed: viewModel.canImport
+                        ? () => _handleImport(viewModel)
+                        : null,
+                    style: _importButtonStyle(context),
+                    icon: const ButleryIcon(ButleryIcons.download),
+                    label: Text(l10n.importRecipeTitle),
+                  ),
           ),
 
           // Success state
@@ -189,35 +207,48 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               child: TextButton.icon(
                 onPressed: () => _handleImport(viewModel),
                 icon: const ButleryIcon(ButleryIcons.refreshCw),
-                label: Text(context.l10n.commonRetry),
+                label: Text(l10n.commonRetry),
               ),
             ),
           ],
 
           const SizedBox(height: AppDimensions.space16),
 
-          // Alternative: photo import card (still navigates)
-          _ImportOptionCard(
-            icon: ButleryIcons.camera,
-            title: context.l10n.onboardingImportPhotoTitle,
-            description: context.l10n.onboardingImportPhotoDescription,
+          // Alternative: photo import (still navigates)
+          _PhotoRow(
+            title: l10n.onboardingImportPhotoTitle,
+            description: l10n.onboardingImportPhotoDescription,
             onTap: () {
               Navigator.of(context).pushNamed(Routes.photoImport);
             },
           ),
 
-          const Spacer(),
-          Center(
-            child: Text(
-              context.l10n.onboardingImportSkipNote,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
+          const SizedBox(height: AppDimensions.space16),
+          Text(
+            l10n.onboardingImportSkipNote(
+              onboardingCountKey(RecipeSeeds.allRecipes.length),
+              RecipeSeeds.allRecipes.length,
+            ),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: AppDimensions.space24),
         ],
+      ),
+    );
+  }
+
+  /// A square-cornered ink-edged button, the same as Tillbaka below it.
+  ButtonStyle _importButtonStyle(BuildContext context) {
+    final theme = Theme.of(context);
+    return (theme.outlinedButtonTheme.style ?? const ButtonStyle()).copyWith(
+      shape: const WidgetStatePropertyAll(RoundedRectangleBorder()),
+      minimumSize: const WidgetStatePropertyAll(
+        Size(0, AppDimensions.buttonHeight),
+      ),
+      side: WidgetStatePropertyAll(
+        BorderSide(color: theme.colorScheme.onSurface, width: 1.5),
       ),
     );
   }
@@ -225,6 +256,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
   Future<void> _pasteFromClipboard(SmartImportViewModel viewModel) async {
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     if (!mounted || clipboardData?.text == null) return;
+    setState(() => _fromClipboard = false);
     _urlController.text = clipboardData!.text!;
     viewModel.updateInput(clipboardData.text!);
   }
@@ -265,14 +297,12 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
   }
 }
 
-class _ImportOptionCard extends StatelessWidget {
-  final IconData icon;
+class _PhotoRow extends StatelessWidget {
   final String title;
   final String description;
   final VoidCallback onTap;
 
-  const _ImportOptionCard({
-    required this.icon,
+  const _PhotoRow({
     required this.title,
     required this.description,
     required this.onTap,
@@ -285,44 +315,51 @@ class _ImportOptionCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: title,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(color: cs.surface),
-                child: ButleryIcon(
-                  icon,
-                  size: AppDimensions.iconSizeL,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.space12,
+            ),
+            decoration: BoxDecoration(
+              border: Border.symmetric(
+                horizontal: BorderSide(color: cs.outlineVariant),
+              ),
+            ),
+            child: Row(
+              children: [
+                ButleryIcon(
+                  ButleryIcons.camera,
+                  size: AppDimensions.iconSizeM,
                   color: cs.onSurface,
                 ),
-              ),
-              const SizedBox(width: AppDimensions.space16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTextStyles.titleMedium),
-                    const SizedBox(height: AppDimensions.space4),
-                    Text(
-                      description,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
+                const SizedBox(width: AppDimensions.space16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: cs.onSurface,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        description,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const ButleryChevron(),
-            ],
+                const ButleryChevron(),
+              ],
+            ),
           ),
         ),
       ),

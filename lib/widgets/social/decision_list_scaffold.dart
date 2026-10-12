@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// The page shell shared by "Mina rapporter" and "Beslut om mitt innehåll":
 /// loading, error and empty states, otherwise one section of rows.
@@ -40,6 +41,7 @@ class DecisionListScaffold extends StatelessWidget {
     return BaseScaffold(
       title: title,
       backTo: backTo,
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: _body(context),
     );
   }

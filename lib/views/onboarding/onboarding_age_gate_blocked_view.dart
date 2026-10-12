@@ -8,9 +8,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/brand/butlery_cloche.dart';
+import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 
 class OnboardingAgeGateBlockedView extends StatefulWidget {
   const OnboardingAgeGateBlockedView({super.key});
@@ -28,25 +27,6 @@ class _OnboardingAgeGateBlockedViewState
     setState(() => _isSigningOut = true);
     await _signOutAndCleanup();
     if (mounted) setState(() => _isSigningOut = false);
-  }
-
-  /// BUT-946: a supportive, parent-mediated path. Shows an info dialog rather
-  /// than a real consent flow (that's the larger BUT-674) — it points the child
-  /// toward asking a parent to create their own account.
-  void _showParentInfo(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.onboardingAgeGateParentInfoTitle),
-        content: Text(ctx.l10n.onboardingAgeGateParentInfoBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.commonClose),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _signOutAndCleanup() async {
@@ -69,6 +49,7 @@ class _OnboardingAgeGateBlockedViewState
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -76,72 +57,69 @@ class _OnboardingAgeGateBlockedViewState
         backgroundColor: cs.surface,
         body: SafeArea(
           child: ButleryPageBody(
-            width: PageWidth.compact,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppDimensions.layoutMarginOf(context),
-                  vertical: AppDimensions.space16,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.lock,
-                      size: AppDimensions.iconSizeHero,
-                      color: cs.onSurface,
-                    ),
-                    const SizedBox(height: AppDimensions.space32),
-                    Text(
-                      context.l10n.onboardingAgeGateTooYoungTitle,
-                      style: AppTextStyles.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppDimensions.space16),
-                    Text(
-                      context.l10n.onboardingAgeGateTooYoungBody,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXxl),
-                    SizedBox(
-                      width: double.infinity,
-                      height: AppDimensions.buttonHeight,
-                      // Signing out keeps the name and draws the plate line
-                      // in the button's own text colour (Komponentark
-                      // v1:365, :372), never a spinner in its place.
-                      child: BusyButtonSemantics(
-                        busy: _isSigningOut,
-                        name: context.l10n.onboardingAgeGateSignOut,
-                        child: ElevatedButton(
-                          key: const Key('onboarding_age_gate_signout_button'),
-                          onPressed: _isSigningOut
-                              ? PlateLineButton.ignore
-                              : _handleSignOut,
-                          style: _isSigningOut
-                              ? PlateLineButton.busyStyle(
-                                  null,
-                                  Theme.of(context).elevatedButtonTheme.style,
-                                )
-                              : null,
-                          child: Text(context.l10n.onboardingAgeGateSignOut),
+            width: PageWidth.text,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppDimensions.layoutMarginOf(context),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // The same row the skip link has on the other steps, so the
+                  // mark stands where it does there.
+                  const SizedBox(height: AppDimensions.minTouchTarget),
+                  const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: ButleryClocheMark(),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  const OnboardingPlateRule(),
+                  const SizedBox(height: AppDimensions.space24),
+                  OnboardingIntro(
+                    title: l10n.onboardingAgeGateTooYoungTitle,
+                    description: l10n.onboardingAgeGateTooYoungBody,
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.space16),
+                    color: cs.surfaceContainerHighest,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.onboardingAgeGateParentTitle,
+                          style: AppTextStyles.bodyBold.copyWith(
+                            color: cs.onSurface,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          l10n.onboardingAgeGateParentBody,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppDimensions.space16),
-                    // BUT-946: a kinder, parent-mediated alternative to a bare
-                    // forced sign-out.
-                    TextButton(
-                      onPressed: () => _showParentInfo(context),
-                      child: Text(
-                        context.l10n.onboardingAgeGateParentOption,
-                        textAlign: TextAlign.center,
-                      ),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  Text(
+                    l10n.onboardingAgeGateNothingSaved,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onSurfaceVariant,
                     ),
-                  ],
-                ),
+                  ),
+                  const Spacer(),
+                  // Signing out keeps the name and draws the plate line
+                  // (Komponentark v1:365, :372), never a spinner in its place.
+                  OnboardingNavButtons(
+                    nextKey: const Key('onboarding_age_gate_signout_button'),
+                    nextLabel: l10n.onboardingAgeGateSignOut,
+                    onNext: _handleSignOut,
+                    busy: _isSigningOut,
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                ],
               ),
             ),
           ),

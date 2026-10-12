@@ -85,6 +85,7 @@ void main() {
     when(management.getAllFriends).thenReturn([
       testUserProfile(uid: 'u-anna', displayName: 'Anna Lindqvist'),
       testUserProfile(uid: 'u-cecilia', displayName: 'Cecilia Berg'),
+      testUserProfile(uid: 'u-per', displayName: 'Per Åberg'),
     ]);
     when(invitations.getSentInvitations).thenReturn(const []);
     TestServiceLocator.registerMock<UnifiedFriendsService>(service);
@@ -145,6 +146,22 @@ void main() {
       _nodeFor('Anna Lindqvist').getSemanticsData().flagsCollection.isSelected,
       Tristate.isFalse,
     );
+    handle.dispose();
+  });
+
+  testWidgets('a friend already in the group stays in the list as a row that '
+      'says so and cannot be picked', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpView(tester);
+
+    expect(find.text('Redan medlem'), findsOneWidget);
+    final data = _nodeFor('Per Åberg, Redan medlem').getSemanticsData();
+    expect(data.flagsCollection.isButton, isFalse);
+    expect(data.hasAction(SemanticsAction.tap), isFalse);
+
+    await tester.tap(find.text('Per Åberg'));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('addMembers.invite')), findsNothing);
     handle.dispose();
   });
 

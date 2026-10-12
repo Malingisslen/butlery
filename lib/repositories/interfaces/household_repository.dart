@@ -1,4 +1,5 @@
 import 'package:butlery/models/household.dart';
+import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/repositories/interfaces/repository.dart';
 
 /// Repository for the shared [Household] entity (top-level `households`
@@ -38,5 +39,14 @@ abstract class HouseholdRepository extends Repository<Household> {
     required String householdId,
     required String key,
     required int? foodId,
+  });
+
+  /// Saves the household's own amount for [key] (an ingredient key, or
+  /// `NutritionAmountChoice.recipeKey` for one recipe), or clears it when
+  /// [choice] is null. Allowed for an admin or edit member.
+  Future<void> setNutritionAmountChoice({
+    required String householdId,
+    required String key,
+    required NutritionAmountChoice? choice,
   });
 }

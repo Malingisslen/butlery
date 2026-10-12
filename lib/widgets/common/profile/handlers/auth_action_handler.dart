@@ -30,14 +30,15 @@ class AuthActionHandler {
     BuildContext context, {
     void Function(String error)? onError,
     bool forDeletion = false,
+    SignInProvider? through,
   }) async {
     final authService = ServiceLocator.get<AuthService>();
     // A challenge left from an earlier attempt must not be taken for this
     // one's.
     authService.clearPendingMfa();
-    final provider = authService.reauthenticationProvider(
-      forDeletion: forDeletion,
-    );
+    final provider =
+        through ??
+        authService.reauthenticationProvider(forDeletion: forDeletion);
     var success = false;
     if (provider == null) {
       final password = await ProfileDialogs.showPasswordDialog(context);

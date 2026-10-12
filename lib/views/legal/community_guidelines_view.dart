@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/legal/legal_contact_footer.dart';
+import 'package:butlery/widgets/legal/legal_document.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -111,24 +110,6 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
 
     if (_content == null) return const SizedBox.shrink();
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.layoutMarginOf(context),
-              vertical: AppDimensions.space16,
-            ),
-            child: SelectableText(
-              _content!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                height: 1.6,
-              ),
-            ),
-          ),
-        ),
-        const LegalContactFooter(),
-      ],
-    );
+    return LegalDocument(content: _content!);
   }
 }

@@ -138,7 +138,7 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     _cachedUser = credential.user ?? _firebaseAuth.currentUser;
     _ignoreInitialNull = false;
-    AppLogger.success('Guest account linked to e-mail', 'AuthRepository');
+    AppLogger.success('E-mail and password linked', 'AuthRepository');
     return credential;
   }
 
@@ -319,6 +319,45 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = _firebaseAuth.currentUser;
     if (user == null) throw Exception('No authenticated user');
     await user.linkWithCredential(credential);
+    _cachedUser = _firebaseAuth.currentUser;
+  }
+
+  @override
+  String? providerEmail(String providerId) {
+    final infos = _firebaseAuth.currentUser?.providerData ?? const [];
+    for (final info in infos) {
+      if (info.providerId == providerId) return info.email;
+    }
+    return null;
+  }
+
+  @override
+  String? providerDisplayName(String providerId) {
+    final infos = _firebaseAuth.currentUser?.providerData ?? const [];
+    for (final info in infos) {
+      if (info.providerId == providerId) return info.displayName;
+    }
+    return null;
+  }
+
+  @override
+  Future<void> linkWithProviderFlow(SignInProvider provider) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    final authProvider = _firebaseProvider(provider);
+    if (kIsWeb) {
+      await user.linkWithPopup(authProvider);
+    } else {
+      await user.linkWithProvider(authProvider);
+    }
+    _cachedUser = _firebaseAuth.currentUser;
+  }
+
+  @override
+  Future<void> unlinkProvider(String providerId) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    await user.unlink(providerId);
     _cachedUser = _firebaseAuth.currentUser;
   }
 

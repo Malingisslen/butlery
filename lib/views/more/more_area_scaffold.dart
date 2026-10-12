@@ -15,6 +15,7 @@ class MoreAreaScaffold extends StatelessWidget {
   const MoreAreaScaffold({
     required this.title,
     required this.sections,
+    this.header,
     super.key,
   }) : _backTo = null,
        _onlyFromMore = true;
@@ -25,6 +26,7 @@ class MoreAreaScaffold extends StatelessWidget {
     String? backTo, {
     required this.title,
     required this.sections,
+    this.header,
     super.key,
   }) : _backTo = backTo,
        _onlyFromMore = false;
@@ -34,6 +36,10 @@ class MoreAreaScaffold extends StatelessWidget {
 
   final List<Widget> sections;
 
+  /// A band that runs the full width of the page above the sections, such
+  /// as Min samling's figures.
+  final Widget? header;
+
   final String? _backTo;
   final bool _onlyFromMore;
 
@@ -42,14 +48,27 @@ class MoreAreaScaffold extends StatelessWidget {
     return ButleryPage.undersida(
       title: title,
       backTo: _onlyFromMore ? context.l10n.moreTitle : _backTo,
-      showTabBar: true,
-      body: ListView(
-        padding: ButleryPageBody.margin(
-          context,
-          bottom: AppDimensions.space24,
-        ),
-        children: sections,
-      ),
+      body: header == null
+          ? ListView(
+              padding: ButleryPageBody.margin(
+                context,
+                bottom: AppDimensions.space24,
+              ),
+              children: sections,
+            )
+          : ListView(
+              padding: const EdgeInsets.only(bottom: AppDimensions.space24),
+              children: [
+                header!,
+                Padding(
+                  padding: ButleryPageBody.margin(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: sections,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

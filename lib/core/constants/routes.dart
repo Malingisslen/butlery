@@ -107,6 +107,8 @@ class Routes {
   static const String settingsNotifications = '/settings/notifications';
   static const String settingsAccountEmail = '/settings/account/email';
   static const String settingsAccountPassword = '/settings/account/password';
+  static const String settingsAccountSignInMethods =
+      '/settings/account/sign-in-methods';
   static const String settingsAccountTwoStep = '/settings/account/two-step';
   // The old Kontosäkerhet page, split into the three above; its link opens
   // Konto & säkerhet.
@@ -181,6 +183,7 @@ class Routes {
     settingsAccountSecurity,
     settingsAccountEmail,
     settingsAccountPassword,
+    settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
     settingsTrash,
@@ -237,6 +240,7 @@ class Routes {
     settingsAccountSecurity,
     settingsAccountEmail,
     settingsAccountPassword,
+    settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
     moderatorReview,
@@ -360,6 +364,7 @@ class Routes {
     settingsAccountSecurity,
     settingsAccountEmail,
     settingsAccountPassword,
+    settingsAccountSignInMethods,
     settingsAccountTwoStep,
     collectionStats,
     moderatorReview,

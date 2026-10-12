@@ -2,13 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 
 class OnboardingAllergenPage extends StatefulWidget {
   const OnboardingAllergenPage({super.key});
@@ -57,55 +58,56 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
 
     final allergens = _showAll ? _allAllergens : _primaryAllergens;
+    final moreCount = _allAllergens.length - _primaryAllergens.length;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.layoutMarginOf(context),
-      ),
+    Widget row(String key) => OnboardingCheckRow(
+      label: _allergenLabel(context, key),
+      checked: viewModel.isAllergenSelected(key),
+      semanticLabel: l10n.allergenToggleSemantics(_allergenLabel(context, key)),
+      onChanged: (_) => viewModel.toggleAllergen(key),
+    );
+
+    return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          OnboardingIntro(
+            title: l10n.onboardingAllergenTitle,
+            description: l10n.onboardingAllergenDescription,
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          for (var i = 0; i < allergens.length; i += 2)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: row(allergens[i])),
+                const SizedBox(width: AppDimensions.space24),
+                Expanded(
+                  child: i + 1 < allergens.length
+                      ? row(allergens[i + 1])
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          _ShowAllToggle(
+            label: _showAll
+                ? l10n.onboardingShowFewerAllergens
+                : l10n.onboardingShowAllAllergens(
+                    onboardingCountKey(moreCount),
+                    moreCount,
+                  ),
+            showAll: _showAll,
+            onToggle: () => setState(() => _showAll = !_showAll),
+          ),
           const SizedBox(height: AppDimensions.space16),
           Text(
-            context.l10n.onboardingAllergenTitle,
-            style: AppTextStyles.headlineMedium.copyWith(
-              color: cs.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            context.l10n.onboardingAllergenDescription,
+            l10n.onboardingAllergenNote,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space24),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 220,
-                crossAxisSpacing: AppDimensions.space8,
-                mainAxisSpacing: AppDimensions.space8,
-                childAspectRatio: 2.5,
-              ),
-              itemCount: allergens.length + 1, // +1 for toggle button
-              itemBuilder: (context, index) {
-                if (index == allergens.length) {
-                  return _ShowAllToggle(
-                    showAll: _showAll,
-                    onToggle: () => setState(() => _showAll = !_showAll),
-                  );
-                }
-                final key = allergens[index];
-                final isSelected = viewModel.isAllergenSelected(key);
-                return _AllergenToggleCard(
-                  label: _allergenLabel(context, key),
-                  isSelected: isSelected,
-                  onTap: () => viewModel.toggleAllergen(key),
-                );
-              },
+              height: 1.5,
             ),
           ),
         ],
@@ -115,10 +117,12 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
 }
 
 class _ShowAllToggle extends StatelessWidget {
+  final String label;
   final bool showAll;
   final VoidCallback onToggle;
 
   const _ShowAllToggle({
+    required this.label,
     required this.showAll,
     required this.onToggle,
   });
@@ -128,106 +132,39 @@ class _ShowAllToggle extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: showAll
-          ? context.l10n.onboardingShowFewerAllergens
-          : context.l10n.onboardingShowAllAllergens,
-      child: GestureDetector(
-        onTap: onToggle,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space12,
-            vertical: AppDimensions.space8,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ButleryIcon(
-                showAll ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
-                size: AppDimensions.iconSizeM,
-                color: cs.onSurface,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Flexible(
-                child: Text(
-                  showAll
-                      ? context.l10n.onboardingShowFewerAllergens
-                      : context.l10n.onboardingShowAllAllergens,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: cs.onSurface,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AllergenToggleCard extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _AllergenToggleCard({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Semantics(
-      button: true,
-      toggled: isSelected,
-      label: context.l10n.allergenToggleSemantics(label),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: AnimationUtils.getDuration(
-            context,
-            const Duration(milliseconds: 200),
-          ),
-          // Chosen is a real border, never a tint (Grafisk manual v6:209,
-          // "Vald = riktig border"; tokens.json:40-53). The fill stays
-          // surface.raised (surfaceContainerHighest), which is also
-          // surface.selected (tokens.json:108-119), and the border is
-          // text.primary: ink on light, paper on dark.
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            border: Border.all(
-              color: isSelected ? cs.onSurface : cs.outlineVariant,
-              width: isSelected ? 1.5 : 1,
+      expanded: showAll,
+      label: label,
+      excludeSemantics: true,
+      onTap: onToggle,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onToggle,
+          child: Container(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
             ),
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space12,
-            vertical: AppDimensions.space8,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-              if (isSelected)
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+            ),
+            child: Row(
+              children: [
                 ButleryIcon(
-                  ButleryIcons.check,
+                  showAll ? ButleryIcons.chevronUp : ButleryIcons.chevronDown,
                   size: AppDimensions.iconSizeM,
                   color: cs.onSurface,
                 ),
-            ],
+                const SizedBox(width: AppDimensions.space12),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

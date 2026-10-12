@@ -8,19 +8,20 @@
 // normal snackbar time. Under assistive navigation it stays until Stäng: the
 // action is a real focusable target (tillganglighetshandoff:172).
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/utils/snackbar_utils.dart'
     show InkSnackBarAction, SnackBarConfig;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 
+import '../../../infrastructure/factories/shopping_list_factory.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
-const _source = 'lib/views/unified_shopping/widgets/shopping_list_content.dart';
+class _MockVm extends Mock implements UnifiedShoppingViewModel {}
 
 Future<void> _showReceipt(
   WidgetTester tester,
@@ -125,28 +126,87 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  test('both move paths show this receipt once the move went through', () {
-    final source = File(_source).readAsStringSync();
+  group('moving through the row menu', () {
+    final milk = ShoppingListFactory.buildItem(
+      id: 'm1',
+      name: 'Mjölk',
+      category: ShoppingCategory.dairy,
+      addedAt: DateTime(2026, 10, 5, 9),
+    );
 
-    // Only the two move handlers are pinned, not the rest of the file.
-    String body(String name) {
-      final start = source.indexOf('Future<void> $name(');
-      expect(start, isNonNegative, reason: '$name is missing');
-      final end = source.indexOf(RegExp(r'\r?\n  \}\r?\n'), start);
-      return source.substring(start, end);
+    _MockVm vmWith({required bool moveSucceeds}) {
+      final vm = _MockVm();
+      final list = ShoppingListFactory.build(
+        id: 'list',
+        items: [milk],
+        createdAt: milk.addedAt,
+        updatedAt: milk.addedAt,
+      );
+      when(() => vm.isLoading).thenReturn(false);
+      when(() => vm.hasError).thenReturn(false);
+      when(() => vm.activeList).thenReturn(list);
+      when(() => vm.hasItems).thenReturn(true);
+      when(() => vm.items).thenReturn([milk]);
+      when(
+        () => vm.categoryOrder,
+      ).thenReturn(ShoppingCategory.defaultStoreOrder);
+      when(() => vm.boughtItems).thenReturn(0);
+      when(() => vm.canEditActiveList).thenReturn(true);
+      when(
+        () => vm.moveItemToCategory(any(), any()),
+      ).thenAnswer((_) async => moveSucceeds);
+      return vm;
     }
 
-    for (final handler in ['_handleItemDrop', '_showCategoryPicker']) {
-      expect(
-        body(handler),
-        matches(
-          RegExp(
-            r'if \(moved && (context\.)?mounted\) \{\s*'
-            r'ShoppingListContentWidget\.showCategoryMoveReceipt\(context, ',
+    Future<void> moveViaMenu(WidgetTester tester, _MockVm vm) async {
+      // Tall enough for the whole category list, so no row sits below the fold.
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: ShoppingListContentWidget(
+            viewModel: vm,
+            onItemTap: (_) {},
+            onEditItem: (_) {},
+            onDeleteItem: (_) {},
+            onCreateList: () {},
+            onAddItem: () {},
+            onClearCompleted: () {},
           ),
         ),
-        reason: handler,
       );
+      await tester.pump();
+      await tester.tap(find.byTooltip('Fler val för Mjölk'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Flytta till kategori'));
+      await tester.pumpAndSettle();
+      final target = find.text(
+        ShoppingCategory.displayName(ShoppingCategory.frozen),
+      );
+      await tester.tap(target);
+      await tester.pumpAndSettle();
     }
+
+    testWidgets('a move that went through shows the receipt', (tester) async {
+      final vm = vmWith(moveSucceeds: true);
+      await moveViaMenu(tester, vm);
+
+      verify(
+        () => vm.moveItemToCategory('m1', ShoppingCategory.frozen),
+      ).called(1);
+      final name = ShoppingCategory.displayName(ShoppingCategory.frozen);
+      expect(find.text('Flyttade till $name'), findsOneWidget);
+    });
+
+    testWidgets('a move that failed shows no receipt', (tester) async {
+      final vm = vmWith(moveSucceeds: false);
+      await moveViaMenu(tester, vm);
+
+      verify(
+        () => vm.moveItemToCategory('m1', ShoppingCategory.frozen),
+      ).called(1);
+      expect(find.textContaining('Flyttade till'), findsNothing);
+    });
   });
 }

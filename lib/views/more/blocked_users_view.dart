@@ -20,7 +20,6 @@ class BlockedUsersView extends StatelessWidget {
     return ButleryPage.undersida(
       title: l10n.settingsBlockedPeople,
       backTo: l10n.settingsPrivacyAreaTitle,
-      showTabBar: true,
       body: ListView(
         padding: ButleryPageBody.margin(
           context,

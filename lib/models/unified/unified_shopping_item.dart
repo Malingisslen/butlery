@@ -486,26 +486,20 @@ class UnifiedShoppingItem {
   /// - Without unit (quantity): "3 Bananer"
   /// - Single item: "Bröd" (when amount is 1.0 and no unit)
   String get displayText {
-    final amountStr = formattedAmount;
+    final quantity = quantityText;
+    return quantity.isEmpty ? name : '$quantity $name';
+  }
+
+  /// The amount and unit alone, for a row that sets the name first:
+  /// "1,5 l", "3", or empty when the name says it all ("Bröd").
+  String get quantityText {
     final unitStr = formattedUnit;
 
-    // If amount is 0, show only the name (for ingredients that already have quantity)
-    if (amount == 0.0) {
-      return name;
-    }
-
-    // If we have a unit, show: "1,5 l Mjölk" or "2 st Ägg"
-    if (unitStr.isNotEmpty) {
-      return '$amountStr $unitStr $name';
-    }
-
-    // If only amount without unit: "3 Bananer"
-    if (amount != 1.0) {
-      return '$amountStr $name';
-    }
-
-    // If amount is 1 without unit, show only the name: "Bröd"
-    return name;
+    // Amount 0 means the name already carries the quantity.
+    if (amount == 0.0) return '';
+    if (unitStr.isNotEmpty) return '$formattedAmount $unitStr';
+    if (amount != 1.0) return formattedAmount;
+    return '';
   }
 
   /// Gets the emoji representation for the item's priority level.

@@ -391,7 +391,7 @@ class _FaceStack extends StatelessWidget {
                     initials: initials[i],
                     color: parseAvatarColor(context, shown[i].avatarColor),
                     size: _face,
-                    circular: true,
+                    round: true,
                   ),
                 ),
               ),
@@ -452,7 +452,7 @@ class _DinerToggleRow extends StatelessWidget {
                     initials: initials,
                     color: parseAvatarColor(context, member.avatarColor),
                     size: 28,
-                    circular: true,
+                    round: true,
                   ),
                   const SizedBox(width: AppDimensions.space12),
                   Expanded(

@@ -38,6 +38,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/views/more/account_email_view.dart';
 import 'package:butlery/views/more/account_password_view.dart';
+import 'package:butlery/views/more/account_sign_in_methods_view.dart';
 import 'package:butlery/views/more/app_settings_view.dart';
 import 'package:butlery/views/more/help_area_view.dart';
 import 'package:butlery/views/more/blocked_users_view.dart';
@@ -48,7 +49,6 @@ import 'package:butlery/views/family/min_familj_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
-import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/views/quick_capture_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
@@ -111,8 +111,6 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 /// - **Messaging Routes**: Conversations, chat interfaces
 /// **Usage Examples:**
 /// ```dart
-/// // Navigate to a route
-/// AppRouter.navigateTo(context, Routes.addRecipe);
 /// // Navigate with arguments
 /// AppRouter.navigateTo(
 ///   context,
@@ -210,8 +208,9 @@ class AppRouter {
           );
 
         case Routes.addRecipe:
+          // Old links: adding is a sheet now, so land on the start tab.
           return _buildRoute(
-            const LaggTillReceptView(),
+            LayoutScaffolds.mainMenu(initialIndex: LayoutScaffolds.homeTab),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -434,6 +433,13 @@ class AppRouter {
         case Routes.settingsAccountPassword:
           return _buildRoute(
             const AccountPasswordView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAccountSignInMethods:
+          return _buildRoute(
+            const AccountSignInMethodsView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 import 'package:butlery/views/social/menu_preview/menu_preview_dishes.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -44,6 +45,7 @@ class MenuPreviewView extends StatelessWidget {
     timeago.setLocaleMessages('sv', timeago.SvMessages());
 
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       backgroundColor: Theme.of(context).colorScheme.surface,
       // The subpage bar as drawn (Skarmar v12 del 3 #menyforhands: back
       // arrow and "Delad meny" on ink; Komponentark v1 §01 pattern 2). The

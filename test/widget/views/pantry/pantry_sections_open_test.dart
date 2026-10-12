@@ -10,6 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_view.dart';
+import 'package:butlery/widgets/common/list/section_band.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/offline_banner_support.dart';
@@ -90,5 +91,33 @@ void main() {
     // Mjölk shows once, in the open expiring group, not again in the fridge.
     expect(find.text('Mjölk'), findsOneWidget);
     expect(find.text('Ärtor'), findsNothing);
+  });
+
+  testWidgets('tapping a group heading folds and opens its rows', (
+    tester,
+  ) async {
+    stock([peas, flour]);
+    await tester.pumpWidget(createLocalizedTestApp(child: const PantryView()));
+    await tester.pumpAndSettle();
+
+    // Freezer (open) then pantry (closed); the empty fridge draws no band.
+    final bands = find.byType(SectionBand);
+    expect(bands, findsNWidgets(2));
+    expect(find.text('Ärtor'), findsOneWidget);
+    expect(find.text('Vetemjöl'), findsNothing);
+
+    await tester.tap(bands.last);
+    await tester.pumpAndSettle();
+    expect(find.text('Vetemjöl'), findsOneWidget);
+    expect(find.text('Ärtor'), findsOneWidget);
+
+    await tester.tap(bands.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Ärtor'), findsNothing);
+    expect(find.text('Vetemjöl'), findsOneWidget);
+
+    await tester.tap(bands.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Ärtor'), findsOneWidget);
   });
 }

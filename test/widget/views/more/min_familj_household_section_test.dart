@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/views/family/family_member_form_view.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -132,12 +133,12 @@ void main() {
   testWidgets('the add row opens the new-member form', (tester) async {
     await pump(tester, hasHousehold: false);
 
-    expect(find.text(sv.familyProfilesSection.toUpperCase()), findsOneWidget);
-    final add = find.widgetWithText(ButleryListRow, sv.familyAddMemberRow);
+    expect(find.text(sv.familyProfilesSection), findsOneWidget);
+    final add = find.text(sv.familyAddMemberRow);
     await tester.ensureVisible(add);
     await tester.tap(add);
     await tester.pumpAndSettle();
 
-    expect(find.text(sv.familyAddMemberRow), findsNothing);
+    expect(find.byType(FamilyMemberFormView), findsOneWidget);
   });
 }

@@ -66,7 +66,7 @@ void main() {
     });
 
     test('/laggTill still opens the add view for old links', () {
-      expect(caseBody('addRecipe'), contains('LaggTillReceptView()'));
+      expect(caseBody('addRecipe'), contains('LayoutScaffolds.homeTab'));
     });
   });
 }

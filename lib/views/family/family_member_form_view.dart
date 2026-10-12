@@ -8,13 +8,13 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
+import 'package:butlery/views/family/family_form_parts.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:
@@ -152,66 +152,46 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     return ListenableBuilder(
       listenable: _vm,
       builder: (context, _) {
-        return Scaffold(
-          // A subpage of Min familj (Komponentark v1:71-78).
-          appBar: ButleryTopBar.undersida(
-            title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
-            backTo: l10n.familyTitle,
-          ),
+        return ButleryPage.undersida(
+          // A subpage of Mitt hushåll (Komponentark v1:71-78). A form is a
+          // focus mode, so the tab bar is not drawn (B-54).
+          title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
+          backTo: l10n.familyTitle,
+          showTabBar: false,
+          // Spara and Ta bort stand fixed at the foot, as the sketch draws.
+          bottomNavigationBar: _footer(context),
           // Top, not Center: a scroll view under loose constraints is only
           // as tall as a short form, and Center then pushed the form down
           // and left an empty band under the top bar (BUT-2261).
-          body: ButleryPageBody(
-            width: PageWidth.text,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.space16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  StyledInput(
-                    label: l10n.familyNameLabel,
-                    hint: l10n.familyNameHint,
-                    helperText: l10n.familyNameHint,
-                    controller: _name,
-                  ),
-                  const SizedBox(height: AppDimensions.space12),
-                  _colorPicker(context),
-                  const SizedBox(height: AppDimensions.space12),
-                  _ageBandPicker(context),
-                  const SizedBox(height: AppDimensions.space12),
-                  if (_isMinor) _guardianConsentCard(context),
-                  _allergenCard(context),
-                  _dislikesCard(context),
-                  if (_isEdit && widget.existing?.guardianConsent != null)
-                    _consentGivenInfo(context),
-                  const SizedBox(height: AppDimensions.space12),
-                  if (_vm.hasError) _errorBox(context),
-                  ActionButtons.primaryButton(
-                    context,
-                    label: l10n.commonSave,
-                    icon: ButleryIcons.save,
-                    isExpanded: true,
-                    isLoading: _vm.isLoading,
-                    onPressed: _canSave ? _save : null,
-                  ),
-                  if (_isEdit) ...[
-                    const SizedBox(height: AppDimensions.space8),
-                    TextButton.icon(
-                      onPressed: _delete,
-                      icon: const ButleryIcon(ButleryIcons.trash2),
-                      label: Text(l10n.familyDeleteMember),
-                      style: TextButton.styleFrom(
-                        foregroundColor: cs.error,
-                        minimumSize: const Size.fromHeight(48),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+          body: SingleChildScrollView(
+            padding: ButleryPageBody.margin(
+              context,
+              top: AppDimensions.space16,
+              bottom: AppDimensions.space16,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                StyledInput(
+                  label: l10n.familyNameLabel.toUpperCase(),
+                  hint: l10n.familyNameHint,
+                  controller: _name,
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                _colorPicker(context),
+                const SizedBox(height: AppDimensions.space16),
+                _ageBandPicker(context),
+                const SizedBox(height: AppDimensions.space16),
+                if (_isMinor) _guardianConsentSection(context),
+                _allergenSection(context),
+                _dislikesSection(context),
+                if (_isEdit && widget.existing?.guardianConsent != null)
+                  _consentGivenInfo(context),
+                if (_vm.hasError) _errorBox(context),
+              ],
             ),
           ),
         );
@@ -219,15 +199,43 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     );
   }
 
-  Widget _fieldLabel(BuildContext context, String text) => Padding(
-    padding: const EdgeInsets.only(bottom: AppDimensions.space4),
-    child: Text(
-      text.toUpperCase(),
-      style: AppTextStyles.labelSmall.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+  Widget _footer(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: Padding(
+        padding: ButleryPageBody.margin(
+          context,
+          top: AppDimensions.space8,
+          bottom: AppDimensions.space8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ActionButtons.primaryButton(
+              context,
+              label: l10n.commonSave,
+              isExpanded: true,
+              isLoading: _vm.isLoading,
+              onPressed: _canSave ? _save : null,
+            ),
+            if (_isEdit)
+              TextButton(
+                onPressed: _delete,
+                style: TextButton.styleFrom(
+                  foregroundColor: cs.error,
+                  minimumSize: const Size.fromHeight(
+                    AppDimensions.minTouchTarget,
+                  ),
+                ),
+                child: Text(l10n.familyDeleteMember),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _colorPicker(BuildContext context) {
     final l10n = context.l10n;
@@ -235,10 +243,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(context, l10n.familyColorLabel),
+        FormFieldLabel(l10n.familyColorLabel),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
           children: [
             for (final (index, hex) in _palette.indexed)
               Semantics(
@@ -247,16 +255,29 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                 label: l10n.a11yColorSwatch(index + 1),
                 child: GestureDetector(
                   onTap: () => setState(() => _color = hex),
+                  // The ring stands off the swatch, so the picked one reads
+                  // as picked without hiding its colour.
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: AppDimensions.minTouchTarget,
+                    height: AppDimensions.minTouchTarget,
+                    padding: const EdgeInsets.all(AppDimensions.space4),
                     decoration: BoxDecoration(
-                      color: parseAvatarColor(context, hex),
                       border: Border.all(
                         color: _color == hex
                             ? cs.onSurface
                             : Colors.transparent,
-                        width: 2,
+                        width: AppDimensions.borderWidthThick,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusControl,
+                      ),
+                    ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: parseAvatarColor(context, hex),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.space8,
+                        ),
                       ),
                     ),
                   ),
@@ -274,47 +295,15 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(context, l10n.familyAgeBandLabel),
-        Row(
-          children: [
-            for (final band in DinerAgeBand.values)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 6),
-                  child: Semantics(
-                    button: true,
-                    selected: _band == band,
-                    label: ageBandLabel(l10n, band),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _band = band),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: _band == band ? cs.primary : cs.surface,
-                          border: Border.all(
-                            color: _band == band
-                                ? cs.primary
-                                : cs.outlineVariant,
-                          ),
-                        ),
-                        child: Text(
-                          ageBandLabel(l10n, band),
-                          style: AppTextStyles.captionBold.copyWith(
-                            color: _band == band
-                                ? cs.onPrimary
-                                : cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        FormFieldLabel(l10n.familyAgeBandLabel),
+        FormTabs<DinerAgeBand>(
+          values: DinerAgeBand.values.reversed.toList(),
+          selected: _band,
+          labelOf: (band) => ageBandLabel(l10n, band),
+          onSelected: (band) => setState(() => _band = band),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.space4),
+          padding: const EdgeInsets.only(top: AppDimensions.space8),
           child: Text(
             l10n.familyAgeBandHint,
             style: AppTextStyles.captionText.copyWith(
@@ -322,6 +311,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             ),
           ),
         ),
+        const SizedBox(height: AppDimensions.space16),
       ],
     );
   }
@@ -338,273 +328,123 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         : l10n.familyConsentPersonWord;
   }
 
-  Widget _consentHeader(
-    String title,
-    String badge,
-    Color badgeColor, {
-    Color? titleColor,
-    Color? badgeTextColor,
-  }) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Flexible(
-        child: Text(
-          title,
-          style: AppTextStyles.titleSmall.copyWith(color: titleColor),
-        ),
-      ),
-      const SizedBox(width: AppDimensions.space8),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(border: Border.all(color: badgeColor)),
-        child: Text(
-          badge,
-          style: AppTextStyles.captionText.copyWith(
-            color: badgeTextColor ?? badgeColor,
-          ),
-        ),
-      ),
-    ],
-  );
-
-  Widget _guardianConsentCard(BuildContext context) {
+  Widget _guardianConsentSection(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
-      padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(color: cs.onSurface, width: 3),
+    return FormSection(
+      title: l10n.familyConsentSectionTitle,
+      badge: l10n.familyConsentRequiredBadge,
+      children: [
+        FormCheckRow(
+          label: l10n.familyGuardianConsentText(
+            _consentName(minorContext: true),
+          ),
+          value: _guardianConsent,
+          onChanged: (v) => setState(() => _guardianConsent = v),
+          bodyStyle: true,
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _consentHeader(
-            l10n.familyConsentSectionTitle,
-            l10n.familyConsentRequiredBadge,
-            cs.onSurface,
-            titleColor: cs.onSurface,
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: _guardianConsent,
-            onChanged: (v) => setState(() => _guardianConsent = v ?? false),
-            title: Text(
-              l10n.familyGuardianConsentText(
-                _consentName(minorContext: true),
-              ),
-              style: AppTextStyles.bodySmall,
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  Widget _allergenCard(BuildContext context) {
+  Widget _allergenSection(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final showWithdraw =
         _isEdit && (widget.existing?.hasAllergenConsent ?? false);
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
-      padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(color: context.modeColors.warning, width: 3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _consentHeader(
-            l10n.familyAllergenSectionTitle,
-            l10n.familyOptionalBadge,
-            cs.outline,
-            titleColor: context.modeColors.textAccent,
-            badgeTextColor: cs.onSurfaceVariant,
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            l10n.familyAllergenHealthNote,
-            style: AppTextStyles.captionText.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: _allergenConsent,
-            onChanged: (v) => setState(() {
-              _allergenConsent = v ?? false;
-              if (!_allergenConsent) _allergens = {};
-            }),
-            title: Text(
-              l10n.familyAllergenConsentText(
-                _consentName(minorContext: false),
-              ),
-              style: AppTextStyles.bodySmall,
-            ),
-          ),
-          if (_allergenConsent) ...[
-            const SizedBox(height: AppDimensions.space4),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final entry in AllergenPreferenceOptions.allergens.entries)
-                  _allergenChip(context, entry.key, entry.value),
-              ],
-            ),
-          ],
-          // Withdraw sits inside the amber card so it's clearly the control
-          // that erases the allergen data shown above (consent-clarity).
-          if (showWithdraw)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _withdraw,
-                icon: const ButleryIcon(
-                  ButleryIcons.undo,
-                  size: AppDimensions.iconSizeS,
-                ),
-                label: Text(l10n.familyWithdrawAllergenConsent),
-                style: TextButton.styleFrom(
-                  foregroundColor: cs.error,
-                  minimumSize: const Size.fromHeight(48),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _allergenChip(BuildContext context, String key, String label) {
-    final cs = Theme.of(context).colorScheme;
-    final selected = _allergens.contains(key);
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: () => setState(() {
-          if (selected) {
-            _allergens.remove(key);
-          } else {
-            _allergens.add(key);
-          }
-        }),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          // Chosen is surface.selected with a real border, never a tint
-          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
-          // is surfaceContainerHighest in both schemes; the border and text
-          // are text.primary (onSurface): ink on light, paper on dark.
-          decoration: BoxDecoration(
-            color: selected ? cs.surfaceContainerHighest : cs.surface,
-            border: Border.all(
-              color: selected ? cs.onSurface : cs.outlineVariant,
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.captionBold.copyWith(
-              color: selected ? cs.onSurface : cs.onSurfaceVariant,
-            ),
+    return FormSection(
+      title: l10n.familyAllergenSectionTitle,
+      badge: l10n.familyOptionalBadge,
+      children: [
+        Text(
+          l10n.familyAllergenHealthNote,
+          style: AppTextStyles.captionText.copyWith(
+            color: cs.onSurfaceVariant,
           ),
         ),
-      ),
+        FormCheckRow(
+          label: l10n.familyAllergenConsentText(
+            _consentName(minorContext: false),
+          ),
+          value: _allergenConsent,
+          onChanged: (v) => setState(() {
+            _allergenConsent = v;
+            if (!_allergenConsent) _allergens = {};
+          }),
+          bodyStyle: true,
+        ),
+        if (_allergenConsent)
+          FormCheckGrid(
+            items: [
+              for (final entry in AllergenPreferenceOptions.allergens.entries)
+                (
+                  label: entry.value,
+                  value: _allergens.contains(entry.key),
+                  onChanged: (on) => setState(() {
+                    if (on) {
+                      _allergens.add(entry.key);
+                    } else {
+                      _allergens.remove(entry.key);
+                    }
+                  }),
+                ),
+            ],
+          ),
+        // Withdraw sits inside the section so it's clearly the control that
+        // erases the allergen data shown above (consent-clarity).
+        if (showWithdraw)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              onPressed: _withdraw,
+              style: TextButton.styleFrom(
+                foregroundColor: cs.error,
+                minimumSize: const Size.fromHeight(
+                  AppDimensions.minTouchTarget,
+                ),
+                alignment: AlignmentDirectional.centerStart,
+              ),
+              child: Text(l10n.familyWithdrawAllergenConsent),
+            ),
+          ),
+      ],
     );
   }
 
   /// Disliked-ingredients picker. A soft preference with no consent friction —
-  /// always shown, no checkbox gate (unlike the allergen card).
-  Widget _dislikesCard(BuildContext context) {
+  /// always shown, no checkbox gate (unlike the allergen section).
+  Widget _dislikesSection(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
-      padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(color: cs.outlineVariant, width: 3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _consentHeader(
-            l10n.familyDislikesSectionTitle,
-            l10n.familyOptionalBadge,
-            cs.outline,
-            titleColor: context.modeColors.textAccent,
-            badgeTextColor: cs.onSurfaceVariant,
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            l10n.familyDislikesNote,
-            style: AppTextStyles.captionText.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final entry in _dislikeOptions.entries)
-                _dislikeChip(context, entry.key, entry.value),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dislikeChip(BuildContext context, String key, String label) {
-    final cs = Theme.of(context).colorScheme;
-    final selected = _dislikes.contains(key);
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: () => setState(() {
-          if (selected) {
-            _dislikes.remove(key);
-          } else {
-            _dislikes.add(key);
-          }
-        }),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          // Chosen is surface.selected with a real border, never a tint
-          // (tokens.json:41, :116-119; Grafisk manual v6:209). surface.selected
-          // is surfaceContainerHighest in both schemes; the border and text
-          // are text.primary (onSurface): ink on light, paper on dark.
-          decoration: BoxDecoration(
-            color: selected ? cs.surfaceContainerHighest : cs.surface,
-            border: Border.all(
-              color: selected ? cs.onSurface : cs.outlineVariant,
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.captionBold.copyWith(
-              color: selected ? cs.onSurface : cs.onSurfaceVariant,
-            ),
+    return FormSection(
+      title: l10n.familyDislikesSectionTitle,
+      badge: l10n.familyOptionalBadge,
+      children: [
+        Text(
+          l10n.familyDislikesNote,
+          style: AppTextStyles.captionText.copyWith(
+            color: cs.onSurfaceVariant,
           ),
         ),
-      ),
+        const SizedBox(height: AppDimensions.space8),
+        Wrap(
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
+          children: [
+            for (final entry in _dislikeOptions.entries)
+              FormChoice(
+                label: entry.value,
+                selected: _dislikes.contains(entry.key),
+                onSelected: (on) => setState(() {
+                  if (on) {
+                    _dislikes.add(entry.key);
+                  } else {
+                    _dislikes.remove(entry.key);
+                  }
+                }),
+              ),
+          ],
+        ),
+      ],
     );
   }
 
