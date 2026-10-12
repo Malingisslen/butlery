@@ -201,6 +201,10 @@ class FamilyExportManager {
       // BUT-643: the household's food picks for nutrition values. They carry
       // no author, so every member gets the whole map.
       'nutrition_food_choices': household.nutritionFoodChoices,
+      'nutrition_amount_choices': {
+        for (final e in household.nutritionAmountChoices.entries)
+          e.key: e.value.toMap(),
+      },
     };
   }
 

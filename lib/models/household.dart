@@ -17,6 +17,7 @@ library;
 import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:uuid/uuid.dart';
@@ -119,6 +120,11 @@ class Household {
   /// changes one key at a time, as `firestore.rules` requires.
   final Map<String, int> nutritionFoodChoices;
 
+  /// The household's own amounts for nutrition values: an ingredient key
+  /// (every recipe) or `r_<recipeId>_<key>` (one recipe) → amount and unit.
+  /// Read-only here for the same reason as [nutritionFoodChoices].
+  final Map<String, NutritionAmountChoice> nutritionAmountChoices;
+
   const Household({
     required this.id,
     required this.name,
@@ -130,6 +136,7 @@ class Household {
     this.sourceGroupId,
     this.sourceGroupOwnerId,
     this.nutritionFoodChoices = const {},
+    this.nutritionAmountChoices = const {},
   });
 
   /// Linked to a group by its owner. Only a household the group's owner
@@ -280,6 +287,7 @@ class Household {
       sourceGroupId: sourceGroupId,
       sourceGroupOwnerId: sourceGroupOwnerId,
       nutritionFoodChoices: nutritionFoodChoices,
+      nutritionAmountChoices: nutritionAmountChoices,
     );
   }
 
@@ -327,6 +335,7 @@ class Household {
         'sourceGroupOwnerId',
       ),
       nutritionFoodChoices: _readChoices(data['nutritionFoodChoices']),
+      nutritionAmountChoices: _readAmounts(data['nutritionAmountChoices']),
     );
   }
 
@@ -343,6 +352,18 @@ class Household {
     };
   }
 
+  // An entry the rules would not have accepted is dropped rather than failing
+  // the whole household read.
+  static Map<String, NutritionAmountChoice> _readAmounts(Object? raw) {
+    if (raw is! Map) return const {};
+    return {
+      for (final e in raw.entries)
+        if (e.key case final String key
+            when NutritionAmountChoice.keyShape.hasMatch(key))
+          key: ?NutritionAmountChoice.fromMap(e.value),
+    };
+  }
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -355,6 +376,10 @@ class Household {
     'sourceGroupOwnerId': ?sourceGroupOwnerId,
     if (nutritionFoodChoices.isNotEmpty)
       'nutritionFoodChoices': nutritionFoodChoices,
+    if (nutritionAmountChoices.isNotEmpty)
+      'nutritionAmountChoices': {
+        for (final e in nutritionAmountChoices.entries) e.key: e.value.toMap(),
+      },
   };
 
   factory Household.fromJson(Map<String, dynamic> json) {
@@ -389,6 +414,7 @@ class Household {
         'sourceGroupOwnerId',
       ),
       nutritionFoodChoices: _readChoices(json['nutritionFoodChoices']),
+      nutritionAmountChoices: _readAmounts(json['nutritionAmountChoices']),
     );
   }
 

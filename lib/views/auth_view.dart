@@ -31,6 +31,7 @@ import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/auth/auth_field_theme.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/views/auth/guest_start_view.dart';
 import 'package:butlery/widgets/auth/guest_entry_button.dart';
@@ -252,224 +253,235 @@ class _AuthViewState extends State<AuthView> {
         horizontal: AppDimensions.space32,
         vertical: AppDimensions.space24 + AppDimensions.space4,
       ),
-      child: AutofillGroup(
-        child: Form(
-          key: _formKey,
-          autovalidateMode: _submitAttempted
-              ? AutovalidateMode.onUserInteraction
-              : AutovalidateMode.disabled,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(
-                  viewModel.isLoginMode
-                      ? context.l10n.authLogin
-                      : context.l10n.authCreateAccount,
-                  style: AppTextStyles.headlineMedium.copyWith(
-                    color: cs.onSurface,
+      child: AuthFieldTheme(
+        child: AutofillGroup(
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _submitAttempted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    viewModel.isLoginMode
+                        ? context.l10n.authLogin
+                        : context.l10n.authCreateAccount,
+                    style: AppTextStyles.headlineMedium.copyWith(
+                      color: cs.onSurface,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: AppDimensions.space24 + AppDimensions.space4,
-              ),
-              SocialSignInButtons(viewModel: viewModel, onSignedIn: _enterApp),
+                const SizedBox(
+                  height: AppDimensions.space24 + AppDimensions.space4,
+                ),
+                SocialSignInButtons(
+                  viewModel: viewModel,
+                  onSignedIn: _enterApp,
+                ),
 
-              // Name field (registration only)
-              if (!viewModel.isLoginMode) ...[
+                // Name field (registration only)
+                if (!viewModel.isLoginMode) ...[
+                  LabeledField(
+                    label: context.l10n.authYourName,
+                    child: TextFormField(
+                      style: fieldTextStyle(
+                        context,
+                        enabled: !viewModel.isLoading,
+                      ),
+                      key: const Key('name_field'),
+                      controller: _nameController,
+                      focusNode: _nameFocus,
+                      textInputAction: TextInputAction.next,
+                      enabled: !viewModel.isLoading,
+                      decoration: InputDecoration(
+                        hintText: context.l10n.authEnterYourName,
+                      ),
+                      validator: FormValidators.authName(),
+                      errorBuilder: FieldErrorLine.builder,
+                      autofillHints: const [AutofillHints.name],
+                      onFieldSubmitted: (_) {
+                        FocusScope.of(context).requestFocus(_emailFocus);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                ],
+
+                // Email field
                 LabeledField(
-                  label: context.l10n.authYourName,
+                  label: context.l10n.authEmail,
                   child: TextFormField(
                     style: fieldTextStyle(
                       context,
                       enabled: !viewModel.isLoading,
                     ),
-                    key: const Key('name_field'),
-                    controller: _nameController,
-                    focusNode: _nameFocus,
+                    key: const Key('email_field'),
+                    controller: _emailController,
+                    focusNode: _emailFocus,
+                    keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     enabled: !viewModel.isLoading,
                     decoration: InputDecoration(
-                      hintText: context.l10n.authEnterYourName,
+                      hintText: context.l10n.authEmailHint,
                     ),
-                    validator: FormValidators.authName(),
+                    validator: FormValidators.authEmail(),
                     errorBuilder: FieldErrorLine.builder,
-                    autofillHints: const [AutofillHints.name],
+                    autofillHints: const [AutofillHints.email],
                     onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(_emailFocus);
+                      FocusScope.of(context).requestFocus(_passwordFocus);
                     },
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space16),
-              ],
 
-              // Email field
-              LabeledField(
-                label: context.l10n.authEmail,
-                child: TextFormField(
-                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
-                  key: const Key('email_field'),
-                  controller: _emailController,
-                  focusNode: _emailFocus,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  enabled: !viewModel.isLoading,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.authEmailHint,
-                  ),
-                  validator: FormValidators.authEmail(),
-                  errorBuilder: FieldErrorLine.builder,
-                  autofillHints: const [AutofillHints.email],
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(_passwordFocus);
-                  },
-                ),
-              ),
-              const SizedBox(height: AppDimensions.space16),
-
-              // Password field
-              LabeledField(
-                label: context.l10n.authPassword,
-                child: TextFormField(
-                  style: fieldTextStyle(context, enabled: !viewModel.isLoading),
-                  key: const Key('password_field'),
-                  controller: _passwordController,
-                  focusNode: _passwordFocus,
-                  obscureText: !viewModel.isPasswordVisible,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _handleSubmit(viewModel),
-                  enabled: !viewModel.isLoading,
-                  decoration: InputDecoration(
-                    hintText: viewModel.isLoginMode
-                        ? context.l10n.authEnterPassword
-                        : context.l10n.authPasswordMinLength,
-                    suffixIcon: IconButton(
-                      icon: ButleryIcon(
-                        viewModel.isPasswordVisible
-                            ? ButleryIcons.eyeOff
-                            : ButleryIcons.eye,
-                        size: AppDimensions.iconSizeM,
+                // Password field
+                LabeledField(
+                  label: context.l10n.authPassword,
+                  child: TextFormField(
+                    style: fieldTextStyle(
+                      context,
+                      enabled: !viewModel.isLoading,
+                    ),
+                    key: const Key('password_field'),
+                    controller: _passwordController,
+                    focusNode: _passwordFocus,
+                    obscureText: !viewModel.isPasswordVisible,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _handleSubmit(viewModel),
+                    enabled: !viewModel.isLoading,
+                    decoration: InputDecoration(
+                      hintText: viewModel.isLoginMode
+                          ? context.l10n.authEnterPassword
+                          : context.l10n.authPasswordMinLength,
+                      suffixIcon: IconButton(
+                        icon: ButleryIcon(
+                          viewModel.isPasswordVisible
+                              ? ButleryIcons.eyeOff
+                              : ButleryIcons.eye,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                        onPressed: viewModel.isLoading
+                            ? null
+                            : viewModel.togglePasswordVisibility,
+                        tooltip: viewModel.isPasswordVisible
+                            ? context.l10n.a11yHidePassword
+                            : context.l10n.a11yShowPassword,
                       ),
+                    ),
+                    validator: viewModel.isLoginMode
+                        ? FormValidators.authPassword()
+                        : FormValidators.strongPassword(),
+                    errorBuilder: FieldErrorLine.builder,
+                    autofillHints: const [AutofillHints.password],
+                  ),
+                ),
+
+                // Forgot password (login mode only)
+                if (viewModel.isLoginMode) ...[
+                  const SizedBox(height: AppDimensions.space8),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: TextButton(
                       onPressed: viewModel.isLoading
                           ? null
-                          : viewModel.togglePasswordVisibility,
-                      tooltip: viewModel.isPasswordVisible
-                          ? context.l10n.a11yHidePassword
-                          : context.l10n.a11yShowPassword,
-                    ),
-                  ),
-                  validator: viewModel.isLoginMode
-                      ? FormValidators.authPassword()
-                      : FormValidators.strongPassword(),
-                  errorBuilder: FieldErrorLine.builder,
-                  autofillHints: const [AutofillHints.password],
-                ),
-              ),
-
-              // Forgot password (login mode only)
-              if (viewModel.isLoginMode) ...[
-                const SizedBox(height: AppDimensions.space8),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton(
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _showPasswordResetDialog(context, viewModel),
-                    // BUT-1380: keep the compact padding but drop the
-                    // shrink-wrapped tap target — Flutter's default `padded`
-                    // size restores the 48dp hit area (WCAG 2.5.5 / Material)
-                    // without changing the visible layout.
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    child: Text(
-                      context.l10n.authForgotPassword,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onPrimaryContainer,
+                          : () => _showPasswordResetDialog(context, viewModel),
+                      // BUT-1380: keep the compact padding but drop the
+                      // shrink-wrapped tap target — Flutter's default `padded`
+                      // size restores the 48dp hit area (WCAG 2.5.5 / Material)
+                      // without changing the visible layout.
+                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                      child: Text(
+                        context.l10n.authForgotPassword,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: context.modeColors.textLink,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-
-              if (!viewModel.isLoginMode) ...[
-                const SizedBox(height: AppDimensions.space16),
-                // Terms acceptance (registration only)
-                TermsConsentRow(
-                  accepted: _termsAccepted,
-                  onChanged: viewModel.isLoading
-                      ? null
-                      : (value) => setState(() => _termsAccepted = value),
-                ),
-              ],
-
-              const SizedBox(height: AppDimensions.space24),
-
-              // Error message
-              if (viewModel.errorMessage != null) ...[
-                StateWidget.error(message: viewModel.errorMessage!),
-                const SizedBox(height: AppDimensions.space16),
-              ],
-
-              // The step's one saffron action, "Logga in" or "Skapa konto"
-              // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
-              // konto'; Grafisk manual v6:219). Working keeps the name and
-              // draws the plate line under it (Komponentark v1:372).
-              HeroButton(
-                key: const ValueKey('auth.submit'),
-                label: viewModel.isLoginMode
-                    ? context.l10n.authLogin
-                    : context.l10n.authCreateAccount,
-                onPressed: () => _handleSubmit(viewModel),
-                busy: viewModel.isLoading,
-                expand: true,
-              ),
-
-              const SizedBox(height: AppDimensions.space24),
-
-              // "eller" divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: cs.outlineVariant)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.space16,
-                    ),
-                    child: Text(
-                      context.l10n.commonOr,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: cs.outlineVariant)),
                 ],
-              ),
 
-              const SizedBox(height: AppDimensions.space24),
+                if (!viewModel.isLoginMode) ...[
+                  const SizedBox(height: AppDimensions.space16),
+                  // Terms acceptance (registration only)
+                  TermsConsentRow(
+                    accepted: _termsAccepted,
+                    onChanged: viewModel.isLoading
+                        ? null
+                        : (value) => setState(() => _termsAccepted = value),
+                  ),
+                ],
 
-              // Toggle button (Skapa konto / Logga in)
-              ActionButtons.outlinedButton(
-                context,
-                isExpanded: true,
-                label: viewModel.isLoginMode
-                    ? context.l10n.authCreateAccount
-                    : context.l10n.authLogin,
-                onPressed: viewModel.isLoading
-                    ? null
-                    : () {
-                        // Clear mode-specific state so switching login<->signup
-                        // doesn't carry a stale password or name.
-                        _passwordController.clear();
-                        _nameController.clear();
-                        setState(() => _submitAttempted = false);
-                        viewModel.toggleAuthMode();
-                      },
-              ),
+                const SizedBox(height: AppDimensions.space24),
 
-              const SizedBox(height: AppDimensions.space8),
-              GuestEntryButton(enabled: !viewModel.isLoading),
-            ],
+                // Error message
+                if (viewModel.errorMessage != null) ...[
+                  StateWidget.error(message: viewModel.errorMessage!),
+                  const SizedBox(height: AppDimensions.space16),
+                ],
+
+                // The step's one saffron action, "Logga in" or "Skapa konto"
+                // (Skarmar v12 etapp 3 'Auth — logga in', 'Auth — skapa
+                // konto'; Grafisk manual v6:219). Working keeps the name and
+                // draws the plate line under it (Komponentark v1:372).
+                HeroButton(
+                  key: const ValueKey('auth.submit'),
+                  label: viewModel.isLoginMode
+                      ? context.l10n.authLogin
+                      : context.l10n.authCreateAccount,
+                  onPressed: () => _handleSubmit(viewModel),
+                  busy: viewModel.isLoading,
+                  expand: true,
+                ),
+
+                const SizedBox(height: AppDimensions.space24),
+
+                // "eller" divider
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: cs.outlineVariant)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.space16,
+                      ),
+                      child: Text(
+                        context.l10n.commonOr,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: cs.outlineVariant)),
+                  ],
+                ),
+
+                const SizedBox(height: AppDimensions.space24),
+
+                // Toggle button (Skapa konto / Logga in)
+                ActionButtons.outlinedButton(
+                  context,
+                  isExpanded: true,
+                  label: viewModel.isLoginMode
+                      ? context.l10n.authCreateAccount
+                      : context.l10n.authLogin,
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () {
+                          // Clear mode-specific state so switching login<->signup
+                          // doesn't carry a stale password or name.
+                          _passwordController.clear();
+                          _nameController.clear();
+                          setState(() => _submitAttempted = false);
+                          viewModel.toggleAuthMode();
+                        },
+                ),
+
+                const SizedBox(height: AppDimensions.space8),
+                GuestEntryButton(enabled: !viewModel.isLoading),
+              ],
+            ),
           ),
         ),
       ),

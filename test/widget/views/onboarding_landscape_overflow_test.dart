@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/views/onboarding/onboarding_setup_page.dart';
 import 'package:butlery/views/onboarding/onboarding_welcome_page.dart';
-import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
+import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -58,11 +59,25 @@ void main() {
     );
 
     testWidgets(
-      'OnboardingDietaryPage scrolls instead of overflowing at landscape',
+      'OnboardingAllergenPage scrolls instead of overflowing at landscape',
       (tester) async {
         await _pumpAtSize(
           tester,
-          _wrap(const OnboardingDietaryPage(), viewModel),
+          _wrap(const OnboardingAllergenPage(), viewModel),
+          _landscapePhone,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(SingleChildScrollView), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'OnboardingSetupPage scrolls instead of overflowing at landscape',
+      (tester) async {
+        await _pumpAtSize(
+          tester,
+          _wrap(const OnboardingSetupPage(), viewModel),
           _landscapePhone,
         );
 

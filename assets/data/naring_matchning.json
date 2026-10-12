@@ -64,7 +64,11 @@
     },
     "strösocker": {
       "food": 1892,
-      "gPerDl": 85
+      "gPerDl": 85,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "florsocker": {
       "food": 1892,
@@ -209,6 +213,10 @@
       "units": {
         "paket": 500,
         "klick": 10
+      },
+      "default": {
+        "amount": 1,
+        "unit": "msk"
       }
     },
     "margarin": {
@@ -216,6 +224,10 @@
       "gPerDl": 95,
       "units": {
         "paket": 500
+      },
+      "default": {
+        "amount": 1,
+        "unit": "msk"
       }
     },
     "bregott": {
@@ -358,7 +370,11 @@
     },
     "olivolja": {
       "food": 35,
-      "gPerDl": 90
+      "gPerDl": 90,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "extra virgin olivolja": {
       "food": 4659,
@@ -366,7 +382,11 @@
     },
     "rapsolja": {
       "food": 2189,
-      "gPerDl": 90
+      "gPerDl": 90,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "solrosolja": {
       "food": 40,
@@ -374,7 +394,11 @@
     },
     "matolja": {
       "food": 3418,
-      "gPerDl": 90
+      "gPerDl": 90,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "sesamolja": {
       "food": 38,
@@ -756,7 +780,11 @@
       "units": {
         "bit": 20
       },
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "chili": {
       "food": 380,
@@ -1680,7 +1708,11 @@
     },
     "sojasås": {
       "food": 909,
-      "gPerDl": 115
+      "gPerDl": 115,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "ketchup": {
       "food": 1969,
@@ -1700,7 +1732,11 @@
     },
     "vinäger": {
       "food": 1966,
-      "gPerDl": 100
+      "gPerDl": 100,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "äppelcidervinäger": {
       "food": 1967,
@@ -1951,7 +1987,11 @@
     "salt": {
       "food": 1975,
       "gPerDl": 120,
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "persilja": {
       "food": 352,
@@ -1960,7 +2000,11 @@
         "knippe": 50,
         "kruka": 40
       },
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "dill": {
       "food": 377,
@@ -1969,7 +2013,11 @@
         "knippe": 30,
         "kruka": 25
       },
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "gräslök": {
       "food": 378,
@@ -1987,7 +2035,11 @@
         "kruka": 30,
         "knippe": 25
       },
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "koriander": {
       "food": 7193,
@@ -1996,7 +2048,11 @@
         "kruka": 40,
         "knippe": 30
       },
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "msk"
+      }
     },
     "mynta": {
       "food": 7194,
@@ -2010,7 +2066,11 @@
     "kanel": {
       "food": 2306,
       "gPerDl": 40,
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "kardemumma": {
       "food": 7195,
@@ -2030,12 +2090,20 @@
     "gurkmeja": {
       "food": 7198,
       "gPerDl": 60,
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "spiskummin": {
       "food": 7199,
       "gPerDl": 50,
-      "toTaste": true
+      "toTaste": true,
+      "default": {
+        "amount": 1,
+        "unit": "tsk"
+      }
     },
     "muskotnöt": {
       "food": 6666,
