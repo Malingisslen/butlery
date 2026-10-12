@@ -19244,6 +19244,82 @@ class AppLocalizationsEn extends AppLocalizations {
       'The choice could not be saved. Try again.';
 
   @override
+  String get nutritionEstimatedBadge => 'Estimated';
+
+  @override
+  String get a11yNutritionEstimatedBadge => 'Estimated amount';
+
+  @override
+  String nutritionCoverageWithEstimates(int counted, int total, int estimated) {
+    return 'Calculated from $counted of $total ingredients, $estimated with an estimated amount';
+  }
+
+  @override
+  String get nutritionEnterAmount => 'Enter amount';
+
+  @override
+  String a11yNutritionEnterAmountFor(String name) {
+    return 'Enter an amount for $name';
+  }
+
+  @override
+  String a11yNutritionChangeAmountFor(String name) {
+    return 'Change the amount for $name';
+  }
+
+  @override
+  String nutritionAmountSheetTitle(String name) {
+    return 'Amount for $name';
+  }
+
+  @override
+  String get nutritionAmountFieldLabel => 'Amount';
+
+  @override
+  String get nutritionAmountUnitLabel => 'Unit';
+
+  @override
+  String get nutritionAmountInvalid => 'Enter a number above 0.';
+
+  @override
+  String get nutritionAmountRemove => 'Remove amount';
+
+  @override
+  String nutritionAmountScopeTitle(String amount, String name) {
+    return 'Is $amount $name for this recipe only?';
+  }
+
+  @override
+  String nutritionAmountScopeBody(String name) {
+    return 'You can also use the amount in every recipe where $name has no amount.';
+  }
+
+  @override
+  String get nutritionAmountScopeRecipe => 'This recipe only';
+
+  @override
+  String get nutritionAmountScopeAll => 'All recipes';
+
+  @override
+  String get nutritionAmountSaved => 'The amount was saved';
+
+  @override
+  String get nutritionAmountRemoved => 'The amount was removed';
+
+  @override
+  String get nutritionAmountSaveFailed =>
+      'The amount could not be saved. Try again.';
+
+  @override
+  String get nutritionAmountFull =>
+      'The household\'s saved amounts are full. Remove one to save a new one.';
+
+  @override
+  String nutritionCountedAsOwn(String food) {
+    return 'Counted as $food, your amount';
+  }
+
+  @override
   String get nutritionPickerClear => 'Remove the household\'s choice';
 
   @override

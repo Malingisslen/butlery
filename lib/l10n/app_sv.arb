@@ -15640,6 +15640,130 @@
   "@nutritionPickerSaveFailed": {
     "description": "BUT-643 nutrition values."
   },
+  "nutritionEstimatedBadge": "Uppskattad",
+  "@nutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEstimatedBadge": "Uppskattad mängd",
+  "@a11yNutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCoverageWithEstimates": "Beräknat på {counted} av {total} ingredienser, varav {estimated} med uppskattad mängd",
+  "@nutritionCoverageWithEstimates": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionEnterAmount": "Ange mängd",
+  "@nutritionEnterAmount": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEnterAmountFor": "Ange mängd för {name}",
+  "@a11yNutritionEnterAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionChangeAmountFor": "Ändra mängd för {name}",
+  "@a11yNutritionChangeAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountSheetTitle": "Mängd för {name}",
+  "@nutritionAmountSheetTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountFieldLabel": "Mängd",
+  "@nutritionAmountFieldLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountUnitLabel": "Enhet",
+  "@nutritionAmountUnitLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountInvalid": "Ange ett tal större än 0.",
+  "@nutritionAmountInvalid": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemove": "Ta bort mängd",
+  "@nutritionAmountRemove": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeTitle": "Gäller {amount} {name} bara det här receptet?",
+  "@nutritionAmountScopeTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeBody": "Du kan också använda mängden i alla recept där {name} saknar mängd.",
+  "@nutritionAmountScopeBody": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeRecipe": "Bara det här receptet",
+  "@nutritionAmountScopeRecipe": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeAll": "Alla recept",
+  "@nutritionAmountScopeAll": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaved": "Mängden sparades",
+  "@nutritionAmountSaved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemoved": "Mängden togs bort",
+  "@nutritionAmountRemoved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaveFailed": "Mängden kunde inte sparas. Försök igen.",
+  "@nutritionAmountSaveFailed": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountFull": "Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.",
+  "@nutritionAmountFull": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCountedAsOwn": "Räknat som {food}, din mängd",
+  "@nutritionCountedAsOwn": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
   "nutritionPickerClear": "Ta bort hushållets val",
   "@nutritionPickerClear": {
     "description": "BUT-643 nutrition values."

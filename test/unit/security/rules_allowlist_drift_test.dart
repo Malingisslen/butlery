@@ -629,6 +629,13 @@ const _knowinglyUncovered = <_Uncovered>[
     'unified_shared_shopping_lists create — creator-only memberPermissions',
     'match /unified_shared_shopping_lists/{listId}',
   ),
+  // BUT-643 follow-up: the allowlist is over the keys of one amount entry
+  // inside the household's `nutritionAmountChoices` map ({a, u}), written by
+  // `NutritionAmountChoice.toMap`, not over the household document's keys.
+  _Uncovered(
+    'households nutritionAmountChoices entry — NutritionAmountChoice.toMap',
+    'function nutritionAmountValueValid(',
+  ),
 ];
 
 /// Matches the allowlist form this guard covers, tolerating the line wrap the
@@ -990,9 +997,16 @@ void main() {
     // memberPermissions.keys().hasOnly([request.auth.uid]) over the member
     // MAP (in _knowinglyUncovered), and addedKeys().hasOnly([ownerId]) in
     // `addsNoMember()`, a set difference outside the payload comparison.
+    // BUT-643 follow-up added household nutrition amounts: one
+    // value.keys().hasOnly(['a', 'u']) over one entry of the
+    // `nutritionAmountChoices` map (in _knowinglyUncovered), one
+    // affectedKeys().hasOnly([key]) over that map's diff, and one
+    // affectedKeys().hasOnly(['nutritionAmountChoices', 'nutritionAmountKey',
+    // 'updatedAt']) over the household document's on the member update. The
+    // last two are diff restrictions outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      55,
+      58,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
