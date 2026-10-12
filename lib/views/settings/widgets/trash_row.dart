@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/trash_item.dart';
@@ -24,9 +25,30 @@ class TrashRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final days = TrashViewModel.daysLeft(item, clock.now());
     final urgent = days < warnBelowDays;
+    final l10n = context.l10n;
+    final locale = l10n.localeName;
+    final now = clock.now();
+    final left = l10n.trashDaysLeft(days);
+    final deleted = item.deletedAt.toLocal();
+    final today =
+        deleted.year == now.year &&
+        deleted.month == now.month &&
+        deleted.day == now.day;
     return ButleryListRow(
       label: item.title,
-      subtitle: context.l10n.trashDaysLeft(days),
+      subtitle: urgent
+          ? days == 0
+                ? l10n.trashUrgentToday(left)
+                : l10n.trashUrgentLeft(
+                    left,
+                    DateFormat.EEEE(locale).format(item.expireAt.toLocal()),
+                  )
+          : l10n.trashRowDeleted(
+              today
+                  ? l10n.trashDeletedToday
+                  : DateFormat.MMMd(locale).format(deleted),
+              left,
+            ),
       onTap: onTap,
       trailing: urgent
           ? ButleryIcon(

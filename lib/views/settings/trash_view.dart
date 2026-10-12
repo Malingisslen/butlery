@@ -10,9 +10,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/trash_viewmodel.dart';
 import 'package:butlery/views/settings/widgets/trash_messages.dart';
 import 'package:butlery/views/settings/widgets/trash_row.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -20,7 +21,7 @@ import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// BUT-907: the trash for deleted recipes. A row opens a sheet to restore or
-/// delete that recipe; the top-bar menu restores or empties the whole trash.
+/// delete that recipe.
 class TrashView extends StatefulWidget {
   const TrashView({super.key});
 
@@ -59,19 +60,10 @@ class _TrashContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final vm = context.watch<TrashViewModel>();
-    final showList = !vm.isLoading && !vm.hasError && !vm.isEmpty;
     return Scaffold(
       appBar: ButleryTopBar.undersida(
         title: l10n.trashTitle,
         backTo: l10n.moreTitle,
-        actions: [
-          if (showList)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.moreVertical),
-              tooltip: l10n.bulkMoreActions,
-              onPressed: vm.isWorking ? null : () => _openMenu(context, vm),
-            ),
-        ],
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(child: _body(context, vm)),
@@ -113,6 +105,23 @@ class _TrashContent extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+          ),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            children: [
+              _action(
+                context,
+                l10n.trashRestoreAll,
+                ModeColors.of(Theme.of(context).brightness).textLink,
+                vm.isWorking ? null : () => _restoreAll(context, vm),
+              ),
+              _action(
+                context,
+                l10n.trashEmptyAction,
+                Theme.of(context).colorScheme.error,
+                vm.isWorking ? null : () => _empty(context, vm),
+              ),
+            ],
           ),
           ButleryListSection(
             rows: [
@@ -179,31 +188,22 @@ class _TrashContent extends StatelessWidget {
     if (context.mounted) _announce(context, result);
   }
 
-  Future<void> _openMenu(BuildContext context, TrashViewModel vm) async {
-    final l10n = context.l10n;
-    final choice = await showButleryListSheet<_MenuChoice>(
-      context,
-      title: l10n.trashTitle,
-      rows: (sheetContext) => [
-        ButleryListRow(
-          label: l10n.trashRestoreAll,
-          leading: ButleryIcons.undo,
-          onTap: () => Navigator.of(sheetContext).pop(_MenuChoice.restoreAll),
-        ),
-        ButleryListRow.danger(
-          label: l10n.trashEmptyAction,
-          onTap: () => Navigator.of(sheetContext).pop(_MenuChoice.empty),
-        ),
-      ],
+  Widget _action(
+    BuildContext context,
+    String label,
+    Color color,
+    VoidCallback? onTap,
+  ) {
+    return ButleryLink(
+      semanticLabel: label,
+      onTap: onTap,
+      child: Text(label, style: AppTextStyles.bodyBold.copyWith(color: color)),
     );
-    if (choice == null || !context.mounted) return;
-    switch (choice) {
-      case _MenuChoice.restoreAll:
-        final result = await vm.restoreAll();
-        if (context.mounted) _announce(context, result);
-      case _MenuChoice.empty:
-        await _empty(context, vm);
-    }
+  }
+
+  Future<void> _restoreAll(BuildContext context, TrashViewModel vm) async {
+    final result = await vm.restoreAll();
+    if (context.mounted) _announce(context, result);
   }
 
   Future<void> _empty(BuildContext context, TrashViewModel vm) async {
@@ -233,5 +233,3 @@ class _TrashContent extends StatelessWidget {
 }
 
 enum _RecipeChoice { restore, delete }
-
-enum _MenuChoice { restoreAll, empty }
