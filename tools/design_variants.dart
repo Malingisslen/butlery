@@ -143,6 +143,58 @@ const variantSpecs = <VariantSpec>[
     'app_sv.arb values with "artikel", "handlingslista", "matsedel", "..." '
         'or a straight double quote',
   ),
+  ...rawWidgetSpecs,
+];
+
+/// Helskanning 2026-10-12: a Flutter widget built in a view or in a widget
+/// outside lib/widgets/common/ is one more place that draws its component
+/// type by hand. Each row counts the calls to [names]; the component that
+/// should replace them is [use].
+class RawWidgetSpec extends VariantSpec {
+  const RawWidgetSpec(String key, this.names, this.use)
+    : super(key, 'helskanning', 0, '');
+
+  final List<String> names;
+  final String use;
+
+  @override
+  String get description =>
+      '${names.join(' / ')} built outside lib/widgets/common/, instead of $use';
+}
+
+const rawWidgetSpecs = <RawWidgetSpec>[
+  RawWidgetSpec('raw_input_decoration', [
+    'InputDecoration',
+  ], 'the shared input fields'),
+  RawWidgetSpec('raw_list_tile', ['ListTile'], 'ButleryListRow'),
+  RawWidgetSpec('raw_divider', ['Divider'], 'the shared hairline'),
+  RawWidgetSpec('raw_chips', [
+    'Chip',
+    'ChoiceChip',
+    'FilterChip',
+    'ActionChip',
+    'InputChip',
+  ], 'the shared chip'),
+  RawWidgetSpec('raw_app_bar', ['AppBar'], 'ButleryTopBar'),
+  RawWidgetSpec('raw_text_style', ['TextStyle'], 'a theme text role'),
+  RawWidgetSpec('raw_toggles', [
+    'Checkbox',
+    'CheckboxListTile',
+    'Switch',
+    'SwitchListTile',
+    'RadioListTile',
+  ], 'the shared checkbox / switch'),
+  RawWidgetSpec('raw_menus', [
+    'PopupMenuButton',
+    'DropdownButton',
+    'DropdownButtonFormField',
+  ], 'the shared menu / dropdown'),
+  RawWidgetSpec('raw_circle_avatar', ['CircleAvatar'], 'the shared avatar'),
+  RawWidgetSpec('raw_show_dialog', ['showDialog'], 'the shared dialog helpers'),
+  RawWidgetSpec('raw_show_sheet', [
+    'showModalBottomSheet',
+  ], 'the shared bottom-sheet helper'),
+  RawWidgetSpec('raw_segmented', ['SegmentedButton'], 'ButlerySegmentSwitch'),
 ];
 
 const _svArb = 'lib/l10n/app_sv.arb';
@@ -188,6 +240,13 @@ countVariants(CensusSource src) {
     final uiLayer =
         path.startsWith('lib/views/') || path.startsWith('lib/widgets/');
 
+    if (uiLayer && !path.startsWith('lib/widgets/common/')) {
+      for (final r in rawWidgetSpecs) {
+        for (final n in r.names) {
+          add(r.key, path, callArguments(code, n).length);
+        }
+      }
+    }
     for (final args in callArguments(code, 'AlertDialog')) {
       if (_errorColour.hasMatch(args)) {
         add('raw_destructive_alert_dialogs', path);

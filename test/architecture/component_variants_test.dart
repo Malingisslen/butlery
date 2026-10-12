@@ -31,6 +31,18 @@ const variantCeilings = {
   'icon_size_literals': 2,
   'spacing_literals': 71,
   'scale_aliases': 0,
+  'raw_input_decoration': 56,
+  'raw_list_tile': 37,
+  'raw_divider': 44,
+  'raw_chips': 15,
+  'raw_app_bar': 0,
+  'raw_text_style': 22,
+  'raw_toggles': 26,
+  'raw_menus': 27,
+  'raw_circle_avatar': 11,
+  'raw_show_dialog': 90,
+  'raw_show_sheet': 5,
+  'raw_segmented': 4,
 };
 
 void main() {
@@ -77,7 +89,7 @@ void main() {
   // One line per row that draws that variant once more. Each row's counter
   // must see it, so a counter that silently returns 0 fails here instead of
   // passing under its ceiling.
-  const probes = {
+  final probes = {
     'raw_destructive_alert_dialogs':
         'final _p = AlertDialog(actions: [TextButton(style: '
         'TextButton.styleFrom(foregroundColor: cs.error))]);',
@@ -103,6 +115,7 @@ void main() {
         'final _p = ButleryIcon(ButleryIcons.check, size: 13);',
     'spacing_literals': 'final _p = EdgeInsets.all(7);',
     'scale_aliases': 'final _p = AppDimensions.spacingSm;',
+    for (final r in rawWidgetSpecs) r.key: 'final _p = ${r.names.first}();',
   };
   const probeFile = 'lib/views/quick_capture_view.dart';
 
@@ -114,6 +127,21 @@ void main() {
       );
       expect(after[e.key]!.count, counts[e.key]!.count + 1);
     });
+  }
+
+  for (final r in rawWidgetSpecs) {
+    for (final n in r.names.skip(1)) {
+      test('one more $n raises ${r.key} by one', () {
+        final source = CensusSource('.').read(probeFile)!;
+        final after = countVariants(
+          CensusSource(
+            '.',
+            overrides: {probeFile: '$source\nfinal _p = $n();\n'},
+          ),
+        );
+        expect(after[r.key]!.count, counts[r.key]!.count + 1);
+      });
+    }
   }
 
   test('one more forbidden Swedish value raises its count by one', () {
