@@ -326,6 +326,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       bar: ButleryTopBar.undersida(
         title: title,
         titleStyle: titleStyle,
+        accentRule: false,
         implyBack: false,
         leading: leading,
         actions: actions,

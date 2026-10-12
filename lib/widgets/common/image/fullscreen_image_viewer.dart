@@ -150,6 +150,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       // the X then stays on the photo on its own (Q7-03 = A).
       appBar: _showAppBar
           ? ButleryTopBar.undersida(
+              accentRule: false,
               backgroundColor: cs.primary,
               foregroundColor: cs.onPrimary,
               leading: IconButton(
