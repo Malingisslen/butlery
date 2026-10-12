@@ -5,7 +5,6 @@
 /// Scaffold or app bar. Wrap in a parent that provides layout chrome.
 library;
 
-import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -14,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -26,6 +24,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/widgets/common/list/section_band.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -206,6 +205,7 @@ class _PantrySections extends StatelessWidget {
       children: [
         if (expiring.isNotEmpty)
           _PantrySection(
+            key: const ValueKey('pantry-section-expiring'),
             title: l10n.pantrySectionExpiring,
             items: expiring,
             initiallyExpanded: true,
@@ -213,6 +213,7 @@ class _PantrySections extends StatelessWidget {
           ),
         for (final (i, place) in places.indexed)
           _PantrySection(
+            key: ValueKey('pantry-section-${place.title}'),
             title: place.title,
             items: place.items,
             initiallyExpanded: i == opened,
@@ -222,8 +223,9 @@ class _PantrySections extends StatelessWidget {
   }
 }
 
-class _PantrySection extends StatelessWidget {
+class _PantrySection extends StatefulWidget {
   const _PantrySection({
+    super.key,
     required this.title,
     required this.items,
     this.initiallyExpanded = false,
@@ -234,68 +236,47 @@ class _PantrySection extends StatelessWidget {
   final List<PantryItem> items;
   final bool initiallyExpanded;
 
-  /// "Går snart ut" takes the danger tone on its edge; the places do not.
+  /// "Utgår snart" takes the saffron bar and the warning tone; the places do
+  /// not.
   final bool urgent;
 
   @override
+  State<_PantrySection> createState() => _PantrySectionState();
+}
+
+class _PantrySectionState extends State<_PantrySection> {
+  late bool _open = widget.initiallyExpanded;
+
+  @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
+    if (widget.items.isEmpty) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
-    final isDark = cs.brightness == Brightness.dark;
-
-    // Skarmar v12 etapp 2 #skafferivyn: a group sits on paper (ink in dark)
-    // with a muted edge and a hairline under it, never the recipe card's
-    // ink edge and saffron rule.
-    return Container(
-      margin: const EdgeInsets.fromLTRB(
+    // Skarmar v12 etapp 2 #skafferivyn: a group is a band with its rows
+    // under it, hairlines between them, never a card.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
         AppDimensions.space24,
         0,
         AppDimensions.space24,
         AppDimensions.space16,
       ),
-      decoration: BoxDecoration(
-        color: isDark ? AppColorsDark.forestGreen : cs.surface,
-        border: Border(
-          left: BorderSide(color: urgent ? cs.error : cs.outline, width: 4),
-          bottom: BorderSide(color: cs.outlineVariant, width: 3),
-        ),
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          trailing: const ButleryExpansionChevron(),
-          initiallyExpanded: initiallyExpanded,
-          iconColor: cs.onSurfaceVariant,
-          collapsedIconColor: cs.onSurfaceVariant,
-          tilePadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space24,
-            vertical: AppDimensions.space4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionBand(
+            title: widget.title,
+            count: '${widget.items.length}',
+            expanded: _open,
+            tone: widget.urgent
+                ? SectionBandTone.warning
+                : SectionBandTone.standard,
+            semanticLabel: widget.title,
+            onTap: () => setState(() => _open = !_open),
           ),
-          childrenPadding: EdgeInsets.zero,
-          title: Row(
-            children: [
-              Text(
-                title.toLowerCase(),
-                style: AppTextStyles.bodySmallBold.copyWith(
-                  letterSpacing: 2,
-                  color: cs.onSurface,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.space8),
-              Text(
-                '${items.length}',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-          children: [
-            for (final item in items)
+          if (_open)
+            for (final item in widget.items)
               PantryItemCard(key: ValueKey(item.id), item: item),
-          ],
-        ),
+        ],
       ),
     );
   }

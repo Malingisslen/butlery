@@ -8,6 +8,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -112,7 +113,7 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
             TextButton(
               onPressed: () {
                 viewModel.dismissWelcomeBanner();
-                Navigator.pushNamed(context, Routes.addRecipe);
+                showButleryAddSheet(context);
               },
               child: Text(context.l10n.onboardingWelcomeBannerAction),
             ),

@@ -1,17 +1,22 @@
-// "Skapa konto" from guest (BUT-920): name, e-mail and password added to the
-// guest's own account, so everything the guest saved stays.
+// "Skapa konto" from guest (BUT-920): name, e-mail and password, or a Google or
+// Apple account, added to the guest's own account, so everything the guest
+// saved stays.
 library;
 
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
+import 'package:butlery/services/auth/auth_provider_flows.dart';
 import 'package:butlery/services/auth/guest_auth_service.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -23,6 +28,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/views/auth/social_sign_in_buttons.dart';
 import 'package:butlery/widgets/guest/guest_erasure.dart';
 
 class GuestUpgradeView extends StatefulWidget {
@@ -33,6 +39,8 @@ class GuestUpgradeView extends StatefulWidget {
   static const Key passwordKey = ValueKey('guestUpgrade.password');
   static const Key submitKey = ValueKey('guestUpgrade.submit');
   static const Key signInInsteadKey = ValueKey('guestUpgrade.signInInstead');
+  static Key providerKey(SignInProvider provider) =>
+      ValueKey('guestUpgrade.provider.${provider.analyticsMethod}');
 
   @override
   State<GuestUpgradeView> createState() => _GuestUpgradeViewState();
@@ -44,6 +52,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  AuthService? _auth;
   GuestAuthService? _guestAuth;
   AgeVerificationService? _ageVerification;
   UserService? _userService;
@@ -52,15 +61,22 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
   bool _passwordVisible = false;
   bool _busy = false;
   bool _emailInUse = false;
+  SignInProvider? _providerInUse;
   String? _error;
 
   // The e-mail is linked but the server has not yet given the account its
   // age claim; the button then only retries that step.
   bool _linked = false;
 
+  // The name the linked provider gave the account, which stands in for the
+  // name field.
+  String? _providerName;
+  bool _linkedWithProvider = false;
+
   @override
   void initState() {
     super.initState();
+    _auth = ServiceLocator.tryGet<AuthService>();
     _guestAuth = ServiceLocator.tryGet<GuestAuthService>();
     _ageVerification = ServiceLocator.tryGet<AgeVerificationService>();
     _userService = ServiceLocator.tryGet<UserService>();
@@ -89,6 +105,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
     setState(() {
       _busy = true;
       _emailInUse = false;
+      _providerInUse = null;
       _error = null;
     });
 
@@ -108,6 +125,43 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
       return;
     }
     _linked = true;
+    await _finish();
+  }
+
+  Future<void> _upgradeWithProvider(SignInProvider provider) async {
+    if (_busy) return;
+    final guestAuth = _guestAuth;
+    if (guestAuth == null) {
+      setState(() => _error = context.l10n.errorUnexpected);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _emailInUse = false;
+      _providerInUse = null;
+      _error = null;
+    });
+
+    final GuestProviderLink? link;
+    try {
+      link = await guestAuth.upgradeGuestWithProvider(provider);
+    } on GuestUpgradeException catch (e) {
+      if (!mounted) return;
+      final inUse = e.reason == GuestUpgradeFailure.providerInUse;
+      setState(() {
+        _busy = false;
+        _providerInUse = inUse ? provider : null;
+        _error = inUse ? null : e.message;
+      });
+      return;
+    }
+    if (link == null) {
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
+    _linked = true;
+    _linkedWithProvider = true;
+    _providerName = link.displayName;
     await _finish();
   }
 
@@ -134,7 +188,10 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
       await userService.retryLoadProfile();
       final isMinor = userService.currentUserProfile?.isMinor ?? true;
       await userService.createOrUpdateProfile(
-        displayName: _nameController.text.trim(),
+        displayName: _linkedWithProvider
+            ? (_providerName ?? userService.currentUserProfile?.displayName)
+                  .orEmpty()
+            : _nameController.text.trim(),
         // Searchable from here, as a new adult account is; a guest was not,
         // and a minor never is.
         isSearchable: isMinor ? null : true,
@@ -142,7 +199,12 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
     }
 
     if (!mounted) return;
-    SnackBarUtils.showSuccess(context, context.l10n.guestUpgradeDone);
+    SnackBarUtils.showSuccess(
+      context,
+      _linkedWithProvider
+          ? context.l10n.guestUpgradeDoneProvider
+          : context.l10n.guestUpgradeDone,
+    );
     Navigator.of(context).pop();
   }
 
@@ -198,10 +260,17 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space32),
+                ..._providerButtons(context),
                 ..._fields(context),
                 const SizedBox(height: AppDimensions.space24),
-                if (_emailInUse) ...[
-                  StateWidget.error(message: l10n.errorEmailAlreadyInUse),
+                if (_emailInUse || _providerInUse != null) ...[
+                  StateWidget.error(
+                    message: _providerInUse != null
+                        ? l10n.signInMethodsAlreadyUsed(
+                            AuthProviderFlows.providerName(_providerInUse!),
+                          )
+                        : l10n.errorEmailAlreadyInUse,
+                  ),
                   TextButton(
                     key: GuestUpgradeView.signInInsteadKey,
                     onPressed: _busy ? null : _signInInstead,
@@ -226,6 +295,29 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
         ),
       ),
     );
+  }
+
+  List<Widget> _providerButtons(BuildContext context) {
+    final auth = _auth;
+    if (auth == null || _linked) return const [];
+    final offered = [
+      for (final provider in SignInProvider.values)
+        if (auth.isProviderOffered(provider)) provider,
+    ];
+    if (offered.isEmpty) return const [];
+    return [
+      for (final provider in offered) ...[
+        ProviderButton(
+          key: GuestUpgradeView.providerKey(provider),
+          provider: provider,
+          onPressed: _busy ? null : () => _upgradeWithProvider(provider),
+        ),
+        const SizedBox(height: AppDimensions.space8 + AppDimensions.space4),
+      ],
+      const SizedBox(height: AppDimensions.space8),
+      const ProviderOrDivider(),
+      const SizedBox(height: AppDimensions.space24),
+    ];
   }
 
   List<Widget> _fields(BuildContext context) {

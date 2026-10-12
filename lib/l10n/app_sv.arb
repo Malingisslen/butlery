@@ -4803,7 +4803,7 @@
   "collaborativeAdd": "Lägg till",
   "collaborativeAddFirstItem": "Lägg till den första varan",
   "collaborativeAdding": "Lägger till …",
-  "collaborativeAddItemHint": "Skriv varunamn …",
+  "collaborativeAddItemHint": "Lägg till vara …",
   "collaborativeClearAll": "Rensa alla",
   "collaborativeClearCompleted": "Rensa avprickade",
   "collaborativeClearCompletedConfirm": "Vill du rensa alla avprickade varor?",
@@ -5830,6 +5830,14 @@
   },
   "a11yDeleteItem": "Ta bort {name}",
   "@a11yDeleteItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShoppingItemMoreOptions": "Fler val för {name}",
+  "@a11yShoppingItemMoreOptions": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -9646,7 +9654,8 @@
   "quickCaptureSave": "Spara",
   "quickCaptureSaved": "Receptet är sparat.",
   "quickCaptureEditAction": "Redigera",
-  "quickCaptureTitleHint": "Vad heter receptet?",
+  "quickCaptureTitleHint": "Vad heter rätten?",
+  "quickCaptureHelp": "Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.",
   "a11ySwipeEditAction": "Redigera recept",
   "a11ySwipeDeleteAction": "Radera receptet",
   "a11yRecipeSelected": "{title}, markerad",
@@ -15983,6 +15992,10 @@
   "guestUpgradeDone": "Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.",
   "@guestUpgradeDone": {
     "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeDoneProvider": "Kontot är skapat. Allt du gjort som gäst finns kvar.",
+  "@guestUpgradeDoneProvider": {
+    "description": "Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)"
   },
   "guestUpgradeFinishFailed": "Kontot är skapat men kunde inte göras klart. Försök igen.",
   "@guestUpgradeFinishFailed": {

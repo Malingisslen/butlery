@@ -83,7 +83,7 @@
    ]
   },
   "lib/views/auth/email_verification_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#21"
    ],
@@ -139,7 +139,7 @@
    ]
   },
   "lib/views/auth_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_1_recept_och_veckomeny#1",
     "del_2_familj_och_socialt#28",
@@ -282,15 +282,6 @@
    ],
    "images": [
     "design/skiss-mot-app/13-ingredienssok.png"
-   ]
-  },
-  "lib/views/lagg_till_recept_view.dart": {
-   "status": "skillnader-listade",
-   "frames": [
-    "del_1_recept_och_veckomeny#9"
-   ],
-   "images": [
-    "design/skiss-mot-app/39-lagg-till-recept.png"
    ]
   },
   "lib/views/legal/community_guidelines_view.dart": {
@@ -463,7 +454,7 @@
    ]
   },
   "lib/views/onboarding/onboarding_age_gate_blocked_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#8"
    ],
@@ -472,7 +463,7 @@
    ]
   },
   "lib/views/onboarding/onboarding_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_3_onboarding#7",
     "etapp_3_onboarding#10",
@@ -482,9 +473,10 @@
    ],
    "images": [
     "design/skiss-mot-app/23-onboarding-aldersgrind.png",
-    "design/skiss-mot-app/24-onboarding-valkomst.png",
-    "design/skiss-mot-app/25-onboarding-allergener.png",
-    "design/skiss-mot-app/26-onboarding-kost.png",
+    "design/skiss-mot-app/spar4/welcome.png",
+    "design/skiss-mot-app/spar4/allergen.png",
+    "design/skiss-mot-app/spar4/setup_active.png",
+    "design/skiss-mot-app/spar4/setup_done.png",
     "design/skiss-mot-app/54-morkt-onboarding-allergener.png"
    ]
   },
@@ -820,7 +812,7 @@
     "del_2_familj_och_socialt#18"
    ],
    "images": [
-    "design/skiss-mot-app/10-delad-inkopslista.png"
+    "design/skiss-mot-app/10-inkopslista.png"
    ]
   },
   "lib/views/veckomeny_view.dart": {

@@ -332,6 +332,15 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  String? providerDisplayName(String providerId) {
+    final infos = _firebaseAuth.currentUser?.providerData ?? const [];
+    for (final info in infos) {
+      if (info.providerId == providerId) return info.displayName;
+    }
+    return null;
+  }
+
+  @override
   Future<void> linkWithProviderFlow(SignInProvider provider) async {
     final user = _firebaseAuth.currentUser;
     if (user == null) throw Exception('No authenticated user');

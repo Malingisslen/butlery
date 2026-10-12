@@ -1,8 +1,7 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_header.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/avatar_stack.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -13,10 +12,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping list header
 /// This widget handles ONLY header display responsibilities:
-/// - List title and status badge display
-/// - Description and metadata display
+/// - The people on the list, its state and its activity
+/// - Description display
 /// - Progress tracking and visualization
-/// - Member count and activity summary
 /// ❌ DOES NOT CONTAIN: Item management, actions, business logic
 class CollaborativeShoppingHeader extends StatelessWidget {
   final CollaborativeShoppingViewModel viewModel;
@@ -28,36 +26,56 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: AppDimensions.borderWidthThin,
-          ),
-        ),
+    // #inkop: no tinted card; the title is in the bar, so the header is the
+    // people, the state and the progress, on the page.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.layoutMargin,
+        AppDimensions.space4,
+        AppDimensions.layoutMargin,
+        AppDimensions.space8,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTitleSection(context),
+          _buildPeopleSection(context),
           if (viewModel.hasDescription) ...[
-            const SizedBox(height: AppDimensions.space4),
+            const SizedBox(height: AppDimensions.space8),
             _buildDescriptionSection(context),
           ],
           if (viewModel.hasActiveShoppers) ...[
             const SizedBox(height: AppDimensions.space4),
             _buildPresenceSection(context),
           ],
-          const SizedBox(height: AppDimensions.space8),
+          const SizedBox(height: AppDimensions.space12),
           _buildProgressSection(context),
-          const SizedBox(height: AppDimensions.space8),
-          _buildMetadataSection(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildPeopleSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        AvatarStack(
+          names: viewModel.participantNames,
+          extra: viewModel.participantsWithoutName,
+        ),
+        const SizedBox(width: AppDimensions.space8),
+        Expanded(
+          child: Text(
+            '${viewModel.memberCountText} · ${viewModel.activitySummary}',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: AppDimensions.space8),
+        _buildStatusBadge(context),
+      ],
     );
   }
 
@@ -97,42 +115,12 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildTitleSection(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            viewModel.listTitle,
-            style: AppTextStyles.sectionHeader.copyWith(
-              color: AppModeColors.textBody(Theme.of(context).brightness),
-            ),
-          ),
-        ),
-        _buildStatusBadge(context),
-      ],
-    );
-  }
-
   Widget _buildStatusBadge(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final butlery = context.modeColors;
-    final color = viewModel.getStatusColor(cs, butlery);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space4,
-        vertical: AppDimensions.space4,
-      ),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.zero,
-      ),
-      child: Text(
-        viewModel.statusText,
-        style: AppTextStyles.labelLarge.copyWith(
-          color: color,
-        ),
-      ),
+    final color = viewModel.getStatusColor(cs, context.modeColors);
+    return Text(
+      viewModel.statusText,
+      style: AppTextStyles.labelLarge.copyWith(color: color),
     );
   }
 
@@ -193,88 +181,5 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     // on progressTrack, per mode (Komponentark v1:305; B-18). The count next
     // to it carries the number, so the line is not read twice.
     return ExcludeSemantics(child: PlateLine(value: progress));
-  }
-
-  Widget _buildMetadataSection(BuildContext context) {
-    return Row(
-      children: [
-        _buildMemberCount(context),
-        const SizedBox(width: AppDimensions.space8),
-        Expanded(
-          child: _buildActivitySummary(context),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMemberCount(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ButleryIcon(
-          ButleryIcons.users,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          size: AppDimensions.iconSizeM,
-        ),
-        const SizedBox(width: AppDimensions.space4),
-        Text(
-          viewModel.memberCountText,
-          style: AppTextStyles.labelMedium,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivitySummary(BuildContext context) {
-    return Row(
-      children: [
-        ButleryIcon(
-          ButleryIcons.clock,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          size: AppDimensions.iconSizeM,
-        ),
-        const SizedBox(width: AppDimensions.space4),
-        Expanded(
-          child: Text(
-            viewModel.activitySummary,
-            style: AppTextStyles.labelMedium,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  bool get shouldShowExpandedView => viewModel.hasDescription;
-
-  /// Get estimated header height for layout calculations
-  double getEstimatedHeight(BuildContext context) {
-    double baseHeight = AppDimensions.space16 * 2; // Top and bottom padding
-    baseHeight += 24; // Title (headlineSmall height)
-
-    if (viewModel.hasDescription) {
-      baseHeight += AppDimensions.space4;
-      baseHeight += 16 * 3; // Max 3 lines (bodyMedium height)
-    }
-
-    baseHeight += AppDimensions.space8; // Before progress
-    baseHeight += 40; // Progress section
-    baseHeight += AppDimensions.space8; // Before metadata
-    baseHeight += 20; // Metadata section
-
-    return baseHeight;
-  }
-
-  /// Get header theme data for consistent styling
-  static BoxDecoration getHeaderDecoration(BuildContext context) {
-    return BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      border: Border(
-        bottom: BorderSide(
-          color: Theme.of(context).dividerColor,
-          width: AppDimensions.borderWidthThin,
-        ),
-      ),
-    );
   }
 }

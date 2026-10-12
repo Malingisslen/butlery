@@ -1,8 +1,10 @@
 // BUT-920: signing in as a guest and turning the guest into an account.
 
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth/guest_auth_service.dart';
+import 'package:butlery/services/auth/provider_sign_in_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -247,6 +249,163 @@ void main() {
       );
 
       verify(() => authService.reloadUser()).called(1);
+    });
+  });
+
+  group('upgradeGuestWithProvider', () {
+    test('links the provider, names the account after it, records the terms '
+        'and tells AuthService the account changed', () async {
+      final guest = user(anonymous: true);
+      when(() => repo.currentUser).thenReturn(guest);
+      when(
+        () => authService.linkProviderToGuest(SignInProvider.google),
+      ).thenAnswer((_) async => const ProviderAttempt.signedIn());
+      when(
+        () => authService.linkedProviderName(SignInProvider.google),
+      ).thenReturn('Malin Gisslén');
+      when(() => repo.updateDisplayName(any(), any())).thenAnswer((_) async {});
+
+      final link = await service.upgradeGuestWithProvider(
+        SignInProvider.google,
+      );
+
+      expect(link?.displayName, 'Malin Gisslén');
+      verify(() => repo.updateDisplayName(guest, 'Malin Gisslén')).called(1);
+      expect(termsRecorded, ['guest-1']);
+      verify(() => authService.reloadUser()).called(1);
+      verify(
+        () => analytics.logSignUp(method: 'guest_upgrade_google'),
+      ).called(1);
+      // A provider's address is verified by the provider.
+      verifyNever(() => repo.sendEmailVerification());
+    });
+
+    test('an account the provider gives no name keeps its own name', () async {
+      final guest = user(anonymous: true);
+      when(() => repo.currentUser).thenReturn(guest);
+      when(
+        () => authService.linkProviderToGuest(SignInProvider.apple),
+      ).thenAnswer((_) async => const ProviderAttempt.signedIn());
+      when(
+        () => authService.linkedProviderName(SignInProvider.apple),
+      ).thenReturn(null);
+
+      final link = await service.upgradeGuestWithProvider(SignInProvider.apple);
+
+      expect(link?.displayName, isNull);
+      verifyNever(() => repo.updateDisplayName(any(), any()));
+      verify(() => authService.reloadUser()).called(1);
+    });
+
+    test('a closed sheet returns null and changes nothing', () async {
+      final guest = user(anonymous: true);
+      when(() => repo.currentUser).thenReturn(guest);
+      when(
+        () => authService.linkProviderToGuest(SignInProvider.google),
+      ).thenAnswer((_) async => const ProviderAttempt.cancelled());
+
+      expect(
+        await service.upgradeGuestWithProvider(SignInProvider.google),
+        isNull,
+      );
+      verifyNever(() => authService.reloadUser());
+      expect(termsRecorded, isEmpty);
+    });
+
+    for (final code in ['credential-already-in-use', 'email-already-in-use']) {
+      test('$code is reported as providerInUse and changes nothing', () async {
+        final guest = user(anonymous: true);
+        when(() => repo.currentUser).thenReturn(guest);
+        when(
+          () => authService.linkProviderToGuest(SignInProvider.google),
+        ).thenAnswer(
+          (_) async =>
+              ProviderAttempt.failed(FirebaseAuthException(code: code)),
+        );
+
+        await expectLater(
+          service.upgradeGuestWithProvider(SignInProvider.google),
+          throwsA(
+            isA<GuestUpgradeException>().having(
+              (e) => e.reason,
+              'reason',
+              GuestUpgradeFailure.providerInUse,
+            ),
+          ),
+        );
+        verifyNever(() => authService.reloadUser());
+        expect(termsRecorded, isEmpty);
+      });
+    }
+
+    test('another refusal is reported as other', () async {
+      final guest = user(anonymous: true);
+      when(() => repo.currentUser).thenReturn(guest);
+      when(
+        () => authService.linkProviderToGuest(SignInProvider.google),
+      ).thenAnswer((_) async => const ProviderAttempt.failed());
+
+      await expectLater(
+        service.upgradeGuestWithProvider(SignInProvider.google),
+        throwsA(
+          isA<GuestUpgradeException>().having(
+            (e) => e.reason,
+            'reason',
+            GuestUpgradeFailure.other,
+          ),
+        ),
+      );
+    });
+
+    test('an account that is not a guest is not linked', () async {
+      final current = user(anonymous: false);
+      when(() => repo.currentUser).thenReturn(current);
+
+      await expectLater(
+        service.upgradeGuestWithProvider(SignInProvider.google),
+        throwsA(
+          isA<GuestUpgradeException>().having(
+            (e) => e.reason,
+            'reason',
+            GuestUpgradeFailure.notGuest,
+          ),
+        ),
+      );
+      verifyNever(
+        () => authService.linkProviderToGuest(SignInProvider.google),
+      );
+    });
+
+    test('a failed name or terms step after the link does not fail the '
+        'upgrade or skip the others', () async {
+      final guest = user(anonymous: true);
+      when(() => repo.currentUser).thenReturn(guest);
+      when(
+        () => authService.linkProviderToGuest(SignInProvider.google),
+      ).thenAnswer((_) async => const ProviderAttempt.signedIn());
+      when(
+        () => authService.linkedProviderName(SignInProvider.google),
+      ).thenReturn('Malin');
+      when(
+        () => repo.updateDisplayName(any(), any()),
+      ).thenThrow(Exception('offline'));
+      service = GuestAuthService(
+        authRepository: repo,
+        authService: authService,
+        analyticsService: analytics,
+        pushUserScope: () async => scopePushes++,
+        recordTerms: (uid) async => throw Exception('offline'),
+      );
+
+      final link = await service.upgradeGuestWithProvider(
+        SignInProvider.google,
+      );
+
+      expect(link?.displayName, 'Malin');
+      verify(() => authService.reloadUser()).called(1);
+      verify(
+        () => analytics.logSignUp(method: 'guest_upgrade_google'),
+      ).called(1);
     });
   });
 }

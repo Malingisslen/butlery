@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -110,8 +111,7 @@ class HemEmptyState extends StatelessWidget {
                   identifier: 'btn-add-recipe',
                   child: HeroButton(
                     key: addRecipeKey,
-                    onPressed: () =>
-                        Navigator.pushNamed(context, Routes.addRecipe),
+                    onPressed: () => showButleryAddSheet(context),
                     icon: ButleryIcons.plus,
                     label: l10n.addRecipeTitle,
                   ),

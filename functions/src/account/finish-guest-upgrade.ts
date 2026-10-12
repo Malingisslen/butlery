@@ -27,8 +27,12 @@ import {
   writeComplianceAudit,
 } from "./verify-signup-age";
 
-/** Google and Apple are added with BUT-916. */
-const UPGRADE_PROVIDERS: ReadonlySet<string> = new Set(["password"]);
+/** The provider the guest linked, as the refreshed token names it. */
+const UPGRADE_PROVIDERS: ReadonlySet<string> = new Set([
+  "password",
+  "google.com",
+  "apple.com",
+]);
 
 export function assertUpgradeCaller(
   auth: CallerAuth | undefined,

@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// What the heading's colour says about the section under it.
@@ -23,6 +24,10 @@ enum SectionHeadingTone {
 
   /// text.danger: the cards under it need the user, as "Väntar på dig".
   attention,
+
+  /// text.warning: the section is about to run out, as "Utgår snart" in the
+  /// pantry.
+  warning,
 }
 
 class SectionHeading extends StatelessWidget {
@@ -45,6 +50,7 @@ class SectionHeading extends StatelessWidget {
       SectionHeadingTone.strong => cs.onSurface,
       SectionHeadingTone.emphasis => cs.tertiary,
       SectionHeadingTone.attention => cs.error,
+      SectionHeadingTone.warning => AppModeColors.textWarning(cs.brightness),
     };
     return Semantics(
       // Its own node, so the heading names the section and does not swallow

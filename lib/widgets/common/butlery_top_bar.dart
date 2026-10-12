@@ -78,7 +78,8 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   }) : pattern = ButleryTopBarPattern.rot,
        backTo = null,
        onBack = null,
-       implyBack = false;
+       implyBack = false,
+       light = false;
 
   /// Mönster 2 · Undersida (Komponentark v1 rad 71–78).
   ///
@@ -97,6 +98,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.backTo,
     this.onBack,
     this.implyBack = true,
+    this.light = false,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
     this.actions = const [],
@@ -131,6 +133,11 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Vad bakåtpilen gör. Null ger [Navigator.maybePop].
   final VoidCallback? onBack;
+
+  /// Ritar undersidan på papper med ink-text i stället för på surface.ink, som
+  /// skisserna gör för vyer där Malin valt ljus rubrik (skissgranskningen
+  /// 2026-10-11). Raderna i `design/screen-register.json` säger vilka vyer.
+  final bool light;
 
   /// Om undersidan ritar bakåtpilen när rutten går att poppa. Falskt ger en
   /// undersida utan pil, för en vy som själv säger att den inte har någon
@@ -233,6 +240,9 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 
+  /// Rotnivån och en ljus undersida ritas på papper.
+  bool get _onPaper => _isRoot || light;
+
   /// Titelns stil. En [titleStyle] läggs ovanpå mönstrets roll, så att det
   /// som inte anges (till exempel radhöjden) kommer från rollen. Då räknar
   /// [preferredSize] alltid med en känd radhöjd.
@@ -282,13 +292,13 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     // Rotnivån ritas på surface och undersidan på primary (Komponentark v1
     // rad 62 och 73).
     final cs = Theme.of(context).colorScheme;
-    final background = backgroundColor ?? (_isRoot ? cs.surface : cs.primary);
+    final background = backgroundColor ?? (_onPaper ? cs.surface : cs.primary);
     final foreground =
-        foregroundColor ?? (_isRoot ? cs.onSurface : cs.onPrimary);
+        foregroundColor ?? (_onPaper ? cs.onSurface : cs.onPrimary);
     // text.secondary är mätt mot surface.base. På en annan yta vet fältet
     // inget om kontrasten, så sekundärraden följer då förgrundsfärgen.
     final secondary =
-        foregroundColor ?? (_isRoot ? cs.onSurfaceVariant : foreground);
+        foregroundColor ?? (_onPaper ? cs.onSurfaceVariant : foreground);
 
     // An action that needs a selection is off at zero with its name still
     // readable (produktregler.md:876), in the disabled role and never
@@ -299,7 +309,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     // bar with another surface (the subpage's ink, or a caller's colour)
     // disabled is not drawn, so the fade stays there (beslut-paket2.md,
     // "disabled on surface.ink").
-    final Color? disabledForeground = _isRoot && backgroundColor == null
+    final Color? disabledForeground = _onPaper && backgroundColor == null
         ? AppModeColors.textDisabled(cs.brightness)
         : null;
 

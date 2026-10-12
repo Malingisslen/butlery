@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -60,7 +60,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
         ),
       );
       if (shouldImport == true && mounted) {
-        await Navigator.of(context).pushNamed(Routes.addRecipe);
+        await showButleryAddSheet(context);
       }
       return;
     }

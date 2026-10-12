@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
@@ -191,6 +192,23 @@ mixin AuthProviderFlows on ChangeNotifier, StateNotifierMixin {
         });
         return false;
     }
+  }
+
+  /// Links [provider] to the signed-in guest. The attempt itself comes back,
+  /// so the caller can tell a closed sheet from "already has an account".
+  Future<ProviderAttempt> linkProviderToGuest(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return const ProviderAttempt.failed();
+    return service.linkProvider(provider);
+  }
+
+  /// The first name a freshly linked [provider] gives the account, if it has
+  /// one: the same minimisation as the terms step, which also starts from the
+  /// first name only, since this name is shown to other people.
+  String? linkedProviderName(SignInProvider provider) {
+    final held = providerSignIn?.providerDisplayName(provider).orEmptyTrimmed();
+    final first = held?.split(RegExp(r'\s+')).first;
+    return first == null || first.isEmpty ? providerFirstName : first;
   }
 
   /// Removes [provider] from the account. Apple's tokens are revoked first
