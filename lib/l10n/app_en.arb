@@ -4772,7 +4772,7 @@
   "collaborativeAdd": "Add",
   "collaborativeAddFirstItem": "Add the first item",
   "collaborativeAdding": "Adding …",
-  "collaborativeAddItemHint": "Type item name...",
+  "collaborativeAddItemHint": "Add item ...",
   "collaborativeClearAll": "Clear all",
   "collaborativeClearCompleted": "Clear completed",
   "collaborativeClearCompletedConfirm": "Do you want to clear all completed items?",
@@ -5787,6 +5787,14 @@
   },
   "a11yDeleteItem": "Delete {name}",
   "@a11yDeleteItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShoppingItemMoreOptions": "More options for {name}",
+  "@a11yShoppingItemMoreOptions": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -9490,7 +9498,8 @@
   "quickCaptureSave": "Save",
   "quickCaptureSaved": "Recipe saved.",
   "quickCaptureEditAction": "Edit",
-  "quickCaptureTitleHint": "What's the recipe called?",
+  "quickCaptureTitleHint": "What's the dish called?",
+  "quickCaptureHelp": "The recipe is saved as a card without details – you can import ingredients and steps whenever you like.",
   "a11ySwipeEditAction": "Edit recipe",
   "a11ySwipeDeleteAction": "Delete recipe",
   "a11yRecipeSelected": "{title}, selected",

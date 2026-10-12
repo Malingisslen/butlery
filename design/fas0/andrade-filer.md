@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=874-->
+<!--manifest:files=875-->
 
 ## Reporoten
 
@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `e262cade0bda7564ea8612e293335af97501fc54848ae02de41cd9fc91df659f` |
+| `beslutslogg.md` | `de802a15a7094cf69aab4c19d1c57af2d0c21b4518ecdf2181eaa3f210c343d1` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `b2ad2dd40a3a59f0c681fab213f8f58dada9ae0025041668db10980843de0e3d` |
+| `screen-register.json` | `ae2fcb9a2a768bde1d0810a32892bd6ab2ce3f1a2de07ee14c895ce2e8036b4e` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -626,11 +626,12 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/03-hem-laddar.png` | `22a9e3cfc80096f57eebfb5aabc486215324f3f333e0594e0c179b5cd24b3c27` |
 | `skiss-mot-app/04-hem-offline.png` | `25c574b37df4fa2ca49cdfbf90a87e28b9a580b060d919693e43b562574952d0` |
 | `skiss-mot-app/05-start-inloggning.png` | `5f58e9704b51f044ffdd3dee73eda8f91d548074a301d4f46a2a095055129770` |
-| `skiss-mot-app/06-skafferi.png` | `84f18152f40b0451c3949b8e203a83e1d5cc308175da14e318434d158cc400e1` |
+| `skiss-mot-app/06-skafferi.png` | `50fd0707fbca6f6d3f3b156b3d217252078f18e9f36655c19c6fb776ae2e657f` |
 | `skiss-mot-app/07-matlagningslage.png` | `c8b4148bf963ad2674ca90c70c87cfc8a54295808d11005ef78d3742ee197e29` |
 | `skiss-mot-app/08-import-lank.png` | `86165268b556792096efb6911c4a1d8b15b649171d4a398319db8d02ad6f0d02` |
 | `skiss-mot-app/09-mer.png` | `2684dc20c174910be324cd697234d0956aff6f130bd938c1f22c11af57b9f22f` |
-| `skiss-mot-app/10-delad-inkopslista.png` | `dfbf15ccb256f35cfd042a82f0c211dd1f10f2ec71609366f88ea5c324beb15b` |
+| `skiss-mot-app/10-delad-inkopslista.png` | `3705e4000d95f4f5600ec9b08b1665113bc6e47785005a716c37a0fa7fd45035` |
+| `skiss-mot-app/10-inkopslista.png` | `126d55fb6e5c88b98faf9a22eaed7ab4c8662729fc87ac29914cbeaecca6e81b` |
 | `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
 | `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
 | `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
@@ -657,8 +658,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/35-notiser.png` | `faac86beabe71dd3c97164e9def379f0157f387c20c966f2beaa792c071a2557` |
 | `skiss-mot-app/36-min-familj.png` | `9d3831ebd84ed0bb34b654e7b22fce020d896eefc6e9961c0c76ba2f0dfb4570` |
 | `skiss-mot-app/37-delade-listor.png` | `438b93f29fec7da4ecc830d97cee58c3a74372f592e8ff17f641975a44faf46e` |
-| `skiss-mot-app/38-snabbspara.png` | `fa6bc9628045214cda9d435c0eb23e855c0ea27bae6ffeb26052a952aca4770f` |
-| `skiss-mot-app/39-lagg-till-recept.png` | `71304fe4910133bfded631342b600da6417b35af17a79dc4af968011dcae6319` |
+| `skiss-mot-app/38-snabbspara.png` | `a1cdd6f497a3481ba49d78d70d4c7207fa8451b9c8d2070c03bd85eb25dcfd79` |
+| `skiss-mot-app/39-lagg-till-recept.png` | `6ba7c4f4eeca9546329cac27bd3619b6916ea44ab81a0053d1a94c5b9960ed07` |
 | `skiss-mot-app/40-familjemedlem.png` | `28272870faaafee4b801412ed52db55064d66be3b01c4b3bb44058f9902eb8e1` |
 | `skiss-mot-app/50-morkt-hem.png` | `6126402d62bab9690cf0aef18139a5b409b8216bbad73388dd6a9b4a2abcdf9a` |
 | `skiss-mot-app/51-morkt-matlagning.png` | `cd561b5b7e157694b16c19adf4682f86b14ab965c1dfbee5c24de7267cc9c680` |

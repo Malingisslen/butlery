@@ -11686,7 +11686,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAddItemHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv varunamn …'**
+  /// **'Lägg till vara …'**
   String get collaborativeAddItemHint;
 
   /// No description provided for @collaborativeClearAll.
@@ -13716,6 +13716,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort {name}'**
   String a11yDeleteItem(String name);
+
+  /// No description provided for @a11yShoppingItemMoreOptions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String a11yShoppingItemMoreOptions(String name);
 
   /// No description provided for @a11ySharedRecipe.
   ///
@@ -22832,8 +22838,14 @@ abstract class AppLocalizations {
   /// No description provided for @quickCaptureTitleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Vad heter receptet?'**
+  /// **'Vad heter rätten?'**
   String get quickCaptureTitleHint;
+
+  /// No description provided for @quickCaptureHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.'**
+  String get quickCaptureHelp;
 
   /// No description provided for @a11ySwipeEditAction.
   ///

@@ -7009,7 +7009,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeAdding => 'Adding …';
 
   @override
-  String get collaborativeAddItemHint => 'Type item name...';
+  String get collaborativeAddItemHint => 'Add item ...';
 
   @override
   String get collaborativeClearAll => 'Clear all';
@@ -8242,6 +8242,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yDeleteItem(String name) {
     return 'Delete $name';
+  }
+
+  @override
+  String a11yShoppingItemMoreOptions(String name) {
+    return 'More options for $name';
   }
 
   @override
@@ -13679,7 +13684,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickCaptureEditAction => 'Edit';
 
   @override
-  String get quickCaptureTitleHint => 'What\'s the recipe called?';
+  String get quickCaptureTitleHint => 'What\'s the dish called?';
+
+  @override
+  String get quickCaptureHelp =>
+      'The recipe is saved as a card without details – you can import ingredients and steps whenever you like.';
 
   @override
   String get a11ySwipeEditAction => 'Edit recipe';

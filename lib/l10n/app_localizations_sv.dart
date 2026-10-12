@@ -7006,7 +7006,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get collaborativeAdding => 'Lägger till …';
 
   @override
-  String get collaborativeAddItemHint => 'Skriv varunamn …';
+  String get collaborativeAddItemHint => 'Lägg till vara …';
 
   @override
   String get collaborativeClearAll => 'Rensa alla';
@@ -8251,6 +8251,11 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String a11yDeleteItem(String name) {
     return 'Ta bort $name';
+  }
+
+  @override
+  String a11yShoppingItemMoreOptions(String name) {
+    return 'Fler val för $name';
   }
 
   @override
@@ -13739,7 +13744,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get quickCaptureEditAction => 'Redigera';
 
   @override
-  String get quickCaptureTitleHint => 'Vad heter receptet?';
+  String get quickCaptureTitleHint => 'Vad heter rätten?';
+
+  @override
+  String get quickCaptureHelp =>
+      'Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.';
 
   @override
   String get a11ySwipeEditAction => 'Redigera recept';

@@ -168,7 +168,7 @@ void main() {
         expect(mark.color, _textPrimary(theme));
       });
 
-      testWidgets('shopping: an unticked box has a text.primary edge', (
+      testWidgets('shopping: an unticked box has the control edge, not ink', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -196,11 +196,14 @@ void main() {
             (w) =>
                 w is AnimatedContainer &&
                 w.constraints ==
-                    const BoxConstraints.tightFor(width: 22, height: 22),
+                    const BoxConstraints.tightFor(width: 24, height: 24),
           ),
         );
         final border = (box.decoration! as BoxDecoration).border! as Border;
-        expect(border.top.color, _textPrimary(theme));
+        // The row draws the control edge (cs.outline). The sweep's point
+        // stands: it must never be cs.primary, which is ink on the dark page.
+        expect(border.top.color, theme.colorScheme.outline);
+        expect(border.top.color, isNot(theme.colorScheme.primary));
       });
 
       testWidgets('messaging: the send glyph is text.primary when typing', (

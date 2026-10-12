@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -403,21 +404,10 @@ void main() {
         expect(progressColor, isA<Color>());
       });
 
-      test('BUT-2136: an item subtitle names a fine-grained aisle', () {
-        final manager = ShoppingDisplayManager();
-        final subtitle = manager.getItemSubtitle(
-          UnifiedShoppingItem(
-            id: 'i',
-            name: 'Fläskfilé',
-            amount: 1,
-            unit: '',
-            category: ShoppingCategory.meat,
-            bought: false,
-          ),
-        );
+      test('BUT-2136: a zone band names a fine-grained aisle', () {
+        final name = ShoppingCategory.displayName(ShoppingCategory.meat);
 
-        expect(subtitle, contains('Kött'));
-        expect(subtitle, isNot(contains('meat')));
+        expect(name, 'Kött');
       });
 
       // P7-C4: the progress colour reads the generated member for the
@@ -504,13 +494,6 @@ void main() {
     });
 
     group('UI Helpers', () {
-      test('should provide item subtitle', () {
-        final item = testShoppingList.items.first;
-        final subtitle = viewModel.getItemSubtitle(item);
-
-        expect(subtitle, isA<String?>());
-      });
-
       test('should provide item trailing widgets', () {
         final item = testShoppingList.items.first;
         final widgets = viewModel.getItemTrailingWidgets(item);
@@ -978,6 +961,118 @@ void main() {
           );
         },
       );
+    });
+
+    group('participantNames / participantsWithoutName', () {
+      UnifiedShoppingItem claimed(
+        String id,
+        String? by, {
+        bool bought = false,
+      }) => UnifiedShoppingItem(
+        id: id,
+        name: 'Vara $id',
+        amount: 1,
+        unit: 'st',
+        category: 'Mejeri',
+        bought: bought,
+        assignedToUserId: by == null ? null : 'uid-$by',
+        assignedToDisplayName: by,
+      );
+
+      Future<CollaborativeShoppingViewModel> viewModelFor({
+        required List<UnifiedShoppingItem> items,
+        String ownerName = 'Malin',
+        int memberCount = 1,
+      }) async {
+        final list = ShoppingListFactory.build(
+          id: testListId,
+          ownerDisplayName: ownerName,
+          items: items,
+          memberPermissions: {
+            for (var i = 0; i < memberCount; i++)
+              'member-$i': SharedListPermission.edit,
+          },
+        );
+        mockShoppingService.setShoppingState(
+          lists: [list],
+          activeListId: testListId,
+        );
+        final vm = CollaborativeShoppingViewModel(
+          listId: testListId,
+          shoppingService: mockShoppingService,
+        );
+        addTearDown(vm.dispose);
+        await Future.delayed(Duration.zero);
+        expect(vm.currentList, isNotNull, reason: 'the list must have loaded');
+        return vm;
+      }
+
+      test('the owner comes first, then each claimer once, in item order '
+          'and bought items\' claimers count', () async {
+        final vm = await viewModelFor(
+          items: [
+            claimed('1', 'Bea'),
+            claimed('2', 'Alva'),
+            claimed('3', 'Bea'),
+            claimed('4', 'Cilla', bought: true),
+            claimed('5', null),
+          ],
+          memberCount: 4,
+        );
+
+        expect(vm.participantNames, ['Malin', 'Bea', 'Alva', 'Cilla']);
+      });
+
+      test(
+        'an empty claimer name and an empty owner name are skipped',
+        () async {
+          final vm = await viewModelFor(
+            ownerName: '',
+            items: [claimed('1', ''), claimed('2', 'Bea')],
+            memberCount: 2,
+          );
+
+          expect(vm.participantNames, ['Bea']);
+        },
+      );
+
+      test('the owner who also claims an item is listed once', () async {
+        final vm = await viewModelFor(
+          items: [claimed('1', 'Malin')],
+          memberCount: 1,
+        );
+
+        expect(vm.participantNames, ['Malin']);
+      });
+
+      test('members the names do not cover are counted', () async {
+        final vm = await viewModelFor(
+          items: [claimed('1', 'Bea')],
+          memberCount: 5,
+        );
+
+        expect(vm.participantNames, ['Malin', 'Bea']);
+        expect(vm.participantsWithoutName, 3);
+      });
+
+      test('fewer members than names never gives a negative count', () async {
+        final vm = await viewModelFor(
+          items: [claimed('1', 'Bea'), claimed('2', 'Alva')],
+          memberCount: 1,
+        );
+
+        expect(vm.participantNames, hasLength(3));
+        expect(vm.participantsWithoutName, 0);
+      });
+
+      test('as many members as names leaves none uncounted', () async {
+        final vm = await viewModelFor(
+          items: [claimed('1', 'Bea')],
+          memberCount: 2,
+        );
+
+        expect(vm.participantsWithoutName, 0);
+      });
     });
   });
 }

@@ -41,6 +41,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/views/social/collaborative_shopping_view.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -54,6 +55,8 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
+import 'package:butlery/widgets/shopping/shopping_row.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -201,6 +204,10 @@ void main() {
     await tester.pump();
   }
 
+  // The add button is a saffron square with only a glyph; the name a screen
+  // reader hears is its semantic label.
+  Finder addButton() => find.byType(SaffronSquareButton);
+
   group('CollaborativeShoppingView — absent list', () {
     test('a missing target list drives the VM into its error state with a '
         'Swedish error message', () async {
@@ -291,7 +298,7 @@ void main() {
     );
 
     testWidgets(
-      'tapping an item checkbox dispatches the toggle for that item id',
+      'tapping an item row dispatches the toggle for that item id',
       (tester) async {
         shoppingService.setShoppingState(
           lists: [
@@ -305,19 +312,19 @@ void main() {
         String? toggledId;
         await pumpItems(tester, vm, (id) => toggledId = id);
 
-        final checkbox = find.descendant(
+        final row = find.descendant(
           of: find.byKey(const ValueKey('collab-item-item-milk')),
-          matching: find.byType(Checkbox),
+          matching: find.byType(ShoppingRow),
         );
-        expect(checkbox, findsOneWidget);
+        expect(row, findsOneWidget);
 
-        await tester.tap(checkbox);
+        await tester.tap(row);
         await tester.pump();
 
         expect(
           toggledId,
           'item-milk',
-          reason: 'Checking an item must dispatch onToggleItem with its id',
+          reason: 'Ticking an item must dispatch onToggleItem with its id',
         );
       },
     );
@@ -408,7 +415,11 @@ void main() {
 
       // The view's key content rendered: the add-item action (the formerly
       // crash-inducing FilledButton, by its Swedish label) and the seeded items.
-      expect(find.text('Lägg till'), findsOneWidget); // l10n.collaborativeAdd
+      expect(addButton(), findsOneWidget);
+      expect(
+        tester.widget<SaffronSquareButton>(addButton()).semanticLabel,
+        'Lägg till', // l10n.collaborativeAdd
+      );
       expect(find.text('Mjölk'), findsOneWidget);
       expect(find.text('Bröd'), findsOneWidget);
     });
@@ -454,7 +465,7 @@ void main() {
       await pumpFullView(tester);
 
       await tester.enterText(find.byType(TextField), 'Havregryn');
-      await tester.tap(find.text('Lägg till'));
+      await tester.tap(addButton());
       // Drain _addItem's async chain (service add → list refresh → clear).
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -520,7 +531,7 @@ void main() {
       );
 
       await tester.enterText(find.byType(TextField), 'Havregryn');
-      await tester.tap(find.text('Lägg till'));
+      await tester.tap(addButton());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
@@ -582,7 +593,7 @@ void main() {
       );
 
       await tester.enterText(find.byType(TextField), 'Havregryn');
-      await tester.tap(find.text('Lägg till'));
+      await tester.tap(addButton());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
@@ -628,12 +639,13 @@ void main() {
     }
 
     Future<void> tapItemCheckbox(WidgetTester tester, String itemId) async {
-      final checkbox = find.descendant(
+      // The tick box is not a control of its own: a tap on the row ticks it.
+      final row = find.descendant(
         of: find.byKey(ValueKey('collab-item-$itemId')),
-        matching: find.byType(Checkbox),
+        matching: find.byType(ShoppingRow),
       );
-      expect(checkbox, findsOneWidget);
-      await tester.tap(checkbox);
+      expect(row, findsOneWidget);
+      await tester.tap(row);
       // Drain _toggleItem's async chain (toggle → refresh → announce).
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -748,12 +760,13 @@ void main() {
     }
 
     Future<void> tapItemCheckbox(WidgetTester tester, String itemId) async {
-      final checkbox = find.descendant(
+      // The tick box is not a control of its own: a tap on the row ticks it.
+      final row = find.descendant(
         of: find.byKey(ValueKey('collab-item-$itemId')),
-        matching: find.byType(Checkbox),
+        matching: find.byType(ShoppingRow),
       );
-      expect(checkbox, findsOneWidget);
-      await tester.tap(checkbox);
+      expect(row, findsOneWidget);
+      await tester.tap(row);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
     }
@@ -899,7 +912,7 @@ void main() {
 
         await pumpFullView(tester);
         await tester.enterText(find.byType(TextField), 'Havregryn');
-        await tester.tap(find.text('Lägg till'));
+        await tester.tap(addButton());
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
 
@@ -993,7 +1006,7 @@ void main() {
       final notice = find.byKey(
         const ValueKey('collaborativeShopping.unaddedText'),
       );
-      expect(find.text('Lägg till'), findsNothing);
+      expect(addButton(), findsNothing);
       // The snackbar is short and says why; the typed text is in a notice in
       // the view, not in the snackbar, so it is never cut off.
       expect(find.text(l10n.roleLoweredShoppingList), findsOneWidget);
@@ -1143,16 +1156,16 @@ void main() {
       );
     });
 
-    // B83-2d: a notice box — surface.tint.warning fill, no border lines.
+    // v10-2: the notice is a list row, not a box — a surface.tint.warning
+    // plate, a 3 px warning-coloured left edge, a hairline under, no radius.
     for (final (name, theme, tint) in [
       ('light', AppTheme.lightTheme, const Color(0xFFF0EEE2)),
       ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
     ]) {
       testWidgets(
-        '$name: a surface.tint.warning fill with no border (B83-2d)',
-        (
-          tester,
-        ) async {
+        '$name: a warning plate with a 3 px warning edge and a hairline '
+        'under, no radius (v10-2)',
+        (tester) async {
           final list = listWith([item('Mjölk')]);
           shoppingService.setShoppingState(lists: [list], isInitialized: true);
           await pumpFullView(tester, theme: theme);
@@ -1178,11 +1191,16 @@ void main() {
           );
           final decoration = box.decoration! as BoxDecoration;
           expect(decoration.color, tint);
-          expect(decoration.border, isNull);
+          expect(decoration.borderRadius, isNull);
+          final border = decoration.border! as Border;
+          expect(border.left.width, 3);
           expect(
-            decoration.borderRadius,
-            BorderRadius.circular(AppDimensions.radiusControl),
+            border.left.color,
+            AppModeColors.textWarning(theme.brightness),
           );
+          expect(border.bottom.color, theme.dividerColor);
+          expect(border.top, BorderSide.none);
+          expect(border.right, BorderSide.none);
         },
       );
     }
@@ -1267,16 +1285,93 @@ void main() {
     });
   });
 
-  // BUT-2183: the list header is surface.raised, so its status badge stands on
-  // surface.base with no border, and the text carries the status colour.
-  group('CollaborativeShoppingView — status badge (BUT-2183)', () {
+  // "Rensa köpta" belongs to those who can edit the list.
+  group('CollaborativeShoppingView — clearing bought items', () {
+    Future<void> pumpFullView(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets('an editor sees it and is asked to confirm before anything '
+        'is cleared', (tester) async {
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Smör', bought: true)]),
+        ],
+        isInitialized: true,
+      );
+      when(
+        () => shoppingService.clearCompletedItems(),
+      ).thenAnswer((_) async => true);
+      await pumpFullView(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+
+      await tester.tap(find.text('Rensa köpta'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n.collaborativeClearCompletedConfirm),
+        findsOneWidget,
+      );
+      verifyNever(() => shoppingService.clearCompletedItems());
+
+      await tester.tap(find.text(l10n.collaborativeClearAll));
+      await tester.pumpAndSettle();
+
+      verify(() => shoppingService.clearCompletedItems()).called(1);
+    });
+
+    testWidgets('a view-only member does not see it', (tester) async {
+      final viewOnly = FakePermissionService();
+      viewOnly.setPermissionState(
+        currentUserId: 'test-user-123',
+        userDisplayName: 'Test User',
+        defaultHasPermission: false,
+        permissions: {
+          _testListId: {
+            ResourcePermission.viewer: true,
+            ResourcePermission.editor: false,
+          },
+        },
+      );
+      TestServiceLocator.registerMock<PermissionService>(viewOnly);
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Smör', bought: true)]),
+        ],
+        isInitialized: true,
+      );
+
+      await pumpFullView(tester);
+
+      // Positive control: the bought section is drawn.
+      expect(find.text('Smör'), findsOneWidget);
+      expect(find.text('Köpt (1)'), findsOneWidget);
+      expect(find.text('Rensa köpta'), findsNothing);
+    });
+  });
+
+  // BUT-2183: the header status is plain text on the page — no pill, no
+  // fill, no border — and the text carries the status colour.
+  group('CollaborativeShoppingView — status text (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
       for (final done in [false, true]) {
         testWidgets(
-          '$name, ${done ? 'completed' : 'in progress'}: base fill, no border, '
+          '$name, ${done ? 'completed' : 'in progress'}: no fill or border, '
           'the status text token',
           (tester) async {
             tester.view.physicalSize = const Size(420, 3000);
@@ -1311,12 +1406,21 @@ void main() {
               done ? l10n.statusCompleted : l10n.statusInProgress,
             );
             expect(badge, findsOneWidget);
-            final box = tester.widget<Container>(
-              find.ancestor(of: badge, matching: find.byType(Container)).first,
+
+            final filled = find.descendant(
+              of: find.byType(CollaborativeShoppingHeader),
+              matching: find.byWidgetPredicate((w) {
+                if (w is! Container) return false;
+                final d = w.decoration;
+                return d is BoxDecoration &&
+                    (d.color != null || d.border != null);
+              }),
             );
-            final decoration = box.decoration! as BoxDecoration;
-            expect(decoration.color, theme.colorScheme.surface);
-            expect(decoration.border, isNull);
+            expect(
+              find.descendant(of: filled, matching: badge),
+              findsNothing,
+              reason: 'the status stands on the page, not on a plate',
+            );
             expect(
               tester.widget<Text>(badge).style?.color,
               done

@@ -1,8 +1,6 @@
-// BUT-2146: the shopping list's category heading (Skarmar v12 del 2 #inkop,
-// :881-884 light, :986-989 dark). An uppercase overline over a hairline, with
-// "N av M" at the right, and no category-coloured plate behind it.
-
-import 'dart:ui' as ui;
+// The shopping list's category heading (Skarmar v12 del 2 #inkop): a
+// SectionBand with the name in capitals, "N av M" at the right and a chevron,
+// that folds its category.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -14,7 +12,6 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/factories/shopping_list_factory.dart';
 import '../../../test_support/semantics_announcement.dart';
@@ -89,8 +86,20 @@ Future<void> _pump(
 Finder _header(String category) =>
     find.byKey(ValueKey('shopping-category-header-$category'));
 
-BoxDecoration _decoration(WidgetTester tester, String category) {
-  final container = tester.widget<AnimatedContainer>(_header(category));
+BoxDecoration _band(WidgetTester tester, String category) {
+  final container = tester.widget<Container>(
+    find
+        .descendant(
+          of: _header(category),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is Container &&
+                w.decoration is BoxDecoration &&
+                (w.decoration! as BoxDecoration).border is Border,
+          ),
+        )
+        .first,
+  );
   return container.decoration! as BoxDecoration;
 }
 
@@ -138,41 +147,6 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('the empty-categories toggle says what a tap does, reads its '
-      'visible text once, and exposes its toggled state', (tester) async {
-    final handle = tester.ensureSemantics();
-    await _pump(tester, _vm(items));
-
-    final toggle = find.bySemanticsLabel(RegExp('^Visa eller dölj'));
-    expect(toggle, findsOneWidget);
-    final lines = announcedLines(tester, toggle);
-    expect(
-      lines.where((l) => l == 'Visa eller dölj'),
-      hasLength(1),
-      reason: '$lines',
-    );
-    expect(
-      lines.where((l) => l == 'Övriga kategorier'),
-      hasLength(1),
-      reason: 'the visible text is the noun and is read once: $lines',
-    );
-    expectNothingAnnouncedTwice(tester, toggle);
-    expectActivatable(tester, toggle);
-    expect(
-      tester.getSemantics(toggle).getSemanticsData().flagsCollection.isToggled,
-      ui.Tristate.isFalse,
-    );
-
-    await tester.tap(find.text('Övriga kategorier'));
-    await tester.pump();
-
-    expect(
-      tester.getSemantics(toggle).getSemanticsData().flagsCollection.isToggled,
-      ui.Tristate.isTrue,
-    );
-    handle.dispose();
-  });
-
   testWidgets('the English count reads "N of M"', (tester) async {
     await _pump(tester, _vm(items), locale: const Locale('en'));
 
@@ -186,47 +160,37 @@ void main() {
   });
 
   for (final brightness in Brightness.values) {
-    testWidgets('${brightness.name}: no plate, a one-pixel rule in the '
-        "facit's colour", (tester) async {
+    testWidgets('${brightness.name}: a plated band with an ink bar at its '
+        'left edge', (tester) async {
       await _pump(tester, _vm(items), brightness: brightness);
 
       final cs = brightness == Brightness.dark
           ? AppTheme.darkTheme.colorScheme
           : AppTheme.lightTheme.colorScheme;
-      final decoration = _decoration(tester, ShoppingCategory.fruitVeg);
-      expect(decoration.color, isNull);
-      expect(decoration.borderRadius, isNull);
-      final border = decoration.border! as Border;
-      expect(border.top, BorderSide.none);
-      expect(border.bottom.width, 1);
-      // Ink in light (:881), border.control in dark (:986).
-      expect(
-        border.bottom.color,
-        brightness == Brightness.dark ? cs.outline : cs.onSurface,
-      );
-      expect(cs.onSurface, isNot(cs.outline));
-      expect(
-        find.descendant(
-          of: _header(ShoppingCategory.fruitVeg),
-          matching: find.byType(PlateLine),
-        ),
-        findsNothing,
-      );
+      final band = _band(tester, ShoppingCategory.fruitVeg);
+      expect(band.color, cs.surfaceContainerHighest);
+      final border = band.border! as Border;
+      expect(border.left.color, cs.onSurface);
+      expect(border.left.width, greaterThan(0));
+      expect(border.bottom, BorderSide.none);
     });
   }
 
-  testWidgets('a bought section heads with its bare count', (tester) async {
+  testWidgets('bought items sit flat under one "Köpt (N)" heading', (
+    tester,
+  ) async {
     await _pump(tester, _vm(items));
 
-    final bought = find.byKey(
-      ValueKey('shopping-category-header-bought-${ShoppingCategory.fruitVeg}'),
-    );
+    expect(find.text('Köpt (1)'), findsOneWidget);
+    expect(find.text('Rensa köpta'), findsOneWidget);
+    // The bought row is shown, but not as a folding category of its own.
+    expect(find.textContaining('Vara c'), findsOneWidget);
     expect(
-      find.descendant(of: bought, matching: find.text('1')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: bought, matching: find.textContaining(' av ')),
+      find.byKey(
+        ValueKey(
+          'shopping-category-header-bought-${ShoppingCategory.fruitVeg}',
+        ),
+      ),
       findsNothing,
     );
   });
