@@ -127,7 +127,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                   const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.familyRatingSectionTitle,
-                    style: _strong.copyWith(
+                    style: AppTextStyles.bodySmallBold.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
@@ -192,7 +192,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             children: [
               Text(
                 l10n.familyRatingAverageLabel,
-                style: _strong,
+                style: AppTextStyles.bodySmallBold,
               ),
               Text(
                 l10n.familyRatingCount(vm.familyCount),
@@ -251,7 +251,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                             Flexible(
                               child: Text(
                                 row.member.displayName,
-                                style: _strong,
+                                style: AppTextStyles.bodySmallBold,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -330,7 +330,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                 children: [
                   Text(
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
-                    style: _strong.copyWith(
+                    style: AppTextStyles.bodySmallBold.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
@@ -407,7 +407,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(width: AppDimensions.space8),
             Text(
               label,
-              style: _strong,
+              style: AppTextStyles.bodySmallBold,
             ),
           ],
         ),
@@ -438,12 +438,9 @@ class _StarNumber extends StatelessWidget {
         const SizedBox(width: AppDimensions.space4),
         Text(
           value.toStringAsFixed(1).replaceAll('.', ','),
-          style: _strong.copyWith(color: cs.onSurface),
+          style: AppTextStyles.bodySmallBold.copyWith(color: cs.onSurface),
         ),
       ],
     );
   }
 }
-
-TextStyle get _strong =>
-    AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700);
