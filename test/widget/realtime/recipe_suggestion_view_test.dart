@@ -145,10 +145,7 @@ void main() {
     await open(tester, asOwner: false, suggestion: replaced);
     expect(
       find.textContaining(
-        l10n
-            .recipeSuggestionIntroMineUpdated('Pannkakor')
-            .split('.')
-            .first,
+        l10n.recipeSuggestionIntroMineUpdated('Pannkakor').split('.').first,
       ),
       findsOneWidget,
     );
