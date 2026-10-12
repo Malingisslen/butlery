@@ -33,7 +33,7 @@
    ]
   },
   "lib/views/admin/feedback_inbox_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#29"
    ],
@@ -668,7 +668,7 @@
    ]
   },
   "lib/views/social/add_members_to_group_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#10"
    ],
