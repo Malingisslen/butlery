@@ -19384,6 +19384,82 @@ class AppLocalizationsSv extends AppLocalizations {
       'Det gick inte att spara valet. Försök igen.';
 
   @override
+  String get nutritionEstimatedBadge => 'Uppskattad';
+
+  @override
+  String get a11yNutritionEstimatedBadge => 'Uppskattad mängd';
+
+  @override
+  String nutritionCoverageWithEstimates(int counted, int total, int estimated) {
+    return 'Beräknat på $counted av $total ingredienser, varav $estimated med uppskattad mängd';
+  }
+
+  @override
+  String get nutritionEnterAmount => 'Ange mängd';
+
+  @override
+  String a11yNutritionEnterAmountFor(String name) {
+    return 'Ange mängd för $name';
+  }
+
+  @override
+  String a11yNutritionChangeAmountFor(String name) {
+    return 'Ändra mängd för $name';
+  }
+
+  @override
+  String nutritionAmountSheetTitle(String name) {
+    return 'Mängd för $name';
+  }
+
+  @override
+  String get nutritionAmountFieldLabel => 'Mängd';
+
+  @override
+  String get nutritionAmountUnitLabel => 'Enhet';
+
+  @override
+  String get nutritionAmountInvalid => 'Ange ett tal större än 0.';
+
+  @override
+  String get nutritionAmountRemove => 'Ta bort mängd';
+
+  @override
+  String nutritionAmountScopeTitle(String amount, String name) {
+    return 'Gäller $amount $name bara det här receptet?';
+  }
+
+  @override
+  String nutritionAmountScopeBody(String name) {
+    return 'Du kan också använda mängden i alla recept där $name saknar mängd.';
+  }
+
+  @override
+  String get nutritionAmountScopeRecipe => 'Bara det här receptet';
+
+  @override
+  String get nutritionAmountScopeAll => 'Alla recept';
+
+  @override
+  String get nutritionAmountSaved => 'Mängden sparades';
+
+  @override
+  String get nutritionAmountRemoved => 'Mängden togs bort';
+
+  @override
+  String get nutritionAmountSaveFailed =>
+      'Mängden kunde inte sparas. Försök igen.';
+
+  @override
+  String get nutritionAmountFull =>
+      'Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.';
+
+  @override
+  String nutritionCountedAsOwn(String food) {
+    return 'Räknat som $food, din mängd';
+  }
+
+  @override
   String get nutritionPickerClear => 'Ta bort hushållets val';
 
   @override
@@ -20157,4 +20233,111 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get accountSecurityEmailCannotConfirmHere =>
       'Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.';
+
+  @override
+  String get settingsSignInMethodsTitle => 'Inloggningssätt';
+
+  @override
+  String get signInMethodsEmailName => 'E-post';
+
+  @override
+  String get signInMethodsPassword => 'E-post och lösenord';
+
+  @override
+  String get signInMethodsOn => 'Påslaget';
+
+  @override
+  String get signInMethodsNotLinked => 'Inte kopplat';
+
+  @override
+  String get signInMethodsLink => 'Koppla';
+
+  @override
+  String get signInMethodsUnlink => 'Koppla från';
+
+  @override
+  String get signInMethodsSetPassword => 'Sätt lösenord';
+
+  @override
+  String signInMethodsSetPasswordBody(String email) {
+    return 'Lösenordet gäller för $email. Du kan då också logga in med e-post och lösenord.';
+  }
+
+  @override
+  String get signInMethodsLastOne =>
+      'Det sista inloggningssättet kan inte tas bort. Du behöver alltid minst ett sätt att logga in.';
+
+  @override
+  String signInMethodsOnlyProvider(String provider) {
+    return '$provider är det sätt du loggar in med just nu och kan inte kopplas från. Sätt ett lösenord eller koppla ett annat sätt först.';
+  }
+
+  @override
+  String get signInMethodsNoAddress =>
+      'Ett lösenord går inte att sätta, eftersom kontot saknar e-postadress.';
+
+  @override
+  String signInMethodsUnlinkTitle(String provider) {
+    return 'Koppla från $provider?';
+  }
+
+  @override
+  String signInMethodsUnlinkBody(String provider) {
+    return 'Du kan inte längre logga in med $provider.';
+  }
+
+  @override
+  String get signInMethodsInsteadPassword =>
+      'Du loggar in med e-post och lösenord i stället.';
+
+  @override
+  String signInMethodsInsteadProvider(String provider) {
+    return 'Du loggar in med $provider i stället.';
+  }
+
+  @override
+  String get signInMethodsUnlinkAppleAsks =>
+      'Apple visar sin ruta en gång till, så att vi kan be Apple ta bort kopplingen.';
+
+  @override
+  String get signInMethodsUnlinkAppleYourself =>
+      'Butlery finns kvar under Logga in med Apple i ditt Apple-konto tills du tar bort det där.';
+
+  @override
+  String signInMethodsLinked(String provider) {
+    return '$provider är kopplat till kontot.';
+  }
+
+  @override
+  String signInMethodsUnlinked(String provider) {
+    return '$provider är frånkopplat.';
+  }
+
+  @override
+  String get signInMethodsPasswordSet =>
+      'Lösenordet är satt. Du kan nu logga in med e-post och lösenord.';
+
+  @override
+  String signInMethodsAlreadyUsed(String provider) {
+    return 'Det $provider-kontot används redan av ett annat Butlery-konto.';
+  }
+
+  @override
+  String signInMethodsAlreadyLinked(String provider) {
+    return '$provider är redan kopplat till kontot.';
+  }
+
+  @override
+  String signInMethodsLinkFailed(String provider) {
+    return '$provider kunde inte kopplas till kontot. Försök igen.';
+  }
+
+  @override
+  String signInMethodsUnlinkFailed(String provider) {
+    return '$provider kunde inte kopplas från. Inloggningssättet är kvar.';
+  }
+
+  @override
+  String get signInMethodsPasswordFailed =>
+      'Lösenordet kunde inte sättas. Försök igen.';
 }

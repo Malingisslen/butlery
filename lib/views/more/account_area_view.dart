@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
+import 'package:butlery/services/auth/auth_provider_flows.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
@@ -24,6 +27,8 @@ class AccountAreaView extends StatefulWidget {
 }
 
 class _AccountAreaViewState extends State<AccountAreaView> {
+  static final _unchanging = ValueNotifier<void>(null);
+
   UserService? _userService;
   AuthService? _authService;
 
@@ -34,16 +39,45 @@ class _AccountAreaViewState extends State<AccountAreaView> {
     _authService = ServiceLocator.tryGet<AuthService>();
   }
 
+  /// "E-post, Google, Apple": the ways the account signs in with.
+  String _signInMethodsSummary(AppLocalizations l10n) {
+    final auth = _authService;
+    return [
+      if (auth?.hasPasswordSignIn ?? true) l10n.signInMethodsEmailName,
+      for (final provider in SignInProvider.values)
+        if (auth?.isProviderLinked(provider) ?? false)
+          AuthProviderFlows.providerName(provider),
+    ].join(', ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     void open(String route) => Navigator.pushNamed(context, route);
+    // The page under this one links and unlinks sign-in methods, which
+    // changes the summary and whether the password row is shown.
+    return ListenableBuilder(
+      listenable: _authService ?? _unchanging,
+      builder: (context, _) => _page(context, l10n, open),
+    );
+  }
+
+  Widget _page(
+    BuildContext context,
+    AppLocalizations l10n,
+    void Function(String route) open,
+  ) {
     return MoreAreaScaffold(
       title: l10n.settingsAccountAreaTitle,
       sections: [
         ButleryListSection(
           title: l10n.settingsSignInSection,
           rows: [
+            ButleryListRow(
+              label: l10n.settingsSignInMethodsTitle,
+              value: _signInMethodsSummary(l10n),
+              onTap: () => open(Routes.settingsAccountSignInMethods),
+            ),
             ButleryListRow(
               label: l10n.settingsAccountEmail,
               value: _userService?.currentUserProfile?.email,

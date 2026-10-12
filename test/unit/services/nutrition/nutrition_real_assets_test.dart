@@ -131,7 +131,7 @@ void main() {
           _ing(1, null, 'gul lök'),
           _ing(2, 'klyftor', 'vitlök'),
           _ing(1, 'tsk', 'salt'),
-          _ing(null, null, 'salt och peppar'),
+          _ing(null, null, 'citronskal'),
         ],
         portions: 4,
       );

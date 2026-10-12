@@ -31456,6 +31456,126 @@ abstract class AppLocalizations {
   /// **'Det gick inte att spara valet. Försök igen.'**
   String get nutritionPickerSaveFailed;
 
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppskattad'**
+  String get nutritionEstimatedBadge;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppskattad mängd'**
+  String get a11yNutritionEstimatedBadge;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beräknat på {counted} av {total} ingredienser, varav {estimated} med uppskattad mängd'**
+  String nutritionCoverageWithEstimates(int counted, int total, int estimated);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange mängd'**
+  String get nutritionEnterAmount;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange mängd för {name}'**
+  String a11yNutritionEnterAmountFor(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra mängd för {name}'**
+  String a11yNutritionChangeAmountFor(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängd för {name}'**
+  String nutritionAmountSheetTitle(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängd'**
+  String get nutritionAmountFieldLabel;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enhet'**
+  String get nutritionAmountUnitLabel;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange ett tal större än 0.'**
+  String get nutritionAmountInvalid;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mängd'**
+  String get nutritionAmountRemove;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller {amount} {name} bara det här receptet?'**
+  String nutritionAmountScopeTitle(String amount, String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan också använda mängden i alla recept där {name} saknar mängd.'**
+  String nutritionAmountScopeBody(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara det här receptet'**
+  String get nutritionAmountScopeRecipe;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept'**
+  String get nutritionAmountScopeAll;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden sparades'**
+  String get nutritionAmountSaved;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden togs bort'**
+  String get nutritionAmountRemoved;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden kunde inte sparas. Försök igen.'**
+  String get nutritionAmountSaveFailed;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.'**
+  String get nutritionAmountFull;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat som {food}, din mängd'**
+  String nutritionCountedAsOwn(String food);
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:
@@ -32613,6 +32733,162 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.'**
   String get accountSecurityEmailCannotConfirmHere;
+
+  /// BUT-916 slice B: title of the sign-in methods page and its row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningssätt'**
+  String get settingsSignInMethodsTitle;
+
+  /// BUT-916 slice B: short name of e-mail and password in the row summary
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post'**
+  String get signInMethodsEmailName;
+
+  /// BUT-916 slice B: row for the password sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post och lösenord'**
+  String get signInMethodsPassword;
+
+  /// BUT-916 slice B: state of a sign-in method that is set up and cannot be removed
+  ///
+  /// In sv, this message translates to:
+  /// **'Påslaget'**
+  String get signInMethodsOn;
+
+  /// BUT-916 slice B: state of a provider that is not linked
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte kopplat'**
+  String get signInMethodsNotLinked;
+
+  /// BUT-916 slice B: action that links Google or Apple
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla'**
+  String get signInMethodsLink;
+
+  /// BUT-916 slice B: action and confirm button that unlink Google or Apple
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla från'**
+  String get signInMethodsUnlink;
+
+  /// BUT-916 slice B: action, dialog title and button for adding a password
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt lösenord'**
+  String get signInMethodsSetPassword;
+
+  /// BUT-916 slice B: what the new password is for
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet gäller för {email}. Du kan då också logga in med e-post och lösenord.'**
+  String signInMethodsSetPasswordBody(String email);
+
+  /// BUT-916 slice B: note under the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Det sista inloggningssättet kan inte tas bort. Du behöver alltid minst ett sätt att logga in.'**
+  String get signInMethodsLastOne;
+
+  /// BUT-916 slice B: note when the one method left is a provider
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är det sätt du loggar in med just nu och kan inte kopplas från. Sätt ett lösenord eller koppla ett annat sätt först.'**
+  String signInMethodsOnlyProvider(String provider);
+
+  /// BUT-916 slice B: set password refused, the account has no address
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett lösenord går inte att sätta, eftersom kontot saknar e-postadress.'**
+  String get signInMethodsNoAddress;
+
+  /// BUT-916 slice B: unlink dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla från {provider}?'**
+  String signInMethodsUnlinkTitle(String provider);
+
+  /// BUT-916 slice B: unlink dialog, what stops working
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre logga in med {provider}.'**
+  String signInMethodsUnlinkBody(String provider);
+
+  /// BUT-916 slice B: unlink dialog, what remains
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggar in med e-post och lösenord i stället.'**
+  String get signInMethodsInsteadPassword;
+
+  /// BUT-916 slice B: unlink dialog, what remains when there is no password
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggar in med {provider} i stället.'**
+  String signInMethodsInsteadProvider(String provider);
+
+  /// BUT-916 slice B: unlink Apple where the app can revoke the Apple tokens
+  ///
+  /// In sv, this message translates to:
+  /// **'Apple visar sin ruta en gång till, så att vi kan be Apple ta bort kopplingen.'**
+  String get signInMethodsUnlinkAppleAsks;
+
+  /// BUT-916 slice B: unlink Apple where the app cannot revoke the Apple tokens
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery finns kvar under Logga in med Apple i ditt Apple-konto tills du tar bort det där.'**
+  String get signInMethodsUnlinkAppleYourself;
+
+  /// BUT-916 slice B: snackbar after linking
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är kopplat till kontot.'**
+  String signInMethodsLinked(String provider);
+
+  /// BUT-916 slice B: snackbar after unlinking
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är frånkopplat.'**
+  String signInMethodsUnlinked(String provider);
+
+  /// BUT-916 slice B: snackbar after adding a password
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet är satt. Du kan nu logga in med e-post och lösenord.'**
+  String get signInMethodsPasswordSet;
+
+  /// BUT-916 slice B: link refused, the provider account belongs to another user
+  ///
+  /// In sv, this message translates to:
+  /// **'Det {provider}-kontot används redan av ett annat Butlery-konto.'**
+  String signInMethodsAlreadyUsed(String provider);
+
+  /// BUT-916 slice B: link refused, already linked
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är redan kopplat till kontot.'**
+  String signInMethodsAlreadyLinked(String provider);
+
+  /// BUT-916 slice B: link failed for a reason without its own text
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} kunde inte kopplas till kontot. Försök igen.'**
+  String signInMethodsLinkFailed(String provider);
+
+  /// BUT-916 slice B: unlink failed
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} kunde inte kopplas från. Inloggningssättet är kvar.'**
+  String signInMethodsUnlinkFailed(String provider);
+
+  /// BUT-916 slice B: add password failed for a reason without its own text
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte sättas. Försök igen.'**
+  String get signInMethodsPasswordFailed;
 }
 
 class _AppLocalizationsDelegate

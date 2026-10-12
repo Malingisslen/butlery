@@ -141,6 +141,13 @@
   absent; replacing a PREDICATE with an ENUMERATION reclassifies HISTORY — derive the list
   from `git log -S` on the writer, never today's live callers.
 
+- Changing an account's SIGN-IN METHODS (link a provider, unlink one, add a password) is a
+  credential change: grade it like email/password change — re-authentication before it, at
+  the VIEW that calls it, for EVERY method and platform branch. Linking without it turns a
+  moment with an unlocked session into a permanent second login (link own Google, then
+  unlink the victim's). Never credit Firebase's `requires-recent-login` for link/unlink
+  unless measured; a client "last method stays" check on cached `providerData` is not
+  proof either.
 - Audit retention differentiates by category (consent 730d, general 180d) via the
   `operation` STRING — every writer must set it, purge must exclude fresh consent events.
   Renaming/retiring a token: grep CONSUMERS and `git log -S` the old spelling and writer

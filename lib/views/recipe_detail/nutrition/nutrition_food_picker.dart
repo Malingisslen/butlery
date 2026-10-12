@@ -19,6 +19,7 @@ Future<bool?> showNutritionFoodPicker(
   required NutritionViewModel viewModel,
   required NutritionLine line,
 }) {
+  viewModel.clearSaveError();
   return showButlerySheet<bool>(
     context: context,
     builder: (_) => NutritionFoodPicker(viewModel: viewModel, line: line),
