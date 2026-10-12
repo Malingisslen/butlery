@@ -45,6 +45,10 @@ void main() {
 
     expect(find.text('Alla recept'), findsOneWidget);
     expect(find.text('Kokböcker'), findsOneWidget);
+    expect(
+      tester.getCenter(find.text('Alla recept')).dx,
+      lessThan(tester.getCenter(find.text('Kokböcker')).dx),
+    );
   });
 
   testWidgets('only the chosen tab reports itself as selected', (tester) async {
