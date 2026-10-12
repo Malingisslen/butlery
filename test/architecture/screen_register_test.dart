@@ -16,7 +16,7 @@ const _statuses = {
   'ej-bedömd',
 };
 
-const _notAssessedBaseline = 52;
+const _notAssessedBaseline = 2;
 
 Map<String, dynamic> _json(String path) =>
     jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
