@@ -1,7 +1,7 @@
 /// Journey test: onboarding flow from welcome to completion.
 ///
 /// Exercises [OnboardingViewModel] through a simplified view that mirrors
-/// the real onboarding wizard's structure (welcome → allergens → dietary →
+/// the real onboarding wizard's structure (welcome → allergens →
 /// import/skip → complete). We assert user-visible state transitions and
 /// that the final completion call reaches UserService with the correct
 /// preferences payload.
@@ -55,7 +55,7 @@ class _MockAgeVerificationService extends Mock
 
 /// Extracted onboarding body that watches [OnboardingViewModel] directly.
 /// Mirrors the real onboarding wizard (age-gate → welcome → allergens →
-/// dietary → import) without pulling in the full production view tree.
+/// import) without pulling in the full production view tree.
 class _OnboardingBody extends StatelessWidget {
   const _OnboardingBody({
     required this.onCompleted,
@@ -86,7 +86,7 @@ class _OnboardingBody extends StatelessWidget {
               key: const Key('page_indicator'),
               padding: const EdgeInsets.all(8),
               color: cs.surfaceContainerHighest,
-              child: Text('Sida ${viewModel.currentPage + 1} / 5'),
+              child: Text('Sida ${viewModel.currentPage + 1} / 4'),
             ),
             Expanded(child: _buildPage(context, viewModel)),
             // Sticky footer with navigation.
@@ -123,12 +123,12 @@ class _OnboardingBody extends StatelessWidget {
                                 return;
                               }
                               // FAITHFUL MIRROR of OnboardingView._handleNext
-                              // (lib/views/onboarding/onboarding_view.dart
-                              // ~L279-297): the server-side age check runs AT
-                              // the gate (page 0 advance), NOT at completion.
+                              // (lib/views/onboarding/onboarding_view.dart): the
+                              // server-side age check runs AT the gate (page 0
+                              // advance), NOT at completion.
                               // Verify-at-gate is the contract — a rejected
                               // under-15 user is routed away and the UGC pages
-                              // (allergens/dietary/import) are never reached.
+                              // (allergens/import) are never reached.
                               if (viewModel.isAgeGatePage) {
                                 final result = await viewModel.verifyAgeGate();
                                 switch (result) {
@@ -209,23 +209,6 @@ class _OnboardingBody extends StatelessWidget {
           ),
         );
       case 3:
-        return SingleChildScrollView(
-          key: const Key('page_dietary'),
-          padding: const EdgeInsets.all(16),
-          child: Wrap(
-            spacing: 8,
-            children: AllergenPreferenceOptions.dietary.entries.map((e) {
-              final selected = viewModel.isDietaryPrefSelected(e.key);
-              return FilterChip(
-                key: Key('dietary_${e.key}'),
-                label: Text(e.value),
-                selected: selected,
-                onSelected: (_) => viewModel.toggleDietaryPref(e.key),
-              );
-            }).toList(),
-          ),
-        );
-      case 4:
       default:
         return const Center(
           key: Key('page_import'),
@@ -391,7 +374,7 @@ void main() {
 
   group('Onboarding journey', () {
     testWidgets(
-      'age-gate → welcome → allergen tap → dietary tap → complete saves prefs',
+      'age-gate → welcome → allergen tap → complete saves prefs',
       (tester) async {
         await tester.pumpWidget(
           _testApp(
@@ -404,7 +387,7 @@ void main() {
         // Page 0 — age gate is first.
         expect(find.byKey(const Key('page_age_gate')), findsOneWidget);
         expect(find.byKey(const Key('back')), findsNothing);
-        expect(find.text('Sida 1 / 5'), findsOneWidget);
+        expect(find.text('Sida 1 / 4'), findsOneWidget);
 
         // Pick an adult year, then advance to the welcome page.
         await tester.tap(find.byKey(const Key('age_gate_set_adult')));
@@ -414,13 +397,13 @@ void main() {
 
         expect(find.byKey(const Key('page_welcome')), findsOneWidget);
         expect(find.text('Välkommen till Butlery'), findsOneWidget);
-        expect(find.text('Sida 2 / 5'), findsOneWidget);
+        expect(find.text('Sida 2 / 4'), findsOneWidget);
 
         // Advance to allergens.
         await tester.tap(find.byKey(const Key('next')));
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('page_allergens')), findsOneWidget);
-        expect(find.text('Sida 3 / 5'), findsOneWidget);
+        expect(find.text('Sida 3 / 4'), findsOneWidget);
 
         // Toggle gluten — chip becomes selected, VM tracks it.
         await tester.tap(find.byKey(const Key('allergen_gluten')));
@@ -432,16 +415,6 @@ void main() {
               .selected,
           isTrue,
         );
-
-        // Advance to dietary.
-        await tester.tap(find.byKey(const Key('next')));
-        await tester.pumpAndSettle();
-        expect(find.byKey(const Key('page_dietary')), findsOneWidget);
-
-        // Toggle vegansk.
-        await tester.tap(find.byKey(const Key('dietary_vegansk')));
-        await tester.pumpAndSettle();
-        expect(viewModel.isDietaryPrefSelected('vegansk'), isTrue);
 
         // Advance to import page — primary button becomes "Kom igång".
         await tester.tap(find.byKey(const Key('next')));
@@ -469,7 +442,6 @@ void main() {
         final skippedAt = captured[1] as DateTime?;
         expect(prefs, isNotNull);
         expect(prefs!.trackedAllergens, contains('gluten'));
-        expect(prefs.trackedDietary, contains('vegansk'));
         expect(
           skippedAt,
           isNull,
@@ -482,7 +454,6 @@ void main() {
             name: 'onboarding_completed',
             parameters: {
               'allergen_count': 1,
-              'dietary_count': 1,
             },
           ),
         ).called(1);
@@ -501,7 +472,7 @@ void main() {
       (tester) async {
         // This case mocks the age-verification CF to REJECT (verifyAge → false),
         // proving the user-visible rejection contract from OnboardingView:
-        // verify-at-gate, then route away so the allergen/dietary/import (UGC)
+        // verify-at-gate, then route away so the allergen/import (UGC)
         // pages are never reachable.
         when(
           () => mockAgeVerificationService.verifyAge(any()),
@@ -542,7 +513,6 @@ void main() {
         // The UGC pages must be unreachable after rejection. The allergen page
         // never rendered, and there's no longer a wizard to advance into.
         expect(find.byKey(const Key('page_allergens')), findsNothing);
-        expect(find.byKey(const Key('page_dietary')), findsNothing);
         expect(find.byKey(const Key('page_import')), findsNothing);
         expect(find.byKey(const Key('next')), findsNothing);
 

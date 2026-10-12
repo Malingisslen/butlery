@@ -19,6 +19,7 @@ import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 ///
@@ -257,6 +258,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: ButleryTopBar.undersida(
         title: context.l10n.mfaTitle,
         backTo: context.l10n.settingsAccountAreaTitle,

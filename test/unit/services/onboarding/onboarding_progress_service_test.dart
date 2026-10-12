@@ -140,7 +140,7 @@ void main() {
         expect(service.resolveResumePageIndex(progress), 1);
       });
 
-      test('allergens finished -> page 3 (dietary)', () {
+      test('allergens finished -> page 3 (first recipe)', () {
         final progress = OnboardingProgress(
           lastCompletedStep: OnboardingStep.allergens,
           completedAt: DateTime(2026),
@@ -148,12 +148,14 @@ void main() {
         expect(service.resolveResumePageIndex(progress), 3);
       });
 
-      test('dietary finished -> page 4 (first recipe)', () {
+      // The dietary page is gone; progress written while it existed resumes
+      // on the page that replaced it.
+      test('legacy dietary finished -> page 3 (first recipe)', () {
         final progress = OnboardingProgress(
           lastCompletedStep: OnboardingStep.dietary,
           completedAt: DateTime(2026),
         );
-        expect(service.resolveResumePageIndex(progress), 4);
+        expect(service.resolveResumePageIndex(progress), 3);
       });
     });
 

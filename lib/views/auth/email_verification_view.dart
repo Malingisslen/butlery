@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -219,12 +220,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: AppDimensions.space8),
-                          Text(
-                            l.emailVerificationMessage(widget.email),
-                            style: tt.bodyLarge?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
+                          _VerificationMessage(
+                            text: l.emailVerificationMessage(widget.email),
+                            email: widget.email,
                           ),
                           // P5-U02: the three-part error (content-style-guide.md:
                           // 87-97) as an alert live region. Part three is the
@@ -238,26 +236,29 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             ),
                           ],
                           const SizedBox(height: AppDimensions.spacingXxl),
-                          ActionButtons.primaryButton(
-                            context,
+                          // The seconds are drawn in the button, but the name a
+                          // screen reader gets stays the same (a name that changes
+                          // every second is never read out, BUT-2146).
+                          Semantics(
+                            button: true,
+                            enabled: !resendDisabled,
                             label: l.emailVerificationResend,
-                            onPressed: resendDisabled
-                                ? null
-                                : _resendVerification,
-                            isLoading: _isSending,
-                          ),
-                          if (!_canResend) ...[
-                            const SizedBox(height: AppDimensions.space8),
-                            Text(
-                              l.emailVerificationResendCountdown(
-                                _resendCooldownRemaining,
-                              ),
-                              style: tt.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                              textAlign: TextAlign.center,
+                            excludeSemantics: true,
+                            onTap: resendDisabled ? null : _resendVerification,
+                            child: ActionButtons.outlinedButton(
+                              context,
+                              isExpanded: true,
+                              label: _canResend
+                                  ? l.emailVerificationResend
+                                  : l.emailVerificationResendCountdown(
+                                      _resendCooldownRemaining,
+                                    ),
+                              onPressed: resendDisabled
+                                  ? null
+                                  : _resendVerification,
+                              isLoading: _isSending,
                             ),
-                          ],
+                          ),
                           const SizedBox(height: AppDimensions.space8),
                           TextButton(
                             onPressed: () {
@@ -283,6 +284,40 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The sentence with the address in bold, as drawn (Skarmar v12 #epostverifiering).
+class _VerificationMessage extends StatelessWidget {
+  const _VerificationMessage({required this.text, required this.email});
+
+  final String text;
+  final String email;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    final base = tt.bodyLarge?.copyWith(color: color);
+    final at = text.indexOf(email);
+    return Text.rich(
+      at < 0
+          ? TextSpan(text: text, style: base)
+          : TextSpan(
+              style: base,
+              children: [
+                TextSpan(text: text.substring(0, at)),
+                TextSpan(
+                  text: email,
+                  style: AppTextStyles.bodyBold.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                TextSpan(text: text.substring(at + email.length)),
+              ],
+            ),
+      textAlign: TextAlign.center,
     );
   }
 }

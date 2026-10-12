@@ -19,7 +19,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
@@ -230,17 +230,12 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
       button: true,
       // Busy keeps the name and gets the plate line; a second tap is ignored
       // rather than the button going disabled (Komponentark v1:365).
-      child: OutlinedButton(
+      child: ActionButtons.outlinedButton(
+        context,
         key: key,
-        onPressed: busy ? PlateLineButton.ignore : onPressed,
-        style: busy
-            ? PlateLineButton.busyStyle(
-                null,
-                Theme.of(context).outlinedButtonTheme.style,
-                onFill: false,
-              )
-            : null,
-        child: Text(label),
+        label: label,
+        isLoading: busy,
+        onPressed: onPressed,
       ),
     );
   }

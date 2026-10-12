@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -10,7 +7,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/legal/legal_contact_footer.dart';
+import 'package:butlery/widgets/legal/legal_document.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -185,54 +182,9 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildPolicyContent() {
-    return Column(
-      children: [
-        _buildInfoBanner(),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.layoutMarginOf(context),
-              vertical: AppDimensions.space16,
-            ),
-            // Offline, web links cannot open, so they turn inactive and
-            // say why (Grafisk manual v6:665 'åtgärder som kräver nät blir
-            // inaktiva med förklarande text').
-            child: MarkdownBody(
-              data: _policyContent!,
-              webLinksEnabled: _isOnline,
-            ),
-          ),
-        ),
-        const LegalContactFooter(),
-      ],
-    );
-  }
-
-  Widget _buildInfoBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
-      child: Row(
-        children: [
-          ButleryIcon(
-            ButleryIcons.info,
-            color: context.modeColors.info,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.space12),
-          Expanded(
-            child: Text(
-              context.l10n.privacyGdprCompliant,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: context.modeColors.info,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return LegalDocument(
+      content: _policyContent!,
+      webLinksEnabled: _isOnline,
     );
   }
 }

@@ -8,7 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -53,17 +53,15 @@ class _OpsLogContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<OpsLogViewModel>();
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.adminOpsTitle,
-        actions: [
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.refreshCw),
-            tooltip: context.l10n.adminRefresh,
-            onPressed: vm.isLoading ? null : vm.refresh,
-          ),
-        ],
-      ),
+    return AdminTabPage(
+      title: context.l10n.adminOpsTitle,
+      actions: [
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.refreshCw),
+          tooltip: context.l10n.adminRefresh,
+          onPressed: vm.isLoading ? null : vm.refresh,
+        ),
+      ],
       body: _body(context, vm),
     );
   }

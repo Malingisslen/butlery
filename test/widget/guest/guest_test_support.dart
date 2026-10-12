@@ -1,6 +1,7 @@
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,8 +25,15 @@ class FakeAuthService extends Fake with ChangeNotifier implements AuthService {
 
   User? _user;
 
+  /// The providers the device offers; none unless a test says so.
+  Set<SignInProvider> offeredProviders = const {};
+
   @override
   User? get currentUser => _user;
+
+  @override
+  bool isProviderOffered(SignInProvider provider) =>
+      offeredProviders.contains(provider);
 
   @override
   String? get currentUserId => _user?.uid;

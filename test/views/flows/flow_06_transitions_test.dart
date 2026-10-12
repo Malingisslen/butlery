@@ -117,11 +117,11 @@ void main() {
     }
   });
 
-  // The resend action: the one ElevatedButton on the screen (the other way
-  // on, "Fortsätt utan att verifiera", is a TextButton).
-  final resend = find.byType(ElevatedButton);
+  // The resend action: the one OutlinedButton on the screen (the other way
+  // on, "Fortsätt utan att bekräfta", is a TextButton).
+  final resend = find.byType(OutlinedButton);
   bool resendEnabled(WidgetTester tester) =>
-      tester.widget<ElevatedButton>(resend).onPressed != null;
+      tester.widget<OutlinedButton>(resend).onPressed != null;
 
   group('TR::FLOW::06::verifieringslank::utgangen', () {
     testWidgets('Skicka igen sends a new link, and no second one is sent '
@@ -145,11 +145,13 @@ void main() {
       expect(sends, 1, reason: 'no second link inside the 60 s');
     });
 
-    // produktregler.md 13.7: the wait sits outside the button's name, since
-    // a name that changes every second is never read out, and the button
-    // comes back when the wait is over (BUT-2146, BUT-2172).
-    testWidgets('the wait is shown under the button, not in its name, and the '
-        'button comes back after the 60 s', (tester) async {
+    // produktregler.md 13.7: the seconds are drawn in the button, but its
+    // spoken name stays "Skicka igen", since a name that changes every second
+    // is never read out; the button comes back when the wait is over
+    // (BUT-2146, BUT-2172).
+    testWidgets('the wait is drawn in the button, its name stays the same, '
+        'and the button comes back after the 60 s', (tester) async {
+      final handle = tester.ensureSemantics();
       await tester.pumpWidget(view());
       await tester.pump();
       await tester.tap(resend);
@@ -158,12 +160,12 @@ void main() {
       expect(
         find.descendant(
           of: resend,
-          matching: find.text(_sv.emailVerificationResend),
+          matching: find.text(_sv.emailVerificationResendCountdown(60)),
         ),
         findsOneWidget,
       );
       expect(
-        find.text(_sv.emailVerificationResendCountdown(60)),
+        find.bySemanticsLabel(_sv.emailVerificationResend),
         findsOneWidget,
       );
 
@@ -172,15 +174,21 @@ void main() {
         find.text(_sv.emailVerificationResendCountdown(59)),
         findsOneWidget,
       );
+      expect(
+        find.bySemanticsLabel(_sv.emailVerificationResend),
+        findsOneWidget,
+      );
 
       await tester.pump(const Duration(seconds: 60));
       expect(resendEnabled(tester), isTrue);
       expect(
-        find.textContaining(
-          _sv.emailVerificationResendCountdown(0).split('0').first,
+        find.descendant(
+          of: resend,
+          matching: find.text(_sv.emailVerificationResend),
         ),
-        findsNothing,
+        findsOneWidget,
       );
+      handle.dispose();
     });
   });
 }

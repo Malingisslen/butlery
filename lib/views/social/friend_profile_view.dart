@@ -31,6 +31,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/views/social/friend_profile/friend_profile_menu.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
 class FriendProfileView extends StatefulWidget {
@@ -119,6 +120,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     final hasBio = friend.bio?.isNotEmpty == true;
 
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       // A subpage under Vänner & grupper; the name is shown as written.
       appBar: ButleryTopBar.undersida(
         title: friend.displayName,

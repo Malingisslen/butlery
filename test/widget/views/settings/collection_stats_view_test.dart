@@ -114,7 +114,7 @@ void main() {
           );
       await tester.pumpAndSettle();
 
-      expect(find.text('Statistik'), findsOneWidget);
+      expect(find.text('Min samling'), findsOneWidget);
       expect(find.text('Min statistik'), findsNothing);
       expect(find.byTooltip('Tillbaka till Mer'), findsOneWidget);
     });

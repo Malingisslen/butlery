@@ -8560,7 +8560,7 @@ abstract class AppLocalizations {
   /// BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave
   ///
   /// In sv, this message translates to:
-  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.'**
+  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Mitt hushåll. Du lämnar hushållet genom att lämna gruppen.'**
   String get householdJoinConfirmBody;
 
   /// BUT-2267: joining the household failed
@@ -8578,7 +8578,7 @@ abstract class AppLocalizations {
   /// BUT-2267: under householdJoinedTitle; points to the sharing setting
   ///
   /// In sv, this message translates to:
-  /// **'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.'**
+  /// **'Dela dina allergier under Mitt hushåll, så räknar menyn med dem.'**
   String get householdJoinedSubtitle;
 
   /// BUT-2267: opens Settings, where the allergy-sharing switch is
@@ -9744,6 +9744,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lägg till medlemmar'**
   String get groupAddMembers;
+
+  /// Title of the add-members page, naming the group
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till i {group}'**
+  String groupAddToGroup(String group);
+
+  /// Row label for a friend who already belongs to the group
+  ///
+  /// In sv, this message translates to:
+  /// **'Redan medlem'**
+  String get groupAlreadyMember;
 
   /// No description provided for @groupAllFriendsAlreadyMembers.
   ///
@@ -11686,7 +11698,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAddItemHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv varunamn …'**
+  /// **'Lägg till vara …'**
   String get collaborativeAddItemHint;
 
   /// No description provided for @collaborativeClearAll.
@@ -13717,6 +13729,12 @@ abstract class AppLocalizations {
   /// **'Ta bort {name}'**
   String a11yDeleteItem(String name);
 
+  /// No description provided for @a11yShoppingItemMoreOptions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String a11yShoppingItemMoreOptions(String name);
+
   /// No description provided for @a11ySharedRecipe.
   ///
   /// In sv, this message translates to:
@@ -13914,12 +13932,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Blötdjur'**
   String get onboardingAllergenMollusc;
-
-  /// No description provided for @onboardingShowAllAllergens.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa alla allergener'**
-  String get onboardingShowAllAllergens;
 
   /// No description provided for @onboardingShowFewerAllergens.
   ///
@@ -14440,7 +14452,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCategoryFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Vänner'**
+  /// **'Vänner & förfrågningar'**
   String get notificationCategoryFriends;
 
   /// No description provided for @notificationCategoryRecipes.
@@ -14452,19 +14464,19 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCategoryCollaboration.
   ///
   /// In sv, this message translates to:
-  /// **'Samarbete'**
+  /// **'Samarbete i realtid'**
   String get notificationCategoryCollaboration;
 
   /// No description provided for @notificationCategoryShopping.
   ///
   /// In sv, this message translates to:
-  /// **'Inköp'**
+  /// **'Inköpslistor'**
   String get notificationCategoryShopping;
 
   /// No description provided for @notificationCategorySocial.
   ///
   /// In sv, this message translates to:
-  /// **'Social aktivitet'**
+  /// **'Socialt flöde'**
   String get notificationCategorySocial;
 
   /// No description provided for @notificationCategorySystem.
@@ -14770,7 +14782,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSkipConfirmMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.'**
+  /// **'Du hinner inte ställa in allergier nu. Du kan göra det när som helst i inställningarna.'**
   String get onboardingSkipConfirmMessage;
 
   /// No description provided for @onboardingSkip.
@@ -14794,19 +14806,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingComplete.
   ///
   /// In sv, this message translates to:
-  /// **'Slutför'**
+  /// **'Klar'**
   String get onboardingComplete;
 
   /// No description provided for @onboardingAgeGateTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Hur gammal är du?'**
+  /// **'Vilket år är du född?'**
   String get onboardingAgeGateTitle;
 
   /// No description provided for @onboardingAgeGateSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).'**
+  /// **'Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.'**
   String get onboardingAgeGateSubtitle;
 
   /// No description provided for @onboardingAgeGateBirthYearLabel.
@@ -14818,13 +14830,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateBirthYearHint.
   ///
   /// In sv, this message translates to:
-  /// **'Välj ditt födelseår'**
+  /// **'Välj ett år'**
   String get onboardingAgeGateBirthYearHint;
 
   /// No description provided for @onboardingAgeGatePrivacyNote.
   ///
   /// In sv, this message translates to:
-  /// **'Vi lagrar bara året, inte hela datumet.'**
+  /// **'Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.'**
   String get onboardingAgeGatePrivacyNote;
 
   /// No description provided for @onboardingAgeGateTooYoungTitle.
@@ -14836,7 +14848,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateTooYoungBody.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.'**
+  /// **'Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.'**
   String get onboardingAgeGateTooYoungBody;
 
   /// No description provided for @onboardingAgeGateSignOut.
@@ -14878,31 +14890,31 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Välkommen. Butlery står redo.'**
+  /// **'Välkommen. Jag sköter veckan.'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.'**
+  /// **'Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.'**
   String get onboardingWelcomeDescription;
 
   /// No description provided for @onboardingWelcomeNote.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan alltid ändra dessa i inställningarna senare.'**
+  /// **'Två frågor kvar. Sedan är du inne.'**
   String get onboardingWelcomeNote;
 
   /// No description provided for @onboardingAllergenTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Allergier & intoleranser'**
+  /// **'Något ni undviker?'**
   String get onboardingAllergenTitle;
 
   /// No description provided for @onboardingAllergenDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Välj de allergener du vill spara och filtrera recept efter.'**
+  /// **'Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.'**
   String get onboardingAllergenDescription;
 
   /// No description provided for @onboardingAllergenGluten.
@@ -14953,102 +14965,6 @@ abstract class AppLocalizations {
   /// **'Sesam'**
   String get onboardingAllergenSesame;
 
-  /// No description provided for @onboardingDietaryTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kostpreferenser'**
-  String get onboardingDietaryTitle;
-
-  /// No description provided for @onboardingDietaryDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Har du några kostpreferenser? Vi kan filtrera recept åt dig.'**
-  String get onboardingDietaryDescription;
-
-  /// No description provided for @onboardingDietaryVegetarian.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vegetarian'**
-  String get onboardingDietaryVegetarian;
-
-  /// No description provided for @onboardingDietaryVegan.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vegan'**
-  String get onboardingDietaryVegan;
-
-  /// No description provided for @onboardingDietaryPescetarian.
-  ///
-  /// In sv, this message translates to:
-  /// **'Pescetarian'**
-  String get onboardingDietaryPescetarian;
-
-  /// No description provided for @onboardingDietaryVegetarianDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga kött- eller fiskprodukter'**
-  String get onboardingDietaryVegetarianDesc;
-
-  /// No description provided for @onboardingDietaryVeganDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga animaliska produkter'**
-  String get onboardingDietaryVeganDesc;
-
-  /// No description provided for @onboardingDietaryPescetarianDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Fisk men inget kött'**
-  String get onboardingDietaryPescetarianDesc;
-
-  /// No description provided for @onboardingDietaryGlutenFree.
-  ///
-  /// In sv, this message translates to:
-  /// **'Glutenfri'**
-  String get onboardingDietaryGlutenFree;
-
-  /// No description provided for @onboardingDietaryLactoseFree.
-  ///
-  /// In sv, this message translates to:
-  /// **'Laktosfri'**
-  String get onboardingDietaryLactoseFree;
-
-  /// No description provided for @onboardingDietaryHalal.
-  ///
-  /// In sv, this message translates to:
-  /// **'Halalanpassad'**
-  String get onboardingDietaryHalal;
-
-  /// No description provided for @onboardingDietaryKosher.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kosheranpassad'**
-  String get onboardingDietaryKosher;
-
-  /// No description provided for @onboardingDietaryGlutenFreeDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga gluteninnehållande ingredienser'**
-  String get onboardingDietaryGlutenFreeDesc;
-
-  /// No description provided for @onboardingDietaryLactoseFreeDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga mejeriprodukter med laktos'**
-  String get onboardingDietaryLactoseFreeDesc;
-
-  /// No description provided for @onboardingDietaryHalalDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Följer halalregler för mat'**
-  String get onboardingDietaryHalalDesc;
-
-  /// No description provided for @onboardingDietaryKosherDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Följer kosherregler för mat'**
-  String get onboardingDietaryKosherDesc;
-
   /// No description provided for @onboardingSkippedBanner.
   ///
   /// In sv, this message translates to:
@@ -15076,38 +14992,32 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingImportTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ditt första recept'**
+  /// **'Ta med ett recept du redan lagar'**
   String get onboardingImportTitle;
 
   /// No description provided for @onboardingImportDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Kom igång snabbt genom att importera ett recept från webben eller ett foto.'**
+  /// **'Klistra in en länk. Jag läser den och du får granska innan något sparas.'**
   String get onboardingImportDescription;
 
   /// No description provided for @onboardingImportUrlTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Från en webbadress'**
+  /// **'Länk till receptet'**
   String get onboardingImportUrlTitle;
 
   /// No description provided for @onboardingImportPhotoTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera från foto'**
+  /// **'Fotografera en sida'**
   String get onboardingImportPhotoTitle;
 
   /// No description provided for @onboardingImportPhotoDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Ta ett foto eller välj från galleriet'**
+  /// **'Ur en kokbok eller en handskriven lapp'**
   String get onboardingImportPhotoDescription;
-
-  /// No description provided for @onboardingImportSkipNote.
-  ///
-  /// In sv, this message translates to:
-  /// **'Du kan hoppa över detta steg och importera senare.'**
-  String get onboardingImportSkipNote;
 
   /// No description provided for @onboardingResumeTitle.
   ///
@@ -15126,6 +15036,156 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Fortsätt'**
   String get onboardingResumeCta;
+
+  /// No description provided for @onboardingAgeGateParentTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'En vuxen kan skapa kontot'**
+  String get onboardingAgeGateParentTitle;
+
+  /// No description provided for @onboardingAgeGateParentBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'En förälder skapar ett eget konto och lägger till dig som matgäst i hushållet. Då planeras maten med dig i räkningen.'**
+  String get onboardingAgeGateParentBody;
+
+  /// No description provided for @onboardingAgeGateNothingSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot du började skapa tas bort. Inget sparas.'**
+  String get onboardingAgeGateNothingSaved;
+
+  /// No description provided for @onboardingWelcomeQuestionAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad hushållet inte tål'**
+  String get onboardingWelcomeQuestionAllergens;
+
+  /// No description provided for @onboardingWelcomeQuestionRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett recept du redan lagar'**
+  String get onboardingWelcomeQuestionRecipe;
+
+  /// No description provided for @onboardingAllergenNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här gäller dig. Allergier för fler i hushållet lägger du till senare. Har du valt något planeras recept med okänt allergeninnehåll aldrig automatiskt.'**
+  String get onboardingAllergenNote;
+
+  /// No description provided for @onboardingShowAllAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, nine{Visa alla nio till} other{Visa alla {count} till}}'**
+  String onboardingShowAllAllergens(String kind, int count);
+
+  /// No description provided for @onboardingImportFromClipboard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtad ur ditt urklipp. Byt om det var fel länk.'**
+  String get onboardingImportFromClipboard;
+
+  /// No description provided for @onboardingImportSkipNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, one{Hoppar du över får du ett startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} two{Hoppar du över får du två startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} three{Hoppar du över får du tre startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} four{Hoppar du över får du fyra startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} five{Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} six{Hoppar du över får du sex startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} seven{Hoppar du över får du sju startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} eight{Hoppar du över får du åtta startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} nine{Hoppar du över får du nio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} ten{Hoppar du över får du tio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} other{Hoppar du över får du {count} startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.}}'**
+  String onboardingImportSkipNote(String kind, int count);
+
+  /// No description provided for @onboardingStepOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {current} av {total}'**
+  String onboardingStepOf(int current, int total);
+
+  /// No description provided for @onboardingSetupTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag dukar upp'**
+  String get onboardingSetupTitle;
+
+  /// No description provided for @onboardingSetupBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett par sekunder. Sedan har du en app med innehåll i.'**
+  String get onboardingSetupBody;
+
+  /// No description provided for @onboardingSetupSaving.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparar allergenerna'**
+  String get onboardingSetupSaving;
+
+  /// No description provided for @onboardingSetupSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergenerna sparade'**
+  String get onboardingSetupSaved;
+
+  /// No description provided for @onboardingSetupSavedNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga allergener angivna'**
+  String get onboardingSetupSavedNone;
+
+  /// No description provided for @onboardingSetupRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägger startrecept i Mina recept'**
+  String get onboardingSetupRecipes;
+
+  /// No description provided for @onboardingSetupRecipesDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, one{Ett startrecept lagt i Mina recept} two{Två startrecept lagda i Mina recept} three{Tre startrecept lagda i Mina recept} four{Fyra startrecept lagda i Mina recept} five{Fem startrecept lagda i Mina recept} six{Sex startrecept lagda i Mina recept} seven{Sju startrecept lagda i Mina recept} eight{Åtta startrecept lagda i Mina recept} nine{Nio startrecept lagda i Mina recept} ten{Tio startrecept lagda i Mina recept} other{{count} startrecept lagda i Mina recept}}'**
+  String onboardingSetupRecipesDone(String kind, int count);
+
+  /// No description provided for @onboardingSetupRecipesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Startrecepten kunde inte läggas till'**
+  String get onboardingSetupRecipesFailed;
+
+  /// No description provided for @onboardingSetupWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägger en exempelvecka och dess inköpslista'**
+  String get onboardingSetupWeek;
+
+  /// No description provided for @onboardingSetupWeekDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exempelvecka och inköpslista klara'**
+  String get onboardingSetupWeekDone;
+
+  /// No description provided for @onboardingSetupWeekFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen exempelvecka lades till'**
+  String get onboardingSetupWeekFailed;
+
+  /// No description provided for @onboardingSetupProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Noll av tre klara} =1{En av tre klara} =2{Två av tre klara} other{Tre av tre klara}}'**
+  String onboardingSetupProgress(int count);
+
+  /// No description provided for @onboardingDoneTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varsågod. Det är dukat.'**
+  String get onboardingDoneTitle;
+
+  /// No description provided for @onboardingDoneBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, zero{Allt går att ändra när du vill.} one{Ett recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} two{Två recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} three{Tre recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} four{Fyra recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} five{Fem recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} six{Sex recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} seven{Sju recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} eight{Åtta recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} nine{Nio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} ten{Tio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} other{{count} recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.}}'**
+  String onboardingDoneBody(String kind, int count);
+
+  /// No description provided for @onboardingDoneRedirect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tar dig till dina recept …'**
+  String get onboardingDoneRedirect;
 
   /// No description provided for @cookingModePortions.
   ///
@@ -15222,6 +15282,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Du har inte behörighet till adminpanelen.'**
   String get adminNotAuthorized;
+
+  /// No description provided for @adminBarTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery Admin'**
+  String get adminBarTitle;
+
+  /// No description provided for @adminBarSignedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggad som {email}'**
+  String adminBarSignedIn(String email);
 
   /// No description provided for @adminSignOut.
   ///
@@ -22418,13 +22490,13 @@ abstract class AppLocalizations {
   /// No description provided for @emailVerificationTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Verifiera din e-post'**
+  /// **'Bekräfta din e-post'**
   String get emailVerificationTitle;
 
   /// No description provided for @emailVerificationMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.'**
+  /// **'Vi har skickat en länk till {email}. Skärmen går vidare av sig själv när du klickat.'**
   String emailVerificationMessage(String email);
 
   /// No description provided for @emailVerificationResend.
@@ -22436,13 +22508,13 @@ abstract class AppLocalizations {
   /// BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).
   ///
   /// In sv, this message translates to:
-  /// **'Du kan skicka igen om {seconds} s'**
+  /// **'Skicka igen ({seconds} s)'**
   String emailVerificationResendCountdown(int seconds);
 
   /// No description provided for @emailVerificationContinue.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsätt ändå'**
+  /// **'Fortsätt utan att bekräfta'**
   String get emailVerificationContinue;
 
   /// No description provided for @emailVerificationSuccess.
@@ -22556,31 +22628,31 @@ abstract class AppLocalizations {
   /// No description provided for @statsRecipeCollection.
   ///
   /// In sv, this message translates to:
-  /// **'Receptsamling'**
+  /// **'Samlingen'**
   String get statsRecipeCollection;
 
   /// No description provided for @statsTotalRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Totalt recept'**
+  /// **'recept'**
   String get statsTotalRecipes;
 
   /// No description provided for @statsFavorites.
   ///
   /// In sv, this message translates to:
-  /// **'Favoriter'**
+  /// **'favoriter'**
   String get statsFavorites;
 
   /// No description provided for @statsRecentlyCooked.
   ///
   /// In sv, this message translates to:
-  /// **'Nyligen lagat'**
+  /// **'lagade senaste veckan'**
   String get statsRecentlyCooked;
 
   /// No description provided for @statsWithImages.
   ///
   /// In sv, this message translates to:
-  /// **'Med bilder'**
+  /// **'med bild'**
   String get statsWithImages;
 
   /// No description provided for @statsPersonalRecipes.
@@ -22598,19 +22670,19 @@ abstract class AppLocalizations {
   /// No description provided for @statsHighRated.
   ///
   /// In sv, this message translates to:
-  /// **'Högt betyg'**
+  /// **'Högt betygsatta'**
   String get statsHighRated;
 
   /// No description provided for @statsMealTypes.
   ///
   /// In sv, this message translates to:
-  /// **'Måltidstyper'**
+  /// **'Vad du lagar'**
   String get statsMealTypes;
 
   /// No description provided for @statsPopularTags.
   ///
   /// In sv, this message translates to:
-  /// **'Populära taggar'**
+  /// **'Vanligaste taggarna'**
   String get statsPopularTags;
 
   /// No description provided for @statsCookingActivity.
@@ -22636,6 +22708,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inga taggar använda än'**
   String get statsNoTags;
+
+  /// Note at the bottom of the collection statistics page
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat på {count} recept i telefonen. Siffrorna gäller din samling som den är hämtad hit – inte en beräkning på servern.'**
+  String statsCountedNote(int count);
 
   /// No description provided for @statsDistinctMealTypes.
   ///
@@ -22832,8 +22910,14 @@ abstract class AppLocalizations {
   /// No description provided for @quickCaptureTitleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Vad heter receptet?'**
+  /// **'Vad heter rätten?'**
   String get quickCaptureTitleHint;
+
+  /// No description provided for @quickCaptureHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.'**
+  String get quickCaptureHelp;
 
   /// No description provided for @a11ySwipeEditAction.
   ///
@@ -23138,19 +23222,19 @@ abstract class AppLocalizations {
   /// No description provided for @notificationsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Aviseringar'**
+  /// **'Notiser'**
   String get notificationsTitle;
 
   /// No description provided for @notificationsEmpty.
   ///
   /// In sv, this message translates to:
-  /// **'Inga aviseringar än'**
+  /// **'Inga notiser än'**
   String get notificationsEmpty;
 
   /// No description provided for @notificationsErrorLoad.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda aviseringar'**
+  /// **'Kunde inte ladda notiser'**
   String get notificationsErrorLoad;
 
   /// No description provided for @notificationsSelectedCount.
@@ -23165,10 +23249,28 @@ abstract class AppLocalizations {
   /// **'Markera alla som lästa'**
   String get notificationsMarkAllRead;
 
+  /// Label of the band that marks every notification as read
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla lästa'**
+  String get notificationsMarkAllReadShort;
+
+  /// Count of unread notifications on the mark-all-read band
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 oläst} other{{count} olästa}}'**
+  String notificationsUnreadCount(int count);
+
+  /// Note under the notification inbox list
+  ///
+  /// In sv, this message translates to:
+  /// **'Tjugo i taget, äldre hämtas när du rullar. Långtryck för att välja flera.'**
+  String get notificationsNote;
+
   /// No description provided for @notificationsDismissed.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Aviseringen togs bort} other{{count} aviseringar togs bort}}'**
+  /// **'{count, plural, =1{Notisen togs bort} other{{count} notiser togs bort}}'**
   String notificationsDismissed(int count);
 
   /// No description provided for @allergenIncludeUnknownTitle.
@@ -25045,13 +25147,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Familj & hushåll'**
+  /// **'Mitt hushåll'**
   String get familyTitle;
 
   /// No description provided for @familyIntro.
   ///
   /// In sv, this message translates to:
-  /// **'Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.'**
+  /// **'Hushållet delar recept, meny och inköpslistor. Familjemedlemmar utan konto kan ändå betygsätta maten.'**
   String get familyIntro;
 
   /// No description provided for @familyHouseholdSection.
@@ -25129,7 +25231,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyAddTitle.
   ///
   /// In sv, this message translates to:
-  /// **'ny familjemedlem'**
+  /// **'Lägg till familjemedlem'**
   String get familyAddTitle;
 
   /// No description provided for @familyEditTitle.
@@ -25141,7 +25243,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyNameLabel.
   ///
   /// In sv, this message translates to:
-  /// **'namn'**
+  /// **'Namn'**
   String get familyNameLabel;
 
   /// No description provided for @familyNameHint.
@@ -25153,31 +25255,31 @@ abstract class AppLocalizations {
   /// No description provided for @familyColorLabel.
   ///
   /// In sv, this message translates to:
-  /// **'färg'**
+  /// **'Färg'**
   String get familyColorLabel;
 
   /// No description provided for @familyAgeBandLabel.
   ///
   /// In sv, this message translates to:
-  /// **'åldersgrupp'**
+  /// **'Åldersband'**
   String get familyAgeBandLabel;
 
   /// No description provided for @familyAgeBandHint.
   ///
   /// In sv, this message translates to:
-  /// **'Bara grov åldersgrupp — inget födelsedatum sparas.'**
+  /// **'Vi lagrar aldrig födelsedatum – bara ett ungefärligt band.'**
   String get familyAgeBandHint;
 
   /// No description provided for @familyConsentSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'samtycke'**
+  /// **'Vårdnadshavarsamtycke'**
   String get familyConsentSectionTitle;
 
   /// No description provided for @familyConsentRequiredBadge.
   ///
   /// In sv, this message translates to:
-  /// **'krävs'**
+  /// **'Krävs'**
   String get familyConsentRequiredBadge;
 
   /// No description provided for @familyGuardianConsentText.
@@ -25189,13 +25291,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyAllergenSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'allergier & specialkost'**
+  /// **'Allergener'**
   String get familyAllergenSectionTitle;
 
   /// No description provided for @familyOptionalBadge.
   ///
   /// In sv, this message translates to:
-  /// **'valfritt'**
+  /// **'Valfritt'**
   String get familyOptionalBadge;
 
   /// No description provided for @familyAllergenHealthNote.
@@ -25219,7 +25321,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyWithdrawAllergenConsent.
   ///
   /// In sv, this message translates to:
-  /// **'Återkalla samtycke & radera allergiuppgifter'**
+  /// **'Ta tillbaka samtycke och radera allergener'**
   String get familyWithdrawAllergenConsent;
 
   /// No description provided for @familyDeleteMember.
@@ -25537,7 +25639,7 @@ abstract class AppLocalizations {
   /// Section title in the family-member form for the soft disliked-ingredients preference (distinct from allergies). Butler voice, lowercase like the sibling section headers (BUT-1610)
   ///
   /// In sv, this message translates to:
-  /// **'ogillade ingredienser'**
+  /// **'Ogillade ingredienser'**
   String get familyDislikesSectionTitle;
 
   /// Helper text under the disliked-ingredients picker clarifying it is a soft preference, not an allergy/safety constraint (BUT-1610)
@@ -25959,6 +26061,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar var du slutade …'**
   String get loadingOnboardingResume;
+
+  /// No description provided for @startSplashTagline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din butler i köket'**
+  String get startSplashTagline;
+
+  /// No description provided for @startSplashBusy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dukar upp ditt kök …'**
+  String get startSplashBusy;
 
   /// No description provided for @loadingOpeningPage.
   ///
@@ -28297,7 +28411,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
   ///
   /// In sv, this message translates to:
-  /// **'Familj & hushåll'**
+  /// **'Mitt hushåll'**
   String get moreFamily;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
@@ -28309,7 +28423,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
   ///
   /// In sv, this message translates to:
-  /// **'Statistik'**
+  /// **'Min samling'**
   String get moreCollectionStats;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
@@ -30271,14 +30385,26 @@ abstract class AppLocalizations {
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
   ///
   /// In sv, this message translates to:
-  /// **'Konton i hushållet'**
+  /// **'Hushållets konton'**
   String get familyAccountsSection;
 
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account
   ///
   /// In sv, this message translates to:
-  /// **'Familjeprofiler'**
+  /// **'Familjemedlemmar'**
   String get familyProfilesSection;
+
+  /// Size of the household accounts list
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 konto} other{{count} konton}}'**
+  String familyAccountsCount(int count);
+
+  /// Size of the family member profiles list
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 profil} other{{count} profiler}}'**
+  String familyProfilesCount(int count);
 
   /// Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form
   ///
@@ -30387,6 +30513,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vad du får notiser om'**
   String get notifCategoriesSection;
+
+  /// Note under the notification category toggles
+  ///
+  /// In sv, this message translates to:
+  /// **'Avstängda kategorier syns fortfarande i notisinkorgen – de skickas bara inte som push.'**
+  String get notifCategoriesFootnote;
 
   /// Section overline for the digest frequency row
   ///
@@ -31366,6 +31498,126 @@ abstract class AppLocalizations {
   /// **'Det gick inte att spara valet. Försök igen.'**
   String get nutritionPickerSaveFailed;
 
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppskattad'**
+  String get nutritionEstimatedBadge;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppskattad mängd'**
+  String get a11yNutritionEstimatedBadge;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beräknat på {counted} av {total} ingredienser, varav {estimated} med uppskattad mängd'**
+  String nutritionCoverageWithEstimates(int counted, int total, int estimated);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange mängd'**
+  String get nutritionEnterAmount;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange mängd för {name}'**
+  String a11yNutritionEnterAmountFor(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra mängd för {name}'**
+  String a11yNutritionChangeAmountFor(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängd för {name}'**
+  String nutritionAmountSheetTitle(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängd'**
+  String get nutritionAmountFieldLabel;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enhet'**
+  String get nutritionAmountUnitLabel;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange ett tal större än 0.'**
+  String get nutritionAmountInvalid;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mängd'**
+  String get nutritionAmountRemove;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller {amount} {name} bara det här receptet?'**
+  String nutritionAmountScopeTitle(String amount, String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan också använda mängden i alla recept där {name} saknar mängd.'**
+  String nutritionAmountScopeBody(String name);
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara det här receptet'**
+  String get nutritionAmountScopeRecipe;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept'**
+  String get nutritionAmountScopeAll;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden sparades'**
+  String get nutritionAmountSaved;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden togs bort'**
+  String get nutritionAmountRemoved;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängden kunde inte sparas. Försök igen.'**
+  String get nutritionAmountSaveFailed;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.'**
+  String get nutritionAmountFull;
+
+  /// BUT-643 nutrition values: own amounts and usual amounts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat som {food}, din mängd'**
+  String nutritionCountedAsOwn(String food);
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:
@@ -31581,6 +31833,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.'**
   String get guestUpgradeDone;
+
+  /// Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat. Allt du gjort som gäst finns kvar.'**
+  String get guestUpgradeDoneProvider;
 
   /// Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)
   ///
@@ -32523,6 +32781,162 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.'**
   String get accountSecurityEmailCannotConfirmHere;
+
+  /// BUT-916 slice B: title of the sign-in methods page and its row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggningssätt'**
+  String get settingsSignInMethodsTitle;
+
+  /// BUT-916 slice B: short name of e-mail and password in the row summary
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post'**
+  String get signInMethodsEmailName;
+
+  /// BUT-916 slice B: row for the password sign-in
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post och lösenord'**
+  String get signInMethodsPassword;
+
+  /// BUT-916 slice B: state of a sign-in method that is set up and cannot be removed
+  ///
+  /// In sv, this message translates to:
+  /// **'Påslaget'**
+  String get signInMethodsOn;
+
+  /// BUT-916 slice B: state of a provider that is not linked
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte kopplat'**
+  String get signInMethodsNotLinked;
+
+  /// BUT-916 slice B: action that links Google or Apple
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla'**
+  String get signInMethodsLink;
+
+  /// BUT-916 slice B: action and confirm button that unlink Google or Apple
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla från'**
+  String get signInMethodsUnlink;
+
+  /// BUT-916 slice B: action, dialog title and button for adding a password
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt lösenord'**
+  String get signInMethodsSetPassword;
+
+  /// BUT-916 slice B: what the new password is for
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet gäller för {email}. Du kan då också logga in med e-post och lösenord.'**
+  String signInMethodsSetPasswordBody(String email);
+
+  /// BUT-916 slice B: note under the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Det sista inloggningssättet kan inte tas bort. Du behöver alltid minst ett sätt att logga in.'**
+  String get signInMethodsLastOne;
+
+  /// BUT-916 slice B: note when the one method left is a provider
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är det sätt du loggar in med just nu och kan inte kopplas från. Sätt ett lösenord eller koppla ett annat sätt först.'**
+  String signInMethodsOnlyProvider(String provider);
+
+  /// BUT-916 slice B: set password refused, the account has no address
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett lösenord går inte att sätta, eftersom kontot saknar e-postadress.'**
+  String get signInMethodsNoAddress;
+
+  /// BUT-916 slice B: unlink dialog title
+  ///
+  /// In sv, this message translates to:
+  /// **'Koppla från {provider}?'**
+  String signInMethodsUnlinkTitle(String provider);
+
+  /// BUT-916 slice B: unlink dialog, what stops working
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte längre logga in med {provider}.'**
+  String signInMethodsUnlinkBody(String provider);
+
+  /// BUT-916 slice B: unlink dialog, what remains
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggar in med e-post och lösenord i stället.'**
+  String get signInMethodsInsteadPassword;
+
+  /// BUT-916 slice B: unlink dialog, what remains when there is no password
+  ///
+  /// In sv, this message translates to:
+  /// **'Du loggar in med {provider} i stället.'**
+  String signInMethodsInsteadProvider(String provider);
+
+  /// BUT-916 slice B: unlink Apple where the app can revoke the Apple tokens
+  ///
+  /// In sv, this message translates to:
+  /// **'Apple visar sin ruta en gång till, så att vi kan be Apple ta bort kopplingen.'**
+  String get signInMethodsUnlinkAppleAsks;
+
+  /// BUT-916 slice B: unlink Apple where the app cannot revoke the Apple tokens
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery finns kvar under Logga in med Apple i ditt Apple-konto tills du tar bort det där.'**
+  String get signInMethodsUnlinkAppleYourself;
+
+  /// BUT-916 slice B: snackbar after linking
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är kopplat till kontot.'**
+  String signInMethodsLinked(String provider);
+
+  /// BUT-916 slice B: snackbar after unlinking
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är frånkopplat.'**
+  String signInMethodsUnlinked(String provider);
+
+  /// BUT-916 slice B: snackbar after adding a password
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet är satt. Du kan nu logga in med e-post och lösenord.'**
+  String get signInMethodsPasswordSet;
+
+  /// BUT-916 slice B: link refused, the provider account belongs to another user
+  ///
+  /// In sv, this message translates to:
+  /// **'Det {provider}-kontot används redan av ett annat Butlery-konto.'**
+  String signInMethodsAlreadyUsed(String provider);
+
+  /// BUT-916 slice B: link refused, already linked
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} är redan kopplat till kontot.'**
+  String signInMethodsAlreadyLinked(String provider);
+
+  /// BUT-916 slice B: link failed for a reason without its own text
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} kunde inte kopplas till kontot. Försök igen.'**
+  String signInMethodsLinkFailed(String provider);
+
+  /// BUT-916 slice B: unlink failed
+  ///
+  /// In sv, this message translates to:
+  /// **'{provider} kunde inte kopplas från. Inloggningssättet är kvar.'**
+  String signInMethodsUnlinkFailed(String provider);
+
+  /// BUT-916 slice B: add password failed for a reason without its own text
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet kunde inte sättas. Försök igen.'**
+  String get signInMethodsPasswordFailed;
 }
 
 class _AppLocalizationsDelegate

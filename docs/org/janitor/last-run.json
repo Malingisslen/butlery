@@ -1,9 +1,9 @@
 {
-  "lastRun": "2026-10-08",
+  "lastRun": "2026-10-12",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": 0.898,
+  "worldWatchRoles": 1,
+  "retroDue": false,
+  "acceptRate": 0.98,
   "scratchCleared": 0,
-  "notes": "This session's own first accept-rate measurement was invalid (computed against a 17-day-stale local clone before merging in three intervening janitor runs) and was dropped; recomputed fresh post-merge: 0.898 (49 commits, 5 reworked). Accept-rate was genuinely below 0.5 for two straight weeks (2026-09-28: 0.352; 2026-10-05: 0.426), tied to the in-flight design-migration ('package 7') commit series — the rolling 30-day window has now aged that batch out, not a fix. Worth confirming with Malin whether that series is actually done or just outside the window. Dossier markers: 0 visible (gitignored, cloud checkout). Security Architect + Release/App-Store Compliance world-watch scanned clean, no material findings. Retro has NEVER run since go-live 2026-06-27 (both shakedown and full are drastically overdue) — needs Malin."
+  "notes": "Accept-rate healthy: 0.98 (49 commits, 1 reworked) over the trailing 30 days. Legal Counsel world-watch had been stuck at 2026-08-31 for several cycles (42 days overdue vs its monthly cadence) — lean pass run this cycle, no material item found, caught up to 2026-10-12. Security Architect + Release/App-Store Compliance not due (both scanned 2026-10-08). Corrected the prior run's 'retro never ran' claim: events.jsonl actually has both shakedown (2026-07-04) and full (2026-09-15) retro events logged — no retro is due. No dossier-staleness markers visible (gitignored, cloud checkout)."
 }

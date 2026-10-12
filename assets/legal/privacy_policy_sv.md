@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.14.0
+**Senast uppdaterad:** 12 oktober 2026
+**Version:** 1.16.0
 
 ---
 
@@ -89,7 +89,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Säkerhet och skydd mot missbruk
 - Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
 - Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen
-- Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
+- Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Om du anger en egen mängd för en ingrediens sparas den på hushållet på samma sätt, antingen för ett recept eller för alla recept. Då sparas även receptets id för det receptet, och mängden följer med i exporten av dina uppgifter. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
@@ -234,6 +234,8 @@ Namnet fyller vi i åt dig när du skapar kontot, och du kan ändra det innan ko
 
 **Överföring:** Inloggningen går genom Firebase Authentication (Google LLC, USA), som omfattas av EU-USA Data Privacy Framework och standardavtalsklausuler (se 6.4). Google och Apple ansvarar själva för hur de för över uppgifter om ditt konto utanför EU/EES.
 
+**När du kopplar från Apple:** Kopplar du från Apple under Konto och säkerhet, Inloggningssätt, på iPhone eller iPad ber vi Apple ta bort Butlerys koppling till ditt Apple-konto, som vid radering. På Android och webben tar du själv bort Butlery under Logga in med Apple i ditt Apple-konto.
+
 **När du raderar ditt konto:** Har du loggat in med Apple och begär radering i appen på iPhone eller iPad ber vi Apple att ta bort Butlerys koppling till ditt Apple-konto direkt, innan raderingen påbörjas. Om Apple inte svarar raderas kontot ändå. På Android och webben kan vi inte be Apple om det ännu; där kan du själv ta bort Butlery under Logga in med Apple i inställningarna för ditt Apple-konto. Har du loggat in med Google kan du själv ta bort Butlerys åtkomst i inställningarna för ditt Google-konto.
 
 ---
@@ -255,7 +257,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
-| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du raderar kontot | Fullgörande av avtal |
+| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |

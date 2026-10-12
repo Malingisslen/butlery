@@ -140,6 +140,95 @@ void main() {
       expect(find.byType(CompactAllergenRow), findsNothing);
     });
   });
+  group('in selection mode', () {
+    Future<void> pumpSelecting(
+      WidgetTester tester, {
+      required bool gridView,
+      required bool selected,
+    }) async {
+      when(() => viewModel.isSelectionMode).thenReturn(true);
+      when(() => viewModel.isGridView).thenReturn(gridView);
+      when(
+        () => viewModel.selectedIds,
+      ).thenReturn(selected ? const {'assessed'} : const <String>{});
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 360,
+                child: MinaReceptRecipeCard(
+                  viewModel: viewModel,
+                  recipe: assessed(),
+                  allergenPrefs: prefs(showOnCards: true),
+                  onDelete: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Finder check(String label) => find.bySemanticsLabel(label);
+
+    testWidgets('the check announces marked / not marked with the title', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      try {
+        await pumpSelecting(tester, gridView: false, selected: false);
+        expect(check('Köttbullar, ej markerad'), findsOneWidget);
+        expect(check('Köttbullar, markerad'), findsNothing);
+
+        await pumpSelecting(tester, gridView: false, selected: true);
+        expect(check('Köttbullar, markerad'), findsOneWidget);
+        expect(check('Köttbullar, ej markerad'), findsNothing);
+      } finally {
+        handle.dispose();
+      }
+    });
+
+    testWidgets('a list row carries the check to the left of the row', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      try {
+        await pumpSelecting(tester, gridView: false, selected: false);
+        expect(tester.takeException(), isNull);
+
+        final checkRect = tester.getRect(check('Köttbullar, ej markerad'));
+        final cardRect = tester.getRect(find.byType(RecipeCard));
+        expect(checkRect.right, lessThanOrEqualTo(cardRect.left));
+      } finally {
+        handle.dispose();
+      }
+    });
+
+    testWidgets('a grid card carries the check in its top-right corner', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      try {
+        await pumpSelecting(tester, gridView: true, selected: true);
+        expect(tester.takeException(), isNull);
+
+        final checkRect = tester.getRect(check('Köttbullar, markerad'));
+        final cardRect = tester.getRect(find.byType(RecipeCard));
+        expect(
+          cardRect.contains(checkRect.center),
+          isTrue,
+          reason: '$checkRect vs $cardRect',
+        );
+        expect(checkRect.center.dx, greaterThan(cardRect.center.dx));
+        expect(checkRect.center.dy, lessThan(cardRect.center.dy));
+      } finally {
+        handle.dispose();
+      }
+    });
+  });
+
   // BUT-723: the card whose recipe is open on the right is marked.
   group('beside a detail pane', () {
     Future<DetailPaneController> pumpInPane(WidgetTester tester) async {

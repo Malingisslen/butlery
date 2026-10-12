@@ -328,3 +328,85 @@ final StateHost pantryWithItemsHost = StateHost(
   build: (ctx) async => _pantryTab(_pantry(items: _pantryItems())),
   reach: _openPantryTab,
 );
+
+/// The pantry as the sketch draws it (06): two items about to expire, then
+/// the fridge, freezer and pantry with one item each.
+final StateHost pantrySketchHost = StateHost(
+  build: (ctx) async {
+    PantryItem item(
+      String id,
+      String name,
+      double quantity,
+      String unit,
+      PantryLocation location, {
+      DateTime? expiry,
+    }) => PantryItem(
+      id: id,
+      ingredientName: name,
+      quantity: quantity,
+      unit: unit,
+      location: location,
+      addedAt: _addedAt,
+      expiryDate: expiry,
+    );
+    final expiring = [
+      item(
+        'p1',
+        'Grädde',
+        2,
+        'dl',
+        PantryLocation.fridge,
+        expiry: DateTime(2026, 9, 29),
+      ),
+      item(
+        'p2',
+        'Babyspenat',
+        1,
+        'påse',
+        PantryLocation.fridge,
+        expiry: DateTime(2026, 9, 30),
+      ),
+    ];
+    final rest = [
+      item('p3', 'Smör', 1, 'paket', PantryLocation.fridge),
+      item('p4', 'Parmesan', 1, 'bit', PantryLocation.fridge),
+      item('p5', 'Ärtor', 1, 'påse', PantryLocation.freezer),
+      item('p6', 'Pasta', 1, 'paket', PantryLocation.pantry),
+      item('p7', 'Spiskummin', 1, 'burk', PantryLocation.spiceRack),
+    ];
+    final vm = _pantry(items: [...expiring, ...rest]);
+    when(() => vm.expiringItems).thenReturn(expiring);
+    when(() => vm.itemsByLocation(any())).thenAnswer(
+      (call) => [
+        for (final p in rest)
+          if (p.location == call.positionalArguments.first) p,
+      ],
+    );
+    return _pantryTab(vm);
+  },
+  reach: _openPantryTab,
+);
+
+/// A shared list with a claimed item, a free one and two bought: the shared
+/// list of sketch frame 10.
+final StateHost sharedListSketchHost = StateHost(
+  build: (ctx) async {
+    final items = [
+      _item('s1', 'Jordgubbar', 'Frukt & grönt', amount: 3, unit: 'l'),
+      _item('s2', 'Färskpotatis', 'Frukt & grönt', amount: 2, unit: 'kg'),
+      _item('s3', 'Gräddfil', 'Mejeri', amount: 2),
+      _item('s4', 'Sill', 'Torrvaror', amount: 2, unit: 'burkar', bought: true),
+      _item('s5', 'Snaps', 'Drycker', bought: true),
+    ];
+    final list = _shared(items);
+    final service = MockUnifiedShoppingService()
+      ..setShoppingState(
+        lists: [list],
+        collaborativeLists: [list],
+        activeListId: list.id,
+      );
+    when(service.loadLists).thenAnswer((_) async {});
+    TestServiceLocator.registerMock<UnifiedShoppingService>(service);
+    return CollaborativeShoppingView(listId: list.id);
+  },
+);

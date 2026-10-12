@@ -394,6 +394,38 @@ service cloud.firestore {
         && (!(key in after) || (after[key] is int && after[key] > 0))
         && request.resource.data.updatedAt == request.time;
     }
+    // The household's own amounts for nutrition values (BUT-643 follow-up),
+    // `nutritionAmountChoices` = {key: {a: amount, u: unit}}. The key is an
+    // ingredient key (every recipe) or `r_<recipeId>_<ingredient key>` (one
+    // recipe); a recipe id is a UUID or a Firestore id. One key per write,
+    // named in `nutritionAmountKey`, as for the food choices above.
+    function nutritionAmountsTouched() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['nutritionAmountChoices', 'nutritionAmountKey']);
+    }
+    function nutritionAmountKeyValid(key) {
+      return key is string
+        && (key.matches('^[a-zåäö0-9_]{1,60}$')
+            || key.matches('^r_[A-Za-z0-9-]{1,40}_[a-zåäö0-9_]{1,60}$'));
+    }
+    function nutritionAmountValueValid(value) {
+      return value is map
+        && value.keys().hasOnly(['a', 'u'])
+        && value.keys().hasAll(['a', 'u'])
+        && value.a is number && value.a > 0 && value.a <= 100000
+        && value.u in ['g', 'kg', 'ml', 'dl', 'l', 'msk', 'tsk', 'krm', 'st'];
+    }
+    function nutritionAmountWriteValid() {
+      let key = request.resource.data.get('nutritionAmountKey', '');
+      let before = resource.data.get('nutritionAmountChoices', {});
+      let after = request.resource.data.get('nutritionAmountChoices', {});
+      return nutritionAmountKeyValid(key)
+        && after is map
+        && after.size() <= 300
+        && after.diff(before).affectedKeys().hasOnly([key])
+        && (!(key in after) || nutritionAmountValueValid(after[key]))
+        && request.resource.data.updatedAt == request.time;
+    }
     function familyStarsValid(stars) {
       return stars is int && stars >= 1 && stars <= 5;
     }
@@ -1366,6 +1398,8 @@ service cloud.firestore {
         && !('sourceGroupOwnerId' in request.resource.data)
         && !('nutritionFoodChoices' in request.resource.data)
         && !('nutritionChoiceKey' in request.resource.data)
+        && !('nutritionAmountChoices' in request.resource.data)
+        && !('nutritionAmountKey' in request.resource.data)
         && hasRequiredFields(['name', 'members', 'memberUserIds',
              'memberPermissions', 'createdBy', 'createdAt', 'updatedAt']);
 
@@ -1376,7 +1410,8 @@ service cloud.firestore {
         && resource.data.memberPermissions[request.auth.uid] == 'admin'
         && cannotModify(['createdBy', 'createdAt', 'members', 'memberUserIds',
              'memberPermissions', 'sourceGroupId', 'sourceGroupOwnerId'])
-        && (!nutritionChoicesTouched() || nutritionChoiceWriteValid());
+        && (!nutritionChoicesTouched() || nutritionChoiceWriteValid())
+        && (!nutritionAmountsTouched() || nutritionAmountWriteValid());
 
       // BUT-643: an admin or edit member may change one nutrition food choice
       // and nothing else.
@@ -1386,6 +1421,14 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
              ['nutritionFoodChoices', 'nutritionChoiceKey', 'updatedAt'])
         && nutritionChoiceWriteValid();
+
+      // The same for one of the household's own nutrition amounts.
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.memberUserIds
+        && resource.data.memberPermissions[request.auth.uid] in ['admin', 'edit']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+             ['nutritionAmountChoices', 'nutritionAmountKey', 'updatedAt'])
+        && nutritionAmountWriteValid();
 
       // Admin-only delete, and only of a household nobody else is in: the
       // other members' allergen shares are deleted by the server, which a

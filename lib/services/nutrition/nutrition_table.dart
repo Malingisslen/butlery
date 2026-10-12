@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/nutrition/nutrient_values.dart';
+import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/services/nutrition/nutrition_key.dart';
 
 /// One food in Livsmedelsverket's database, values per 100 g edible part.
@@ -32,11 +33,16 @@ class IngredientMatch {
   /// than as an ingredient that could not be counted.
   final bool toTaste;
 
+  /// A usual amount for a recipe of four portions, for lines that state none:
+  /// counted, and marked as an estimate.
+  final NutritionAmountChoice? defaultAmount;
+
   const IngredientMatch({
     required this.foodId,
     this.gramsPerDl,
     this.gramsPerUnit = const {},
     this.toTaste = false,
+    this.defaultAmount,
   });
 
   factory IngredientMatch.fromJson(Map<String, dynamic> json) =>
@@ -49,6 +55,10 @@ class IngredientMatch {
             e.key: (e.value as num).toDouble(),
         },
         toTaste: json['toTaste'] == true,
+        defaultAmount: NutritionAmountChoice.fromMap({
+          'a': (json['default'] as Map<String, dynamic>?)?['amount'],
+          'u': (json['default'] as Map<String, dynamic>?)?['unit'],
+        }),
       );
 }
 

@@ -4,6 +4,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/household.dart';
+import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 
@@ -178,6 +179,45 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
     await collection.doc(householdId).update({
       FieldPath(['nutritionFoodChoices', key]): foodId ?? FieldValue.delete(),
       'nutritionChoiceKey': key,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<void> setNutritionAmountChoice({
+    required String householdId,
+    required String key,
+    required NutritionAmountChoice? choice,
+  }) async {
+    if (!NutritionAmountChoice.keyShape.hasMatch(key)) {
+      throw ArgumentError.value(key, 'key', 'not a nutrition amount key');
+    }
+    if (choice != null && !choice.isValid) {
+      throw ArgumentError.value(choice, 'choice', 'not an allowed amount');
+    }
+    final userId = requireCurrentUserId();
+    final current = await _loadRaw(householdId);
+    final allowed = current != null && current.canEdit(userId);
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'Household/$householdId/nutritionAmountChoices',
+      operation: 'update',
+      granted: allowed,
+      auditRepository: auditRepository,
+    );
+    if (!allowed) {
+      throw StateError('Not allowed to change this household');
+    }
+    final stored = current.nutritionAmountChoices;
+    if (choice != null &&
+        !stored.containsKey(key) &&
+        stored.length >= NutritionAmountChoice.maxEntries) {
+      throw const NutritionAmountChoicesFullException();
+    }
+    await collection.doc(householdId).update({
+      FieldPath(['nutritionAmountChoices', key]):
+          choice?.toMap() ?? FieldValue.delete(),
+      'nutritionAmountKey': key,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

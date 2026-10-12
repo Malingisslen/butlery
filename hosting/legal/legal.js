@@ -67,8 +67,6 @@
 
       if (trimmed === '') { flushPara(); i++; continue; }
 
-      // The terms files carry no markdown heading; their first line is the
-      // title in capitals.
       if (!sawText && trimmed === trimmed.toUpperCase() && /[A-ZÅÄÖ]{4,}/.test(trimmed) && !/^[#|\-*\d]/.test(trimmed)) {
         out.push('<h1>' + inline(escapeHtml(trimmed)) + '</h1>');
         sawText = true; i++; continue;

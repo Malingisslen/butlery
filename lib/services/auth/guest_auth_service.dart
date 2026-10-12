@@ -5,6 +5,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/account/terms_acceptance.dart';
@@ -16,11 +17,21 @@ enum GuestUpgradeFailure {
   /// The address belongs to another account.
   emailInUse,
 
+  /// The Google or Apple account already has a Butlery account.
+  providerInUse,
+
   /// The signed-in user is not a guest, so there is nothing to upgrade.
   notGuest,
 
   /// Anything else; [GuestUpgradeException.message] says what.
   other,
+}
+
+/// What a guest who linked Google or Apple takes on as the account's name.
+class GuestProviderLink {
+  const GuestProviderLink({this.displayName});
+
+  final String? displayName;
 }
 
 class GuestUpgradeException implements Exception {
@@ -148,6 +159,70 @@ class GuestAuthService {
     } catch (e) {
       AppLogger.warning('Guest upgrade: logging the sign-up failed: $e');
     }
+  }
+
+  /// Links [provider] to the signed-in guest and takes the provider's name
+  /// for the account. Everything the guest saved stays, because the uid does.
+  ///
+  /// Null when the user closed the provider's sheet. Throws
+  /// [GuestUpgradeException].
+  Future<GuestProviderLink?> upgradeGuestWithProvider(
+    SignInProvider provider,
+  ) async {
+    final user = _authRepository.currentUser;
+    if (user == null || !user.isAnonymous) {
+      throw GuestUpgradeException(
+        GuestUpgradeFailure.notGuest,
+        AppLocale.current.errorUnexpected,
+      );
+    }
+    final attempt = await _authService.linkProviderToGuest(provider);
+    switch (attempt.outcome) {
+      case ProviderSignInOutcome.signedIn:
+        break;
+      case ProviderSignInOutcome.cancelled:
+        return null;
+      default:
+        final error = attempt.error;
+        AppLogger.warning('Guest provider upgrade refused: ${error?.code}');
+        throw GuestUpgradeException(
+          switch (error?.code) {
+            'credential-already-in-use' ||
+            'email-already-in-use' => GuestUpgradeFailure.providerInUse,
+            _ => GuestUpgradeFailure.other,
+          },
+          error != null
+              ? mapAuthErrorToMessage(error)
+              : AppLocale.current.errorUnexpected,
+        );
+    }
+
+    // The link cannot be undone, so nothing after it fails the upgrade.
+    final linked = _authRepository.currentUser;
+    final displayName = _authService.linkedProviderName(provider);
+    if (linked != null) {
+      if (displayName != null) {
+        try {
+          await _authRepository.updateDisplayName(linked, displayName);
+        } catch (e) {
+          AppLogger.warning('Guest upgrade: setting the name failed: $e');
+        }
+      }
+      try {
+        await _recordTerms(linked.uid);
+      } catch (e) {
+        AppLogger.warning('Guest upgrade: recording the terms failed: $e');
+      }
+    }
+    await _authService.reloadUser();
+    try {
+      await _analyticsService.logSignUp(
+        method: 'guest_upgrade_${provider.analyticsMethod}',
+      );
+    } catch (e) {
+      AppLogger.warning('Guest upgrade: logging the sign-up failed: $e');
+    }
+    return GuestProviderLink(displayName: displayName);
   }
 
   static GuestUpgradeFailure _failureFor(String code) => switch (code) {

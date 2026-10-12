@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 11, 2026
-**Version:** 1.14.0
+**Last updated:** October 12, 2026
+**Version:** 1.16.0
 
 ---
 
@@ -89,7 +89,7 @@ We use your personal data for the following purposes:
 - Security and protection against misuse
 - Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
 - Handle reports: the person who reported something, and the person whose content was removed or whose profile was hidden, get a notification and a notice in the app with the decision and the reason for it, and can appeal the decision in the app
-- Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. The app does not record what you eat and has no personal goals or daily values.
+- Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. If you enter your own amount for an ingredient, it is saved on your household in the same way, either for one recipe or for all recipes. For one recipe, the recipe's id is saved too, and the amount is included in the export of your data. The app does not record what you eat and has no personal goals or daily values.
 
 ### 5.2 Optional features (require consent)
 
@@ -233,6 +233,8 @@ We fill in the name for you when you create the account, and you can change it b
 
 **Transfer:** Sign-in goes through Firebase Authentication (Google LLC, USA), which is covered by the EU-US Data Privacy Framework and Standard Contractual Clauses (see 6.4). Google and Apple are themselves responsible for how they transfer data about your account outside the EU/EEA.
 
+**When you unlink Apple:** If you unlink Apple under Account and security, Sign-in methods, on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account, as when you delete your account. On Android and the web you remove Butlery yourself under Sign in with Apple in your Apple account.
+
 **When you delete your account:** If you signed in with Apple and request deletion in the app on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account straight away, before the deletion starts. If Apple does not respond, the account is deleted anyway. On Android and the web we cannot ask Apple to do this yet; there you can remove Butlery yourself under Sign in with Apple in your Apple account settings. If you signed in with Google, you can remove Butlery's access yourself in your Google account settings.
 
 ---
@@ -254,7 +256,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
-| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you delete the account | Performance of contract |
+| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |

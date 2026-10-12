@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/shopping/shopping_row.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -10,6 +11,18 @@ import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/semantics_announcement.dart';
+
+// The row sets the name first and the amount after it, in one Text.rich.
+String rowText(UnifiedShoppingItem item) =>
+    item.quantityText.isEmpty ? item.name : '${item.name} ${item.quantityText}';
+
+ColorScheme schemeOf(WidgetTester tester) =>
+    Theme.of(tester.element(find.byType(ShoppingRow))).colorScheme;
+
+Future<void> openMenu(WidgetTester tester) async {
+  await tester.tap(find.byType(ShoppingRowMenu));
+  await tester.pumpAndSettle();
+}
 
 void main() {
   group('ShoppingItemTiles Widget Tests', () {
@@ -84,10 +97,39 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text(basicItem.displayText), findsOneWidget);
+        expect(find.text(rowText(basicItem)), findsOneWidget);
         expect(find.byIcon(ButleryIcons.check), findsNothing);
-        expect(find.byIcon(ButleryIcons.pencil), findsOneWidget);
-        expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
+        // Edit and delete live behind the row's menu, not beside the name.
+        expect(find.byType(ShoppingRowMenu), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.pencil), findsNothing);
+        expect(find.byIcon(ButleryIcons.trash2), findsNothing);
+      });
+
+      testWidgets('the amount follows the name in the muted tone', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ShoppingItemTile(
+              item: basicItem,
+              isCompleted: false,
+              onItemTap: (_) {},
+              onEditItem: (_) {},
+              onDeleteItem: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final cs = schemeOf(tester);
+        final text = tester.widget<Text>(find.text(rowText(basicItem)));
+        final span = text.textSpan! as TextSpan;
+        expect(span.children, hasLength(2));
+        expect((span.children![0] as TextSpan).text, basicItem.name);
+        final amount = span.children![1] as TextSpan;
+        expect(amount.text!.trim(), basicItem.quantityText);
+        expect(amount.style?.color, cs.onSurfaceVariant);
+        expect(text.style?.color, cs.onSurface);
       });
 
       testWidgets('renders completed item with strikethrough', (
@@ -109,7 +151,7 @@ void main() {
         expect(find.byIcon(ButleryIcons.check), findsOneWidget);
 
         final textWidget = tester.widget<Text>(
-          find.text(completedItem.displayText),
+          find.text(rowText(completedItem)),
         );
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
@@ -128,7 +170,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text(itemWithNote.displayText), findsOneWidget);
+        expect(find.text(rowText(itemWithNote)), findsOneWidget);
         expect(find.text(itemWithNote.note!), findsOneWidget);
       });
 
@@ -288,7 +330,9 @@ void main() {
         expect(tappedItem, equals(basicItem));
       });
 
-      testWidgets('handles edit button tap', (WidgetTester tester) async {
+      testWidgets('edit is in the menu and calls onEditItem', (
+        WidgetTester tester,
+      ) async {
         UnifiedShoppingItem? editedItem;
 
         await tester.pumpWidget(
@@ -304,13 +348,16 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(ButleryIcons.pencil));
+        await openMenu(tester);
+        await tester.tap(find.text('Redigera'));
         await tester.pumpAndSettle();
 
         expect(editedItem, equals(basicItem));
       });
 
-      testWidgets('handles delete button tap', (WidgetTester tester) async {
+      testWidgets('delete is in the menu and calls onDeleteItem', (
+        WidgetTester tester,
+      ) async {
         UnifiedShoppingItem? deletedItem;
 
         await tester.pumpWidget(
@@ -326,13 +373,63 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(ButleryIcons.trash2));
+        await openMenu(tester);
+        await tester.tap(find.text('Ta bort'));
         await tester.pumpAndSettle();
 
         expect(deletedItem, equals(basicItem));
       });
 
-      testWidgets('shows correct tooltips on action buttons', (
+      testWidgets('move is in the menu, calls onMoveToCategory and does not '
+          'check the item off', (WidgetTester tester) async {
+        var moved = false;
+        var tapped = false;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ShoppingItemTile(
+              item: basicItem,
+              isCompleted: false,
+              onItemTap: (_) => tapped = true,
+              onEditItem: (_) {},
+              onDeleteItem: (_) {},
+              onMoveToCategory: () => moved = true,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await openMenu(tester);
+        await tester.tap(find.text('Flytta till kategori'));
+        await tester.pumpAndSettle();
+
+        expect(moved, isTrue);
+        expect(tapped, isFalse);
+      });
+
+      testWidgets('a ticked-off item cannot be moved', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ShoppingItemTile(
+              item: completedItem,
+              isCompleted: true,
+              onItemTap: (_) {},
+              onEditItem: (_) {},
+              onDeleteItem: (_) {},
+              onMoveToCategory: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await openMenu(tester);
+        expect(find.text('Redigera'), findsOneWidget);
+        expect(find.text('Ta bort'), findsOneWidget);
+        expect(find.text('Flytta till kategori'), findsNothing);
+      });
+
+      testWidgets('the menu button names its item in its tooltip', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -348,20 +445,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        String tooltipOf(IconData icon) => tester
-            .widget<Tooltip>(
-              find
-                  .ancestor(
-                    of: find.widgetWithIcon(IconButton, icon),
-                    matching: find.byType(Tooltip),
-                  )
-                  .first,
-            )
-            .message!;
-
-        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
-        expect(tooltipOf(ButleryIcons.pencil), 'Redigera Mjölk');
-        expect(tooltipOf(ButleryIcons.trash2), 'Ta bort Mjölk');
+        expect(
+          tester
+              .widget<PopupMenuButton<int>>(find.byType(PopupMenuButton<int>))
+              .tooltip,
+          'Fler val för Mjölk',
+        );
       });
     });
 
@@ -382,11 +471,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textWidget = tester.widget<Text>(
-          find.text(basicItem.displayText),
-        );
-        // Production uses cs.onSurface which maps to AppColors.textDark
-        expect(textWidget.style?.color, AppColors.textDark);
+        final textWidget = tester.widget<Text>(find.text(rowText(basicItem)));
+        expect(textWidget.style?.color, schemeOf(tester).onSurface);
         expect(
           textWidget.style?.decoration,
           anyOf(isNull, TextDecoration.none),
@@ -410,13 +496,9 @@ void main() {
         await tester.pumpAndSettle();
 
         final textWidget = tester.widget<Text>(
-          find.text(completedItem.displayText),
+          find.text(rowText(completedItem)),
         );
-        // Production uses cs.onSurfaceVariant which maps to AppColors.textMedium
-        expect(
-          textWidget.style?.color,
-          AppColors.lightColorScheme.onSurfaceVariant,
-        );
+        expect(textWidget.style?.color, schemeOf(tester).onSurfaceVariant);
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
@@ -472,7 +554,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textWidget = tester.widget<Text>(find.text(longItem.displayText));
+        final textWidget = tester.widget<Text>(find.text(rowText(longItem)));
         expect(textWidget.overflow, TextOverflow.ellipsis);
         expect(textWidget.maxLines, 2);
       });
@@ -563,9 +645,10 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('has proper semantics for buttons', (
+      testWidgets('the menu button is a labelled button naming its item', (
         WidgetTester tester,
       ) async {
+        final handle = tester.ensureSemantics();
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -579,18 +662,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = find.widgetWithIcon(IconButton, ButleryIcons.pencil);
-        final deleteButton = find.widgetWithIcon(
-          IconButton,
-          ButleryIcons.trash2,
-        );
-
-        expect(editButton, findsOneWidget);
-        expect(deleteButton, findsOneWidget);
-
-        // Labels mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
-        expect(find.bySemanticsLabel('Redigera Mjölk'), findsOneWidget);
-        expect(find.bySemanticsLabel('Ta bort Mjölk'), findsOneWidget);
+        final menu = find.byTooltip('Fler val för Mjölk');
+        expect(menu, findsOneWidget);
+        final data = tester.getSemantics(menu).getSemanticsData();
+        expect(data.tooltip, 'Fler val för Mjölk');
+        expectActivatable(tester, menu);
+        handle.dispose();
       });
 
       testWidgets('the row says what a tap does, once, in both states', (
@@ -646,19 +723,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // AppIconButton doesn't pass explicit constraints to its inner
-        // IconButton — it relies on Material's built-in 48dp interactive
-        // minimum. Assert the rendered hit-area instead, which is what
-        // actually matters for WCAG 2.5.5.
-        final editButtonSize = tester.getSize(
-          find.widgetWithIcon(IconButton, ButleryIcons.pencil),
-        );
+        // WCAG 2.5.5: assert the rendered hit areas of the row and its menu.
+        for (final target in [
+          find.byType(InkWell).first,
+          find.byType(PopupMenuButton<int>),
+        ]) {
+          final size = tester.getSize(target);
+          expect(
+            size.height,
+            greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+            reason: '$target',
+          );
+        }
         expect(
-          editButtonSize.width,
-          greaterThanOrEqualTo(AppDimensions.minTouchTarget),
-        );
-        expect(
-          editButtonSize.height,
+          tester.getSize(find.byType(PopupMenuButton<int>)).width,
           greaterThanOrEqualTo(AppDimensions.minTouchTarget),
         );
       });
@@ -688,7 +766,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text(zeroItem.displayText), findsOneWidget);
+        expect(find.text(rowText(zeroItem)), findsOneWidget);
       });
 
       testWidgets('handles item with empty note', (WidgetTester tester) async {
@@ -977,94 +1055,35 @@ void main() {
 
         // Verify the static method creates a ShoppingItemTile widget
         expect(find.byType(ShoppingItemTile), findsOneWidget);
-        expect(find.text(basicItem.displayText), findsOneWidget);
+        expect(find.text(rowText(basicItem)), findsOneWidget);
       });
 
-      testWidgets(
-        'BUT-948: buildDraggableItemTile no longer wraps the whole tile in '
-        'a long-press drag (freed for multi-select)',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              child: Builder(
-                builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
-                  context,
-                  basicItem,
-                  false,
-                  (_) {},
-                  (_) {},
-                  (_) {},
-                ),
+      testWidgets('the row has no drag handle; moving is in its menu', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ShoppingItemTiles.buildItemTile(
+                context,
+                basicItem,
+                false,
+                (_) {},
+                (_) {},
+                (_) {},
+                onMoveToCategory: () {},
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(
-            find.byType(LongPressDraggable<UnifiedShoppingItem>),
-            findsNothing,
-          );
-          expect(find.byType(ShoppingItemTile), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'BUT-948: a grip-handle drag appears only when category-move is '
-        'allowed',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              child: Builder(
-                builder: (context) => ShoppingItemTiles.buildItemTile(
-                  context,
-                  basicItem,
-                  false,
-                  (_) {},
-                  (_) {},
-                  (_) {},
-                  onMoveToCategory: () {},
-                ),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(
-            find.byType(Draggable<UnifiedShoppingItem>),
-            findsOneWidget,
-            reason: 'reorder moved onto a per-row drag handle',
-          );
-          expect(find.byIcon(ButleryIcons.drag), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'buildDraggableItemTile skips drag wrapper for completed items',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              child: Builder(
-                builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
-                  context,
-                  completedItem,
-                  true,
-                  (_) {},
-                  (_) {},
-                  (_) {},
-                ),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          // Completed items should NOT be draggable
-          expect(
-            find.byType(LongPressDraggable<UnifiedShoppingItem>),
-            findsNothing,
-          );
-          expect(find.byType(ShoppingItemTile), findsOneWidget);
-        },
-      );
+        expect(find.byType(Draggable<UnifiedShoppingItem>), findsNothing);
+        expect(find.byIcon(ButleryIcons.drag), findsNothing);
+        await tester.tap(find.byType(ShoppingRowMenu));
+        await tester.pumpAndSettle();
+        expect(find.text('Flytta till kategori'), findsOneWidget);
+      });
     });
   });
 }

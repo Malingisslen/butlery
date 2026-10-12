@@ -12,6 +12,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -21,6 +22,8 @@ import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart'
+    show MockAuthService;
 
 class _MockUserService extends Mock implements UserService {}
 
@@ -29,6 +32,41 @@ class _MockReportService extends Mock implements ReportService {}
 class _FakeAuthService extends Fake implements AuthService {
   @override
   String? get currentUserId => 'anna';
+}
+
+/// An account made with Google and Apple, without a password.
+class _ProviderAuth extends MockAuthService {
+  @override
+  bool get hasPasswordSignIn => false;
+
+  @override
+  bool isProviderLinked(SignInProvider provider) => true;
+}
+
+/// A password account that has added Google.
+class _MixedAuth extends MockAuthService {
+  @override
+  bool get hasPasswordSignIn => true;
+
+  @override
+  bool isProviderLinked(SignInProvider provider) =>
+      provider == SignInProvider.google;
+}
+
+/// A password account whose methods change while the page is open.
+class _ChangingAuth extends MockAuthService {
+  bool password = true;
+
+  @override
+  bool get hasPasswordSignIn => password;
+
+  @override
+  bool isProviderLinked(SignInProvider provider) => false;
+
+  void dropPassword() {
+    password = false;
+    notifyListeners();
+  }
 }
 
 class _EmptyQueue implements PendingChangesSource {
@@ -42,6 +80,7 @@ class _EmptyQueue implements PendingChangesSource {
 void main() {
   final sv = AppLocalizationsSv();
   late SignOutGuard Function() originalFactory;
+  late DIContainer container;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -63,7 +102,7 @@ void main() {
       () => reports.ownReportStatus(),
     ).thenAnswer((_) async => OwnReportStatus.none);
 
-    final container = DIContainer();
+    container = DIContainer();
     container.container.registerSingleton<UserService>(users);
     container.container.registerSingleton<ReportService>(reports);
     ServiceLocator.initialize(container);
@@ -102,6 +141,44 @@ void main() {
     return pushed;
   }
 
+  testWidgets('summarises the sign-in methods and hides the password row for '
+      'an account without a password', (tester) async {
+    container.container.registerSingleton<AuthService>(_ProviderAuth());
+
+    await pump(tester);
+
+    expect(find.text('Google, Apple'), findsOneWidget);
+    expect(find.text(sv.settingsAccountPassword), findsNothing);
+  });
+
+  testWidgets('lists e-mail first when the account has a password', (
+    tester,
+  ) async {
+    container.container.registerSingleton<AuthService>(_MixedAuth());
+
+    await pump(tester);
+
+    expect(
+      find.text('${sv.signInMethodsEmailName}, Google'),
+      findsOneWidget,
+    );
+    expect(find.text(sv.settingsAccountPassword), findsOneWidget);
+  });
+
+  testWidgets('follows a change made on the page under it', (tester) async {
+    final auth = _ChangingAuth();
+    container.container.registerSingleton<AuthService>(auth);
+    await pump(tester);
+    expect(find.text(sv.signInMethodsEmailName), findsOneWidget);
+    expect(find.text(sv.settingsAccountPassword), findsOneWidget);
+
+    auth.dropPassword();
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.signInMethodsEmailName), findsNothing);
+    expect(find.text(sv.settingsAccountPassword), findsNothing);
+  });
+
   testWidgets('shows the account email on its row', (tester) async {
     await pump(tester);
 
@@ -118,6 +195,7 @@ void main() {
   });
 
   for (final row in {
+    sv.settingsSignInMethodsTitle: Routes.settingsAccountSignInMethods,
     sv.settingsAccountEmail: Routes.settingsAccountEmail,
     sv.settingsAccountPassword: Routes.settingsAccountPassword,
     sv.settingsAccountTwoStep: Routes.settingsAccountTwoStep,

@@ -3966,6 +3966,19 @@
   "importWebRecipeLinkDetected": "Recipe link from website detected.",
   "importWebsite": "Website",
   "groupAddMembers": "Add members",
+  "groupAddToGroup": "Add to {group}",
+  "@groupAddToGroup": {
+    "description": "Title of the add-members page, naming the group",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "groupAlreadyMember": "Already a member",
+  "@groupAlreadyMember": {
+    "description": "Row label for a friend who already belongs to the group"
+  },
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupSharedContentLoadFailed": "The shared content could not be loaded.",
   "@groupSharedContentLoadFailed": {
@@ -4772,7 +4785,7 @@
   "collaborativeAdd": "Add",
   "collaborativeAddFirstItem": "Add the first item",
   "collaborativeAdding": "Adding …",
-  "collaborativeAddItemHint": "Type item name...",
+  "collaborativeAddItemHint": "Add item ...",
   "collaborativeClearAll": "Clear all",
   "collaborativeClearCompleted": "Clear completed",
   "collaborativeClearCompletedConfirm": "Do you want to clear all completed items?",
@@ -5793,6 +5806,14 @@
       }
     }
   },
+  "a11yShoppingItemMoreOptions": "More options for {name}",
+  "@a11yShoppingItemMoreOptions": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11ySharedRecipe": "Shared recipe",
   "a11ySharedMenu": "Shared menu",
   "a11yRemoveProfileImage": "Remove profile image",
@@ -5826,7 +5847,6 @@
   "onboardingAllergenTreeNut": "Tree nuts",
   "onboardingAllergenCrustacean": "Crustaceans",
   "onboardingAllergenMollusc": "Molluscs",
-  "onboardingShowAllAllergens": "Show all allergens",
   "onboardingShowFewerAllergens": "Show fewer",
   "filterVegetarian": "Vegetarian",
   "filterVegan": "Vegan",
@@ -6148,29 +6168,29 @@
     }
   },
   "onboardingSkipConfirmTitle": "Skip the intro?",
-  "onboardingSkipConfirmMessage": "You won't set up allergies and dietary preferences now. You can do it anytime in settings.",
+  "onboardingSkipConfirmMessage": "You won't set up allergies now. You can do it anytime in settings.",
   "onboardingSkip": "Skip",
   "onboardingBack": "Back",
   "onboardingNext": "Next",
-  "onboardingComplete": "Finish",
-  "onboardingAgeGateTitle": "How old are you?",
-  "onboardingAgeGateSubtitle": "We need your birth year to follow Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4).",
+  "onboardingComplete": "Done",
+  "onboardingAgeGateTitle": "What year were you born?",
+  "onboardingAgeGateSubtitle": "Butlery is for people aged 15 and over. I only ask for the year, not the date.",
   "onboardingAgeGateBirthYearLabel": "Birth year",
-  "onboardingAgeGateBirthYearHint": "Choose your birth year",
-  "onboardingAgeGatePrivacyNote": "We only store the year, not the full date.",
+  "onboardingAgeGateBirthYearHint": "Choose a year",
+  "onboardingAgeGatePrivacyNote": "The year is saved on your account. It is used for the age limit and is not visible to anyone else.",
   "onboardingAgeGateTooYoungTitle": "Butlery is for ages 15 and up",
-  "onboardingAgeGateTooYoungBody": "Under Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4) you need to be at least 15 to have your own account. You're welcome to come back when you turn 15.",
+  "onboardingAgeGateTooYoungBody": "We didn't choose this ourselves. Swedish law sets the limit for services with a social side, and Butlery has one.",
   "onboardingAgeGateSignOut": "Sign out",
   "onboardingAgeGateParentOption": "A grown-up can sign up for you",
   "onboardingAgeGateParentInfoTitle": "Ask a grown-up for help",
   "onboardingAgeGateParentInfoBody": "Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.",
   "onboardingAgeRejectedTitle": "We couldn't create your account",
   "onboardingAgeRejectedBody": "Butlery is available to those aged 15 and over. We're unable to create your account at this time.",
-  "onboardingWelcomeTitle": "Welcome. Butlery stands ready.",
-  "onboardingWelcomeDescription": "Let us set up your preferences so you get the best experience from the start.",
-  "onboardingWelcomeNote": "You can always change these in settings later.",
-  "onboardingAllergenTitle": "Allergies & intolerances",
-  "onboardingAllergenDescription": "Choose the allergens you want to track and filter recipes by.",
+  "onboardingWelcomeTitle": "Welcome. I'll run the week.",
+  "onboardingWelcomeDescription": "Gather the recipes you already cook, and let me build the weekly menu and the shopping list from them.",
+  "onboardingWelcomeNote": "Two questions left. Then you're in.",
+  "onboardingAllergenTitle": "Anything you avoid?",
+  "onboardingAllergenDescription": "Then I'll keep it out everywhere — in recipes, in the menu and in the shopping list.",
   "onboardingAllergenGluten": "Gluten",
   "onboardingAllergenMilk": "Milk",
   "onboardingAllergenNuts": "Nuts",
@@ -6179,35 +6199,100 @@
   "onboardingAllergenFish": "Fish",
   "onboardingAllergenShellfish": "Shellfish",
   "onboardingAllergenSesame": "Sesame",
-  "onboardingDietaryTitle": "Dietary preferences",
-  "onboardingDietaryDescription": "Do you have any dietary preferences? We can filter recipes for you.",
-  "onboardingDietaryVegetarian": "Vegetarian",
-  "onboardingDietaryVegan": "Vegan",
-  "onboardingDietaryPescetarian": "Pescetarian",
-  "onboardingDietaryVegetarianDesc": "No meat or fish products",
-  "onboardingDietaryVeganDesc": "No animal products",
-  "onboardingDietaryPescetarianDesc": "Fish but no meat",
-  "onboardingDietaryGlutenFree": "Gluten-free",
-  "onboardingDietaryLactoseFree": "Lactose-free",
-  "onboardingDietaryHalal": "Halal",
-  "onboardingDietaryKosher": "Kosher",
-  "onboardingDietaryGlutenFreeDesc": "No gluten-containing ingredients",
-  "onboardingDietaryLactoseFreeDesc": "No dairy products with lactose",
-  "onboardingDietaryHalalDesc": "Follows halal food guidelines",
-  "onboardingDietaryKosherDesc": "Follows kosher food guidelines",
   "onboardingSkippedBanner": "You skipped the introduction. Want to set up allergens and dietary preferences?",
   "onboardingSkippedBannerAction": "Open settings",
   "onboardingWelcomeBanner": "Welcome to Butlery. You're all set — add your first recipe to get started.",
   "onboardingWelcomeBannerAction": "Add recipe",
-  "onboardingImportTitle": "Import your first recipe",
-  "onboardingImportDescription": "Get started quickly by importing a recipe from the web or a photo.",
-  "onboardingImportUrlTitle": "From a web address",
-  "onboardingImportPhotoTitle": "Import from photo",
-  "onboardingImportPhotoDescription": "Take a photo or choose from gallery",
-  "onboardingImportSkipNote": "You can skip this step and import later.",
+  "onboardingImportTitle": "Bring a recipe you already cook",
+  "onboardingImportDescription": "Paste a link. I'll read it and you review it before anything is saved.",
+  "onboardingImportUrlTitle": "Link to the recipe",
+  "onboardingImportPhotoTitle": "Photograph a page",
+  "onboardingImportPhotoDescription": "From a cookbook or a handwritten note",
   "onboardingResumeTitle": "Finish your profile",
   "onboardingResumeBody": "30 seconds left",
   "onboardingResumeCta": "Continue",
+  "onboardingAgeGateParentTitle": "An adult can create the account",
+  "onboardingAgeGateParentBody": "A parent creates their own account and adds you as a guest in the household. Then meals are planned with you in mind.",
+  "onboardingAgeGateNothingSaved": "The account you started creating is deleted. Nothing is saved.",
+  "onboardingWelcomeQuestionAllergens": "What the household can't eat",
+  "onboardingWelcomeQuestionRecipe": "A recipe you already cook",
+  "onboardingAllergenNote": "This applies to you. You can add allergies for others in the household later. If you choose any, recipes with unknown allergen content are never planned automatically.",
+  "onboardingShowAllAllergens": "{kind, select, other{Show {count} more}}",
+  "@onboardingShowAllAllergens": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingImportFromClipboard": "Taken from your clipboard. Change it if it was the wrong link.",
+  "onboardingImportSkipNote": "{kind, select, one{If you skip, you get one starter recipe and a ready-made example week. You never start in an empty app.} other{If you skip, you get {count} starter recipes and a ready-made example week. You never start in an empty app.}}",
+  "@onboardingImportSkipNote": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStepOf": "Step {current} of {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupTitle": "I'm setting the table",
+  "onboardingSetupBody": "A few seconds. Then you have an app with something in it.",
+  "onboardingSetupSaving": "Saving your allergens",
+  "onboardingSetupSaved": "Allergens saved",
+  "onboardingSetupSavedNone": "No allergens chosen",
+  "onboardingSetupRecipes": "Adding starter recipes to My recipes",
+  "onboardingSetupRecipesDone": "{kind, select, one{One starter recipe added to My recipes} other{{count} starter recipes added to My recipes}}",
+  "@onboardingSetupRecipesDone": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupRecipesFailed": "The starter recipes couldn't be added",
+  "onboardingSetupWeek": "Laying out an example week and its shopping list",
+  "onboardingSetupWeekDone": "Example week and shopping list ready",
+  "onboardingSetupWeekFailed": "No example week was added",
+  "onboardingSetupProgress": "{count, plural, =0{None of three done} =1{One of three done} =2{Two of three done} other{Three of three done}}",
+  "@onboardingSetupProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneTitle": "There you are. It's served.",
+  "onboardingDoneBody": "{kind, select, zero{Everything can be changed whenever you like.} one{One recipe and an example week are waiting for you. Everything can be changed whenever you like.} other{{count} recipes and an example week are waiting for you. Everything can be changed whenever you like.}}",
+  "@onboardingDoneBody": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneRedirect": "Taking you to your recipes …",
   "cookingModePortions": "Portions",
   "feedbackSendLabel": "Send feedback",
   "feedbackCategoryLabel": "Category",
@@ -6224,6 +6309,13 @@
   "adminPasswordLabel": "Password",
   "adminLoginFailed": "Login failed",
   "adminNotAuthorized": "You do not have access to the admin panel.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Signed in as {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Log out",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "No feedback yet",
@@ -9366,8 +9458,8 @@
       }
     }
   },
-  "emailVerificationTitle": "Verify your email",
-  "emailVerificationMessage": "Open the link in the verification email to {email}. If you can't find it, you can send a new one.",
+  "emailVerificationTitle": "Confirm your email",
+  "emailVerificationMessage": "We've sent a link to {email}. The screen moves on by itself once you've clicked it.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
@@ -9376,7 +9468,7 @@
     }
   },
   "emailVerificationResend": "Send again",
-  "emailVerificationResendCountdown": "You can send again in {seconds} s",
+  "emailVerificationResendCountdown": "Send again ({seconds} s)",
   "@emailVerificationResendCountdown": {
     "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
     "placeholders": {
@@ -9385,7 +9477,7 @@
       }
     }
   },
-  "emailVerificationContinue": "Continue anyway",
+  "emailVerificationContinue": "Continue without confirming",
   "emailVerificationSuccess": "Email verified.",
   "a11yCookingModeFontScale": "Change text size",
   "a11yCookingModeClose": "Close cooking mode",
@@ -9418,6 +9510,15 @@
   "statsTotalCooks": "Total Cooks",
   "statsNoMealTypes": "No meal types recorded",
   "statsNoTags": "No tags used yet",
+  "statsCountedNote": "Counted over {count} recipes on this phone. The figures cover your collection as it has been fetched here – not a calculation on the server.",
+  "@statsCountedNote": {
+    "description": "Note at the bottom of the collection statistics page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statsDistinctMealTypes": "Meal Types",
   "statsDistinctTags": "Tags",
   "importPendingRetryPrompt": "You have a pending import — retry now?",
@@ -9490,7 +9591,8 @@
   "quickCaptureSave": "Save",
   "quickCaptureSaved": "Recipe saved.",
   "quickCaptureEditAction": "Edit",
-  "quickCaptureTitleHint": "What's the recipe called?",
+  "quickCaptureTitleHint": "What's the dish called?",
+  "quickCaptureHelp": "The recipe is saved as a card without details – you can import ingredients and steps whenever you like.",
   "a11ySwipeEditAction": "Edit recipe",
   "a11ySwipeDeleteAction": "Delete recipe",
   "a11yRecipeSelected": "{title}, selected",
@@ -9602,6 +9704,23 @@
   "notificationsErrorLoad": "Could not load notifications",
   "notificationsSelectedCount": "{count} selected",
   "notificationsMarkAllRead": "Mark all as read",
+  "notificationsMarkAllReadShort": "Mark all as read",
+  "@notificationsMarkAllReadShort": {
+    "description": "Label of the band that marks every notification as read"
+  },
+  "notificationsUnreadCount": "{count, plural, =1{1 unread} other{{count} unread}}",
+  "@notificationsUnreadCount": {
+    "description": "Count of unread notifications on the mark-all-read band",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsNote": "Twenty at a time, older ones load as you scroll. Long-press to select several.",
+  "@notificationsNote": {
+    "description": "Note under the notification inbox list"
+  },
   "notificationsDismissed": "{count, plural, =1{Notification removed} other{{count} notifications removed}}",
   "@notificationsDismissed": {
     "placeholders": {
@@ -11358,6 +11477,8 @@
   "buttonBusySaving": "Saving …",
   "loadingProfileBusy": "Loading your profile …",
   "loadingOnboardingResume": "Finding where you left off …",
+  "startSplashTagline": "Your butler in the kitchen",
+  "startSplashBusy": "Setting up your kitchen …",
   "loadingOpeningPage": "Opening the page …",
   "loadingStartingApp": "Starting Butlery …",
   "recipeSaveToMyKitchen": "Save to my kitchen",
@@ -14049,6 +14170,24 @@
   "@familyProfilesSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account"
   },
+  "familyAccountsCount": "{count, plural, =1{1 account} other{{count} accounts}}",
+  "@familyAccountsCount": {
+    "description": "Size of the household accounts list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "familyProfilesCount": "{count, plural, =1{1 profile} other{{count} profiles}}",
+  "@familyProfilesCount": {
+    "description": "Size of the family member profiles list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyAddMemberRow": "Add family member",
   "@familyAddMemberRow": {
     "description": "Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form"
@@ -14120,6 +14259,10 @@
   "notifCategoriesSection": "What you get notifications about",
   "@notifCategoriesSection": {
     "description": "Section overline above the notification category toggles"
+  },
+  "notifCategoriesFootnote": "Muted categories still show in the notification inbox – they are only not sent as push.",
+  "@notifCategoriesFootnote": {
+    "description": "Note under the notification category toggles"
   },
   "notifDigestSection": "Summary",
   "@notifDigestSection": {
@@ -14959,6 +15102,130 @@
   "@nutritionPickerSaveFailed": {
     "description": "BUT-643 nutrition values."
   },
+  "nutritionEstimatedBadge": "Estimated",
+  "@nutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEstimatedBadge": "Estimated amount",
+  "@a11yNutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCoverageWithEstimates": "Calculated from {counted} of {total} ingredients, {estimated} with an estimated amount",
+  "@nutritionCoverageWithEstimates": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionEnterAmount": "Enter amount",
+  "@nutritionEnterAmount": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEnterAmountFor": "Enter an amount for {name}",
+  "@a11yNutritionEnterAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionChangeAmountFor": "Change the amount for {name}",
+  "@a11yNutritionChangeAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountSheetTitle": "Amount for {name}",
+  "@nutritionAmountSheetTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountFieldLabel": "Amount",
+  "@nutritionAmountFieldLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountUnitLabel": "Unit",
+  "@nutritionAmountUnitLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountInvalid": "Enter a number above 0.",
+  "@nutritionAmountInvalid": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemove": "Remove amount",
+  "@nutritionAmountRemove": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeTitle": "Is {amount} {name} for this recipe only?",
+  "@nutritionAmountScopeTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeBody": "You can also use the amount in every recipe where {name} has no amount.",
+  "@nutritionAmountScopeBody": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeRecipe": "This recipe only",
+  "@nutritionAmountScopeRecipe": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeAll": "All recipes",
+  "@nutritionAmountScopeAll": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaved": "The amount was saved",
+  "@nutritionAmountSaved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemoved": "The amount was removed",
+  "@nutritionAmountRemoved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaveFailed": "The amount could not be saved. Try again.",
+  "@nutritionAmountSaveFailed": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountFull": "The household's saved amounts are full. Remove one to save a new one.",
+  "@nutritionAmountFull": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCountedAsOwn": "Counted as {food}, your amount",
+  "@nutritionCountedAsOwn": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
   "nutritionPickerClear": "Remove the household's choice",
   "@nutritionPickerClear": {
     "description": "BUT-643 nutrition values."
@@ -15112,6 +15379,10 @@
   "guestUpgradeDone": "The account is created. An e-mail with a link to confirm the address has been sent.",
   "@guestUpgradeDone": {
     "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeDoneProvider": "The account is created. Everything you did as a guest is kept.",
+  "@guestUpgradeDoneProvider": {
+    "description": "Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)"
   },
   "guestUpgradeFinishFailed": "The account is created but could not be finished. Try again.",
   "@guestUpgradeFinishFailed": {
@@ -15960,5 +16231,164 @@
   "accountSecurityEmailCannotConfirmHere": "The change can't be confirmed on this device, because the account's sign-in isn't available here. Change the address on a device where you can sign in to the account.",
   "@accountSecurityEmailCannotConfirmHere": {
     "description": "BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform"
+  },
+  "settingsSignInMethodsTitle": "Sign-in methods",
+  "@settingsSignInMethodsTitle": {
+    "description": "BUT-916 slice B: title of the sign-in methods page and its row on Konto & säkerhet"
+  },
+  "signInMethodsEmailName": "E-mail",
+  "@signInMethodsEmailName": {
+    "description": "BUT-916 slice B: short name of e-mail and password in the row summary"
+  },
+  "signInMethodsPassword": "E-mail and password",
+  "@signInMethodsPassword": {
+    "description": "BUT-916 slice B: row for the password sign-in"
+  },
+  "signInMethodsOn": "On",
+  "@signInMethodsOn": {
+    "description": "BUT-916 slice B: state of a sign-in method that is set up and cannot be removed"
+  },
+  "signInMethodsNotLinked": "Not linked",
+  "@signInMethodsNotLinked": {
+    "description": "BUT-916 slice B: state of a provider that is not linked"
+  },
+  "signInMethodsLink": "Link",
+  "@signInMethodsLink": {
+    "description": "BUT-916 slice B: action that links Google or Apple"
+  },
+  "signInMethodsUnlink": "Unlink",
+  "@signInMethodsUnlink": {
+    "description": "BUT-916 slice B: action and confirm button that unlink Google or Apple"
+  },
+  "signInMethodsSetPassword": "Set password",
+  "@signInMethodsSetPassword": {
+    "description": "BUT-916 slice B: action, dialog title and button for adding a password"
+  },
+  "signInMethodsSetPasswordBody": "The password is for {email}. You can then also sign in with e-mail and password.",
+  "@signInMethodsSetPasswordBody": {
+    "description": "BUT-916 slice B: what the new password is for",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLastOne": "The last sign-in method can't be removed. You always need at least one way to sign in.",
+  "@signInMethodsLastOne": {
+    "description": "BUT-916 slice B: note under the list"
+  },
+  "signInMethodsOnlyProvider": "{provider} is the way you sign in right now and can't be unlinked. Set a password or link another method first.",
+  "@signInMethodsOnlyProvider": {
+    "description": "BUT-916 slice B: note when the one method left is a provider",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsNoAddress": "A password can't be set, because the account has no e-mail address.",
+  "@signInMethodsNoAddress": {
+    "description": "BUT-916 slice B: set password refused, the account has no address"
+  },
+  "signInMethodsUnlinkTitle": "Unlink {provider}?",
+  "@signInMethodsUnlinkTitle": {
+    "description": "BUT-916 slice B: unlink dialog title",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkBody": "You can no longer sign in with {provider}.",
+  "@signInMethodsUnlinkBody": {
+    "description": "BUT-916 slice B: unlink dialog, what stops working",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsInsteadPassword": "You sign in with e-mail and password instead.",
+  "@signInMethodsInsteadPassword": {
+    "description": "BUT-916 slice B: unlink dialog, what remains"
+  },
+  "signInMethodsInsteadProvider": "You sign in with {provider} instead.",
+  "@signInMethodsInsteadProvider": {
+    "description": "BUT-916 slice B: unlink dialog, what remains when there is no password",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkAppleAsks": "Apple shows its sheet once more, so that we can ask Apple to remove the link.",
+  "@signInMethodsUnlinkAppleAsks": {
+    "description": "BUT-916 slice B: unlink Apple where the app can revoke the Apple tokens"
+  },
+  "signInMethodsUnlinkAppleYourself": "Butlery stays under Sign in with Apple in your Apple account until you remove it there.",
+  "@signInMethodsUnlinkAppleYourself": {
+    "description": "BUT-916 slice B: unlink Apple where the app cannot revoke the Apple tokens"
+  },
+  "signInMethodsLinked": "{provider} is linked to the account.",
+  "@signInMethodsLinked": {
+    "description": "BUT-916 slice B: snackbar after linking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinked": "{provider} is unlinked.",
+  "@signInMethodsUnlinked": {
+    "description": "BUT-916 slice B: snackbar after unlinking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordSet": "The password is set. You can now sign in with e-mail and password.",
+  "@signInMethodsPasswordSet": {
+    "description": "BUT-916 slice B: snackbar after adding a password"
+  },
+  "signInMethodsAlreadyUsed": "That {provider} account is already used by another Butlery account.",
+  "@signInMethodsAlreadyUsed": {
+    "description": "BUT-916 slice B: link refused, the provider account belongs to another user",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsAlreadyLinked": "{provider} is already linked to the account.",
+  "@signInMethodsAlreadyLinked": {
+    "description": "BUT-916 slice B: link refused, already linked",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLinkFailed": "{provider} couldn't be linked to the account. Try again.",
+  "@signInMethodsLinkFailed": {
+    "description": "BUT-916 slice B: link failed for a reason without its own text",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkFailed": "{provider} couldn't be unlinked. The sign-in method is still there.",
+  "@signInMethodsUnlinkFailed": {
+    "description": "BUT-916 slice B: unlink failed",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordFailed": "The password couldn't be set. Try again.",
+  "@signInMethodsPasswordFailed": {
+    "description": "BUT-916 slice B: add password failed for a reason without its own text"
   }
 }

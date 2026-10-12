@@ -24,6 +24,7 @@ import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -151,10 +152,9 @@ void main() {
 
     group('completeOnboarding', () {
       test(
-        'calls completeOnboardingWithPreferences with combined prefs',
+        'calls completeOnboardingWithPreferences with the chosen allergens',
         () async {
           viewModel.toggleAllergen('gluten');
-          viewModel.toggleDietaryPref('vegansk');
 
           final result = await viewModel.completeOnboarding();
 
@@ -168,7 +168,7 @@ void main() {
           ).captured;
           final prefs = captured.first as UserAllergenPreferences;
           expect(prefs.trackedAllergens, contains('gluten'));
-          expect(prefs.trackedDietary, contains('vegansk'));
+          expect(prefs.trackedDietary, isEmpty);
         },
       );
 
@@ -185,6 +185,36 @@ void main() {
         ).called(1);
       });
 
+      test('shows the setup screen and ends on its last phase', () async {
+        expect(viewModel.showsSetup, isFalse);
+        final phases = <OnboardingSetupPhase>[];
+        viewModel.addListener(() {
+          if (phases.isEmpty || phases.last != viewModel.setupPhase) {
+            phases.add(viewModel.setupPhase);
+          }
+        });
+
+        await viewModel.completeOnboarding();
+
+        expect(viewModel.showsSetup, isTrue);
+        expect(viewModel.setupPhase, OnboardingSetupPhase.done);
+        expect(phases.last, OnboardingSetupPhase.done);
+        addTearDown(() => OnboardingHold.active.value = false);
+        expect(
+          OnboardingHold.active.value,
+          isTrue,
+          reason: 'the view lets go after the last screen has been shown',
+        );
+        final order = phases.map((p) => p.index).toList();
+        expect(order, [...order]..sort(), reason: 'phases only move forward');
+      });
+
+      test('says whether allergens were chosen, for the setup screen', () {
+        expect(viewModel.hasAllergens, isFalse);
+        viewModel.toggleAllergen('gluten');
+        expect(viewModel.hasAllergens, isTrue);
+      });
+
       test('returns false when service throws', () async {
         when(
           () => mockUserService.completeOnboardingWithPreferences(
@@ -197,10 +227,17 @@ void main() {
         final result = await viewModel.completeOnboarding();
 
         expect(result, isFalse);
+        expect(
+          viewModel.showsSetup,
+          isFalse,
+          reason:
+              'a failed write goes back to the wizard, not the setup screen',
+        );
+        expect(OnboardingHold.active.value, isFalse);
       });
 
       test('fires onboarding_completed analytics on success', () async {
-        viewModel.setPage(4);
+        viewModel.setPage(3);
 
         await viewModel.completeOnboarding();
 
@@ -209,7 +246,6 @@ void main() {
             name: 'onboarding_completed',
             parameters: {
               'allergen_count': 0,
-              'dietary_count': 0,
             },
           ),
         ).called(1);
@@ -233,7 +269,7 @@ void main() {
       test(
         'BUT-545: fires onboarding_import_skipped when import never succeeded',
         () async {
-          viewModel.setPage(4);
+          viewModel.setPage(3);
           await viewModel.completeOnboarding();
 
           verify(
@@ -248,7 +284,7 @@ void main() {
       test(
         'BUT-545: does NOT fire onboarding_import_skipped after successful import',
         () async {
-          viewModel.setPage(4);
+          viewModel.setPage(3);
           viewModel.markOnboardingImportSucceeded();
 
           await viewModel.completeOnboarding();
@@ -488,6 +524,8 @@ void main() {
 
             expect(result, isFalse);
             expect(viewModel.ageRejected, isTrue);
+            expect(viewModel.showsSetup, isFalse);
+            expect(OnboardingHold.active.value, isFalse);
             verifyNever(
               () => mockUserService.completeOnboardingWithPreferences(
                 any(),
@@ -497,6 +535,20 @@ void main() {
             );
           },
         );
+
+        test('a verifyAge that throws at completion leaves the setup screen '
+            'and returns false', () async {
+          viewModel.setBirthYear(DateTime.now().year - 30);
+          when(
+            () => mockAgeVerificationService.verifyAge(any()),
+          ).thenThrow(Exception('offline'));
+
+          final result = await viewModel.completeOnboarding();
+
+          expect(result, isFalse);
+          expect(viewModel.showsSetup, isFalse);
+          expect(OnboardingHold.active.value, isFalse);
+        });
       });
     });
 
@@ -727,21 +779,20 @@ void main() {
         'walking the whole wizard persists each step exactly once',
         () async {
           vm.setPage(0);
-          // Pages 0->1->2->3->4: four forward hops, each leaving one step.
-          for (var i = 0; i < 4; i++) {
+          // Pages 0->1->2->3: three forward hops, each leaving one step.
+          for (var i = 0; i < 3; i++) {
             final from = vm.currentPage;
             vm.nextPage();
             vm.setPage(from + 1);
           }
 
-          // Each of the four left-behind steps persisted once; never duplicated
+          // Each of the three left-behind steps persisted once; never duplicated
           // by the trailing setPage (whose guard is false because nextPage
           // already advanced _currentPage).
           for (final step in [
             OnboardingStep.ageGate,
             OnboardingStep.welcome,
             OnboardingStep.allergens,
-            OnboardingStep.dietary,
           ]) {
             verify(
               () => mockProgress.markStepComplete(
@@ -962,6 +1013,8 @@ void main() {
 
       await viewModel.completeOnboarding();
 
+      expect(viewModel.weekSeeded, isTrue);
+      expect(viewModel.starterRecipeCount, isPositive);
       final savedPlan =
           verify(() => mockMenuService.save(captureAny())).captured.single
               as WeeklyMenuPlan;
@@ -1291,48 +1344,7 @@ void main() {
 
       verifyNever(() => mockMenuService.save(any()));
       verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
-    });
-
-    test('a picked diet keeps a recipe that breaks it out of the sample menu '
-        '(BUT-2299)', () async {
-      Recipe dietRecipe(String id, TriState vegetarian) {
-        final base = recipeWith(id, 'Middag');
-        return Recipe(
-          core: base.core.copyWith(
-            tagResult: TagResult(
-              tags: const {},
-              allergenStatus: const {},
-              dietaryStatus: {'vegetarisk': vegetarian},
-              coverage: 1.0,
-              generatedAt: DateTime(2026),
-              generatorVersion: kTagGeneratorVersion,
-            ),
-          ),
-          type: base.type,
-        );
-      }
-
-      when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) {
-        final id = inv.positionalArguments.first as String;
-        if (id == 'r1') return dietRecipe(id, TriState.free);
-        if (id == 'r2') return dietRecipe(id, TriState.contains);
-        return recipeWith(id, 'Middag');
-      });
-      wireRealAdderOnEmptyWeek();
-      viewModel.toggleDietaryPref('vegetarisk');
-
-      await viewModel.completeOnboarding();
-
-      final savedPlan =
-          verify(() => mockMenuService.save(captureAny())).captured.single
-              as WeeklyMenuPlan;
-      final planned = savedPlan.entries.map((e) => e.recipeId).toSet();
-      expect(planned, contains('r1'));
-      expect(
-        planned,
-        isNot(contains('r2')),
-        reason: 'a recipe that breaks the picked diet must not be planned',
-      );
+      expect(viewModel.weekSeeded, isFalse);
     });
 
     test('two single-slot (middag) recipes land on different days, never '
@@ -1524,6 +1536,7 @@ void main() {
 
       await viewModel.completeOnboarding();
 
+      expect(viewModel.weekSeeded, isFalse);
       verify(() => mockMenuService.readWeek(any())).called(1);
       verifyNever(() => mockMenuService.save(any()));
       verifyNever(() => mockShoppingGenerator.generateForWeek(any()));

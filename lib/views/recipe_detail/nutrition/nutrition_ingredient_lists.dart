@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -13,10 +14,12 @@ class NutritionMissingList extends StatelessWidget {
     super.key,
     required this.lines,
     required this.onPick,
+    required this.onEnterAmount,
   });
 
   final List<NutritionLine> lines;
   final void Function(NutritionLine line) onPick;
+  final void Function(NutritionLine line) onEnterAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +72,25 @@ class NutritionMissingList extends StatelessWidget {
                       child: Text(l10n.nutritionPickFood),
                     ),
                   ),
+                if (line.status == NutritionLineStatus.noAmount &&
+                    line.storageKey != null &&
+                    line.food != null)
+                  Semantics(
+                    label: l10n.a11yNutritionEnterAmountFor(line.name),
+                    button: true,
+                    excludeSemantics: true,
+                    onTap: () => onEnterAmount(line),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(
+                          AppDimensions.minTouchTarget,
+                          AppDimensions.minTouchTarget,
+                        ),
+                      ),
+                      onPressed: () => onEnterAmount(line),
+                      child: Text(l10n.nutritionEnterAmount),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -78,22 +100,23 @@ class NutritionMissingList extends StatelessWidget {
 }
 
 /// The counted ingredients with the food each was matched to, and a way for
-/// the household to change that food.
+/// the household to change that food. An estimated line is marked as such and
+/// offers a change of its amount instead.
 class NutritionIngredientsSection extends StatelessWidget {
   const NutritionIngredientsSection({
     super.key,
     required this.lines,
     required this.onChange,
+    required this.onChangeAmount,
   });
 
   final List<NutritionLine> lines;
   final void Function(NutritionLine line) onChange;
+  final void Function(NutritionLine line) onChangeAmount;
 
   @override
   Widget build(BuildContext context) {
-    final counted = lines
-        .where((l) => l.status == NutritionLineStatus.counted)
-        .toList();
+    final counted = lines.where((l) => l.isCounted).toList();
     if (counted.isEmpty) return const SizedBox.shrink();
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
@@ -122,34 +145,73 @@ class NutritionIngredientsSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      l10n.nutritionCountedAs(line.food!.name),
+                      _countedAs(l10n, line),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: cs.onSurfaceVariant,
                       ),
                     ),
+                    if (line.status == NutritionLineStatus.estimated)
+                      Semantics(
+                        label: l10n.a11yNutritionEstimatedBadge,
+                        excludeSemantics: true,
+                        child: Text(
+                          l10n.nutritionEstimatedBadge,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
               if (line.storageKey != null)
-                Semantics(
-                  label: l10n.a11yNutritionChangeFoodFor(line.name),
-                  button: true,
-                  excludeSemantics: true,
-                  onTap: () => onChange(line),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(
-                        AppDimensions.minTouchTarget,
-                        AppDimensions.minTouchTarget,
-                      ),
-                    ),
-                    onPressed: () => onChange(line),
-                    child: Text(l10n.nutritionChange),
-                  ),
+                _ChangeButton(
+                  semanticLabel: line.status == NutritionLineStatus.estimated
+                      ? l10n.a11yNutritionChangeAmountFor(line.name)
+                      : l10n.a11yNutritionChangeFoodFor(line.name),
+                  onPressed: () => line.status == NutritionLineStatus.estimated
+                      ? onChangeAmount(line)
+                      : onChange(line),
                 ),
             ],
           ),
       ],
+    );
+  }
+}
+
+String _countedAs(AppLocalizations l10n, NutritionLine line) {
+  final own =
+      line.amountSource == NutritionAmountSource.household ||
+      line.amountSource == NutritionAmountSource.thisRecipe;
+  return own
+      ? l10n.nutritionCountedAsOwn(line.food!.name)
+      : l10n.nutritionCountedAs(line.food!.name);
+}
+
+class _ChangeButton extends StatelessWidget {
+  const _ChangeButton({required this.semanticLabel, required this.onPressed});
+
+  final String semanticLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      excludeSemantics: true,
+      onTap: onPressed,
+      child: TextButton(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(
+            AppDimensions.minTouchTarget,
+            AppDimensions.minTouchTarget,
+          ),
+        ),
+        onPressed: onPressed,
+        child: Text(context.l10n.nutritionChange),
+      ),
     );
   }
 }

@@ -3457,7 +3457,7 @@
   "@householdJoinAction": {
     "description": "BUT-2267: button that joins the household (opens a confirm dialog first)"
   },
-  "householdJoinConfirmBody": "Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.",
+  "householdJoinConfirmBody": "Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Mitt hushåll. Du lämnar hushållet genom att lämna gruppen.",
   "@householdJoinConfirmBody": {
     "description": "BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave"
   },
@@ -3469,7 +3469,7 @@
   "@householdJoinedTitle": {
     "description": "BUT-2267: group page, after joining the household"
   },
-  "householdJoinedSubtitle": "Dela dina allergier under Familj & hushåll, så räknar menyn med dem.",
+  "householdJoinedSubtitle": "Dela dina allergier under Mitt hushåll, så räknar menyn med dem.",
   "@householdJoinedSubtitle": {
     "description": "BUT-2267: under householdJoinedTitle; points to the sharing setting"
   },
@@ -3972,6 +3972,19 @@
   "importWebRecipeLinkDetected": "Receptlänk från webbsida är detekterad.",
   "importWebsite": "Webbsida",
   "groupAddMembers": "Lägg till medlemmar",
+  "groupAddToGroup": "Lägg till i {group}",
+  "@groupAddToGroup": {
+    "description": "Title of the add-members page, naming the group",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "groupAlreadyMember": "Redan medlem",
+  "@groupAlreadyMember": {
+    "description": "Row label for a friend who already belongs to the group"
+  },
   "groupAllFriendsAlreadyMembers": "Alla dina vänner är redan medlemmar i denna grupp, eller så har du redan skickat inbjudningar till dem.",
   "groupSharedContentLoadFailed": "Det delade innehållet kunde inte hämtas.",
   "@groupSharedContentLoadFailed": {
@@ -4794,7 +4807,7 @@
   "collaborativeAdd": "Lägg till",
   "collaborativeAddFirstItem": "Lägg till den första varan",
   "collaborativeAdding": "Lägger till …",
-  "collaborativeAddItemHint": "Skriv varunamn …",
+  "collaborativeAddItemHint": "Lägg till vara …",
   "collaborativeClearAll": "Rensa alla",
   "collaborativeClearCompleted": "Rensa avprickade",
   "collaborativeClearCompletedConfirm": "Vill du rensa alla avprickade varor?",
@@ -5827,6 +5840,14 @@
       }
     }
   },
+  "a11yShoppingItemMoreOptions": "Fler val för {name}",
+  "@a11yShoppingItemMoreOptions": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11ySharedRecipe": "Delat recept",
   "a11ySharedMenu": "Delad meny",
   "a11yRemoveProfileImage": "Ta bort profilbild",
@@ -5860,7 +5881,6 @@
   "onboardingAllergenTreeNut": "Trädnötter",
   "onboardingAllergenCrustacean": "Kräftdjur",
   "onboardingAllergenMollusc": "Blötdjur",
-  "onboardingShowAllAllergens": "Visa alla allergener",
   "onboardingShowFewerAllergens": "Visa färre",
   "filterVegetarian": "Vegetarisk",
   "filterVegan": "Vegansk",
@@ -6058,11 +6078,11 @@
   "notificationQuietHoursSubtitle": "Inga aviseringar under vald tidsperiod",
   "commonFrom": "Från",
   "commonTo": "Till",
-  "notificationCategoryFriends": "Vänner",
+  "notificationCategoryFriends": "Vänner & förfrågningar",
   "notificationCategoryRecipes": "Recept",
-  "notificationCategoryCollaboration": "Samarbete",
-  "notificationCategoryShopping": "Inköp",
-  "notificationCategorySocial": "Social aktivitet",
+  "notificationCategoryCollaboration": "Samarbete i realtid",
+  "notificationCategoryShopping": "Inköpslistor",
+  "notificationCategorySocial": "Socialt flöde",
   "notificationCategorySystem": "System",
   "notificationCategoryMessaging": "Meddelanden",
   "notificationDigestFrequencyTitle": "Sammanfattningsfrekvens",
@@ -6182,29 +6202,29 @@
     }
   },
   "onboardingSkipConfirmTitle": "Hoppa över introduktionen?",
-  "onboardingSkipConfirmMessage": "Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.",
+  "onboardingSkipConfirmMessage": "Du hinner inte ställa in allergier nu. Du kan göra det när som helst i inställningarna.",
   "onboardingSkip": "Hoppa över",
   "onboardingBack": "Tillbaka",
   "onboardingNext": "Nästa",
-  "onboardingComplete": "Slutför",
-  "onboardingAgeGateTitle": "Hur gammal är du?",
-  "onboardingAgeGateSubtitle": "Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).",
+  "onboardingComplete": "Klar",
+  "onboardingAgeGateTitle": "Vilket år är du född?",
+  "onboardingAgeGateSubtitle": "Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.",
   "onboardingAgeGateBirthYearLabel": "Födelseår",
-  "onboardingAgeGateBirthYearHint": "Välj ditt födelseår",
-  "onboardingAgeGatePrivacyNote": "Vi lagrar bara året, inte hela datumet.",
+  "onboardingAgeGateBirthYearHint": "Välj ett år",
+  "onboardingAgeGatePrivacyNote": "Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.",
   "onboardingAgeGateTooYoungTitle": "Butlery är för 15 år och uppåt",
-  "onboardingAgeGateTooYoungBody": "Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.",
+  "onboardingAgeGateTooYoungBody": "Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.",
   "onboardingAgeGateSignOut": "Logga ut",
   "onboardingAgeGateParentOption": "En vuxen kan skapa ett konto åt dig",
   "onboardingAgeGateParentInfoTitle": "Be en vuxen om hjälp",
   "onboardingAgeGateParentInfoBody": "Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.",
   "onboardingAgeRejectedTitle": "Kontot kunde inte skapas",
   "onboardingAgeRejectedBody": "Butlery är tillgängligt för dig som fyllt 15 år. Vi kan inte skapa ditt konto just nu.",
-  "onboardingWelcomeTitle": "Välkommen. Butlery står redo.",
-  "onboardingWelcomeDescription": "Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.",
-  "onboardingWelcomeNote": "Du kan alltid ändra dessa i inställningarna senare.",
-  "onboardingAllergenTitle": "Allergier & intoleranser",
-  "onboardingAllergenDescription": "Välj de allergener du vill spara och filtrera recept efter.",
+  "onboardingWelcomeTitle": "Välkommen. Jag sköter veckan.",
+  "onboardingWelcomeDescription": "Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.",
+  "onboardingWelcomeNote": "Två frågor kvar. Sedan är du inne.",
+  "onboardingAllergenTitle": "Något ni undviker?",
+  "onboardingAllergenDescription": "Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.",
   "onboardingAllergenGluten": "Gluten",
   "onboardingAllergenMilk": "Mjölk",
   "onboardingAllergenNuts": "Nötter",
@@ -6213,35 +6233,100 @@
   "onboardingAllergenFish": "Fisk",
   "onboardingAllergenShellfish": "Skaldjur",
   "onboardingAllergenSesame": "Sesam",
-  "onboardingDietaryTitle": "Kostpreferenser",
-  "onboardingDietaryDescription": "Har du några kostpreferenser? Vi kan filtrera recept åt dig.",
-  "onboardingDietaryVegetarian": "Vegetarian",
-  "onboardingDietaryVegan": "Vegan",
-  "onboardingDietaryPescetarian": "Pescetarian",
-  "onboardingDietaryVegetarianDesc": "Inga kött- eller fiskprodukter",
-  "onboardingDietaryVeganDesc": "Inga animaliska produkter",
-  "onboardingDietaryPescetarianDesc": "Fisk men inget kött",
-  "onboardingDietaryGlutenFree": "Glutenfri",
-  "onboardingDietaryLactoseFree": "Laktosfri",
-  "onboardingDietaryHalal": "Halalanpassad",
-  "onboardingDietaryKosher": "Kosheranpassad",
-  "onboardingDietaryGlutenFreeDesc": "Inga gluteninnehållande ingredienser",
-  "onboardingDietaryLactoseFreeDesc": "Inga mejeriprodukter med laktos",
-  "onboardingDietaryHalalDesc": "Följer halalregler för mat",
-  "onboardingDietaryKosherDesc": "Följer kosherregler för mat",
   "onboardingSkippedBanner": "Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?",
   "onboardingSkippedBannerAction": "Öppna inställningar",
   "onboardingWelcomeBanner": "Välkommen till Butlery. Allt är klart – lägg till ditt första recept så kommer du igång.",
   "onboardingWelcomeBannerAction": "Lägg till recept",
-  "onboardingImportTitle": "Importera ditt första recept",
-  "onboardingImportDescription": "Kom igång snabbt genom att importera ett recept från webben eller ett foto.",
-  "onboardingImportUrlTitle": "Från en webbadress",
-  "onboardingImportPhotoTitle": "Importera från foto",
-  "onboardingImportPhotoDescription": "Ta ett foto eller välj från galleriet",
-  "onboardingImportSkipNote": "Du kan hoppa över detta steg och importera senare.",
+  "onboardingImportTitle": "Ta med ett recept du redan lagar",
+  "onboardingImportDescription": "Klistra in en länk. Jag läser den och du får granska innan något sparas.",
+  "onboardingImportUrlTitle": "Länk till receptet",
+  "onboardingImportPhotoTitle": "Fotografera en sida",
+  "onboardingImportPhotoDescription": "Ur en kokbok eller en handskriven lapp",
   "onboardingResumeTitle": "Avsluta din profil",
   "onboardingResumeBody": "30 sekunder kvar",
   "onboardingResumeCta": "Fortsätt",
+  "onboardingAgeGateParentTitle": "En vuxen kan skapa kontot",
+  "onboardingAgeGateParentBody": "En förälder skapar ett eget konto och lägger till dig som matgäst i hushållet. Då planeras maten med dig i räkningen.",
+  "onboardingAgeGateNothingSaved": "Kontot du började skapa tas bort. Inget sparas.",
+  "onboardingWelcomeQuestionAllergens": "Vad hushållet inte tål",
+  "onboardingWelcomeQuestionRecipe": "Ett recept du redan lagar",
+  "onboardingAllergenNote": "Det här gäller dig. Allergier för fler i hushållet lägger du till senare. Har du valt något planeras recept med okänt allergeninnehåll aldrig automatiskt.",
+  "onboardingShowAllAllergens": "{kind, select, nine{Visa alla nio till} other{Visa alla {count} till}}",
+  "@onboardingShowAllAllergens": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingImportFromClipboard": "Hämtad ur ditt urklipp. Byt om det var fel länk.",
+  "onboardingImportSkipNote": "{kind, select, one{Hoppar du över får du ett startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} two{Hoppar du över får du två startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} three{Hoppar du över får du tre startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} four{Hoppar du över får du fyra startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} five{Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} six{Hoppar du över får du sex startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} seven{Hoppar du över får du sju startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} eight{Hoppar du över får du åtta startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} nine{Hoppar du över får du nio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} ten{Hoppar du över får du tio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} other{Hoppar du över får du {count} startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.}}",
+  "@onboardingImportSkipNote": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStepOf": "Steg {current} av {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupTitle": "Jag dukar upp",
+  "onboardingSetupBody": "Ett par sekunder. Sedan har du en app med innehåll i.",
+  "onboardingSetupSaving": "Sparar allergenerna",
+  "onboardingSetupSaved": "Allergenerna sparade",
+  "onboardingSetupSavedNone": "Inga allergener angivna",
+  "onboardingSetupRecipes": "Lägger startrecept i Mina recept",
+  "onboardingSetupRecipesDone": "{kind, select, one{Ett startrecept lagt i Mina recept} two{Två startrecept lagda i Mina recept} three{Tre startrecept lagda i Mina recept} four{Fyra startrecept lagda i Mina recept} five{Fem startrecept lagda i Mina recept} six{Sex startrecept lagda i Mina recept} seven{Sju startrecept lagda i Mina recept} eight{Åtta startrecept lagda i Mina recept} nine{Nio startrecept lagda i Mina recept} ten{Tio startrecept lagda i Mina recept} other{{count} startrecept lagda i Mina recept}}",
+  "@onboardingSetupRecipesDone": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupRecipesFailed": "Startrecepten kunde inte läggas till",
+  "onboardingSetupWeek": "Lägger en exempelvecka och dess inköpslista",
+  "onboardingSetupWeekDone": "Exempelvecka och inköpslista klara",
+  "onboardingSetupWeekFailed": "Ingen exempelvecka lades till",
+  "onboardingSetupProgress": "{count, plural, =0{Noll av tre klara} =1{En av tre klara} =2{Två av tre klara} other{Tre av tre klara}}",
+  "@onboardingSetupProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneTitle": "Varsågod. Det är dukat.",
+  "onboardingDoneBody": "{kind, select, zero{Allt går att ändra när du vill.} one{Ett recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} two{Två recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} three{Tre recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} four{Fyra recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} five{Fem recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} six{Sex recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} seven{Sju recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} eight{Åtta recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} nine{Nio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} ten{Tio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} other{{count} recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.}}",
+  "@onboardingDoneBody": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneRedirect": "Tar dig till dina recept …",
   "cookingModePortions": "Portioner",
   "feedbackSendLabel": "Skicka feedback",
   "feedbackCategoryLabel": "Kategori",
@@ -6258,6 +6343,13 @@
   "adminPasswordLabel": "Lösenord",
   "adminLoginFailed": "Inloggning misslyckades",
   "adminNotAuthorized": "Du har inte behörighet till adminpanelen.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Inloggad som {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Logga ut",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "Ingen feedback än",
@@ -9440,8 +9532,8 @@
       }
     }
   },
-  "emailVerificationTitle": "Verifiera din e-post",
-  "emailVerificationMessage": "Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.",
+  "emailVerificationTitle": "Bekräfta din e-post",
+  "emailVerificationMessage": "Vi har skickat en länk till {email}. Skärmen går vidare av sig själv när du klickat.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
@@ -9450,7 +9542,7 @@
     }
   },
   "emailVerificationResend": "Skicka igen",
-  "emailVerificationResendCountdown": "Du kan skicka igen om {seconds} s",
+  "emailVerificationResendCountdown": "Skicka igen ({seconds} s)",
   "@emailVerificationResendCountdown": {
     "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
     "placeholders": {
@@ -9459,7 +9551,7 @@
       }
     }
   },
-  "emailVerificationContinue": "Fortsätt ändå",
+  "emailVerificationContinue": "Fortsätt utan att bekräfta",
   "emailVerificationSuccess": "E-posten är verifierad.",
   "a11yCookingModeFontScale": "Ändra textstorlek",
   "a11yCookingModeClose": "Stäng tillagningsläge",
@@ -9478,20 +9570,29 @@
   "tooltipCreatePoll": "Skapa omröstning",
   "tooltipSelectedImage": "Vald bild",
   "statsMyStatistics": "Min statistik",
-  "statsRecipeCollection": "Receptsamling",
-  "statsTotalRecipes": "Totalt recept",
-  "statsFavorites": "Favoriter",
-  "statsRecentlyCooked": "Nyligen lagat",
-  "statsWithImages": "Med bilder",
+  "statsRecipeCollection": "Samlingen",
+  "statsTotalRecipes": "recept",
+  "statsFavorites": "favoriter",
+  "statsRecentlyCooked": "lagade senaste veckan",
+  "statsWithImages": "med bild",
   "statsPersonalRecipes": "Egna recept",
   "statsCollaborativeRecipes": "Delade recept",
-  "statsHighRated": "Högt betyg",
-  "statsMealTypes": "Måltidstyper",
-  "statsPopularTags": "Populära taggar",
+  "statsHighRated": "Högt betygsatta",
+  "statsMealTypes": "Vad du lagar",
+  "statsPopularTags": "Vanligaste taggarna",
   "statsCookingActivity": "Matlagningsaktivitet",
   "statsTotalCooks": "Totalt antal tillagningar",
   "statsNoMealTypes": "Inga måltidstyper registrerade",
   "statsNoTags": "Inga taggar använda än",
+  "statsCountedNote": "Räknat på {count} recept i telefonen. Siffrorna gäller din samling som den är hämtad hit – inte en beräkning på servern.",
+  "@statsCountedNote": {
+    "description": "Note at the bottom of the collection statistics page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statsDistinctMealTypes": "Måltidstyper",
   "statsDistinctTags": "Taggar",
   "importPendingRetryPrompt": "Du har en väntande import — försök igen?",
@@ -9564,7 +9665,8 @@
   "quickCaptureSave": "Spara",
   "quickCaptureSaved": "Receptet är sparat.",
   "quickCaptureEditAction": "Redigera",
-  "quickCaptureTitleHint": "Vad heter receptet?",
+  "quickCaptureTitleHint": "Vad heter rätten?",
+  "quickCaptureHelp": "Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.",
   "a11ySwipeEditAction": "Redigera recept",
   "a11ySwipeDeleteAction": "Radera receptet",
   "a11yRecipeSelected": "{title}, markerad",
@@ -9671,9 +9773,9 @@
   "statsWithoutTime": "Utan tid",
   "statsIncomplete": "Ofullständiga",
   "statsAllComplete": "Alla recept är kompletta.",
-  "notificationsTitle": "Aviseringar",
-  "notificationsEmpty": "Inga aviseringar än",
-  "notificationsErrorLoad": "Kunde inte ladda aviseringar",
+  "notificationsTitle": "Notiser",
+  "notificationsEmpty": "Inga notiser än",
+  "notificationsErrorLoad": "Kunde inte ladda notiser",
   "notificationsSelectedCount": "{count} markerade",
   "@notificationsSelectedCount": {
     "placeholders": {
@@ -9683,7 +9785,24 @@
     }
   },
   "notificationsMarkAllRead": "Markera alla som lästa",
-  "notificationsDismissed": "{count, plural, =1{Aviseringen togs bort} other{{count} aviseringar togs bort}}",
+  "notificationsMarkAllReadShort": "Markera alla lästa",
+  "@notificationsMarkAllReadShort": {
+    "description": "Label of the band that marks every notification as read"
+  },
+  "notificationsUnreadCount": "{count, plural, =1{1 oläst} other{{count} olästa}}",
+  "@notificationsUnreadCount": {
+    "description": "Count of unread notifications on the mark-all-read band",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsNote": "Tjugo i taget, äldre hämtas när du rullar. Långtryck för att välja flera.",
+  "@notificationsNote": {
+    "description": "Note under the notification inbox list"
+  },
+  "notificationsDismissed": "{count, plural, =1{Notisen togs bort} other{{count} notiser togs bort}}",
   "@notificationsDismissed": {
     "placeholders": {
       "count": {
@@ -10993,8 +11112,8 @@
   "@a11yRelatedRecipeThumbnail": {
     "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
-  "familyTitle": "Familj & hushåll",
-  "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
+  "familyTitle": "Mitt hushåll",
+  "familyIntro": "Hushållet delar recept, meny och inköpslistor. Familjemedlemmar utan konto kan ändå betygsätta maten.",
   "familyHouseholdSection": "hushållet",
   "familyMembersSection": "hushållet",
   "familyAccountsWord": "konton",
@@ -11007,22 +11126,22 @@
   "ageBandChild": "barn",
   "ageBandTeen": "tonåring",
   "ageBandAdult": "vuxen",
-  "familyAddTitle": "ny familjemedlem",
+  "familyAddTitle": "Lägg till familjemedlem",
   "familyEditTitle": "redigera familjemedlem",
-  "familyNameLabel": "namn",
+  "familyNameLabel": "Namn",
   "familyNameHint": "Smeknamn eller initial räcker — vi behöver inte fullständigt namn.",
-  "familyColorLabel": "färg",
-  "familyAgeBandLabel": "åldersgrupp",
-  "familyAgeBandHint": "Bara grov åldersgrupp — inget födelsedatum sparas.",
-  "familyConsentSectionTitle": "samtycke",
-  "familyConsentRequiredBadge": "krävs",
+  "familyColorLabel": "Färg",
+  "familyAgeBandLabel": "Åldersband",
+  "familyAgeBandHint": "Vi lagrar aldrig födelsedatum – bara ett ungefärligt band.",
+  "familyConsentSectionTitle": "Vårdnadshavarsamtycke",
+  "familyConsentRequiredBadge": "Krävs",
   "familyGuardianConsentText": "Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet. Betyg som sätts på måltider bidrar anonymt till receptens allmänna snittbetyg.",
-  "familyAllergenSectionTitle": "allergier & specialkost",
-  "familyOptionalBadge": "valfritt",
+  "familyAllergenSectionTitle": "Allergener",
+  "familyOptionalBadge": "Valfritt",
   "familyAllergenHealthNote": "Allergiuppgifter räknas som känsliga hälsouppgifter. Du kan spara profilen utan dem och lägga till senare.",
   "familyAllergenConsentText": "Jag samtycker uttryckligen till att {name}s allergi- och kostuppgifter (hälsouppgifter) sparas.",
   "familyConsentGivenPrefix": "Samtycke givet",
-  "familyWithdrawAllergenConsent": "Återkalla samtycke & radera allergiuppgifter",
+  "familyWithdrawAllergenConsent": "Ta tillbaka samtycke och radera allergener",
   "familyDeleteMember": "Ta bort familjemedlem",
   "familyDeleteConfirmTitle": "Ta bort familjemedlem?",
   "familyDeleteConfirmBody": "Familjemedlemmen och deras familjebetyg tas bort. Detta går inte att ångra.",
@@ -11229,7 +11348,7 @@
   "@deepLinkUnavailable": {
     "description": "Butler-voice snackbar shown when a shared deep link is valid but its target content is gone or no longer accessible to this user (BUT-1587)"
   },
-  "familyDislikesSectionTitle": "ogillade ingredienser",
+  "familyDislikesSectionTitle": "Ogillade ingredienser",
   "@familyDislikesSectionTitle": {
     "description": "Section title in the family-member form for the soft disliked-ingredients preference (distinct from allergies). Butler voice, lowercase like the sibling section headers (BUT-1610)"
   },
@@ -11489,6 +11608,8 @@
   "buttonBusySaving": "Sparar …",
   "loadingProfileBusy": "Hämtar din profil …",
   "loadingOnboardingResume": "Hämtar var du slutade …",
+  "startSplashTagline": "Din butler i köket",
+  "startSplashBusy": "Dukar upp ditt kök …",
   "loadingOpeningPage": "Öppnar sidan …",
   "loadingStartingApp": "Startar Butlery …",
   "recipeSaveToMyKitchen": "Spara till mitt kök",
@@ -13001,7 +13122,7 @@
   "@moreSectionAppAccount": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
   },
-  "moreFamily": "Familj & hushåll",
+  "moreFamily": "Mitt hushåll",
   "@moreFamily": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
   },
@@ -13009,7 +13130,7 @@
   "@morePersonalTags": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
   },
-  "moreCollectionStats": "Statistik",
+  "moreCollectionStats": "Min samling",
   "@moreCollectionStats": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
   },
@@ -14673,13 +14794,31 @@
   "@friendProfileRemoveFriend": {
     "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet"
   },
-  "familyAccountsSection": "Konton i hushållet",
+  "familyAccountsSection": "Hushållets konton",
   "@familyAccountsSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders"
   },
-  "familyProfilesSection": "Familjeprofiler",
+  "familyProfilesSection": "Familjemedlemmar",
   "@familyProfilesSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account"
+  },
+  "familyAccountsCount": "{count, plural, =1{1 konto} other{{count} konton}}",
+  "@familyAccountsCount": {
+    "description": "Size of the household accounts list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "familyProfilesCount": "{count, plural, =1{1 profil} other{{count} profiler}}",
+  "@familyProfilesCount": {
+    "description": "Size of the family member profiles list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "familyAddMemberRow": "Lägg till familjemedlem",
   "@familyAddMemberRow": {
@@ -14752,6 +14891,10 @@
   "notifCategoriesSection": "Vad du får notiser om",
   "@notifCategoriesSection": {
     "description": "Section overline above the notification category toggles"
+  },
+  "notifCategoriesFootnote": "Avstängda kategorier syns fortfarande i notisinkorgen – de skickas bara inte som push.",
+  "@notifCategoriesFootnote": {
+    "description": "Note under the notification category toggles"
   },
   "notifDigestSection": "Sammanfattning",
   "@notifDigestSection": {
@@ -15591,6 +15734,130 @@
   "@nutritionPickerSaveFailed": {
     "description": "BUT-643 nutrition values."
   },
+  "nutritionEstimatedBadge": "Uppskattad",
+  "@nutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEstimatedBadge": "Uppskattad mängd",
+  "@a11yNutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCoverageWithEstimates": "Beräknat på {counted} av {total} ingredienser, varav {estimated} med uppskattad mängd",
+  "@nutritionCoverageWithEstimates": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionEnterAmount": "Ange mängd",
+  "@nutritionEnterAmount": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEnterAmountFor": "Ange mängd för {name}",
+  "@a11yNutritionEnterAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionChangeAmountFor": "Ändra mängd för {name}",
+  "@a11yNutritionChangeAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountSheetTitle": "Mängd för {name}",
+  "@nutritionAmountSheetTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountFieldLabel": "Mängd",
+  "@nutritionAmountFieldLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountUnitLabel": "Enhet",
+  "@nutritionAmountUnitLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountInvalid": "Ange ett tal större än 0.",
+  "@nutritionAmountInvalid": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemove": "Ta bort mängd",
+  "@nutritionAmountRemove": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeTitle": "Gäller {amount} {name} bara det här receptet?",
+  "@nutritionAmountScopeTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeBody": "Du kan också använda mängden i alla recept där {name} saknar mängd.",
+  "@nutritionAmountScopeBody": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeRecipe": "Bara det här receptet",
+  "@nutritionAmountScopeRecipe": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeAll": "Alla recept",
+  "@nutritionAmountScopeAll": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaved": "Mängden sparades",
+  "@nutritionAmountSaved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemoved": "Mängden togs bort",
+  "@nutritionAmountRemoved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaveFailed": "Mängden kunde inte sparas. Försök igen.",
+  "@nutritionAmountSaveFailed": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountFull": "Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.",
+  "@nutritionAmountFull": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCountedAsOwn": "Räknat som {food}, din mängd",
+  "@nutritionCountedAsOwn": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
   "nutritionPickerClear": "Ta bort hushållets val",
   "@nutritionPickerClear": {
     "description": "BUT-643 nutrition values."
@@ -15744,6 +16011,10 @@
   "guestUpgradeDone": "Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.",
   "@guestUpgradeDone": {
     "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeDoneProvider": "Kontot är skapat. Allt du gjort som gäst finns kvar.",
+  "@guestUpgradeDoneProvider": {
+    "description": "Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)"
   },
   "guestUpgradeFinishFailed": "Kontot är skapat men kunde inte göras klart. Försök igen.",
   "@guestUpgradeFinishFailed": {
@@ -16592,5 +16863,164 @@
   "accountSecurityEmailCannotConfirmHere": "Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.",
   "@accountSecurityEmailCannotConfirmHere": {
     "description": "BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform"
+  },
+  "settingsSignInMethodsTitle": "Inloggningssätt",
+  "@settingsSignInMethodsTitle": {
+    "description": "BUT-916 slice B: title of the sign-in methods page and its row on Konto & säkerhet"
+  },
+  "signInMethodsEmailName": "E-post",
+  "@signInMethodsEmailName": {
+    "description": "BUT-916 slice B: short name of e-mail and password in the row summary"
+  },
+  "signInMethodsPassword": "E-post och lösenord",
+  "@signInMethodsPassword": {
+    "description": "BUT-916 slice B: row for the password sign-in"
+  },
+  "signInMethodsOn": "Påslaget",
+  "@signInMethodsOn": {
+    "description": "BUT-916 slice B: state of a sign-in method that is set up and cannot be removed"
+  },
+  "signInMethodsNotLinked": "Inte kopplat",
+  "@signInMethodsNotLinked": {
+    "description": "BUT-916 slice B: state of a provider that is not linked"
+  },
+  "signInMethodsLink": "Koppla",
+  "@signInMethodsLink": {
+    "description": "BUT-916 slice B: action that links Google or Apple"
+  },
+  "signInMethodsUnlink": "Koppla från",
+  "@signInMethodsUnlink": {
+    "description": "BUT-916 slice B: action and confirm button that unlink Google or Apple"
+  },
+  "signInMethodsSetPassword": "Sätt lösenord",
+  "@signInMethodsSetPassword": {
+    "description": "BUT-916 slice B: action, dialog title and button for adding a password"
+  },
+  "signInMethodsSetPasswordBody": "Lösenordet gäller för {email}. Du kan då också logga in med e-post och lösenord.",
+  "@signInMethodsSetPasswordBody": {
+    "description": "BUT-916 slice B: what the new password is for",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLastOne": "Det sista inloggningssättet kan inte tas bort. Du behöver alltid minst ett sätt att logga in.",
+  "@signInMethodsLastOne": {
+    "description": "BUT-916 slice B: note under the list"
+  },
+  "signInMethodsOnlyProvider": "{provider} är det sätt du loggar in med just nu och kan inte kopplas från. Sätt ett lösenord eller koppla ett annat sätt först.",
+  "@signInMethodsOnlyProvider": {
+    "description": "BUT-916 slice B: note when the one method left is a provider",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsNoAddress": "Ett lösenord går inte att sätta, eftersom kontot saknar e-postadress.",
+  "@signInMethodsNoAddress": {
+    "description": "BUT-916 slice B: set password refused, the account has no address"
+  },
+  "signInMethodsUnlinkTitle": "Koppla från {provider}?",
+  "@signInMethodsUnlinkTitle": {
+    "description": "BUT-916 slice B: unlink dialog title",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkBody": "Du kan inte längre logga in med {provider}.",
+  "@signInMethodsUnlinkBody": {
+    "description": "BUT-916 slice B: unlink dialog, what stops working",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsInsteadPassword": "Du loggar in med e-post och lösenord i stället.",
+  "@signInMethodsInsteadPassword": {
+    "description": "BUT-916 slice B: unlink dialog, what remains"
+  },
+  "signInMethodsInsteadProvider": "Du loggar in med {provider} i stället.",
+  "@signInMethodsInsteadProvider": {
+    "description": "BUT-916 slice B: unlink dialog, what remains when there is no password",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkAppleAsks": "Apple visar sin ruta en gång till, så att vi kan be Apple ta bort kopplingen.",
+  "@signInMethodsUnlinkAppleAsks": {
+    "description": "BUT-916 slice B: unlink Apple where the app can revoke the Apple tokens"
+  },
+  "signInMethodsUnlinkAppleYourself": "Butlery finns kvar under Logga in med Apple i ditt Apple-konto tills du tar bort det där.",
+  "@signInMethodsUnlinkAppleYourself": {
+    "description": "BUT-916 slice B: unlink Apple where the app cannot revoke the Apple tokens"
+  },
+  "signInMethodsLinked": "{provider} är kopplat till kontot.",
+  "@signInMethodsLinked": {
+    "description": "BUT-916 slice B: snackbar after linking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinked": "{provider} är frånkopplat.",
+  "@signInMethodsUnlinked": {
+    "description": "BUT-916 slice B: snackbar after unlinking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordSet": "Lösenordet är satt. Du kan nu logga in med e-post och lösenord.",
+  "@signInMethodsPasswordSet": {
+    "description": "BUT-916 slice B: snackbar after adding a password"
+  },
+  "signInMethodsAlreadyUsed": "Det {provider}-kontot används redan av ett annat Butlery-konto.",
+  "@signInMethodsAlreadyUsed": {
+    "description": "BUT-916 slice B: link refused, the provider account belongs to another user",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsAlreadyLinked": "{provider} är redan kopplat till kontot.",
+  "@signInMethodsAlreadyLinked": {
+    "description": "BUT-916 slice B: link refused, already linked",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLinkFailed": "{provider} kunde inte kopplas till kontot. Försök igen.",
+  "@signInMethodsLinkFailed": {
+    "description": "BUT-916 slice B: link failed for a reason without its own text",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkFailed": "{provider} kunde inte kopplas från. Inloggningssättet är kvar.",
+  "@signInMethodsUnlinkFailed": {
+    "description": "BUT-916 slice B: unlink failed",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordFailed": "Lösenordet kunde inte sättas. Försök igen.",
+  "@signInMethodsPasswordFailed": {
+    "description": "BUT-916 slice B: add password failed for a reason without its own text"
   }
 }

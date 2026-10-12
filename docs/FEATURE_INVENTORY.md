@@ -68,7 +68,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | AUTH-04 | Sign-out (manual / inactivity / forced) | Verified |
 | AUTH-05 | Email-verification gate | Untested |
 | AUTH-06 | GDPR age gate (under-15 block) | Verified |
-| AUTH-07 | Onboarding allergen & dietary selection | Verified |
+| AUTH-07 | Onboarding allergen selection | Verified |
 | AUTH-08 | Onboarding completion, resume & seeding | Verified |
 | AUTH-09 | Change password | Verified |
 | AUTH-10 | Change email | Verified |
@@ -288,19 +288,19 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Entry:** First onboarding page (OnboardingAgeGatePage) via `/onboarding`.
 - **User story:** As a minor under 15, I should be blocked from creating an account so that the app complies with Swedish GDPR Art. 8.
 - **Expected behavior:** User must explicitly pick a birth year (no default seeded). Age ≥15 passes; otherwise routed to a blocked screen. Birth year persisted at completion.
-- **Edge cases:** No year → Next disabled. Under-15 best-effort deletes the Auth record; on `requires-recent-login` falls back to sign-out. A "parent info" dialog offers a kinder path. Back-dismiss prevented.
+- **Edge cases:** No year → Next disabled. Under-15 best-effort deletes the Auth record; on `requires-recent-login` falls back to sign-out. The blocked screen carries a kinder parent note instead of a dialog. Back-dismiss prevented.
 - **Validation:** Min age 15; birth year required.
 - **Test coverage:** Verified — `test/widget/views/onboarding_age_gate_page_test.dart`, `test/unit/viewmodels/onboarding_viewmodel_test.dart`, `test/views/onboarding_journey_test.dart`.
 
-#### AUTH-07: Onboarding allergen & dietary selection
-- **Entry:** Onboarding allergen + dietary pages.
-- **User story:** As a new user, I want to pick the allergens and diets I care about so that the app filters and tailors recipes for me from day one.
+#### AUTH-07: Onboarding allergen selection
+- **Entry:** Onboarding allergen page.
+- **User story:** As a new user, I want to pick the allergens I care about so that the app filters and tailors recipes for me from day one.
 - **Expected behavior:** Multi-select toggles accumulate; on completion saved as `UserAllergenPreferences` (only if non-empty). Counts logged.
 - **Edge cases:** Both empty → prefs saved as null. Re-toggling removes.
-- **Test coverage:** Verified — `test/widget/views/onboarding_allergen_page_test.dart`, `onboarding_dietary_page_test.dart`, `onboarding_viewmodel_test.dart`.
+- **Test coverage:** Verified — `test/widget/views/onboarding_allergen_page_test.dart`, `onboarding_viewmodel_test.dart`.
 
 #### AUTH-08: Onboarding completion, progress persistence & resume
-- **Entry:** Onboarding wizard (welcome→allergen→dietary→import); resumed by AuthWrapper at the saved step.
+- **Entry:** Onboarding wizard (age gate→welcome→allergen→import→setup); resumed by AuthWrapper at the saved step.
 - **User story:** As a new user, I want onboarding to remember where I left off and land me on a populated app so that I'm not stuck on empty screens.
 - **Expected behavior:** Each step persists. Completion writes prefs + birth year (20s timeout), stamps `completed`, seeds starter recipes, builds a sample weekly menu + shopping list. Resumes at the saved page on cold start.
 - **Edge cases:** Completion hang → timeout caught → returns false → generic error not infinite spinner (BUT-33). Per-recipe seed failures tolerated/counted. Sample-menu seeding idempotent.

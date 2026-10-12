@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
@@ -152,6 +153,104 @@ mixin AuthProviderFlows on ChangeNotifier, StateNotifierMixin {
         break;
     }
     return attempt.outcome;
+  }
+
+  /// The sign-in methods page (BUT-916 slice B): what the account signs in
+  /// with, and what may be added or removed.
+  bool isProviderLinked(SignInProvider provider) =>
+      providerSignIn?.isLinked(provider) ?? false;
+
+  String? providerAccountEmail(SignInProvider provider) =>
+      providerSignIn?.providerEmail(provider);
+
+  /// False when only one sign-in method is left, which stays.
+  bool get canUnlinkSignInMethod => providerSignIn?.canUnlinkAny ?? false;
+
+  bool get revokesAppleOnUnlink => providerSignIn?.revokesApple ?? false;
+
+  /// Adds [provider] to the signed-in account. False with the reason in
+  /// `error`, or with none when the user closed the sheet.
+  Future<bool> linkProvider(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    final attempt = await service.linkProvider(provider);
+    switch (attempt.outcome) {
+      case ProviderSignInOutcome.signedIn:
+        notifyListeners();
+        return true;
+      case ProviderSignInOutcome.cancelled:
+        return false;
+      default:
+        final l10n = AppLocale.current;
+        final name = providerName(provider);
+        setError(switch (attempt.error?.code) {
+          'credential-already-in-use' ||
+          'email-already-in-use' => l10n.signInMethodsAlreadyUsed(name),
+          'provider-already-linked' => l10n.signInMethodsAlreadyLinked(name),
+          _ => l10n.signInMethodsLinkFailed(name),
+        });
+        return false;
+    }
+  }
+
+  /// Links [provider] to the signed-in guest. The attempt itself comes back,
+  /// so the caller can tell a closed sheet from "already has an account".
+  Future<ProviderAttempt> linkProviderToGuest(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return const ProviderAttempt.failed();
+    return service.linkProvider(provider);
+  }
+
+  /// The first name a freshly linked [provider] gives the account, if it has
+  /// one: the same minimisation as the terms step, which also starts from the
+  /// first name only, since this name is shown to other people.
+  String? linkedProviderName(SignInProvider provider) {
+    final held = providerSignIn?.providerDisplayName(provider).orEmptyTrimmed();
+    final first = held?.split(RegExp(r'\s+')).first;
+    return first == null || first.isEmpty ? providerFirstName : first;
+  }
+
+  /// Removes [provider] from the account. Apple's tokens are revoked first
+  /// where the sheet gave a code; a failed revocation never keeps the method.
+  Future<bool> unlinkProvider(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    final name = providerName(provider);
+    try {
+      await service.unlinkProvider(provider);
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.warning('Unlinking ${provider.providerId} refused: ${e.code}');
+    } catch (e) {
+      AppLogger.warning(
+        'Unlinking ${provider.providerId} failed: ${e.runtimeType}',
+      );
+    }
+    setError(AppLocale.current.signInMethodsUnlinkFailed(name));
+    return false;
+  }
+
+  /// Adds a password to an account made with Google or Apple. The caller
+  /// re-authenticates first.
+  Future<bool> addPasswordSignIn(String password) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    try {
+      await service.addPassword(password);
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.warning('Adding a password refused: ${e.code}');
+      setError(mapAuthErrorToMessage(e));
+    } catch (e) {
+      AppLogger.warning('Adding a password failed: ${e.runtimeType}');
+      setError(AppLocale.current.signInMethodsPasswordFailed);
+    }
+    return false;
   }
 
   /// Before a deletion is scheduled: revoke the app's Apple tokens where the

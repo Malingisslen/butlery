@@ -6,11 +6,9 @@
 /// - Error states use error color (NOT rust)
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/error_text_style.dart';
 
 /// Input, card, and data display component themes.
@@ -237,22 +235,4 @@ class InputThemes {
       return BorderSide(color: AppModeColors.paperWash(cs.brightness));
     });
   }
-
-  /// Recipe card decoration - Left green border + bottom rust border.
-  /// Uses AppColors directly since BoxDecoration is not part of ThemeData
-  /// and these are brand-specific decorative borders.
-  static BoxDecoration get recipeCardDecoration => BoxDecoration(
-    color: AppColors.cardWhite,
-    border: const Border(
-      left: BorderSide(
-        color: AppColors.recipeCardLeftBorder,
-        width: 4,
-      ),
-      bottom: BorderSide(
-        color: AppColors.recipeCardBottomBorder,
-        width: 3,
-      ),
-    ),
-    boxShadow: AppShadows.cardLifted,
-  );
 }
