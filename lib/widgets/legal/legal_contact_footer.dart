@@ -22,7 +22,7 @@ class LegalContactFooter extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
+        color: cs.surface,
         border: Border(
           top: BorderSide(
             color: cs.outlineVariant,
@@ -38,7 +38,7 @@ class LegalContactFooter extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.space12),
-          ActionButtons.primaryButton(
+          ActionButtons.outlinedButton(
             context,
             label: context.l10n.privacyContactUs,
             icon: ButleryIcons.mail,

@@ -135,6 +135,7 @@ class _GuestStartViewState extends State<GuestStartView> {
       child: ButleryPage.undersida(
         title: l10n.guestTryWithoutAccount,
         width: PageWidth.compact,
+        showTabBar: false,
         body: _tooYoung ? const _TooYoungPanel() : _buildForm(context),
       ),
     );

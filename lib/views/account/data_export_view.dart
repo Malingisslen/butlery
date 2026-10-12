@@ -21,6 +21,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -39,6 +40,7 @@ class DataExportView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => context.read<DataExportViewModel>(),
       child: Scaffold(
+        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
         appBar: ButleryTopBar.undersida(
           title: context.l10n.dataExportTitle,
         ),
