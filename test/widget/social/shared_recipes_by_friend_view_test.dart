@@ -229,20 +229,23 @@ Widget _wrap() => MaterialApp(
   ),
 );
 
-/// The matches that are not part of the tab bar under the page, which the
-/// page template adds and which draws its own indicator shapes.
-List<Element> _outsideBottomNav(Finder finder) => finder
-    .evaluate()
-    .where(
-      (e) => find
+/// The matches that are not part of what the page template adds: the tab bar
+/// under the page and the top bar's accent rule, which draw their own rounded
+/// shapes.
+List<Element> _outsideBottomNav(Finder finder) => finder.evaluate().where((e) {
+  final self = find.byElementPredicate((x) => x == e);
+  return find
+          .ancestor(of: self, matching: find.byType(ButleryBottomNavigation))
+          .evaluate()
+          .isEmpty &&
+      find
           .ancestor(
-            of: find.byElementPredicate((x) => x == e),
-            matching: find.byType(ButleryBottomNavigation),
+            of: self,
+            matching: find.byKey(const ValueKey('butleryTopBar.accentRule')),
           )
           .evaluate()
-          .isEmpty,
-    )
-    .toList();
+          .isEmpty;
+}).toList();
 
 void main() {
   setUp(() async {
