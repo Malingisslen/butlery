@@ -10,7 +10,6 @@ import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -20,8 +19,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -39,40 +39,28 @@ class DataExportView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => context.read<DataExportViewModel>(),
-      child: Scaffold(
-        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-        appBar: ButleryTopBar.undersida(
-          title: context.l10n.dataExportTitle,
-        ),
-        body: SafeArea(
-          child: ButleryPageBody(
-            width: PageWidth.text,
-            child: Consumer<DataExportViewModel>(
-              builder: (context, viewModel, _) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(
-                    AppDimensions.layoutMarginOf(context),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildHeaderSection(context),
-                      const SizedBox(height: AppDimensions.space32),
-                      _buildExportButton(context, viewModel),
-                      const SizedBox(height: AppDimensions.space24),
-                      if (viewModel.isExporting) _buildLoadingState(context),
-                      if (viewModel.hasError)
-                        _buildErrorState(context, viewModel),
-                      if (viewModel.hasExportedData)
-                        _buildSuccessState(context, viewModel),
-                      const SizedBox(height: AppDimensions.space32),
-                      _buildInfoSection(context),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+      child: ButleryPage.undersida(
+        title: context.l10n.dataExportPageTitle,
+        body: Consumer<DataExportViewModel>(
+          builder: (context, viewModel, _) {
+            return ListView(
+              padding: ButleryPageBody.margin(
+                context,
+                top: AppDimensions.space16,
+                bottom: AppDimensions.space24,
+              ),
+              children: [
+                _buildHeaderSection(context),
+                _buildInfoSection(context),
+                const SizedBox(height: AppDimensions.space24),
+                _buildExportButton(context, viewModel),
+                if (viewModel.isExporting) _buildLoadingState(context),
+                if (viewModel.hasError) _buildErrorState(context, viewModel),
+                if (viewModel.hasExportedData)
+                  _buildSuccessState(context, viewModel),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -80,40 +68,22 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildHeaderSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.export,
-                  size: AppDimensions.iconSizeXl,
-                  color: cs.onSurface,
-                ),
-                const SizedBox(width: AppDimensions.space12),
-                Expanded(
-                  child: Text(
-                    context.l10n.dataExportDownloadTitle,
-                    style: AppTextStyles.titleBold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space16),
-            Text(
-              context.l10n.dataExportGdprDescription,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(
+            context.l10n.dataExportHeadline,
+            style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
+          ),
         ),
-      ),
+        const SizedBox(height: AppDimensions.space8),
+        Text(
+          context.l10n.dataExportGdprDescription,
+          style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
+        ),
+      ],
     );
   }
 
@@ -278,48 +248,48 @@ class DataExportView extends StatelessWidget {
     DataExportViewModel viewModel,
   ) {
     final cs = Theme.of(context).colorScheme;
-
-    return Card(
-      color: context.modeColors.surfaceTintSuccess,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
-      child: Padding(
+    final l10n = context.l10n;
+    final warning = AppModeColors.textWarning(Theme.of(context).brightness);
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.space16),
+      child: StyledCard(
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ButleryIcon(
-              ButleryIcons.circleCheck,
-              size: AppDimensions.iconSizeXxl,
-              color: context.modeColors.onSuccessContainer,
-            ),
-            const SizedBox(height: AppDimensions.space16),
-            Text(
-              context.l10n.dataExportSuccess,
-              style: AppTextStyles.titleBold,
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            Text(
-              '${context.l10n.dataExportExportedAt} ${viewModel.exportTimestampText}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              '${context.l10n.dataExportFileSize}: ${viewModel.exportSizeText}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.space16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ExcludeSemantics(
+                  child: ButleryIcon(ButleryIcons.file, color: cs.onSurface),
+                ),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.dataExportFileTitle,
+                        style: AppTextStyles.titleBold,
+                      ),
+                      Text(
+                        '${viewModel.exportSizeText} · '
+                        '${viewModel.exportTimestampText}',
+                        style: AppTextStyles.captionBase.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.space12),
+            Row(
               children: [
                 Expanded(
                   child: HeroButton(
                     key: const ValueKey('dataExport.saveFile'),
-                    label: context.l10n.dataExportSaveFile,
+                    label: l10n.dataExportSaveFile,
                     icon: ButleryIcons.download,
                     onPressed: () => _handleDownload(context, viewModel),
                     expand: true,
@@ -330,32 +300,46 @@ class DataExportView extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _handleShare(context, viewModel),
-                      icon: const ButleryIcon(ButleryIcons.share2),
-                      label: Text(context.l10n.commonShare),
+                      icon: const ButleryIcon(ButleryIcons.externalLink),
+                      label: Text(l10n.commonShare),
                     ),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: AppDimensions.space16),
+            const SizedBox(height: AppDimensions.space12),
             // The file lives only in memory and is cleared when the view is
             // left, and the view says so (produktregler.md:733; Skarmar v12
             // etapp 6 #kontodataexport).
-            Text(
-              context.l10n.dataExportMemoryNotice,
-              key: const ValueKey('dataExport.memoryNotice'),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.space4),
+                  child: ExcludeSemantics(
+                    child: ButleryIcon(
+                      ButleryIcons.info,
+                      size: AppDimensions.iconSizeS,
+                      color: warning,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.space8),
+                Expanded(
+                  child: Text(
+                    l10n.dataExportMemoryNotice,
+                    key: const ValueKey('dataExport.memoryNotice'),
+                    style: AppTextStyles.bodySmall.copyWith(color: warning),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppDimensions.space12),
+            const SizedBox(height: AppDimensions.space8),
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
               icon: const ButleryIcon(ButleryIcons.trash2),
-              label: Text(context.l10n.dataExportClear),
-              style: TextButton.styleFrom(
-                foregroundColor: cs.onSurfaceVariant,
-              ),
+              label: Text(l10n.dataExportClear),
+              style: TextButton.styleFrom(foregroundColor: cs.onSurfaceVariant),
             ),
           ],
         ),
@@ -364,69 +348,24 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildInfoSection(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.info,
-                  color: context.modeColors.info,
-                  size: AppDimensions.iconSizeM,
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: Text(
-                    context.l10n.dataExportWhatsIncluded,
-                    style: AppTextStyles.titleBold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space12),
-            _buildInfoItem(context, context.l10n.dataExportIncludesProfile),
-            _buildInfoItem(context, context.l10n.dataExportIncludesRecipes),
-            _buildInfoItem(context, context.l10n.dataExportIncludesFriends),
-            _buildInfoItem(context, context.l10n.dataExportIncludesMessages),
-            _buildInfoItem(context, context.l10n.dataExportIncludesLists),
-            _buildInfoItem(context, context.l10n.dataExportIncludesComments),
-            _buildInfoItem(context, context.l10n.dataExportIncludesActivity),
-            _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
-            const SizedBox(height: AppDimensions.space12),
-            Text(
-              context.l10n.dataExportSharedDataNote,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
+    final l10n = context.l10n;
+    return ButleryListSection(
+      title: l10n.dataExportWhatsIncluded,
+      rows: [
+        for (final line in [
+          l10n.dataExportIncludesProfile,
+          l10n.dataExportIncludesRecipesComments,
+          l10n.dataExportIncludesLists,
+          l10n.dataExportIncludesSocial,
+          l10n.dataExportIncludesAuditLogs,
+        ])
+          ButleryListRow.note(label: line, leading: ButleryIcons.check),
+        ButleryListRow.note(
+          label: l10n.dataExportSharedDataNote,
+          leading: ButleryIcons.info,
+          muted: true,
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(BuildContext context, String text) {
-    return Padding(
-      padding: AppDimensions.paddingVertical4,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ButleryIcon(
-            ButleryIcons.check,
-            size: AppDimensions.iconSizeS,
-            color: context.modeColors.success,
-          ),
-          const SizedBox(width: AppDimensions.space8),
-          Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
