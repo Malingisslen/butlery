@@ -109,6 +109,10 @@ abstract class AuthRepository {
   /// signed-in user, or null when it is not linked or carries none.
   String? providerEmail(String providerId);
 
+  /// The name [providerId] holds for the signed-in user, or null when it is
+  /// not linked or carries none.
+  String? providerDisplayName(String providerId);
+
   /// Adds [provider] to the signed-in user through Firebase's own sheet.
   Future<void> linkWithProviderFlow(SignInProvider provider);
 

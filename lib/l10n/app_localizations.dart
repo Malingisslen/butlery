@@ -11692,7 +11692,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAddItemHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv varunamn …'**
+  /// **'Lägg till vara …'**
   String get collaborativeAddItemHint;
 
   /// No description provided for @collaborativeClearAll.
@@ -13722,6 +13722,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort {name}'**
   String a11yDeleteItem(String name);
+
+  /// No description provided for @a11yShoppingItemMoreOptions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String a11yShoppingItemMoreOptions(String name);
 
   /// No description provided for @a11ySharedRecipe.
   ///
@@ -22886,8 +22892,14 @@ abstract class AppLocalizations {
   /// No description provided for @quickCaptureTitleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Vad heter receptet?'**
+  /// **'Vad heter rätten?'**
   String get quickCaptureTitleHint;
+
+  /// No description provided for @quickCaptureHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.'**
+  String get quickCaptureHelp;
 
   /// No description provided for @a11ySwipeEditAction.
   ///
@@ -31803,6 +31815,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.'**
   String get guestUpgradeDone;
+
+  /// Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat. Allt du gjort som gäst finns kvar.'**
+  String get guestUpgradeDoneProvider;
 
   /// Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)
   ///

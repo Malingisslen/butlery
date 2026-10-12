@@ -7014,7 +7014,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeAdding => 'Adding …';
 
   @override
-  String get collaborativeAddItemHint => 'Type item name...';
+  String get collaborativeAddItemHint => 'Add item ...';
 
   @override
   String get collaborativeClearAll => 'Clear all';
@@ -8247,6 +8247,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yDeleteItem(String name) {
     return 'Delete $name';
+  }
+
+  @override
+  String a11yShoppingItemMoreOptions(String name) {
+    return 'More options for $name';
   }
 
   @override
@@ -13765,7 +13770,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickCaptureEditAction => 'Edit';
 
   @override
-  String get quickCaptureTitleHint => 'What\'s the recipe called?';
+  String get quickCaptureTitleHint => 'What\'s the dish called?';
+
+  @override
+  String get quickCaptureHelp =>
+      'The recipe is saved as a card without details – you can import ingredients and steps whenever you like.';
 
   @override
   String get a11ySwipeEditAction => 'Edit recipe';
@@ -19537,6 +19546,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guestUpgradeDone =>
       'The account is created. An e-mail with a link to confirm the address has been sent.';
+
+  @override
+  String get guestUpgradeDoneProvider =>
+      'The account is created. Everything you did as a guest is kept.';
 
   @override
   String get guestUpgradeFinishFailed =>

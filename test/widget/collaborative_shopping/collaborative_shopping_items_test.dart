@@ -6,6 +6,8 @@
 
 library;
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -17,6 +19,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operatio
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 /// Fake VM that shadows the parts of CollaborativeShoppingViewModel the
 /// widget reads. Avoids plumbing the full shopping service + DI stack
@@ -99,9 +102,6 @@ class _FakeCollaborativeShoppingViewModel extends ChangeNotifier
   }
 
   @override
-  String? getItemSubtitle(UnifiedShoppingItem item) => null;
-
-  @override
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>
       const <Widget>[];
 
@@ -180,8 +180,8 @@ void main() {
       expect(find.text('Ägg'), findsOneWidget);
     });
 
-    // BUT-2195: the tick box is its own tap target, so a screen reader needs
-    // the item's name on it.
+    // BUT-2195: the tick box is the row's tap target, so a screen reader
+    // needs the item's name and amount on it, once.
     testWidgets('each tick box is labelled with its item', (tester) async {
       final handle = tester.ensureSemantics();
       final milk = UnifiedShoppingItem(
@@ -205,19 +205,97 @@ void main() {
         ),
       );
 
-      expect(
-        tester.getSemantics(find.byType(Checkbox)),
-        matchesSemantics(
-          label: milk.displayText,
-          hasCheckedState: true,
-          hasEnabledState: true,
-          isEnabled: true,
-          isFocusable: true,
-          hasTapAction: true,
-          hasFocusAction: true,
+      final box = find.bySemanticsLabel(
+        RegExp(RegExp.escape(milk.displayText)),
+      );
+      expect(box, findsOneWidget);
+      final data = tester.getSemantics(box).getSemanticsData();
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.flagsCollection.isChecked, ui.CheckedState.isFalse);
+      expect(data.flagsCollection.isEnabled, ui.Tristate.isTrue);
+      expectActivatable(tester, box);
+      handle.dispose();
+    });
+
+    group('bought rows (#inkop)', () {
+      UnifiedShoppingItem bought(String name, {String? buyer}) =>
+          UnifiedShoppingItem(
+            id: 'b-$name',
+            name: name,
+            amount: 1,
+            unit: '',
+            category: ShoppingCategory.other,
+            bought: true,
+            purchasedByDisplayName: buyer,
+          );
+
+      Future<void> pumpItems(
+        WidgetTester tester,
+        List<UnifiedShoppingItem> items, {
+        VoidCallback? onClearCompleted,
+      }) => tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: _FakeCollaborativeShoppingViewModel(items: items),
+            onToggleItem: (_) {},
+            onClearCompleted: onClearCompleted,
+          ),
         ),
       );
-      handle.dispose();
+
+      testWidgets('a bought row names who bought it', (tester) async {
+        await pumpItems(tester, [bought('Smör', buyer: 'Anna')]);
+
+        expect(find.text('Smör'), findsOneWidget);
+        expect(find.text('Anna'), findsOneWidget);
+      });
+
+      testWidgets('a bought row with no recorded buyer names nobody, and an '
+          'open row never shows a buyer', (tester) async {
+        await pumpItems(tester, [
+          bought('Smör'),
+          bought('Ost', buyer: ''),
+          UnifiedShoppingItem(
+            id: 'open',
+            name: 'Mjölk',
+            amount: 1,
+            unit: '',
+            category: ShoppingCategory.other,
+            purchasedByDisplayName: 'Anna',
+          ),
+        ]);
+
+        // Positive control: all three rows are drawn.
+        expect(find.text('Smör'), findsOneWidget);
+        expect(find.text('Ost'), findsOneWidget);
+        expect(find.text('Mjölk'), findsOneWidget);
+        expect(find.text('Anna'), findsNothing);
+      });
+
+      testWidgets('"Rensa köpta" calls onClearCompleted', (tester) async {
+        var cleared = 0;
+        await pumpItems(
+          tester,
+          [bought('Smör')],
+          onClearCompleted: () => cleared++,
+        );
+
+        await tester.tap(find.text('Rensa köpta'));
+        await tester.pump();
+
+        expect(cleared, 1);
+      });
+
+      testWidgets('without onClearCompleted there is no "Rensa köpta"', (
+        tester,
+      ) async {
+        await pumpItems(tester, [bought('Smör')]);
+
+        // Positive control: the bought section is there.
+        expect(find.text('Smör'), findsOneWidget);
+        expect(find.text('Köpt (1)'), findsOneWidget);
+        expect(find.text('Rensa köpta'), findsNothing);
+      });
     });
 
     testWidgets(
@@ -420,15 +498,17 @@ void main() {
   });
 
   // BUT-2183: the old half-opacity steps are gone. Rows that are someone
-  // else's or done stand on surface.base instead of a faded raised fill, and
-  // the other-people header is text.secondary, not a faded copy of it.
+  // else's or done are drawn in text.secondary rather than a faded copy of
+  // the primary text; no section heading is faded.
   group('CollaborativeShoppingItems on the B83 tokens (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('$name: other people\'s and done rows stand on surface.base, '
-          'their header is text.secondary', (tester) async {
+      testWidgets('$name: other people\'s and done rows are text.secondary, '
+          'my own open row text.primary, and no heading is faded', (
+        tester,
+      ) async {
         final cs = theme.colorScheme;
         final vm = _FakeCollaborativeShoppingViewModel(
           viewMode: ShoppingViewMode.myPart,
@@ -456,20 +536,16 @@ void main() {
           ),
         );
 
-        Card cardOf(String text) => tester.widget<Card>(
-          find.ancestor(of: find.text(text), matching: find.byType(Card)).first,
-        );
-        expect(cardOf('Bröd').color, cs.surface);
-        expect(cardOf('Pasta').color, cs.surface);
-        expect(
-          cardOf('Mjölk').color,
-          isNull,
-          reason: 'my own open row keeps the card theme (surface.raised)',
-        );
+        TextStyle? nameStyle(String text) =>
+            tester.widget<Text>(find.text(text)).style;
+        expect(nameStyle('Bröd')?.color, cs.onSurfaceVariant);
+        expect(nameStyle('Pasta')?.color, cs.onSurfaceVariant);
+        expect(nameStyle('Pasta')?.decoration, TextDecoration.lineThrough);
+        expect(nameStyle('Mjölk')?.color, cs.onSurface);
 
         Color? headerColor(String text) =>
             tester.widget<Text>(find.textContaining(text)).style?.color;
-        expect(headerColor('ANNAS DEL'), cs.onSurfaceVariant);
+        expect(headerColor('ANNAS DEL'), cs.onSurface);
         expect(headerColor('MIN DEL'), cs.onSurface);
       });
     }

@@ -28,6 +28,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -101,15 +102,45 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('renders the title field and save button', (tester) async {
-    // Baseline: the capture screen identifies itself and exposes the save CTA.
+  testWidgets('renders the title field, the meal types, the help and save', (
+    tester,
+  ) async {
+    // Baseline: the capture screen names itself and offers everything the
+    // quick save needs on one screen.
     await openCapture(tester, _PopObserver());
 
-    expect(find.text(sv.quickCaptureTitle), findsOneWidget);
+    expect(find.text(sv.addSheetQuickSaveTitle), findsOneWidget);
+    expect(find.byType(TextFormField), findsOneWidget);
+    expect(find.text(sv.quickCaptureTitleHint), findsOneWidget);
+    for (final type in RecipeFormState.mealTypes) {
+      expect(find.text(type), findsOneWidget, reason: type);
+    }
+    expect(find.text(sv.quickCaptureHelp), findsOneWidget);
     expect(
       find.byKey(const ValueKey('test-quick-capture-save')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the chosen meal type is the one the recipe is saved with', (
+    tester,
+  ) async {
+    when(() => personalOps.addUnifiedRecipe(any())).thenAnswer(
+      (_) async => RecipeOperationResult.success('ok'),
+    );
+    await openCapture(tester, _PopObserver());
+
+    final other = RecipeFormState.mealTypes.firstWhere((t) => t != 'Middag');
+    await tester.tap(find.text(other));
+    await tester.pump();
+    await tester.enterText(find.byType(TextFormField), 'Pannkakor');
+    await tester.tap(find.byKey(const ValueKey('test-quick-capture-save')));
+    await tester.pumpAndSettle();
+
+    final captured =
+        verify(() => personalOps.addUnifiedRecipe(captureAny())).captured.single
+            as Recipe;
+    expect(captured.mealType, other);
   });
 
   testWidgets('P4-U07: a subpage with one saffron save, named for its way '
@@ -120,7 +151,7 @@ void main() {
 
     final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
     expect(bar.pattern, ButleryTopBarPattern.undersida);
-    expect(find.byTooltip('Tillbaka till Lägg till recept'), findsOneWidget);
+    expect(find.byTooltip('Tillbaka'), findsOneWidget);
     final save = tester.widget<FilledButton>(
       find.descendant(
         of: find.byKey(const ValueKey('test-quick-capture-save')),

@@ -1,6 +1,6 @@
 /// BUT-948: gates the shopping tile's multi-select behaviour — long-press enters
 /// selection (showing the selection circle and reading as selected to a11y), tap
-/// toggles, and per-item action buttons (edit/delete/handle) hide while
+/// toggles, and the per-item menu (edit/move/delete) hides while
 /// selecting. With no selection manager in scope the tile degrades to the plain
 /// check-off tile (nullable provider).
 library;
@@ -15,6 +15,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/shopping/shopping_row.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/semantics_announcement.dart';
@@ -62,8 +63,7 @@ void main() {
     expect(selection.isSelected('s_1'), isTrue);
     expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
     // Per-item actions are hidden while selecting.
-    expect(find.byIcon(ButleryIcons.trash2), findsNothing);
-    expect(find.byIcon(ButleryIcons.drag), findsNothing);
+    expect(find.byType(ShoppingRowMenu), findsNothing);
   });
 
   testWidgets('a row in selection mode says "Markera" once, names the item '
@@ -100,28 +100,28 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('the drag grip adds "Dra för att flytta kategori" to the row '
-      'once, and the item name is still read once', (tester) async {
+  testWidgets('the row\'s menu is its own node that names the item once, '
+      'and the row does not read the menu', (tester) async {
     final handle = tester.ensureSemantics();
     await pumpTile(tester);
 
-    final row = find.bySemanticsLabel(RegExp('Dra för att flytta kategori'));
-    expect(row, findsOneWidget);
-    final lines = announcedLines(tester, row);
-    expect(
-      lines.where((l) => l == 'Dra för att flytta kategori'),
-      hasLength(1),
-      reason: '$lines',
-    );
+    final menu = find.byTooltip('Fler val för Mjölk');
+    expect(menu, findsOneWidget);
+    final lines = announcedLines(tester, menu);
     expect(
       lines.where((l) => l.contains('Mjölk')),
       hasLength(1),
-      reason:
-          'the grip must not restate the name the row already reads: '
-          '$lines',
+      reason: '$lines',
     );
-    expectNothingAnnouncedTwice(tester, row);
-    expectActivatable(tester, row);
+    expectNothingAnnouncedTwice(tester, menu);
+    expectActivatable(tester, menu);
+
+    final row = find.bySemanticsLabel(RegExp('^Bocka av'));
+    expect(row, findsOneWidget);
+    expect(
+      announcedLines(tester, row).where((l) => l.contains('Fler val')),
+      isEmpty,
+    );
     handle.dispose();
   });
 
