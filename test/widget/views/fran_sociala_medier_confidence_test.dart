@@ -108,9 +108,9 @@ void main() {
     );
   });
 
-  // P4-T6: the tips heading is text.primary (onSurface), paper on the dark
-  // page; cs.primary is ink in both schemes (tokens.json:54-57, :112-115).
-  testWidgets('dark mode: the tips heading and its glyph are paper', (
+  // The caption warning sits on the tinted note: its glyph takes the muted
+  // ink in both schemes, so it stays readable on the dark page too.
+  testWidgets('dark mode: the caption warning glyph is the muted ink', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -124,20 +124,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final paper = AppTheme.darkTheme.colorScheme.onSurface;
-    final heading = tester.widget<Text>(find.text('Tips för bästa resultat'));
-    expect(heading.style?.color, paper);
     final glyph = tester.widget<Icon>(
-      find
-          .descendant(
-            of: find.ancestor(
-              of: find.text('Tips för bästa resultat'),
-              matching: find.byType(Row),
-            ),
-            matching: find.byIcon(ButleryIcons.info),
-          )
-          .first,
+      find.byIcon(ButleryIcons.triangleAlert).first,
     );
-    expect(glyph.color, paper);
+    expect(glyph.color, AppTheme.darkTheme.colorScheme.onSurfaceVariant);
   });
 }

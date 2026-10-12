@@ -5018,6 +5018,27 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importFromSocialMedia => 'Från sociala medier';
 
   @override
+  String get importLinkOrCaptionLabel => 'Länk eller bildtext';
+
+  @override
+  String get importPasteHelp =>
+      'Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.';
+
+  @override
+  String get importCaptionWarningLead =>
+      'Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men ';
+
+  @override
+  String get importCaptionWarningEmphasis => 'du får ofta rätta något';
+
+  @override
+  String get importVideoNotRead =>
+      'Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.';
+
+  @override
+  String get importFetchRecipe => 'Hämta receptet';
+
+  @override
   String get importImporting => 'Importerar …';
 
   @override
@@ -6728,7 +6749,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String importConfirmButton(int count) {
-    return 'Importera ($count)';
+    return 'Spara $count recept';
   }
 
   @override
@@ -7457,6 +7478,36 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingDescriptionOptional => 'Beskrivning (valfritt)';
+
+  @override
+  String get shoppingNewSharedListTitle => 'Ny delad lista';
+
+  @override
+  String get shoppingSharedListNameLabel => 'Listans namn';
+
+  @override
+  String get shoppingShareWithHeading => 'Dela med';
+
+  @override
+  String get shoppingPermissionHeading => 'Behörighet';
+
+  @override
+  String get shoppingPermissionCanEdit => 'Kan redigera';
+
+  @override
+  String get shoppingPermissionReadOnlyTab => 'Endast läsa';
+
+  @override
+  String get shoppingPermissionCanEditHelp =>
+      'Alla kan lägga till och bocka av varor i realtid.';
+
+  @override
+  String get shoppingPermissionViewOnlyHelp =>
+      'De du delar med kan se listan men inte ändra den.';
+
+  @override
+  String get shoppingNoFriendsToShareWith =>
+      'Du har inga vänner att dela med än.';
 
   @override
   String get shoppingItemNameHint => 'Varunamn …';
@@ -12189,7 +12240,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get buttonCreating => 'Skapar …';
 
   @override
-  String get buttonCreateAndShare => 'Skapa & Dela';
+  String get buttonCreateAndShare => 'Skapa och dela';
 
   @override
   String get analysisNoContentExtracted => 'Inget innehåll extraherat';
@@ -14636,16 +14687,16 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get heirloomToggle => 'Detta är ett arvegods';
+  String get heirloomToggle => 'Det här är ett arvegods';
 
   @override
-  String get heirloomWriterLabel => 'Vem skrev receptet?';
+  String get heirloomWriterLabel => 'Vems handskrift?';
 
   @override
-  String get heirloomYearLabel => 'Vilket år?';
+  String get heirloomYearLabel => 'År';
 
   @override
-  String get heirloomNoteLabel => 'Kort notering';
+  String get heirloomNoteLabel => 'Notis';
 
   @override
   String heirloomFrom(String name, int year) {
@@ -20349,4 +20400,87 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'Lösenordet kunde inte sättas. Försök igen.';
+
+  @override
+  String get importMoreFilters => 'Fler';
+
+  @override
+  String importArchivedHeading(int count) {
+    return 'Arkiverade recept · $count';
+  }
+
+  @override
+  String importRestoreCount(int count) {
+    return 'Återställ $count recept';
+  }
+
+  @override
+  String get importFiltersTitle => 'Filter';
+
+  @override
+  String get importTimeHeading => 'Tid';
+
+  @override
+  String get importTagsHeading => 'Taggar';
+
+  @override
+  String importRecipeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String importUpToMinutes(int minutes) {
+    return 'Högst $minutes min';
+  }
+
+  @override
+  String get importArchiveTitle => 'Ur arkivet';
+
+  @override
+  String importPreviewFoundCount(int count) {
+    return '$count recept hittades';
+  }
+
+  @override
+  String importPreviewParsedCount(int count) {
+    return '$count tolkade';
+  }
+
+  @override
+  String importPreviewProgress(int selected, int total) {
+    return '$selected av $total';
+  }
+
+  @override
+  String get importPreviewUnreadHeading => 'Kunde inte tolkas';
+
+  @override
+  String get importPreviewReadyHeading => 'Klara att spara';
+
+  @override
+  String get voiceListeningWord => 'hör dig …';
+
+  @override
+  String get importPhotoCameraButton => 'Fota nu';
+
+  @override
+  String get importPhotoLibraryButton => 'Ur bildbiblioteket';
+
+  @override
+  String importPhotoPagesHeading(int count) {
+    return 'Sidor · $count';
+  }
+
+  @override
+  String get heirloomToggleSubtitle => 'Fotot sparas med receptet, som källa';
+
+  @override
+  String get importPhotoHeirloomHint =>
+      'Handskrivna arvsrecept? Originalbilden sparas på receptkortet.';
+
+  @override
+  String get recipeDescriptionOptional => 'Beskrivning (valfritt)';
+
+  @override
+  String get recipeMethodHeading => 'Gör så här';
 }

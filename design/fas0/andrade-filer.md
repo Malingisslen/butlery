@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `60da29745450ac9a00771c5ff0db19be872abfc3d91d365416561afc64724369` |
+| `beslutslogg.md` | `bfada03857e8cd319792cccb281bf28ea438d09516afeff102f0f0ec9daf8dd4` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -641,7 +641,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/106-shared-with-me.png` | `d43e79cd36818e156734fb499137a6dccf56323c8ee3186469452ef8135cd5dd` |
 | `skiss-mot-app/107-user-profile-edit.png` | `167730b6885e9b2e1153604c07d65c24284eb03bb6c5b637f8c1ffc4e3bbbae7` |
 | `skiss-mot-app/108-tag-detail.png` | `a7df37fd5bd3d1c7f369378b71dd88d3cb7cb64737656d845cea820674a238c4` |
-| `skiss-mot-app/109-voice-import.png` | `ac96cc10da5a2c0008f00ae288759eb6962bf6fb9cc3c7716f3eb5255402d143` |
+| `skiss-mot-app/109-voice-import.png` | `96bcaeed23cb651af17bf5dca4590c63cf0911532b4b397c305712df37788b32` |
 | `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
 | `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
 | `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
@@ -689,10 +689,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/70-set-new-password.png` | `82ecee7cd0094496b135965f46b60ad586028953f9fa3eca65987bc940ac5940` |
 | `skiss-mot-app/71-cookbook-detail.png` | `c56ed9c0bc1253a3ad14f8c297b1d8772d071f18443ebbcc8dc063b65b277f0f` |
 | `skiss-mot-app/72-family-rating-entry.png` | `3c83191b6bee5c8d257f210cc383a4c1f2eeedc3c2f9c46aea0ebb004161e35f` |
-| `skiss-mot-app/73-file-import.png` | `4713b56bf11af1ac0d7a461ce0db0e1e637cf8fc75507ee9ed9a0ac241374e48` |
-| `skiss-mot-app/74-fran-sociala-medier.png` | `7a9121f9c7f3a4b0d45480b6ee680551fe444578287be9c100c40826fb3893c6` |
+| `skiss-mot-app/73-file-import.png` | `80d8511482f898264164873e6b4cae7fe950c341683dced66035a54bfdd061ff` |
+| `skiss-mot-app/74-fran-sociala-medier.png` | `29ed22ebb9538e2bc3f00cb62dc3acd8b0fd5450959cbf4a1553288c3a2d991e` |
 | `skiss-mot-app/75-group-weekly-menu.png` | `db56e0c677889b1f0818b37fe8619ac4782da947c2779952f56de344f3676dd8` |
-| `skiss-mot-app/76-importera-fran-arkiv.png` | `72e020811b90336ff02dc9028754c9dde3a84b195a49ff08f2a8ea630db93a52` |
+| `skiss-mot-app/76-importera-fran-arkiv.png` | `615f1ae2c510787b152225850da483d8c51ec914faa4badeeb9a7e3c3505d642` |
 | `skiss-mot-app/77-community-guidelines.png` | `7e2aa9263f6d7e26d38b6b45f2fed05e4b896b989bd093323cfc4ea9e46bde5f` |
 | `skiss-mot-app/78-menu-placement.png` | `25f7bed1d7fb77c098c703d2280facdb42d1fc9dfcffa5d5a2ca0af461d575b1` |
 | `skiss-mot-app/79-conversation-group-detail.png` | `80a94f5468a696d95ec1b78befa8b0535d33d3ceb846bd4d2be6996c1fe268bf` |
@@ -701,7 +701,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/82-account-password.png` | `250b17684535b3945eb488311f9dade9ccf215384cb996cb4991ac1eda2b8db4` |
 | `skiss-mot-app/83-help-area.png` | `2ed8aba580762023d05572c51e1db7835fdf61be91c71178703c315fc0e7cd5b` |
 | `skiss-mot-app/84-personal-tags.png` | `c3ea287d406dcaabc5ef3974729113030b30c80a949a731e0d29cf46e4a250b4` |
-| `skiss-mot-app/85-photo-import.png` | `d21f2d2897de1feb1aea3a3e308084d85c2c1782a251899d40eaebff590ae681` |
+| `skiss-mot-app/85-photo-import.png` | `28c49f510c2988a17678df9eba83170aa31810e28f24e7a9830f3f618fe6a03d` |
 | `skiss-mot-app/86-conflict-diff.png` | `a9bdca0cc0dd0c1d9e97216b696c262f4aa0df34129a4ecc37e42d98a4c14402` |
 | `skiss-mot-app/87-recipe-suggestion.png` | `d9dd7980bd2e03a2334aaf538cde37213c736f799dd4c522ed608379cf5acd73` |
 | `skiss-mot-app/88-allergen-preferences.png` | `b7f8d319ac2ed29633568d8e53b5f601a5b5d94f412dd4c309171ce446afcb93` |
@@ -712,8 +712,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/93-my-content-decisions.png` | `fd7fea9a3108a9f38a0d56eacd2a2b6580d813690ed3b429e536cdbda1c9b223` |
 | `skiss-mot-app/94-my-reports.png` | `c93c8704f21c33875da2eba4bd732d803b6fc1b0589521ad9fbe583482a875c3` |
 | `skiss-mot-app/95-trash.png` | `16e027ab1ce15faa85c28cf2e4cacfdea0475b152dbab47f400652f973d8c88d` |
-| `skiss-mot-app/96-skriv-sjalv-recept.png` | `9d2d8ea8003403a8771ab6dc3ee4f8ad8cec4cdb115912c3c055453be48f5754` |
-| `skiss-mot-app/97-create-shared-shopping-list.png` | `c9ae662d2f76721b747139e9bc072c17e56249fdc4270cbb65c6d1792a0ff9e2` |
+| `skiss-mot-app/96-skriv-sjalv-recept.png` | `074641046c5847db25b7d81104d6d06d717fb9edaabb8b951335ec6f567a3b89` |
+| `skiss-mot-app/97-create-shared-shopping-list.png` | `67ad1ebccb8b6e424218e37cbc84ba6a8f9de148fcc79ee5df5b123a72f082f9` |
 | `skiss-mot-app/98-friend-profile.png` | `ba99a1e8c94e83fd00771986ecb9a1fd88ef25211d2f80d51beaddb80553a295` |
 | `skiss-mot-app/99-friend-requests.png` | `ea8b030c4913b4e40f22752149cc162fa10590aa0dae5db1cfad211f19574e69` |
 | `skiss-mot-app/spar4/allergen.png` | `6508fd2dea1465d70ec32e2382aa3dbc3439babad5b2eae71eb1449958e2c426` |

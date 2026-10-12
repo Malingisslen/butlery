@@ -161,8 +161,8 @@ void main() {
     final l10n = await pumpView(tester);
 
     expect(find.text(l10n.importHandwrittenToggle), findsOneWidget);
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(switchWidget.value, isFalse);
     expect(fakeVm.isHandwritten, isFalse);
@@ -184,7 +184,7 @@ void main() {
     registerFake(fakeVm);
     await pumpView(tester);
 
-    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.byType(Switch));
     await tester.pump();
 
     expect(
@@ -192,8 +192,8 @@ void main() {
       isTrue,
       reason: 'tapping the toggle must flow through to setHandwritten',
     );
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(switchWidget.value, isTrue);
   });
@@ -208,8 +208,8 @@ void main() {
     registerFake(fakeVm);
     await pumpView(tester);
 
-    final switchWidget = tester.widget<SwitchListTile>(
-      find.byType(SwitchListTile),
+    final switchWidget = tester.widget<Switch>(
+      find.byType(Switch),
     );
     expect(
       switchWidget.onChanged,
