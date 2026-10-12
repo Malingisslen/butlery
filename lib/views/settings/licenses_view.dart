@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// OFL 1.1 condition 2 requires the copyright notice and licence to reach the
@@ -131,24 +132,29 @@ class _LicensesViewState extends State<LicensesView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            context.l10n.licensesIntro,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const AccentRule.inline(),
           for (var i = 0; i < texts.length; i++) ...[
             if (i > 0) const SizedBox(height: AppDimensions.space24),
-            _document(headings[i], texts[i]),
+            _document('${i + 1} · ${headings[i]}', texts[i]),
           ],
           // BUT-643: CC BY 4.0 attribution for the bundled nutrition table.
           const SizedBox(height: AppDimensions.space24),
           _document(
-            context.l10n.licensesLivsmedelsverketHeading,
+            '${texts.length + 1} · ${context.l10n.licensesLivsmedelsverketHeading}',
             context.l10n.licensesLivsmedelsverketBody,
           ),
           const SizedBox(height: AppDimensions.space24),
           // The packages' licences already live in Flutter's own page, so link
           // rather than duplicate them.
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const ButleryIcon(ButleryIcons.file),
-            title: Text(context.l10n.legalOpenSourceLicenses),
-            trailing: const ButleryChevron(),
+          ButleryListRow(
+            leading: ButleryIcons.file,
+            label: context.l10n.legalOpenSourceLicenses,
             onTap: () =>
                 showLicensePage(context: context, applicationName: 'Butlery'),
           ),
@@ -163,7 +169,7 @@ class _LicensesViewState extends State<LicensesView> {
       children: [
         Semantics(
           header: true,
-          child: Text(heading, style: AppTextStyles.titleMedium),
+          child: Text(heading, style: AppTextStyles.titleLargeBold),
         ),
         const SizedBox(height: AppDimensions.space8),
         SelectableText(

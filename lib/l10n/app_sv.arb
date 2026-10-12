@@ -17270,7 +17270,7 @@
       }
     }
   },
-  "licensesIntro": "Det Butlery bygger på, och villkoren det följer med. Licenstexterna står på engelska, eftersom licensen kräver att originaltexten följer med.",
+  "licensesIntro": "Det Butlery bygger på, och villkoren det följer med.",
   "@licensesIntro": {
     "description": "Intro line under the title of the licences page"
   },

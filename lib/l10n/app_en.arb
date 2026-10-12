@@ -16638,7 +16638,7 @@
       }
     }
   },
-  "licensesIntro": "What Butlery is built on, and the terms it comes with. The licence texts are in English, because the licence requires the original text to come with it.",
+  "licensesIntro": "What Butlery is built on, and the terms it comes with.",
   "@licensesIntro": {
     "description": "Intro line under the title of the licences page"
   },

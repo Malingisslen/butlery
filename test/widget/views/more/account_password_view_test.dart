@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
@@ -86,6 +87,25 @@ void main() {
     final hide = find.byTooltip(l10n.tooltipHidePassword);
     expect(hide, findsOneWidget);
     expect(glyphOf(tester, hide), ButleryIcons.eyeOff);
+  });
+
+  testWidgets('the rule line names the length the form really enforces, and '
+      'the confirm field says what it repeats', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AccountPasswordView(),
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('accountPassword.rule')))
+          .data,
+      l10n.accountSecurityPasswordRule(FormValidators.minPasswordLength),
+    );
+    expect(find.text(l10n.accountSecurityRepeatNewPassword), findsOneWidget);
   });
 
   Future<void> pumpView(WidgetTester tester) async {

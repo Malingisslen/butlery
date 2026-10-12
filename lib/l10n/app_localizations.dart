@@ -33241,7 +33241,7 @@ abstract class AppLocalizations {
   /// Intro line under the title of the licences page
   ///
   /// In sv, this message translates to:
-  /// **'Det Butlery bygger på, och villkoren det följer med. Licenstexterna står på engelska, eftersom licensen kräver att originaltexten följer med.'**
+  /// **'Det Butlery bygger på, och villkoren det följer med.'**
   String get licensesIntro;
 
   /// Title of the note on the two-step verification page when it is on

@@ -20495,7 +20495,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licensesIntro =>
-      'What Butlery is built on, and the terms it comes with. The licence texts are in English, because the licence requires the original text to come with it.';
+      'What Butlery is built on, and the terms it comes with.';
 
   @override
   String get mfaOnTitle => 'On';

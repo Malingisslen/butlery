@@ -20547,7 +20547,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get licensesIntro =>
-      'Det Butlery bygger på, och villkoren det följer med. Licenstexterna står på engelska, eftersom licensen kräver att originaltexten följer med.';
+      'Det Butlery bygger på, och villkoren det följer med.';
 
   @override
   String get mfaOnTitle => 'Påslagen';
