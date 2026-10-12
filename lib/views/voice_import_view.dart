@@ -202,7 +202,6 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
 
     return ButleryPage.undersida(
       title: context.l10n.voiceImportTitle,
-      showTabBar: false,
       body: ListView(
         padding: AppDimensions.responsiveContentPadding(context),
         children: [

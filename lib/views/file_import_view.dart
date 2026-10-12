@@ -73,7 +73,6 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildScaffold(BuildContext context) {
     return ButleryPage.undersida(
       title: context.l10n.importFromFile,
-      showTabBar: false,
       body: Padding(
         padding: AppDimensions.responsiveContentPadding(context),
         child: Column(

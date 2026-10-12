@@ -322,7 +322,6 @@ class _FranSocialaMedierViewContentState
 
     return ButleryPage.undersida(
       title: context.l10n.importFromSocialMedia,
-      showTabBar: false,
       body: SingleChildScrollView(
         padding: AppDimensions.responsiveContentPadding(context),
         child: Column(
