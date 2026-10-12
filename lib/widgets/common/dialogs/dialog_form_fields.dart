@@ -31,6 +31,7 @@ import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels
 /// through [buildTextFormField]; the dropdown, checkbox and switch builders
@@ -387,20 +388,20 @@ class DialogFormFields {
   /// Checkbox field with standard styling
   static Widget buildCheckboxField({
     required bool value,
-    required ValueChanged<bool?> onChanged,
+    required ValueChanged<bool> onChanged,
     required String title,
     String? subtitle,
     bool enabled = true,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
-      child: CheckboxListTile(
+      child: ButleryCheckboxTile(
+        boxFirst: true,
         value: value,
         onChanged: enabled ? onChanged : null,
         title: Text(title),
         subtitle: subtitle != null ? Text(subtitle) : null,
         contentPadding: EdgeInsets.zero,
-        controlAffinity: ListTileControlAffinity.leading,
       ),
     );
   }

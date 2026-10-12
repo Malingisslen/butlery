@@ -39,16 +39,16 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `39156f8443bc3b374fdfffefe580897f2e787f5a99c6e7edc3ea42d555dfc8d3` |
-| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `a7cadebc571fb4ccf0ccc30f04985ac7df00437f57b9f13dbc89b2f65eedd328` |
-| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `598794f627d79730ec584032bf6ada940c7b2ce896ac9a91859400c03903accf` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `4c6c2b693b0e8b1a77b466459d6684f6d0e4124694f7b4afc1828a0af3ddef25` |
+| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `4dc9d9f020df10f7db7ab50bbe581d07abce990c47d25bb87bbaf8accd915ea9` |
+| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `83a58c6a1527e0d4b7d76da114089dda27fdc39373ba3975da88d65cba9eb413` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `e11f89dd72c74d9a1f51b25221a6c19be319a53f01427b3398e8fc5293b022fc` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `bd24f7477b12796b9b396576a06af133c40f323ef2258b491209b78422f98db3` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `3607ccf2815fa9cfb0cf8817cb615e9ac32b19d4b64dd202377b52fbdfe9e020` |
-| `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `b31a0024cf92edf8ee90e9f31dd3ef69b6ff65e7278ec675e1ede7dbc6ba72a2` |
-| `Butlery Skarmar v12 etapp 2.dc.html` | `872c00c2595095f7dc5f4bbae86e24a1aa41a4b3e2c32c44c46b0404d827fbb6` |
-| `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `d630fd784a713c131df0a67bed874a2fdcc2c369da827325119f0a013623cfe8` |
-| `Butlery Skarmar v12 etapp 4 import.dc.html` | `0a2ab9586124f1d48e5d572a272584012fbc4e957eb59a7d11c7fb19a20f71b9` |
-| `Butlery Skarmar v12 etapp 5-7.dc.html` | `dbe97b0317d24446ceb636d83a9d962e8d52acbbe1831adf326d2cc4d0f1acd5` |
+| `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `7eeef52cc70105eb8c6601e33d188a2458e2765335f92d04a88906fb03b3b632` |
+| `Butlery Skarmar v12 etapp 2.dc.html` | `d23c4474b735deb03f7d1afc85a1dca365c74f0fe303f417f496acd7505d56ce` |
+| `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `ccc739451b56711941e0aff319dcf0caeec7a6b2ef21419ecb85c6c5fa6b1d0a` |
+| `Butlery Skarmar v12 etapp 4 import.dc.html` | `557a0f568b34e7f17c967fa857b375a3699b6340d99ff064e1998a4e1ed36780` |
+| `Butlery Skarmar v12 etapp 5-7.dc.html` | `8b0d975728d67b99f546af374af8cbb4b432dede1723194df2a384d2a2df90d9` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `d0b48a9996962597b52d56930a4eb57fce9842746a8d66e0a7d2e31e07e2daf2` |
 | `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `b5819c7a2687b5383be6c668201af1aad18a7b4d1f97f2c137f28153135c2208` |
 | `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `0aa22ca9b574870b6792de2f4d873018e14e5307dd9fcf98bc747a001f51ddcf` |
@@ -103,7 +103,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
 | `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
 | `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `54219a65c4487c6a5be276b1e7af2d960779100bae98ae7e9a95d8243b25fd50` |
+| `assets/generated/tokens.css` | `590a29966c9ef2ba7e0a438a4f195c7ceb69e9fcf4abd0fcb75e35a10eb1967b` |
 | `assets/icons/activity.svg` | `3b7c324df2d719b1fd949a47f4f3c58702576c5c89ecd788b935caa0ae595466` |
 | `assets/icons/archive.svg` | `cf161abb7df09faed9bccb69e17efc0c85b134b4a522d6654c45201e3706467c` |
 | `assets/icons/arrow-down.svg` | `33137ab2d024ba075abba489752df8b44189862491996ffd37375d094fac070d` |
@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `feb657338d411514a1a785410e93528ceef98e90220bcdf46360561b5d95b895` |
+| `beslutslogg.md` | `6b237f34b8f7acac65390f25ff6f54cfcc9392e06c4b38af8a1ab69b0834d5b5` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -604,10 +604,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `2d4c31dbffd04f7315e74f0f2f84e29632abc448828ad2a82778e657b5230417` |
-| `lib/theme/app_colors_dark.dart` | `c8d8fc8b825bab46fafcd5be0f8e7d1aa30259295794bc1c9a5f9f94d1ed1920` |
-| `lib/theme/app_text_styles.dart` | `b6987913ac42abd26305fae45a47cfd31f64142fd0defe293fe099369930d9f0` |
-| `lib/theme/butlery_tokens.dart` | `75f072a2fd22556a093e35ecac2f26a802aca6228c26208eab2f6d527d74a0cf` |
+| `lib/theme/app_colors.dart` | `03b4e86d1caaa21142b2a6dc7a1ceb63e1f1ed73874c681fee56b997bf3991ed` |
+| `lib/theme/app_colors_dark.dart` | `bb0265189c914fd6021784ae889536f7f77501fc45d7f54801f798dec2dc0d7a` |
+| `lib/theme/app_text_styles.dart` | `de89538426e561628c4acc4e4105c6c9fc8a66cf2bf6c119b8d1f0be11d2a67e` |
+| `lib/theme/butlery_tokens.dart` | `8c100452ac8a0e51cc819b64b9c862b69b3dfed20d1cc22eda9a0dedea76fabb` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `mockup-kit/README.md` | `60d900666e7dd6b66831666ebd27e2feb40522d80bc848ff551389c6e42499a6` |
@@ -730,7 +730,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `500482a1bc58f40494369ca94f9a703dd66ba9315756388511617877b953eeeb` |
-| `tokens.json` | `e858646ba4d026f5594e6a35d81171648994a1b6fdfbb9e0867b4a35f68dfbb0` |
+| `tokens.json` | `7c8f35a9a31ca1e718a81e3fda8d8577c32c44d0495cacae8e031c1033c6600f` |
 | `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/adjudication-guards-fixtures.mjs` | `e435e8b5df13f07ecfd17ea2baf18a1796b24081d89dcef6352e8584c0c29d37` |
 | `tools/adjudication-pilot-fixtures.mjs` | `91adf41c78e92605e577f4c7f85511d9ccd1226e5b795977b9104e4193604c1f` |

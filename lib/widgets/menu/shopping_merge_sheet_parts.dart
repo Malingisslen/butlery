@@ -192,7 +192,7 @@ class _DetailsToggle extends StatelessWidget {
   }
 }
 
-/// One switch as drawn: a 24 px checkbox, the title 13/700 in text.primary
+/// One switch as drawn: a checkbox, the title 13/700 in text.primary
 /// and the description 12/400 in text.secondary, at least 48 dp tall.
 class _SwitchRow extends StatelessWidget {
   const _SwitchRow({
@@ -241,12 +241,7 @@ class _SwitchRow extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      value: value,
-                      onChanged: onChanged == null
-                          ? null
-                          : (v) => onChanged!(v ?? false),
-                    ),
+                    ButleryCheckbox(value: value, onChanged: onChanged),
                     const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Padding(

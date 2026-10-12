@@ -37,6 +37,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
@@ -196,7 +197,10 @@ void main() {
             (w) =>
                 w is AnimatedContainer &&
                 w.constraints ==
-                    const BoxConstraints.tightFor(width: 24, height: 24),
+                    const BoxConstraints.tightFor(
+                      width: ButleryCheckbox.boxSize,
+                      height: ButleryCheckbox.boxSize,
+                    ),
           ),
         );
         final border = (box.decoration! as BoxDecoration).border! as Border;

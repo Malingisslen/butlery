@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:5e6d17b760c814c9451ba5009d789f993c2c613abbc437812bb5e311d5465a69 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:43bfd14d19efca0629d5d557b364ffb134b98b4c13aee59b9a439fa4c41b3947 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -180,7 +180,7 @@ class ButleryTouch {
 
 class ButleryControls {
   const ButleryControls._();
-  static const double checkboxSize = 24;
+  static const double checkboxSize = 20;
   static const double checkboxRadius = 6;
   static const double checkboxBorder = 1.5;
   static const double checkStroke = 2.2;

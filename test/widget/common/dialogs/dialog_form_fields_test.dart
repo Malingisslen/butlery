@@ -20,6 +20,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -1253,8 +1254,8 @@ void main() {
       );
       expect(find.text('Acceptera villkor'), findsOneWidget);
       expect(find.text('Du måste godkänna'), findsOneWidget);
-      final tile = tester.widget<CheckboxListTile>(
-        find.byType(CheckboxListTile),
+      final tile = tester.widget<ButleryCheckboxTile>(
+        find.byType(ButleryCheckboxTile),
       );
       expect(tile.value, isTrue);
     });
@@ -1270,7 +1271,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byType(CheckboxListTile));
+      await tester.tap(find.byType(ButleryCheckboxTile));
       await tester.pumpAndSettle();
       expect(received, isTrue);
     });
@@ -1286,8 +1287,8 @@ void main() {
           ),
         ),
       );
-      final tile = tester.widget<CheckboxListTile>(
-        find.byType(CheckboxListTile),
+      final tile = tester.widget<ButleryCheckboxTile>(
+        find.byType(ButleryCheckboxTile),
       );
       expect(tile.onChanged, isNull);
     });
@@ -1302,8 +1303,8 @@ void main() {
           ),
         ),
       );
-      final tile = tester.widget<CheckboxListTile>(
-        find.byType(CheckboxListTile),
+      final tile = tester.widget<ButleryCheckboxTile>(
+        find.byType(ButleryCheckboxTile),
       );
       expect(tile.subtitle, isNull);
     });

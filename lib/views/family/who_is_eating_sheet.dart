@@ -12,6 +12,7 @@ import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Outcome of the who's-eating picker.
 ///
@@ -486,7 +487,10 @@ class _DinerToggleRow extends StatelessWidget {
                   ],
                   ExcludeSemantics(
                     child: IgnorePointer(
-                      child: Checkbox(value: selected, onChanged: (_) {}),
+                      child: ButleryCheckbox(
+                        value: selected,
+                        onChanged: (_) {},
+                      ),
                     ),
                   ),
                 ],

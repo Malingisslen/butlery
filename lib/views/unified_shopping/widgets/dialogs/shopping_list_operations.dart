@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// List management operations for shopping lists
 class ShoppingListOperations {
@@ -420,11 +421,11 @@ class _ConvertToCollaborativeDialogState
                 itemBuilder: (context, index) {
                   final friend = widget.friends[index];
                   final isSelected = _selectedIds.contains(friend.uid);
-                  return CheckboxListTile(
+                  return ButleryCheckboxTile(
                     value: isSelected,
                     onChanged: (checked) {
                       setState(() {
-                        if (checked == true) {
+                        if (checked) {
                           _selectedIds.add(friend.uid);
                         } else {
                           _selectedIds.remove(friend.uid);
@@ -456,8 +457,6 @@ class _ConvertToCollaborativeDialogState
                         ),
                       ),
                     ),
-                    controlAffinity: ListTileControlAffinity.trailing,
-                    activeColor: Theme.of(context).colorScheme.primary,
                     contentPadding: EdgeInsets.zero,
                   );
                 },

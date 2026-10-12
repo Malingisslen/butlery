@@ -2,16 +2,14 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Checkbox with debounce functionality to prevent spam clicking
 /// This widget wraps a standard checkbox and provides debouncing to prevent
 /// multiple rapid state changes that could overwhelm the system.
 class DebouncedCheckbox extends StatefulWidget {
   final bool value;
-  final ValueChanged<bool?>? onChanged;
-  final Color? activeColor;
+  final ValueChanged<bool>? onChanged;
   final Duration debounceDuration;
 
   /// A wait, not motion (produktbeslut R8-9 = A).
@@ -21,7 +19,6 @@ class DebouncedCheckbox extends StatefulWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.activeColor,
     this.debounceDuration = defaultDebounce,
   });
 
@@ -53,8 +50,8 @@ class _DebouncedCheckboxState extends State<DebouncedCheckbox> {
     super.dispose();
   }
 
-  void _handleChanged(bool? newValue) {
-    if (newValue == null || widget.onChanged == null) {
+  void _handleChanged(bool newValue) {
+    if (widget.onChanged == null) {
       return;
     }
 
@@ -75,15 +72,6 @@ class _DebouncedCheckboxState extends State<DebouncedCheckbox> {
 
   @override
   Widget build(BuildContext context) {
-    // The shared grip: a 48 dp box with the focus ring around the whole box
-    // and no saffron focus tint (Grafisk manual v6:209, :381).
-    return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
-      child: Checkbox(
-        value: _currentValue,
-        onChanged: _handleChanged,
-        activeColor: widget.activeColor,
-      ),
-    );
+    return ButleryCheckbox(value: _currentValue, onChanged: _handleChanged);
   }
 }

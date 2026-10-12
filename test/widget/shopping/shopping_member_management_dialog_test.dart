@@ -45,6 +45,7 @@ import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -320,7 +321,7 @@ void main() {
   }
 
   Future<void> inviteCecilia(WidgetTester tester) async {
-    await tester.tap(find.byType(CheckboxListTile));
+    await tester.tap(find.byType(ButleryCheckboxTile));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.listInviteButtonCount(1)));
     await tester.pumpAndSettle();
@@ -481,7 +482,7 @@ void main() {
           summary: const ListInviteSummary(invited: [_friendId]),
         ),
       );
-      await tester.tap(find.byType(CheckboxListTile));
+      await tester.tap(find.byType(ButleryCheckboxTile));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.shoppingPermissionView).last);
       await tester.pumpAndSettle();
@@ -565,8 +566,11 @@ void main() {
         friendNames: const ['Cecilia', 'Bob'],
       );
 
-      expect(find.widgetWithText(CheckboxListTile, 'Cecilia'), findsOneWidget);
-      expect(find.widgetWithText(CheckboxListTile, 'Bob'), findsNothing);
+      expect(
+        find.widgetWithText(ButleryCheckboxTile, 'Cecilia'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(ButleryCheckboxTile, 'Bob'), findsNothing);
     });
 
     testWidgets('a call that never went through says so and keeps the '
@@ -713,8 +717,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.listInviteAlreadyInvited), findsOneWidget);
-      final tile = tester.widget<CheckboxListTile>(
-        find.byType(CheckboxListTile),
+      final tile = tester.widget<ButleryCheckboxTile>(
+        find.byType(ButleryCheckboxTile),
       );
       expect(tile.onChanged, isNull);
       expect(find.text(l10n.listInviteButtonCount(1)), findsNothing);

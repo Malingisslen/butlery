@@ -9,6 +9,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 class ShareTargetSelection {
   static Widget build(
@@ -120,7 +121,7 @@ class ShareTargetSelection {
             friend.displayName,
             style: AppTextStyles.contentTitle,
           ),
-          trailing: Checkbox(
+          trailing: ButleryCheckbox(
             value: isSelected,
             onChanged: (_) => onFriendToggled(friend.uid),
           ),

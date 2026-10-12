@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Builds the rows of the friend requests list, incoming and sent. Rows sit in
 /// a ButleryListSection, so they carry no card of their own.
@@ -51,9 +52,9 @@ class FriendRequestCard {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (selecting) ...[
-                Checkbox(
+                ButleryCheckbox(
                   value: isSelected,
-                  onChanged: (value) => onSelectionChanged(value ?? false),
+                  onChanged: onSelectionChanged,
                 ),
                 const SizedBox(width: AppDimensions.space4),
               ],
@@ -211,9 +212,9 @@ class FriendRequestCard {
         child: Row(
           children: [
             if (selectable) ...[
-              Checkbox(
+              ButleryCheckbox(
                 value: isSelected,
-                onChanged: (value) => onSelectionChanged(value ?? false),
+                onChanged: onSelectionChanged,
               ),
               const SizedBox(width: AppDimensions.space4),
             ],

@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Prefix marking a disabled category-header dropdown item; its value is a
 /// sentinel that is never a real property.
@@ -577,12 +578,13 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildApplyToExistingSection() {
-    return CheckboxListTile(
+    return ButleryCheckboxTile(
+      boxFirst: true,
       value: _applyToExisting,
       onChanged: _isSaving
           ? null
           : (value) async {
-              setState(() => _applyToExisting = value ?? false);
+              setState(() => _applyToExisting = value);
               if (_applyToExisting && _affectedRecipeCount == null) {
                 await _calculateAffectedCount();
               }
@@ -594,7 +596,6 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           ? Text(context.l10n.tagDetailRuleMatches(_affectedRecipeCount!))
           : Text(context.l10n.ruleTagMatchingImmediately),
       contentPadding: EdgeInsets.zero,
-      controlAffinity: ListTileControlAffinity.leading,
     );
   }
 

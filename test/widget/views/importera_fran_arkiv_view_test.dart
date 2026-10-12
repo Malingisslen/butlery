@@ -104,6 +104,31 @@ void main() {
     expect(find.text('Återställ 1 recept'), findsOneWidget);
   });
 
+  testWidgets('a ticked row draws a ticked box and the others stay empty', (
+    tester,
+  ) async {
+    await pumpView(tester);
+    final recipes = archive.archivedRecipes;
+
+    bool ticked(String title) => tester
+        .widget<Checkbox>(
+          find.descendant(
+            of: find.ancestor(
+              of: find.text(title),
+              matching: find.byType(InkWell),
+            ),
+            matching: find.byType(Checkbox),
+          ),
+        )
+        .value!;
+
+    await tester.tap(find.text(recipes.first.title));
+    await tester.pumpAndSettle();
+
+    expect(ticked(recipes.first.title), isTrue);
+    expect(ticked(recipes[1].title), isFalse);
+  });
+
   testWidgets('"Välj alla" ticks every listed recipe', (tester) async {
     await pumpView(tester);
 

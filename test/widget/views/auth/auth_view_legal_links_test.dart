@@ -388,7 +388,7 @@ void main() {
       expect(rect.height, greaterThanOrEqualTo(_kMinTapTarget));
       expect(tester.widget<Checkbox>(checkbox).value, isFalse);
 
-      await tester.tapAt(rect.bottomLeft + const Offset(4, -4));
+      await tester.tapAt(rect.bottomLeft + const Offset(16, -4));
       await tester.pump();
       expect(tester.widget<Checkbox>(checkbox).value, isTrue);
     });

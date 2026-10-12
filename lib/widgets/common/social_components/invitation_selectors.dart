@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -121,7 +122,7 @@ class InvitationSelectors {
       itemBuilder: (context, index) {
         final target = targets[index];
         final isSelected = selectedTargets?.contains(target) ?? false;
-        return CheckboxListTile(
+        return ButleryCheckboxTile(
           title: Text(target.displayName),
           value: isSelected,
           onChanged: (value) {
@@ -129,7 +130,7 @@ class InvitationSelectors {
               final newSelection = List<InvitationTarget>.from(
                 selectedTargets ?? [],
               );
-              if (value == true) {
+              if (value) {
                 newSelection.add(target);
               } else {
                 newSelection.remove(target);

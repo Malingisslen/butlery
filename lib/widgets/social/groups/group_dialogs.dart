@@ -16,6 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/social/groups/remove_member_dialog.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Group dialog show methods
 /// This module provides methods for showing various group-related dialogs
@@ -143,11 +144,11 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
                   itemBuilder: (context, index) {
                     final target = availableTargets[index];
                     final isSelected = selected.contains(target.targetId);
-                    return CheckboxListTile(
+                    return ButleryCheckboxTile(
                       value: isSelected,
                       onChanged: (checked) {
                         setDialogState(() {
-                          if (checked == true) {
+                          if (checked) {
                             if (!allowMultiple) selected.clear();
                             selected.add(target.targetId);
                           } else {
