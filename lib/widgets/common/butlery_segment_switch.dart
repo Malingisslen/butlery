@@ -1,12 +1,14 @@
-/// The one two-way switch: the component sheet's segment (1.5 px ink border,
-/// 8 dp radius, the chosen half filled), used for "Alla recept | Kokböcker" and
-/// "Lista | Kalender". Every switch of this kind is this widget, so the shape
-/// is decided in one place.
+/// The one choice between a few options inside a dialog or sheet: the component
+/// sheet's segment (1.5 px ink border, 8 dp radius, the chosen half filled
+/// while the switch is available).
+/// Page-level views use `UnderlineTabs`. Every segment of this kind is this
+/// widget, so the shape is decided in one place.
 library;
 
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ButlerySegmentSwitch<T> extends StatelessWidget {
@@ -15,12 +17,18 @@ class ButlerySegmentSwitch<T> extends StatelessWidget {
     required this.choices,
     required this.selected,
     required this.onChanged,
+    this.disabledValues = const {},
   });
 
   /// The halves, in order, as value and visible label.
   final List<(T, String)> choices;
   final T selected;
-  final ValueChanged<T> onChanged;
+
+  /// Null while the whole switch is unavailable, such as during a send.
+  final ValueChanged<T>? onChanged;
+
+  /// Choices that cannot be picked right now.
+  final Set<T> disabledValues;
 
   /// Room a label needs beside it for the segment's padding and border.
   static const double segmentPadding = 2 * AppDimensions.space24;
@@ -46,9 +54,12 @@ class ButlerySegmentSwitch<T> extends StatelessWidget {
                     child: ChoiceChip(
                       label: Text(label),
                       selected: value == selected,
-                      onSelected: (_) {
-                        if (value != selected) onChanged(value);
-                      },
+                      onSelected:
+                          onChanged == null || disabledValues.contains(value)
+                          ? null
+                          : (_) {
+                              if (value != selected) onChanged!(value);
+                            },
                     ),
                   ),
               ],
@@ -62,10 +73,16 @@ class ButlerySegmentSwitch<T> extends StatelessWidget {
             style: _segmentStyle(Theme.of(context).colorScheme),
             segments: [
               for (final (value, label) in choices)
-                ButtonSegment(value: value, label: Text(label)),
+                ButtonSegment(
+                  value: value,
+                  label: Text(label),
+                  enabled: !disabledValues.contains(value),
+                ),
             ],
             selected: {selected},
-            onSelectionChanged: (selection) => onChanged(selection.first),
+            onSelectionChanged: onChanged == null
+                ? null
+                : (selection) => onChanged!(selection.first),
           ),
         );
       },
@@ -79,6 +96,7 @@ class ButlerySegmentSwitch<T> extends StatelessWidget {
       foregroundColor: cs.onSurface,
       selectedForegroundColor: cs.surface,
       selectedBackgroundColor: cs.onSurface,
+      disabledForegroundColor: AppModeColors.textDisabled(cs.brightness),
       side: BorderSide(color: cs.onSurface, width: 1.5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

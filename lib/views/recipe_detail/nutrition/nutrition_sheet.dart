@@ -13,6 +13,7 @@ import 'package:butlery/views/recipe_detail/nutrition/nutrition_amount_sheet.dar
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_food_picker.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_format.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_ingredient_lists.dart';
+import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -179,26 +180,18 @@ class _NutritionSheetState extends State<NutritionSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SegmentedButton<NutritionBasis>(
-            style: SegmentedButton.styleFrom(
-              minimumSize: const Size(0, AppDimensions.minTouchTarget),
-            ),
-            segments: [
-              ButtonSegment(
-                value: NutritionBasis.perPortion,
-                label: Text(l10n.nutritionBasisPerPortion),
-                enabled: _vm.hasPerPortion,
-              ),
-              ButtonSegment(
-                value: NutritionBasis.wholeRecipe,
-                label: Text(l10n.nutritionBasisWhole),
-              ),
+          ButlerySegmentSwitch<NutritionBasis>(
+            choices: [
+              (NutritionBasis.perPortion, l10n.nutritionBasisPerPortion),
+              (NutritionBasis.wholeRecipe, l10n.nutritionBasisWhole),
             ],
-            selected: {basis},
-            showSelectedIcon: false,
-            onSelectionChanged: (selection) {
-              _vm.setBasis(selection.first);
-              _announceBasis(selection.first);
+            selected: basis,
+            disabledValues: {
+              if (!_vm.hasPerPortion) NutritionBasis.perPortion,
+            },
+            onChanged: (picked) {
+              _vm.setBasis(picked);
+              _announceBasis(picked);
             },
           ),
           if (!_vm.hasPerPortion)

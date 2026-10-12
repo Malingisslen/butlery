@@ -42,7 +42,7 @@ const variantCeilings = {
   'raw_circle_avatar': 11,
   'raw_show_dialog': 90,
   'raw_show_sheet': 5,
-  'raw_segmented': 4,
+  'raw_segmented': 0,
 };
 
 void main() {
