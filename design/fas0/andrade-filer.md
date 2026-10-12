@@ -593,7 +593,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
-| `legacy-api-contract.json` | `f38815be4857800ebe0ce3b9fcb562473926b86db02aa12717e1146bc941528e` |
+| `legacy-api-contract.json` | `5a19c6475aaa817f18d188697bcfc436335231c53b0eda9da96a2f57f1bd4437` |
 | `legacy-api-contract.schema.json` | `77d2aef24644d42c4cf0aa39533cbaabf1a40d80012509a6758bb745c752c258` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
