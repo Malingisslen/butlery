@@ -112,16 +112,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text(
-          '${sv.moderatorReasonLabel}: ${sv.reportReasonInappropriate}',
-        ),
+        find.text(sv.reportReasonInappropriate),
         findsOneWidget,
       );
       expect(
-        find.text('${sv.moderatorReasonLabel}: Gammalt skäl'),
+        find.text('Gammalt skäl'),
         findsOneWidget,
       );
-      expect(find.textContaining(': abuse'), findsNothing);
+      expect(find.text('abuse'), findsNothing);
     },
   );
 }

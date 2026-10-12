@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -10,11 +11,10 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -127,7 +127,6 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     FamilyRatingEntryViewModel vm,
     AppLocalizations l10n,
   ) {
-    final cs = Theme.of(context).colorScheme;
     // Holder name powers the "inmatat av {name}" attribution on proxy rows.
     String? holderName;
     for (final m in vm.present) {
@@ -144,11 +143,6 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     return ListView(
       padding: AppDimensions.paddingAll16,
       children: [
-        Text(
-          l10n.familyRatingIntro,
-          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-        ),
-        const SizedBox(height: AppDimensions.space16),
         for (var i = 0; i < vm.present.length; i++)
           _DinerRatingRow(
             member: vm.present[i],
@@ -158,35 +152,26 @@ class _FamilyRatingEntryContent extends StatelessWidget {
             holderName: holderName,
             onChanged: (s) => vm.setStars(vm.present[i].memberId, s),
           ),
-        const SizedBox(height: AppDimensions.space8),
+        const SizedBox(height: AppDimensions.space16),
         _privateNote(context, l10n),
       ],
     );
   }
 
   Widget _privateNote(BuildContext context, AppLocalizations l10n) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.paddingAll12,
-      color: cs.surface,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ButleryIcon(
-            ButleryIcons.lock,
-            size: AppDimensions.iconSizeS,
-            color: cs.onSurface,
-          ),
-          const SizedBox(width: AppDimensions.space8),
-          Expanded(
-            child: Text(
-              l10n.familyRatingPrivateNote,
-              style: AppTextStyles.captionText.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+    return TintedNote(
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: '${l10n.familyRatingNoteSkip} '),
+            TextSpan(
+              text: l10n.familyRatingNoteCounts,
+              style: AppTextStyles.bodySmallBold,
             ),
-          ),
-        ],
+            TextSpan(text: l10n.familyRatingNoteAnonymous),
+          ],
+        ),
+        style: TintedNote.textStyle(context),
       ),
     );
   }
@@ -254,14 +239,6 @@ class _DinerRatingRow extends StatelessWidget {
     required this.onChanged,
   });
 
-  String _tag(BuildContext context) {
-    final l10n = context.l10n;
-    if (member.type == HouseholdMemberType.user || member.ageBand == null) {
-      return l10n.ageBandAdult;
-    }
-    return ageBandLabel(l10n, member.ageBand!);
-  }
-
   /// A proxy row is another *account holder* entered on this device — flag that
   /// it won't overwrite their own private rating. Diner profiles never mirror,
   /// so they need no such note.
@@ -271,100 +248,70 @@ class _DinerRatingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).toString();
+    final score = NumberFormat.decimalPatternDigits(
+      locale: locale,
+      decimalDigits: 1,
+    ).format(stars);
+    final name = isHolder
+        ? '${member.displayName} · ${l10n.familyRatingYou}'
+        : member.displayName;
     return Container(
-      margin: AppDimensions.paddingOnlyBottom12,
-      padding: AppDimensions.paddingAll12,
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space16),
       decoration: BoxDecoration(
-        // surface.base, never white: white stayed white on the dark page
-        // under paper text.
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(color: cs.onSurface, width: 4),
-          bottom: BorderSide(
-            color: context.modeColors.recipeCardBottomBorder,
-            width: 3,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FamilyAvatar(
-            name: member.displayName,
-            color: parseAvatarColor(context, member.avatarColor),
-            initials: initials,
+          Row(
+            children: [
+              FamilyAvatar(
+                name: member.displayName,
+                color: parseAvatarColor(context, member.avatarColor),
+                initials: initials,
+                size: AppDimensions.space32 * 2,
+                round: true,
+              ),
+              const SizedBox(width: AppDimensions.space16),
+              Expanded(
+                child: Text(
+                  name,
+                  style: AppTextStyles.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                stars == 0 ? l10n.familyRatingNotSet : score,
+                style: stars == 0
+                    ? AppTextStyles.bodyMedium.copyWith(
+                        color: cs.onSurfaceVariant,
+                      )
+                    : AppTextStyles.titleMedium,
+              ),
+            ],
           ),
-          const SizedBox(width: AppDimensions.space12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        member.displayName,
-                        style: AppTextStyles.titleSmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (isHolder) ...[
-                      const SizedBox(width: AppDimensions.space8),
-                      _YouBadge(label: l10n.familyRatingYou),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.space4),
-                Text(
-                  _tag(context),
-                  style: AppTextStyles.captionBold.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.space8),
-                StarRatingRow(
-                  rating: stars.toDouble(),
-                  size: 30,
-                  onRatingChanged: (v) => onChanged(v.toInt()),
-                  semanticsLabel: (s) =>
-                      l10n.a11yRateStarsForMember(member.displayName, s),
-                ),
-                if (_isProxyUser && holderName != null) ...[
-                  const SizedBox(height: AppDimensions.space4),
-                  Text(
-                    l10n.familyRatingProxyNote(holderName!),
-                    style: AppTextStyles.captionText.copyWith(
-                      color: cs.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ],
+          const SizedBox(height: AppDimensions.space8),
+          StarRatingRow(
+            rating: stars.toDouble(),
+            size: AppDimensions.iconSizeL,
+            slot: AppDimensions.minTouchTarget,
+            solidEmpty: true,
+            onRatingChanged: (v) => onChanged(v.toInt()),
+            semanticsLabel: (s) =>
+                l10n.a11yRateStarsForMember(member.displayName, s),
+          ),
+          if (_isProxyUser && holderName != null) ...[
+            const SizedBox(height: AppDimensions.space4),
+            Text(
+              l10n.familyRatingProxyNote(holderName!),
+              style: AppTextStyles.captionText.copyWith(
+                color: cs.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-          ),
+          ],
         ],
-      ),
-    );
-  }
-}
-
-class _YouBadge extends StatelessWidget {
-  final String label;
-  const _YouBadge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.badgePadding,
-      decoration: BoxDecoration(
-        color: context.modeColors.heroPaleGreen,
-        border: Border.all(color: cs.onSurface),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.captionBold.copyWith(
-          color: cs.onSurface,
-        ),
       ),
     );
   }

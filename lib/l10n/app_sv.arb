@@ -214,7 +214,7 @@
   "@menuAutoPlacedChangeAction": {
     "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
   },
-  "menuPlacementTitle": "placera i veckan",
+  "menuPlacementTitle": "Placera i veckan",
   "@menuPlacementTitle": {
     "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
   },
@@ -230,7 +230,7 @@
       }
     }
   },
-  "menuPlacementTrayLabel": "Kvar att placera ({count})",
+  "menuPlacementTrayLabel": "{count} kvar att placera",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
@@ -239,7 +239,7 @@
       }
     }
   },
-  "menuPlacementHint": "Tryck på en ledig ruta för att placera {recipe}.",
+  "menuPlacementHint": "Tryck på en ledig plats för {recipe}. Lunch och middag tar en rätt, övrigt tar flera.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
@@ -248,7 +248,7 @@
       }
     }
   },
-  "menuPlacementHintSelect": "Välj ett recept nedan för att placera det.",
+  "menuPlacementHintSelect": "Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.",
   "@menuPlacementHintSelect": {
     "description": "BUT-1241: hint banner when no tray recipe is selected."
   },
@@ -256,7 +256,7 @@
   "@menuPlacementPlaceHere": {
     "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
   },
-  "menuPlacementAutoRest": "Placera resten automatiskt",
+  "menuPlacementAutoRest": "Slumpa resten",
   "@menuPlacementAutoRest": {
     "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
   },
@@ -1422,7 +1422,7 @@
       }
     }
   },
-  "personalTagRuleCount": "{count} regler",
+  "personalTagRuleCount": "{count, plural, =1{1 regel} other{{count} regler}}",
   "@personalTagRuleCount": {
     "placeholders": {
       "count": {
@@ -1430,7 +1430,7 @@
       }
     }
   },
-  "personalTagRuleCountActive": "{enabled}/{total} regler aktiva",
+  "personalTagRuleCountActive": "{enabled} av {total} {total, plural, =1{regel} other{regler}} på",
   "@personalTagRuleCountActive": {
     "placeholders": {
       "enabled": {
@@ -2977,7 +2977,7 @@
       }
     }
   },
-  "shareGroupMembersCount": "{count} medlemmar",
+  "shareGroupMembersCount": "{count, plural, =1{1 medlem} other{{count} medlemmar}}",
   "@shareGroupMembersCount": {
     "placeholders": {
       "count": {
@@ -10028,9 +10028,41 @@
   "weeklyMenuPrevWeek": "Föregående vecka",
   "weeklyMenuNextWeek": "Nästa vecka",
   "weeklyMenuTodayBadge": "I dag",
+  "weeklyMenuNewMark": "ny",
+  "weeklyMenuLegendNew": "ny",
+  "weeklyMenuLegendAllergen": "tål inte",
+  "weeklyMenuLegendPresence": "hemma, om inte alla",
+  "a11yWeeklyMenuAddDish": "Lägg till rätt på {slot} {day}",
+  "@a11yWeeklyMenuAddDish": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yWeeklyMenuOpenOvrigt": "Visa övrigt på {day}",
+  "@a11yWeeklyMenuOpenOvrigt": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "weeklyMenuEmptyTitle": "Ingen planering än",
   "weeklyMenuEmptyHint": "Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.",
   "weeklyMenuOvrigtAddMore": "+ lägg till",
+  "weeklyMenuOvrigtSheetTitle": "Övrigt på {day}",
+  "@weeklyMenuOvrigtSheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOvrigtSheetAdd": "Lägg till rätt",
   "weeklyMenuOverwriteConfirm": "Detta ersätter din nuvarande planering. Fortsätt?",
   "weeklyMenuLoadError": "Kunde inte ladda veckomenyn",
   "weeklyMenuWeekLabel": "Vecka {weekNum} · {start}–{end}",
@@ -10039,6 +10071,25 @@
       "weekNum": {
         "type": "int"
       },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuWeekTitle": "Vecka {weekNum}",
+  "@weeklyMenuWeekTitle": {
+    "placeholders": {
+      "weekNum": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuWeekRange": "{start}–{end}",
+  "@weeklyMenuWeekRange": {
+    "placeholders": {
       "start": {
         "type": "String"
       },
@@ -10579,7 +10630,7 @@
   "@moderatorReasonLabel": {
     "description": "BUT-417: label prefix for the report reason."
   },
-  "moderatorReporterLabel": "Rapporterat av",
+  "moderatorReporterLabel": "Anmäld av",
   "@moderatorReporterLabel": {
     "description": "BUT-417: label prefix for the reporter's user id."
   },
@@ -11274,15 +11325,29 @@
       }
     }
   },
-  "whoAteSkip": "hoppa över",
+  "whoAteSkip": "Hoppa över",
   "a11yToggleDiner": "Markera som äter",
   "@a11yToggleDiner": {
     "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
   },
-  "menuPresenceSheetTitle": "vem är hemma?",
-  "menuPresenceThisMeal": "denna måltid",
-  "menuPresenceWholeDay": "hela dagen",
+  "menuPresenceSheetTitle": "Vem är hemma?",
+  "menuPresenceThisMeal": "Den här måltiden",
+  "menuPresenceWholeDay": "Hela dagen",
   "menuPresenceNobody": "ingen hemma",
+  "menuPresenceHome": "hemma",
+  "menuPresenceAway": "borta",
+  "menuPresenceHomeSummary": "{home} hemma · {portions} port.",
+  "@menuPresenceHomeSummary": {
+    "placeholders": {
+      "home": {
+        "type": "int"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPresenceOpenRecipe": "Öppna receptet",
   "menuPresencePortions": "{count} port",
   "@menuPresencePortions": {
     "placeholders": {
@@ -11304,7 +11369,7 @@
   },
   "menuPresenceAfterGenerateNotice": "närvaron uppdaterad — planerade rätter ligger kvar",
   "menuPresenceSummaryTitle": "vem är hemma?",
-  "menuPresenceSummaryAllHome": "alla hemma hela veckan",
+  "menuPresenceSummaryAllHome": "Alla hemma hela veckan",
   "menuPresenceSummaryAway": "{names} borta delar av veckan",
   "@menuPresenceSummaryAway": {
     "placeholders": {
@@ -11324,10 +11389,10 @@
       }
     }
   },
-  "familyRatingTitle": "vad tyckte ni?",
+  "familyRatingTitle": "Vad tyckte ni?",
   "familyRatingIntro": "Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.",
   "familyRatingYou": "du",
-  "familyRatingSave": "spara betyg",
+  "familyRatingSave": "Spara",
   "familyRatingPrivateNote": "Era enskilda betyg är privata — ingen annan ser vem som satte vad. Varje betyg räknas dock med i receptets allmänna snitt.",
   "familyRatingManualButton": "Betygsätt som familj",
   "familyRatingProxyNote": "inmatat av {name} · ändrar inte personens eget betyg",
@@ -11537,6 +11602,7 @@
   "@a11yShowVoters": {
     "description": "BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework."
   },
+  "a11yGroupMenuDishDetails": "Visa förslag och röster",
   "groupMenuUnknownVoter": "Okänd medlem",
   "@groupMenuUnknownVoter": {
     "description": "BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed."
@@ -11852,6 +11918,18 @@
   "@menuPreviewTitle": {
     "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
   },
+  "menuPreviewSharedLine": "{name} delade menyn {menu} med dig · endast läsa",
+  "@menuPreviewSharedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "menu": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPreviewDecline": "Avböj",
   "emailVerificationResendFailed": "Verifieringsmailet kunde inte skickas.",
   "@emailVerificationResendFailed": {
     "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."
@@ -13062,23 +13140,23 @@
   "@recipeSuggestionTitle": {
     "description": "P5-U27b: title of the view that shows one suggestion."
   },
-  "recipeSuggestionIntroOwner": "{name} föreslår det här. Förslaget sparas till {date}.",
+  "recipeSuggestionIntroOwner": "{name} föreslår en ändring i {title}. Ditt recept ändras bara om du använder förslaget.",
   "@recipeSuggestionIntroOwner": {
-    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner; name = suggester, title = the recipe.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMine": "Det här föreslog du. Förslaget sparas till {date}.",
+  "recipeSuggestionIntroMine": "Du föreslog en ändring i {title}. Receptet ändras bara om ägaren använder förslaget.",
   "@recipeSuggestionIntroMine": {
-    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "description": "Intro line for the suggester; title = the recipe.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -13087,9 +13165,9 @@
   "@recipeSuggestionSuggestedLabel": {
     "description": "P5-U27b: label over the suggested value of a field."
   },
-  "recipeSuggestionCurrentLabel": "Receptet nu",
+  "recipeSuggestionCurrentLabel": "Nu",
   "@recipeSuggestionCurrentLabel": {
-    "description": "P5-U27b: label over the recipe's current value of a field."
+    "description": "Label over the recipe's current value of a field."
   },
   "recipeSuggestionAccept": "Använd förslaget",
   "@recipeSuggestionAccept": {
@@ -13613,23 +13691,23 @@
       }
     }
   },
-  "recipeSuggestionIntroOwnerUpdated": "{name} har uppdaterat sitt förslag till det här. Förslaget sparas till {date}.",
+  "recipeSuggestionIntroOwnerUpdated": "{name} har uppdaterat sitt förslag till {title}. Ditt recept ändras bara om du använder förslaget.",
   "@recipeSuggestionIntroOwnerUpdated": {
-    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner when the suggestion replaced an earlier one.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMineUpdated": "Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till {date}.",
+  "recipeSuggestionIntroMineUpdated": "Du föreslog en ändring i {title}, och den ersatte ditt förra förslag. Receptet ändras bara om ägaren använder förslaget.",
   "@recipeSuggestionIntroMineUpdated": {
-    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "description": "Intro line for the suggester when the suggestion replaced an earlier one.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -13716,6 +13794,14 @@
   "hemStartCooking": "Börja laga",
   "@hemStartCooking": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSuggestion": "Förslag",
+  "@hemSuggestion": {
+    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3)."
+  },
+  "hemSwapSuggestion": "Byt förslag",
+  "@hemSwapSuggestion": {
+    "description": "HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3)."
   },
   "hemSwapDish": "Byt rätt",
   "@hemSwapDish": {
@@ -15188,7 +15274,7 @@
   "@tagDetailAddRule": {
     "description": "Row that opens the rule builder"
   },
-  "tagDetailRunRulesAll": "Kör reglerna på alla recept",
+  "tagDetailRunRulesAll": "Kör reglerna nu",
   "@tagDetailRunRulesAll": {
     "description": "Secondary button on the tag page that applies the rules to existing recipes"
   },
@@ -17227,5 +17313,257 @@
   "signInMethodsPasswordFailed": "Lösenordet kunde inte sättas. Försök igen.",
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
+  },
+  "adminOpsSectionTitle": "Drift · senaste händelser",
+  "@adminOpsSectionTitle": {
+    "description": "Skiss spår 9 (v65): heading above the ops-log table"
+  },
+  "adminOpsSparseTitle": "Glest med flit.",
+  "@adminOpsSparseTitle": {
+    "description": "Skiss spår 9 (v65): bold lead of the note closing the ops-log table"
+  },
+  "adminOpsSparseBody": "Loggen fylls när appen har användare. Att den är kort betyder inte att något saknas.",
+  "@adminOpsSparseBody": {
+    "description": "Skiss spår 9 (v65): body of the note closing the ops-log table"
+  },
+  "adminOpsEventNotificationCleanup": "Notiser städade",
+  "@adminOpsEventNotificationCleanup": {
+    "description": "Ops-log event name for the notification_cleanup job"
+  },
+  "adminOpsEventIngredientCleanup": "Ingredienser städade",
+  "@adminOpsEventIngredientCleanup": {
+    "description": "Ops-log event name for the ingredient_cleanup job"
+  },
+  "adminOpsEventSystemEventsCleanup": "Driftloggen städad",
+  "@adminOpsEventSystemEventsCleanup": {
+    "description": "Ops-log event name for the system_events_cleanup job"
+  },
+  "adminOpsEventSocialRequestsCleanup": "Gamla förfrågningar städade",
+  "@adminOpsEventSocialRequestsCleanup": {
+    "description": "Ops-log event name for the cleanup_expired_social_requests job"
+  },
+  "adminOpsEventAuditLogCleanup": "Granskningslogg städad",
+  "@adminOpsEventAuditLogCleanup": {
+    "description": "Ops-log event name for the audit_log_cleanup job"
+  },
+  "adminOpsEventDeletionAuditLogCleanup": "Raderingslogg städad",
+  "@adminOpsEventDeletionAuditLogCleanup": {
+    "description": "Ops-log event name for the deletion_audit_log_cleanup job"
+  },
+  "adminParsingSectionTitle": "Parsning per domän",
+  "@adminParsingSectionTitle": {
+    "description": "Skiss spår 9 (v66): heading above the parsing table"
+  },
+  "adminParsingColSuccess": "Lyckat",
+  "@adminParsingColSuccess": {
+    "description": "Skiss spår 9 (v66): column with the import success rate per domain"
+  },
+  "adminParsingColStuck": "Fastnar på",
+  "@adminParsingColStuck": {
+    "description": "Skiss spår 9 (v66): column with the field corrected most per domain"
+  },
+  "adminParsingTableNote": "Tryck på en rad för att se importerna. Fältet i sista kolumnen är det som oftast rättas för domänen.",
+  "@adminParsingTableNote": {
+    "description": "Skiss spår 9 (v66): note under the parsing table"
+  },
+  "moderatorContentTypeRecipe": "Recept",
+  "@moderatorContentTypeRecipe": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeComment": "Kommentar",
+  "@moderatorContentTypeComment": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeMessage": "Meddelande",
+  "@moderatorContentTypeMessage": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeProfile": "Profil",
+  "@moderatorContentTypeProfile": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeCookSnap": "Matbild",
+  "@moderatorContentTypeCookSnap": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeGroup": "Grupp",
+  "@moderatorContentTypeGroup": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorStatusNew": "Ny",
+  "@moderatorStatusNew": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusInReview": "Granskas",
+  "@moderatorStatusInReview": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusActioned": "Åtgärdad",
+  "@moderatorStatusActioned": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusClosed": "Stängd",
+  "@moderatorStatusClosed": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorCloseTooltip": "Stäng rapporten",
+  "@moderatorCloseTooltip": {
+    "description": "Skiss spår 9 (v64): tooltip on the X that closes a report"
+  },
+  "familyRatingNotSet": "inte satt",
+  "@familyRatingNotSet": {
+    "description": "Skiss spår 9 (v72): shown instead of a score for a diner with no stars yet"
+  },
+  "familyRatingNoteSkip": "Den som hoppar över får ingen rad och räknas inte in i snittet. Betyget går alltid att ändra, och det senaste ersätter det tidigare.",
+  "@familyRatingNoteSkip": {
+    "description": "Skiss spår 9 (v72): first part of the note under the family rating rows"
+  },
+  "familyRatingNoteCounts": "Betyget räknas in i receptets publika snitt",
+  "@familyRatingNoteCounts": {
+    "description": "Skiss spår 9 (v72): bold part of the note under the family rating rows"
+  },
+  "familyRatingNoteAnonymous": ", anonymt och utan att någon identitet visas.",
+  "@familyRatingNoteAnonymous": {
+    "description": "Skiss spår 9 (v72): closing part of the note under the family rating rows"
+  },
+  "cookbookStatRecipes": "recept",
+  "@cookbookStatRecipes": {
+    "description": "Skiss spår 9 (v71): label under the recipe count in a cookbook's key figures"
+  },
+  "cookbookStatSort": "sortering",
+  "@cookbookStatSort": {
+    "description": "Skiss spår 9 (v71): label under the sort order in a cookbook's key figures"
+  },
+  "cookbookStatSortAlphabetical": "A–Ö",
+  "@cookbookStatSortAlphabetical": {
+    "description": "Skiss spår 9 (v71): the cookbook is sorted alphabetically"
+  },
+  "cookbookStatSortCustom": "Egen",
+  "@cookbookStatSortCustom": {
+    "description": "Skiss spår 9 (v71): the cookbook has the user's own order"
+  },
+  "cookbookStatUpdated": "senast ändrad",
+  "@cookbookStatUpdated": {
+    "description": "Skiss spår 9 (v71): label under the date the cookbook last changed"
+  },
+  "tagDetailNewRule": "+ Ny regel",
+  "@tagDetailNewRule": {
+    "description": "Skiss spår 9 (v108): link at the end of the rules heading on a tag page"
+  },
+  "tagDetailRulesHeading": "Automatiska regler",
+  "@tagDetailRulesHeading": {
+    "description": "Skiss spår 9 (v108): heading over the rules on a tag page"
+  },
+  "tagDetailStatChanged": "senast ändrad",
+  "@tagDetailStatChanged": {
+    "description": "Skiss spår 9 (v108): label under the date the tag last changed"
+  },
+  "tagDetailRuleTagged": "{count, plural, =1{taggade 1 recept} other{taggade {count} recept}}",
+  "@tagDetailRuleTagged": {
+    "description": "Skiss spår 9 (v108): what a rule has tagged",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRecipesHeading": "{count, plural, =1{1 recept med taggen} other{{count} recept med taggen}}",
+  "@tagDetailRecipesHeading": {
+    "description": "Skiss spår 9 (v108): line over the recipe list on a tag page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRuleSummaryNumber": "{type} {operator} {value}",
+  "@tagDetailRuleSummaryNumber": {
+    "description": "Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "operator": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "tagEditSheetTitle": "Redigera taggen",
+  "@tagEditSheetTitle": {
+    "description": "Skiss spår 9 (v108): title of the sheet the Redigera link on a tag page opens"
+  },
+  "tagDetailStatRulesValue": "{enabled} av {total}",
+  "@tagDetailStatRulesValue": {
+    "description": "Skiss spår 9 (v108): how many of the tag's rules are on",
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailStatRules": "{total, plural, =1{regel på} other{regler på}}",
+  "@tagDetailStatRules": {
+    "description": "Skiss spår 9 (v108): label under how many of the tag's rules are on",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagUnusedHeading": "Oanvända ({count})",
+  "@personalTagUnusedHeading": {
+    "description": "Skiss spår 9 (v84): heading over the unused tags shown as pills",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteAllShort": "Radera alla",
+  "@personalTagDeleteAllShort": {
+    "description": "Skiss spår 9 (v84): red link at the end of the unused-tags heading"
+  },
+  "conflictDiffMineName": "Din",
+  "@conflictDiffMineName": {
+    "description": "Name of the user's own version in the conflict view."
+  },
+  "conflictDiffTheirsName": "Deras",
+  "@conflictDiffTheirsName": {
+    "description": "Name of the other version in the conflict view when no name is known."
+  },
+  "conflictDiffApplies": "Gäller",
+  "@conflictDiffApplies": {
+    "description": "Badge on the version that applies now."
+  },
+  "conflictDiffIntro": "Du och {name} ändrade samtidigt i {title}. Bara en av versionerna gäller – så här skiljer de sig.",
+  "@conflictDiffIntro": {
+    "description": "Intro of the conflict view; name = the other editor, title = the recipe.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictDiffIntroPlain": "Ni ändrade samtidigt. Bara en av versionerna gäller – så här skiljer de sig.",
+  "@conflictDiffIntroPlain": {
+    "description": "Intro of the conflict view when the other editor or the title is not known."
+  },
+  "recipeSuggestionKeptNote": "Förslaget sparas till {date}. Sedan tas det bort.",
+  "@recipeSuggestionKeptNote": {
+    "description": "Note above the decision buttons; the Firestore TTL policy on recipe_suggestions removes it at expiresAt.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

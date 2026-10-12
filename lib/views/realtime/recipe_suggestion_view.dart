@@ -9,8 +9,8 @@
 /// and decides: "Använd förslaget" or "Avvisa förslaget".
 ///
 /// What is drawn and what is built: no drawing shows a suggestion. The field
-/// cards are the conflict view's (Skarmar v12 del 3 #konflikt, built in
-/// ConflictDiffView), relabelled "Förslaget" and "Receptet nu"; the decision
+/// rows are the conflict view's (Skarmar v12 del 3 #konflikt), named "Förslaget"
+/// and "Nu"; the decision
 /// bar is the conflict view's bottom bar with the saffron action first and
 /// the outlined one under it (Grafisk manual v6:219, one saffron action per
 /// view). Recorded as interpretations in the P5-U27b commit.
@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/content_time_labels.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -30,7 +31,10 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/views/realtime/conflict_diff_view.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/views/realtime/conflict_field_label.dart';
+import 'package:butlery/widgets/common/bold_in_text.dart';
+import 'package:butlery/widgets/common/diff_field_row.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -79,6 +83,8 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
 
   late Future<ConflictDiff> _diff = _load();
   _Decision? _busy;
+
+  bool get _decidesHere => widget.asOwner && widget.suggestion.isPending;
 
   Future<ConflictDiff> _load() {
     final svc = _service;
@@ -150,7 +156,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l = context.l10n;
-    final decides = widget.asOwner && widget.suggestion.isPending;
+    final decides = _decidesHere;
     return Scaffold(
       backgroundColor: cs.surface,
       appBar: ButleryTopBar.undersida(title: l.recipeSuggestionTitle),
@@ -183,26 +189,31 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
   Widget _content(BuildContext context, ConflictDiff diff) {
     final cs = Theme.of(context).colorScheme;
     final l = context.l10n;
-    final keptUntil = _keptUntil(context);
+    final saffron = context.modeColors.textAccent;
     final name = RecipeSuggestionService.suggesterNameOf(widget.suggestion);
     // Q6-12 = B: both readers are told when it replaced an earlier one.
     final replaced = widget.suggestion.wasReplaced;
     final who = name.isEmpty ? l.displayUnknownUser : name;
+    // The recipe's own title: a suggestion that renames it must not rename
+    // the sentence about it.
+    final recipeTitle =
+        diff.changedFields
+            .where((f) => f.fieldKey == 'title')
+            .map((f) => f.remoteText)
+            .firstOrNull ??
+        (widget.suggestion.suggestion['title'] as String?).orEmpty();
     final intro = widget.asOwner
         ? (replaced
-              ? l.recipeSuggestionIntroOwnerUpdated(who, keptUntil)
-              : l.recipeSuggestionIntroOwner(who, keptUntil))
+              ? l.recipeSuggestionIntroOwnerUpdated(who, recipeTitle)
+              : l.recipeSuggestionIntroOwner(who, recipeTitle))
         : (replaced
-              ? l.recipeSuggestionIntroMineUpdated(keptUntil)
-              : l.recipeSuggestionIntroMine(keptUntil));
+              ? l.recipeSuggestionIntroMineUpdated(recipeTitle)
+              : l.recipeSuggestionIntroMine(recipeTitle));
     return ListView(
       padding: const EdgeInsets.all(AppDimensions.space16),
       children: [
-        Text(
-          intro,
-          style: AppTextStyles.contentLabel.copyWith(color: cs.onSurface),
-        ),
-        const SizedBox(height: AppDimensions.space12),
+        BoldInText(intro, bold: [if (widget.asOwner) who, recipeTitle]),
+        const SizedBox(height: AppDimensions.space16),
         if (diff.isEmpty)
           Text(
             l.recipeSuggestionNoChanges,
@@ -212,36 +223,43 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
           )
         else
           for (final field in diff.changedFields) ...[
-            ConflictDiffFieldCard(
-              field: ConflictFieldDiff(
-                fieldKey: _fieldLabel(context, field.fieldKey),
-                localText: field.localText,
-                remoteText: field.remoteText,
-              ),
-              localLabel: l.recipeSuggestionSuggestedLabel,
-              remoteLabel: l.recipeSuggestionCurrentLabel,
+            const Divider(),
+            const SizedBox(height: AppDimensions.space12),
+            DiffFieldRow(
+              title: conflictFieldLabel(l, field.fieldKey),
+              emptyText: l.conflictDiffEmptyValue,
+              versions: [
+                DiffVersion(
+                  name: l.recipeSuggestionSuggestedLabel,
+                  text: field.localText,
+                  marker: saffron,
+                  emphasised: true,
+                ),
+                DiffVersion(
+                  name: l.recipeSuggestionCurrentLabel,
+                  text: field.remoteText,
+                  marker: cs.onSurface,
+                ),
+              ],
             ),
             const SizedBox(height: AppDimensions.space12),
           ],
+        if (!_decidesHere)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.space8),
+            child: _keptNote(context),
+          ),
       ],
     );
   }
 
-  /// The name a person reads for a compared field
-  /// (RecipeSuggestionService.contentFields), never the stored key.
-  static String _fieldLabel(BuildContext context, String key) {
-    final l = context.l10n;
-    return switch (key) {
-      'title' => l.recipeTitle,
-      'description' => l.recipeDescription,
-      'ingredients' => l.recipeIngredients,
-      'instructions' => l.recipeInstructions,
-      'portions' => l.recipePortions,
-      'timeMinutes' => l.recipeCookingTime,
-      'mealType' => l.recipeMealType,
-      _ => key,
-    };
-  }
+  Widget _keptNote(BuildContext context) => Text(
+    context.l10n.recipeSuggestionKeptNote(_keptUntil(context)),
+    textAlign: TextAlign.center,
+    style: AppTextStyles.bodyMedium.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
 
   Widget _decisionBar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -259,6 +277,8 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _keptNote(context),
+              const SizedBox(height: AppDimensions.space12),
               // The view's one saffron action (Grafisk manual v6:219). Busy
               // keeps its name and draws the plate line (Komponentark v1:365).
               HeroButton(

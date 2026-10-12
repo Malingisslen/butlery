@@ -7,11 +7,9 @@ import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -27,14 +25,25 @@ class WhoAteResult {
   final List<String> attendeeMemberIds;
   final bool applyToWholeDay;
 
+  /// The week menu's meal sheet only: the user chose the dish instead of
+  /// changing who is home.
+  final bool openRecipe;
+
   const WhoAteResult.attended(
     this.attendeeMemberIds, {
     this.applyToWholeDay = false,
-  }) : skipped = false;
+  }) : skipped = false,
+       openRecipe = false;
   const WhoAteResult.skipped()
     : skipped = true,
       attendeeMemberIds = const [],
-      applyToWholeDay = false;
+      applyToWholeDay = false,
+      openRecipe = false;
+  const WhoAteResult.openRecipe()
+    : skipped = false,
+      attendeeMemberIds = const [],
+      applyToWholeDay = false,
+      openRecipe = true;
 }
 
 /// Presentation config for the shared roster picker — lets the cook-log flow
@@ -42,20 +51,31 @@ class WhoAteResult {
 class _PickerConfig {
   final String title;
   final String subtitle;
-  final IconData subtitleIcon;
   final String Function(int count) confirmLabel;
   final String? skipLabel; // null → no skip action (presence)
   final String? wholeDayLabel; // null → no whole-day action (cook-log)
   final bool allowEmpty; // presence permits an explicit "nobody home"
 
+  /// Presence only: the word beside each row's box, and the line under the
+  /// title that counts who is home and the portions they make.
+  final String? homeLabel;
+  final String? awayLabel;
+  final String Function(int home)? summary;
+
+  /// Presence on the week menu only: a way to the dish itself.
+  final String? openRecipeLabel;
+
   const _PickerConfig({
     required this.title,
     required this.subtitle,
-    required this.subtitleIcon,
     required this.confirmLabel,
     this.skipLabel,
     this.wholeDayLabel,
     this.allowEmpty = false,
+    this.homeLabel,
+    this.awayLabel,
+    this.summary,
+    this.openRecipeLabel,
   });
 }
 
@@ -77,7 +97,6 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
     config: _PickerConfig(
       title: l10n.whoAteTitle,
       subtitle: recipeTitle,
-      subtitleIcon: ButleryIcons.utensils,
       confirmLabel: l10n.whoAteConfirm,
       skipLabel: l10n.whoAteSkip,
     ),
@@ -94,6 +113,7 @@ Future<WhoAteResult?> showWhoIsHomeSheet(
   BuildContext context, {
   required String slotLabel,
   required List<String> seedMemberIds,
+  bool offerRecipe = false,
 }) {
   final l10n = context.l10n;
   return _showRosterPicker(
@@ -103,10 +123,13 @@ Future<WhoAteResult?> showWhoIsHomeSheet(
     config: _PickerConfig(
       title: l10n.menuPresenceSheetTitle,
       subtitle: slotLabel,
-      subtitleIcon: ButleryIcons.house,
       confirmLabel: (_) => l10n.menuPresenceThisMeal,
       wholeDayLabel: l10n.menuPresenceWholeDay,
       allowEmpty: true,
+      homeLabel: l10n.menuPresenceHome,
+      awayLabel: l10n.menuPresenceAway,
+      summary: (home) => l10n.menuPresenceHomeSummary(home, home),
+      openRecipeLabel: offerRecipe ? l10n.menuPresenceOpenRecipe : null,
     ),
   );
 }
@@ -170,13 +193,18 @@ class _WhoIsEatingSheet extends StatelessWidget {
     final initials = distinctInitials([
       for (final m in vm.roster) m.displayName,
     ]);
+    final summary = config.summary;
+    final selectedMembers = [
+      for (final m in vm.roster)
+        if (vm.isSelected(m.memberId)) m,
+    ];
 
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.space16,
+          AppDimensions.space24,
           AppDimensions.space12,
-          AppDimensions.space16,
+          AppDimensions.space24,
           AppDimensions.space24,
         ),
         child: Column(
@@ -188,7 +216,10 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 margin: AppDimensions.paddingOnlyBottom12,
-                color: cs.outlineVariant,
+                decoration: BoxDecoration(
+                  color: cs.outlineVariant,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                ),
               ),
             ),
             Text(
@@ -196,26 +227,38 @@ class _WhoIsEatingSheet extends StatelessWidget {
               style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             ),
             const SizedBox(height: AppDimensions.space4),
-            Row(
-              children: [
-                ButleryIcon(
-                  config.subtitleIcon,
-                  size: AppDimensions.iconSizeS,
-                  color: cs.secondary,
-                ),
-                const SizedBox(width: AppDimensions.space4),
-                Expanded(
-                  child: Text(
-                    config.subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: context.modeColors.textAccent,
+            Text(
+              config.subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            if (summary != null) ...[
+              const SizedBox(height: AppDimensions.space16),
+              Row(
+                children: [
+                  _FaceStack(
+                    members: selectedMembers,
+                    initials: [
+                      for (final m in selectedMembers)
+                        initials[vm.roster.indexOf(m)],
+                    ],
+                  ),
+                  if (selectedMembers.isNotEmpty)
+                    const SizedBox(width: AppDimensions.space12),
+                  Expanded(
+                    child: Text(
+                      summary(vm.selectedCount),
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
             const SizedBox(height: AppDimensions.space12),
             Flexible(
               child: ListView.separated(
@@ -229,13 +272,15 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 ),
                 itemCount: vm.roster.length,
                 separatorBuilder: (_, _) =>
-                    const SizedBox(height: AppDimensions.space8),
+                    Divider(height: 1, color: cs.outlineVariant),
                 itemBuilder: (_, i) {
                   final member = vm.roster[i];
+                  final selected = vm.isSelected(member.memberId);
                   return _DinerToggleRow(
                     member: member,
                     initials: initials[i],
-                    selected: vm.isSelected(member.memberId),
+                    selected: selected,
+                    statusLabel: selected ? config.homeLabel : config.awayLabel,
                     onTap: () => vm.toggle(member.memberId),
                   );
                 },
@@ -271,6 +316,22 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 isExpanded: true,
               ),
             ],
+            if (config.openRecipeLabel != null) ...[
+              const SizedBox(height: AppDimensions.space8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () =>
+                      Navigator.pop(context, const WhoAteResult.openRecipe()),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(
+                      AppDimensions.minTouchTarget,
+                    ),
+                  ),
+                  child: Text(config.openRecipeLabel!),
+                ),
+              ),
+            ],
             if (config.skipLabel != null) ...[
               const SizedBox(height: AppDimensions.space8),
               SizedBox(
@@ -293,11 +354,62 @@ class _WhoIsEatingSheet extends StatelessWidget {
   }
 }
 
-/// One toggleable roster member row inside the picker.
+/// The faces of the members who are chosen, overlapping, at most three.
+class _FaceStack extends StatelessWidget {
+  const _FaceStack({required this.members, required this.initials});
+
+  final List<HouseholdRosterMember> members;
+  final List<String> initials;
+
+  static const double _face = 28;
+  static const int _max = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = members.take(_max).toList();
+    if (shown.isEmpty) return const SizedBox.shrink();
+    const step = _face - AppDimensions.space8;
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: _face + (shown.length - 1) * step,
+        height: _face,
+        child: Stack(
+          children: [
+            for (var i = 0; i < shown.length; i++)
+              PositionedDirectional(
+                start: i * step,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 2,
+                    ),
+                  ),
+                  child: FamilyAvatar(
+                    name: shown[i].displayName,
+                    initials: initials[i],
+                    color: parseAvatarColor(context, shown[i].avatarColor),
+                    size: _face,
+                    round: true,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One toggleable roster member row inside the picker: a hairline row, the
+/// face, the name, and a checkbox. With [statusLabel] the word "hemma" or
+/// "borta" stands beside the box; without it the row carries the age band.
 class _DinerToggleRow extends StatelessWidget {
   final HouseholdRosterMember member;
   final String initials;
   final bool selected;
+  final String? statusLabel;
   final VoidCallback onTap;
 
   const _DinerToggleRow({
@@ -305,6 +417,7 @@ class _DinerToggleRow extends StatelessWidget {
     required this.initials,
     required this.selected,
     required this.onTap,
+    this.statusLabel,
   });
 
   String _tag(BuildContext context) {
@@ -327,98 +440,61 @@ class _DinerToggleRow extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(
-          surface: selected ? PressSurface.raised : PressSurface.base,
+          surface: PressSurface.base,
           child: InkWell(
             onTap: onTap,
-            // Who eats is a chosen state: surface.selected with the real
-            // text.primary left border, never a faded row.
-            // An unchosen row keeps full text.
-            child: Ink(
-              decoration: BoxDecoration(
-                color: selected ? cs.surfaceContainerHighest : cs.surface,
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    left: BorderSide(
-                      color: selected ? cs.onSurface : cs.outlineVariant,
-                      width: 4,
-                    ),
-                    bottom: BorderSide(
-                      color: selected
-                          ? context.modeColors.recipeCardBottomBorder
-                          : cs.outlineVariant,
-                      width: 3,
-                    ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: Row(
+                children: [
+                  FamilyAvatar(
+                    name: member.displayName,
+                    initials: initials,
+                    color: parseAvatarColor(context, member.avatarColor),
+                    size: 28,
+                    round: true,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    FamilyAvatar(
-                      name: member.displayName,
-                      initials: initials,
-                      color: parseAvatarColor(context, member.avatarColor),
-                      size: 40,
-                    ),
-                    const SizedBox(width: AppDimensions.space12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            member.displayName,
-                            style: AppTextStyles.titleSmall,
+                  const SizedBox(width: AppDimensions.space12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          member.displayName,
+                          style: AppTextStyles.labelLargeBold.copyWith(
+                            color: cs.onSurface,
                           ),
-                          const SizedBox(height: AppDimensions.space4),
+                        ),
+                        if (statusLabel == null)
                           Text(
                             _tag(context),
                             style: AppTextStyles.captionBold.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
                           ),
-                        ],
+                      ],
+                    ),
+                  ),
+                  if (statusLabel != null) ...[
+                    Text(
+                      statusLabel!,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
-                    _CheckBox(selected: selected),
+                    const SizedBox(width: AppDimensions.space12),
                   ],
-                ),
+                  ExcludeSemantics(
+                    child: IgnorePointer(
+                      child: Checkbox(value: selected, onChanged: (_) {}),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CheckBox extends StatelessWidget {
-  final bool selected;
-  const _CheckBox({required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 26,
-      height: 26,
-      decoration: BoxDecoration(
-        color: selected ? cs.primary : Colors.transparent,
-        border: Border.all(
-          color: selected ? cs.primary : cs.outlineVariant,
-          width: 2,
-        ),
-      ),
-      child: selected
-          ? ButleryIcon(
-              ButleryIcons.check,
-              size: AppDimensions.iconSize18,
-              color: cs.onPrimary,
-            )
-          : null,
     );
   }
 }

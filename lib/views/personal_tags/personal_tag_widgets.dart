@@ -12,7 +12,11 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
@@ -32,8 +36,16 @@ class PersonalTagRow extends StatelessWidget {
     final ruleCount = tag.rules.length;
     final enabledRuleCount = tag.rules.where((r) => r.isEnabled).length;
 
+    final cs = Theme.of(context).colorScheme;
+    final summary = subtitleFor(
+      context,
+      usageCount: usageCount,
+      ruleCount: ruleCount,
+      enabledRuleCount: enabledRuleCount,
+    );
     return Semantics(
       selected: inSelectionMode ? isSelected : null,
+      button: true,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         // BUT-948: long-press stays a shortcut into multi-select; the Välj
@@ -41,27 +53,75 @@ class PersonalTagRow extends StatelessWidget {
         onLongPress: inSelectionMode
             ? null
             : () => selection.enterSelection(tag.id),
-        child: ButleryListRow(
-          label: tag.name,
-          subtitle: subtitleFor(
-            context,
-            usageCount: usageCount,
-            ruleCount: ruleCount,
-            enabledRuleCount: enabledRuleCount,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
           ),
-          leading: inSelectionMode
-              ? (isSelected ? ButleryIcons.checkSquare : ButleryIcons.square)
-              : null,
-          onTap: inSelectionMode
-              ? () => selection.toggle(tag.id)
-              : () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => TagDetailView(tagId: tag.id),
-                  ),
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: inSelectionMode
+                  ? () => selection.toggle(tag.id)
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TagDetailView(tagId: tag.id),
+                      ),
+                    ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: AppDimensions.minTouchTarget,
                 ),
+                child: Row(
+                  children: [
+                    if (inSelectionMode)
+                      ButleryIcon(
+                        isSelected
+                            ? ButleryIcons.checkSquare
+                            : ButleryIcons.square,
+                      )
+                    else
+                      _TagDot(color: _dotColor(cs, tag.id)),
+                    const SizedBox(width: AppDimensions.space12),
+                    Expanded(
+                      child: Text(
+                        tag.name,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.space8),
+                    Flexible(
+                      child: Text(
+                        summary,
+                        textAlign: TextAlign.end,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    if (!inSelectionMode) ...[
+                      const SizedBox(width: AppDimensions.space8),
+                      ButleryIcon(
+                        ButleryIcons.chevronRight,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  /// The tag's dot: one of five steps from ink to muted, fixed by the tag's id
+  /// so it stays the same between visits.
+  static Color _dotColor(ColorScheme cs, String tagId) {
+    final step = tagId.codeUnits.fold<int>(0, (sum, u) => sum + u) % 5;
+    return Color.lerp(cs.onSurface, cs.outline, step / 4)!;
   }
 
   static String subtitleFor(
@@ -85,6 +145,23 @@ class PersonalTagRow extends StatelessWidget {
       );
     }
     return parts.isEmpty ? context.l10n.personalTagNoUsage : parts.join(' · ');
+  }
+}
+
+class _TagDot extends StatelessWidget {
+  const _TagDot({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Container(
+        width: AppDimensions.space12,
+        height: AppDimensions.space12,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+    );
   }
 }
 
@@ -172,29 +249,67 @@ class PersonalTagGroupSection extends StatelessWidget {
   }
 }
 
-/// Tags no recipe uses, ended by the row that deletes them all.
+/// Tags no recipe uses, drawn as pills under a heading that deletes them all.
 class UnusedTagsSection extends StatelessWidget {
   const UnusedTagsSection({
     super.key,
     required this.unusedTags,
     required this.onDeleteAll,
-    required this.viewModel,
   });
 
   final List<PersonalTag> unusedTags;
   final VoidCallback onDeleteAll;
-  final PersonalTagViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    return PersonalTagSection(
-      title: context.l10n.personalTagUnusedSection(unusedTags.length),
-      tags: unusedTags,
-      viewModel: viewModel,
-      extraRows: [
-        ButleryListRow.danger(
-          label: context.l10n.personalTagDeleteUnusedAction,
-          onTap: onDeleteAll,
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppDimensions.space16),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: cs.outlineVariant)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.personalTagUnusedHeading(unusedTags.length),
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: onDeleteAll,
+                child: Text(
+                  l10n.personalTagDeleteAllShort,
+                  style: AppTextStyles.labelLarge.copyWith(color: cs.error),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Wrap(
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
+          children: [
+            for (final tag in unusedTags)
+              PressFill(
+                surface: PressSurface.base,
+                child: ActionChip(
+                  key: ValueKey(tag.id),
+                  label: Text(tag.name),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TagDetailView(tagId: tag.id),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );

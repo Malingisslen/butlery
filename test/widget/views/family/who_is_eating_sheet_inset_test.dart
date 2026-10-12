@@ -92,9 +92,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    final checkBoxes = find.byWidgetPredicate(
-      (w) => w.runtimeType.toString() == '_CheckBox',
-    );
+    final checkBoxes = find.byType(Checkbox);
     expect(
       checkBoxes.evaluate().length,
       greaterThanOrEqualTo(2),

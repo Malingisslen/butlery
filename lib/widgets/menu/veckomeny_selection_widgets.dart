@@ -1,5 +1,5 @@
 /// Presentational widgets extracted from veckomeny_view (BUT-1258): the
-/// view-mode tabs, the live cooking-session presence card, and the
+/// view-mode switch, the live cooking-session presence card, and the
 /// generating panel.
 library;
 
@@ -16,29 +16,20 @@ import 'package:butlery/services/unified/operations/cooking/cooking_session_modu
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
 
-/// The list/calendar tab row under the week menu's root bar.
-///
-/// Skarmar v12 del 1 #veckomeny and #tomvecka draw it as two tabs under the
-/// title, "Lista" and "Kalender": the chosen one 13/700 in text.primary with
-/// a 3 px saffron line under it, the other 13/600 in text.secondary, and a
-/// hairline in border.subtle under the row. The saffron line is the plate
-/// line's "vald flik" (Komponentark v1:844), so it is the token
-/// progressIndicator: #CE7C1E in light and dark. Each tab is at least 48 dp
-/// tall and carries the focus ring (Grafisk manual v6:381; tokens.json:485-492).
-class VeckomenyViewModeToggle extends StatelessWidget
-    implements PreferredSizeWidget {
+/// The list/calendar switch under the week menu's root bar: the component
+/// sheet's segment, the chosen half filled (the approved week menu picture,
+/// design/skiss-mot-app/21-veckomeny.png). The shape is [ButlerySegmentSwitch]'s,
+/// as Hem's "Alla recept | Kokböcker" is.
+class VeckomenyViewModeToggle extends StatelessWidget {
   final VeckomenyViewMode mode;
   final ValueChanged<VeckomenyViewMode> onSelect;
 
@@ -48,133 +39,15 @@ class VeckomenyViewModeToggle extends StatelessWidget
     required this.onSelect,
   });
 
-  /// The drawn underline under the chosen tab (#veckomeny: `height:3px`).
-  static const double indicatorHeight = 3;
-
-  /// The underline's key, for tests.
-  static const Key indicatorKey = ValueKey<String>(
-    'veckomenyViewModeToggle.indicator',
-  );
-
-  /// The text scale the height is reserved for, the same 200 % ceiling as
-  /// [ButleryTopBar.preferredSize], which adds this height to its own.
-  static const double _ceilingTextScale = 2.0;
-
-  /// The row's height at the ceiling: a tab's label line and vertical
-  /// padding, never under the tab's minimum.
-  @override
-  Size get preferredSize {
-    final label = AppTextStyles.bodySmall;
-    final line =
-        ((label.fontSize ?? 14) * (label.height ?? 1.0) * _ceilingTextScale)
-            .ceilToDouble();
-    final tab = line + 2 * AppDimensions.space12;
-    final row = tab > ButleryControlFocus.minSize
-        ? tab
-        : ButleryControlFocus.minSize;
-    return Size.fromHeight(row + 1);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: ButleryTopBar.sideMargin(context),
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: DecoratedBox(
-          // border.subtle: #CCD1C2 light, rgba(245,244,237,0.18) dark
-          // (tokens.json border.subtle; outlineVariant in both schemes).
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-          ),
-          // At 200 % text the two tabs are wider than a 320–360 dp phone
-          // (BUT-2341), so the row scrolls sideways rather than overflowing.
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              spacing: AppDimensions.space16,
-              children: [
-                _tab(
-                  context,
-                  label: context.l10n.weeklyMenuToggleList,
-                  active: mode == VeckomenyViewMode.lista,
-                  onTap: () => onSelect(VeckomenyViewMode.lista),
-                ),
-                _tab(
-                  context,
-                  label: context.l10n.weeklyMenuToggleCalendar,
-                  active: mode == VeckomenyViewMode.kalender,
-                  onTap: () => onSelect(VeckomenyViewMode.kalender),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tab(
-    BuildContext context, {
-    required String label,
-    required bool active,
-    required VoidCallback onTap,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      selected: active,
-      child: ButleryControlFocus(
-        child: PressFill(
-          surface: PressSurface.base,
-          child: InkWell(
-            onTap: onTap,
-            child: ButleryControlFocus.box(
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.space4,
-                      vertical: AppDimensions.space12,
-                    ),
-                    child: Text(
-                      label,
-                      style:
-                          (active
-                                  ? AppTextStyles.bodySmallBold
-                                  : AppTextStyles.bodySmall)
-                              .copyWith(
-                                // text.primary / text.secondary (onSurface /
-                                // onSurfaceVariant), both modes.
-                                color: active
-                                    ? cs.onSurface
-                                    : cs.onSurfaceVariant,
-                              ),
-                    ),
-                  ),
-                  if (active)
-                    PositionedDirectional(
-                      start: 0,
-                      end: 0,
-                      bottom: 0,
-                      child: SizedBox(
-                        key: indicatorKey,
-                        height: indicatorHeight,
-                        child: ColoredBox(
-                          color: context.modeColors.progressIndicator,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return ButlerySegmentSwitch<VeckomenyViewMode>(
+      choices: [
+        (VeckomenyViewMode.lista, context.l10n.weeklyMenuToggleList),
+        (VeckomenyViewMode.kalender, context.l10n.weeklyMenuToggleCalendar),
+      ],
+      selected: mode,
+      onChanged: onSelect,
     );
   }
 }
@@ -360,6 +233,8 @@ class VeckomenyGenerateButton extends StatelessWidget {
     required this.busy,
     required this.busyLabel,
     required this.onGenerate,
+    this.reasonBelow = true,
+    this.expand = false,
   });
 
   final String label;
@@ -369,10 +244,16 @@ class VeckomenyGenerateButton extends StatelessWidget {
   /// Null while there is no prompt to generate from.
   final VoidCallback? onGenerate;
 
+  /// Whether the offline reason stands under the button. A button that sits
+  /// beside a field leaves the reason to the row, which gives it the full
+  /// width ([VeckomenyOfflineReason]).
+  final bool reasonBelow;
+
+  /// The button takes the full width, under a field that has no room for it.
+  final bool expand;
+
   /// The reason line under the switched-off button, for tests.
-  static const Key offlineReasonKey = ValueKey<String>(
-    'veckomeny-generate-offline-reason',
-  );
+  static const Key offlineReasonKey = VeckomenyOfflineReason.reasonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -385,31 +266,49 @@ class VeckomenyGenerateButton extends StatelessWidget {
             busy: busy,
             busyLabel: busyLabel,
             onPressed: isOnline ? onGenerate : null,
+            expand: expand,
+            // Beside a field the style's full-width minimum has no room.
+            minimumSize: reasonBelow
+                ? null
+                : const Size(0, AppDimensions.minTouchTarget),
           ),
         );
-        if (isOnline) return button;
-        final cs = Theme.of(context).colorScheme;
+        if (isOnline || !reasonBelow) return button;
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             button,
             const SizedBox(height: AppDimensions.space8),
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                context.l10n.menuGenerateOfflineReason,
-                key: offlineReasonKey,
-                textAlign: TextAlign.center,
-                // text.secondary: #5B6959 light, its dark value in dark
-                // (onSurfaceVariant in both schemes).
-                style: AppTextStyles.captionBase.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
+            const VeckomenyOfflineReason(),
           ],
         );
       },
+    );
+  }
+}
+
+/// Why Generera is switched off offline, in words (P6-U01).
+class VeckomenyOfflineReason extends StatelessWidget {
+  const VeckomenyOfflineReason({super.key});
+
+  static const Key reasonKey = ValueKey<String>(
+    'veckomeny-generate-offline-reason',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Text(
+        context.l10n.menuGenerateOfflineReason,
+        key: reasonKey,
+        textAlign: TextAlign.center,
+        // text.secondary: #5B6959 light, its dark value in dark
+        // (onSurfaceVariant in both schemes).
+        style: AppTextStyles.captionBase.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }

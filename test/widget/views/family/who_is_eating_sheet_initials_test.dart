@@ -92,9 +92,11 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ma'), findsOneWidget);
-    expect(find.text('Mi'), findsOneWidget);
-    expect(find.text('EB'), findsOneWidget);
+    // Each member is drawn twice: in the face stack of the summary and in
+    // their own row. Three distinct pairs, never "MA" for two of them.
+    expect(find.text('Ma'), findsNWidgets(2));
+    expect(find.text('Mi'), findsNWidgets(2));
+    expect(find.text('EB'), findsNWidgets(2));
     expect(find.text('MA'), findsNothing);
   });
 
