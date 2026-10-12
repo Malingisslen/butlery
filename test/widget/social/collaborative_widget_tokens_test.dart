@@ -11,7 +11,6 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
-import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -22,30 +21,11 @@ import 'package:butlery/widgets/social/collaborative/components/collaborative_li
 import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_permissions_widgets.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_status_widgets.dart';
-import 'package:butlery/widgets/social/groups/group_shared_content_section.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 import 'package:butlery/widgets/social/groups/shared_content_card.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/social_factory.dart';
-
-class _FakeContentService extends Fake implements GroupSharedContentService {
-  _FakeContentService(this.items);
-  final List<SharedContentItem> items;
-
-  @override
-  Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) =>
-      Stream.value(items);
-
-  @override
-  Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) =>
-      Stream.value(const []);
-
-  @override
-  Stream<List<SharedContentItem>> streamSharedShoppingLists(
-    FriendCategory group,
-  ) => Stream.value(const []);
-}
 
 SharedContentItem _item(String type) => SharedContentItem(
   id: 'i-$type',
@@ -371,27 +351,6 @@ void main() {
           );
           expect(avatar.backgroundColor, cs.surface, reason: type);
         }
-      });
-
-      testWidgets('shared-content section: the count pill is the raised '
-          'surface', (tester) async {
-        TestServiceLocator.registerMock<GroupSharedContentService>(
-          _FakeContentService([_item('recipe'), _item('recipe')]),
-        );
-        await _pump(
-          tester,
-          theme,
-          SizedBox(
-            height: 600,
-            child: GroupSharedContentSection(
-              group: SocialFactory.createFriendCategory(name: 'Klubben'),
-            ),
-          ),
-        );
-        await tester.pump();
-        await tester.pump();
-        final decoration = _decorationAbove(tester, find.text('2'));
-        expect(decoration.color, cs.surfaceContainerHighest);
       });
     });
   }

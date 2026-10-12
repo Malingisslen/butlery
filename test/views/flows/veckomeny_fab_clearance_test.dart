@@ -1,5 +1,6 @@
-/// BUT-2275 finding 2: on the generated list, the floating "Till inköpslista"
-/// button covered "Jag placerar själv", the second placement button.
+/// BUT-2275 finding 2: on the generated list, the "Till inköpslista" button
+/// covered "Jag placerar själv", the second placement button. It now stands in
+/// the footer beside it, and the three must not overlap.
 library;
 
 import 'package:clock/clock.dart';
@@ -33,7 +34,7 @@ void main() {
 
   tearDown(() => h.tearDown());
 
-  testWidgets('the shopping button leaves both placement buttons free', (
+  testWidgets('the shopping button sits clear of both placement buttons', (
     tester,
   ) async {
     await withClock(Clock.fixed(flowMonday), () async {
@@ -44,7 +45,10 @@ void main() {
       final fab = tester.getRect(
         find.ancestor(
           of: find.text('Till inköpslista'),
-          matching: find.byType(ElevatedButton),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is ElevatedButton || w is OutlinedButton || w is FilledButton,
+          ),
         ),
       );
       for (final label in [

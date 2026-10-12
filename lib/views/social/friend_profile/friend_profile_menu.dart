@@ -8,10 +8,10 @@ import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-enum FriendProfileMenuAction { shareProfile, report, block, removeFriend }
+enum FriendProfileMenuAction { shareProfile, report, block }
 
-/// The profile's only top-bar action: ⋯, opening the sheet of the rarer and
-/// the destructive things. The sheet closes first, then the page acts.
+/// The profile's only top-bar action: ⋯, opening the sheet of the rarer things
+/// (removing the friend is the red line at the foot of the page). The sheet closes first, then the page acts.
 class FriendProfileMenuButton extends StatelessWidget {
   const FriendProfileMenuButton({
     super.key,
@@ -53,12 +53,6 @@ class FriendProfileMenuButton extends StatelessWidget {
             onTap: () =>
                 Navigator.of(sheetContext).pop(FriendProfileMenuAction.block),
           ),
-        ButleryListRow.danger(
-          label: l10n.friendProfileRemoveFriend,
-          onTap: () => Navigator.of(
-            sheetContext,
-          ).pop(FriendProfileMenuAction.removeFriend),
-        ),
       ],
     );
     if (action != null) onAction(action);

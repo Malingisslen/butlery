@@ -12,10 +12,6 @@ final _fab = RegExp(r'(?<![\w.])FloatingActionButton(\.\w+)?\(');
 
 /// InkWells per file that carry no fill of their own.
 const _waiting = <String, int>{
-  // Rests on surface.raised: the theme's default fill is the step on raised.
-  'lib/views/admin/feedback_inbox_view.dart': 1,
-  'lib/views/social/friend_requests/friend_request_card.dart': 2,
-  'lib/views/social/public_profile_view.dart': 1,
   'lib/widgets/common/cards/selection_card.dart': 1,
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
   'lib/widgets/common/friends/category_display_widgets.dart': 2,
@@ -24,7 +20,6 @@ const _waiting = <String, int>{
   'lib/widgets/image/components/empty_image_state.dart': 1,
   'lib/widgets/image/image_gallery_widget.dart': 1,
   'lib/widgets/image/image_picker_widget.dart': 1,
-  'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/social/groups/shared_content_card.dart': 1,
   // A tab with its own drawn press (paper at the on-ink 0.18 step).
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 1,

@@ -237,7 +237,7 @@ void main() {
       final report = _report(action: ModeratorDecision.contentRemoved);
       await pumpView(tester, report);
 
-      await tester.tap(find.text(_sv.moderatorActionClose));
+      await tester.tap(find.byTooltip(_sv.moderatorCloseTooltip));
       await tester.pumpAndSettle();
       await tester.tap(find.text(_sv.motivationRemovedCopyright));
       await tester.pump();
@@ -259,7 +259,7 @@ void main() {
       final report = _report();
       await pumpView(tester, report);
 
-      await tester.tap(find.text(_sv.moderatorActionClose));
+      await tester.tap(find.byTooltip(_sv.moderatorCloseTooltip));
       await tester.pumpAndSettle();
       expect(find.text(_sv.motivationKeptNoBreach), findsOneWidget);
       expect(find.text(_sv.motivationRemovedSpam), findsNothing);
@@ -281,7 +281,7 @@ void main() {
       final report = _report(reason: 'misattribution');
       await pumpView(tester, report);
 
-      await tester.tap(find.text(_sv.moderatorActionClose));
+      await tester.tap(find.byTooltip(_sv.moderatorCloseTooltip));
       await tester.pumpAndSettle();
 
       expect(find.text(_sv.moderatorCloseChoose), findsNothing);
@@ -291,7 +291,7 @@ void main() {
     testWidgets('dismissing the sheet closes nothing', (tester) async {
       await pumpView(tester, _report());
 
-      await tester.tap(find.text(_sv.moderatorActionClose));
+      await tester.tap(find.byTooltip(_sv.moderatorCloseTooltip));
       await tester.pumpAndSettle();
       await tester.tap(find.text(_sv.commonCancel));
       await tester.pumpAndSettle();

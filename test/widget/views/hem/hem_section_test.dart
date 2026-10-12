@@ -23,6 +23,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -237,6 +238,50 @@ void main() {
       expect(calls.cooked.single.id, 'r1');
       await tester.tap(find.byKey(HemTonightCard.swapKey));
       expect(calls.openedMenu, 1);
+      vm.dispose();
+    });
+
+    testWidgets('an empty week shows a suggestion; Byt förslag changes it, '
+        'not the menu', (tester) async {
+      Recipe pick(String id) =>
+          (RecipeBuilder()
+                ..id = id
+                ..title = 'Förslag $id'
+                ..timeMinutes = 30
+                ..portions = 4)
+              .build();
+      final vm = HemViewModel(
+        readWeek: (_) async =>
+            WeeklyMenuPlanRead(plan: _plan(const []), readFailed: false),
+        recipeById: (_) => null,
+        pantryIngredientIds: () async => const {},
+        isOnline: () => true,
+        library: () => [pick('a'), pick('b')],
+        householdPrefs: () async => UserAllergenPreferences.none,
+      );
+      await withClock(Clock.fixed(_now), vm.load);
+      final calls = _Calls();
+      await tester.pumpWidget(_app(_section(vm, calls)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FÖRSLAG · 30 MIN · 4 PORT.'), findsOneWidget);
+      expect(find.textContaining('IKVÄLL'), findsNothing);
+      final first = vm.hero?.recipe?.id;
+      expect(
+        find.descendant(
+          of: find.byKey(HemTonightCard.swapKey),
+          matching: find.text('Byt förslag'),
+        ),
+        findsOneWidget,
+      );
+      await withClock(Clock.fixed(_now), () async {
+        await tester.tap(find.byKey(HemTonightCard.swapKey));
+        await tester.pumpAndSettle();
+      });
+      expect(vm.hero?.recipe?.id, isNot(first));
+      expect(calls.openedMenu, 0);
+      await tester.tap(find.byKey(HemTonightCard.startCookingKey));
+      expect(calls.cooked.single.id, vm.hero?.recipe?.id);
       vm.dispose();
     });
 

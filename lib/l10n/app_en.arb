@@ -57,7 +57,9 @@
   "authResetPassword": "Reset password",
   "authForgotPassword": "Forgot password?",
   "authEnterPassword": "Enter your password",
-  "authPasswordMinLength": "Min 6 characters",
+  "authPasswordChoose": "Choose a strong password",
+  "passwordRuleHint": "At least twelve characters, or three words you remember. The rule stands here, not as an error after you have typed.",
+  "guestUpgradeNameHint": "What should I call you?",
   "authResetPasswordInstructions": "Enter your email address and we'll send you instructions to reset your password.",
   "imageAddImage": "Add image",
   "commentDeletedUndoMessage": "Comment deleted",
@@ -213,7 +215,7 @@
   "@menuAutoPlacedChangeAction": {
     "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
   },
-  "menuPlacementTitle": "place in the week",
+  "menuPlacementTitle": "Place in the week",
   "@menuPlacementTitle": {
     "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
   },
@@ -229,7 +231,7 @@
       }
     }
   },
-  "menuPlacementTrayLabel": "Left to place ({count})",
+  "menuPlacementTrayLabel": "{count} left to place",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
@@ -238,7 +240,7 @@
       }
     }
   },
-  "menuPlacementHint": "Tap a free cell to place {recipe}.",
+  "menuPlacementHint": "Tap a free place for {recipe}. Lunch and dinner take one dish, other takes several.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
@@ -247,7 +249,7 @@
       }
     }
   },
-  "menuPlacementHintSelect": "Select a recipe below to place it.",
+  "menuPlacementHintSelect": "Select a dish below to place it. Lunch and dinner take one dish, other takes several.",
   "@menuPlacementHintSelect": {
     "description": "BUT-1241: hint banner when no tray recipe is selected."
   },
@@ -255,7 +257,7 @@
   "@menuPlacementPlaceHere": {
     "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
   },
-  "menuPlacementAutoRest": "Place the rest automatically",
+  "menuPlacementAutoRest": "Randomise the rest",
   "@menuPlacementAutoRest": {
     "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
   },
@@ -415,7 +417,6 @@
   "validationEmailRequired": "Email required",
   "validationPasswordRequired": "Password required",
   "validationInvalidAmount": "Invalid amount",
-  "validationPasswordTooShort": "Password must be at least 6 characters",
   "validationGenericRequired": "This field is required",
   "validationEmailInvalid": "Invalid email address",
   "errorGeneric": "An error occurred. Please try again.",
@@ -1416,7 +1417,7 @@
       }
     }
   },
-  "personalTagRuleCount": "{count} rules",
+  "personalTagRuleCount": "{count, plural, =1{1 rule} other{{count} rules}}",
   "@personalTagRuleCount": {
     "placeholders": {
       "count": {
@@ -1424,7 +1425,7 @@
       }
     }
   },
-  "personalTagRuleCountActive": "{enabled}/{total} rules active",
+  "personalTagRuleCountActive": "{enabled} of {total} {total, plural, =1{rule} other{rules}} on",
   "@personalTagRuleCountActive": {
     "placeholders": {
       "enabled": {
@@ -2577,7 +2578,35 @@
       }
     }
   },
-  "groupSharedContent": "Shared content",
+  "groupSharedRecipesLabel": "{count, plural, =1{recipe} other{recipes}}",
+  "@groupSharedRecipesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedMenusLabel": "{count, plural, =1{menu} other{menus}}",
+  "@groupSharedMenusLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedListsLabel": "{count, plural, =1{shopping list} other{shopping lists}}",
+  "@groupSharedListsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupInvitedLabel": "Invited",
+  "groupInviteLink": "+ Invite",
+  "groupMembersHeading": "Members",
+  "groupShareSheetButton": "Share a recipe, menu or list",
+  "groupSharedContent": "Shared in the group",
   "groupShareShoppingList": "Share shopping list",
   "groupShoppingListViewComingSoon": "Shopping list view: {title} (coming soon)",
   "@groupShoppingListViewComingSoon": {
@@ -2943,7 +2972,7 @@
       }
     }
   },
-  "shareGroupMembersCount": "{count} members",
+  "shareGroupMembersCount": "{count, plural, =1{1 member} other{{count} members}}",
   "@shareGroupMembersCount": {
     "placeholders": {
       "count": {
@@ -3186,11 +3215,12 @@
       }
     }
   },
+  "messagingNewGroupChat": "New group chat",
   "messagingNoFriendsAvailable": "No friends available",
   "messagingNoFriendsFound": "No friends found",
   "messagingSearchFriends": "Search friends...",
   "messagingSelectAtLeastTwoMembers": "Select at least 2 members below",
-  "messagingSelectedMembers": "Selected members ({count})",
+  "messagingSelectedMembers": "Participants · {count} selected",
   "@messagingSelectedMembers": {
     "placeholders": {
       "count": {
@@ -3357,12 +3387,6 @@
   "importFromFile": "Import from file",
   "importFromFileTitle": "Import recipes from CSV or Excel",
   "importFromSocialMedia": "From social media",
-  "importLinkOrCaptionLabel": "Link or caption",
-  "importPasteHelp": "Paste the link to the post, or the whole caption if you have already copied it.",
-  "importCaptionWarningLead": "A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ",
-  "importCaptionWarningEmphasis": "you will often need to fix something",
-  "importVideoNotRead": "The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.",
-  "importFetchRecipe": "Get the recipe",
   "importImporting": "Importing...",
   "importImportingRecipes": "Importing {count} recipes...",
   "@importImportingRecipes": {
@@ -3443,8 +3467,8 @@
     }
   },
   "indicatorBackOnline": "Back online",
-  "householdToggle": "Mark as household",
-  "householdToggleDescription": "Household allergens are combined for menu planning",
+  "householdToggle": "This is the household",
+  "householdToggleDescription": "The household's allergens count in the menu",
   "householdJoinTitle": "Join the household",
   "@householdJoinTitle": {
     "description": "BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet"
@@ -3981,6 +4005,10 @@
       }
     }
   },
+  "groupAlreadyMember": "Already a member",
+  "@groupAlreadyMember": {
+    "description": "Row label for a friend who already belongs to the group"
+  },
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupSharedContentLoadFailed": "The shared content could not be loaded.",
   "@groupSharedContentLoadFailed": {
@@ -4261,7 +4289,7 @@
   "profileAddAvatar": "Add avatar",
   "profileAvatarRemoved": "Avatar removed",
   "profileAvatarUploaded": "Avatar uploaded.",
-  "profileBio": "Bio",
+  "profileBio": "About me",
   "profileBioHint": "Describe yourself as a cook (max 160 characters)",
   "profileNoBio": "No bio yet",
   "profileChangeAvatar": "Change avatar",
@@ -4276,6 +4304,14 @@
   "profileCuisineAffinitiesHint": "Choose up to 5 cuisines",
   "profileCuisineAffinitiesMax": "Maximum 5 cuisines selected",
   "profileDisplayName": "Display name",
+  "profileChangePhoto": "Change picture",
+  "@profileChangePhoto": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar"
+  },
+  "profileDisplayNameAvailable": "Available",
+  "@profileDisplayNameAvailable": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free"
+  },
   "profileDisplayNameHint": "Your name as others see it",
   "profileFormReset": "Form reset",
   "profileLanguage": "Language",
@@ -4289,10 +4325,10 @@
   },
   "profileLoading": "Loading profile …",
   "profileNewUser": "New user",
-  "profilePrivacySettings": "Privacy settings",
+  "profilePrivacySettings": "Privacy",
   "profileResetChanges": "Reset changes",
   "profileSaved": "Profile saved.",
-  "profileSaveProfile": "Save profile",
+  "profileSaveProfile": "Save changes",
   "profileSearchableByEmail": "Searchable by email",
   "profileSearchableByEmailDescription": "Others can find you through your email address",
   "profileShowOnlineStatus": "Show online status",
@@ -4960,7 +4996,39 @@
   "sharedNoShoppingLists": "No shared shopping lists",
   "sharedNoShoppingListsDescription": "Shopping lists shared with you will appear here",
   "sharedSearchHint": "Search shared content...",
-  "sharedTabRecipes": "Recipes ({count})",
+  "sharedSaveAction": "Save",
+  "@sharedSaveAction": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own"
+  },
+  "sharedSavedState": "Saved",
+  "@sharedSavedState": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved"
+  },
+  "sharedFromNameAgo": "from {name} · {time}",
+  "@sharedFromNameAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item",
+    "placeholders": {"name": {"type": "String"}, "time": {"type": "String"}}
+  },
+  "sharedSharedAgo": "shared {time}",
+  "@sharedSharedAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sharedNewMark": "new",
+  "@sharedNewMark": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item"
+  },
+  "sharedFromHeading": "From {name}",
+  "@sharedFromHeading": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "sharedFromSummary": "{count, plural, one{{count} recipe} other{{count} recipes}} · latest {time}",
+  "@sharedFromSummary": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading",
+    "placeholders": {"count": {"type": "int"}, "time": {"type": "String"}}
+  },
+  "sharedTabRecipes": "Recipes · {count}",
   "@sharedTabRecipes": {
     "placeholders": {
       "count": {
@@ -4968,7 +5036,7 @@
       }
     }
   },
-  "sharedTabMenus": "Menus ({count})",
+  "sharedTabMenus": "Menus · {count}",
   "@sharedTabMenus": {
     "placeholders": {
       "count": {
@@ -4976,7 +5044,7 @@
       }
     }
   },
-  "sharedTabShoppingLists": "Shopping lists ({count})",
+  "sharedTabShoppingLists": "Lists · {count}",
   "@sharedTabShoppingLists": {
     "placeholders": {
       "count": {
@@ -5115,15 +5183,6 @@
   "shoppingDeleteList": "Delete list",
   "shoppingDescriptionHint": "Add a description...",
   "shoppingDescriptionOptional": "Description (optional)",
-  "shoppingNewSharedListTitle": "New shared list",
-  "shoppingSharedListNameLabel": "List name",
-  "shoppingShareWithHeading": "Share with",
-  "shoppingPermissionHeading": "Permission",
-  "shoppingPermissionCanEdit": "Can edit",
-  "shoppingPermissionReadOnlyTab": "Read only",
-  "shoppingPermissionCanEditHelp": "Everyone can add and tick off items in real time.",
-  "shoppingPermissionViewOnlyHelp": "The people you share with can see the list but not change it.",
-  "shoppingNoFriendsToShareWith": "You have no friends to share with yet.",
   "shoppingItemNameHint": "Item name...",
   "shoppingJustNow": "Just now",
   "shoppingListDetails": "List details",
@@ -5422,6 +5481,31 @@
   "socialFindFriends": "Find friends",
   "socialFriendsAndGroups": "Friends & groups",
   "socialGroups": "Groups",
+  "socialFriendsSection": "Friends · {count}",
+  "@socialFriendsSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSelect": "Select",
+  "socialRequestsIncomingSection": "Incoming · {count}",
+  "@socialRequestsIncomingSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSentSection": "Sent · {count}",
+  "@socialRequestsSentSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialIncoming": "Incoming",
   "socialLoadingRequests": "Loading requests …",
   "socialLoadingSentRequests": "Loading sent requests …",
@@ -6320,6 +6404,13 @@
   "adminPasswordLabel": "Password",
   "adminLoginFailed": "Login failed",
   "adminNotAuthorized": "You do not have access to the admin panel.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Signed in as {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Log out",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "No feedback yet",
@@ -8776,7 +8867,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Password must be at least 8 characters",
+  "validationPasswordRule": "The password needs at least twelve characters, or three words you remember.",
   "validationDisplayNameLabel": "Display name",
   "validationCommentLabel": "Comment",
   "validationAmountMustBePositive": "Amount must be a positive number",
@@ -9392,6 +9483,9 @@
   "legalCommunityGuidelines": "Community Guidelines",
   "legalOpenSourceLicenses": "Open Source Licenses",
   "authTermsAcceptPrefix": "I accept the ",
+  "authTermsConsentPrefix": "I accept the ",
+  "authTermsConsentTermsLink": "terms of use",
+  "authTermsConsentPrivacyLink": "privacy policy",
   "authTermsAcceptMiddle": " and ",
   "authTermsAcceptRequired": "You must accept the terms to create an account",
   "a11yTermsOfServiceLink": "Terms of service",
@@ -9851,9 +9945,41 @@
   "weeklyMenuPrevWeek": "Previous week",
   "weeklyMenuNextWeek": "Next week",
   "weeklyMenuTodayBadge": "Today",
+  "weeklyMenuNewMark": "new",
+  "weeklyMenuLegendNew": "new",
+  "weeklyMenuLegendAllergen": "can't eat",
+  "weeklyMenuLegendPresence": "home, if not everyone",
+  "a11yWeeklyMenuAddDish": "Add a dish for {slot} on {day}",
+  "@a11yWeeklyMenuAddDish": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yWeeklyMenuOpenOvrigt": "Show other dishes on {day}",
+  "@a11yWeeklyMenuOpenOvrigt": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "weeklyMenuEmptyTitle": "No plan yet",
   "weeklyMenuEmptyHint": "Generate a weekly menu from the prompt above and we'll lay out the days for you.",
   "weeklyMenuOvrigtAddMore": "+ add",
+  "weeklyMenuOvrigtSheetTitle": "Other dishes on {day}",
+  "@weeklyMenuOvrigtSheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOvrigtSheetAdd": "Add a dish",
   "weeklyMenuOverwriteConfirm": "This will replace your current plan. Continue?",
   "weeklyMenuLoadError": "Couldn't load the weekly menu",
   "weeklyMenuWeekLabel": "Week {weekNum} · {start}–{end}",
@@ -9862,6 +9988,25 @@
       "weekNum": {
         "type": "int"
       },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuWeekTitle": "Week {weekNum}",
+  "@weeklyMenuWeekTitle": {
+    "placeholders": {
+      "weekNum": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuWeekRange": "{start}–{end}",
+  "@weeklyMenuWeekRange": {
+    "placeholders": {
       "start": {
         "type": "String"
       },
@@ -11065,15 +11210,29 @@
       }
     }
   },
-  "whoAteSkip": "skip",
+  "whoAteSkip": "Skip",
   "a11yToggleDiner": "Mark as eating",
   "@a11yToggleDiner": {
     "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
   },
-  "menuPresenceSheetTitle": "who's home?",
-  "menuPresenceThisMeal": "this meal",
-  "menuPresenceWholeDay": "whole day",
+  "menuPresenceSheetTitle": "Who's home?",
+  "menuPresenceThisMeal": "This meal",
+  "menuPresenceWholeDay": "Whole day",
   "menuPresenceNobody": "nobody home",
+  "menuPresenceHome": "home",
+  "menuPresenceAway": "away",
+  "menuPresenceHomeSummary": "{home} home · {portions} servings",
+  "@menuPresenceHomeSummary": {
+    "placeholders": {
+      "home": {
+        "type": "int"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPresenceOpenRecipe": "Open the recipe",
   "menuPresencePortions": "{count} serv",
   "@menuPresencePortions": {
     "placeholders": {
@@ -11095,7 +11254,7 @@
   },
   "menuPresenceAfterGenerateNotice": "presence updated — planned meals stay put",
   "menuPresenceSummaryTitle": "who's home?",
-  "menuPresenceSummaryAllHome": "everyone home all week",
+  "menuPresenceSummaryAllHome": "Everyone home all week",
   "menuPresenceSummaryAway": "{names} away part of the week",
   "@menuPresenceSummaryAway": {
     "placeholders": {
@@ -11115,10 +11274,10 @@
       }
     }
   },
-  "familyRatingTitle": "what did you think?",
+  "familyRatingTitle": "What did you think?",
   "familyRatingIntro": "Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.",
   "familyRatingYou": "you",
-  "familyRatingSave": "save ratings",
+  "familyRatingSave": "Save",
   "familyRatingPrivateNote": "Your individual ratings are private — no one else sees who gave what. Each rating does, though, count toward the recipe's overall average.",
   "familyRatingManualButton": "Rate as a family",
   "familyRatingProxyNote": "entered by {name} · doesn't change their own rating",
@@ -11316,6 +11475,7 @@
   "@a11yShowVoters": {
     "description": "BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework."
   },
+  "a11yGroupMenuDishDetails": "Show proposal and votes",
   "groupMenuUnknownVoter": "Unknown member",
   "@groupMenuUnknownVoter": {
     "description": "BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed."
@@ -11620,6 +11780,18 @@
   "@menuPreviewTitle": {
     "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
   },
+  "menuPreviewSharedLine": "{name} shared the menu {menu} with you · read only",
+  "@menuPreviewSharedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "menu": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPreviewDecline": "Decline",
   "emailVerificationResendFailed": "The verification email could not be sent.",
   "@emailVerificationResendFailed": {
     "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."
@@ -12641,23 +12813,23 @@
   "@recipeSuggestionTitle": {
     "description": "P5-U27b: title of the view that shows one suggestion."
   },
-  "recipeSuggestionIntroOwner": "{name} suggests this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroOwner": "{name} suggests a change to {title}. Your recipe only changes if you use the suggestion.",
   "@recipeSuggestionIntroOwner": {
-    "description": "P5-U27b: intro line for the owner; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner; name = suggester, title = the recipe.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMine": "You suggested this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroMine": "You suggested a change to {title}. The recipe only changes if the owner uses the suggestion.",
   "@recipeSuggestionIntroMine": {
-    "description": "P5-U27b: intro line for the suggester; date = when the 7 days end.",
+    "description": "Intro line for the suggester; title = the recipe.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -12666,9 +12838,9 @@
   "@recipeSuggestionSuggestedLabel": {
     "description": "P5-U27b: label over the suggested value of a field."
   },
-  "recipeSuggestionCurrentLabel": "Recipe now",
+  "recipeSuggestionCurrentLabel": "Now",
   "@recipeSuggestionCurrentLabel": {
-    "description": "P5-U27b: label over the recipe's current value of a field."
+    "description": "Label over the recipe's current value of a field."
   },
   "recipeSuggestionAccept": "Use the suggestion",
   "@recipeSuggestionAccept": {
@@ -13172,23 +13344,23 @@
       }
     }
   },
-  "recipeSuggestionIntroOwnerUpdated": "{name} has updated their suggestion to this. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroOwnerUpdated": "{name} has updated their suggestion for {title}. Your recipe only changes if you use the suggestion.",
   "@recipeSuggestionIntroOwnerUpdated": {
-    "description": "Q6-12 = B: intro line for the owner when the suggestion replaced an earlier one; name = suggester, date = when the 7 days end.",
+    "description": "Intro line for the owner when the suggestion replaced an earlier one.",
     "placeholders": {
       "name": {
         "type": "String"
       },
-      "date": {
+      "title": {
         "type": "String"
       }
     }
   },
-  "recipeSuggestionIntroMineUpdated": "You suggested this, and it replaced your earlier suggestion. The suggestion is kept until {date}.",
+  "recipeSuggestionIntroMineUpdated": "You suggested a change to {title}, and it replaced your earlier suggestion. The recipe only changes if the owner uses the suggestion.",
   "@recipeSuggestionIntroMineUpdated": {
-    "description": "Q6-12 = B: intro line for the suggester when the suggestion replaced an earlier one; date = when the 7 days end.",
+    "description": "Intro line for the suggester when the suggestion replaced an earlier one.",
     "placeholders": {
-      "date": {
+      "title": {
         "type": "String"
       }
     }
@@ -13275,6 +13447,14 @@
   "hemStartCooking": "Start cooking",
   "@hemStartCooking": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSuggestion": "Suggestion",
+  "@hemSuggestion": {
+    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3)."
+  },
+  "hemSwapSuggestion": "Change suggestion",
+  "@hemSwapSuggestion": {
+    "description": "HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3)."
   },
   "hemSwapDish": "Change dish",
   "@hemSwapDish": {
@@ -13684,7 +13864,7 @@
   },
   "setNewPasswordTitle": "Choose a new password",
   "setNewPasswordChecking": "Checking the link …",
-  "setNewPasswordForAccount": "For the account {email}.",
+  "setNewPasswordForAccount": "Choose a new password for {email}",
   "setNewPasswordRepeat": "Repeat new password",
   "setNewPasswordSave": "Save password",
   "setNewPasswordWeak": "The password is too simple. Choose a longer one, ideally with numbers and symbols.",
@@ -14158,6 +14338,125 @@
   "@friendProfileRemoveFriend": {
     "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet"
   },
+  "messagingAboutConversation": "About the conversation",
+  "@messagingAboutConversation": {
+    "description": "Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page"
+  },
+  "messagingConversationSubline": "{name} · {count, plural, =1{1 in the conversation} other{{count} in the conversation}}",
+  "@messagingConversationSubline": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messagingConversationNameRow": "Conversation name",
+  "@messagingConversationNameRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog"
+  },
+  "messagingAddSomeoneRow": "Add someone",
+  "@messagingAddSomeoneRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the friend picker"
+  },
+  "messagingInConversationSection": "In the conversation",
+  "@messagingInConversationSection": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title above the members"
+  },
+  "messagingMemberYou": "you",
+  "@messagingMemberYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list"
+  },
+  "messagingRemoveFromConversationTitle": "Remove {name} from the conversation?",
+  "@messagingRemoveFromConversationTitle": {
+    "description": "Skiss rättad spår 7 (2026-10-12): question in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveFromConversationBody": "{name} stops seeing new messages. What has already been written stays, and the account is not affected. You can invite them again.",
+  "@messagingRemoveFromConversationBody": {
+    "description": "Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingLeaveConversationRow": "Leave the conversation",
+  "@messagingLeaveConversationRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page"
+  },
+  "messagingLeaveConversationSub": "You stop seeing new messages. What you wrote stays.",
+  "@messagingLeaveConversationSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the leave row"
+  },
+  "recipeRowMinutes": "{minutes} min",
+  "@recipeRowMinutes": {
+    "description": "Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "publicProfileRecipeCount": "{count, plural, =1{1 public recipe} other{{count} public recipes}}",
+  "@publicProfileRecipeCount": {
+    "description": "Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendProfileBetweenYou": "Between you",
+  "@friendProfileBetweenYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title on the friend profile"
+  },
+  "friendProfileSharedWithYouSub": "Found under Shared with me",
+  "@friendProfileSharedWithYouSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row"
+  },
+  "friendProfilePublicRecipesSub": "Visible to everyone, not only you",
+  "@friendProfilePublicRecipesSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the public recipes row"
+  },
+  "friendProfileShareLinkRow": "Share a link to {owner} profile",
+  "@friendProfileShareLinkRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileShareLinkSub": "Shows the public page, nothing you have shared",
+  "@friendProfileShareLinkSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the share-link row"
+  },
+  "profileFriendsLabel": "{count, plural, =1{friend} other{friends}}",
+  "@profileFriendsLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePublicRecipesLabel": "{count, plural, =1{public recipe} other{public recipes}}",
+  "@profilePublicRecipesLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyAccountsSection": "Accounts in the household",
   "@familyAccountsSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders"
@@ -14347,7 +14646,7 @@
   "@tagDetailAddRule": {
     "description": "Row that opens the rule builder"
   },
-  "tagDetailRunRulesAll": "Run the rules on all recipes",
+  "tagDetailRunRulesAll": "Run the rules now",
   "@tagDetailRunRulesAll": {
     "description": "Secondary button on the tag page that applies the rules to existing recipes"
   },
@@ -15356,10 +15655,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.",
+  "guestStartBody": "The same questions as for a new account. What you save as a guest comes with you if you create an account later.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "We only save the year, not the full date.",
+  "guestStartBackToSignIn": "Back to sign in",
   "guestStartPreparing": "Getting your guest account ready",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
@@ -16387,6 +16688,273 @@
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
   },
+  "adminOpsSectionTitle": "Operations · recent events",
+  "@adminOpsSectionTitle": {
+    "description": "Skiss spår 9 (v65): heading above the ops-log table"
+  },
+  "adminOpsSparseTitle": "Sparse on purpose.",
+  "@adminOpsSparseTitle": {
+    "description": "Skiss spår 9 (v65): bold lead of the note closing the ops-log table"
+  },
+  "adminOpsSparseBody": "The log fills once the app has users. A short log does not mean anything is missing.",
+  "@adminOpsSparseBody": {
+    "description": "Skiss spår 9 (v65): body of the note closing the ops-log table"
+  },
+  "adminOpsEventNotificationCleanup": "Notifications cleaned",
+  "@adminOpsEventNotificationCleanup": {
+    "description": "Ops-log event name for the notification_cleanup job"
+  },
+  "adminOpsEventIngredientCleanup": "Ingredients cleaned",
+  "@adminOpsEventIngredientCleanup": {
+    "description": "Ops-log event name for the ingredient_cleanup job"
+  },
+  "adminOpsEventSystemEventsCleanup": "Ops log cleaned",
+  "@adminOpsEventSystemEventsCleanup": {
+    "description": "Ops-log event name for the system_events_cleanup job"
+  },
+  "adminOpsEventSocialRequestsCleanup": "Old requests cleaned",
+  "@adminOpsEventSocialRequestsCleanup": {
+    "description": "Ops-log event name for the cleanup_expired_social_requests job"
+  },
+  "adminOpsEventAuditLogCleanup": "Audit log cleaned",
+  "@adminOpsEventAuditLogCleanup": {
+    "description": "Ops-log event name for the audit_log_cleanup job"
+  },
+  "adminOpsEventDeletionAuditLogCleanup": "Deletion log cleaned",
+  "@adminOpsEventDeletionAuditLogCleanup": {
+    "description": "Ops-log event name for the deletion_audit_log_cleanup job"
+  },
+  "adminParsingSectionTitle": "Parsing by domain",
+  "@adminParsingSectionTitle": {
+    "description": "Skiss spår 9 (v66): heading above the parsing table"
+  },
+  "adminParsingColSuccess": "Succeeded",
+  "@adminParsingColSuccess": {
+    "description": "Skiss spår 9 (v66): column with the import success rate per domain"
+  },
+  "adminParsingColStuck": "Stuck on",
+  "@adminParsingColStuck": {
+    "description": "Skiss spår 9 (v66): column with the field corrected most per domain"
+  },
+  "adminParsingTableNote": "Tap a row to see its imports. The field in the last column is the one corrected most often for the domain.",
+  "@adminParsingTableNote": {
+    "description": "Skiss spår 9 (v66): note under the parsing table"
+  },
+  "moderatorContentTypeRecipe": "Recipe",
+  "@moderatorContentTypeRecipe": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeComment": "Comment",
+  "@moderatorContentTypeComment": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeMessage": "Message",
+  "@moderatorContentTypeMessage": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeProfile": "Profile",
+  "@moderatorContentTypeProfile": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeCookSnap": "Cook snap",
+  "@moderatorContentTypeCookSnap": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorContentTypeGroup": "Group",
+  "@moderatorContentTypeGroup": {
+    "description": "Skiss spår 9 (v64): content type in a report card header"
+  },
+  "moderatorStatusNew": "New",
+  "@moderatorStatusNew": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusInReview": "In review",
+  "@moderatorStatusInReview": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusActioned": "Actioned",
+  "@moderatorStatusActioned": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorStatusClosed": "Closed",
+  "@moderatorStatusClosed": {
+    "description": "Skiss spår 9 (v64): report status pill"
+  },
+  "moderatorCloseTooltip": "Close the report",
+  "@moderatorCloseTooltip": {
+    "description": "Skiss spår 9 (v64): tooltip on the X that closes a report"
+  },
+  "familyRatingNotSet": "not set",
+  "@familyRatingNotSet": {
+    "description": "Skiss spår 9 (v72): shown instead of a score for a diner with no stars yet"
+  },
+  "familyRatingNoteSkip": "Anyone you skip gets no row and is left out of the average. A rating can always be changed, and the latest replaces the earlier one.",
+  "@familyRatingNoteSkip": {
+    "description": "Skiss spår 9 (v72): first part of the note under the family rating rows"
+  },
+  "familyRatingNoteCounts": "The rating counts toward the recipe's public average",
+  "@familyRatingNoteCounts": {
+    "description": "Skiss spår 9 (v72): bold part of the note under the family rating rows"
+  },
+  "familyRatingNoteAnonymous": ", anonymously and without showing anyone's identity.",
+  "@familyRatingNoteAnonymous": {
+    "description": "Skiss spår 9 (v72): closing part of the note under the family rating rows"
+  },
+  "cookbookStatRecipes": "recipes",
+  "@cookbookStatRecipes": {
+    "description": "Skiss spår 9 (v71): label under the recipe count in a cookbook's key figures"
+  },
+  "cookbookStatSort": "order",
+  "@cookbookStatSort": {
+    "description": "Skiss spår 9 (v71): label under the sort order in a cookbook's key figures"
+  },
+  "cookbookStatSortAlphabetical": "A–Z",
+  "@cookbookStatSortAlphabetical": {
+    "description": "Skiss spår 9 (v71): the cookbook is sorted alphabetically"
+  },
+  "cookbookStatSortCustom": "Own",
+  "@cookbookStatSortCustom": {
+    "description": "Skiss spår 9 (v71): the cookbook has the user's own order"
+  },
+  "cookbookStatUpdated": "last changed",
+  "@cookbookStatUpdated": {
+    "description": "Skiss spår 9 (v71): label under the date the cookbook last changed"
+  },
+  "tagDetailNewRule": "+ New rule",
+  "@tagDetailNewRule": {
+    "description": "Skiss spår 9 (v108): link at the end of the rules heading on a tag page"
+  },
+  "tagDetailRulesHeading": "Automatic rules",
+  "@tagDetailRulesHeading": {
+    "description": "Skiss spår 9 (v108): heading over the rules on a tag page"
+  },
+  "tagDetailStatChanged": "last changed",
+  "@tagDetailStatChanged": {
+    "description": "Skiss spår 9 (v108): label under the date the tag last changed"
+  },
+  "tagDetailRuleTagged": "{count, plural, =1{tagged 1 recipe} other{tagged {count} recipes}}",
+  "@tagDetailRuleTagged": {
+    "description": "Skiss spår 9 (v108): what a rule has tagged",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRecipesHeading": "{count, plural, =1{1 recipe with the tag} other{{count} recipes with the tag}}",
+  "@tagDetailRecipesHeading": {
+    "description": "Skiss spår 9 (v108): line over the recipe list on a tag page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailRuleSummaryNumber": "{type} {operator} {value}",
+  "@tagDetailRuleSummaryNumber": {
+    "description": "Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "operator": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "tagEditSheetTitle": "Edit the tag",
+  "@tagEditSheetTitle": {
+    "description": "Skiss spår 9 (v108): title of the sheet the Redigera link on a tag page opens"
+  },
+  "tagDetailStatRulesValue": "{enabled} of {total}",
+  "@tagDetailStatRulesValue": {
+    "description": "Skiss spår 9 (v108): how many of the tag's rules are on",
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tagDetailStatRules": "{total, plural, =1{rule on} other{rules on}}",
+  "@tagDetailStatRules": {
+    "description": "Skiss spår 9 (v108): label under how many of the tag's rules are on",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagUnusedHeading": "Unused ({count})",
+  "@personalTagUnusedHeading": {
+    "description": "Skiss spår 9 (v84): heading over the unused tags shown as pills",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteAllShort": "Delete all",
+  "@personalTagDeleteAllShort": {
+    "description": "Skiss spår 9 (v84): red link at the end of the unused-tags heading"
+  },
+  "conflictDiffMineName": "Yours",
+  "@conflictDiffMineName": {
+    "description": "Name of the user's own version in the conflict view."
+  },
+  "conflictDiffTheirsName": "Theirs",
+  "@conflictDiffTheirsName": {
+    "description": "Name of the other version in the conflict view when no name is known."
+  },
+  "conflictDiffApplies": "Applies",
+  "@conflictDiffApplies": {
+    "description": "Badge on the version that applies now."
+  },
+  "conflictDiffIntro": "You and {name} edited {title} at the same time. Only one of the versions applies – here is how they differ.",
+  "@conflictDiffIntro": {
+    "description": "Intro of the conflict view; name = the other editor, title = the recipe.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictDiffIntroPlain": "You edited at the same time. Only one of the versions applies – here is how they differ.",
+  "@conflictDiffIntroPlain": {
+    "description": "Intro of the conflict view when the other editor or the title is not known."
+  },
+  "recipeSuggestionKeptNote": "The suggestion is kept until {date}. Then it is removed.",
+  "@recipeSuggestionKeptNote": {
+    "description": "Note above the decision buttons; the Firestore TTL policy on recipe_suggestions removes it at expiresAt.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "importLinkOrCaptionLabel": "Link or caption",
+  "importPasteHelp": "Paste the link to the post, or the whole caption if you have already copied it.",
+  "importCaptionWarningLead": "A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ",
+  "importCaptionWarningEmphasis": "you will often need to fix something",
+  "importVideoNotRead": "The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.",
+  "importFetchRecipe": "Get the recipe",
+  "shoppingNewSharedListTitle": "New shared list",
+  "shoppingSharedListNameLabel": "List name",
+  "shoppingShareWithHeading": "Share with",
+  "shoppingPermissionHeading": "Permission",
+  "shoppingPermissionCanEdit": "Can edit",
+  "shoppingPermissionReadOnlyTab": "Read only",
+  "shoppingPermissionCanEditHelp": "Everyone can add and tick off items in real time.",
+  "shoppingPermissionViewOnlyHelp": "The people you share with can see the list but not change it.",
+  "shoppingNoFriendsToShareWith": "You have no friends to share with yet.",
   "importMoreFilters": "More",
   "importArchivedHeading": "Archived recipes · {count}",
   "@importArchivedHeading": {

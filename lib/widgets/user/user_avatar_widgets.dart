@@ -37,27 +37,33 @@ class UserAvatarWidgets {
     bool showStatus = false,
     bool isOnline = false,
     bool announceName = true,
+    bool round = false,
   }) {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         final bc = context.modeColors;
         final avatarSize = explicitSize ?? _getAvatarSize(size);
-        // UI Redesign: Avatar uses rust (secondary) color scheme
-        final effectiveBackgroundColor = backgroundColor ?? cs.secondary;
-        final effectiveTextColor = textColor ?? cs.surfaceContainerHighest;
+        // The round person avatar is ink with paper initials, as the sketch
+        // draws people; the square one keeps the saffron it has always had.
+        final effectiveBackgroundColor =
+            backgroundColor ?? (round ? cs.primary : cs.secondary);
+        final effectiveTextColor =
+            textColor ?? (round ? cs.onPrimary : cs.surfaceContainerHighest);
 
         Widget avatarWidget = Container(
           width: avatarSize,
           height: avatarSize,
           decoration: BoxDecoration(
             color: effectiveBackgroundColor,
+            shape: round ? BoxShape.circle : BoxShape.rectangle,
             border: borderWidth != null && borderColor != null
                 ? Border.all(width: borderWidth, color: borderColor)
                 : null,
           ),
           child: (imageUrl != null && imageUrl.isNotEmpty)
-              ? ClipRect(
+              ? ClipPath(
+                  clipper: _AvatarClipper(round: round),
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
@@ -70,12 +76,14 @@ class UserAvatarWidgets {
                       avatarSize,
                       effectiveBackgroundColor,
                       effectiveTextColor,
+                      round: round,
                     ),
                     errorWidget: (_, url, error) => _buildInitialsAvatar(
                       displayName,
                       avatarSize,
                       effectiveBackgroundColor,
                       effectiveTextColor,
+                      round: round,
                     ),
                     fadeInDuration: AppMotion.standard,
                     fadeOutDuration: AppMotion.standard,
@@ -86,6 +94,7 @@ class UserAvatarWidgets {
                   avatarSize,
                   effectiveBackgroundColor,
                   effectiveTextColor,
+                  round: round,
                 ),
         );
 
@@ -254,8 +263,9 @@ class UserAvatarWidgets {
     String displayName,
     double size,
     Color backgroundColor,
-    Color textColor,
-  ) {
+    Color textColor, {
+    bool round = false,
+  }) {
     final initials = getInitials(displayName);
     final fontSize = size * 0.4;
 
@@ -264,6 +274,7 @@ class UserAvatarWidgets {
       height: size,
       decoration: BoxDecoration(
         color: backgroundColor,
+        shape: round ? BoxShape.circle : BoxShape.rectangle,
       ),
       child: Center(
         // Initials restate the name, which is announced by the avatar label
@@ -334,4 +345,18 @@ class UserAvatarWidgets {
       ),
     );
   }
+}
+
+class _AvatarClipper extends CustomClipper<Path> {
+  const _AvatarClipper({required this.round});
+
+  final bool round;
+
+  @override
+  Path getClip(Size size) => round
+      ? (Path()..addOval(Offset.zero & size))
+      : (Path()..addRect(Offset.zero & size));
+
+  @override
+  bool shouldReclip(_AvatarClipper old) => old.round != round;
 }

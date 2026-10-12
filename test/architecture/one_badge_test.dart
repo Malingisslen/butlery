@@ -12,8 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 const _notYetMoved = <String>{
   // The admin views' filled status pill, shared by spår D1 in #732.
   'lib/widgets/common/indicators/status_pill.dart StatusPill',
-  // Genomgångens spår B owns the rating entry view.
-  'lib/views/family/family_rating_entry_view.dart _YouBadge',
   // An avatar of initials, not a badge.
   'lib/views/social/collaborative_shopping/collaborative_shopping_items.dart _AssigneeBadge',
   // A neutral info chip with no border, decided in B83-2.

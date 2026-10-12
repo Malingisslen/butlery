@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -22,7 +23,7 @@ class SharedContentSearchBar {
     }
 
     return Padding(
-      padding: AppDimensions.screenPadding,
+      padding: ButleryPageBody.margin(context, bottom: AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

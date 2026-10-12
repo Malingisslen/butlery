@@ -2,10 +2,11 @@
 ///
 /// The view resolves its [PersonalTagViewModel] through the production
 /// [ServiceLocator] (GetIt) and looks the tag up by id in `build`. It branches
-/// on three VM states (loading-while-missing → not-found → loaded) and carries
-/// a name field that saves on blur. We register a thin fake VM over the
-/// GetIt bridge and assert the user-visible Swedish behaviour for each branch
-/// plus the autosaved rename, group sheet, rules and menu.
+/// on three VM states (loading-while-missing → not-found → loaded). The tag's
+/// name, group and whole-tag actions live in the sheet "Redigera" opens. We
+/// register a thin fake VM over the GetIt bridge and assert the user-visible
+/// Swedish behaviour for each branch plus the rename, group sheet, rules and
+/// the edit sheet.
 library;
 
 import 'package:flutter/material.dart';
@@ -26,7 +27,6 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -103,7 +103,7 @@ void main() {
     tester,
   ) async {
     // Proves: the happy path — the resolved tag's name titles the screen and
-    // its usage count is rendered via TagDetailHeader.
+    // its usage count is the first key figure.
     final tag = PersonalTag.create(name: 'Vardagsmat');
     fakeVm.setState(
       tags: [tag],
@@ -113,7 +113,8 @@ void main() {
     await pumpView(tester, tag.id);
 
     expect(find.text('Vardagsmat'), findsWidgets);
-    expect(find.text('3 recept'), findsOneWidget); // tagDetailRecipeCount(3)
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text('recept'), findsOneWidget); // cookbookStatRecipes
   });
 
   testWidgets('unknown tag id shows the not-found error state', (tester) async {
@@ -152,42 +153,49 @@ void main() {
     expect(find.text('Spara'), findsNothing);
   });
 
-  testWidgets('the name field is seeded and saves when it loses focus', (
+  Future<void> openEditSheet(WidgetTester tester) async {
+    await tester.tap(find.text('Redigera'));
+    await tester.pumpAndSettle();
+  }
+
+  // The sheet saves the name when it is dismissed, so a tap outside is the
+  // way every name test below leaves it.
+  Future<void> dismissSheet(WidgetTester tester) async {
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('the sheet is seeded with the name and saves it when closed', (
     tester,
   ) async {
     final tag = PersonalTag.create(name: 'Helg');
     fakeVm.setState(tags: [tag], isLoading: false);
     await pumpView(tester, tag.id);
+    await openEditSheet(tester);
 
-    final field = find.byType(StyledInput);
+    expect(find.byType(StyledInput), findsOneWidget);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
       'Helg',
     );
 
     await tester.enterText(find.byType(TextField), 'Helgmat');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pumpAndSettle();
+    await dismissSheet(tester);
 
-    expect(field, findsOneWidget);
     expect(fakeVm.updated.single.name, 'Helgmat');
     expect(find.text('Tagg uppdaterad'), findsOneWidget);
   });
 
-  testWidgets('an emptied name is refused and put back', (tester) async {
+  testWidgets('an emptied name is refused', (tester) async {
     final tag = PersonalTag.create(name: 'Helg');
     fakeVm.setState(tags: [tag], isLoading: false);
     await pumpView(tester, tag.id);
+    await openEditSheet(tester);
 
     await tester.enterText(find.byType(TextField), '  ');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pumpAndSettle();
+    await dismissSheet(tester);
 
     expect(fakeVm.updated, isEmpty);
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller?.text,
-      'Helg',
-    );
   });
 
   testWidgets('a refused rename says so instead of claiming success', (
@@ -198,56 +206,16 @@ void main() {
       ..updateSucceeds = false
       ..setState(tags: [tag], isLoading: false);
     await pumpView(tester, tag.id);
+    await openEditSheet(tester);
 
     await tester.enterText(find.byType(TextField), 'Helgmat');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pumpAndSettle();
+    await dismissSheet(tester);
 
     expect(find.textContaining('Kunde inte uppdatera taggen'), findsOneWidget);
     expect(find.text('Tagg uppdaterad'), findsNothing);
   });
 
-  testWidgets('a name typed and then left by Back is still saved', (
-    tester,
-  ) async {
-    final tag = PersonalTag.create(name: 'Helg');
-    fakeVm.setState(tags: [tag], isLoading: false);
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('sv'),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        theme: AppTheme.lightTheme,
-        home: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => TagDetailView(tagId: tag.id),
-              ),
-            ),
-            child: const Text('open'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'Helgmat');
-    await tester.pump();
-    Navigator.of(tester.element(find.byType(TagDetailView))).pop();
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TagDetailView), findsNothing);
-    expect(fakeVm.updated.single.name, 'Helgmat');
-  });
-
-  testWidgets('the Grupp row shows the group and its sheet moves the tag', (
+  testWidgets('the Grupp row of the edit sheet moves the tag', (
     tester,
   ) async {
     final group = PersonalTagGroup.create(name: 'Kvällsmat');
@@ -255,6 +223,7 @@ void main() {
     fakeVm.setState(tags: [tag], groups: [group], isLoading: false);
     await pumpView(tester, tag.id);
 
+    await openEditSheet(tester);
     expect(find.text('Ingen grupp'), findsOneWidget);
     await tester.tap(find.widgetWithText(ButleryListRow, 'Grupp'));
     await tester.pumpAndSettle();
@@ -264,7 +233,7 @@ void main() {
     expect(fakeVm.moved, [(tag.id, group.id)]);
   });
 
-  testWidgets('a rule is a row with its state and a last row adds one', (
+  testWidgets('a rule is a row with a switch and the heading adds one', (
     tester,
   ) async {
     final now = DateTime(2026, 10, 10);
@@ -286,19 +255,21 @@ void main() {
     fakeVm.setState(tags: [tag], isLoading: false);
     await pumpView(tester, tag.id);
 
-    expect(find.text('REGLER'), findsOneWidget);
+    expect(find.text('AUTOMATISKA REGLER'), findsOneWidget);
     expect(find.text('Laxregel'), findsOneWidget);
-    expect(find.text('På'), findsOneWidget);
-    expect(find.text('Lägg till regel'), findsOneWidget);
-    expect(find.text('Kör reglerna på alla recept'), findsOneWidget);
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+    expect(find.text('+ Ny regel'), findsOneWidget);
+    expect(find.text('Kör reglerna nu'), findsOneWidget);
 
     await tester.tap(find.text('Laxregel'));
     await tester.pumpAndSettle();
-    expect(find.text('Pausa regeln'), findsOneWidget);
     expect(find.text('Redigera regeln'), findsOneWidget);
     expect(find.text('Radera regeln'), findsOneWidget);
+    expect(find.text('Pausa regeln'), findsNothing);
 
-    await tester.tap(find.text('Pausa regeln'));
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(fakeVm.toggled, [('t1', 'r1')]);
   });
@@ -380,35 +351,34 @@ void main() {
         );
       await pumpView(tester, tag.id);
 
-      expect(find.textContaining('"lax" · 3 recept matchar'), findsOneWidget);
+      expect(find.textContaining('"lax" · taggade 3 recept'), findsOneWidget);
     });
 
-    testWidgets('a paused rule reads Av and its sheet offers Aktivera', (
-      tester,
-    ) async {
-      fakeVm.setState(
-        tags: [
-          tag.copyWith(rules: [rule.copyWith(isEnabled: false)]),
-        ],
-        isLoading: false,
-      );
-      await pumpView(tester, tag.id);
-      expect(find.text('Av'), findsOneWidget);
-      expect(find.text('På'), findsNothing);
+    testWidgets(
+      'a paused rule has its switch off, and the switch turns it on',
+      (
+        tester,
+      ) async {
+        fakeVm.setState(
+          tags: [
+            tag.copyWith(rules: [rule.copyWith(isEnabled: false)]),
+          ],
+          isLoading: false,
+        );
+        await pumpView(tester, tag.id);
+        expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
 
-      await tester.tap(find.text('Laxregel'));
-      await tester.pumpAndSettle();
-      expect(find.text('Pausa regeln'), findsNothing);
-      await tester.tap(find.text('Aktivera regeln'));
-      await tester.pumpAndSettle();
-      expect(fakeVm.toggled, [('t1', 'r1')]);
-    });
+        await tester.tap(find.byType(Switch));
+        await tester.pumpAndSettle();
+        expect(fakeVm.toggled, [('t1', 'r1')]);
+      },
+    );
 
-    testWidgets('Lägg till regel opens an empty rule builder', (tester) async {
+    testWidgets('+ Ny regel opens an empty rule builder', (tester) async {
       fakeVm.setState(tags: [tag], isLoading: false);
       await pumpView(tester, tag.id);
 
-      await tester.tap(find.text('Lägg till regel'));
+      await tester.tap(find.text('+ Ny regel'));
       await tester.pumpAndSettle();
       // The new-rule form's empty condition card overflows its operator
       // dropdown by a few pixels (rule_condition_card.dart); that layout is
@@ -440,7 +410,7 @@ void main() {
     });
   });
 
-  group('the menu turns all rules on or off', () {
+  group('the edit sheet turns all rules on or off', () {
     final now = DateTime(2026, 10, 10);
     PersonalTagRule rule(String id, {required bool on}) => PersonalTagRule(
       id: id,
@@ -464,8 +434,7 @@ void main() {
       );
       fakeVm.setState(tags: [tag], isLoading: false);
       await pumpView(tester, tag.id);
-      await tester.tap(find.byIcon(ButleryIcons.moreVertical));
-      await tester.pumpAndSettle();
+      await openEditSheet(tester);
     }
 
     testWidgets('all on: only Inaktivera, and it asks first', (tester) async {
@@ -500,15 +469,14 @@ void main() {
     });
   });
 
-  testWidgets('the menu holds share and the danger row, which confirms', (
+  testWidgets('the edit sheet holds share and the danger row, which confirms', (
     tester,
   ) async {
     final tag = PersonalTag.create(name: 'Helg');
     fakeVm.setState(tags: [tag], isLoading: false);
     await pumpView(tester, tag.id);
 
-    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
-    await tester.pumpAndSettle();
+    await openEditSheet(tester);
     expect(find.text('Dela taggen'), findsOneWidget);
 
     await tester.tap(find.text('Radera taggen'));

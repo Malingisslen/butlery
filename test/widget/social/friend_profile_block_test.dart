@@ -148,7 +148,7 @@ void main() {
     );
   });
 
-  testWidgets('the ⋯ sheet holds report, block and remove-friend, once', (
+  testWidgets('the ⋯ sheet holds share, report and block, once', (
     tester,
   ) async {
     await openMenu(tester);
@@ -156,7 +156,6 @@ void main() {
     expect(find.byTooltip('Fler val'), findsOneWidget);
     expect(find.text('Rapportera'), findsOneWidget);
     expect(find.text('Blockera'), findsOneWidget);
-    expect(find.text('Ta bort som vän'), findsOneWidget);
     expect(find.text('Dela profil'), findsOneWidget);
   });
 
@@ -185,12 +184,19 @@ void main() {
       findsNothing,
     );
 
-    expect(find.text('RECEPT'), findsOneWidget);
+    expect(find.text('MELLAN ER'), findsOneWidget);
     expect(find.text('Delat med dig av Anna Svensson'), findsOneWidget);
-    // The old stand-alone buttons are gone from the page.
-    expect(find.text('Ta bort vän'), findsNothing);
+    expect(
+      find.text('Dela en länk till Anna Svenssons profil'),
+      findsOneWidget,
+    );
+    // Removing the friend is the red line at the foot of the page, not a
+    // stand-alone button.
+    expect(find.text('Ta bort som vän'), findsOneWidget);
     expect(find.text('Dela profil'), findsNothing);
-    expect(find.text('0 recept · 0 vänner'), findsOneWidget);
+    expect(find.text('0'), findsNWidgets(2));
+    expect(find.text('vänner'), findsOneWidget);
+    expect(find.text('publika recept'), findsOneWidget);
   });
 
   testWidgets('the public recipes row shows the count and uses a genitive', (
@@ -206,7 +212,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Jonas publika recept'), findsOneWidget);
-    expect(find.text('23'), findsOneWidget);
+    // The figure sits in the stats and at the end of the row.
+    expect(find.text('23'), findsNWidgets(2));
   });
 
   testWidgets('a name not ending in s gets an s added in the genitive', (
@@ -271,8 +278,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(FriendProfileView), findsOneWidget);
 
-    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Ta bort som vän'));
     await tester.pumpAndSettle();
 
@@ -280,7 +285,8 @@ void main() {
     verifyNever(() => friendsViewModel.removeFriend(any()));
     expect(find.text('Ta bort Anna Svensson som vän?'), findsOneWidget);
 
-    await tester.tap(find.text('Ta bort som vän'));
+    // The dialog's confirm button reads the same as the page's red line.
+    await tester.tap(find.text('Ta bort som vän').last);
     await tester.pumpAndSettle();
 
     verify(() => friendsViewModel.removeFriend(_them)).called(1);
@@ -290,7 +296,10 @@ void main() {
   testWidgets('cancelling the remove-friend dialog keeps the friend', (
     tester,
   ) async {
-    await openMenu(tester);
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: _friend)),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Ta bort som vän'));
     await tester.pumpAndSettle();
 

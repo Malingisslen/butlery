@@ -1,6 +1,7 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/moderation_motivation.dart';
@@ -11,6 +12,7 @@ import 'package:butlery/views/admin/moderator_evidence_section.dart';
 import 'package:butlery/views/admin/moderator_review_tabs.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -179,6 +181,7 @@ class _ReportCard extends StatelessWidget {
         );
     final cs = Theme.of(context).colorScheme;
 
+    final l10n = context.l10n;
     return StyledCard(
       padding: const EdgeInsets.all(AppDimensions.space12),
       child: Column(
@@ -188,35 +191,34 @@ class _ReportCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${report.contentType == ContentType.menuDish ? context.l10n.moderatorContentTypeMenuDish : report.contentType.wireName.toUpperCase()} · ${report.contentId}',
-                  style: AppTextStyles.bodyMedium,
+                  '${_contentTypeLabel(l10n)} · ${report.contentId}',
+                  style: AppTextStyles.labelLarge,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              StatusPill(label: report.status.wireName),
+              StatusPill(label: _statusLabel(l10n).toUpperCase()),
             ],
           ),
-          const SizedBox(height: AppDimensions.space4),
+          const SizedBox(height: AppDimensions.space8),
           Text(
-            '${context.l10n.moderatorReasonLabel}: '
-            '${reportReasonDisplay(context.l10n, report.reason)}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
+            reportReasonDisplay(l10n, report.reason),
+            style: AppTextStyles.titleMedium,
           ),
           if (report.description != null && report.description!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.space4),
               child: Text(
                 report.description!,
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           const SizedBox(height: AppDimensions.space4),
           Text(
             report.reporterErased
-                ? context.l10n.moderatorReporterErased
-                : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
+                ? l10n.moderatorReporterErased
+                : '${l10n.moderatorReporterLabel} ${report.reporterId}',
             style: AppTextStyles.labelMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
@@ -234,36 +236,42 @@ class _ReportCard extends StatelessWidget {
           // BUT-1609: moderation on a minor's account carries extra care
           // (GDPR/child-safety) — surface it before any action is taken.
           if (vm.isMinorOwner(report)) ...[
-            const SizedBox(height: AppDimensions.space4),
+            const SizedBox(height: AppDimensions.space8),
             AdminBadge(
-              label: context.l10n.moderatorMinorAccountBadge,
+              label: l10n.moderatorMinorAccountBadge,
               icon: ButleryIcons.shield,
             ),
           ],
-          const SizedBox(height: AppDimensions.space8),
-          Wrap(
-            spacing: AppDimensions.space8,
-            runSpacing: AppDimensions.space4,
+          const SizedBox(height: AppDimensions.space12),
+          Row(
             children: [
-              if (report.status != ReportStatus.closed)
-                OutlinedButton(
-                  onPressed: () => _advance(context, vm),
-                  child: Text(context.l10n.moderatorActionAdvance),
+              if (report.status != ReportStatus.closed) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _advance(context, vm),
+                    child: Text(l10n.moderatorActionAdvance),
+                  ),
                 ),
-              OutlinedButton(
-                onPressed: () => _confirmTakeDown(context, vm),
-                child: Text(
-                  vm.isReversibleAction(report)
-                      ? context.l10n.moderatorActionHide
-                      : report.contentType == ContentType.menuDish
-                      ? context.l10n.moderatorActionRemoveDish
-                      : context.l10n.moderatorActionDelete,
+                const SizedBox(width: AppDimensions.space8),
+              ],
+              Expanded(
+                child: OutlinedButton(
+                  style: ButtonThemes.deleteButtonStyle(cs),
+                  onPressed: () => _confirmTakeDown(context, vm),
+                  child: Text(
+                    vm.isReversibleAction(report)
+                        ? l10n.moderatorActionHide
+                        : report.contentType == ContentType.menuDish
+                        ? l10n.moderatorActionRemoveDish
+                        : l10n.moderatorActionDelete,
+                  ),
                 ),
               ),
               if (report.status != ReportStatus.closed)
-                TextButton(
+                IconButton(
+                  icon: const ButleryIcon(ButleryIcons.x),
+                  tooltip: l10n.moderatorCloseTooltip,
                   onPressed: () => _close(context, vm),
-                  child: Text(context.l10n.moderatorActionClose),
                 ),
             ],
           ),
@@ -271,6 +279,24 @@ class _ReportCard extends StatelessWidget {
       ),
     );
   }
+
+  String _contentTypeLabel(AppLocalizations l10n) =>
+      switch (report.contentType) {
+        ContentType.recipe => l10n.moderatorContentTypeRecipe,
+        ContentType.comment => l10n.moderatorContentTypeComment,
+        ContentType.message => l10n.moderatorContentTypeMessage,
+        ContentType.profile => l10n.moderatorContentTypeProfile,
+        ContentType.cookSnap => l10n.moderatorContentTypeCookSnap,
+        ContentType.group => l10n.moderatorContentTypeGroup,
+        ContentType.menuDish => l10n.moderatorContentTypeMenuDish,
+      }.toUpperCase();
+
+  String _statusLabel(AppLocalizations l10n) => switch (report.status) {
+    ReportStatus.newReport => l10n.moderatorStatusNew,
+    ReportStatus.inReview => l10n.moderatorStatusInReview,
+    ReportStatus.actioned => l10n.moderatorStatusActioned,
+    ReportStatus.closed => l10n.moderatorStatusClosed,
+  };
 
   Future<void> _confirmTakeDown(
     BuildContext context,

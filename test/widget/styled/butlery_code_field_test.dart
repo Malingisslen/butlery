@@ -211,8 +211,10 @@ void main() {
           tester.getRect(ringBox),
           fourth.inflate(AppDimensions.focusRingOffset),
         );
-        for (final edge in _edges(tester, cs.surface)) {
-          expect(edge.color, cs.outline);
+        // The three boxes holding a digit are drawn darker than the empty ones.
+        final edges = _edges(tester, cs.surface);
+        for (final (i, edge) in edges.indexed) {
+          expect(edge.color, i < 3 ? cs.onSurfaceVariant : cs.outline);
           expect(edge.width, AppDimensions.borderWidthStandard);
         }
       });

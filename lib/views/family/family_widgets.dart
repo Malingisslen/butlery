@@ -58,6 +58,7 @@ class FamilyAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = AppTextStyles.bodyBold.copyWith(color: Colors.white);
     return Container(
       width: size,
       height: size,
@@ -67,9 +68,10 @@ class FamilyAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
-        style: AppTextStyles.bodyBold.copyWith(
-          color: Colors.white,
-        ),
+        // A small face keeps its letters inside the circle.
+        style: round && size < 32
+            ? style.copyWith(fontSize: size * 0.42)
+            : style,
       ),
     );
   }
