@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// The form's one primary button, last on the page. While the view model
@@ -25,7 +26,9 @@ class AccountFormButton extends StatelessWidget {
 
   final String label;
   final bool busy;
-  final VoidCallback onPressed;
+
+  /// Null turns the button off.
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +53,23 @@ class AccountFormButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// After a right current password, an account with two-step verification
+/// gives its code before the change goes on (BUT-916 C7). True when given.
+Future<bool> confirmSecondFactor(
+  BuildContext context,
+  AccountSecurityViewModel viewModel,
+) async {
+  final challenge = viewModel.pendingSecondFactor;
+  if (challenge == null) return false;
+  final result = await Navigator.of(context).push<MfaChallengeResult>(
+    MaterialPageRoute(
+      builder: (_) =>
+          MfaChallengeView(challenge: challenge, forReauthentication: true),
+    ),
+  );
+  return result != null;
 }
 
 /// A failed change is the failure snackbar, never OK. A failure without a known cause offers Försök igen, which runs

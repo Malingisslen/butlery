@@ -73,6 +73,21 @@
 				<string>butlery</string>
 			</array>
 		</dict>
+		<!-- Google sign-in (BUT-916) returns to the app through this scheme: the iOS
+		     OAuth client id (GIDClientID below) written backwards. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.976357691692-7d79qbq7lm5q6okuohsv4pmrreka8mtd</string>
+			</array>
+		</dict>
 	</array>
+	<!-- The build has no GoogleService-Info.plist (Firebase reads
+	     lib/firebase_options.dart), so Google sign-in takes its iOS OAuth client
+	     id from here (BUT-916). -->
+	<key>GIDClientID</key>
+	<string>976357691692-7d79qbq7lm5q6okuohsv4pmrreka8mtd.apps.googleusercontent.com</string>
 </dict>
 </plist>

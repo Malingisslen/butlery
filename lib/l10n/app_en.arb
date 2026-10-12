@@ -15924,5 +15924,157 @@
   "listInviteShareSent": "Invitation sent. Recipients join once they accept.",
   "@listInviteShareSent": {
     "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
+  },
+  "authContinueWithGoogle": "Continue with Google",
+  "@authContinueWithGoogle": {
+    "description": "BUT-916: Google sign-in button on the sign-in screen"
+  },
+  "authContinueWithApple": "Continue with Apple",
+  "@authContinueWithApple": {
+    "description": "BUT-549: Sign in with Apple button on the sign-in screen"
+  },
+  "authProviderFailed": "Signing in with {provider} did not work. Try again.",
+  "@authProviderFailed": {
+    "description": "BUT-916: a Google/Apple sign-in failed for a reason without its own text",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authProviderAccountExists": "There is already an account with that e-mail address. Sign in with e-mail and password.",
+  "@authProviderAccountExists": {
+    "description": "BUT-916: the address has a password account and the provider did not vouch for it"
+  },
+  "authProviderWrongAccount": "That was a different {provider} account from the one this account uses. Choose the same account again.",
+  "@authProviderWrongAccount": {
+    "description": "BUT-916: re-authentication chose another Google/Apple account",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "providerTermsTitle": "Welcome to Butlery",
+  "@providerTermsTitle": {
+    "description": "BUT-916: heading of the terms step after a new Google/Apple sign-in"
+  },
+  "providerTermsSubtitle": "One step left before the account is created.",
+  "@providerTermsSubtitle": {
+    "description": "BUT-916: line under the terms step heading"
+  },
+  "providerTermsNameHelp": "Others in your groups and shared lists see your name. You can change it later.",
+  "@providerTermsNameHelp": {
+    "description": "BUT-916: help text under the name field on the terms step"
+  },
+  "providerTermsCancelAndDelete": "Cancel and remove the account",
+  "@providerTermsCancelAndDelete": {
+    "description": "BUT-916: decline on the terms step when it is shown again after a restart (C3)"
+  },
+  "providerTermsSaveFailed": "The account could not be created. Try again.",
+  "@providerTermsSaveFailed": {
+    "description": "BUT-916: accepting the terms could not be saved"
+  },
+  "providerTermsNoEmail": "The account could not be created because no e-mail address came from Google or Apple. Try again.",
+  "@providerTermsNoEmail": {
+    "description": "BUT-916 C2: the provider gave no e-mail address; retryable"
+  },
+  "providerLinkTitle": "Link accounts",
+  "@providerLinkTitle": {
+    "description": "BUT-916: heading of the step that links Google/Apple to an existing password account"
+  },
+  "providerLinkBody": "There is already a Butlery account for {email}. Enter your Butlery password once and {provider} is linked to the account.",
+  "@providerLinkBody": {
+    "description": "BUT-916: body of the link step",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      },
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "providerLinkSubmit": "Link",
+  "@providerLinkSubmit": {
+    "description": "BUT-916: primary button of the link step"
+  },
+  "providerLinkFailed": "{provider} could not be linked to the account. Try again with Continue with {provider}.",
+  "@providerLinkFailed": {
+    "description": "BUT-916: after sign-in, the waiting Google/Apple credential could not be linked to the account",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeProviderRejected": "The backup code is not right. A used code cannot be used again.",
+  "@mfaBackupCodeProviderRejected": {
+    "description": "BUT-916: a backup code after a Google/Apple sign-in was refused"
+  },
+  "mfaBackupCodeProviderSupport": "With {provider} on this device the backup code cannot be checked here. Write to us and we will help you into the account.",
+  "@mfaBackupCodeProviderSupport": {
+    "description": "BUT-916 C8: backup codes cannot be proved through Apple on Android/web or Google on the web",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeContactSupport": "Write to support",
+  "@mfaBackupCodeContactSupport": {
+    "description": "BUT-916 C8: button opening a mail to support from the backup-code step"
+  },
+  "mfaBackupCodeSupportSubject": "Signing in with a backup code",
+  "@mfaBackupCodeSupportSubject": {
+    "description": "BUT-916 C8: subject of the support mail from the backup-code step"
+  },
+  "accountSecurityEmailProviderReauth": "You confirm it is you with {provider} before the address is changed.",
+  "@accountSecurityEmailProviderReauth": {
+    "description": "BUT-916 C7: e-mail change for an account without a password",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeRecoveredSignInAgain": "The backup code worked, so two-step verification is off. The sign-in did not finish: sign in with {provider} again to get in.",
+  "@mfaBackupCodeRecoveredSignInAgain": {
+    "description": "BUT-916: a backup code removed the second factor, but the Google/Apple sign-in after it was cancelled or failed",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeRecoveredSignInAgainPassword": "The backup code worked, so two-step verification is off. The sign-in did not finish: sign in again to get in.",
+  "@mfaBackupCodeRecoveredSignInAgainPassword": {
+    "description": "BUT-916: a backup code removed the second factor, but the password sign-in after it failed"
+  },
+  "mfaBackupCodeSignInAgainWith": "Sign in with {provider}",
+  "@mfaBackupCodeSignInAgainWith": {
+    "description": "BUT-916: retries only the Google/Apple sign-in after a backup code worked",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "mfaBackupCodeSignInAgain": "Sign in again",
+  "@mfaBackupCodeSignInAgain": {
+    "description": "BUT-916: retries only the password sign-in after a backup code worked"
+  },
+  "mfaBackupCodeNoEmail": "The email app could not be opened. Write to {address}.",
+  "@mfaBackupCodeNoEmail": {
+    "description": "BUT-916 C8: the support mail from the backup-code step could not open",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "accountSecurityEmailCannotConfirmHere": "The change can't be confirmed on this device, because the account's sign-in isn't available here. Change the address on a device where you can sign in to the account.",
+  "@accountSecurityEmailCannotConfirmHere": {
+    "description": "BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform"
   }
 }

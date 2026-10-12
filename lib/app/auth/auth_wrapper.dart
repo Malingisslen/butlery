@@ -32,6 +32,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
+import 'package:butlery/views/auth/provider_terms_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
@@ -177,6 +178,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Widget _buildSignedIn(BuildContext context, User user) {
+    // BUT-916 C1: a new Google/Apple account answers the terms first;
+    // nothing is created for it before that.
+    if (_userService.termsPending) {
+      return ProviderTermsView(key: ValueKey('terms_${user.uid}'));
+    }
+
     // BUT-920: a guest reaches Hem only after the age check and the starter
     // recipes, which run after the sign-in has already brought us here.
     if (user.isAnonymous && (_guestStart?.isRunning ?? false)) {
@@ -218,6 +225,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
         return _ProfileLoadErrorView(
           message: _userService.error ?? context.l10n.errorCouldNotLoadProfile,
           onRetry: () => _userService.retryLoadProfile(),
+          // A retry cannot help an account that came without an address
+          // (BUT-916 C2); signing out and choosing again can. Never offered
+          // to a guest, whose sign-out would abandon the anonymous account.
+          onSignOut: user.email == null && !user.isAnonymous
+              ? _authService.signOut
+              : null,
         );
       }
       // Plate line plus text, never a spinner.
@@ -394,17 +407,36 @@ class _ResumeResolution {
 class _ProfileLoadErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
+  final VoidCallback? onSignOut;
 
-  const _ProfileLoadErrorView({required this.message, required this.onRetry});
+  const _ProfileLoadErrorView({
+    required this.message,
+    required this.onRetry,
+    this.onSignOut,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: StateWidget.error(
-          message: message,
-          actionLabel: context.l10n.commonRetry,
-          onAction: onRetry,
+        child: Column(
+          children: [
+            Expanded(
+              child: StateWidget.error(
+                message: message,
+                actionLabel: context.l10n.commonRetry,
+                onAction: onRetry,
+              ),
+            ),
+            if (onSignOut != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.space24),
+                child: TextButton(
+                  onPressed: onSignOut,
+                  child: Text(context.l10n.profileLogout),
+                ),
+              ),
+          ],
         ),
       ),
     );

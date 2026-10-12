@@ -270,6 +270,32 @@ class ComplianceExportManager {
     }
   }
 
+  /// Export the sign-in methods linked to the account for GDPR Article 15
+  /// (BUT-916, C12): each provider's id and the e-mail it reported.
+  Future<Map<String, dynamic>> exportSignInMethods(String userId) async {
+    final user = _auth.currentUser;
+    if (user == null || user.uid != userId) {
+      throw const ComplianceExportException(
+        'Sign-in methods export needs the signed-in user',
+      );
+    }
+    return {
+      'sign_in_methods': [
+        for (final info in user.providerData)
+          {
+            'provider_id': info.providerId,
+            'provider_uid': info.uid,
+            'email': info.email,
+          },
+      ],
+      'gdpr_article': 'Article 15 - Right of Access',
+      'data_minimisation':
+          'Not reproduced here: sign-in tokens, the name a sign-in provider '
+          'sends, and the link to the profile picture that Google sends, '
+          'which is not shown in Butlery.',
+    };
+  }
+
   Future<Map<String, dynamic>> _fetchBackupCodes() async {
     final callable = _functions.httpsCallable(
       'exportMfaRecoveryData',

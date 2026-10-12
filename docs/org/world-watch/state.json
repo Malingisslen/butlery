@@ -152,7 +152,7 @@
           "type": "regulator"
         }
       ],
-      "lastScan": "2026-08-31",
+      "lastScan": "2026-10-12",
       "snapshot": {
         "https://developer.apple.com/news/upcoming-requirements/": "Apple 'Upcoming Requirements' page re-fetched 2026-07-27 (direct WebFetch, succeeded). Unchanged from the 2026-06-27 baseline: age-rating questionnaire deadline (Jan 31, 2026) passed; Xcode 26/iOS 26 SDK requirement in effect since Apr 28, 2026; EU DSA trader-status rules unchanged (since Oct 2024/Feb 2025). Still no UGC/age-rating/AI-consent/external-link-payment items listed on this specific page. No delta. | 2026-08-31 janitor lean check (WebSearch): no new material item found beyond what's already recorded/ticketed.",
         "https://developer.apple.com/news/rss/news.rss": "Direct fetch failed (HTTP 500); WebSearch fallback used. Confirms the previously-known Jun 8, 2026 'Time Allowances' item went live in practice: on Jul 9, 2026 Apple opened the App Store Connect age-rating questionnaire to new social-media-capability questions, required for submissions from Sep 2026; a 'yes' answer carries a minimum 13+ rating plus a new 'Social Media' content descriptor. Not a NEW legal fact vs. the 2026-06-27 baseline and already ticketed as GitHub issue #215 / BUT-1382 by the Release/App-Store Compliance Manager role. Cross-referenced only, no new Legal-chair action. | 2026-08-31 janitor lean check (WebSearch): no new material item found beyond what's already recorded/ticketed.",
@@ -168,6 +168,11 @@
           "date": "2026-08-31",
           "via": "weekly-janitor-sweep",
           "note": "Lean WebSearch pass across all sources for this role. Security Architect: no new pub-ecosystem CVE beyond standing CVE-2026-27704 (Low); freeRASP and whisper.cpp show no release past the ones already recorded/ticketed (whisper.cpp v1.9.3 = issue #234, still current). Legal Counsel: checked Apple guidelines, Google Play policy, IMY, EDPB, Konsumentverket, DSA text; Google Play's Aug-31-2026 target-API-level deadline (API 36) confirmed already met (android/app/build.gradle.kts targetSdk=36) -- not material, no ticket. No new legal item since the 2026-07-27 baseline. Release/Compliance: Apple EU/DPLA changes reconfirmed as the same 2026-08-18 item already filed as issue #235; no delta since 2026-08-24. No issues filed this cycle."
+        },
+        {
+          "date": "2026-10-12",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass; this role's lastScan had been stuck at 2026-08-31 for several weekly cycles (only Security Architect and Release/Compliance got refreshed) — 42 days overdue vs the monthly cadence, now caught up. Apple App Store Review Guidelines: no October 2026 change found beyond the already-known June 9 2026 alt-distribution wording update. Google Play policy: Oct 28 2026 changes (Child Safety Standards extended to anonymous/random-chat apps, new Contacts Permissions policy) confirmed inapplicable — Butlery is not a chat app and does not request broad contacts access. Konsumentverket/MFL: no 2026 Swedish amendment found; EU Digital Fairness Act still only proposed, not adopted. EDPB/IMY: no new item beyond what's already tracked (web-scraping/anonymisation guidelines still in consultation to 2026-10-30, already filed). No new issues filed this cycle."
         }
       ]
     },

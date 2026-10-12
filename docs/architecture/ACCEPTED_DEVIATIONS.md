@@ -6288,3 +6288,12 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
   amount shows after a restart, as food choices do.
 - **Negligible spices with no food in the table stay "skipped"**, not estimated, although
   Malin's list names them; only ingredients that match a food can be counted.
+
+## BUT-916 — the terms step for Google and Apple sign-ups (2026-10-11)
+
+- **The terms step is enforced in the app only.** A Google or Apple sign-in without a profile
+  and without `termsAcceptedAt` on `users/{uid}` sets `UserService.termsPending`, and
+  `AuthWrapper` shows `ProviderTermsView` before anything else is written for the account.
+  `firestore.rules` does not check `termsAcceptedAt`, so a hand-rolled client can create the
+  profile without accepting the terms. The e-mail form's terms checkbox (`AuthView`) is
+  likewise checked in the app only.

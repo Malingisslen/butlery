@@ -44,6 +44,12 @@ class _Allowed {
 
 const _allowed = <_Allowed>[
   _Allowed(
+    'lib/services/auth/provider_sign_in_service.dart',
+    '_repo.currentUser?.displayName',
+    'prefills the editable name field on the terms step (BUT-916); the '
+        'profile is written from what the user confirms there',
+  ),
+  _Allowed(
     'lib/services/auth_service.dart',
     'currentUserDisplayName => _currentUser?.displayName',
     'the sign-in surface exposing the Auth account itself',

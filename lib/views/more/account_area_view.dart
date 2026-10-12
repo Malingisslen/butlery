@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -24,11 +25,13 @@ class AccountAreaView extends StatefulWidget {
 
 class _AccountAreaViewState extends State<AccountAreaView> {
   UserService? _userService;
+  AuthService? _authService;
 
   @override
   void initState() {
     super.initState();
     _userService = ServiceLocator.tryGet<UserService>();
+    _authService = ServiceLocator.tryGet<AuthService>();
   }
 
   @override
@@ -46,10 +49,13 @@ class _AccountAreaViewState extends State<AccountAreaView> {
               value: _userService?.currentUserProfile?.email,
               onTap: () => open(Routes.settingsAccountEmail),
             ),
-            ButleryListRow(
-              label: l10n.settingsAccountPassword,
-              onTap: () => open(Routes.settingsAccountPassword),
-            ),
+            // An account made with Google or Apple has no password to
+            // change (BUT-916 C7).
+            if (_authService?.hasPasswordSignIn ?? true)
+              ButleryListRow(
+                label: l10n.settingsAccountPassword,
+                onTap: () => open(Routes.settingsAccountPassword),
+              ),
             ButleryListRow(
               label: l10n.settingsAccountTwoStep,
               onTap: () => open(Routes.settingsAccountTwoStep),

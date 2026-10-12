@@ -589,6 +589,7 @@ void main() {
       when(() => mockUser.emailVerified).thenReturn(true);
       when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
       when(() => mockUser.multiFactor).thenReturn(_NoFactorsMultiFactor());
+      when(() => mockUser.providerData).thenReturn(const []);
       mockAuthRepository.setAuthState(
         user: mockUser,
         userId: testUserId,
@@ -1082,6 +1083,9 @@ void main() {
           (data['moderation_counters'] as Map).containsKey('error'),
           isFalse,
         );
+        // BUT-916 C12: the manager suite drives `exportSignInMethods` directly
+        // and never sees the bundle.
+        expect(data['sign_in_methods']['sign_in_methods'], isEmpty);
         expect(data['personal_tags'], isNotNull);
         // Social data
         expect(data['friends'], isNotNull);

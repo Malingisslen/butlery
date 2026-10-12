@@ -2,19 +2,35 @@
  "comment": "En rad per vy: vilka skissramar den ska följa, bild med skiss mot app, och status. Statusar: godkänd, avviker-beslutad, ersatt (skissen är bytt mot ett beslut), skillnader-listade (jämförd, Malin har inte valt), ej-bedömd (aldrig jämförd; antalet får bara minska). Se .claude/rules/design-system.md.",
  "views": {
   "lib/views/account/consent_management_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_6_konto_och_integritet#1",
+    "etapp_6_konto_och_integritet#2",
+    "del_3_sok_och_skalbevis#23"
+   ],
+   "images": [
+    "design/skiss-mot-app/60-consent-management.png"
+   ]
   },
   "lib/views/account/data_export_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#30",
+    "etapp_6_konto_och_integritet#4"
+   ],
+   "images": [
+    "design/skiss-mot-app/61-data-export.png"
+   ]
   },
   "lib/views/account/pending_deletion_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_5-7#5",
+    "etapp_5-7#7"
+   ],
+   "images": [
+    "design/skiss-mot-app/62-pending-deletion.png"
+   ]
   },
   "lib/views/admin/feedback_inbox_view.dart": {
    "status": "skillnader-listade",
@@ -26,24 +42,45 @@
    ]
   },
   "lib/views/admin/metric_tab_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#29",
+    "etapp_5-7#9",
+    "etapp_9_socialt_och_komponenter#17"
+   ],
+   "images": [
+    "design/skiss-mot-app/63-metric-tab.png"
+   ]
   },
   "lib/views/admin/moderator_review_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_5-7#11",
+    "etapp_5-7#12",
+    "del_2_familj_och_socialt#24"
+   ],
+   "images": [
+    "design/skiss-mot-app/64-moderator-review.png"
+   ]
   },
   "lib/views/admin/ops_log_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#17",
+    "del_2_familj_och_socialt#24"
+   ],
+   "images": [
+    "design/skiss-mot-app/65-ops-log.png"
+   ]
   },
   "lib/views/admin/parsing_details_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#17"
+   ],
+   "images": [
+    "design/skiss-mot-app/66-parsing-details.png"
+   ]
   },
   "lib/views/auth/email_verification_view.dart": {
    "status": "skillnader-listade",
@@ -55,24 +92,51 @@
    ]
   },
   "lib/views/auth/guest_start_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_3_onboarding#1"
+   ],
+   "images": [
+    "design/skiss-mot-app/67-guest-start.png"
+   ]
   },
   "lib/views/auth/guest_upgrade_view.dart": {
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_3_onboarding#2"
+   ],
+   "images": [
+    "design/skiss-mot-app/68-guest-upgrade.png"
+   ]
+  },
+  "lib/views/auth/mfa_challenge_view.dart": {
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_3_onboarding#6"
+   ],
+   "images": [
+    "design/skiss-mot-app/69-mfa-challenge.png"
+   ]
+  },
+  "lib/views/auth/provider_link_view.dart": {
    "status": "ej-bedömd",
    "frames": [],
    "images": []
   },
-  "lib/views/auth/mfa_challenge_view.dart": {
+  "lib/views/auth/provider_terms_view.dart": {
    "status": "ej-bedömd",
    "frames": [],
    "images": []
   },
   "lib/views/auth/set_new_password_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_3_onboarding#3",
+    "etapp_3_onboarding#1"
+   ],
+   "images": [
+    "design/skiss-mot-app/70-set-new-password.png"
+   ]
   },
   "lib/views/auth_view.dart": {
    "status": "skillnader-listade",
@@ -87,9 +151,13 @@
    ]
   },
   "lib/views/cookbooks/cookbook_detail_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#18"
+   ],
+   "images": [
+    "design/skiss-mot-app/71-cookbook-detail.png"
+   ]
   },
   "lib/views/cooking_mode_view.dart": {
    "status": "skillnader-listade",
@@ -123,9 +191,15 @@
    ]
   },
   "lib/views/family/family_rating_entry_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#2",
+    "del_4_morkt_lage_och_etapp_0-1#25",
+    "del_4_morkt_lage_och_etapp_0-1#24"
+   ],
+   "images": [
+    "design/skiss-mot-app/72-family-rating-entry.png"
+   ]
   },
   "lib/views/family/min_familj_view.dart": {
    "status": "skillnader-listade",
@@ -146,19 +220,32 @@
    ]
   },
   "lib/views/file_import_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_4_import#12"
+   ],
+   "images": [
+    "design/skiss-mot-app/73-file-import.png"
+   ]
   },
   "lib/views/fran_sociala_medier_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_4_import#10"
+   ],
+   "images": [
+    "design/skiss-mot-app/74-fran-sociala-medier.png"
+   ]
   },
   "lib/views/group_weekly_menu_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_2#28",
+    "etapp_2#21"
+   ],
+   "images": [
+    "design/skiss-mot-app/75-group-weekly-menu.png"
+   ]
   },
   "lib/views/hem/hem_section.dart": {
    "status": "skillnader-listade",
@@ -179,9 +266,14 @@
    ]
   },
   "lib/views/importera_fran_arkiv_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#15",
+    "etapp_4_import#21"
+   ],
+   "images": [
+    "design/skiss-mot-app/76-importera-fran-arkiv.png"
+   ]
   },
   "lib/views/ingredient_search/ingredient_search_view.dart": {
    "status": "skillnader-listade",
@@ -202,9 +294,15 @@
    ]
   },
   "lib/views/legal/community_guidelines_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#14",
+    "del_3_sok_och_skalbevis#26",
+    "del_2_familj_och_socialt#23"
+   ],
+   "images": [
+    "design/skiss-mot-app/77-community-guidelines.png"
+   ]
   },
   "lib/views/legal/privacy_policy_view.dart": {
    "status": "skillnader-listade",
@@ -227,14 +325,24 @@
    ]
   },
   "lib/views/menu_placement_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#3",
+    "etapp_2#17",
+    "etapp_2#18"
+   ],
+   "images": [
+    "design/skiss-mot-app/78-menu-placement.png"
+   ]
   },
   "lib/views/messaging/conversation_group_detail_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#9"
+   ],
+   "images": [
+    "design/skiss-mot-app/79-conversation-group-detail.png"
+   ]
   },
   "lib/views/messaging/conversations_list_view.dart": {
    "status": "avviker-beslutad",
@@ -247,9 +355,13 @@
    ]
   },
   "lib/views/messaging/create_group_conversation_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#11"
+   ],
+   "images": [
+    "design/skiss-mot-app/80-create-group-conversation.png"
+   ]
   },
   "lib/views/mina_recept_view.dart": {
    "status": "skillnader-listade",
@@ -271,14 +383,24 @@
    ]
   },
   "lib/views/more/account_email_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#27",
+    "etapp_6_konto_och_integritet#6"
+   ],
+   "images": [
+    "design/skiss-mot-app/81-account-email.png"
+   ]
   },
   "lib/views/more/account_password_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#27",
+    "etapp_6_konto_och_integritet#6"
+   ],
+   "images": [
+    "design/skiss-mot-app/82-account-password.png"
+   ]
   },
   "lib/views/more/app_settings_view.dart": {
    "status": "avviker-beslutad",
@@ -299,9 +421,13 @@
    ]
   },
   "lib/views/more/help_area_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_1_recept_och_veckomeny#14"
+   ],
+   "images": [
+    "design/skiss-mot-app/83-help-area.png"
+   ]
   },
   "lib/views/more/more_view.dart": {
    "status": "avviker-beslutad",
@@ -367,14 +493,23 @@
    ]
   },
   "lib/views/personal_tags_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#16"
+   ],
+   "images": [
+    "design/skiss-mot-app/84-personal-tags.png"
+   ]
   },
   "lib/views/photo_import_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#14",
+    "etapp_4_import#11"
+   ],
+   "images": [
+    "design/skiss-mot-app/85-photo-import.png"
+   ]
   },
   "lib/views/quick_capture_view.dart": {
    "status": "skillnader-listade",
@@ -386,14 +521,23 @@
    ]
   },
   "lib/views/realtime/conflict_diff_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#28",
+    "etapp_11_breda_vyer#5"
+   ],
+   "images": [
+    "design/skiss-mot-app/86-conflict-diff.png"
+   ]
   },
   "lib/views/realtime/recipe_suggestion_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#28"
+   ],
+   "images": [
+    "design/skiss-mot-app/87-recipe-suggestion.png"
+   ]
   },
   "lib/views/recipe_detail_view.dart": {
    "status": "skillnader-listade",
@@ -405,14 +549,22 @@
    ]
   },
   "lib/views/settings/allergen_preferences_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#17"
+   ],
+   "images": [
+    "design/skiss-mot-app/88-allergen-preferences.png"
+   ]
   },
   "lib/views/settings/appeal_form_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_6_konto_och_integritet#13"
+   ],
+   "images": [
+    "design/skiss-mot-app/89-appeal-form.png"
+   ]
   },
   "lib/views/settings/collection_stats_view.dart": {
    "status": "skillnader-listade",
@@ -424,29 +576,54 @@
    ]
   },
   "lib/views/settings/decision_detail_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_6_konto_och_integritet#13"
+   ],
+   "images": [
+    "design/skiss-mot-app/90-decision-detail.png"
+   ]
   },
   "lib/views/settings/licenses_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#26"
+   ],
+   "images": [
+    "design/skiss-mot-app/91-licenses.png"
+   ]
   },
   "lib/views/settings/mfa_settings_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#22",
+    "etapp_6_konto_och_integritet#9",
+    "etapp_6_konto_och_integritet#10"
+   ],
+   "images": [
+    "design/skiss-mot-app/92-mfa-settings.png"
+   ]
   },
   "lib/views/settings/my_content_decisions_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_6_konto_och_integritet#13",
+    "del_3_sok_och_skalbevis#24"
+   ],
+   "images": [
+    "design/skiss-mot-app/93-my-content-decisions.png"
+   ]
   },
   "lib/views/settings/my_reports_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#24",
+    "del_3_sok_och_skalbevis#25",
+    "etapp_6_konto_och_integritet#13"
+   ],
+   "images": [
+    "design/skiss-mot-app/94-my-reports.png"
+   ]
   },
   "lib/views/settings/notification_preferences_view.dart": {
    "status": "skillnader-listade",
@@ -458,14 +635,23 @@
    ]
   },
   "lib/views/settings/trash_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#24"
+   ],
+   "images": [
+    "design/skiss-mot-app/95-trash.png"
+   ]
   },
   "lib/views/skriv_sjalv_recept_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#13",
+    "etapp_4_import#7"
+   ],
+   "images": [
+    "design/skiss-mot-app/96-skriv-sjalv-recept.png"
+   ]
   },
   "lib/views/smart_import_view.dart": {
    "status": "avviker-beslutad",
@@ -495,44 +681,79 @@
    ]
   },
   "lib/views/social/create_shared_shopping_list_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#14"
+   ],
+   "images": [
+    "design/skiss-mot-app/97-create-shared-shopping-list.png"
+   ]
   },
   "lib/views/social/friend_profile_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#8",
+    "etapp_5-7#18"
+   ],
+   "images": [
+    "design/skiss-mot-app/98-friend-profile.png"
+   ]
   },
   "lib/views/social/friend_requests/friend_requests_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#7"
+   ],
+   "images": [
+    "design/skiss-mot-app/99-friend-requests.png"
+   ]
   },
   "lib/views/social/friend_requests_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#7"
+   ],
+   "images": [
+    "design/skiss-mot-app/100-friend-requests-reexport.png"
+   ]
   },
   "lib/views/social/friends_list_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#9",
+    "etapp_9_socialt_och_komponenter#1",
+    "etapp_9_socialt_och_komponenter#2"
+   ],
+   "images": [
+    "design/skiss-mot-app/101-friends-list.png"
+   ]
   },
   "lib/views/social/group_detail_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#29"
+   ],
+   "images": [
+    "design/skiss-mot-app/102-group-detail.png"
+   ]
   },
   "lib/views/social/menu_preview_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#12"
+   ],
+   "images": [
+    "design/skiss-mot-app/103-menu-preview.png"
+   ]
   },
   "lib/views/social/public_profile_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#9"
+   ],
+   "images": [
+    "design/skiss-mot-app/104-public-profile.png"
+   ]
   },
   "lib/views/social/shared_shopping_lists_view.dart": {
    "status": "skillnader-listade",
@@ -544,19 +765,31 @@
    ]
   },
   "lib/views/social/shared_with_me/shared_recipes_by_friend_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#11"
+   ],
+   "images": [
+    "design/skiss-mot-app/105-shared-recipes-by-friend.png"
+   ]
   },
   "lib/views/social/shared_with_me_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_2_familj_och_socialt#19"
+   ],
+   "images": [
+    "design/skiss-mot-app/106-shared-with-me.png"
+   ]
   },
   "lib/views/social/user_profile_edit_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#4"
+   ],
+   "images": [
+    "design/skiss-mot-app/107-user-profile-edit.png"
+   ]
   },
   "lib/views/sync/sync_queue_view.dart": {
    "status": "skillnader-listade",
@@ -568,9 +801,13 @@
    ]
   },
   "lib/views/tag_detail_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "del_3_sok_och_skalbevis#18"
+   ],
+   "images": [
+    "design/skiss-mot-app/108-tag-detail.png"
+   ]
   },
   "lib/views/unified_shopping_view.dart": {
    "status": "skillnader-listade",
@@ -592,9 +829,13 @@
    ]
   },
   "lib/views/voice_import_view.dart": {
-   "status": "ej-bedömd",
-   "frames": [],
-   "images": []
+   "status": "skillnader-listade",
+   "frames": [
+    "etapp_9_socialt_och_komponenter#22"
+   ],
+   "images": [
+    "design/skiss-mot-app/109-voice-import.png"
+   ]
   }
  }
 }

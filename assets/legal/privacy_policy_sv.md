@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.14.0
+**Senast uppdaterad:** 12 oktober 2026
+**Version:** 1.15.0
 
 ---
 
@@ -30,7 +30,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 
 ### 3.1 Information du tillhandahåller direkt
 
-- **Kontouppgifter:** E-postadress, lösenord (krypterat), användarnamn, profilbild
+- **Kontouppgifter:** E-postadress, lösenord (krypterat) om du loggar in med e-post, användarnamn, profilbild
 - **Tvåstegsverifiering (frivillig):** Om du slår på tvåstegsverifiering sparar vi en hemlig nyckel som kopplar din autentiseringsapp till kontot, och skyddade versioner av dina reservkoder. Själva reservkoderna sparas aldrig i läsbar form.
 - **Profilinformation:** Displaynamn, biografi, matpreferenser
 - **Innehåll du skapar:** Recept, menyer, inköpslistor, kommentarer, betyg
@@ -48,6 +48,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 ### 3.3 Information från tredje part
 
 - **Importerade recept:** Recept du importerar från externa webbplatser
+- **Inloggning med Google eller Apple:** Om du väljer "Fortsätt med Google" eller "Fortsätt med Apple" får vi ditt namn, din e-postadress och ditt användar-id hos Google eller Apple. Se avsnitt 6.5.
 
 ### 3.4 Om du provar som gäst
 
@@ -209,13 +210,31 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 
 | Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
 |---------|---------------|---------------|-------------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering, inloggningsuppgifter från Google eller Apple | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
 
 Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje förändring av vår leverantörskedja.
+
+### 6.5 Inloggning med Google eller Apple
+
+Du kan logga in med ditt Google- eller Apple-konto i stället för med e-post och lösenord. Det är frivilligt, och e-post och lösenord fungerar som förut.
+
+**Vad vi får:**
+- **Från Google:** ditt namn, din e-postadress och ditt användar-id hos Google. Google skickar också en länk till din profilbild hos Google. Bilden visas inte och kopieras inte till vår databas, men inloggningstjänsten (Firebase Authentication) sparar länken tillsammans med de andra inloggningsuppgifterna så länge kontot finns.
+- **Från Apple:** ditt namn (bara första gången du loggar in), din e-postadress och ditt användar-id hos Apple. Om du väljer att dölja din e-postadress hos Apple får vi i stället en särskild adress från Apple som Apple vidarebefordrar till din riktiga adress. Vi ser då aldrig din riktiga adress. Ett sådant konto kopplas inte ihop med ett Butlery-konto som du redan har med din riktiga adress, utan blir ett eget konto.
+
+Namnet fyller vi i åt dig när du skapar kontot, och du kan ändra det innan kontot skapas. Finns det redan ett Butlery-konto med samma e-postadress ber vi om ditt Butlery-lösenord en gång och kopplar sedan ihop inloggningssätten.
+
+**Vad Google och Apple får:** de ser att du loggar in i Butlery. Vi skickar inga andra uppgifter från Butlery till dem, utom när vi ber Apple ta bort kopplingen till ditt konto (se nedan). Google och Apple är själva personuppgiftsansvariga för ditt Google- och Apple-konto och behandlar uppgifterna enligt sina egna integritetspolicyer ([Google](https://policies.google.com/privacy), [Apple](https://www.apple.com/legal/privacy/)). De är inte våra personuppgiftsbiträden.
+
+**Rättslig grund:** Fullgörande av avtal (Art. 6.1.b), eftersom du har valt att logga in på det sättet.
+
+**Överföring:** Inloggningen går genom Firebase Authentication (Google LLC, USA), som omfattas av EU-USA Data Privacy Framework och standardavtalsklausuler (se 6.4). Google och Apple ansvarar själva för hur de för över uppgifter om ditt konto utanför EU/EES.
+
+**När du raderar ditt konto:** Har du loggat in med Apple och begär radering i appen på iPhone eller iPad ber vi Apple att ta bort Butlerys koppling till ditt Apple-konto direkt, innan raderingen påbörjas. Om Apple inte svarar raderas kontot ändå. På Android och webben kan vi inte be Apple om det ännu; där kan du själv ta bort Butlery under Logga in med Apple i inställningarna för ditt Apple-konto. Har du loggat in med Google kan du själv ta bort Butlerys åtkomst i inställningarna för ditt Google-konto.
 
 ---
 
@@ -227,6 +246,8 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 - Lämpliga skyddsåtgärder finns på plats
 - Dina rättigheter enligt GDPR upprätthålls
 
+Loggar du in med Google eller Apple går inloggningen genom Firebase Authentication, med samma skydd (se avsnitt 6.5).
+
 ---
 
 ## 8. Hur länge sparar vi dina uppgifter?
@@ -234,6 +255,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
+| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
@@ -270,12 +292,13 @@ Du har följande rättigheter enligt GDPR:
 ### 9.3 Rätt till radering (Art. 17 - "Rätten att bli glömd")
 - Radera ditt konto och alla dina uppgifter
 - **Hur:** Profil → Kontohantering → Radera konto
-- **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt.
+- **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt. Har du loggat in med Apple ångrar du raderingen genom att logga in med Apple igen. Apple frågar då på nytt om du vill använda Butlery med ditt Apple-konto.
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
 - Exportera alla dina uppgifter i maskinläsbart format (JSON)
 - **Hur:** Profil → Kontohantering → Exportera mina data
 - **Format:** JSON (universellt format)
+- **Inloggningssätt:** Exporten visar vilka inloggningssätt som är kopplade till kontot (e-post och lösenord, Google eller Apple) och e-postadressen från Google eller Apple. Inloggningsnycklar (token) och länken till profilbilden ingår inte.
 
 ### 9.5 Rätt till begränsning (Art. 18)
 - Begränsa behandling av dina uppgifter

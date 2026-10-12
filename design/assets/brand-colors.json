@@ -1,8 +1,8 @@
 {
   "$schema": "./brand-colors.schema.json",
   "$id": "butlery-brand-colors/1",
-  "version": "1.0",
-  "date": "2026-08-02",
+  "version": "1.1",
+  "date": "2026-10-11",
   "$note": "EXTERNA VARUMÄRKESIDENTITETER — citat, inte design. De tokeniseras inte och får inte ändras för att passa Butlerys palett. Låg tidigare hårdkodade i tools/gen-app-theme.mjs, vilket gjorde generatorn till en parallell designkälla.",
   "owner": "PRODUKT",
   "provenance": "Färgerna är respektive varumärkes officiella primärfärg enligt deras publicerade riktlinjer. Ändras endast när varumärket självt ändrar sin identitet, aldrig av designskäl.",
@@ -57,6 +57,42 @@
     },
     "generic": {
       "color": "#6B7280"
+    },
+    "google": {
+      "color": "#4285F4",
+      "note": "Google G, blue part (Sign in with Google branding guidelines)"
+    },
+    "googleRed": {
+      "color": "#EA4335",
+      "note": "Google G, red part"
+    },
+    "googleYellow": {
+      "color": "#FBBC05",
+      "note": "Google G, yellow part"
+    },
+    "googleGreen": {
+      "color": "#34A853",
+      "note": "Google G, green part"
+    },
+    "googleButtonLight": {
+      "color": "#747775",
+      "background": "#FFFFFF",
+      "text": "#1F1F1F",
+      "note": "Sign in with Google button, light theme: stroke, fill, text"
+    },
+    "googleButtonDark": {
+      "color": "#8E918F",
+      "background": "#131314",
+      "text": "#E3E3E3",
+      "note": "Sign in with Google button, dark theme: stroke, fill, text"
+    },
+    "appleBlack": {
+      "color": "#000000",
+      "note": "Sign in with Apple, black style (Apple HIG)"
+    },
+    "appleWhite": {
+      "color": "#FFFFFF",
+      "note": "Sign in with Apple, white style (Apple HIG)"
     }
   }
 }

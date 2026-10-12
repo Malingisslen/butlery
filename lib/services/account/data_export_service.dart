@@ -271,6 +271,7 @@ class DataExportService extends BaseService {
       'two_step_verification': _complianceManager.exportTwoStepVerification(
         userId,
       ),
+      'sign_in_methods': _complianceManager.exportSignInMethods(userId),
       'preferences': _preferencesManager.exportPreferences(userId),
       'notifications': _preferencesManager.exportNotifications(userId),
       // BUT-1957: `users/{uid}/notifications`, the subcollection. NOT the same
