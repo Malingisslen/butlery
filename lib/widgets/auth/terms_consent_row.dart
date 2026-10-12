@@ -35,8 +35,8 @@ class TermsConsentRow extends StatelessWidget {
           // The visible text beside the box is the screen-reader stop for this
           // checkbox, so the box itself stays out of the tree.
           // The box stands on the form's left edge (tokens.json
-          // controls.checkbox, B-37): the 48 dp square is pulled 12 dp left so
-          // its padding hangs outside the row.
+          // controls.checkbox): the 48 dp square is pulled left so its padding
+          // hangs outside the row.
           ExcludeSemantics(
             child: SizedBox(
               width: ButleryCheckbox.boxSize + AppDimensions.space8,

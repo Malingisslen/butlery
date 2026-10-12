@@ -192,7 +192,7 @@ class _DetailsToggle extends StatelessWidget {
   }
 }
 
-/// One switch as drawn: a 24 px checkbox, the title 13/700 in text.primary
+/// One switch as drawn: a checkbox, the title 13/700 in text.primary
 /// and the description 12/400 in text.secondary, at least 48 dp tall.
 class _SwitchRow extends StatelessWidget {
   const _SwitchRow({

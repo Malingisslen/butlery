@@ -18,8 +18,8 @@ void main() {
 
       expect(tester.getSize(find.byType(ButleryCheckbox)).width, 48);
       expect(tester.getSize(find.byType(ButleryCheckbox)).height, 48);
-      // Material's 18 dp box is scaled to the token's 24 dp.
-      expect(tester.getSize(find.byType(Checkbox)), const Size(24, 24));
+      // Material's 18 dp box is scaled to the token size, 20 dp.
+      expect(tester.getSize(find.byType(Checkbox)), const Size(20, 20));
     });
 
     testWidgets('a tap on the box toggles once', (tester) async {
@@ -50,7 +50,7 @@ void main() {
   });
 
   group('ButleryCheckboxMark', () {
-    testWidgets('draws the state at 24 dp and takes no tap', (tester) async {
+    testWidgets('draws the state at 20 dp and takes no tap', (tester) async {
       var taps = 0;
       await _pump(
         tester,
@@ -63,7 +63,7 @@ void main() {
 
       final box = tester.widget<Checkbox>(find.byType(Checkbox));
       expect(box.value, isTrue);
-      expect(tester.getSize(find.byType(Checkbox)), const Size(24, 24));
+      expect(tester.getSize(find.byType(Checkbox)), const Size(20, 20));
 
       await tester.tap(find.byType(Checkbox));
       // The row around the mark owns the tap, so it reaches the row once.

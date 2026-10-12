@@ -21,7 +21,7 @@ class ButleryCheckbox extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
 
   /// tokens.json controls.checkbox.size, drawn on the field's edge.
-  static const double boxSize = 24;
+  static const double boxSize = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class ButleryCheckbox extends StatelessWidget {
   }
 }
 
-/// The token's 24 dp box, scaled up from Material's 18 dp one.
+/// The token-sized box, scaled up from Material's 18 dp one.
 class _TokenBox extends StatelessWidget {
   const _TokenBox({required this.value, required this.onChanged});
 
@@ -82,7 +82,7 @@ class _TokenBox extends StatelessWidget {
     );
   }
 
-  // The theme holds the edge and corner at the token's 24 dp; the scale
+  // The theme holds the edge and corner at the token's size; the scale
   // below would enlarge both, so they are drawn smaller to land on the token.
   static CheckboxThemeData _preScaled(ThemeData theme) {
     final base = theme.checkboxTheme;
