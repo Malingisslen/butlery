@@ -168,11 +168,20 @@ Widget _cooking() {
     recipe: RecipeFactory.build(
       id: 'r1',
       title: 'Krämig svamppasta med timjan',
-      ingredients: ['400 g svamp', '350 g pasta', '2 dl grädde'],
+      ingredients: [
+        '400 g färska champinjoner',
+        '3 dl grädde',
+        '400 g pasta',
+        '2 st vitlöksklyftor',
+        '50 g parmesan, riven',
+      ],
       instructions: [
         'Skiva svampen och stek den gyllene i smör.',
-        'Koka pastan al dente i saltat vatten.',
-        'Rör ner grädden och timjan, och vänd ner pastan.',
+        'Tillsätt grädden och låt sjuda 15 min under omrörning.',
+        'Koka pastan enligt anvisning, spara lite pastavatten.',
+        'Rör ner timjan och vänd ner pastan.',
+        'Smaka av med salt och peppar.',
+        'Servera med riven parmesan.',
       ],
       portions: 4,
     ),

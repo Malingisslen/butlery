@@ -83,6 +83,10 @@ class FamilyRatingBreakdownViewModel extends BaseViewModel {
   int get familyCount => _summary.familyRatingCount;
   List<DinerRatingDisplay> get rows => _rows;
 
+  bool isCurrentUser(DinerRatingDisplay row) =>
+      row.member.type == HouseholdMemberType.user &&
+      row.member.memberId == _permissionService.currentUserId;
+
   /// Subscribe to live family ratings for this recipe (BUT-1461) so the
   /// breakdown updates when another member rates on their own device. Loading
   /// clears once the first emission resolves; the subscription is cancelled in

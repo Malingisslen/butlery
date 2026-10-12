@@ -10,7 +10,12 @@ import 'package:butlery/models/admin/ops_event.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
+import 'package:butlery/models/parsing/field_correction.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsing_correction.dart';
+import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
+import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/services/admin/metrics_assembler.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -27,6 +32,8 @@ class _MockAssembler extends Mock implements MetricsAssembler {}
 class _MockOps extends Mock implements OpsLogRepository {}
 
 class _MockParsing extends Mock implements ParsingCorrectionRepository {}
+
+class _MockSiteConfigs extends Mock implements SiteConfigRepository {}
 
 class _MockReports extends Mock implements ReportService {}
 
@@ -92,17 +99,17 @@ final reviewAdminHosts = <String, StateHost>{
       when(() => repo.getRecentEvents(limit: any(named: 'limit'))).thenAnswer(
         (_) async => [
           OpsEvent(
-            type: 'cleanupExpiredTrash',
+            type: 'notification_cleanup',
             executedAt: DateTime(2026, 9, 28, 3),
             deletedCount: 12,
           ),
           OpsEvent(
-            type: 'cleanupOldAuditLogs',
+            type: 'audit_log_cleanup',
             executedAt: DateTime(2026, 9, 27, 3),
             deletedCount: 340,
           ),
           OpsEvent(
-            type: 'cleanupGuestAccounts',
+            type: 'system_events_cleanup',
             executedAt: DateTime(2026, 9, 26, 3),
           ),
         ],
@@ -117,10 +124,37 @@ final reviewAdminHosts = <String, StateHost>{
       when(repo.getDomainStats).thenAnswer(
         (_) async => {'ica.se': 14, 'koket.se': 9, 'arla.se': 4},
       );
+      ParsingCorrection fixed({
+        FieldCorrection? portions,
+        FieldCorrection? time,
+      }) => ParsingCorrection.create(
+        recipeId: 'r',
+        userId: 'u',
+        source: ImportSource.url,
+        originalQuality: 0.5,
+        portionsCorrection: portions,
+        timeCorrection: time,
+      );
+      const edit = FieldCorrection(originalValue: 'a', correctedValue: 'b');
       when(
         () => repo.getByDomain(any(), limit: any(named: 'limit')),
-      ).thenAnswer((_) async => []);
+      ).thenAnswer((inv) async {
+        return switch (inv.positionalArguments.first) {
+          'koket.se' => [fixed(time: edit)],
+          'arla.se' => [fixed(portions: edit)],
+          _ => <ParsingCorrection>[],
+        };
+      });
       TestServiceLocator.registerMock<ParsingCorrectionRepository>(repo);
+      final configs = _MockSiteConfigs();
+      when(configs.getAllConfigs).thenAnswer(
+        (_) async => const [
+          SiteConfig(domain: 'ica.se', successCount: 97, failureCount: 3),
+          SiteConfig(domain: 'koket.se', successCount: 94, failureCount: 6),
+          SiteConfig(domain: 'arla.se', successCount: 89, failureCount: 11),
+        ],
+      );
+      TestServiceLocator.registerMock<SiteConfigRepository>(configs);
       return const ParsingDetailsView();
     },
   ),

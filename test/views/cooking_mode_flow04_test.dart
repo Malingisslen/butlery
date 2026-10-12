@@ -424,7 +424,10 @@ void main() {
         await openCooking(tester, results: results);
         await next(tester);
         await next(tester);
-        expect(find.text(sv.cookingModeStepOf(3, 3)), findsOneWidget);
+        expect(
+          find.text(sv.cookingModeStepOf(3, 3).toUpperCase()),
+          findsOneWidget,
+        );
 
         final navigator = tester.state<NavigatorState>(find.byType(Navigator));
         unawaited(navigator.maybePop());
@@ -433,7 +436,10 @@ void main() {
 
         await tester.tap(find.text(sv.cookingExitConfirmStay));
         await tester.pumpAndSettle();
-        expect(find.text(sv.cookingModeStepOf(3, 3)), findsOneWidget);
+        expect(
+          find.text(sv.cookingModeStepOf(3, 3).toUpperCase()),
+          findsOneWidget,
+        );
         expect(results, isEmpty);
 
         unawaited(navigator.maybePop());
@@ -476,7 +482,10 @@ void main() {
 
           expect(effects.calls, isNot(contains('lock')));
           expect(tester.takeException(), isNull);
-          expect(find.text(sv.cookingModeStepOf(1, 3)), findsOneWidget);
+          expect(
+            find.text(sv.cookingModeStepOf(1, 3).toUpperCase()),
+            findsOneWidget,
+          );
         },
       );
     }
@@ -535,7 +544,10 @@ void main() {
       tester.view.physicalSize = const Size(1366, 1024);
       await tester.pumpAndSettle();
 
-      expect(find.text(sv.cookingModeStepOf(2, 3)), findsOneWidget);
+      expect(
+        find.text(sv.cookingModeStepOf(2, 3).toUpperCase()),
+        findsOneWidget,
+      );
       expect(timers.isRunningFor('step-1'), isTrue);
       timers.resetTimer('step-1');
     });

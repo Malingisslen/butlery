@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/models/admin/ops_event.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
-import 'package:butlery/views/admin/widgets/admin_help_text.dart';
-import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
+import 'package:butlery/views/admin/ops_event_label.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/admin/admin_table.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only ops-log tab: recent scheduled-job runs from `system_events`.
@@ -69,7 +70,7 @@ class _OpsLogContent extends StatelessWidget {
   Widget _body(BuildContext context, OpsLogViewModel vm) {
     final l10n = context.l10n;
     if (vm.isLoading && vm.events.isEmpty) {
-      return StateWidget.loading(message: context.l10n.loadingOpsLog);
+      return StateWidget.loading(message: l10n.loadingOpsLog);
     }
     if (vm.error != null && vm.events.isEmpty) {
       return StateWidget.error(message: vm.error!, onAction: vm.refresh);
@@ -80,122 +81,65 @@ class _OpsLogContent extends StatelessWidget {
         icon: ButleryIcons.server,
       );
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final now = DateTime.now();
+    return ListView(
+      padding: const EdgeInsets.all(AppDimensions.space16),
       children: [
-        AdminHelpText(text: l10n.adminOpsHelp),
-        Padding(
-          padding: const EdgeInsets.all(AppDimensions.space12),
-          child: Wrap(
-            spacing: AppDimensions.space8,
-            runSpacing: AppDimensions.space8,
-            children: [
-              AdminStatCard(
-                label: l10n.adminOpsLastRun,
-                value: _formatDateTime(vm.lastRun),
+        SectionHeading(l10n.adminOpsSectionTitle),
+        const SizedBox(height: AppDimensions.space8),
+        AdminTable(
+          columns: [
+            AdminTableColumn(label: l10n.adminOpsColTime, flex: 2),
+            AdminTableColumn(label: l10n.adminOpsColType, flex: 5),
+            AdminTableColumn(label: l10n.adminOpsColDeleted, alignEnd: true),
+          ],
+          rows: [
+            for (final e in vm.events)
+              AdminTableRow(
+                cells: [
+                  _formatTime(e.executedAt, now),
+                  opsEventLabel(l10n, e.type),
+                  e.deletedCount != null ? '${e.deletedCount}' : '—',
+                ],
               ),
-              AdminStatCard(
-                label: l10n.adminOpsEventCount,
-                value: '${vm.eventCount}',
-              ),
-            ],
-          ),
-        ),
-        const _HeaderRow(),
-        Expanded(
-          child: ListView.separated(
-            itemCount: vm.events.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (_, i) => _EventRow(event: vm.events[i]),
-          ),
+          ],
+          footer: const _SparseNote(),
         ),
       ],
     );
   }
 }
 
-String _formatDateTime(DateTime? d) {
+class _SparseNote extends StatelessWidget {
+  const _SparseNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final base = TintedNote.textStyle(context);
+    return TintedNote.band(
+      child: Text.rich(
+        TextSpan(
+          style: base,
+          children: [
+            TextSpan(
+              text: '${l10n.adminOpsSparseTitle} ',
+              style: AppTextStyles.labelLarge.copyWith(color: base.color),
+            ),
+            TextSpan(text: l10n.adminOpsSparseBody),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Clock time for today's runs, day and month for older ones, so the column
+/// stays short.
+String _formatTime(DateTime? d, DateTime now) {
   if (d == null) return '—';
   String two(int n) => n.toString().padLeft(2, '0');
-  return '${d.year}-${two(d.month)}-${two(d.day)} '
-      '${two(d.hour)}:${two(d.minute)}';
-}
-
-class _HeaderRow extends StatelessWidget {
-  const _HeaderRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    return Container(
-      color: cs.surfaceContainerHighest,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space8,
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 4, child: Text(l10n.adminOpsColType, style: _h)),
-          Expanded(
-            flex: 4,
-            child: Text(l10n.adminOpsColTime, style: _h),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              l10n.adminOpsColDeleted,
-              style: _h,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static final TextStyle _h = AppTextStyles.labelMedium;
-}
-
-class _EventRow extends StatelessWidget {
-  final OpsEvent event;
-  const _EventRow({required this.event});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space8,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              event.type,
-              style: AppTextStyles.bodyMedium,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Text(
-              _formatDateTime(event.executedAt),
-              style: AppTextStyles.bodyMedium,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              event.deletedCount != null ? '${event.deletedCount}' : '—',
-              style: AppTextStyles.bodyMedium,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  final clock = '${two(d.hour)}:${two(d.minute)}';
+  final today = d.year == now.year && d.month == now.month && d.day == now.day;
+  return today ? clock : '${d.day}/${d.month} $clock';
 }

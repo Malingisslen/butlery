@@ -26,6 +26,7 @@ class SwipeHintBanner extends StatefulWidget {
     this.seenKey = recipeSwipeSeenKey,
     this.icon = ButleryIcons.hand,
     this.message,
+    this.onInk = false,
   });
 
   /// SharedPreferences key for the once-per-device dismiss flag.
@@ -37,6 +38,10 @@ class SwipeHintBanner extends StatefulWidget {
   /// Hint copy. When null, falls back to the recipe-swipe string so the
   /// zero-arg constructor keeps its original behaviour.
   final String? message;
+
+  /// Drawn on the ink base (cooking mode): a tonal on-ink surface with paper
+  /// text, as Skarmar v12 del 1 #lagastaende draws the tip.
+  final bool onInk;
 
   /// Default key for the recipe-list swipe hint (BUT-982).
   static const String recipeSwipeSeenKey = 'butlery_hint_recipe_swipe_seen';
@@ -78,6 +83,7 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
   Widget build(BuildContext context) {
     if (_visible != true) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
+    final foreground = widget.onInk ? cs.onPrimary : cs.onSurface;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -93,7 +99,9 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
       decoration: BoxDecoration(
         // The information surface, without a border (B83-2b), with the
         // control radius (B83-2c).
-        color: context.modeColors.surfaceTintWarning,
+        color: widget.onInk
+            ? AppModeColors.surfaceRaisedOnInk()
+            : context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Row(
@@ -101,14 +109,16 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
           ButleryIcon(
             widget.icon,
             size: AppDimensions.iconSizeM,
-            color: cs.onSurface,
+            color: foreground,
           ),
           const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               widget.message ?? context.l10n.recipeSwipeHintText,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppModeColors.textBody(cs.brightness),
+                color: widget.onInk
+                    ? cs.onPrimary
+                    : AppModeColors.textBody(cs.brightness),
               ),
             ),
           ),
@@ -118,7 +128,7 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
               size: AppDimensions.iconSizeS,
             ),
             tooltip: context.l10n.commonDismiss,
-            color: cs.onSurface,
+            color: foreground,
             onPressed: _dismiss,
           ),
         ],
