@@ -1,6 +1,5 @@
-// Mer, omtänkt del 4: the group header's meta line follows the viewer's role
-// and the member count, the household toggle is an admin-only row, and an
-// empty description falls back to the shared copy.
+// The group header: the household switch is an admin-only row, and the
+// description shows only when the group has one.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,8 +9,7 @@ import 'package:butlery/views/social/group_detail/group_detail_header.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
-const _householdToggle = 'Markera som hushåll'; // householdToggle
-const _noDescription = 'Ingen beskrivning'; // groupNoDescription
+const _householdToggle = 'Det här är hushållet'; // householdToggle
 
 FriendCategory _group({
   List<String> members = const ['owner-uid'],
@@ -31,7 +29,6 @@ Widget _app(
   bool isAdmin = false,
   bool isHousehold = false,
   ValueChanged<bool>? onToggleHousehold,
-  int? memberCount,
 }) => createLocalizedTestApp(
   wrapInScrollView: true,
   child: Builder(
@@ -41,49 +38,30 @@ Widget _app(
       isAdmin: isAdmin,
       isHousehold: isHousehold,
       onToggleHousehold: onToggleHousehold,
-      memberCount: memberCount,
     ),
   ),
 );
 
 void main() {
-  testWidgets(
-    'a non-admin with one friend and no memberCount sees "1 medlem" and no toggle',
-    (tester) async {
-      await tester.pumpWidget(
-        _app(_group(), onToggleHousehold: (_) {}),
-      );
+  testWidgets('a non-admin gets no household switch', (tester) async {
+    await tester.pumpWidget(_app(_group(), onToggleHousehold: (_) {}));
 
-      expect(find.text('1 medlem'), findsOneWidget);
-      expect(find.textContaining('du är admin'), findsNothing);
-      expect(find.text(_householdToggle), findsNothing);
-    },
-  );
+    expect(find.text(_householdToggle), findsNothing);
+  });
 
-  testWidgets(
-    'an admin with memberCount 3 sees the admin meta and can toggle household',
-    (tester) async {
-      bool? toggledTo;
-      await tester.pumpWidget(
-        _app(
-          _group(),
-          isAdmin: true,
-          memberCount: 3,
-          onToggleHousehold: (v) => toggledTo = v,
-        ),
-      );
+  testWidgets('an admin can switch the household on', (tester) async {
+    bool? toggledTo;
+    await tester.pumpWidget(
+      _app(_group(), isAdmin: true, onToggleHousehold: (v) => toggledTo = v),
+    );
 
-      // memberCount wins over the one-entry friend list.
-      expect(find.text('3 medlemmar · du är admin'), findsOneWidget);
-      expect(find.text('1 medlem'), findsNothing);
-      expect(find.text(_householdToggle), findsOneWidget);
+    expect(find.text(_householdToggle), findsOneWidget);
 
-      await tester.tap(find.text(_householdToggle));
-      await tester.pump();
+    await tester.tap(find.text(_householdToggle));
+    await tester.pump();
 
-      expect(toggledTo, isTrue);
-    },
-  );
+    expect(toggledTo, isTrue);
+  });
 
   testWidgets('toggling an already-household group reports false', (
     tester,
@@ -104,11 +82,13 @@ void main() {
     expect(toggledTo, isFalse);
   });
 
-  testWidgets('an empty-string description shows the no-description copy', (
+  testWidgets('a description is shown and an empty one is not replaced', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(_group(description: '')));
+    await tester.pumpWidget(_app(_group(description: 'Söndagsmiddag')));
+    expect(find.text('Söndagsmiddag'), findsOneWidget);
 
-    expect(find.text(_noDescription), findsOneWidget);
+    await tester.pumpWidget(_app(_group(description: '')));
+    expect(find.text('Ingen beskrivning'), findsNothing);
   });
 }

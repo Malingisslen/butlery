@@ -11,15 +11,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
-/// Skill-level selector + cuisine affinity chips, bound to [viewModel].
+/// Skill-level tabs and the favourite-cuisines row, bound to [viewModel].
 class CookingPreferenceControls extends StatelessWidget {
   final UserProfileViewModel viewModel;
 
@@ -27,95 +29,112 @@ class CookingPreferenceControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atMax =
-        viewModel.cuisineAffinities.length >=
-        UserProfileViewModel.maxCuisineAffinities;
-
+    final l10n = context.l10n;
+    final cuisines = viewModel.cuisineAffinities;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Skill level
-        Text(
-          context.l10n.profileCookingSkill,
-          style: AppTextStyles.labelMedium,
-        ),
+        SectionHeading(l10n.profileCookingSkill),
         const SizedBox(height: AppDimensions.space4),
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<CookingSkillLevel>(
-            segments: [
-              ButtonSegment(
-                value: CookingSkillLevel.beginner,
-                label: Text(context.l10n.profileCookingSkillBeginner),
-              ),
-              ButtonSegment(
-                value: CookingSkillLevel.intermediate,
-                label: Text(context.l10n.profileCookingSkillIntermediate),
-              ),
-              ButtonSegment(
-                value: CookingSkillLevel.advanced,
-                label: Text(context.l10n.profileCookingSkillAdvanced),
-              ),
-            ],
-            selected: viewModel.cookingSkillLevel != null
-                ? {viewModel.cookingSkillLevel!}
-                : {},
-            emptySelectionAllowed: true,
-            onSelectionChanged: (selection) {
-              viewModel.updateCookingSkillLevel(
-                selection.isEmpty ? null : selection.first,
-              );
-            },
-            style: ButtonStyle(
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
-              ),
+        // Nullable: no level chosen is a valid state, and tapping the chosen
+        // one again clears it, as the segmented control it replaces did.
+        UnderlineTabs<CookingSkillLevel?>(
+          values: CookingSkillLevel.values,
+          selected: viewModel.cookingSkillLevel,
+          onChanged: (level) => viewModel.updateCookingSkillLevel(
+            level == viewModel.cookingSkillLevel ? null : level,
+          ),
+          labelOf: (level) => switch (level) {
+            CookingSkillLevel.beginner => l10n.profileCookingSkillBeginner,
+            CookingSkillLevel.intermediate =>
+              l10n.profileCookingSkillIntermediate,
+            CookingSkillLevel.advanced => l10n.profileCookingSkillAdvanced,
+            null => '',
+          },
+        ),
+        const SizedBox(height: AppDimensions.space8),
+        ButleryListSection(
+          rows: [
+            ButleryListRow(
+              label: l10n.profileCuisineAffinities,
+              subtitle: cuisines.isEmpty
+                  ? l10n.profileCuisineAffinitiesHint
+                  : cuisines.join(', '),
+              onTap: () => _chooseCuisines(context),
             ),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space12),
-
-        // Cuisine affinities
-        Text(
-          context.l10n.profileCuisineAffinities,
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.space4),
-        Text(
-          atMax
-              ? context.l10n.profileCuisineAffinitiesMax
-              : context.l10n.profileCuisineAffinitiesHint,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: atMax
-                ? context.modeColors.warning
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space4),
-        Wrap(
-          spacing: AppDimensions.space4,
-          runSpacing: AppDimensions.space4,
-          children: CuisineConfig.cuisines.map((cuisine) {
-            final selected = viewModel.cuisineAffinities.contains(cuisine.tag);
-            return PressFill(
-              surface: selected ? PressSurface.ink : PressSurface.base,
-              child: FilterChip(
-                label: Text(cuisine.tag),
-                selected: selected,
-                onSelected: (value) {
-                  if (!value || !atMax) {
-                    viewModel.toggleCuisineAffinity(cuisine.tag);
-                  }
-                },
-              ),
-            );
-          }).toList(),
+          ],
         ),
       ],
+    );
+  }
+
+  void _chooseCuisines(BuildContext context) {
+    showButlerySheet<void>(
+      context: context,
+      builder: (_) => _CuisineSheet(viewModel: viewModel),
+    );
+  }
+}
+
+/// Up to five cuisines, each a toggle; the sheet follows the view model so a
+/// choice shows at once.
+class _CuisineSheet extends StatelessWidget {
+  const _CuisineSheet({required this.viewModel});
+
+  final UserProfileViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final atMax =
+            viewModel.cuisineAffinities.length >=
+            UserProfileViewModel.maxCuisineAffinities;
+        return SingleChildScrollView(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            AppDimensions.layoutMarginOf(context),
+            0,
+            AppDimensions.layoutMarginOf(context),
+            AppDimensions.layoutMargin,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeading(l10n.profileCuisineAffinities),
+              const SizedBox(height: AppDimensions.space4),
+              Text(
+                atMax
+                    ? l10n.profileCuisineAffinitiesMax
+                    : l10n.profileCuisineAffinitiesHint,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: atMax
+                      ? context.modeColors.warning
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              ButleryListSection(
+                rows: [
+                  for (final cuisine in CuisineConfig.cuisines)
+                    ButleryListRow.toggle(
+                      label: cuisine.tag,
+                      checked: viewModel.cuisineAffinities.contains(
+                        cuisine.tag,
+                      ),
+                      // A sixth cannot be added; a chosen one can always go.
+                      enabled:
+                          !atMax ||
+                          viewModel.cuisineAffinities.contains(cuisine.tag),
+                      onChanged: (_) =>
+                          viewModel.toggleCuisineAffinity(cuisine.tag),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

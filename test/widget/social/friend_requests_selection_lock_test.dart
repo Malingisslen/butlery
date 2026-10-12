@@ -27,18 +27,21 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_theme.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+
+Finder get _bulkAccept =>
+    find.byKey(const ValueKey('friendRequests.bulkAccept'));
+Finder get _bulkCancel =>
+    find.byKey(const ValueKey('friendRequests.bulkCancel'));
 
 void main() {
   late MockUnifiedFriendsService mockFriendsService;
@@ -196,8 +199,29 @@ void main() {
   /// from a profile this suite does not stub, so the checkbox is the stable
   /// handle rather than any text.
   Future<void> selectBoth(WidgetTester tester) async {
-    expect(find.byType(Checkbox), findsNWidgets(2));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(FriendRequestsView)),
+    );
+    await tester.tap(find.text(l10n.socialRequestsSelect));
+    await tester.pump();
+    // Two incoming and two sent rows, each with a checkbox, incoming first.
+    expect(find.byType(Checkbox), findsNWidgets(4));
     for (var i = 0; i < 2; i++) {
+      await tester.tap(find.byType(Checkbox).at(i));
+      await tester.pump();
+    }
+  }
+
+  /// Chooses the two sent requests, which sit after the incoming rows.
+  Future<void> selectSent(WidgetTester tester) async {
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(FriendRequestsView)),
+    );
+    if (find.text(l10n.socialRequestsSelect).evaluate().isNotEmpty) {
+      await tester.tap(find.text(l10n.socialRequestsSelect));
+      await tester.pump();
+    }
+    for (var i = 2; i < 4; i++) {
       await tester.tap(find.byType(Checkbox).at(i));
       await tester.pump();
     }
@@ -216,33 +240,30 @@ void main() {
       tester.element(find.byType(FriendRequestsView)),
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ButleryTopBar),
-        matching: find.byIcon(ButleryIcons.listCheck),
-      ),
-    );
-    await settle(tester);
-    await tester.tap(find.text(l10n.socialAcceptCount(2)).last);
+    await tester.tap(_bulkAccept);
     await settle(tester);
     await tester.tap(find.text(l10n.socialAcceptAll));
     return l10n;
   }
 
-  VoidCallback? fabPress(WidgetTester tester) => tester
-      .widget<FloatingActionButton>(find.byType(FloatingActionButton))
-      .onPressed;
-
-  /// The app-bar menu is the second way into a batch, and it locks separately
-  /// from the FAB — a lock on one of them is not a lock.
-  bool menuEnabled(WidgetTester tester) => tester
-      .widget<PopupMenuButton<String>>(
+  VoidCallback? bulkAcceptPress(WidgetTester tester) => tester
+      .widget<FilledButton>(
         find.descendant(
-          of: find.byType(ButleryTopBar),
-          matching: find.byType(PopupMenuButton<String>),
+          of: _bulkAccept,
+          matching: find.byWidgetPredicate((w) => w is FilledButton),
         ),
       )
-      .enabled;
+      .onPressed;
+
+  /// The decline action is the second way into a batch, and it locks
+  /// separately from the accept — a lock on one of them is not a lock.
+  bool declineEnabled(WidgetTester tester) =>
+      tester
+          .widget<OutlinedButton>(
+            find.byKey(const ValueKey('friendRequests.bulkDecline')),
+          )
+          .onPressed !=
+      null;
 
   testWidgets('the top bar names the page and the page it returns to, above '
       'the detail bottom nav', (tester) async {
@@ -325,14 +346,7 @@ void main() {
     await settle(tester);
 
     // Nothing left to act on, so the batch controls are gone entirely.
-    expect(find.byType(FloatingActionButton), findsNothing);
-    expect(
-      find.descendant(
-        of: find.byType(ButleryTopBar),
-        matching: find.byIcon(ButleryIcons.listCheck),
-      ),
-      findsNothing,
-    );
+    expect(_bulkAccept, findsNothing);
   });
 
   testWidgets('the batch controls are locked while a batch runs and usable '
@@ -346,8 +360,12 @@ void main() {
     await confirmAcceptAll(tester);
     await tester.pump();
 
-    expect(fabPress(tester), isNull, reason: 'locked while the batch runs');
-    expect(menuEnabled(tester), isFalse);
+    expect(
+      bulkAcceptPress(tester),
+      isNull,
+      reason: 'locked while the batch runs',
+    );
+    expect(declineEnabled(tester), isFalse);
     expect(activeBar(), findsOneWidget);
     // The screen-level count, which `activeBar()` cannot carry: that finder is
     // scoped to the bar's own subtree, so a loading line put back into a
@@ -360,8 +378,12 @@ void main() {
     await settle(tester);
 
     // req-2 failed, so a control is still on screen — and pressable again.
-    expect(fabPress(tester), isNotNull, reason: 'unlocked once it finishes');
-    expect(menuEnabled(tester), isTrue);
+    expect(
+      bulkAcceptPress(tester),
+      isNotNull,
+      reason: 'unlocked once it finishes',
+    );
+    expect(declineEnabled(tester), isTrue);
     expect(activeBar(), findsNothing);
   });
 
@@ -377,7 +399,7 @@ void main() {
     final l10n = await confirmAcceptAll(tester);
     await tester.pump();
 
-    expect(fabPress(tester), isNull);
+    expect(bulkAcceptPress(tester), isNull);
 
     mockManagement.releaseRequests();
     await settle(tester);
@@ -387,8 +409,8 @@ void main() {
     // The throws are swallowed per id inside the ViewModel, so they never
     // reach `_runLocked`: this does not exercise its `finally`, and a probe
     // that moves the unlock out of it stays green. Nothing pins that clause.
-    expect(fabPress(tester), isNotNull);
-    expect(menuEnabled(tester), isTrue);
+    expect(bulkAcceptPress(tester), isNotNull);
+    expect(declineEnabled(tester), isTrue);
     expect(find.text(l10n.socialAcceptCount(2)), findsOneWidget);
   });
 
@@ -402,14 +424,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(FriendRequestsView)),
     );
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ButleryTopBar),
-        matching: find.byIcon(ButleryIcons.listCheck),
-      ),
-    );
-    await settle(tester);
-    await tester.tap(find.text(l10n.socialAcceptCount(2)).last);
+    await tester.tap(_bulkAccept);
     await settle(tester);
 
     // The dialog is open and nothing has been written, so a bar here would
@@ -453,15 +468,14 @@ void main() {
     mockManagement.releaseRequests();
     await settle(tester);
 
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(_bulkAccept, findsNothing);
   });
 
   testWidgets('a batch where EVERY id vanished still stops counting them', (
     tester,
   ) async {
     // The worst case, and the one the reconcile was built for: both requests
-    // were cancelled from another device, so nothing lands, and the tab's
-    // empty state hides the "Rensa" button.
+    // were cancelled from another device, so nothing lands.
     //
     // `landed` is EMPTY here, so retainWhere does all the work alone. The
     // non-empty side of that boundary is
@@ -483,7 +497,7 @@ void main() {
     mockManagement.releaseRequests();
     await settle(tester);
 
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(_bulkAccept, findsNothing);
   });
 
   // BUT-2041. Both controls that could show a batch are conditional on a
@@ -499,11 +513,11 @@ void main() {
     final l10n = await confirmAcceptAll(tester);
     await settle(tester);
 
-    await tester.tap(find.text(l10n.commonClear));
+    await tester.tap(find.text(l10n.commonDone));
     await settle(tester);
 
     // The controls are gone with the selection — that part is unchanged.
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(_bulkAccept, findsNothing);
     expect(activeBar(), findsOneWidget);
     expect(
       find.descendant(
@@ -518,79 +532,12 @@ void main() {
     expect(activeBar(), findsNothing);
   });
 
-  testWidgets('switching tab mid-batch does not hide the batch', (
-    tester,
-  ) async {
-    mockManagement.pauseRequests();
-
-    await pumpView(tester);
-    await selectBoth(tester);
-    final l10n = await confirmAcceptAll(tester);
-    await settle(tester);
-
-    await tester.tap(find.text(l10n.socialSent));
-    await settle(tester);
-
-    expect(find.byType(FloatingActionButton), findsNothing);
-    expect(activeBar(), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(BatchActivityBar),
-        matching: loadingLabel(l10n),
-      ),
-      findsOneWidget,
-    );
-
-    mockManagement.releaseRequests();
-    await settle(tester);
-    expect(activeBar(), findsNothing);
-  });
-
-  // BUT-2042: only "Rensa" drops the selection. A tab switch — by tap or by
-  // swipe — and a refresh keep it, so the two ways of switching tab agree.
+  // BUT-2042: only leaving "Välj" drops the selection; a refresh keeps it.
   group('the selection survives', () {
-    Finder acceptFab(AppLocalizations l10n, int count) => find.descendant(
-      of: find.byType(FloatingActionButton),
+    Finder acceptBar(AppLocalizations l10n, int count) => find.descendant(
+      of: _bulkAccept,
       matching: find.text(l10n.socialAcceptCount(count)),
     );
-
-    testWidgets('tapping to the other tab and back', (tester) async {
-      await pumpView(tester);
-      await selectBoth(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(FriendRequestsView)),
-      );
-      expect(acceptFab(l10n, 2), findsOneWidget);
-
-      await tester.tap(find.text(l10n.socialSent));
-      await tester.pumpAndSettle();
-      expect(find.byType(FloatingActionButton), findsNothing);
-
-      await tester.tap(find.text(l10n.socialIncoming));
-      await tester.pumpAndSettle();
-      expect(acceptFab(l10n, 2), findsOneWidget);
-    });
-
-    testWidgets('swiping to the other tab and back', (tester) async {
-      await pumpView(tester);
-      await selectBoth(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(FriendRequestsView)),
-      );
-
-      await tester.fling(
-        find.byType(TabBarView),
-        const Offset(-600, 0),
-        1500,
-      );
-      await tester.pumpAndSettle();
-      // The FAB is per tab, so a swipe alone must rebuild it away.
-      expect(find.byType(FloatingActionButton), findsNothing);
-
-      await tester.fling(find.byType(TabBarView), const Offset(600, 0), 1500);
-      await tester.pumpAndSettle();
-      expect(acceptFab(l10n, 2), findsOneWidget);
-    });
 
     testWidgets('a refresh, minus a request answered elsewhere', (
       tester,
@@ -600,6 +547,7 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(FriendRequestsView)),
       );
+      expect(acceptBar(l10n, 2), findsOneWidget);
 
       mockFriendsService.setFriendsState(
         incomingRequests: [incoming('req-1')],
@@ -611,69 +559,61 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(acceptFab(l10n, 1), findsOneWidget);
+      expect(acceptBar(l10n, 1), findsOneWidget);
     });
 
-    testWidgets('"Rensa" on the sent tab keeps the incoming selection', (
+    testWidgets('"Klar" drops both selections and the batch controls', (
       tester,
     ) async {
       await pumpView(tester);
       await selectBoth(tester);
+      await selectSent(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(FriendRequestsView)),
       );
+      expect(acceptBar(l10n, 2), findsOneWidget);
+      expect(_bulkCancel, findsOneWidget);
 
-      await tester.tap(find.text(l10n.socialSent));
+      await tester.tap(find.text(l10n.commonDone));
       await tester.pumpAndSettle();
-      await selectBoth(tester);
-      await tester.tap(find.text(l10n.commonClear));
-      await tester.pumpAndSettle();
-      expect(find.byTooltip(l10n.socialCancelCount(2)), findsNothing);
+      expect(_bulkAccept, findsNothing);
+      expect(_bulkCancel, findsNothing);
 
-      await tester.tap(find.text(l10n.socialIncoming));
+      // Choosing again starts from nothing, not from the old selection.
+      await tester.tap(find.text(l10n.socialRequestsSelect));
       await tester.pumpAndSettle();
-      expect(acceptFab(l10n, 2), findsOneWidget);
+      expect(_bulkAccept, findsNothing);
     });
   });
 
-  group('the sent tab', () {
+  group('the sent requests', () {
     /// The three handlers are copies, and only the sent one reads
-    /// `_selectedSent`. Driving the incoming tab alone lets a handler that
+    /// `_selectedSent`. Driving the incoming rows alone lets a handler that
     /// clears the wrong set survive the whole repo.
-    Future<AppLocalizations> openSentTabAndSelectBoth(
-      WidgetTester tester,
-    ) async {
+    Future<AppLocalizations> selectBothSent(WidgetTester tester) async {
       await pumpView(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(FriendRequestsView)),
       );
-
-      await tester.tap(find.text(l10n.socialSent));
-      await settle(tester);
-      await selectBoth(tester);
+      await selectSent(tester);
       return l10n;
     }
 
-    /// The IconButton itself, for reading `.onPressed`. `byTooltip` matches
-    /// the Tooltip IconButton builds inside itself, so it is only used for
-    /// tapping — and the ancestor hop is what gets from it back to the button.
-    Finder cancelButton(AppLocalizations l10n, int count) => find.ancestor(
-      of: find.byTooltip(l10n.socialCancelCount(count)),
-      matching: find.byType(IconButton),
+    Finder cancelLabel(AppLocalizations l10n, int count) => find.descendant(
+      of: _bulkCancel,
+      matching: find.text(l10n.socialCancelCount(count)),
     );
 
-    Finder cancelTooltip(AppLocalizations l10n, int count) => find.descendant(
-      of: find.byType(ButleryTopBar),
-      matching: find.byTooltip(l10n.socialCancelCount(count)),
-    );
+    bool cancelEnabled(WidgetTester tester) =>
+        tester.widget<OutlinedButton>(_bulkCancel).onPressed != null;
 
     testWidgets('a partial cancel keeps the failed SENT id selected', (
       tester,
     ) async {
       mockManagement.setManagementState(failingRequestIds: {'sent-2'});
 
-      final l10n = await openSentTabAndSelectBoth(tester);
-      await tester.tap(cancelTooltip(l10n, 2));
+      final l10n = await selectBothSent(tester);
+      await tester.tap(_bulkCancel);
       await settle(tester);
       await tester.tap(find.text(l10n.socialCancelAll));
       await settle(tester);
@@ -681,25 +621,25 @@ void main() {
       // The count going 2 -> 1 is also what kills a handler that drops the
       // landed ids from `_selectedIncoming` instead: the sent selection would
       // still read 2.
-      expect(cancelTooltip(l10n, 1), findsOneWidget);
+      expect(cancelLabel(l10n, 1), findsOneWidget);
     });
 
     testWidgets('a refresh drops a sent request cancelled elsewhere', (
       tester,
     ) async {
-      final l10n = await openSentTabAndSelectBoth(tester);
+      final l10n = await selectBothSent(tester);
 
       mockFriendsService.setFriendsState(
         outgoingRequests: [outgoing('sent-1')],
       );
       await tester.fling(
-        find.byType(RefreshIndicator).last,
+        find.byType(RefreshIndicator).first,
         const Offset(0, 400),
         1500,
       );
       await tester.pumpAndSettle();
 
-      expect(cancelTooltip(l10n, 1), findsOneWidget);
+      expect(cancelLabel(l10n, 1), findsOneWidget);
     });
 
     testWidgets('the cancel control locks while its batch runs', (
@@ -710,8 +650,8 @@ void main() {
         ..pauseRequests();
 
       final handle = tester.ensureSemantics();
-      final l10n = await openSentTabAndSelectBoth(tester);
-      await tester.tap(cancelTooltip(l10n, 2));
+      final l10n = await selectBothSent(tester);
+      await tester.tap(_bulkCancel);
       await settle(tester);
       await tester.tap(find.text(l10n.socialCancelAll));
       await tester.pump();
@@ -721,20 +661,15 @@ void main() {
       // bar animates for as long as the batch runs, so settling never returns.
       await tester.pump(const Duration(milliseconds: 400));
 
-      expect(
-        tester.widget<IconButton>(cancelButton(l10n, 2)).onPressed,
-        isNull,
-        reason: 'locked while the batch runs',
-      );
-      // Inert alone would leave the tab silent about work in flight; the bar
+      expect(cancelEnabled(tester), isFalse, reason: 'locked while it runs');
+      // Inert alone would leave the page silent about work in flight; the bar
       // is what says so, and it lives in the screen rather than in a control.
       expect(activeBar(), findsOneWidget);
-      // The same screen-level count as on the incoming tab, repeated because
-      // this is the tab where the cancel button renders: a loading line put
-      // back into ITS icon slot is invisible to every other assertion here.
+      // The screen-level count: a loading line put back into the control is
+      // invisible to every other assertion here.
       expect(find.byType(PlateLine), findsOneWidget);
       // The announcement, not only the widget. Scoped to the bar WIDGET: the
-      // request cards render an unstubbed display name starting with the same
+      // request rows render an unstubbed display name starting with the same
       // word, so an unscoped finder matches them too.
       expect(
         find.descendant(
@@ -748,62 +683,12 @@ void main() {
       mockManagement.releaseRequests();
       await settle(tester);
 
-      // sent-2 failed, so one request is still selected — the control is back
-      // to its cancel icon and pressable again.
-      expect(
-        tester.widget<IconButton>(cancelButton(l10n, 1)).onPressed,
-        isNotNull,
-      );
+      // sent-2 failed, so one request is still selected and the control is
+      // pressable again.
+      expect(cancelLabel(l10n, 1), findsOneWidget);
+      expect(cancelEnabled(tester), isTrue);
       expect(activeBar(), findsNothing);
       handle.dispose();
     });
   });
-
-  // BUT-2183: the selection bar and the request's own message stand on
-  // surface tokens instead of faded washes.
-  for (final (name, theme) in [
-    ('light', AppTheme.lightTheme),
-    ('dark', AppTheme.darkTheme),
-  ]) {
-    testWidgets('$name: the selection bar is surface.raised and the message '
-        'inset is surface.base on the raised card', (tester) async {
-      final withMessage = [
-        incoming('req-1', message: 'Hej, vi lagar ihop!'),
-        incoming('req-2'),
-      ];
-      mockFriendsService.setFriendsState(incomingRequests: withMessage);
-      mockManagement.setManagementState(incomingRequests: withMessage);
-      await pumpView(tester, theme: theme);
-
-      await tester.tap(find.byType(Checkbox).first);
-      await tester.pump();
-
-      final context = tester.element(find.byType(FriendRequestsView));
-      final l10n = AppLocalizations.of(context);
-      final cs = Theme.of(context).colorScheme;
-
-      Color? fillOf(Finder of) =>
-          (tester
-                      .widget<Container>(
-                        find
-                            .ancestor(of: of, matching: find.byType(Container))
-                            .first,
-                      )
-                      .decoration
-                  as BoxDecoration?)
-              ?.color;
-
-      final bar = find.text(l10n.socialRequestsSelected(1));
-      expect(bar, findsOneWidget);
-      expect(
-        tester
-            .widget<Container>(
-              find.ancestor(of: bar, matching: find.byType(Container)).first,
-            )
-            .color,
-        cs.surfaceContainerHighest,
-      );
-      expect(fillOf(find.text('"Hej, vi lagar ihop!"')), cs.surface);
-    });
-  }
 }

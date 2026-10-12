@@ -74,7 +74,6 @@ const _files = [
   'lib/views/social/menu_preview_view.dart',
   'lib/views/social/public_profile_view.dart',
   'lib/views/social/shared_with_me/shared_content_actions.dart',
-  'lib/views/social/shared_with_me/shared_content_app_bar.dart',
   'lib/views/social/shared_with_me/shared_content_lists.dart',
   'lib/views/social/shared_with_me/shared_recipes_by_friend_view.dart',
   'lib/views/social/shared_with_me_view.dart',

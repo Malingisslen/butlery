@@ -997,7 +997,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Streams the conversation. Admin (creator) can add/remove members + rename; any member can leave. Exposes available-friends-to-add.
 - **Edge cases:** Admin can't remove self (must leave); empty title rejected; conversation missing from stream → cached copy.
 - **Validation:** Admin-only add/remove/rename; non-empty title.
-- **Test coverage:** Verified — `group_detail_viewmodel_test.dart`, `group_info_card_locale_test.dart`.
+- **Test coverage:** Verified — `group_detail_viewmodel_test.dart`.
 
 #### GRP-08: Share recipes with a group
 - **Entry:** "Dela recept" in GroupDetailView.

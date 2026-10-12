@@ -24,6 +24,7 @@ Future<void> _pump(
   WidgetTester tester, {
   Locale locale = const Locale('sv'),
   bool accepting = false,
+  bool selecting = false,
 }) {
   final vm = _MockFriendsVm();
   final now = DateTime.utc(2026, 10, 5, 9);
@@ -65,6 +66,7 @@ Future<void> _pump(
               vm,
               false,
               (_) {},
+              selecting: selecting,
             ),
           ),
         ),
@@ -133,11 +135,11 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('the card says what it does and reads the name once', (
+  testWidgets('in "Välj" the row says what it does and reads the name once', (
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    await _pump(tester);
+    await _pump(tester, selecting: true);
 
     final card = find.bySemanticsLabel(
       RegExp(r'^Vänförfrågan, tryck för att markera\n'),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 
-/// Card displaying a group member with avatar, name, and optional remove button.
+/// A group member as a row: round avatar, name, "· du" after your own, and
+/// "Ta bort" at the end when the member can be removed. Rows go in a
+/// ButleryListSection so they sit between hairlines.
 class GroupMemberItem extends StatelessWidget {
   final String displayName;
   final String? avatarUrl;
@@ -15,7 +15,7 @@ class GroupMemberItem extends StatelessWidget {
   final VoidCallback? onRemove;
 
   /// Makes the whole row tappable. [semanticsLabel] names the action only and
-  /// is merged into the ListTile's node, so the row is a single focus stop.
+  /// is merged into the row's node, so the row is a single focus stop.
   final VoidCallback? onTap;
   final String? semanticsLabel;
 
@@ -30,52 +30,36 @@ class GroupMemberItem extends StatelessWidget {
     this.semanticsLabel,
   });
 
+  static const double _avatarSize = 36;
+
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tile = ListTile(
-      leading: UserDisplayWidgets.avatar(
+    final row = ButleryMediaRow(
+      leading: UserAvatar(
         imageUrl: avatarUrl,
         displayName: displayName,
-        size: ImageSize.medium,
+        explicitSize: _avatarSize,
+        round: true,
         announceName: false,
       ),
-      title: Row(
-        children: [
-          Text(displayName),
-          if (isCurrentUser) ...[
-            const SizedBox(width: AppDimensions.space4),
-            Text(
-              '(${context.l10n.commonYou})',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ],
-      ),
+      title: displayName,
+      titleSuffix: isCurrentUser ? context.l10n.messagingMemberYou : null,
+      onTap: onTap,
       trailing: canRemove
-          ? IconButton(
-              icon: const ButleryIcon(ButleryIcons.minus),
-              color: cs.error,
+          ? TextButton(
               onPressed: onRemove,
-              tooltip: context.l10n.groupRemoveMember,
+              style: ButtonStyle(
+                foregroundColor: WidgetStatePropertyAll(
+                  AppModeColors.textWarning(Theme.of(context).brightness),
+                ),
+              ),
+              child: Text(context.l10n.commonRemove),
             )
           : null,
-      onTap: onTap,
     );
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
-      child: onTap == null
-          ? tile
-          : MergeSemantics(
-              child: Semantics(
-                label: semanticsLabel,
-                button: true,
-                child: tile,
-              ),
-            ),
+    if (onTap == null) return row;
+    return MergeSemantics(
+      child: Semantics(label: semanticsLabel, button: true, child: row),
     );
   }
 }

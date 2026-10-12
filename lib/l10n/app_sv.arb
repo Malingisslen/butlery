@@ -2584,7 +2584,35 @@
       }
     }
   },
-  "groupSharedContent": "Delat innehåll",
+  "groupSharedRecipesLabel": "{count, plural, =1{recept} other{recept}}",
+  "@groupSharedRecipesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedMenusLabel": "{count, plural, =1{meny} other{menyer}}",
+  "@groupSharedMenusLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedListsLabel": "{count, plural, =1{inköpslista} other{inköpslistor}}",
+  "@groupSharedListsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupInvitedLabel": "Inbjuden",
+  "groupInviteLink": "+ Bjud in",
+  "groupMembersHeading": "Medlemmar",
+  "groupShareSheetButton": "Dela recept, meny eller lista",
+  "groupSharedContent": "Delat i gruppen",
   "groupShareShoppingList": "Dela inköpslista",
   "groupShoppingListViewComingSoon": "Inköpslistevisning: {title} (kommer snart)",
   "@groupShoppingListViewComingSoon": {
@@ -3193,11 +3221,12 @@
       }
     }
   },
+  "messagingNewGroupChat": "Ny gruppchatt",
   "messagingNoFriendsAvailable": "Inga vänner tillgängliga",
   "messagingNoFriendsFound": "Inga vänner hittades",
   "messagingSearchFriends": "Sök vänner …",
   "messagingSelectAtLeastTwoMembers": "Välj minst 2 medlemmar nedan",
-  "messagingSelectedMembers": "Valda medlemmar ({count})",
+  "messagingSelectedMembers": "Deltagare · {count} valda",
   "@messagingSelectedMembers": {
     "placeholders": {
       "count": {
@@ -3444,8 +3473,8 @@
     }
   },
   "indicatorBackOnline": "Ansluten igen",
-  "householdToggle": "Markera som hushåll",
-  "householdToggleDescription": "Hushållets allergier sammanställs för menyplanering",
+  "householdToggle": "Det här är hushållet",
+  "householdToggleDescription": "Hushållets allergier räknas med i menyn",
   "householdJoinTitle": "Gå med i hushållet",
   "@householdJoinTitle": {
     "description": "BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet"
@@ -4282,7 +4311,7 @@
   "profileAddAvatar": "Lägg till avatar",
   "profileAvatarRemoved": "Avatar borttagen",
   "profileAvatarUploaded": "Avataren är uppladdad.",
-  "profileBio": "Beskrivning",
+  "profileBio": "Om mig",
   "profileBioHint": "Beskriv dig som matlagare (max 160 tecken)",
   "profileNoBio": "Ingen beskrivning ännu",
   "profileChangeAvatar": "Ändra avatar",
@@ -4297,6 +4326,14 @@
   "profileCuisineAffinitiesHint": "Välj upp till 5 kök",
   "profileCuisineAffinitiesMax": "Max 5 kök valda",
   "profileDisplayName": "Visningsnamn",
+  "profileChangePhoto": "Ändra bild",
+  "@profileChangePhoto": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar"
+  },
+  "profileDisplayNameAvailable": "Ledigt",
+  "@profileDisplayNameAvailable": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free"
+  },
   "profileDisplayNameHint": "Ditt namn som andra ser",
   "profileFormReset": "Formulär återställt",
   "profileLanguage": "Språk",
@@ -4310,10 +4347,10 @@
   },
   "profileLoading": "Laddar profil …",
   "profileNewUser": "Ny användare",
-  "profilePrivacySettings": "Integritetsinställningar",
+  "profilePrivacySettings": "Integritet",
   "profileResetChanges": "Återställ ändringar",
   "profileSaved": "Profilen är sparad.",
-  "profileSaveProfile": "Spara profil",
+  "profileSaveProfile": "Spara ändringar",
   "profileSearchableByEmail": "Sökbar via e-post",
   "profileSearchableByEmailDescription": "Andra kan hitta dig genom din e-postadress",
   "profileShowOnlineStatus": "Visa onlinestatus",
@@ -4982,7 +5019,39 @@
   "sharedNoShoppingLists": "Inga delade inköpslistor",
   "sharedNoShoppingListsDescription": "Inköpslistor som delas med dig visas här",
   "sharedSearchHint": "Sök delat innehåll …",
-  "sharedTabRecipes": "Recept ({count})",
+  "sharedSaveAction": "Spara",
+  "@sharedSaveAction": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own"
+  },
+  "sharedSavedState": "Sparad",
+  "@sharedSavedState": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved"
+  },
+  "sharedFromNameAgo": "från {name} · {time}",
+  "@sharedFromNameAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item",
+    "placeholders": {"name": {"type": "String"}, "time": {"type": "String"}}
+  },
+  "sharedSharedAgo": "delad {time}",
+  "@sharedSharedAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sharedNewMark": "ny",
+  "@sharedNewMark": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item"
+  },
+  "sharedFromHeading": "Från {name}",
+  "@sharedFromHeading": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "sharedFromSummary": "{count, plural, one{{count} recept} other{{count} recept}} · senast {time}",
+  "@sharedFromSummary": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading",
+    "placeholders": {"count": {"type": "int"}, "time": {"type": "String"}}
+  },
+  "sharedTabRecipes": "Recept · {count}",
   "@sharedTabRecipes": {
     "placeholders": {
       "count": {
@@ -4990,7 +5059,7 @@
       }
     }
   },
-  "sharedTabMenus": "Menyer ({count})",
+  "sharedTabMenus": "Menyer · {count}",
   "@sharedTabMenus": {
     "placeholders": {
       "count": {
@@ -4998,7 +5067,7 @@
       }
     }
   },
-  "sharedTabShoppingLists": "Inköpslistor ({count})",
+  "sharedTabShoppingLists": "Listor · {count}",
   "@sharedTabShoppingLists": {
     "placeholders": {
       "count": {
@@ -5443,6 +5512,31 @@
   "socialFindFriends": "Hitta vänner",
   "socialFriendsAndGroups": "Vänner & grupper",
   "socialGroups": "Grupper",
+  "socialFriendsSection": "Vänner · {count}",
+  "@socialFriendsSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSelect": "Välj",
+  "socialRequestsIncomingSection": "Inkommande · {count}",
+  "@socialRequestsIncomingSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSentSection": "Skickade · {count}",
+  "@socialRequestsSentSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialIncoming": "Inkommande",
   "socialLoadingRequests": "Laddar förfrågningar …",
   "socialLoadingSentRequests": "Laddar skickade förfrågningar …",
@@ -14875,6 +14969,125 @@
   "friendProfileRemoveFriend": "Ta bort som vän",
   "@friendProfileRemoveFriend": {
     "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet"
+  },
+  "messagingAboutConversation": "Om samtalet",
+  "@messagingAboutConversation": {
+    "description": "Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page"
+  },
+  "messagingConversationSubline": "{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}",
+  "@messagingConversationSubline": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messagingConversationNameRow": "Samtalets namn",
+  "@messagingConversationNameRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog"
+  },
+  "messagingAddSomeoneRow": "Lägg till någon",
+  "@messagingAddSomeoneRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the friend picker"
+  },
+  "messagingInConversationSection": "Med i samtalet",
+  "@messagingInConversationSection": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title above the members"
+  },
+  "messagingMemberYou": "du",
+  "@messagingMemberYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list"
+  },
+  "messagingRemoveFromConversationTitle": "Ta bort {name} ur samtalet?",
+  "@messagingRemoveFromConversationTitle": {
+    "description": "Skiss rättad spår 7 (2026-10-12): question in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveFromConversationBody": "{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.",
+  "@messagingRemoveFromConversationBody": {
+    "description": "Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingLeaveConversationRow": "Lämna samtalet",
+  "@messagingLeaveConversationRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page"
+  },
+  "messagingLeaveConversationSub": "Du slutar se nya meddelanden. Det du skrivit ligger kvar.",
+  "@messagingLeaveConversationSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the leave row"
+  },
+  "recipeRowMinutes": "{minutes} min",
+  "@recipeRowMinutes": {
+    "description": "Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "publicProfileRecipeCount": "{count, plural, =1{1 publikt recept} other{{count} publika recept}}",
+  "@publicProfileRecipeCount": {
+    "description": "Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendProfileBetweenYou": "Mellan er",
+  "@friendProfileBetweenYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title on the friend profile"
+  },
+  "friendProfileSharedWithYouSub": "Ligger under Delat med mig",
+  "@friendProfileSharedWithYouSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row"
+  },
+  "friendProfilePublicRecipesSub": "Synliga för alla, inte bara för dig",
+  "@friendProfilePublicRecipesSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the public recipes row"
+  },
+  "friendProfileShareLinkRow": "Dela en länk till {owner} profil",
+  "@friendProfileShareLinkRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileShareLinkSub": "Visar den publika sidan, inget ni delat",
+  "@friendProfileShareLinkSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the share-link row"
+  },
+  "profileFriendsLabel": "{count, plural, =1{vän} other{vänner}}",
+  "@profileFriendsLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePublicRecipesLabel": "{count, plural, =1{publikt recept} other{publika recept}}",
+  "@profilePublicRecipesLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "familyAccountsSection": "Hushållets konton",
   "@familyAccountsSection": {

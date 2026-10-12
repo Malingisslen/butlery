@@ -16,6 +16,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 
 /// SharedContentActions - Action methods for shared content
 /// Handles import, dismiss, and other actions for shared content.
@@ -34,6 +36,35 @@ class SharedContentActions {
     final recipe = await recipeViewModel.loadFullRecipe(sharedRecipe);
     if (!context.mounted) return;
     await Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
+  }
+
+  /// Opens the direct conversation with whoever shared something.
+  static Future<void> replyToSender(
+    BuildContext context, {
+    required String userId,
+    required String displayName,
+  }) async {
+    try {
+      final conversationId = await ServiceLocator.get<MessagingService>()
+          .startDirectConversation(
+            otherUserId: userId,
+            otherUserDisplayName: displayName,
+          );
+      if (!context.mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChatViewFacade(conversationId: conversationId),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to start conversation', e);
+      if (context.mounted) {
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.conversationStartFailed,
+        );
+      }
+    }
   }
 
   static Future<void> importRecipe(
