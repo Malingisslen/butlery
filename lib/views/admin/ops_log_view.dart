@@ -90,10 +90,10 @@ class _OpsLogContent extends StatelessWidget {
         AdminTable(
           columns: [
             AdminTableColumn(label: l10n.adminOpsColTime, flex: 3),
-            AdminTableColumn(label: l10n.adminOpsColType, flex: 5),
+            AdminTableColumn(label: l10n.adminOpsColType, flex: 4),
             AdminTableColumn(
               label: l10n.adminOpsColDeleted,
-              flex: 2,
+              flex: 3,
               alignEnd: true,
             ),
           ],
