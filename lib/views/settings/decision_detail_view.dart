@@ -387,7 +387,7 @@ class _AppealBlock extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodySmall.copyWith(color: muted),
+              style: AppTextStyles.captionBase.copyWith(color: muted),
             ),
           ),
         ],

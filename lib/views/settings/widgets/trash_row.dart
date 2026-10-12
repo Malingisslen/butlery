@@ -35,6 +35,7 @@ class TrashRow extends StatelessWidget {
         deleted.month == now.month &&
         deleted.day == now.day;
     return ButleryListRow(
+      emphasis: true,
       label: item.title,
       subtitle: urgent
           ? days == 0

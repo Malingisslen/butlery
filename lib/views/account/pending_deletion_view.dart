@@ -186,6 +186,7 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                           ),
                         ])
                           ButleryListRow.note(
+                            emphasis: true,
                             label: title,
                             subtitle: note,
                             leading: ButleryIcons.trash2,

@@ -107,7 +107,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   TextSpan(text: l10n.consentRequiredNoteBefore),
                   TextSpan(
                     text: l10n.consentRequiredNoteBold,
-                    style: AppTextStyles.bodySmallBold,
+                    style: AppTextStyles.captionBold,
                   ),
                   TextSpan(text: l10n.consentRequiredNoteAfter),
                 ],
@@ -122,24 +122,28 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         title: l10n.consentYourChoices,
         rows: [
           ButleryListRow.toggle(
+            emphasis: true,
             label: l10n.consentAnalytics,
             subtitle: l10n.consentAnalyticsDescription,
             checked: viewModel.analytics,
             onChanged: viewModel.setAnalytics,
           ),
           ButleryListRow.toggle(
+            emphasis: true,
             label: l10n.consentMarketing,
             subtitle: l10n.consentMarketingDescription,
             checked: viewModel.marketing,
             onChanged: viewModel.setMarketing,
           ),
           ButleryListRow.toggle(
+            emphasis: true,
             label: l10n.consentSocial,
             subtitle: l10n.consentSocialDescription,
             checked: viewModel.socialFeatures,
             onChanged: viewModel.setSocialFeatures,
           ),
           ButleryListRow.toggle(
+            emphasis: true,
             label: l10n.consentPushNotifications,
             subtitle: l10n.consentPushNotificationsDescription,
             checked: viewModel.pushNotifications,
@@ -148,6 +152,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           // The model has carried this purpose since consent version 1.1.0
           // and the import checks it; without a switch it could only be lost.
           ButleryListRow.toggle(
+            emphasis: true,
             label: l10n.consentAiProcessing,
             subtitle: l10n.consentAiProcessingDescription,
             checked: viewModel.aiProcessing,
@@ -160,7 +165,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
           child: Text(
             _savedLine(context, viewModel.currentConsent!),
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+            style: AppTextStyles.captionBase.copyWith(color: cs.onSurfaceVariant),
           ),
         ),
       ButleryListSection(

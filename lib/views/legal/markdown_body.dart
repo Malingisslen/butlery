@@ -197,7 +197,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       color: cs.onSurface,
       height: 1.6,
     );
-    final metaStyle = AppTextStyles.bodySmall.copyWith(
+    final metaStyle = AppTextStyles.captionBase.copyWith(
       color: cs.onSurfaceVariant,
     );
     final headingColor = cs.onSurface;

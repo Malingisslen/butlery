@@ -359,7 +359,11 @@ class DataExportView extends StatelessWidget {
           l10n.dataExportIncludesSocial,
           l10n.dataExportIncludesAuditLogs,
         ])
-          ButleryListRow.note(label: line, leading: ButleryIcons.check),
+          ButleryListRow.note(
+            label: line,
+            leading: ButleryIcons.check,
+            emphasis: true,
+          ),
         ButleryListRow.note(
           label: l10n.dataExportSharedDataNote,
           leading: ButleryIcons.info,

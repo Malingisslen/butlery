@@ -115,7 +115,7 @@ class _AppealFormViewState extends State<AppealFormView> {
               const SizedBox(height: AppDimensions.space8),
               Text(
                 owner ? l10n.appealFormOnceOwner : l10n.appealFormOnceReporter,
-                style: AppTextStyles.bodySmall.copyWith(color: muted),
+                style: AppTextStyles.captionBase.copyWith(color: muted),
               ),
               const SizedBox(height: AppDimensions.space16),
               FilledButton(

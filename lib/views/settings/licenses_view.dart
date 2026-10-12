@@ -134,7 +134,7 @@ class _LicensesViewState extends State<LicensesView> {
         children: [
           Text(
             context.l10n.licensesIntro,
-            style: AppTextStyles.bodySmall.copyWith(
+            style: AppTextStyles.captionBase.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -174,7 +174,7 @@ class _LicensesViewState extends State<LicensesView> {
         const SizedBox(height: AppDimensions.space8),
         SelectableText(
           text,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
+          style: AppTextStyles.captionBase.copyWith(height: 1.5),
         ),
       ],
     );

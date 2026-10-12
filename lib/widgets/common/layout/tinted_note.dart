@@ -53,7 +53,7 @@ class TintedNote extends StatelessWidget {
   /// The text style a note's plain text uses; callers add emphasis with
   /// [TextSpan]s on top of it.
   static TextStyle textStyle(BuildContext context) =>
-      AppTextStyles.bodySmall.copyWith(
+      AppTextStyles.captionBase.copyWith(
         color: Theme.of(context).colorScheme.onSurface,
       );
 
@@ -144,7 +144,7 @@ class _LabelledNoteBody extends StatelessWidget {
         children: [
           TextSpan(
             text: '$label ',
-            style: AppTextStyles.bodySmallBold.copyWith(color: base.color),
+            style: AppTextStyles.captionBold.copyWith(color: base.color),
           ),
           TextSpan(text: text),
         ],

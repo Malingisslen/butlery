@@ -28,7 +28,7 @@ Future<void> showConsentHistorySheet(
             padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
             child: Text(
               l10n.consentHistoryEmpty,
-              style: AppTextStyles.bodySmall.copyWith(color: muted),
+              style: AppTextStyles.captionBase.copyWith(color: muted),
             ),
           ),
         ];
@@ -48,7 +48,7 @@ Future<void> showConsentHistorySheet(
                 ),
                 Text(
                   _summary(l10n, entry),
-                  style: AppTextStyles.bodySmall.copyWith(color: muted),
+                  style: AppTextStyles.captionBase.copyWith(color: muted),
                 ),
               ],
             ),
