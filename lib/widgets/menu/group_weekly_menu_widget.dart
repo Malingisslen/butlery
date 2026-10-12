@@ -1,15 +1,10 @@
 /// The group's weekly menu, rendered (BUT-1971).
-///
-/// Direction A from the design round Malin picked on 2026-08-29: the whole week
-/// as a dense row list, empty days visible as empty. Face row on top, week
-/// arrows at the bottom. `_weekList` documents what happens when the rows stop
-/// fitting.
 library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -25,7 +20,11 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_week_grid.dart';
+import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
+import 'package:butlery/widgets/menu/group_menu_dish_sheet.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
 ///
@@ -132,21 +131,20 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       return StateWidget.loading(message: context.l10n.loadingWeeklyMenu);
     }
 
+    final now = clock.now();
+    final todayIndex = vm.weekStart == IsoWeekUtils.weekStartOf(now)
+        ? now.weekday - 1
+        : -1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // In the body, not the app bar: an AppBar's toolbar height does not
-        // follow the text scaler, so a subtitle inside it has a fixed box to
-        // grow in.
-        Padding(
-          padding: const EdgeInsetsDirectional.only(
-            start: AppDimensions.space8,
-            top: AppDimensions.space4,
+        WeekNavHeader(
+          title: context.l10n.weeklyMenuWeekTitle(
+            IsoWeekUtils.isoWeekNumber(vm.weekStart),
           ),
-          child: Text(
-            _weekLabel(context, vm.weekStart),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          range: formatWeekRange(context, vm.weekStart),
+          onPrev: vm.goToPreviousWeek,
+          onNext: vm.goToNextWeek,
         ),
         _FaceRow(vm: vm),
         // Only once a plan document exists: a week nobody has planned yet has
@@ -156,7 +154,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         if (vm.plan != null && !vm.canEdit)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space8,
+              horizontal: AppDimensions.space16,
               vertical: AppDimensions.space4,
             ),
             child: Text(
@@ -165,10 +163,78 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
             ),
           ),
         Expanded(
-          child: vm.isEmptyWeek ? _emptyWeek(context) : _weekList(context, vm),
+          child: vm.isEmptyWeek
+              ? _emptyWeek(context)
+              : SingleChildScrollView(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: CalendarWeekGrid(
+                    weekStart: vm.weekStart,
+                    todayIndex: todayIndex,
+                    cellBuilder: (context, day, slot) =>
+                        _cell(context, vm, day, slot),
+                  ),
+                ),
         ),
-        _WeekArrows(vm: vm),
       ],
+    );
+  }
+
+  /// A place in the week: the dish's name, or a plus that starts a poll when
+  /// the group can. The week is filled by polls, not by picking a dish here.
+  Widget _cell(
+    BuildContext context,
+    GroupWeeklyMenuViewModel vm,
+    DayOfWeek day,
+    MealSlot slot,
+  ) {
+    final entries = [
+      for (final e in vm.entriesFor(day))
+        if (e.slot == slot) e,
+    ];
+    final l10n = context.l10n;
+    if (entries.isEmpty) {
+      final cs = Theme.of(context).colorScheme;
+      final plus = SizedBox(
+        height: kCalendarCellMinHeight,
+        child: Center(
+          child: ButleryIcon(
+            ButleryIcons.plus,
+            size: AppDimensions.iconSizeM,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+      );
+      final start = widget.onStartPoll;
+      if (start == null) return const SizedBox(height: kCalendarCellMinHeight);
+      return Semantics(
+        button: true,
+        label: l10n.groupMenuEmptyAction,
+        excludeSemantics: true,
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+              onTap: start,
+              child: plus,
+            ),
+          ),
+        ),
+      );
+    }
+    return CalendarDishCell(
+      title: entries.first.recipeTitle,
+      extraCount: entries.length - 1,
+      marks: const CalendarCellMarks(),
+      semanticsLabel: l10n.a11yGroupMenuDishDetails,
+      onTap: () => showGroupDishSheet(
+        context: context,
+        vm: vm,
+        day: day,
+        slot: slot,
+        onRemove: _remove,
+      ),
     );
   }
 
@@ -181,24 +247,6 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
           ? null
           : context.l10n.groupMenuEmptyAction,
       onAction: widget.onStartPoll,
-    );
-  }
-
-  /// The whole week, one row per day.
-  ///
-  /// Rows size to their content rather than taking seven `Expanded` slices, and
-  /// the column scrolls when the content does not fit. The `no overflow at
-  /// small sizes` group holds the sizes where a fixed-slice layout clips
-  /// instead, and carries the measurement.
-  Widget _weekList(BuildContext context, GroupWeeklyMenuViewModel vm) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final day in DayOfWeek.values)
-            _DayRow(vm: vm, day: day, onRemove: _remove),
-        ],
-      ),
     );
   }
 
@@ -216,19 +264,6 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
       context,
       context.l10n.groupMenuDishRemoved,
       onUndo: () => unawaited(vm.undoLastRemoval()),
-    );
-  }
-
-  String _weekLabel(BuildContext context, DateTime weekStart) {
-    final end = weekStart.add(const Duration(days: 6));
-    // The month name comes from the active locale, not a hardcoded Swedish
-    // list: a localized frame around untranslated content is the same defect
-    // as a Swedish string in the ViewModel.
-    final locale = Localizations.localeOf(context).toString();
-    final month = DateFormat.MMMM(locale).format(end);
-    return context.l10n.groupMenuWeekRange(
-      IsoWeekUtils.isoWeekNumber(weekStart),
-      '${weekStart.day}–${end.day} $month',
     );
   }
 }
@@ -314,294 +349,6 @@ class _Face extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: scheme.onPrimaryContainer,
         ),
-      ),
-    );
-  }
-}
-
-class _DayRow extends StatelessWidget {
-  final GroupWeeklyMenuViewModel vm;
-  final DayOfWeek day;
-  final Future<void> Function(String entryId) onRemove;
-
-  const _DayRow({
-    required this.vm,
-    required this.day,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final entries = vm.entriesFor(day);
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          // border.subtle (outlineVariant), never a faded divider
-          // (tokens.json:40-53 opacityLadder).
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space8,
-        vertical: AppDimensions.space4,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 44,
-            child: Text(
-              day.displayLabel.toUpperCase(),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                letterSpacing: 0.8,
-              ),
-            ),
-          ),
-          Expanded(
-            child: entries.isEmpty
-                ? Text(
-                    context.l10n.groupMenuNoDish,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Every dish carries its OWN delete control.
-                      for (final entry in entries)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.recipeTitle,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                  Text(
-                                    entry.slot.displayLabel,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  _provenance(context, vm, entry),
-                                ],
-                              ),
-                            ),
-                            if (vm.canEdit)
-                              IconButton(
-                                icon: const ButleryIcon(
-                                  ButleryIcons.x,
-                                  size: AppDimensions.iconSize18,
-                                ),
-                                tooltip: MaterialLocalizations.of(
-                                  context,
-                                ).deleteButtonTooltip,
-                                onPressed: () => onRemove(entry.id),
-                              ),
-                          ],
-                        ),
-                    ],
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// "Föreslagen av Malin · framröstad av 3" under a dish (BUT-1971).
-///
-/// Draws NOTHING when the dish carries no provenance — no row, no "unknown".
-/// Every dish that predates the feature is in that state, and a guessed name is
-/// worse than a missing one.
-///
-/// The proposer gets a NAME and the voters get a COUNT because one name is what
-/// fits this row; the face row above already carries who is in the group.
-Widget _provenance(
-  BuildContext context,
-  GroupWeeklyMenuViewModel vm,
-  WeeklyMenuPlanEntry entry,
-) {
-  final theme = Theme.of(context);
-  final parts = <String>[];
-
-  final proposer = entry.proposedBy;
-  if (proposer != null) {
-    // A uid is never rendered. An unresolved profile drops the half it names
-    // rather than the whole row — the vote count is still true.
-    final name = vm.displayNameFor(proposer);
-    if (name != null && name.trim().isNotEmpty) {
-      parts.add(context.l10n.groupMenuProposedBy(name));
-    }
-  }
-  if (entry.votedInBy.isNotEmpty) {
-    parts.add(context.l10n.groupMenuVotedInBy(entry.votedInBy.length));
-  }
-  if (parts.isEmpty) return const SizedBox.shrink();
-
-  final label = Text(
-    parts.join(' · '),
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: theme.textTheme.bodySmall?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-    ),
-  );
-
-  // The row shows a COUNT because only one name fits it (BUT-1906 measured the
-  // width). The names live one tap away — which is the whole point: Malin's
-  // Art. 15 decision to export other members' voter uids rests on the app
-  // actually showing them, and until this sheet existed it did not.
-  if (entry.votedInBy.isEmpty) return label;
-
-  return Semantics(
-    label: context.l10n.a11yShowVoters,
-    button: true,
-    child: PressFill(
-      surface: PressSurface.base,
-      child: InkWell(
-        onTap: () => _showVoters(context, vm, entry),
-        // The visible row is one line of `bodySmall`, well under the minimum
-        // touch target. Not wrapped in `TappableWrapper`: its `Center` would
-        // re-centre the row in a layout that is deliberately left-aligned. A
-        // control that is hard to hit shows no names, and the Art. 15 decision
-        // to export other members' voter uids rests on the app showing them.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: AppDimensions.minTouchTarget,
-          ),
-          child: Align(alignment: Alignment.centerLeft, child: label),
-        ),
-      ),
-    ),
-  );
-}
-
-void _showVoters(
-  BuildContext context,
-  GroupWeeklyMenuViewModel vm,
-  WeeklyMenuPlanEntry entry,
-) {
-  showButlerySheet<void>(
-    context: context,
-    builder: (sheetContext) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.space8),
-            child: Text(
-              sheetContext.l10n.groupMenuVotersTitle,
-              style: Theme.of(sheetContext).textTheme.titleMedium,
-            ),
-          ),
-          // Scrollable, not a bare column: a clipped
-          // list here would mean the bigger the group, the fewer voters the app
-          // actually shows, which is the one direction the Art. 15 decision
-          // resting on this sheet cannot afford.
-          // Listens to the viewmodel: the sheet is a separate route, so without
-          // this a name that resolves after it opens stays "Okänd medlem" for
-          // the life of the sheet — and the Art. 15 decision to export other
-          // members' voter uids rests on this list showing their names.
-          Flexible(
-            child: ListenableBuilder(
-              listenable: vm,
-              builder: (_, _) => ListView.builder(
-                shrinkWrap: true,
-                itemCount: entry.votedInBy.length,
-                itemBuilder: (_, index) {
-                  final voter = entry.votedInBy[index];
-                  final name = vm.displayNameFor(voter);
-                  return ListTile(
-                    key: ValueKey(voter),
-                    leading: const ButleryIcon(ButleryIcons.vote),
-                    // A uid is never rendered, here either — and a blank display
-                    // name falls back the same way the face row does.
-                    title: Text(
-                      name == null || name.trim().isEmpty
-                          ? sheetContext.l10n.groupMenuUnknownVoter
-                          : name,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _WeekArrows extends StatelessWidget {
-  final GroupWeeklyMenuViewModel vm;
-
-  const _WeekArrows({required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final previous = vm.weekStart.subtract(const Duration(days: 7));
-    final next = vm.weekStart.add(const Duration(days: 7));
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space4,
-        vertical: AppDimensions.space4,
-      ),
-      // Both halves are Expanded so the labels ellipsize instead of forcing the
-      // row wider than the screen.
-      child: Row(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: vm.goToPreviousWeek,
-                icon: const ButleryIcon(ButleryIcons.chevronLeft),
-                label: Text(
-                  context.l10n.groupMenuWeekShort(
-                    IsoWeekUtils.isoWeekNumber(previous),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: vm.goToNextWeek,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        context.l10n.groupMenuWeekShort(
-                          IsoWeekUtils.isoWeekNumber(next),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const ButleryIcon(ButleryIcons.chevronRight),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

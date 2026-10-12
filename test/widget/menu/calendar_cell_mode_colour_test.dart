@@ -1,6 +1,5 @@
-/// BUT-2376: an assigned calendar cell's underline follows the theme's
-/// brightness (context.modeColors), as the feed card does, instead of the
-/// light-mode colour in both modes.
+/// BUT-2376: an assigned calendar cell's border follows the theme's
+/// brightness, instead of the light-mode colour in both modes.
 library;
 
 import 'package:flutter/material.dart';
@@ -12,8 +11,6 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -42,11 +39,11 @@ void main() {
     registerFallbackValue(_FakePlan());
   });
 
-  for (final (mode, theme, expected) in [
-    ('light', AppTheme.lightTheme, AppColors.recipeCardBottomBorder),
-    ('dark', AppTheme.darkTheme, AppColorsDark.recipeCardBottomBorder),
+  for (final (mode, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
   ]) {
-    testWidgets('an assigned cell is underlined in the $mode colour', (
+    testWidgets('an assigned cell is framed in the $mode colour', (
       tester,
     ) async {
       final monday = DateTime(2026, 4, 13);
@@ -93,13 +90,13 @@ void main() {
           wrapInScrollView: true,
           child: Theme(
             data: theme,
-            child: DayCell(
+            child: CalendarWeekTable(
               vm: vm,
               plan: vm.plan!,
-              day: DayOfWeek.mon,
-              isToday: false,
+              todayIndex: -1,
               onTapEmptySlot: (_, _) {},
               onTapRecipe: (_, {presentServings}) {},
+              onTapOvrigt: (_) {},
               roster: const [],
               onTapPresence: (_, _) {},
             ),
@@ -111,21 +108,21 @@ void main() {
       // Premise: the light and dark values differ, so the check below can
       // tell the two modes apart.
       expect(
-        AppColors.recipeCardBottomBorder,
-        isNot(AppColorsDark.recipeCardBottomBorder),
+        AppTheme.lightTheme.colorScheme.outlineVariant,
+        isNot(AppTheme.darkTheme.colorScheme.outlineVariant),
       );
-      expect(find.text('köttbullar'), findsOneWidget);
+      expect(find.text('Köttbullar'), findsOneWidget);
 
-      final underlines = tester
-          .widgetList<Container>(find.byType(Container))
-          .map((c) => c.decoration)
-          .whereType<BoxDecoration>()
-          .map((d) => d.border)
-          .whereType<Border>()
-          .where((b) => b.bottom.width == 2)
-          .map((b) => b.bottom.color)
-          .toList();
-      expect(underlines, [expected]);
+      final frame = tester.widget<Container>(
+        find
+            .ancestor(
+              of: find.text('Köttbullar'),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final border = (frame.decoration! as BoxDecoration).border! as Border;
+      expect(border.bottom.color, theme.colorScheme.outlineVariant);
     });
   }
 }

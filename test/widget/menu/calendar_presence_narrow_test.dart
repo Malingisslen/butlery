@@ -1,17 +1,16 @@
-/// The per-meal presence row fits its cell on a narrow phone.
+/// The week table fits a narrow phone with a household's presence marks.
 ///
-/// Package 7 gave the row's texts the 10.5/700 size (tokens.json
-/// controls.calendarPresenceRow). With overline's 1.5 px tracking the texts
-/// overflowed the slot column at 320–375 dp. This pumps a whole [DayCell] at
-/// phone widths with the real ButlerySans (the test font draws every glyph
-/// one em wide) and a household of two, with nobody home and with everyone
-/// home, in Swedish and English, and expects no layout exception.
+/// A meal not everyone is home for carries a person and a count in the corner
+/// of its cell (B-40: faces live in the sheet). This pumps the whole
+/// [CalendarWeekTable] at phone widths with the real ButlerySans (the test
+/// font draws every glyph one em wide), at normal and large text, with a
+/// household of two and of five, in Swedish and English, and expects no
+/// layout exception.
 library;
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,8 +20,8 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
-import 'package:butlery/views/family/family_widgets.dart' show FamilyAvatar;
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
@@ -53,17 +52,33 @@ WeeklyMenuPlan _plan({required bool nobodyHome}) => WeeklyMenuPlan(
   id: 'u1_2026-W16',
   userId: 'u1',
   weekStartDate: DateTime.utc(2026, 4, 13),
-  entries: const [],
+  entries: [
+    for (final day in DayOfWeek.values)
+      for (final slot in [MealSlot.lunch, MealSlot.middag, MealSlot.ovrigt])
+        WeeklyMenuPlanEntry.create(
+          day: day,
+          slot: slot,
+          recipeId: 'r-${day.name}-${slot.name}',
+          recipeTitle: 'Kräm sig svamp pasta med grön ärtsås',
+        ),
+  ],
   createdAt: DateTime.utc(2026, 4, 13),
   updatedAt: DateTime.utc(2026, 4, 13),
   presenceBySlot: nobodyHome
-      ? const {
-          DayOfWeek.mon: {MealSlot.lunch: [], MealSlot.middag: []},
+      ? {
+          for (final day in DayOfWeek.values)
+            day: const {MealSlot.lunch: [], MealSlot.middag: []},
         }
-      : const {},
+      : {
+          for (final day in DayOfWeek.values)
+            day: const {
+              MealSlot.lunch: ['u1'],
+              MealSlot.middag: ['u1'],
+            },
+        },
 );
 
-Future<void> _pumpMonday(
+Future<void> _pumpWeek(
   WidgetTester tester, {
   required double width,
   required List<HouseholdRosterMember> roster,
@@ -77,6 +92,10 @@ Future<void> _pumpMonday(
 
   final vm = _MockVm();
   when(() => vm.selectionMode).thenReturn(false);
+  when(() => vm.isRecentlyPlaced(any())).thenReturn(true);
+  when(() => vm.isSelected(any())).thenReturn(false);
+  when(() => vm.isAllergenUnsafe(any())).thenReturn(true);
+  when(() => vm.placementOrderOf(any())).thenReturn(null);
 
   await tester.pumpWidget(
     MaterialApp(
@@ -92,15 +111,15 @@ Future<void> _pumpMonday(
       ),
       home: Scaffold(
         body: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: width < 360 ? 20 : 24),
-          child: DayCell(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: CalendarWeekTable(
             vm: vm,
             plan: _plan(nobodyHome: nobodyHome),
-            day: DayOfWeek.mon,
-            isToday: false,
+            todayIndex: 0,
+            roster: roster,
             onTapEmptySlot: (_, _) {},
             onTapRecipe: (_, {presentServings}) {},
-            roster: roster,
+            onTapOvrigt: (_) {},
             onTapPresence: (_, _) {},
           ),
         ),
@@ -109,99 +128,38 @@ Future<void> _pumpMonday(
   );
 }
 
-/// The faces drawn in one of the two presence rows; "+N" in both rows
-/// accounts for everyone the faces leave out, and the portion count is
-/// shown whole: faces give way before the count does (decision B-40).
-int _facesPerRowAccountedFor(
-  WidgetTester tester,
-  int household, {
-  String locale = 'sv',
-  bool countWhole = true,
-}) {
-  final portions = lookupAppLocalizations(
-    Locale(locale),
-  ).menuPresencePortions(household);
-  final counts = find.text(portions);
-  expect(counts, findsNWidgets(2));
-  for (final e in countWhole ? counts.evaluate() : const <Element>[]) {
-    final paragraph = e.renderObject! as RenderParagraph;
-    expect(paragraph.didExceedMaxLines, isFalse, reason: portions);
-  }
-  final faces = find.byType(FamilyAvatar).evaluate().length;
-  expect(faces, greaterThanOrEqualTo(2));
-  expect(faces.isEven, isTrue);
-  final perRow = faces ~/ 2;
-  final rest = household - perRow;
-  // One face may stand alone with the count when "+N" does not fit too.
-  if (rest > 0 && perRow > 1) expect(find.text('+$rest'), findsNWidgets(2));
-  return perRow;
-}
-
 void main() {
   setUpAll(_loadButlerySans);
 
   for (final width in [320.0, 360.0]) {
     for (final locale in ['sv', 'en']) {
-      for (final (roster, nobodyHome) in [
-        (_pair, true),
-        (_pair, false),
-        (_five, false),
-      ]) {
-        final who = nobodyHome ? 'nobody home' : 'all ${roster.length} home';
-        testWidgets('the presence row fits at $width dp ($locale, $who)', (
-          tester,
-        ) async {
-          await _pumpMonday(
-            tester,
-            width: width,
-            roster: roster,
-            locale: locale,
-            nobodyHome: nobodyHome,
-          );
+      for (final textScale in [1.0, 1.6, 2.0]) {
+        for (final (roster, nobodyHome) in [
+          (_pair, true),
+          (_pair, false),
+          (_five, false),
+        ]) {
+          final who = nobodyHome ? 'nobody home' : 'some of ${roster.length}';
+          testWidgets(
+            'the full week with every mark fits at $width dp '
+            '($locale, text x$textScale, $who)',
+            (tester) async {
+              await _pumpWeek(
+                tester,
+                width: width,
+                roster: roster,
+                locale: locale,
+                nobodyHome: nobodyHome,
+                textScale: textScale,
+              );
 
-          expect(tester.takeException(), isNull);
-          if (roster.length > 4) {
-            _facesPerRowAccountedFor(tester, 5, locale: locale);
-          }
-        });
+              expect(tester.takeException(), isNull);
+              // The marks really rendered: without them this proves nothing.
+              expect(find.byKey(CalendarPresenceMark.markKey), findsWidgets);
+            },
+          );
+        }
       }
     }
   }
-
-  testWidgets('five people: faces grow with the width, never past four', (
-    tester,
-  ) async {
-    final seen = <int>[];
-    for (final width in [320.0, 400.0, 440.0, 480.0, 560.0, 680.0, 1000.0]) {
-      await _pumpMonday(tester, width: width, roster: _five);
-      expect(tester.takeException(), isNull, reason: '$width dp');
-      seen.add(_facesPerRowAccountedFor(tester, 5));
-    }
-    for (var i = 1; i < seen.length; i++) {
-      expect(seen[i], greaterThanOrEqualTo(seen[i - 1]), reason: '$seen');
-    }
-    // Every step from one face to four is reached, so each branch of the
-    // fit runs.
-    expect(seen.toSet(), {1, 2, 3, 4}, reason: '$seen');
-  });
-
-  testWidgets('five people at double text size fit, with fewer faces', (
-    tester,
-  ) async {
-    await _pumpMonday(tester, width: 560, roster: _five);
-    final atNormalSize = _facesPerRowAccountedFor(tester, 5);
-
-    await _pumpMonday(tester, width: 560, roster: _five, textScale: 2);
-    expect(tester.takeException(), isNull);
-    // The doubled texts are measured at their real size, so they take room
-    // from the faces.
-    final atDoubleSize = _facesPerRowAccountedFor(tester, 5, countWhole: false);
-    expect(atDoubleSize, lessThan(atNormalSize));
-
-    await _pumpMonday(tester, width: 360, roster: _five, textScale: 2);
-    expect(tester.takeException(), isNull);
-    // At double size one face and the count are the floor; the count may
-    // then be cut with an ellipsis rather than overflow.
-    _facesPerRowAccountedFor(tester, 5, countWhole: false);
-  });
 }

@@ -214,7 +214,7 @@
   "@menuAutoPlacedChangeAction": {
     "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
   },
-  "menuPlacementTitle": "placera i veckan",
+  "menuPlacementTitle": "Placera i veckan",
   "@menuPlacementTitle": {
     "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
   },
@@ -230,7 +230,7 @@
       }
     }
   },
-  "menuPlacementTrayLabel": "Kvar att placera ({count})",
+  "menuPlacementTrayLabel": "{count} kvar att placera",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
@@ -239,7 +239,7 @@
       }
     }
   },
-  "menuPlacementHint": "Tryck på en ledig ruta för att placera {recipe}.",
+  "menuPlacementHint": "Tryck på en ledig plats för {recipe}. Lunch och middag tar en rätt, övrigt tar flera.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
@@ -248,7 +248,7 @@
       }
     }
   },
-  "menuPlacementHintSelect": "Välj ett recept nedan för att placera det.",
+  "menuPlacementHintSelect": "Välj en rätt nedan för att placera den. Lunch och middag tar en rätt, övrigt tar flera.",
   "@menuPlacementHintSelect": {
     "description": "BUT-1241: hint banner when no tray recipe is selected."
   },
@@ -256,7 +256,7 @@
   "@menuPlacementPlaceHere": {
     "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
   },
-  "menuPlacementAutoRest": "Placera resten automatiskt",
+  "menuPlacementAutoRest": "Slumpa resten",
   "@menuPlacementAutoRest": {
     "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
   },
@@ -2949,7 +2949,7 @@
       }
     }
   },
-  "shareGroupMembersCount": "{count} medlemmar",
+  "shareGroupMembersCount": "{count, plural, =1{1 medlem} other{{count} medlemmar}}",
   "@shareGroupMembersCount": {
     "placeholders": {
       "count": {
@@ -9934,9 +9934,41 @@
   "weeklyMenuPrevWeek": "Föregående vecka",
   "weeklyMenuNextWeek": "Nästa vecka",
   "weeklyMenuTodayBadge": "I dag",
+  "weeklyMenuNewMark": "ny",
+  "weeklyMenuLegendNew": "ny",
+  "weeklyMenuLegendAllergen": "tål inte",
+  "weeklyMenuLegendPresence": "hemma, om inte alla",
+  "a11yWeeklyMenuAddDish": "Lägg till rätt på {slot} {day}",
+  "@a11yWeeklyMenuAddDish": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yWeeklyMenuOpenOvrigt": "Visa övrigt på {day}",
+  "@a11yWeeklyMenuOpenOvrigt": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "weeklyMenuEmptyTitle": "Ingen planering än",
   "weeklyMenuEmptyHint": "Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.",
   "weeklyMenuOvrigtAddMore": "+ lägg till",
+  "weeklyMenuOvrigtSheetTitle": "Övrigt på {day}",
+  "@weeklyMenuOvrigtSheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOvrigtSheetAdd": "Lägg till rätt",
   "weeklyMenuOverwriteConfirm": "Detta ersätter din nuvarande planering. Fortsätt?",
   "weeklyMenuLoadError": "Kunde inte ladda veckomenyn",
   "weeklyMenuWeekLabel": "Vecka {weekNum} · {start}–{end}",
@@ -9945,6 +9977,25 @@
       "weekNum": {
         "type": "int"
       },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuWeekTitle": "Vecka {weekNum}",
+  "@weeklyMenuWeekTitle": {
+    "placeholders": {
+      "weekNum": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuWeekRange": "{start}–{end}",
+  "@weeklyMenuWeekRange": {
+    "placeholders": {
       "start": {
         "type": "String"
       },
@@ -11185,10 +11236,24 @@
   "@a11yToggleDiner": {
     "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
   },
-  "menuPresenceSheetTitle": "vem är hemma?",
-  "menuPresenceThisMeal": "denna måltid",
-  "menuPresenceWholeDay": "hela dagen",
+  "menuPresenceSheetTitle": "Vem är hemma?",
+  "menuPresenceThisMeal": "Den här måltiden",
+  "menuPresenceWholeDay": "Hela dagen",
   "menuPresenceNobody": "ingen hemma",
+  "menuPresenceHome": "hemma",
+  "menuPresenceAway": "borta",
+  "menuPresenceHomeSummary": "{home} hemma · {portions} port.",
+  "@menuPresenceHomeSummary": {
+    "placeholders": {
+      "home": {
+        "type": "int"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPresenceOpenRecipe": "Öppna receptet",
   "menuPresencePortions": "{count} port",
   "@menuPresencePortions": {
     "placeholders": {
@@ -11210,7 +11275,7 @@
   },
   "menuPresenceAfterGenerateNotice": "närvaron uppdaterad — planerade rätter ligger kvar",
   "menuPresenceSummaryTitle": "vem är hemma?",
-  "menuPresenceSummaryAllHome": "alla hemma hela veckan",
+  "menuPresenceSummaryAllHome": "Alla hemma hela veckan",
   "menuPresenceSummaryAway": "{names} borta delar av veckan",
   "@menuPresenceSummaryAway": {
     "placeholders": {
@@ -11443,6 +11508,7 @@
   "@a11yShowVoters": {
     "description": "BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework."
   },
+  "a11yGroupMenuDishDetails": "Visa förslag och röster",
   "groupMenuUnknownVoter": "Okänd medlem",
   "@groupMenuUnknownVoter": {
     "description": "BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed."
@@ -11758,6 +11824,18 @@
   "@menuPreviewTitle": {
     "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
   },
+  "menuPreviewSharedLine": "{name} delade menyn {menu} med dig · endast läsa",
+  "@menuPreviewSharedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "menu": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPreviewDecline": "Avböj",
   "emailVerificationResendFailed": "Verifieringsmailet kunde inte skickas.",
   "@emailVerificationResendFailed": {
     "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."
@@ -13622,6 +13700,14 @@
   "hemStartCooking": "Börja laga",
   "@hemStartCooking": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). The one saffron action on Hem: opens cooking mode for the planned dish."
+  },
+  "hemSuggestion": "Förslag",
+  "@hemSuggestion": {
+    "description": "HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3)."
+  },
+  "hemSwapSuggestion": "Byt förslag",
+  "@hemSwapSuggestion": {
+    "description": "HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3)."
   },
   "hemSwapDish": "Byt rätt",
   "@hemSwapDish": {

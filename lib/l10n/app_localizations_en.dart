@@ -276,7 +276,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuAutoPlacedChangeAction => 'Change';
 
   @override
-  String get menuPlacementTitle => 'place in the week';
+  String get menuPlacementTitle => 'Place in the week';
 
   @override
   String menuPlacementProgress(int placed, int total) {
@@ -285,22 +285,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuPlacementTrayLabel(int count) {
-    return 'Left to place ($count)';
+    return '$count left to place';
   }
 
   @override
   String menuPlacementHint(String recipe) {
-    return 'Tap a free cell to place $recipe.';
+    return 'Tap a free place for $recipe. Lunch and dinner take one dish, other takes several.';
   }
 
   @override
-  String get menuPlacementHintSelect => 'Select a recipe below to place it.';
+  String get menuPlacementHintSelect =>
+      'Select a dish below to place it. Lunch and dinner take one dish, other takes several.';
 
   @override
   String get menuPlacementPlaceHere => 'place here';
 
   @override
-  String get menuPlacementAutoRest => 'Place the rest automatically';
+  String get menuPlacementAutoRest => 'Randomise the rest';
 
   @override
   String menuPlacementOverflow(int count) {
@@ -4402,7 +4403,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shareGroupMembersCount(int count) {
-    return '$count members';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -14158,6 +14165,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyMenuTodayBadge => 'Today';
 
   @override
+  String get weeklyMenuNewMark => 'new';
+
+  @override
+  String get weeklyMenuLegendNew => 'new';
+
+  @override
+  String get weeklyMenuLegendAllergen => 'can\'t eat';
+
+  @override
+  String get weeklyMenuLegendPresence => 'home, if not everyone';
+
+  @override
+  String a11yWeeklyMenuAddDish(String slot, String day) {
+    return 'Add a dish for $slot on $day';
+  }
+
+  @override
+  String a11yWeeklyMenuOpenOvrigt(String day) {
+    return 'Show other dishes on $day';
+  }
+
+  @override
   String get weeklyMenuEmptyTitle => 'No plan yet';
 
   @override
@@ -14166,6 +14195,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weeklyMenuOvrigtAddMore => '+ add';
+
+  @override
+  String weeklyMenuOvrigtSheetTitle(String day) {
+    return 'Other dishes on $day';
+  }
+
+  @override
+  String get weeklyMenuOvrigtSheetAdd => 'Add a dish';
 
   @override
   String get weeklyMenuOverwriteConfirm =>
@@ -14177,6 +14214,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String weeklyMenuWeekLabel(int weekNum, String start, String end) {
     return 'Week $weekNum · $start–$end';
+  }
+
+  @override
+  String weeklyMenuWeekTitle(int weekNum) {
+    return 'Week $weekNum';
+  }
+
+  @override
+  String weeklyMenuWeekRange(String start, String end) {
+    return '$start–$end';
   }
 
   @override
@@ -15280,16 +15327,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yToggleDiner => 'Mark as eating';
 
   @override
-  String get menuPresenceSheetTitle => 'who\'s home?';
+  String get menuPresenceSheetTitle => 'Who\'s home?';
 
   @override
-  String get menuPresenceThisMeal => 'this meal';
+  String get menuPresenceThisMeal => 'This meal';
 
   @override
-  String get menuPresenceWholeDay => 'whole day';
+  String get menuPresenceWholeDay => 'Whole day';
 
   @override
   String get menuPresenceNobody => 'nobody home';
+
+  @override
+  String get menuPresenceHome => 'home';
+
+  @override
+  String get menuPresenceAway => 'away';
+
+  @override
+  String menuPresenceHomeSummary(int home, int portions) {
+    return '$home home · $portions servings';
+  }
+
+  @override
+  String get menuPresenceOpenRecipe => 'Open the recipe';
 
   @override
   String menuPresencePortions(int count) {
@@ -15309,7 +15370,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuPresenceSummaryTitle => 'who\'s home?';
 
   @override
-  String get menuPresenceSummaryAllHome => 'everyone home all week';
+  String get menuPresenceSummaryAllHome => 'Everyone home all week';
 
   @override
   String menuPresenceSummaryAway(String names) {
@@ -15557,6 +15618,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yShowVoters => 'Show who voted';
+
+  @override
+  String get a11yGroupMenuDishDetails => 'Show proposal and votes';
 
   @override
   String get groupMenuUnknownVoter => 'Unknown member';
@@ -15819,6 +15883,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPreviewTitle => 'Shared menu';
+
+  @override
+  String menuPreviewSharedLine(String name, String menu) {
+    return '$name shared the menu $menu with you · read only';
+  }
+
+  @override
+  String get menuPreviewDecline => 'Decline';
 
   @override
   String get emailVerificationResendFailed =>
@@ -17670,6 +17742,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hemStartCooking => 'Start cooking';
+
+  @override
+  String get hemSuggestion => 'Suggestion';
+
+  @override
+  String get hemSwapSuggestion => 'Change suggestion';
 
   @override
   String get hemSwapDish => 'Change dish';

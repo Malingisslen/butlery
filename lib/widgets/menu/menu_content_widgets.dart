@@ -1,9 +1,8 @@
 // lib/widgets/menu/menu_content_widgets.dart
 //
-// UI Redesign: Meal type headers with green left border (4px) + light green background
+// The generated menu's content area: summary, hints, errors and the list.
 
 import 'package:flutter/material.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -13,135 +12,17 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/menu/menu_list_rows.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
-import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
-import 'package:butlery/widgets/common/layout/detail_pane.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
-///
-/// **UI Redesign:** Meal type headers now use green left border (4px)
-/// with light green background and uppercase text.
 class MenuContentWidgets {
-  /// Builds the prompt input section.
-  static Widget buildPromptInput(
-    BuildContext context, {
-    required TextEditingController controller,
-    required bool isGenerating,
-    required VoidCallback onClear,
-    required VoidCallback onChanged,
-    FocusNode? focusNode,
-    Widget? voiceButton,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.utensils,
-                size: AppDimensions.iconSizeM,
-                color: cs.onSurface,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Flexible(
-                child: Text(
-                  context.l10n.menuPromptQuestion,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.space8),
-          StyledInput(
-            controller: controller,
-            focusNode: focusNode,
-            enabled: !isGenerating,
-            hint: context.l10n.menuPromptHint,
-            prefixIcon: const ButleryIcon(ButleryIcons.pencil),
-            suffixIcon: (controller.text.isNotEmpty || voiceButton != null)
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (controller.text.isNotEmpty)
-                        IconButton(
-                          icon: ButleryIcon(
-                            ButleryIcons.x,
-                            size: AppDimensions.iconSizeM,
-                            color: cs.onSurfaceVariant,
-                          ),
-                          onPressed: onClear,
-                          tooltip: context.l10n.commonClear,
-                        ),
-                      // Voice prompt (kb-whisper plan): push-to-talk mic —
-                      // transcript lands editable in this same field.
-                      ?voiceButton,
-                    ],
-                  )
-                : null,
-            textInputAction: TextInputAction.done,
-            onChanged: (value) => onChanged(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the generate menu button.
-  ///
-  /// BUT-403: wrapped in Semantics with `btn-generate-menu` identifier so
-  /// the browser a11y tree can locate it without CSS selectors.
-  static Widget buildGenerateButton(
-    BuildContext context, {
-    required MenuViewModel viewModel,
-    required bool hasPrompt,
-    required VoidCallback onGenerate,
-  }) {
-    return Center(
-      key: const ValueKey('test-veckomeny-generate'),
-      child: Semantics(
-        identifier: 'btn-generate-menu',
-        button: true,
-        enabled: !viewModel.isGenerating && hasPrompt,
-        label: viewModel.isGenerating
-            ? context.l10n.menuGenerating
-            : context.l10n.menuGenerate,
-        child: ActionButtons.primaryButton(
-          context,
-          label: viewModel.isGenerating
-              ? context.l10n.menuGenerating
-              : (viewModel.hasMenu
-                    ? context.l10n.menuGenerateNew
-                    : context.l10n.menuGenerate),
-          icon: ButleryIcons.utensils,
-          onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
-          isLoading: viewModel.isGenerating,
-          loadingText: context.l10n.menuGenerating,
-        ),
-      ),
-    );
-  }
-
   /// Builds the menu content area (empty state, error state, or menu list).
   /// UI Redesign: Inline error handling with retry button.
   static Widget buildMenuContent(
@@ -188,7 +69,7 @@ class MenuContentWidgets {
 
     return ListView(
       children: [
-        buildMenuSummary(context, viewModel: viewModel),
+        MenuListTitle(viewModel: viewModel),
         // BUT-1685: a run built on a household roster we could not fully read
         // was filtered by a widened safety floor, not by the family's real
         // allergies — saying "hushållets allergier" would claim a precision
@@ -218,66 +99,10 @@ class MenuContentWidgets {
             recipes: entry.value,
             votingViewModel: votingViewModel,
           ),
-          const Divider(),
         ],
         const SizedBox(
           height: AppDimensions.space24 + AppDimensions.space12,
         ),
-      ],
-    );
-  }
-
-  /// Builds the menu summary header.
-  static Widget buildMenuSummary(
-    BuildContext context, {
-    required MenuViewModel viewModel,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          decoration: BoxDecoration(
-            color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.utensils,
-                color: cs.onPrimaryContainer,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        context.l10n.menuYourWeeklyMenu,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          color: cs.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      context.l10n.menuRecipeCount(viewModel.totalRecipeCount),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space12),
       ],
     );
   }
@@ -384,10 +209,7 @@ class MenuContentWidgets {
     );
   }
 
-  /// Builds a single menu section (category with recipes).
-  ///
-  /// **UI Redesign:** Uses green left border (4px) + light green background
-  /// for meal type headers with uppercase text and letter-spacing.
+  /// One meal of the generated list.
   static Widget buildMenuSection(
     BuildContext context, {
     required MenuViewModel viewModel,
@@ -395,107 +217,11 @@ class MenuContentWidgets {
     required List<Recipe> recipes,
     MenuVotingViewModel? votingViewModel,
   }) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: AppDimensions.space16),
-        // UI Redesign: Meal type header with green left border
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space8 + AppDimensions.space4,
-          ),
-          decoration: BoxDecoration(
-            // Light green background
-            color: cs.onSurface.withValues(alpha: AppOpacity.onPaper10),
-            // Rounded right corners only for left-border effect
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(AppDimensions.radiusControl),
-              bottomRight: Radius.circular(AppDimensions.radiusControl),
-            ),
-            // 4px green left border
-            border: Border(
-              left: BorderSide(
-                color: cs.onSurface,
-                width: 4,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: SectionHeading(
-                  MenuViewHelpers.capitalizeCategory(category),
-                  tone: SectionHeadingTone.strong,
-                ),
-              ),
-              // Swap/refresh button moved to icon only
-              Material(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl,
-                ),
-                child: Semantics(
-                  label: context.l10n.a11yMenuSectionRegenerate(
-                    MenuViewHelpers.capitalizeCategory(category),
-                  ),
-                  button: true,
-                  enabled: viewModel.canEditMenu && !viewModel.isGenerating,
-                  child: PressFill(
-                    surface: PressSurface.base,
-                    child: InkWell(
-                      onTap: !viewModel.canEditMenu || viewModel.isGenerating
-                          ? null
-                          : () => viewModel.regenerateSection(category),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.space8),
-                        child: ButleryIcon(
-                          ButleryIcons.refreshCw,
-                          size: AppDimensions.iconSizeM,
-                          color:
-                              !viewModel.canEditMenu || viewModel.isGenerating
-                              ? cs.onSurfaceVariant
-                              : cs.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppDimensions.space8),
-        // Recipe cards with swap + vote buttons
-        for (int i = 0; i < recipes.length; i++) ...[
-          _MenuRecipeCard(
-            recipe: recipes[i],
-            category: category,
-            viewModel: viewModel,
-            votingViewModel: votingViewModel,
-            slotIndex: i,
-            onTap: () => openDetail(
-              context,
-              Routes.recipeDetail,
-              arguments: recipes[i],
-              selectionKey: recipes[i].id,
-            ),
-          ),
-          if (votingViewModel case final vvm?)
-            MenuSlotVoteSection(
-              voting: vvm,
-              menu: viewModel,
-              category: category,
-              slotIndex: i,
-            ),
-        ],
-      ],
+    return MenuListSection(
+      viewModel: viewModel,
+      category: category,
+      recipes: recipes,
+      votingViewModel: votingViewModel,
     );
   }
 }
@@ -584,224 +310,4 @@ Widget _buildInlineError(
       ),
     ),
   );
-}
-
-/// UI Redesign: Text-only menu recipe item with swap button per mockup.
-/// No images - just recipe title with swap icon on the right.
-class _MenuRecipeCard extends StatelessWidget {
-  const _MenuRecipeCard({
-    required this.recipe,
-    required this.category,
-    required this.viewModel,
-    required this.onTap,
-    this.votingViewModel,
-    this.slotIndex = 0,
-  });
-
-  final Recipe recipe;
-  final String category;
-  final MenuViewModel viewModel;
-  final VoidCallback onTap;
-  final MenuVotingViewModel? votingViewModel;
-  final int slotIndex;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final pane = DetailPaneScope.maybeOf(context);
-    final isOpenOnRight = pane?.isSelected(recipe.id) ?? false;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
-      child: Material(
-        color: cs.surfaceContainerHighest,
-        // The card already sits on surface.raised, which is the value of
-        // surface.selected, so a fill would not show; the chosen card takes
-        // the border instead.
-        shape: isOpenOnRight
-            ? Border.all(color: cs.onSurface, width: 1.5)
-            : null,
-        child: Semantics(
-          label: context.l10n.a11yMenuRecipeOpen,
-          button: true,
-          selected: pane == null ? null : isOpenOnRight,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space16,
-                vertical: AppDimensions.space8,
-              ),
-              child: Row(
-                children: [
-                  // Recipe title + metadata per mockup
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recipe.title,
-                          style: AppTextStyles.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (recipe.timeMinutes != null ||
-                            recipe.portions != null)
-                          Text(
-                            [
-                              if (recipe.timeMinutes != null)
-                                '${recipe.timeMinutes} ${context.l10n.unitMinutesShort}',
-                              if (recipe.portions != null)
-                                '${recipe.portions} ${context.l10n.recipePortionsPlural}',
-                            ].join(' · '),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        // BUT-1464 (PM condition 2): recipe was included via
-                        // the UNKNOWN-soft path while the household tracks
-                        // allergens — mark the uncertainty. Square corners
-                        // per design language.
-                        // BUT-2362: not everyone in the household can eat
-                        // it. Words and an icon, never colour alone.
-                        if (viewModel.isHouseholdUnsafe(recipe))
-                          _HouseholdUnsafeChip(key: ValueKey(recipe.id))
-                        else if (viewModel.isUnknownSoft(recipe.id))
-                          Container(
-                            margin: const EdgeInsets.only(
-                              top: AppDimensions.space4,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.space4,
-                              vertical: AppDimensions.badgePaddingY,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cs.surface,
-                              borderRadius: BorderRadius.zero,
-                              border: Border.all(color: cs.outlineVariant),
-                            ),
-                            child: Text(
-                              context.l10n.menuAllergenUnknownChip,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.space8),
-                  // Vote button (collaborative menus only)
-                  if (votingViewModel case final vvm?) ...[
-                    MenuStartVoteButton(
-                      voting: vvm,
-                      menu: viewModel,
-                      recipe: recipe,
-                      category: category,
-                      slotIndex: slotIndex,
-                    ),
-                    const SizedBox(width: AppDimensions.space4),
-                  ],
-                  // Swap button
-                  Material(
-                    color: cs.surface,
-                    borderRadius: BorderRadius.zero,
-                    child: Semantics(
-                      label: context.l10n.a11yMenuSwapRecipe(recipe.title),
-                      button: true,
-                      enabled: viewModel.canEditMenu && !viewModel.isGenerating,
-                      child: PressFill(
-                        surface: PressSurface.base,
-                        child: InkWell(
-                          onTap:
-                              !viewModel.canEditMenu || viewModel.isGenerating
-                              ? null
-                              : () async {
-                                  final result = await viewModel.swapRecipe(
-                                    recipe,
-                                    category,
-                                  );
-                                  // The ink snackbar, never a saffron fill
-                                  // (Komponentark v1:745-750, :300; PQ-09 = A).
-                                  if (result.recipe == null &&
-                                      context.mounted) {
-                                    SnackBarUtils.showInfo(
-                                      context,
-                                      result.exhaustedMessage ??
-                                          context.l10n.menuNoMoreRecipes,
-                                    );
-                                  } else if (result.recipe != null &&
-                                      context.mounted) {
-                                    SnackBarUtils.showInfo(
-                                      context,
-                                      context.l10n.menuSwapAlternatives(
-                                        result.alternativesRemaining,
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                    );
-                                  }
-                                },
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.space4,
-                            ),
-                            child: ButleryIcon(
-                              ButleryIcons.swapHorizontal,
-                              size: AppDimensions.iconSizeS,
-                              color:
-                                  !viewModel.canEditMenu ||
-                                      viewModel.isGenerating
-                                  ? cs.onSurfaceVariant
-                                  : cs.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// BUT-2362: on a listed dish someone in the household cannot eat.
-class _HouseholdUnsafeChip extends StatelessWidget {
-  const _HouseholdUnsafeChip({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.modeColors;
-    return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.space4),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space4,
-        vertical: AppDimensions.badgePaddingY,
-      ),
-      color: colors.warningContainer,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            ButleryIcons.triangleAlert,
-            size: AppDimensions.iconSizeXs,
-            color: colors.onWarningContainer,
-          ),
-          const SizedBox(width: AppDimensions.space4),
-          Flexible(
-            child: Text(
-              context.l10n.menuAllergenUnsafeForHousehold,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: colors.onWarningContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -6,9 +6,9 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/menu_dish_credit_viewmodel.dart';
-import 'package:butlery/widgets/common/content_card.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/dish_credit_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
@@ -83,74 +83,145 @@ class _MenuPreviewDishList extends StatelessWidget {
       );
     }
 
-    final categories = menuContent.keys.toList();
+    // One row per dish, the category named on its first row, as the approved
+    // picture lists day, dish and time.
+    final rows = <({String category, bool first, Recipe recipe})>[
+      for (final entry in menuContent.entries)
+        for (var i = 0; i < entry.value.length; i++)
+          (category: entry.key, first: i == 0, recipe: entry.value[i]),
+    ];
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
-        final category = categories[index];
-        final recipes = menuContent[category] ?? [];
+        final row = rows[index];
+        return _DishRow(
+          category: row.first ? row.category : null,
+          recipe: row.recipe,
+          credits: credits,
+        );
+      }, childCount: rows.length),
+    );
+  }
+}
 
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppDimensions.space4,
-            AppDimensions.space4,
-            AppDimensions.space4,
-            index == categories.length - 1 ? AppDimensions.space12 : 0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryHeader(
-                title: category,
-                icon: ButleryIcons.utensils,
-                count: recipes.length,
-              ),
-              const SizedBox(height: AppDimensions.space4),
-              for (final recipe in recipes) ...[
-                ContentCard.compactRecipe(
-                  recipe: recipe,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space16,
-                  ),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    '/receptDetalj',
-                    arguments: recipe,
+class _DishRow extends StatelessWidget {
+  const _DishRow({
+    required this.category,
+    required this.recipe,
+    required this.credits,
+  });
+
+  final String? category;
+  final Recipe recipe;
+  final MenuDishCreditViewModel credits;
+
+  static const double _categoryWidth = 72;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final minutes = recipe.timeMinutes;
+    final credit = credits.creditFor(recipe);
+    return Padding(
+      padding: AppDimensions.responsiveContentPadding(context),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Semantics(
+              button: true,
+              child: Material(
+                type: MaterialType.transparency,
+                child: PressFill(
+                  surface: PressSurface.base,
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      '/receptDetalj',
+                      arguments: recipe,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppDimensions.minTouchTarget,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: _categoryWidth,
+                            child: category == null
+                                ? null
+                                : Text(
+                                    category!,
+                                    style: AppTextStyles.labelMediumBold
+                                        .copyWith(color: cs.onSurfaceVariant),
+                                  ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppDimensions.space8,
+                              ),
+                              child: Text(
+                                recipe.title,
+                                style: AppTextStyles.labelLargeBold.copyWith(
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (minutes != null) ...[
+                            const SizedBox(width: AppDimensions.space8),
+                            Text(
+                              '$minutes ${context.l10n.unitMinutesShort}',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                if (credits.creditFor(recipe) case final credit?)
-                  DishCreditLine(
-                    userId: credit.userId,
-                    displayName: credit.displayName,
-                    onReport:
-                        _canReportDish(credits, recipe) && !credit.isViewer
-                        ? () => ReportContentDialog.show(
+              ),
+            ),
+            if (credit != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: _categoryWidth,
+                  bottom: AppDimensions.space4,
+                ),
+                child: DishCreditLine(
+                  userId: credit.userId,
+                  displayName: credit.displayName,
+                  onReport: _canReportDish(credits, recipe) && !credit.isViewer
+                      ? () => ReportContentDialog.show(
+                          context: context,
+                          contentType: ContentType.menuDish,
+                          contentId: credits.menuId,
+                          contentOwnerId: credits.sharerId,
+                          dishId: recipe.id,
+                        )
+                      : null,
+                  onNotMine: _canReportDish(credits, recipe) && credit.isViewer
+                      ? () async {
+                          final filed = await ReportContentDialog.showNotMyDish(
                             context: context,
-                            contentType: ContentType.menuDish,
-                            contentId: credits.menuId,
-                            contentOwnerId: credits.sharerId,
+                            menuId: credits.menuId,
+                            sharerId: credits.sharerId,
                             dishId: recipe.id,
-                          )
-                        : null,
-                    onNotMine:
-                        _canReportDish(credits, recipe) && credit.isViewer
-                        ? () async {
-                            final filed =
-                                await ReportContentDialog.showNotMyDish(
-                                  context: context,
-                                  menuId: credits.menuId,
-                                  sharerId: credits.sharerId,
-                                  dishId: recipe.id,
-                                );
-                            if (filed) credits.withdrawOwnCredit(recipe.id);
-                          }
-                        : null,
-                  ),
-                const SizedBox(height: AppDimensions.space4),
-              ],
-            ],
-          ),
-        );
-      }, childCount: categories.length),
+                          );
+                          if (filed) credits.withdrawOwnCredit(recipe.id);
+                        }
+                      : null,
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
