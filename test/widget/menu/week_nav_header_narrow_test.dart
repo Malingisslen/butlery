@@ -5,9 +5,8 @@
 /// chevrons and the three week actions left it about 88 dp. The header now
 /// moves the actions to a second row when the label does not fit beside
 /// them. This pumps [WeekNavHeader] with the real ButlerySans at 320 and
-/// 360 dp, at 100 % and 200 % text, and expects the label on at most two
-/// lines, no word broken inside, no layout exception, and every action a
-/// 48 dp tap target.
+/// 360 dp, at 100 % and 200 % text, and expects the title and the dates each
+/// on one line, no layout exception, and every action a 48 dp tap target.
 library;
 
 import 'dart:io';
@@ -32,7 +31,8 @@ Future<void> _loadButlerySans() async {
   await loader.load();
 }
 
-const _label = 'Vecka 39 · 21 sep–27 sep';
+const _title = 'Vecka 39';
+const _range = '21 sep–27 sep';
 
 void main() {
   setUpAll(_loadButlerySans);
@@ -61,7 +61,8 @@ void main() {
                 body: Column(
                   children: [
                     WeekNavHeader(
-                      label: _label,
+                      title: _title,
+                      range: _range,
                       onPrev: () {},
                       onNext: () {},
                       onSelectMode: () {},
@@ -77,35 +78,29 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        final paragraph = tester.renderObject<RenderParagraph>(
-          find.byKey(WeekNavHeader.labelKey),
-        );
-        final labelWidth = paragraph.size.width;
-        TextPainter painterFor(String text, {int? maxLines}) => TextPainter(
-          text: TextSpan(text: text, style: paragraph.text.style),
-          textDirection: TextDirection.ltr,
-          textScaler: paragraph.textScaler,
-          maxLines: maxLines,
-        )..layout(maxWidth: labelWidth);
-
-        // At most two lines as laid out.
-        final laidOut = painterFor(_label, maxLines: 2);
-        expect(laidOut.computeLineMetrics().length, lessThanOrEqualTo(2));
-        laidOut.dispose();
-
-        // No word is broken inside: every word fits the label's width on
-        // one line, so the label wraps by words, never letter by letter.
-        for (final word in _label.split(' ')) {
-          final p = painterFor(word);
-          expect(
-            p.computeLineMetrics().length,
-            1,
-            reason: '"$word" must fit on one line of $labelWidth dp',
+        // Title and dates each stay on one line: the label never wraps a
+        // word, let alone a letter, however narrow the phone or large the text.
+        for (final text in [_title, _range]) {
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.descendant(
+              of: find.byKey(WeekNavHeader.labelKey),
+              matching: find.text(text),
+            ),
           );
-          p.dispose();
+          final oneLine = TextPainter(
+            text: TextSpan(text: text, style: paragraph.text.style),
+            textDirection: TextDirection.ltr,
+            textScaler: paragraph.textScaler,
+          )..layout();
+          expect(
+            paragraph.size.height,
+            lessThanOrEqualTo(oneLine.height + 1),
+            reason: '"$text" must fit on one line',
+          );
+          oneLine.dispose();
         }
 
-        // Every button keeps a 48 dp tap target and can be tapped.
+        // Every button is a 48 dp tap target, and can be tapped.
         final buttons = find.byType(IconButton);
         expect(buttons, findsNWidgets(5));
         for (final element in buttons.evaluate()) {
@@ -141,7 +136,8 @@ void main() {
           body: Column(
             children: [
               WeekNavHeader(
-                label: _label,
+                title: _title,
+                range: _range,
                 onPrev: () {},
                 onNext: () {},
                 onSelectMode: () {},
@@ -154,6 +150,7 @@ void main() {
       ),
     );
 
+    expect(find.byKey(WeekNavHeader.labelKey), findsOneWidget);
     expect(find.byKey(WeekNavHeader.actionsRowKey), findsNothing);
   });
 }

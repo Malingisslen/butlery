@@ -25,7 +25,6 @@ const _waiting = <String, int>{
   'lib/widgets/image/components/empty_image_state.dart': 1,
   'lib/widgets/image/image_gallery_widget.dart': 1,
   'lib/widgets/image/image_picker_widget.dart': 1,
-  'lib/widgets/menu/menu_content_widgets.dart': 1,
   'lib/widgets/social/groups/shared_content_card.dart': 1,
   // A tab with its own drawn press (paper at the on-ink 0.18 step).
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart': 1,

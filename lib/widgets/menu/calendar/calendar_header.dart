@@ -1,10 +1,11 @@
 /// Week navigation header + overflow tray for the weekly-menu calendar.
 ///
 /// Extracted from `calendar_cells.dart` (BUT-542) to keep that file under
-/// the 500-line ceiling. Both widgets are stateless and agnostic to the
-/// orchestrator's Provider/routing concerns — nav callbacks + overflow
-/// payload are injected.
+/// the 500-line ceiling. The widgets are agnostic to the orchestrator's
+/// Provider/routing concerns — nav callbacks + overflow payload are injected.
 library;
+
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -20,8 +21,34 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 
+const double _kNavIconWidth = 48;
+
+/// Measured text can come out a pixel or two narrower than it paints.
+const double _kLabelSlack = AppDimensions.space8;
+
+Widget _navIcon({
+  required IconData icon,
+  required Color color,
+  required VoidCallback? onPressed,
+  required String tooltip,
+}) {
+  return IconButton(
+    icon: ButleryIcon(icon),
+    color: color,
+    onPressed: onPressed,
+    tooltip: tooltip,
+    style: IconButton.styleFrom(
+      minimumSize: const Size(_kNavIconWidth, AppDimensions.minTouchTarget),
+      padding: EdgeInsets.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+  );
+}
+
 class WeekNavHeader extends StatelessWidget {
-  final String label;
+  /// "Vecka 31", set bold, and the dates under it.
+  final String title;
+  final String range;
   final VoidCallback onPrev;
   final VoidCallback onNext;
 
@@ -39,7 +66,8 @@ class WeekNavHeader extends StatelessWidget {
 
   const WeekNavHeader({
     super.key,
-    required this.label,
+    required this.title,
+    required this.range,
     required this.onPrev,
     required this.onNext,
     this.onClearWeek,
@@ -57,94 +85,102 @@ class WeekNavHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final style = AppTextStyles.titleSmall.copyWith(color: cs.onSurface);
+    final titleStyle = AppTextStyles.labelLargeBold.copyWith(
+      color: cs.onSurface,
+    );
+    final rangeStyle = AppTextStyles.labelMedium.copyWith(
+      color: cs.onSurfaceVariant,
+    );
     final actions = <Widget>[
       if (onSelectMode != null)
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.listCheck),
-          color: cs.onPrimaryContainer,
+        _navIcon(
+          icon: ButleryIcons.listCheck,
+          color: cs.onSurface,
           onPressed: onSelectMode,
           tooltip: context.l10n.weeklyMenuSelectAction,
         ),
       if (onCopyWeek != null)
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.copy),
-          color: cs.onPrimaryContainer,
+        _navIcon(
+          icon: ButleryIcons.copy,
+          color: cs.onSurface,
           onPressed: onCopyWeek,
           tooltip: context.l10n.weeklyMenuCopyToNextAction,
         ),
       if (onClearWeek != null)
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.trash2),
-          color: cs.onPrimaryContainer,
+        _navIcon(
+          icon: ButleryIcons.trash2,
+          color: cs.onSurface,
           onPressed: onClearWeek,
           tooltip: context.l10n.weeklyMenuClearWeekAction,
         ),
     ];
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space8,
-      ),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor),
-        ),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // The drawing (Skarmar v12 etapp 2, #kalender) puts the week
-          // actions on the label's row. On a narrow phone or with large text
-          // that leaves the label too little room and it breaks letter by
-          // letter, so the actions then move to a second row and the label
-          // keeps the full width between the chevrons.
-          final painter = TextPainter(
-            text: TextSpan(
-              text: label,
-              style: DefaultTextStyle.of(context).style.merge(style),
-            ),
-            textDirection: Directionality.of(context),
-            textScaler: MediaQuery.textScalerOf(context),
-            maxLines: 1,
-          )..layout();
-          final labelWidth = painter.width;
-          painter.dispose();
-          final buttonsInline = 2 + actions.length;
-          final roomInline =
-              constraints.maxWidth -
-              buttonsInline * AppDimensions.minTouchTarget;
-          final inline = actions.isEmpty || roomInline >= labelWidth;
+          // The drawing puts the week actions on the label's row. On a narrow
+          // phone or with large text that leaves the label too little room, so
+          // the actions then move to a second row and the label keeps the
+          // width between the chevrons.
+          double widthOf(String text, TextStyle style) {
+            final painter = TextPainter(
+              text: TextSpan(
+                text: text,
+                style: DefaultTextStyle.of(context).style.merge(style),
+              ),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              maxLines: 1,
+            )..layout();
+            final width = painter.width;
+            painter.dispose();
+            return width;
+          }
 
+          final labelWidth = math.max(
+            widthOf(title, titleStyle),
+            widthOf(range, rangeStyle),
+          );
+          final roomInline =
+              constraints.maxWidth - (2 + actions.length) * _kNavIconWidth;
+          final inline = roomInline >= labelWidth + _kLabelSlack;
+
+          final label = Column(
+            key: labelKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: titleStyle),
+              Text(range, style: rangeStyle),
+            ],
+          );
           final navRow = Row(
             children: [
-              IconButton(
-                icon: const ButleryIcon(ButleryIcons.chevronLeft),
-                color: cs.onPrimaryContainer,
+              _navIcon(
+                icon: ButleryIcons.chevronLeft,
+                color: cs.onSurface,
                 onPressed: onPrev,
                 tooltip: context.l10n.weeklyMenuPrevWeek,
               ),
-              Expanded(
-                child: Text(
-                  label,
-                  key: labelKey,
-                  style: style,
-                  textAlign: TextAlign.center,
-                  softWrap: true,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (inline) ...actions,
-              IconButton(
-                icon: const ButleryIcon(ButleryIcons.chevronRight),
-                color: cs.onPrimaryContainer,
+              // A Flexible beside the Spacer would split the free width
+              // evenly and wrap "Vecka 42", so inline the label takes the
+              // width it measures.
+              if (inline)
+                SizedBox(width: labelWidth + _kLabelSlack, child: label)
+              else
+                Flexible(child: label),
+              _navIcon(
+                icon: ButleryIcons.chevronRight,
+                color: cs.onSurface,
                 onPressed: onNext,
                 tooltip: context.l10n.weeklyMenuNextWeek,
               ),
+              if (inline) ...[const Spacer(), ...actions],
             ],
           );
-          if (inline) return navRow;
+          if (inline || actions.isEmpty) return navRow;
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -296,10 +332,7 @@ class OverflowTray extends StatelessWidget {
         l.weeklyMenuOverflowKeep,
     ].join(' ');
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space8,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: PartialOutcome(
         title: l.weeklyMenuOverflowPlacedCount(placedCount, totalCount),
         message: message,

@@ -205,6 +205,19 @@ void main() {
     recipeTitle: title,
   );
 
+  /// The week shows only a dish's name; who proposed it, who voted it in and
+  /// its removal are in the sheet a tap on the cell opens.
+  Future<void> openDish(
+    WidgetTester tester, [
+    String title = 'Linsgryta med spetskål',
+  ]) async {
+    await tester.tap(find.text(title));
+    await tester.pumpAndSettle();
+  }
+
+  Finder removeButton(String id) =>
+      find.byKey(ValueKey('group-menu-remove-$id'));
+
   group('a refusal and an outage are different screens', () {
     testWidgets('a refusal offers NO retry', (tester) async {
       stubRead(_plan());
@@ -247,9 +260,9 @@ void main() {
   //
   // These do NOT assert the week fits on screen: the rows live in a
   // `SingleChildScrollView`, so their height is unbounded and a too-tall week
-  // scrolls instead of overflowing. Measured, it already scrolls by 210px at 2x
-  // text. What they hold is that nothing overflows at these sizes — probed by
-  // replacing the scroll view with `Expanded` rows, which reddens this group.
+  // scrolls instead of overflowing. What they hold is that nothing overflows
+  // at these sizes — probed by replacing the scroll view with `Expanded` rows,
+  // which reddens this group.
   group('no overflow at small sizes', () {
     testWidgets('320dp at 1x with two meals on one day', (tester) async {
       stubRead(
@@ -308,7 +321,8 @@ void main() {
         ),
       ).thenThrow(saveError);
       await pump(tester);
-      await tester.tap(find.byIcon(ButleryIcons.x));
+      await openDish(tester);
+      await tester.tap(removeButton('e1'));
       await tester.pumpAndSettle();
     }
 
@@ -350,7 +364,8 @@ void main() {
       await pump(tester);
 
       expect(find.text('Linsgryta med spetskål'), findsOne);
-      expect(find.byIcon(ButleryIcons.x), findsNothing);
+      await openDish(tester);
+      expect(removeButton('e1'), findsNothing);
       expect(
         find.text('Du kan se gruppens meny men inte ändra i den.'),
         findsOne,
@@ -414,9 +429,9 @@ void main() {
 
       // The SECOND dish's control. A single per-day control could only ever
       // reach the first, which left the other meal unremovable.
-      final buttons = find.byIcon(ButleryIcons.x);
-      expect(buttons, findsNWidgets(2));
-      await tester.tap(buttons.last);
+      await openDish(tester);
+      expect(removeButton('middag'), findsOneWidget);
+      await tester.tap(removeButton('middag'));
       await tester.pumpAndSettle();
 
       final captured = verify(
@@ -427,6 +442,78 @@ void main() {
         ),
       ).captured;
       expect(captured.single, 'middag');
+    });
+
+    testWidgets('two dishes in one place are counted "+1", and its sheet lists '
+        'exactly those two, each removable', (tester) async {
+      final loaded = _plan(
+        entries: [
+          entry('l1', slot: MealSlot.lunch, title: 'Ugnsbakad lax'),
+          entry('l2', slot: MealSlot.lunch, title: 'Pannkakor'),
+          entry('middag'),
+        ],
+      );
+      stubRead(loaded);
+      await vm.loadWeek(_week);
+      when(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: any(named: 'entryId'),
+        ),
+      ).thenAnswer((invocation) {
+        final id = invocation.namedArguments[#entryId] as String;
+        return loaded.copyWith(
+          entries: loaded.entries.where((e) => e.id != id).toList(),
+        );
+      });
+      when(
+        () => service.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenAnswer((_) async {});
+      await pump(tester);
+
+      // The cell has room for one name; the other dish is only counted.
+      expect(find.text('Ugnsbakad lax +1'), findsOne);
+      expect(find.text('Pannkakor'), findsNothing);
+
+      await openDish(tester, 'Ugnsbakad lax +1');
+      final sheet = find.byType(BottomSheet);
+      expect(
+        find.descendant(of: sheet, matching: find.text('Ugnsbakad lax')),
+        findsOne,
+      );
+      expect(
+        find.descendant(of: sheet, matching: find.text('Pannkakor')),
+        findsOne,
+      );
+      // Same day, other place: not this place's dish.
+      expect(
+        find.descendant(
+          of: sheet,
+          matching: find.text('Linsgryta med spetskål'),
+        ),
+        findsNothing,
+      );
+      expect(removeButton('l1'), findsOne);
+      expect(removeButton('l2'), findsOne);
+
+      await tester.tap(removeButton('l2'));
+      await tester.pumpAndSettle();
+
+      final captured = verify(
+        () => service.removeEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          entryId: captureAny(named: 'entryId'),
+        ),
+      ).captured;
+      expect(captured.single, 'l2');
+      // One dish left in the place: the count is gone with it.
+      expect(find.text('Ugnsbakad lax'), findsOne);
+      expect(find.textContaining('+1'), findsNothing);
     });
 
     testWidgets('offers an undo that puts the dish back', (tester) async {
@@ -449,7 +536,8 @@ void main() {
       ).thenAnswer((_) async {});
 
       await pump(tester);
-      await tester.tap(find.byIcon(ButleryIcons.x));
+      await openDish(tester);
+      await tester.tap(removeButton('e1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Linsgryta med spetskål'), findsNothing);
@@ -495,7 +583,8 @@ void main() {
       });
 
       await pump(tester);
-      await tester.tap(find.byIcon(ButleryIcons.x));
+      await openDish(tester);
+      await tester.tap(removeButton('e1'));
       await tester.pumpAndSettle();
 
       failing = true;
@@ -601,7 +690,10 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      expect(find.text('Föreslagen av Dan · framröstad av 3'), findsOne);
+      await openDish(tester);
+      expect(find.text('Föreslagen av Dan'), findsOne);
+      // Three voters, none of whom resolves: three fallbacks, no uid.
+      expect(find.text('Okänd medlem'), findsNWidgets(3));
     });
 
     // The row is a tap target, so it owes the tap-target Semantics rule. The
@@ -629,18 +721,18 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      final node = tester.getSemantics(find.text('framröstad av 1'));
-      expect(node.label, contains('Visa vilka som röstade'));
+      final node = tester.getSemantics(find.text('Linsgryta med spetskål'));
+      expect(node.label, contains('Visa förslag och röster'));
       // Count the ROW's own sentence, not the label's: the framework
       // concatenates the child text onto the label, so a label that restates
       // it makes a screen reader say it twice. Counting the label's words
       // instead would stay green under exactly that mutation.
       expect(
-        'framröstad av 1'.allMatches(node.label).length,
+        'Linsgryta med spetskål'.allMatches(node.label).length,
         1,
         reason:
-            'the label names the ACTION; the row text is added by the '
-            'framework, so restating it announces the sentence twice',
+            'the label names the ACTION; the cell text is added by the '
+            'framework, so restating it announces the name twice',
       );
       expect(node.flagsCollection.isButton, isTrue);
       handle.dispose();
@@ -669,7 +761,7 @@ void main() {
 
       final region = tester.getRect(
         find.ancestor(
-          of: find.text('framröstad av 1'),
+          of: find.text('Linsgryta med spetskål'),
           matching: find.byType(InkWell),
         ),
       );
@@ -705,8 +797,7 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      await tester.tap(find.text('framröstad av 1'));
-      await tester.pumpAndSettle();
+      await openDish(tester);
       expect(find.text('Okänd medlem'), findsOne);
 
       gate.complete(
@@ -861,11 +952,9 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      // The row drops the proposer half rather than printing an empty name.
-      expect(find.text('framröstad av 1'), findsOne);
-
-      await tester.tap(find.text('framröstad av 1'));
-      await tester.pumpAndSettle();
+      await openDish(tester);
+      // The sheet drops the proposer half rather than printing an empty name.
+      expect(find.textContaining('Föreslagen av'), findsNothing);
       expect(find.text('Okänd medlem'), findsOne);
     });
 
@@ -906,8 +995,7 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      await tester.tap(find.text('framröstad av 20'));
-      await tester.pumpAndSettle();
+      await openDish(tester);
       expect(tester.takeException(), isNull);
 
       // The sheet's own list, not the week's: two scrollables are in the tree
@@ -972,8 +1060,8 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      await tester.tap(find.text('Föreslagen av Malin · framröstad av 3'));
-      await tester.pumpAndSettle();
+      await openDish(tester);
+      expect(find.text('Föreslagen av Malin'), findsOne);
 
       expect(find.text('Röstade på den här rätten'), findsOne);
       expect(find.text('Malin'), findsOne);
@@ -991,13 +1079,16 @@ void main() {
       await pump(tester);
 
       expect(find.text('Linsgryta med spetskål'), findsOne);
+      await openDish(tester);
+      // Premise: the sheet opened, so the absences below mean something.
+      expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.textContaining('Föreslagen av'), findsNothing);
-      expect(find.textContaining('framröstad av'), findsNothing);
+      expect(find.text('Röstade på den här rätten'), findsNothing);
     });
 
-    // A uid is never rendered. An unresolved profile costs the half it names,
-    // not the whole row — the count is still true.
-    testWidgets('keeps the vote count when the name will not resolve', (
+    // A uid is never rendered. An unresolved profile is named as an unknown
+    // member instead of by its uid.
+    testWidgets('names an unresolved profile as unknown, never by its uid', (
       tester,
     ) async {
       stubRead(
@@ -1018,7 +1109,8 @@ void main() {
       await vm.loadWeek(_week);
       await pump(tester);
 
-      expect(find.text('framröstad av 1'), findsOne);
+      await openDish(tester);
+      expect(find.text('Okänd medlem'), findsOne);
       expect(find.textContaining('user-ghost'), findsNothing);
     });
   });
@@ -1049,7 +1141,42 @@ void main() {
         );
       }
       expect(find.text('Linsgryta med spetskål'), findsOne);
-      expect(find.text('Ingen rätt vald'), findsNWidgets(6));
+      // An empty place is a bare cell, not a sentence saying so.
+      expect(find.text('Ingen rätt vald'), findsNothing);
+    });
+
+    testWidgets('an empty place in a planned week starts a poll, and is bare '
+        'when the group cannot start one', (tester) async {
+      stubRead(_plan(entries: [entry('e1')]));
+      await vm.loadWeek(_week);
+      var started = 0;
+      await pump(tester, onStartPoll: () => started++);
+
+      await tester.tap(find.byIcon(ButleryIcons.plus).first);
+      await tester.pumpAndSettle();
+      expect(started, 1);
+
+      await pump(tester);
+      // Premise: the dish is still drawn, so the missing plus is the callback.
+      expect(find.text('Linsgryta med spetskål'), findsOne);
+      expect(find.byIcon(ButleryIcons.plus), findsNothing);
+    });
+
+    testWidgets('the week arrows move the shown week', (tester) async {
+      stubRead(_plan(entries: [entry('e1')]));
+      await vm.loadWeek(_week);
+      await pump(tester);
+      final shown = vm.weekStart;
+
+      await tester.tap(find.byIcon(ButleryIcons.chevronRight));
+      await tester.pumpAndSettle();
+      expect(vm.weekStart, shown.add(const Duration(days: 7)));
+
+      await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(ButleryIcons.chevronLeft));
+      await tester.pumpAndSettle();
+      expect(vm.weekStart, shown.subtract(const Duration(days: 7)));
     });
 
     testWidgets('an empty week asks for a poll, not seven blank rows', (

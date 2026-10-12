@@ -33,6 +33,12 @@ class PresenceOverview extends StatelessWidget {
     required this.onToggleExpanded,
   });
 
+  /// "Elias", "Elias och Petra", "Elias, Petra och Maja".
+  static String _names(List<String> names) {
+    if (names.length < 2) return names.join();
+    return '${names.sublist(0, names.length - 1).join(', ')} och ${names.last}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -49,19 +55,15 @@ class PresenceOverview extends StatelessWidget {
     final summary = away.isEmpty
         ? l10n.menuPresenceSummaryAllHome
         : l10n.menuPresenceSummaryAway(
-            away.map((m) => m.displayName).join(', '),
+            _names([for (final m in away) m.displayName]),
           );
+    final initials = distinctInitials([
+      for (final m in roster) m.displayName,
+    ]);
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(
-        AppDimensions.space16,
-        AppDimensions.space8,
-        AppDimensions.space16,
-        0,
-      ),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(left: BorderSide(color: cs.onSurface, width: 3)),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,26 +78,33 @@ class PresenceOverview extends StatelessWidget {
                 surface: PressSurface.base,
                 child: InkWell(
                   onTap: onToggleExpanded,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
                     ),
                     child: Row(
                       children: [
-                        ButleryIcon(
-                          ButleryIcons.house,
-                          size: AppDimensions.iconSizeS,
-                          color: cs.secondary,
-                        ),
-                        const SizedBox(width: AppDimensions.space4),
+                        if (away.isEmpty)
+                          ButleryIcon(
+                            ButleryIcons.house,
+                            size: AppDimensions.iconSizeM,
+                            color: cs.secondary,
+                          )
+                        else
+                          _AwayFaces(
+                            members: away,
+                            initials: [
+                              for (final m in away) initials[roster.indexOf(m)],
+                            ],
+                          ),
+                        const SizedBox(width: AppDimensions.space12),
                         Expanded(
                           child: Text(
                             summary,
-                            style: AppTextStyles.labelMedium.copyWith(
+                            style: AppTextStyles.labelLargeBold.copyWith(
                               color: cs.onSurface,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -103,8 +112,8 @@ class PresenceOverview extends StatelessWidget {
                           expanded
                               ? ButleryIcons.chevronUp
                               : ButleryIcons.chevronDown,
-                          size: AppDimensions.iconSize18,
-                          color: cs.outline,
+                          size: AppDimensions.iconSizeM,
+                          color: cs.onSurfaceVariant,
                         ),
                       ],
                     ),
@@ -234,6 +243,53 @@ class _GridCell extends StatelessWidget {
                   color: cs.onPrimary,
                 )
               : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// The faces of the members who are away, overlapping, at most three.
+class _AwayFaces extends StatelessWidget {
+  const _AwayFaces({required this.members, required this.initials});
+
+  final List<HouseholdRosterMember> members;
+  final List<String> initials;
+
+  static const double _face = 26;
+  static const int _max = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = members.take(_max).toList();
+    const step = _face - AppDimensions.space8;
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: _face + (shown.length - 1) * step,
+        height: _face,
+        child: Stack(
+          children: [
+            for (var i = 0; i < shown.length; i++)
+              PositionedDirectional(
+                start: i * step,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 2,
+                    ),
+                  ),
+                  child: FamilyAvatar(
+                    name: shown[i].displayName,
+                    color: parseAvatarColor(context, shown[i].avatarColor),
+                    size: _face,
+                    initials: initials[i],
+                    circular: true,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

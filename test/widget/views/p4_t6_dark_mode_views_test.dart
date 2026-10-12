@@ -245,6 +245,7 @@ void main() {
             updatedAt: now,
           ),
         );
+        when(() => vm.weekStart).thenReturn(DateTime(2026, 4, 6));
         when(() => vm.isEligible(any(), any())).thenReturn(false);
         when(() => vm.selectedItem).thenReturn(null);
         when(() => vm.isSessionEntry(any())).thenReturn(true);
@@ -255,7 +256,7 @@ void main() {
         final chip = tester.widget<Container>(
           find
               .ancestor(
-                of: find.text('pannkakor'),
+                of: find.text('Pannkakor'),
                 matching: find.byWidgetPredicate(
                   (w) =>
                       w is Container &&

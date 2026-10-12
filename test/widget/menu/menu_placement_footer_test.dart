@@ -33,6 +33,7 @@ void main() {
           isPlacing: isPlacing,
           onPlaceAuto: () => autoTaps++,
           onPlaceManual: () {},
+          onToShopping: () {},
         ),
       ),
     );
@@ -60,6 +61,98 @@ void main() {
     expect(find.byType(ButtonPlateLine), findsOneWidget);
   });
 
+  Future<void> pumpScaled(
+    WidgetTester tester, {
+    required double textScale,
+    VoidCallback? onManual,
+    VoidCallback? onShopping,
+    bool isShoppingBusy = false,
+  }) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(textScale)),
+            child: Material(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: MenuPlacementChoiceFooter(
+                  onPlaceAuto: () {},
+                  onPlaceManual: onManual ?? () {},
+                  onToShopping: onShopping ?? () {},
+                  isShoppingBusy: isShoppingBusy,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Finder buttonWith(String label) => find.ancestor(
+    of: find.text(label),
+    matching: find.byType(OutlinedButton),
+  );
+
+  testWidgets('manual and shopping buttons each fire their own callback', (
+    tester,
+  ) async {
+    var manual = 0;
+    var shopping = 0;
+    await pumpScaled(
+      tester,
+      textScale: 1.0,
+      onManual: () => manual++,
+      onShopping: () => shopping++,
+    );
+
+    await tester.tap(buttonWith('Jag placerar själv'));
+    expect((manual, shopping), (1, 0));
+    await tester.tap(buttonWith('Till inköpslista'));
+    expect((manual, shopping), (1, 1));
+  });
+
+  testWidgets('at normal text size the two outlined buttons share a row', (
+    tester,
+  ) async {
+    await pumpScaled(tester, textScale: 1.0);
+
+    final manual = tester.getRect(buttonWith('Jag placerar själv'));
+    final shopping = tester.getRect(buttonWith('Till inköpslista'));
+    expect(manual.top, shopping.top);
+    expect(manual.right, lessThanOrEqualTo(shopping.left));
+  });
+
+  testWidgets('at a large text size the two outlined buttons stack and do '
+      'not overflow', (tester) async {
+    await pumpScaled(tester, textScale: 2.0);
+
+    final manual = tester.getRect(buttonWith('Jag placerar själv'));
+    final shopping = tester.getRect(buttonWith('Till inköpslista'));
+    expect(manual.bottom, lessThanOrEqualTo(shopping.top));
+    expect(manual.left, shopping.left);
+    expect(manual.width, shopping.width);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a busy shopping flow marks only the shopping button busy', (
+    tester,
+  ) async {
+    await pumpScaled(tester, textScale: 1.0, isShoppingBusy: true);
+
+    Finder busyAround(String label) => find.ancestor(
+      of: find.text(label),
+      matching: find.byType(BusyButtonSemantics),
+    );
+    expect(busyAround('Till inköpslista'), findsOneWidget);
+    expect(busyAround('Jag placerar själv'), findsNothing);
+    expect(find.byType(BusyButtonSemantics), findsOneWidget);
+  });
+
   testWidgets('both buttons sit above the home-indicator inset', (
     tester,
   ) async {
@@ -79,6 +172,7 @@ void main() {
                   isPlacing: false,
                   onPlaceAuto: () {},
                   onPlaceManual: () {},
+                  onToShopping: () {},
                 ),
               ),
             ),

@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/bold_names_text.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -17,7 +18,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -59,20 +59,26 @@ class MenuPreviewView extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
         child: ButleryPageBody(
           width: PageWidth.text,
-          child: CustomScrollView(
-            slivers: [
-              // BUT-1162: surface silent collaborative-edit conflict
-              // resolutions on this shared menu (drop-in; idle-collapses).
-              SliverToBoxAdapter(
-                child: ConflictBanner(
-                  filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
+          child: Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    // BUT-1162: surface silent collaborative-edit conflict
+                    // resolutions on this shared menu (drop-in; idle-collapses).
+                    SliverToBoxAdapter(
+                      child: ConflictBanner(
+                        filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
+                      ),
+                    ),
+                    _buildMenuHeader(context),
+                    MenuPreviewDishes(sharedMenu: sharedMenu),
+                    _buildImportNote(context),
+                  ],
                 ),
               ),
-              _buildMenuHeader(context),
-              MenuPreviewDishes(sharedMenu: sharedMenu),
               _buildActionButtons(context),
             ],
           ),
@@ -82,208 +88,126 @@ class MenuPreviewView extends StatelessWidget {
   }
 
   Widget _buildMenuHeader(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final line = context.l10n.menuPreviewSharedLine(
+      sharedMenu.sharedByDisplayName,
+      sharedMenu.menuTitle,
+    );
+    final bold = AppTextStyles.bodyBold.copyWith(color: cs.onSurface);
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
+        padding: AppDimensions.responsiveContentPadding(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppDimensions.space8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SocialAvatarComponents.avatar(
+                  announceName: false,
+                  displayName: sharedMenu.sharedByDisplayName,
+                  size: ImageSize.small,
+                ),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.onSurface,
+                      ),
+                      children: boldNameSpans(line, [
+                        sharedMenu.sharedByDisplayName,
+                        sharedMenu.menuTitle,
+                      ], bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Delningsinformation
-              Row(
-                children: [
-                  SocialAvatarComponents.avatar(
-                    announceName: false,
-                    displayName: sharedMenu.sharedByDisplayName,
-                    size: ImageSize.small,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.l10n.sharedByUser(
-                            sharedMenu.sharedByDisplayName,
-                          ),
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                        Text(
-                          timeago.format(sharedMenu.sharedAt, locale: 'sv'),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  UnifiedBadge.status(label: context.l10n.menuSharedMenu),
-                ],
-              ),
-
+            if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
               const SizedBox(height: AppDimensions.space12),
-
-              // Meny titel och beskrivning
               Text(
-                sharedMenu.menuTitle,
-                style: AppTextStyles.sectionHeader.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                '"${sharedMenu.shareMessage}"',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
+            ],
+            const SizedBox(height: AppDimensions.space12),
+            Divider(height: 1, color: cs.outlineVariant),
+          ],
+        ),
+      ),
+    );
+  }
 
-              const SizedBox(height: AppDimensions.space4),
-
-              // Meny statistik
-              Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.utensils,
-                    size: AppDimensions.iconSizeM,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Text(
-                    context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.space12),
-                  ButleryIcon(
-                    ButleryIcons.grid,
-                    size: AppDimensions.iconSizeM,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Text(
-                    context.l10n.menuCategoryCount(
-                      sharedMenu.categories.length,
-                    ),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                ],
-              ),
-
-              // Delningsmeddelande
-              if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-                const SizedBox(height: AppDimensions.space12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.space16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.commonMessage,
-                        style: AppTextStyles.labelLarge,
-                      ),
-                      const SizedBox(height: AppDimensions.space4),
-                      Text(
-                        '"${sharedMenu.shareMessage}"',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ], // Close if statement spread array
-            ], // Close children array of main Column
-          ), // Close main Column
-        ), // Close Container
+  Widget _buildImportNote(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: AppDimensions.responsiveContentPadding(context).add(
+          const EdgeInsets.symmetric(vertical: AppDimensions.space12),
+        ),
+        child: Text(
+          context.l10n.menuImportDescription(sharedMenu.totalRecipeCount),
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: AppDimensions.screenPadding,
-        child: Consumer<SharedContentCoordinatorViewModel>(
-          builder: (context, viewModel, _) {
-            final isImported = viewModel.menuViewModel.isMenuImported(
-              sharedMenu,
-            );
+    return Padding(
+      padding: AppDimensions.responsiveContentPadding(context),
+      child: Consumer<SharedContentCoordinatorViewModel>(
+        builder: (context, viewModel, _) {
+          final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
-            // Use per-item loading state to avoid spinner on all items
-            final isThisMenuOperating = viewModel.menuViewModel.isItemOperating(
-              sharedMenu.id,
-            );
+          // Per-item loading state avoids a spinner on every item.
+          final isThisMenuOperating = viewModel.menuViewModel.isItemOperating(
+            sharedMenu.id,
+          );
 
-            return Column(
-              children: [
-                // Import knapp
-                // The view's one saffron action, "Spara till mina menyer"
-                // as drawn (Skarmar v12 del 3 #menyforhands:631; Grafisk
-                // manual v6:219). Imported, it takes the hero's disabled
-                // surface; importing keeps the name and draws the plate line.
-                HeroButton(
-                  key: const ValueKey('menuPreview.import'),
-                  label: isImported
-                      ? context.l10n.menuImported
-                      : context.l10n.menuImportAll,
-                  icon: isImported ? ButleryIcons.check : ButleryIcons.download,
-                  onPressed: isImported
-                      ? null
-                      : () => _importMenu(context, viewModel),
-                  busy: isThisMenuOperating,
-                  busyLabel: context.l10n.commonImporting,
-                  expand: true,
-                ),
-
-                const SizedBox(height: AppDimensions.space4),
-
-                // Dismiss knapp
-                ActionButtons.outlinedButton(
-                  context,
-                  label: context.l10n.sharedHideFromList,
-                  icon: ButleryIcons.eye,
-                  onPressed: () => _dismissMenu(context, viewModel),
-                  isExpanded: true,
-                ),
-
-                const SizedBox(height: AppDimensions.space12),
-
-                // Info text
-                Text(
-                  context.l10n.menuImportDescription(
-                    sharedMenu.totalRecipeCount,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // The view's one saffron action, "Spara till mina menyer" as
+              // drawn (Skarmar v12 del 3 #menyforhands). Imported, it takes
+              // the hero's disabled surface; importing keeps the name and
+              // draws the plate line.
+              HeroButton(
+                key: const ValueKey('menuPreview.import'),
+                label: isImported
+                    ? context.l10n.menuImported
+                    : context.l10n.menuImportAll,
+                icon: isImported ? ButleryIcons.check : null,
+                onPressed: isImported
+                    ? null
+                    : () => _importMenu(context, viewModel),
+                busy: isThisMenuOperating,
+                busyLabel: context.l10n.commonImporting,
+                expand: true,
+              ),
+              TextButton(
+                key: const ValueKey('menuPreview.decline'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(
+                    AppDimensions.minTouchTarget,
+                    AppDimensions.minTouchTarget,
                   ),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
                 ),
-              ],
-            );
-          },
-        ),
+                onPressed: () => _dismissMenu(context, viewModel),
+                child: Text(context.l10n.menuPreviewDecline),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

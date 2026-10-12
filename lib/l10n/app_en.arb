@@ -213,7 +213,7 @@
   "@menuAutoPlacedChangeAction": {
     "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
   },
-  "menuPlacementTitle": "place in the week",
+  "menuPlacementTitle": "Place in the week",
   "@menuPlacementTitle": {
     "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
   },
@@ -229,7 +229,7 @@
       }
     }
   },
-  "menuPlacementTrayLabel": "Left to place ({count})",
+  "menuPlacementTrayLabel": "{count} left to place",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
@@ -238,7 +238,7 @@
       }
     }
   },
-  "menuPlacementHint": "Tap a free cell to place {recipe}.",
+  "menuPlacementHint": "Tap a free place for {recipe}. Lunch and dinner take one dish, other takes several.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
@@ -247,7 +247,7 @@
       }
     }
   },
-  "menuPlacementHintSelect": "Select a recipe below to place it.",
+  "menuPlacementHintSelect": "Select a dish below to place it. Lunch and dinner take one dish, other takes several.",
   "@menuPlacementHintSelect": {
     "description": "BUT-1241: hint banner when no tray recipe is selected."
   },
@@ -255,7 +255,7 @@
   "@menuPlacementPlaceHere": {
     "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
   },
-  "menuPlacementAutoRest": "Place the rest automatically",
+  "menuPlacementAutoRest": "Randomise the rest",
   "@menuPlacementAutoRest": {
     "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
   },
@@ -2943,7 +2943,7 @@
       }
     }
   },
-  "shareGroupMembersCount": "{count} members",
+  "shareGroupMembersCount": "{count, plural, =1{1 member} other{{count} members}}",
   "@shareGroupMembersCount": {
     "placeholders": {
       "count": {
@@ -9728,9 +9728,41 @@
   "weeklyMenuPrevWeek": "Previous week",
   "weeklyMenuNextWeek": "Next week",
   "weeklyMenuTodayBadge": "Today",
+  "weeklyMenuNewMark": "new",
+  "weeklyMenuLegendNew": "new",
+  "weeklyMenuLegendAllergen": "can't eat",
+  "weeklyMenuLegendPresence": "home, if not everyone",
+  "a11yWeeklyMenuAddDish": "Add a dish for {slot} on {day}",
+  "@a11yWeeklyMenuAddDish": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yWeeklyMenuOpenOvrigt": "Show other dishes on {day}",
+  "@a11yWeeklyMenuOpenOvrigt": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "weeklyMenuEmptyTitle": "No plan yet",
   "weeklyMenuEmptyHint": "Generate a weekly menu from the prompt above and we'll lay out the days for you.",
   "weeklyMenuOvrigtAddMore": "+ add",
+  "weeklyMenuOvrigtSheetTitle": "Other dishes on {day}",
+  "@weeklyMenuOvrigtSheetTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuOvrigtSheetAdd": "Add a dish",
   "weeklyMenuOverwriteConfirm": "This will replace your current plan. Continue?",
   "weeklyMenuLoadError": "Couldn't load the weekly menu",
   "weeklyMenuWeekLabel": "Week {weekNum} · {start}–{end}",
@@ -9739,6 +9771,25 @@
       "weekNum": {
         "type": "int"
       },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyMenuWeekTitle": "Week {weekNum}",
+  "@weeklyMenuWeekTitle": {
+    "placeholders": {
+      "weekNum": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyMenuWeekRange": "{start}–{end}",
+  "@weeklyMenuWeekRange": {
+    "placeholders": {
       "start": {
         "type": "String"
       },
@@ -10947,10 +10998,24 @@
   "@a11yToggleDiner": {
     "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
   },
-  "menuPresenceSheetTitle": "who's home?",
-  "menuPresenceThisMeal": "this meal",
-  "menuPresenceWholeDay": "whole day",
+  "menuPresenceSheetTitle": "Who's home?",
+  "menuPresenceThisMeal": "This meal",
+  "menuPresenceWholeDay": "Whole day",
   "menuPresenceNobody": "nobody home",
+  "menuPresenceHome": "home",
+  "menuPresenceAway": "away",
+  "menuPresenceHomeSummary": "{home} home · {portions} servings",
+  "@menuPresenceHomeSummary": {
+    "placeholders": {
+      "home": {
+        "type": "int"
+      },
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPresenceOpenRecipe": "Open the recipe",
   "menuPresencePortions": "{count} serv",
   "@menuPresencePortions": {
     "placeholders": {
@@ -10972,7 +11037,7 @@
   },
   "menuPresenceAfterGenerateNotice": "presence updated — planned meals stay put",
   "menuPresenceSummaryTitle": "who's home?",
-  "menuPresenceSummaryAllHome": "everyone home all week",
+  "menuPresenceSummaryAllHome": "Everyone home all week",
   "menuPresenceSummaryAway": "{names} away part of the week",
   "@menuPresenceSummaryAway": {
     "placeholders": {
@@ -11193,6 +11258,7 @@
   "@a11yShowVoters": {
     "description": "BUT-1971: Semantics label for the tappable provenance row. Names the ACTION only — the row's own text is concatenated onto this label by the framework."
   },
+  "a11yGroupMenuDishDetails": "Show proposal and votes",
   "groupMenuUnknownVoter": "Unknown member",
   "@groupMenuUnknownVoter": {
     "description": "BUT-1971: shown in the voter sheet for a member whose profile could not be read. A raw uid is never displayed."
@@ -11495,6 +11561,18 @@
   "@menuPreviewTitle": {
     "description": "Top bar title of the shared menu preview (Skarmar v12 del 3 #menyforhands)."
   },
+  "menuPreviewSharedLine": "{name} shared the menu {menu} with you · read only",
+  "@menuPreviewSharedLine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "menu": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPreviewDecline": "Decline",
   "emailVerificationResendFailed": "The verification email could not be sent.",
   "@emailVerificationResendFailed": {
     "description": "P5-T1: Part 1 of the error (content-style-guide.md:90) when the verification email could not be resent (auth-otp ERROR)."

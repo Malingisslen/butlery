@@ -43,26 +43,36 @@ class FamilyAvatar extends StatelessWidget {
   final double size;
   final String? initials;
 
+  /// A round face, as the week menu draws who is home. The square one stays
+  /// the family pages' own (Mer del 2).
+  final bool circular;
+
   const FamilyAvatar({
     super.key,
     required this.name,
     required this.color,
     this.size = 42,
     this.initials,
+    this.circular = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final style = AppTextStyles.bodyBold.copyWith(color: Colors.white);
     return Container(
       width: size,
       height: size,
-      color: color,
+      decoration: BoxDecoration(
+        color: color,
+        shape: circular ? BoxShape.circle : BoxShape.rectangle,
+      ),
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
-        style: AppTextStyles.bodyBold.copyWith(
-          color: Colors.white,
-        ),
+        // A small face keeps its letters inside the circle.
+        style: circular && size < 32
+            ? style.copyWith(fontSize: size * 0.42)
+            : style,
       ),
     );
   }

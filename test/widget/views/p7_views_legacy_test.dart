@@ -462,7 +462,7 @@ void main() {
 
     test('surface.disabled never sits under a recipe title', () {
       final code = _code('lib/views/menu_placement/placement_widgets.dart');
-      for (final name in ['_OccupiedCell', '_OvrigtEntryChip']) {
+      for (final name in ['_PlacedDish']) {
         final start = code.indexOf('class $name');
         expect(start, isNot(-1), reason: name);
         final end = code.indexOf('\nclass ', start + 1);
