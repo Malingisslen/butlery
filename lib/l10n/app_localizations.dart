@@ -6676,13 +6676,13 @@ abstract class AppLocalizations {
   /// No description provided for @consentAnalytics.
   ///
   /// In sv, this message translates to:
-  /// **'Analysdata'**
+  /// **'Analys'**
   String get consentAnalytics;
 
   /// No description provided for @consentAnalyticsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.'**
+  /// **'Hur appen används, aldrig vad du lagar.'**
   String get consentAnalyticsDescription;
 
   /// No description provided for @consentWhatWeLog.
@@ -6742,7 +6742,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentPushNotificationsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.'**
+  /// **'Systemets tillåtelse styrs separat, i inställningarna.'**
   String get consentPushNotificationsDescription;
 
   /// No description provided for @consentGoodToKnow.
@@ -6844,7 +6844,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportGdprDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.'**
+  /// **'Du har rätt att få ut dina uppgifter i ett format som går att läsa och flytta. Filen är JSON.'**
   String get dataExportGdprDescription;
 
   /// No description provided for @dataExportExporting.
@@ -6898,7 +6898,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportWhatsIncluded.
   ///
   /// In sv, this message translates to:
-  /// **'Vad ingår i exporten?'**
+  /// **'Det här följer med'**
   String get dataExportWhatsIncluded;
 
   /// No description provided for @dataExportIncludesProfile.
@@ -8008,7 +8008,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaRegistered.
   ///
   /// In sv, this message translates to:
-  /// **'Registrerad: {time}'**
+  /// **'Registrerad {time}'**
   String mfaRegistered(String time);
 
   /// No description provided for @mfaRegisteredMethods.
@@ -22214,7 +22214,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalCommunityGuidelines.
   ///
   /// In sv, this message translates to:
-  /// **'Gemenskapsriktlinjer'**
+  /// **'Communityriktlinjer'**
   String get legalCommunityGuidelines;
 
   /// No description provided for @legalOpenSourceLicenses.
@@ -32215,7 +32215,7 @@ abstract class AppLocalizations {
   /// BUT-2353: appeal form explanation
   ///
   /// In sv, this message translates to:
-  /// **'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.'**
+  /// **'Beslutet granskas igen och du får ett nytt besked i appen.'**
   String get appealFormIntro;
 
   /// BUT-2353: appeal text field hint
@@ -32925,6 +32925,354 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet kunde inte sättas. Försök igen.'**
   String get signInMethodsPasswordFailed;
+
+  /// Spår 6, v60: heading over the box with the two consents that cannot be switched off
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkor för att appen finns'**
+  String get consentTermsHeading;
+
+  /// Spår 6, v60: title of the locked consent for essential services
+  ///
+  /// In sv, this message translates to:
+  /// **'Nödvändig drift'**
+  String get consentEssentialTitle;
+
+  /// Spår 6, v60: reason for the essential-services consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning, dina recept, synk mellan dina enheter.'**
+  String get consentEssentialBody;
+
+  /// Spår 6, v60: reason for the data-processing consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Att spara det du skriver in, så att det finns kvar i morgon.'**
+  String get consentDataProcessingBody;
+
+  /// Spår 6, v60: first part of the note under the locked consents; the bold part follows
+  ///
+  /// In sv, this message translates to:
+  /// **'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen '**
+  String get consentRequiredNoteBefore;
+
+  /// Spår 6, v60: bold part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **'radera kontot'**
+  String get consentRequiredNoteBold;
+
+  /// Spår 6, v60: last part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **', inte ett reglage här.'**
+  String get consentRequiredNoteAfter;
+
+  /// Spår 6, v60: heading over the optional consent switches
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val'**
+  String get consentYourChoices;
+
+  /// Spår 6, v60: marketing consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Utskick'**
+  String get consentMarketing;
+
+  /// Spår 6, v60: what the marketing consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyheter om appen. Aldrig andras erbjudanden.'**
+  String get consentMarketingDescription;
+
+  /// Spår 6, v60: social-features consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Socialt'**
+  String get consentSocial;
+
+  /// Spår 6, v60: what the social consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, delade listor, kommentarer.'**
+  String get consentSocialDescription;
+
+  /// Spår 6, v60: the line that says which version, when and on which device the consent was saved; device is empty or starts with ' · '
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat version {version} · {date}{device}. Vi behåller versionen för att kunna visa vad du sa ja till, inte bara att du gjorde det.'**
+  String consentSavedVersion(String version, String date, String device);
+
+  /// Spår 6, v60: row that opens the consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Historik'**
+  String get consentHistory;
+
+  /// Spår 6, v60: subtitle of the consent history row
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad du sagt ja och nej till, och när'**
+  String get consentHistorySubtitle;
+
+  /// Spår 6, v60: empty consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade val ännu.'**
+  String get consentHistoryEmpty;
+
+  /// Spår 6, v60: red text button under the save button
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkalla allt valfritt'**
+  String get consentRevokeAllOptional;
+
+  /// Spår 6, v60: history line when no optional consent was on
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga valfria samtycken'**
+  String get consentHistoryNoneOn;
+
+  /// Spår 6, v61: page title of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämta ut dina uppgifter'**
+  String get dataExportPageTitle;
+
+  /// Spår 6, v61: heading of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt du lagt in, i en fil'**
+  String get dataExportHeadline;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept, kommentarer och betyg'**
+  String get dataExportIncludesRecipesComments;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, meddelanden och aktivitetshistorik'**
+  String get dataExportIncludesSocial;
+
+  /// Spår 6, v61: title of the finished export file card
+  ///
+  /// In sv, this message translates to:
+  /// **'Din export (JSON)'**
+  String get dataExportFileTitle;
+
+  /// Spår 6, v62: title of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}'**
+  String pendingDeletionNoticeTitle(String date);
+
+  /// Spår 6, v62: body of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Tills dess finns allt kvar, och du kan ångra raderingen. Efter det går inget att återskapa.'**
+  String get pendingDeletionNoticeBody;
+
+  /// Spår 6, v62: heading over the list of what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här raderas den {date}'**
+  String pendingDeletionListHeading(String date);
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept, menyer och listor'**
+  String get pendingDeletionItemRecipes;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'allt du skapat'**
+  String get pendingDeletionItemRecipesNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg, kommentarer och cook snaps'**
+  String get pendingDeletionItemRatings;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'även i andras recept'**
+  String get pendingDeletionItemRatingsNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll och delningar'**
+  String get pendingDeletionItemHousehold;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'du lyfts ur, listorna finns kvar hos de andra'**
+  String get pendingDeletionItemHouseholdNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Sökindex och lokal cache'**
+  String get pendingDeletionItemCache;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'rensas först av allt'**
+  String get pendingDeletionItemCacheNote;
+
+  /// Link at the foot of a legal document to the terms of service
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkoren'**
+  String get legalLinkTerms;
+
+  /// Link at the foot of a legal document to the privacy policy
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet'**
+  String get legalLinkPrivacy;
+
+  /// Link at the foot of a legal document to the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Riktlinjer'**
+  String get legalLinkGuidelines;
+
+  /// Link at the foot of a legal document that opens a mail to support
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontakt'**
+  String get legalLinkContact;
+
+  /// Page title of the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Så gör vi mot varandra'**
+  String get legalCommunityGuidelinesTitle;
+
+  /// Label before the current e-mail address at the top of the change e-mail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Nu: '**
+  String get accountSecurityEmailNow;
+
+  /// Rule under the new password fields on the change password page
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst {count} tecken.'**
+  String accountSecurityPasswordRule(int count);
+
+  /// Label of the second new-password field on the change password page
+  ///
+  /// In sv, this message translates to:
+  /// **'Upprepa nytt lösenord'**
+  String get accountSecurityRepeatNewPassword;
+
+  /// Bold label opening the outcome note of a moderation matter
+  ///
+  /// In sv, this message translates to:
+  /// **'Utfall:'**
+  String get decisionOutcomeLabel;
+
+  /// Link in a moderation row or decision that opens the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag vill överklaga'**
+  String get decisionAppealLink;
+
+  /// Status pill on a report that led to an action
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get myReportsStatusActioned;
+
+  /// Intro line under the title of Beslut om mitt innehåll
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om sådant du lagt upp. Varje beslut kan överklagas en gång.'**
+  String get myContentDecisionsIntro;
+
+  /// Intro line under the title of Mina rapporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du anmält och vad som hänt sedan. Vi berättar utfallet, också när det gick emot dig.'**
+  String get myReportsIntro;
+
+  /// Heading above the appeal text field
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför tycker du att beslutet är fel?'**
+  String get appealFormQuestion;
+
+  /// Subtitle of a trash row: when it was deleted and how long is left
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderad {when} · {left}'**
+  String trashRowDeleted(String when, String left);
+
+  /// 'When' of a trash row deleted today
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag'**
+  String get trashDeletedToday;
+
+  /// Subtitle of a trash row with little time left; day is the weekday
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott på {day}'**
+  String trashUrgentLeft(String left, String day);
+
+  /// Subtitle of a trash row that expires today
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott i dag'**
+  String trashUrgentToday(String left);
+
+  /// Intro line under the title of the licences page
+  ///
+  /// In sv, this message translates to:
+  /// **'Det Butlery bygger på, och villkoren det följer med. Licenstexterna står på engelska, eftersom licensen kräver att originaltexten följer med.'**
+  String get licensesIntro;
+
+  /// Title of the note on the two-step verification page when it is on
+  ///
+  /// In sv, this message translates to:
+  /// **'Påslagen'**
+  String get mfaOnTitle;
+
+  /// Title of the note on the two-step verification page when it is off
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte påslagen'**
+  String get mfaOffTitle;
+
+  /// Section heading about backup codes on the two-step verification page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om telefonen är borta'**
+  String get mfaLostPhoneTitle;
+
+  /// Body under the backup codes heading
+  ///
+  /// In sv, this message translates to:
+  /// **'När du slog på skyddet fick du tio engångskoder att skriva ned. Med en av dem kommer du in även utan telefonen.'**
+  String get mfaLostPhoneBody;
+
+  /// Text link that removes a registered two-step method
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get mfaRemoveLink;
 }
 
 class _AppLocalizationsDelegate

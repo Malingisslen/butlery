@@ -4028,11 +4028,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get consentRejectAll => 'Avvisa alla';
 
   @override
-  String get consentAnalytics => 'Analysdata';
+  String get consentAnalytics => 'Analys';
 
   @override
   String get consentAnalyticsDescription =>
-      'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.';
+      'Hur appen används, aldrig vad du lagar.';
 
   @override
   String get consentWhatWeLog => 'Vad vi loggar';
@@ -4064,7 +4064,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentPushNotificationsDescription =>
-      'Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.';
+      'Systemets tillåtelse styrs separat, i inställningarna.';
 
   @override
   String get consentGoodToKnow => 'Bra att veta';
@@ -4121,7 +4121,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get dataExportGdprDescription =>
-      'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.';
+      'Du har rätt att få ut dina uppgifter i ett format som går att läsa och flytta. Filen är JSON.';
 
   @override
   String get dataExportExporting => 'Exporterar dina data …';
@@ -4148,7 +4148,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dataExportClear => 'Rensa export';
 
   @override
-  String get dataExportWhatsIncluded => 'Vad ingår i exporten?';
+  String get dataExportWhatsIncluded => 'Det här följer med';
 
   @override
   String get dataExportIncludesProfile => 'Profil och inställningar';
@@ -4800,7 +4800,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String mfaRegistered(String time) {
-    return 'Registrerad: $time';
+    return 'Registrerad $time';
   }
 
   @override
@@ -13496,7 +13496,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get legalTermsOfService => 'Användarvillkor';
 
   @override
-  String get legalCommunityGuidelines => 'Gemenskapsriktlinjer';
+  String get legalCommunityGuidelines => 'Communityriktlinjer';
 
   @override
   String get legalOpenSourceLicenses => 'Öppen källkod-licenser';
@@ -19903,7 +19903,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get appealFormIntro =>
-      'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.';
+      'Beslutet granskas igen och du får ett nytt besked i appen.';
 
   @override
   String get appealFormHint => 'Skriv din motivering här';
@@ -20364,4 +20364,204 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'Lösenordet kunde inte sättas. Försök igen.';
+
+  @override
+  String get consentTermsHeading => 'Villkor för att appen finns';
+
+  @override
+  String get consentEssentialTitle => 'Nödvändig drift';
+
+  @override
+  String get consentEssentialBody =>
+      'Inloggning, dina recept, synk mellan dina enheter.';
+
+  @override
+  String get consentDataProcessingBody =>
+      'Att spara det du skriver in, så att det finns kvar i morgon.';
+
+  @override
+  String get consentRequiredNoteBefore =>
+      'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen ';
+
+  @override
+  String get consentRequiredNoteBold => 'radera kontot';
+
+  @override
+  String get consentRequiredNoteAfter => ', inte ett reglage här.';
+
+  @override
+  String get consentYourChoices => 'Dina val';
+
+  @override
+  String get consentMarketing => 'Utskick';
+
+  @override
+  String get consentMarketingDescription =>
+      'Nyheter om appen. Aldrig andras erbjudanden.';
+
+  @override
+  String get consentSocial => 'Socialt';
+
+  @override
+  String get consentSocialDescription => 'Vänner, delade listor, kommentarer.';
+
+  @override
+  String consentSavedVersion(String version, String date, String device) {
+    return 'Sparat version $version · $date$device. Vi behåller versionen för att kunna visa vad du sa ja till, inte bara att du gjorde det.';
+  }
+
+  @override
+  String get consentHistory => 'Historik';
+
+  @override
+  String get consentHistorySubtitle => 'Vad du sagt ja och nej till, och när';
+
+  @override
+  String get consentHistoryEmpty => 'Inga sparade val ännu.';
+
+  @override
+  String get consentRevokeAllOptional => 'Återkalla allt valfritt';
+
+  @override
+  String get consentHistoryNoneOn => 'Inga valfria samtycken';
+
+  @override
+  String get dataExportPageTitle => 'Hämta ut dina uppgifter';
+
+  @override
+  String get dataExportHeadline => 'Allt du lagt in, i en fil';
+
+  @override
+  String get dataExportIncludesRecipesComments =>
+      'Dina recept, kommentarer och betyg';
+
+  @override
+  String get dataExportIncludesSocial =>
+      'Vänner, meddelanden och aktivitetshistorik';
+
+  @override
+  String get dataExportFileTitle => 'Din export (JSON)';
+
+  @override
+  String pendingDeletionNoticeTitle(String date) {
+    return 'Kontot raderas $date';
+  }
+
+  @override
+  String get pendingDeletionNoticeBody =>
+      'Tills dess finns allt kvar, och du kan ångra raderingen. Efter det går inget att återskapa.';
+
+  @override
+  String pendingDeletionListHeading(String date) {
+    return 'Det här raderas den $date';
+  }
+
+  @override
+  String get pendingDeletionItemRecipes => 'Recept, menyer och listor';
+
+  @override
+  String get pendingDeletionItemRecipesNote => 'allt du skapat';
+
+  @override
+  String get pendingDeletionItemRatings => 'Betyg, kommentarer och cook snaps';
+
+  @override
+  String get pendingDeletionItemRatingsNote => 'även i andras recept';
+
+  @override
+  String get pendingDeletionItemHousehold => 'Hushåll och delningar';
+
+  @override
+  String get pendingDeletionItemHouseholdNote =>
+      'du lyfts ur, listorna finns kvar hos de andra';
+
+  @override
+  String get pendingDeletionItemCache => 'Sökindex och lokal cache';
+
+  @override
+  String get pendingDeletionItemCacheNote => 'rensas först av allt';
+
+  @override
+  String get legalLinkTerms => 'Villkoren';
+
+  @override
+  String get legalLinkPrivacy => 'Integritet';
+
+  @override
+  String get legalLinkGuidelines => 'Riktlinjer';
+
+  @override
+  String get legalLinkContact => 'Kontakt';
+
+  @override
+  String get legalCommunityGuidelinesTitle => 'Så gör vi mot varandra';
+
+  @override
+  String get accountSecurityEmailNow => 'Nu: ';
+
+  @override
+  String accountSecurityPasswordRule(int count) {
+    return 'Minst $count tecken.';
+  }
+
+  @override
+  String get accountSecurityRepeatNewPassword => 'Upprepa nytt lösenord';
+
+  @override
+  String get decisionOutcomeLabel => 'Utfall:';
+
+  @override
+  String get decisionAppealLink => 'Jag vill överklaga';
+
+  @override
+  String get myReportsStatusActioned => 'Åtgärdad';
+
+  @override
+  String get myContentDecisionsIntro =>
+      'Beslut om sådant du lagt upp. Varje beslut kan överklagas en gång.';
+
+  @override
+  String get myReportsIntro =>
+      'Det du anmält och vad som hänt sedan. Vi berättar utfallet, också när det gick emot dig.';
+
+  @override
+  String get appealFormQuestion => 'Varför tycker du att beslutet är fel?';
+
+  @override
+  String trashRowDeleted(String when, String left) {
+    return 'Raderad $when · $left';
+  }
+
+  @override
+  String get trashDeletedToday => 'i dag';
+
+  @override
+  String trashUrgentLeft(String left, String day) {
+    return '$left — raderas för gott på $day';
+  }
+
+  @override
+  String trashUrgentToday(String left) {
+    return '$left — raderas för gott i dag';
+  }
+
+  @override
+  String get licensesIntro =>
+      'Det Butlery bygger på, och villkoren det följer med. Licenstexterna står på engelska, eftersom licensen kräver att originaltexten följer med.';
+
+  @override
+  String get mfaOnTitle => 'Påslagen';
+
+  @override
+  String get mfaOffTitle => 'Inte påslagen';
+
+  @override
+  String get mfaLostPhoneTitle => 'Om telefonen är borta';
+
+  @override
+  String get mfaLostPhoneBody =>
+      'När du slog på skyddet fick du tio engångskoder att skriva ned. Med en av dem kommer du in även utan telefonen.';
+
+  @override
+  String get mfaRemoveLink => 'Ta bort';
 }

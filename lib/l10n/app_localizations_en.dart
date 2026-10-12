@@ -4034,7 +4034,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentAnalyticsDescription =>
-      'Help us improve the app by sharing usage statistics. We collect information about how you use the app to identify bugs and improve the user experience.';
+      'How the app is used, never what you cook.';
 
   @override
   String get consentWhatWeLog => 'What we log';
@@ -4066,7 +4066,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentPushNotificationsDescription =>
-      'Get notifications about comments on your recipes, when friends share with you and other activities.';
+      'The system\'s permission is set separately, in the settings.';
 
   @override
   String get consentGoodToKnow => 'Good to know';
@@ -4123,7 +4123,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataExportGdprDescription =>
-      'Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.';
+      'You have the right to get your data in a format that can be read and moved. The file is JSON.';
 
   @override
   String get dataExportExporting => 'Exporting your data …';
@@ -4150,7 +4150,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataExportClear => 'Clear export';
 
   @override
-  String get dataExportWhatsIncluded => 'What\'s included in the export?';
+  String get dataExportWhatsIncluded => 'What comes with it';
 
   @override
   String get dataExportIncludesProfile => 'Profile and settings';
@@ -4800,7 +4800,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String mfaRegistered(String time) {
-    return 'Registered: $time';
+    return 'Registered $time';
   }
 
   @override
@@ -19849,7 +19849,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appealFormIntro =>
-      'Tell us why you think the decision is wrong. The decision is reviewed again and you get a new answer in the app.';
+      'The decision is reviewed again and you get a new answer in the app.';
 
   @override
   String get appealFormHint => 'Write your reasons here';
@@ -20311,4 +20311,205 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'The password couldn\'t be set. Try again.';
+
+  @override
+  String get consentTermsHeading => 'Conditions for the app to exist';
+
+  @override
+  String get consentEssentialTitle => 'Essential operation';
+
+  @override
+  String get consentEssentialBody =>
+      'Sign-in, your recipes, sync between your devices.';
+
+  @override
+  String get consentDataProcessingBody =>
+      'Saving what you write, so it is still there tomorrow.';
+
+  @override
+  String get consentRequiredNoteBefore =>
+      'These cannot be switched off — without them there is no service to say yes or no to. To leave altogether, the way is to ';
+
+  @override
+  String get consentRequiredNoteBold => 'delete the account';
+
+  @override
+  String get consentRequiredNoteAfter => ', not a switch here.';
+
+  @override
+  String get consentYourChoices => 'Your choices';
+
+  @override
+  String get consentMarketing => 'Mailings';
+
+  @override
+  String get consentMarketingDescription =>
+      'News about the app. Never anyone else\'s offers.';
+
+  @override
+  String get consentSocial => 'Social';
+
+  @override
+  String get consentSocialDescription => 'Friends, shared lists, comments.';
+
+  @override
+  String consentSavedVersion(String version, String date, String device) {
+    return 'Saved version $version · $date$device. We keep the version to be able to show what you said yes to, not just that you did.';
+  }
+
+  @override
+  String get consentHistory => 'History';
+
+  @override
+  String get consentHistorySubtitle => 'What you said yes and no to, and when';
+
+  @override
+  String get consentHistoryEmpty => 'No saved choices yet.';
+
+  @override
+  String get consentRevokeAllOptional => 'Revoke everything optional';
+
+  @override
+  String get consentHistoryNoneOn => 'No optional consents';
+
+  @override
+  String get dataExportPageTitle => 'Get your data';
+
+  @override
+  String get dataExportHeadline => 'Everything you put in, in one file';
+
+  @override
+  String get dataExportIncludesRecipesComments =>
+      'Your recipes, comments and ratings';
+
+  @override
+  String get dataExportIncludesSocial =>
+      'Friends, messages and activity history';
+
+  @override
+  String get dataExportFileTitle => 'Your export (JSON)';
+
+  @override
+  String pendingDeletionNoticeTitle(String date) {
+    return 'The account is deleted on $date';
+  }
+
+  @override
+  String get pendingDeletionNoticeBody =>
+      'Until then everything is kept, and you can undo the deletion. After that nothing can be restored.';
+
+  @override
+  String pendingDeletionListHeading(String date) {
+    return 'This is deleted on $date';
+  }
+
+  @override
+  String get pendingDeletionItemRecipes => 'Recipes, menus and lists';
+
+  @override
+  String get pendingDeletionItemRecipesNote => 'everything you created';
+
+  @override
+  String get pendingDeletionItemRatings => 'Ratings, comments and cook snaps';
+
+  @override
+  String get pendingDeletionItemRatingsNote =>
+      'also on other people\'s recipes';
+
+  @override
+  String get pendingDeletionItemHousehold => 'Household and shares';
+
+  @override
+  String get pendingDeletionItemHouseholdNote =>
+      'you are removed, the lists stay with the others';
+
+  @override
+  String get pendingDeletionItemCache => 'Search index and local cache';
+
+  @override
+  String get pendingDeletionItemCacheNote => 'cleared first of all';
+
+  @override
+  String get legalLinkTerms => 'Terms';
+
+  @override
+  String get legalLinkPrivacy => 'Privacy';
+
+  @override
+  String get legalLinkGuidelines => 'Guidelines';
+
+  @override
+  String get legalLinkContact => 'Contact';
+
+  @override
+  String get legalCommunityGuidelinesTitle => 'How we treat each other';
+
+  @override
+  String get accountSecurityEmailNow => 'Now: ';
+
+  @override
+  String accountSecurityPasswordRule(int count) {
+    return 'At least $count characters.';
+  }
+
+  @override
+  String get accountSecurityRepeatNewPassword => 'Repeat new password';
+
+  @override
+  String get decisionOutcomeLabel => 'Outcome:';
+
+  @override
+  String get decisionAppealLink => 'I want to appeal';
+
+  @override
+  String get myReportsStatusActioned => 'Actioned';
+
+  @override
+  String get myContentDecisionsIntro =>
+      'Decisions about things you have posted. Each decision can be appealed once.';
+
+  @override
+  String get myReportsIntro =>
+      'What you have reported and what has happened since. We tell you the outcome, also when it went against you.';
+
+  @override
+  String get appealFormQuestion => 'Why do you think the decision is wrong?';
+
+  @override
+  String trashRowDeleted(String when, String left) {
+    return 'Deleted $when · $left';
+  }
+
+  @override
+  String get trashDeletedToday => 'today';
+
+  @override
+  String trashUrgentLeft(String left, String day) {
+    return '$left — gone for good on $day';
+  }
+
+  @override
+  String trashUrgentToday(String left) {
+    return '$left — gone for good today';
+  }
+
+  @override
+  String get licensesIntro =>
+      'What Butlery is built on, and the terms it comes with. The licence texts are in English, because the licence requires the original text to come with it.';
+
+  @override
+  String get mfaOnTitle => 'On';
+
+  @override
+  String get mfaOffTitle => 'Not on';
+
+  @override
+  String get mfaLostPhoneTitle => 'If the phone is gone';
+
+  @override
+  String get mfaLostPhoneBody =>
+      'When you turned the protection on you got ten one-time codes to write down. With one of them you get in even without the phone.';
+
+  @override
+  String get mfaRemoveLink => 'Remove';
 }
