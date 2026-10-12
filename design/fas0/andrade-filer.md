@@ -721,8 +721,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/spar4/setup_done.png` | `099d6352118a30abf185d9402557b3beb75061a6d88c4acf1807323dd0ef984d` |
 | `skiss-mot-app/spar4/splash.png` | `6a46ad84585d4c9604ec9e93282ec1b4ec912a21eefdfd08cd45bb73014a399e` |
 | `skiss-mot-app/spar4/welcome.png` | `4b3e22327056fb12589ffa45da80d25afdc9ae1c77b05d3525b289fb800f5df7` |
-| `skiss-mot-app/spar8/67-guest-start.png` | `82243fc9d33ab96115ecc19de87c41a6e3a0039ec57b8c0b1f2aa97879f45b97` |
-| `skiss-mot-app/spar8/68-guest-upgrade.png` | `304e59323d68b85fab996e31797ac9f51fcf23e932b4b62680483ba68466b3fa` |
+| `skiss-mot-app/spar8/67-guest-start.png` | `785c9565b232c2d1beb37dc014aaea78bdecaf0afe4181f462ec0d949abe450e` |
+| `skiss-mot-app/spar8/68-guest-upgrade.png` | `7b63544f9c7805b61e98f23a564863d15ee74bfed9ec0bab386efb5cf1d79d74` |
 | `skiss-mot-app/spar8/69-mfa-challenge.png` | `37ec3c9a45b3b3f95d18d7e6bdaff47e200b73fce6344378e2e51980b1712872` |
 | `skiss-mot-app/spar8/70-set-new-password.png` | `df3d1e7616e0ff3cb1b12c4837f7c966066657e589e4f0f4ed75091ac9f76cd4` |
 | `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |

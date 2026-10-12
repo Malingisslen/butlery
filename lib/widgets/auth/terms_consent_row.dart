@@ -45,10 +45,8 @@ class TermsConsentRow extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: AppDimensions.space8),
         Expanded(
-          // Links are baseline WidgetSpans in one sentence: ButleryLink keeps
-          // its hit area. The words around them toggle the box.
+          // The words around the links toggle the box.
           child: Semantics(
             checked: accepted,
             child: GestureDetector(
@@ -94,7 +92,7 @@ class TermsConsentRow extends StatelessWidget {
   }) => WidgetSpan(
     alignment: PlaceholderAlignment.baseline,
     baseline: TextBaseline.alphabetic,
-    child: ButleryLink(
+    child: ButleryLink.inline(
       semanticLabel: label,
       onTap: () => Navigator.pushNamed(context, route),
       child: Text(text, style: _linkStyle(context)),

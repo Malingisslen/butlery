@@ -23,6 +23,8 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/widgets/auth/terms_consent_row.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -334,6 +336,30 @@ void main() {
       await tester.pumpAndSettle(_kPumpCap);
       expectActivatable(tester, tosLink);
       handle.dispose();
+    });
+
+    testWidgets('the consent links keep the sentence on its own line height', (
+      tester,
+    ) async {
+      await pumpRegisterMode(tester);
+
+      final links = find.descendant(
+        of: find.byType(TermsConsentRow),
+        matching: find.byType(ButleryLink),
+      );
+      expect(links, findsNWidgets(2));
+      for (final link in links.evaluate()) {
+        expect(
+          tester.getSize(find.byWidget(link.widget)).height,
+          lessThan(_kMinTapTarget),
+          reason: 'a link in running text does not stretch its line',
+        );
+      }
+      expect(
+        tester.getSize(find.byType(TermsConsentRow)).height,
+        lessThan(_kMinTapTarget * 1.5),
+        reason: 'the row is the box and the sentence, not a tall link line',
+      );
     });
 
     testWidgets('consent checkboxes provide a >=48dp tap target', (
