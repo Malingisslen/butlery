@@ -1,8 +1,6 @@
 // lib/widgets/common/input/butlery_checkbox.dart
 //
-// The one checkbox in the app. Every pick-many box is this widget, or the tile
-// below it, so the size, edge, tick and touch target are decided in
-// one place (tokens.json controls.checkbox, B-37).
+// tokens.json controls.checkbox, B-37.
 library;
 
 import 'package:flutter/material.dart';

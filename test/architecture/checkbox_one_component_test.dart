@@ -1,7 +1,4 @@
-// Every checkbox in the app is ButleryCheckbox or ButleryCheckboxTile, so the
-// 24 dp box, the edge, the tick, the focus ring and the touch target are drawn
-// in one place (tokens.json controls.checkbox). A Material Checkbox or
-// CheckboxListTile built by hand is a second checkbox, and none is left.
+// A Material Checkbox or CheckboxListTile built by hand is a second checkbox.
 
 import 'dart:io';
 
