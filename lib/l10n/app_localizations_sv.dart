@@ -14563,10 +14563,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ingredientSearchTitle => 'Sök med ingredienser';
 
   @override
-  String get ingredientSearchHint => 'Sök ingrediens …';
+  String get ingredientSearchHint => 'lägg till …';
 
   @override
-  String get ingredientSearchButton => 'Visa recept';
+  String get ingredientSearchButton => 'Sök recept';
 
   @override
   String get ingredientSearchChip => 'Med ingredienser';
@@ -14587,8 +14587,8 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recept hittade',
-      one: '1 recept hittat',
+      other: '$count recept matchar',
+      one: '1 recept matchar',
     );
     return '$_temp0';
   }
@@ -15542,10 +15542,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyRatingSectionTitle => 'betyg';
+  String get familyRatingSectionTitle => 'Hushållets betyg';
 
   @override
-  String get familyRatingAverageLabel => 'hushållets snitt';
+  String get familyRatingAverageLabel => 'Hushållets snitt';
 
   @override
   String familyRatingCount(int count) {
@@ -15554,18 +15554,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String familyRatingUpdated(String date) {
-    return 'uppdaterad $date';
+    return 'Uppdaterad $date';
   }
 
   @override
-  String get familyRatingCommunityLabel => 'alla';
+  String get familyRatingCommunityLabel => 'Alla som lagat';
 
   @override
-  String get familyRatingYourOwnLabel => 'ditt eget betyg';
+  String get familyRatingYourOwnLabel => 'Ditt eget betyg';
 
   @override
   String get familyRatingLegend =>
-      'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.';
+      'Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.';
 
   @override
   String recipeFamilyRatingPill(String rating) {
@@ -15608,7 +15608,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String familyRatingProxyEntered(String name) {
-    return 'inmatat av $name';
+    return 'Ifylld av $name';
   }
 
   @override
@@ -20471,6 +20471,33 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'Lösenordet kunde inte sättas. Försök igen.';
+
+  @override
+  String familyRatingHouseholdPill(String value) {
+    return 'Hushåll $value';
+  }
+
+  @override
+  String get ingredientSearchHeading => 'Vad kan jag laga?';
+
+  @override
+  String cookingModeIngredientRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rader',
+      one: '1 rad',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingModeSwapHint => 'Håll på en rad för att byta ingrediens';
+
+  @override
+  String cookingModeNextStepPreview(String step) {
+    return 'Nästa: $step';
+  }
 
   @override
   String get consentTermsHeading => 'Villkor för att appen finns';

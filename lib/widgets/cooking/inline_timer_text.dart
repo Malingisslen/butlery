@@ -39,6 +39,13 @@ class InlineTimerText extends StatelessWidget {
   /// surface when the line sits on the ink base.
   final Color? chipFill;
 
+  /// Text and icon colour inside the chip; defaults to [chipColor].
+  final Color? chipForeground;
+
+  /// A filled pill with no outline, as drawn in the cooking-mode step
+  /// (Skarmar v12 del 1 #lagastaende). False keeps the square outlined chip.
+  final bool pillChip;
+
   const InlineTimerText({
     super.key,
     required this.text,
@@ -46,6 +53,8 @@ class InlineTimerText extends StatelessWidget {
     this.style,
     this.chipColor,
     this.chipFill,
+    this.chipForeground,
+    this.pillChip = false,
     this.quantityMarks = const [],
   });
 
@@ -97,6 +106,7 @@ class InlineTimerText extends StatelessWidget {
   WidgetSpan _timerChip(BuildContext context, DurationMatch match) {
     final cs = Theme.of(context).colorScheme;
     final accent = chipColor ?? style?.color ?? cs.onSurface;
+    final onChip = chipForeground ?? accent;
     final phrase = text.substring(match.start, match.end);
     return WidgetSpan(
       alignment: PlaceholderAlignment.middle,
@@ -116,8 +126,10 @@ class InlineTimerText extends StatelessWidget {
               vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
-              // Square design language — no border radius.
-              border: Border.all(color: accent),
+              border: pillChip ? null : Border.all(color: accent),
+              borderRadius: pillChip
+                  ? BorderRadius.circular(AppDimensions.radiusPill)
+                  : null,
               color: chipFill ?? cs.surfaceContainerHighest,
             ),
             child: Row(
@@ -126,13 +138,13 @@ class InlineTimerText extends StatelessWidget {
                 ButleryIcon(
                   ButleryIcons.clock,
                   size: AppDimensions.iconSizeS,
-                  color: accent,
+                  color: onChip,
                 ),
                 const SizedBox(width: AppDimensions.space4),
                 Text(
                   phrase,
                   style: (style ?? const TextStyle()).copyWith(
-                    color: accent,
+                    color: onChip,
                     fontWeight: FontWeight.w600,
                     height: 1.0,
                   ),

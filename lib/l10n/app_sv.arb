@@ -10133,13 +10133,13 @@
     }
   },
   "ingredientSearchTitle": "Sök med ingredienser",
-  "ingredientSearchHint": "Sök ingrediens …",
-  "ingredientSearchButton": "Visa recept",
+  "ingredientSearchHint": "lägg till …",
+  "ingredientSearchButton": "Sök recept",
   "ingredientSearchChip": "Med ingredienser",
   "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
   "ingredientSearchNoResults": "Inga recept matchar dina ingredienser",
   "ingredientSearchError": "Kunde inte söka recept",
-  "ingredientSearchResultCount": "{count, plural, =1{1 recept hittat} other{{count} recept hittade}}",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recept matchar} other{{count} recept matchar}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {
@@ -11324,8 +11324,8 @@
       }
     }
   },
-  "familyRatingSectionTitle": "betyg",
-  "familyRatingAverageLabel": "hushållets snitt",
+  "familyRatingSectionTitle": "Hushållets betyg",
+  "familyRatingAverageLabel": "Hushållets snitt",
   "familyRatingCount": "{count} betyg",
   "@familyRatingCount": {
     "placeholders": {
@@ -11334,7 +11334,7 @@
       }
     }
   },
-  "familyRatingUpdated": "uppdaterad {date}",
+  "familyRatingUpdated": "Uppdaterad {date}",
   "@familyRatingUpdated": {
     "placeholders": {
       "date": {
@@ -11342,9 +11342,9 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "alla",
-  "familyRatingYourOwnLabel": "ditt eget betyg",
-  "familyRatingLegend": "Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.",
+  "familyRatingCommunityLabel": "Alla som lagat",
+  "familyRatingYourOwnLabel": "Ditt eget betyg",
+  "familyRatingLegend": "Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.",
   "recipeFamilyRatingPill": "familj {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -11399,7 +11399,7 @@
   "pooledCommunityLabel": "butlery-betyget",
   "pooledHouseholdLabel": "alla i ditt kök",
   "a11yPooledHouseholdPill": "Ditt köks betyg",
-  "familyRatingProxyEntered": "inmatat av {name}",
+  "familyRatingProxyEntered": "Ifylld av {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
       "name": {
@@ -17106,6 +17106,32 @@
   "signInMethodsPasswordFailed": "Lösenordet kunde inte sättas. Försök igen.",
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
+  },
+  "familyRatingHouseholdPill": "Hushåll {value}",
+  "@familyRatingHouseholdPill": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "ingredientSearchHeading": "Vad kan jag laga?",
+  "cookingModeIngredientRows": "{count, plural, =1{1 rad} other{{count} rader}}",
+  "@cookingModeIngredientRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingModeSwapHint": "Håll på en rad för att byta ingrediens",
+  "cookingModeNextStepPreview": "Nästa: {step}",
+  "@cookingModeNextStepPreview": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
   },
   "consentTermsHeading": "Villkor för att appen finns",
   "@consentTermsHeading": {
