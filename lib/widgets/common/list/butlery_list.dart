@@ -121,6 +121,7 @@ class ButleryListRow extends StatelessWidget {
   }) : _muted = false,
        leadingColor = null,
        _kind = _RowKind.nav,
+       centered = false,
        enabled = true,
        strongValue = false,
        checked = false,
@@ -139,6 +140,7 @@ class ButleryListRow extends StatelessWidget {
   }) : _muted = false,
        leadingColor = null,
        _kind = _RowKind.toggle,
+       centered = false,
        strongValue = false,
        selected = null,
        onTap = null,
@@ -150,10 +152,14 @@ class ButleryListRow extends StatelessWidget {
 
   /// The destructive row, in text.danger, last on its page. What it does is
   /// confirmed by the dialog it opens, not by the row.
+  ///
+  /// [centered] draws it as the sketch's last line of a profile page: the
+  /// words centred under the rows, no chevron.
   const ButleryListRow.danger({
     required this.label,
     required VoidCallback this.onTap,
     this.subtitle,
+    this.centered = false,
     this.identifier,
     super.key,
   }) : _muted = false,
@@ -181,6 +187,7 @@ class ButleryListRow extends StatelessWidget {
   }) : _muted = false,
        leadingColor = null,
        _kind = _RowKind.info,
+       centered = false,
        selected = null,
        enabled = true,
        emphasis = false,
@@ -207,6 +214,7 @@ class ButleryListRow extends StatelessWidget {
     super.key,
   }) : _muted = muted,
        _kind = _RowKind.info,
+       centered = false,
        selected = null,
        enabled = true,
        strongValue = false,
@@ -241,6 +249,9 @@ class ButleryListRow extends StatelessWidget {
   /// glyph that shows it is excluded from semantics. A selected row also takes
   /// the selected surface behind its full width.
   final bool? selected;
+
+  /// A danger row drawn as centred words with no chevron.
+  final bool centered;
 
   final String? identifier;
   final VoidCallback? onTap;
@@ -277,6 +288,32 @@ class ButleryListRow extends StatelessWidget {
         : muted
         ? cs.onSurfaceVariant
         : cs.onSurface;
+
+    if (centered) {
+      return Semantics(
+        container: true,
+        button: true,
+        identifier: identifier,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyBold.copyWith(color: labelColor),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     Widget rowContent(double rowWidth) => ConstrainedBox(
       constraints: const BoxConstraints(

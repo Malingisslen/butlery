@@ -17,9 +17,13 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Local extracted components
 import 'package:butlery/views/social/friend_requests/friend_request_actions.dart';
@@ -65,9 +69,10 @@ class _FriendRequestsViewContent extends StatefulWidget {
       _FriendRequestsViewContentState();
 }
 
-class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _FriendRequestsViewContentState
+    extends State<_FriendRequestsViewContent> {
+  /// "Välj": the rows take a checkbox and the batch actions appear.
+  bool _selecting = false;
   final Set<String> _selectedIncoming = {};
   final Set<String> _selectedSent = {};
   late final FriendRequestActions _actions;
@@ -79,10 +84,6 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   @override
   void initState() {
     super.initState();
-    // The FAB and the app-bar actions are per tab, so a swipe must rebuild
-    // them as well as a tap.
-    _tabController = TabController(length: 2, vsync: this)
-      ..addListener(_onTabChanged);
     _actions = FriendRequestActions();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,23 +94,20 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _actions.dispose();
     super.dispose();
   }
 
-  int _shownTab = 0;
-
-  void _onTabChanged() {
-    if (!mounted || _tabController.index == _shownTab) return;
-    setState(() => _shownTab = _tabController.index);
-  }
-
-  /// Drops one tab's selection — the "Rensa" control only, on the tab it sits
-  /// on. A tab switch and a refresh keep it (BUT-2042); a batch reconciles it
-  /// via [_reconcileSelection].
-  void _clearSelection(Set<String> selection) {
-    if (mounted) setState(selection.clear);
+  /// Leaving "Välj" drops both selections; a refresh keeps them (BUT-2042) and
+  /// a batch reconciles them via [_reconcileSelection].
+  void _toggleSelecting() {
+    setState(() {
+      _selecting = !_selecting;
+      if (!_selecting) {
+        _selectedIncoming.clear();
+        _selectedSent.clear();
+      }
+    });
   }
 
   /// Drops what the batch wrote, and anything that is no longer open: a
@@ -185,68 +183,107 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FriendsViewModel>();
+    final hasRows =
+        viewModel.incomingRequests.isNotEmpty ||
+        viewModel.sentRequests.isNotEmpty;
+    final hasSelection =
+        _selectedIncoming.isNotEmpty || _selectedSent.isNotEmpty;
+    // "Välj" is only offered while there are rows, so select mode must not
+    // outlive the last one.
+    if (_selecting && !hasRows) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selecting) setState(() => _selecting = false);
+      });
+    }
 
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: FriendRequestsHeaderBuilder.buildAppBar(
-        context,
-        viewModel,
-        _tabController,
-        _selectedIncoming,
-        _selectedSent,
-        () => _handleBatchAccept(viewModel),
-        () => _handleBatchReject(viewModel),
-        () => _handleCancelSelected(viewModel),
-        batchRunning: _batchRunning,
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: Column(
-            children: [
-              LayoutComponents.offlineIndicator(),
-              // Outside the TabBarView and gated on the batch rather than
-              // on a selection, so it survives a tab switch and a cleared
-              // selection — both of which take every batch control off
-              // screen (BUT-2041).
-              BatchActivityBar(active: _batchRunning),
-              FriendRequestsHeaderBuilder.buildErrorDisplay(
-                context,
-                viewModel,
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    IncomingRequestsTabBuilder.build(
-                      context,
-                      viewModel,
-                      _selectedIncoming,
-                      _onIncomingSelectionChanged,
-                      () => _clearSelection(_selectedIncoming),
-                      () => _pruneAfterRefresh(viewModel),
-                    ),
-                    SentRequestsTabBuilder.build(
-                      context,
-                      viewModel,
-                      _selectedSent,
-                      _onSentSelectionChanged,
-                      () => _clearSelection(_selectedSent),
-                      () => _pruneAfterRefresh(viewModel),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return ButleryPage.undersida(
+      title: context.l10n.socialFriendRequestsTitle,
+      backTo: context.l10n.socialFriendsAndGroups,
+      ruleUnderBar: false,
+      actions: [
+        if (hasRows)
+          TextButton(
+            onPressed: _toggleSelecting,
+            child: Text(
+              _selecting
+                  ? context.l10n.commonDone
+                  : context.l10n.socialRequestsSelect,
+            ),
           ),
-        ),
+      ],
+      // The bulk actions take the tab bar's place while something is chosen.
+      bottomNavigationBar: hasSelection
+          ? _buildBulkBar(context, viewModel)
+          : null,
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          // Gated on the batch rather than on a selection, so it survives a
+          // cleared selection, which takes every batch control off screen
+          // (BUT-2041).
+          BatchActivityBar(active: _batchRunning),
+          FriendRequestsHeaderBuilder.buildErrorDisplay(context, viewModel),
+          Expanded(
+            child: FriendRequestsListBuilder.build(
+              context,
+              viewModel,
+              _selectedIncoming,
+              _selectedSent,
+              selecting: _selecting,
+              onIncomingChanged: _onIncomingSelectionChanged,
+              onSentChanged: _onSentSelectionChanged,
+              onRefreshed: () => _pruneAfterRefresh(viewModel),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: _actions.buildFloatingActionButton(
-        context,
-        _tabController,
-        _selectedIncoming,
-        () => _handleBatchAccept(viewModel),
-        batchRunning: _batchRunning,
+    );
+  }
+
+  Widget _buildBulkBar(BuildContext context, FriendsViewModel viewModel) {
+    final l10n = context.l10n;
+    return BottomActionContainer(
+      child: Row(
+        children: [
+          if (_selectedIncoming.isNotEmpty) ...[
+            Expanded(
+              child: HeroButton(
+                key: const ValueKey('friendRequests.bulkAccept'),
+                label: l10n.socialAcceptCount(_selectedIncoming.length),
+                // A null onPressed is what refuses a second press while a
+                // batch runs; what SAYS so is `BatchActivityBar`.
+                onPressed: _batchRunning
+                    ? null
+                    : () => _handleBatchAccept(viewModel),
+                expand: true,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.space12),
+            Expanded(
+              child: ActionButtons.outlinedButton(
+                context,
+                key: const ValueKey('friendRequests.bulkDecline'),
+                label: l10n.socialDeclineCount(_selectedIncoming.length),
+                onPressed: _batchRunning
+                    ? null
+                    : () => _handleBatchReject(viewModel),
+              ),
+            ),
+          ],
+          if (_selectedIncoming.isNotEmpty && _selectedSent.isNotEmpty)
+            const SizedBox(width: AppDimensions.space12),
+          if (_selectedSent.isNotEmpty)
+            Expanded(
+              child: ActionButtons.outlinedButton(
+                context,
+                key: const ValueKey('friendRequests.bulkCancel'),
+                label: l10n.socialCancelCount(_selectedSent.length),
+                onPressed: _batchRunning
+                    ? null
+                    : () => _handleCancelSelected(viewModel),
+              ),
+            ),
+        ],
       ),
     );
   }

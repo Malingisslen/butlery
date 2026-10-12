@@ -1972,12 +1972,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String personalTagRuleCount(int count) {
-    return '$count rules';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rules',
+      one: '1 rule',
+    );
+    return '$_temp0';
   }
 
   @override
   String personalTagRuleCountActive(int enabled, int total) {
-    return '$enabled/$total rules active';
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'rules',
+      one: 'rule',
+    );
+    return '$enabled of $total $_temp0 on';
   }
 
   @override
@@ -3799,7 +3811,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get groupSharedContent => 'Shared content';
+  String get groupSharedContent => 'Shared in the group';
 
   @override
   String get groupShareShoppingList => 'Share shopping list';
@@ -4756,7 +4768,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String messagingSelectedMembers(int count) {
-    return 'Selected members ($count)';
+    return 'Participants · $count selected';
   }
 
   @override
@@ -5125,11 +5137,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indicatorBackOnline => 'Back online';
 
   @override
-  String get householdToggle => 'Mark as household';
+  String get householdToggle => 'This is the household';
 
   @override
   String get householdToggleDescription =>
-      'Household allergens are combined for menu planning';
+      'The household\'s allergens count in the menu';
 
   @override
   String get householdJoinTitle => 'Join the household';
@@ -6187,7 +6199,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAvatarUploaded => 'Avatar uploaded.';
 
   @override
-  String get profileBio => 'Bio';
+  String get profileBio => 'About me';
 
   @override
   String get profileBioHint =>
@@ -6253,7 +6265,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileNewUser => 'New user';
 
   @override
-  String get profilePrivacySettings => 'Privacy settings';
+  String get profilePrivacySettings => 'Privacy';
 
   @override
   String get profileResetChanges => 'Reset changes';
@@ -6262,7 +6274,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaved => 'Profile saved.';
 
   @override
-  String get profileSaveProfile => 'Save profile';
+  String get profileSaveProfile => 'Save changes';
 
   @override
   String get profileSearchableByEmail => 'Searchable by email';
@@ -7313,17 +7325,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sharedTabRecipes(int count) {
-    return 'Recipes ($count)';
+    return 'Recipes · $count';
   }
 
   @override
   String sharedTabMenus(int count) {
-    return 'Menus ($count)';
+    return 'Menus · $count';
   }
 
   @override
   String sharedTabShoppingLists(int count) {
-    return 'Shopping lists ($count)';
+    return 'Lists · $count';
   }
 
   @override
@@ -15321,7 +15333,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get whoAteSkip => 'skip';
+  String get whoAteSkip => 'Skip';
 
   @override
   String get a11yToggleDiner => 'Mark as eating';
@@ -15383,7 +15395,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyRatingTitle => 'what did you think?';
+  String get familyRatingTitle => 'What did you think?';
 
   @override
   String get familyRatingIntro =>
@@ -15393,7 +15405,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get familyRatingYou => 'you';
 
   @override
-  String get familyRatingSave => 'save ratings';
+  String get familyRatingSave => 'Save';
 
   @override
   String get familyRatingPrivateNote =>
@@ -17276,20 +17288,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSuggestionTitle => 'Suggested change';
 
   @override
-  String recipeSuggestionIntroOwner(String name, String date) {
-    return '$name suggests this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroOwner(String name, String title) {
+    return '$name suggests a change to $title. Your recipe only changes if you use the suggestion.';
   }
 
   @override
-  String recipeSuggestionIntroMine(String date) {
-    return 'You suggested this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroMine(String title) {
+    return 'You suggested a change to $title. The recipe only changes if the owner uses the suggestion.';
   }
 
   @override
   String get recipeSuggestionSuggestedLabel => 'Suggestion';
 
   @override
-  String get recipeSuggestionCurrentLabel => 'Recipe now';
+  String get recipeSuggestionCurrentLabel => 'Now';
 
   @override
   String get recipeSuggestionAccept => 'Use the suggestion';
@@ -17678,13 +17690,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
-    return '$name has updated their suggestion to this. The suggestion is kept until $date.';
+  String recipeSuggestionIntroOwnerUpdated(String name, String title) {
+    return '$name has updated their suggestion for $title. Your recipe only changes if you use the suggestion.';
   }
 
   @override
-  String recipeSuggestionIntroMineUpdated(String date) {
-    return 'You suggested this, and it replaced your earlier suggestion. The suggestion is kept until $date.';
+  String recipeSuggestionIntroMineUpdated(String title) {
+    return 'You suggested a change to $title, and it replaced your earlier suggestion. The recipe only changes if the owner uses the suggestion.';
   }
 
   @override
@@ -18861,7 +18873,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagDetailAddRule => 'Add rule';
 
   @override
-  String get tagDetailRunRulesAll => 'Run the rules on all recipes';
+  String get tagDetailRunRulesAll => 'Run the rules now';
 
   @override
   String get tagDetailShareTag => 'Share tag';
@@ -20590,4 +20602,405 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveLink => 'Remove';
+
+  @override
+  String groupSharedRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recipes',
+      one: 'recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedMenusLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'menus',
+      one: 'menu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedListsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'shopping lists',
+      one: 'shopping list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInvitedLabel => 'Invited';
+
+  @override
+  String get groupInviteLink => '+ Invite';
+
+  @override
+  String get groupMembersHeading => 'Members';
+
+  @override
+  String get groupShareSheetButton => 'Share a recipe, menu or list';
+
+  @override
+  String get messagingNewGroupChat => 'New group chat';
+
+  @override
+  String get profileChangePhoto => 'Change picture';
+
+  @override
+  String get profileDisplayNameAvailable => 'Available';
+
+  @override
+  String get sharedSaveAction => 'Save';
+
+  @override
+  String get sharedSavedState => 'Saved';
+
+  @override
+  String sharedFromNameAgo(String name, String time) {
+    return 'from $name · $time';
+  }
+
+  @override
+  String sharedSharedAgo(String time) {
+    return 'shared $time';
+  }
+
+  @override
+  String get sharedNewMark => 'new';
+
+  @override
+  String sharedFromHeading(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String sharedFromSummary(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '$count recipe',
+    );
+    return '$_temp0 · latest $time';
+  }
+
+  @override
+  String socialFriendsSection(int count) {
+    return 'Friends · $count';
+  }
+
+  @override
+  String get socialRequestsSelect => 'Select';
+
+  @override
+  String socialRequestsIncomingSection(int count) {
+    return 'Incoming · $count';
+  }
+
+  @override
+  String socialRequestsSentSection(int count) {
+    return 'Sent · $count';
+  }
+
+  @override
+  String get messagingAboutConversation => 'About the conversation';
+
+  @override
+  String messagingConversationSubline(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count in the conversation',
+      one: '1 in the conversation',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get messagingConversationNameRow => 'Conversation name';
+
+  @override
+  String get messagingAddSomeoneRow => 'Add someone';
+
+  @override
+  String get messagingInConversationSection => 'In the conversation';
+
+  @override
+  String get messagingMemberYou => 'you';
+
+  @override
+  String messagingRemoveFromConversationTitle(String name) {
+    return 'Remove $name from the conversation?';
+  }
+
+  @override
+  String messagingRemoveFromConversationBody(String name) {
+    return '$name stops seeing new messages. What has already been written stays, and the account is not affected. You can invite them again.';
+  }
+
+  @override
+  String get messagingLeaveConversationRow => 'Leave the conversation';
+
+  @override
+  String get messagingLeaveConversationSub =>
+      'You stop seeing new messages. What you wrote stays.';
+
+  @override
+  String recipeRowMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String publicProfileRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count public recipes',
+      one: '1 public recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get friendProfileBetweenYou => 'Between you';
+
+  @override
+  String get friendProfileSharedWithYouSub => 'Found under Shared with me';
+
+  @override
+  String get friendProfilePublicRecipesSub =>
+      'Visible to everyone, not only you';
+
+  @override
+  String friendProfileShareLinkRow(String owner) {
+    return 'Share a link to $owner profile';
+  }
+
+  @override
+  String get friendProfileShareLinkSub =>
+      'Shows the public page, nothing you have shared';
+
+  @override
+  String profileFriendsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'friends',
+      one: 'friend',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePublicRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'public recipes',
+      one: 'public recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOpsSectionTitle => 'Operations · recent events';
+
+  @override
+  String get adminOpsSparseTitle => 'Sparse on purpose.';
+
+  @override
+  String get adminOpsSparseBody =>
+      'The log fills once the app has users. A short log does not mean anything is missing.';
+
+  @override
+  String get adminOpsEventNotificationCleanup => 'Notifications cleaned';
+
+  @override
+  String get adminOpsEventIngredientCleanup => 'Ingredients cleaned';
+
+  @override
+  String get adminOpsEventSystemEventsCleanup => 'Ops log cleaned';
+
+  @override
+  String get adminOpsEventSocialRequestsCleanup => 'Old requests cleaned';
+
+  @override
+  String get adminOpsEventAuditLogCleanup => 'Audit log cleaned';
+
+  @override
+  String get adminOpsEventDeletionAuditLogCleanup => 'Deletion log cleaned';
+
+  @override
+  String get adminParsingSectionTitle => 'Parsing by domain';
+
+  @override
+  String get adminParsingColSuccess => 'Succeeded';
+
+  @override
+  String get adminParsingColStuck => 'Stuck on';
+
+  @override
+  String get adminParsingTableNote =>
+      'Tap a row to see its imports. The field in the last column is the one corrected most often for the domain.';
+
+  @override
+  String get moderatorContentTypeRecipe => 'Recipe';
+
+  @override
+  String get moderatorContentTypeComment => 'Comment';
+
+  @override
+  String get moderatorContentTypeMessage => 'Message';
+
+  @override
+  String get moderatorContentTypeProfile => 'Profile';
+
+  @override
+  String get moderatorContentTypeCookSnap => 'Cook snap';
+
+  @override
+  String get moderatorContentTypeGroup => 'Group';
+
+  @override
+  String get moderatorStatusNew => 'New';
+
+  @override
+  String get moderatorStatusInReview => 'In review';
+
+  @override
+  String get moderatorStatusActioned => 'Actioned';
+
+  @override
+  String get moderatorStatusClosed => 'Closed';
+
+  @override
+  String get moderatorCloseTooltip => 'Close the report';
+
+  @override
+  String get familyRatingNotSet => 'not set';
+
+  @override
+  String get familyRatingNoteSkip =>
+      'Anyone you skip gets no row and is left out of the average. A rating can always be changed, and the latest replaces the earlier one.';
+
+  @override
+  String get familyRatingNoteCounts =>
+      'The rating counts toward the recipe\'s public average';
+
+  @override
+  String get familyRatingNoteAnonymous =>
+      ', anonymously and without showing anyone\'s identity.';
+
+  @override
+  String get cookbookStatRecipes => 'recipes';
+
+  @override
+  String get cookbookStatSort => 'order';
+
+  @override
+  String get cookbookStatSortAlphabetical => 'A–Z';
+
+  @override
+  String get cookbookStatSortCustom => 'Own';
+
+  @override
+  String get cookbookStatUpdated => 'last changed';
+
+  @override
+  String get tagDetailNewRule => '+ New rule';
+
+  @override
+  String get tagDetailRulesHeading => 'Automatic rules';
+
+  @override
+  String get tagDetailStatChanged => 'last changed';
+
+  @override
+  String tagDetailRuleTagged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'tagged $count recipes',
+      one: 'tagged 1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRecipesHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes with the tag',
+      one: '1 recipe with the tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRuleSummaryNumber(
+    String type,
+    String operator,
+    String value,
+  ) {
+    return '$type $operator $value';
+  }
+
+  @override
+  String get tagEditSheetTitle => 'Edit the tag';
+
+  @override
+  String tagDetailStatRulesValue(int enabled, int total) {
+    return '$enabled of $total';
+  }
+
+  @override
+  String tagDetailStatRules(int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'rules on',
+      one: 'rule on',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagUnusedHeading(int count) {
+    return 'Unused ($count)';
+  }
+
+  @override
+  String get personalTagDeleteAllShort => 'Delete all';
+
+  @override
+  String get conflictDiffMineName => 'Yours';
+
+  @override
+  String get conflictDiffTheirsName => 'Theirs';
+
+  @override
+  String get conflictDiffApplies => 'Applies';
+
+  @override
+  String conflictDiffIntro(String name, String title) {
+    return 'You and $name edited $title at the same time. Only one of the versions applies – here is how they differ.';
+  }
+
+  @override
+  String get conflictDiffIntroPlain =>
+      'You edited at the same time. Only one of the versions applies – here is how they differ.';
+
+  @override
+  String recipeSuggestionKeptNote(String date) {
+    return 'The suggestion is kept until $date. Then it is removed.';
+  }
 }

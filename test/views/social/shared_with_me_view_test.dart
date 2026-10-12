@@ -7,8 +7,8 @@
 /// assert the user-visible Swedish state the view renders for each.
 ///
 /// The coordinator is the view's SINGLE dependency, so each test pins one
-/// state → one rendered outcome (input → output). The filter chips and the
-/// mixed newest-first list are covered below the state group.
+/// state → one rendered outcome (input → output). The tabs and the rows of
+/// each kind are covered below the state group.
 ///
 /// Rebuilt for BUT-1180 — replaces a ~25-test ULTRATHINK smoke-suite of
 /// `findsOneWidget` / `takeException isNull` structural asserts that threw
@@ -27,13 +27,12 @@ import 'package:butlery/viewmodels/shared_content/shared_content_search_viewmode
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart';
-import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_tabs.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 import 'package:butlery/views/social/shared_with_me_view.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -45,7 +44,6 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/mocks/service_mocks.dart';
 import '../helpers/view_test_helpers.dart';
 
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
@@ -297,10 +295,9 @@ void main() {
     );
   });
 
-  group('SharedWithMeView — filter chips', () {
-    testWidgets('Allt, Recept, Menyer and Inköpslistor are offered', (
-      tester,
-    ) async {
+  group('SharedWithMeView — tabs', () {
+    testWidgets('Recept, Menyer and Listor are offered with their counts, '
+        'Recept first', (tester) async {
       stubGlobalState(
         loading: false,
         hasError: false,
@@ -321,56 +318,13 @@ void main() {
 
       await pumpView(tester);
 
-      for (final label in ['Allt', 'Recept', 'Menyer', 'Inköpslistor']) {
+      for (final label in ['Recept · 0', 'Menyer · 0', 'Listor · 0']) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      // The tabs with counters are gone.
-      expect(find.byType(TabBar), findsNothing);
+      // There is no "Allt": the first tab is the recipes.
+      expect(find.text('Allt'), findsNothing);
+      expect(find.text('Inga delade recept'), findsOneWidget);
     });
-
-    testWidgets(
-      'tapping a chip selects it and tapping it again returns to Allt',
-      (
-        tester,
-      ) async {
-        SharedContentFilter? last;
-        await tester.pumpWidget(
-          MaterialApp(
-            locale: const Locale('sv', 'SE'),
-            supportedLocales: AppLocalizations.supportedLocales,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            theme: AppTheme.lightTheme,
-            home: Scaffold(
-              body: StatefulBuilder(
-                builder: (context, setState) => SharedContentFilterChips(
-                  selected: last ?? SharedContentFilter.all,
-                  onSelected: (f) => setState(() => last = f),
-                ),
-              ),
-            ),
-          ),
-        );
-
-        await tester.tap(find.text('Recept'));
-        await tester.pump();
-        expect(last, SharedContentFilter.recipes);
-
-        await tester.tap(find.text('Recept'));
-        await tester.pump();
-        expect(last, SharedContentFilter.all);
-
-        await tester.tap(find.text('Menyer'));
-        await tester.pump();
-        await tester.tap(find.text('Allt'));
-        await tester.pump();
-        expect(last, SharedContentFilter.all);
-      },
-    );
   });
 
   group('SharedWithMeView — filtered lists', () {
@@ -379,7 +333,7 @@ void main() {
     late MockSharedShoppingVm lists;
     late MockSearchVm search;
 
-    // Content exists overall (so chips render) but only [recipe] is listed.
+    // Content exists overall (so the tabs render) but only [recipe] is listed.
     void stubContent({
       List<SharedRecipe> recipeList = const [],
       bool hasSearchQuery = false,
@@ -399,10 +353,6 @@ void main() {
       when(() => recipes.isRecipeViewed(any())).thenReturn(true);
       when(() => recipes.isRecipeImported(any())).thenReturn(false);
       when(() => recipes.isOperating).thenReturn(false);
-      // The recipe card's reply button resolves it in initState.
-      TestServiceLocator.registerMock<MessagingService>(
-        MockMessagingService(),
-      );
       when(() => coordinator.recipeViewModel).thenReturn(recipes);
       when(() => coordinator.menuViewModel).thenReturn(menus);
       when(() => coordinator.shoppingViewModel).thenReturn(lists);
@@ -421,44 +371,133 @@ void main() {
     );
 
     testWidgets('tapping Menyer swaps the recipe list for the menus empty '
-        'state, and tapping it again brings the recipe back', (tester) async {
+        'state, and tapping Recept brings the recipe back', (tester) async {
       stubContent(recipeList: [recipe]);
       await pumpView(tester);
 
       expect(find.text('Köttbullar'), findsOneWidget);
 
-      await tester.tap(find.text('Menyer'));
+      await tester.tap(find.text('Menyer · 0'));
       await tester.pumpAndSettle();
 
       expect(find.text('Inga delade menyer'), findsOneWidget);
       expect(find.text(_findFriendsCta), findsOneWidget);
       expect(find.text('Köttbullar'), findsNothing);
 
-      await tester.tap(find.text('Menyer'));
+      await tester.tap(find.text('Recept · 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Köttbullar'), findsOneWidget);
       expect(find.text('Inga delade menyer'), findsNothing);
     });
 
-    testWidgets('each chip with nothing of its kind names that kind in the '
+    testWidgets('each tab with nothing of its kind names that kind in the '
         'empty state', (tester) async {
       stubContent();
       await pumpView(tester);
 
-      await tester.tap(find.text('Recept'));
-      await tester.pumpAndSettle();
       expect(find.text('Inga delade recept'), findsOneWidget);
 
-      await tester.tap(find.text('Inköpslistor'));
+      await tester.tap(find.text('Listor · 0'));
       await tester.pumpAndSettle();
       expect(find.text('Inga delade inköpslistor'), findsOneWidget);
       expect(find.text('Inga delade recept'), findsNothing);
 
-      await tester.tap(find.text('Menyer'));
+      await tester.tap(find.text('Menyer · 0'));
       await tester.pumpAndSettle();
       expect(find.text('Inga delade menyer'), findsOneWidget);
       expect(find.text('Inga delade inköpslistor'), findsNothing);
+    });
+
+    testWidgets('a recipe row names who shared it and offers Spara', (
+      tester,
+    ) async {
+      stubContent(recipeList: [recipe]);
+      await pumpView(tester);
+
+      expect(find.text('Köttbullar'), findsOneWidget);
+      expect(find.textContaining('från Anna'), findsOneWidget);
+      expect(find.text('Spara'), findsOneWidget);
+      expect(find.text('SPARAD'), findsNothing);
+    });
+
+    testWidgets('a recipe already saved shows the Sparad badge and no Spara', (
+      tester,
+    ) async {
+      stubContent(recipeList: [recipe]);
+      when(() => recipes.isRecipeImported(any())).thenReturn(true);
+      await pumpView(tester);
+
+      expect(find.text('SPARAD'), findsOneWidget);
+      expect(find.text('Spara'), findsNothing);
+    });
+
+    testWidgets('a recipe not yet opened is marked "ny" after its name', (
+      tester,
+    ) async {
+      stubContent(recipeList: [recipe]);
+      when(() => recipes.isRecipeViewed(any())).thenReturn(false);
+      await pumpView(tester);
+
+      expect(find.text('Köttbullar · ny', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets('long-pressing a row offers Svara, Dölj and Sluta dela', (
+      tester,
+    ) async {
+      stubContent(recipeList: [recipe]);
+      await pumpView(tester);
+
+      await tester.longPress(find.text('Köttbullar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Svara'), findsOneWidget);
+      expect(find.text('Dölj'), findsOneWidget);
+      expect(find.text('Sluta dela'), findsOneWidget);
+    });
+
+    testWidgets('Spara imports that recipe once', (tester) async {
+      stubContent(recipeList: [recipe]);
+      when(
+        () => recipes.importSharedRecipe(any()),
+      ).thenAnswer((_) async => 'new-id');
+      await pumpView(tester);
+
+      await tester.tap(find.text('Spara'));
+      await tester.pump();
+
+      verify(() => recipes.importSharedRecipe(recipe)).called(1);
+    });
+
+    testWidgets('Spara is disabled while an import is running', (tester) async {
+      stubContent(recipeList: [recipe]);
+      when(() => recipes.isOperating).thenReturn(true);
+      await pumpView(tester);
+
+      final button = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Spara'),
+          matching: find.bySubtype<ButtonStyleButton>(),
+        ),
+      );
+      expect(button.onPressed, isNull);
+    });
+
+    testWidgets('Sluta dela in the sheet asks before unsharing, and Avbryt '
+        'closes the question', (tester) async {
+      stubContent(recipeList: [recipe]);
+      await pumpView(tester);
+
+      await tester.longPress(find.text('Köttbullar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sluta dela'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sluta dela recept?'), findsOneWidget);
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sluta dela recept?'), findsNothing);
     });
 
     testWidgets('the search is the shared search box: typing searches, the '
@@ -535,7 +574,7 @@ void main() {
     });
   });
 
-  group('SharedContentLists.entriesFor', () {
+  group('SharedContentLists.rowsFor', () {
     late MockSharedRecipeVm recipes;
     late MockSharedMenuVm menus;
     late MockSharedShoppingVm lists;
@@ -581,37 +620,19 @@ void main() {
       when(() => coordinator.shoppingViewModel).thenReturn(lists);
     });
 
-    test('Allt mixes all three kinds, newest shared first', () {
-      final ids = SharedContentLists.entriesFor(
-        coordinator,
-        SharedContentFilter.all,
-      ).map((e) => e.id);
-      expect(ids, ['menu_m1', 'list_s1', 'recipe_r1']);
-    });
+    Iterable<Object?> keysOf(SharedContentFilter filter) =>
+        SharedContentLists.rowsFor(
+          coordinator,
+          filter,
+        ).map((row) => (row.key! as ValueKey).value);
 
     test('Recept shows only recipes', () {
-      final ids = SharedContentLists.entriesFor(
-        coordinator,
-        SharedContentFilter.recipes,
-      ).map((e) => e.id);
-      expect(ids, ['recipe_r1']);
+      expect(keysOf(SharedContentFilter.recipes), ['recipe_r1']);
     });
 
-    test('Menyer and Inköpslistor each show only their own kind', () {
-      expect(
-        SharedContentLists.entriesFor(
-          coordinator,
-          SharedContentFilter.menus,
-        ).map((e) => e.id),
-        ['menu_m1'],
-      );
-      expect(
-        SharedContentLists.entriesFor(
-          coordinator,
-          SharedContentFilter.shoppingLists,
-        ).map((e) => e.id),
-        ['list_s1'],
-      );
+    test('Menyer and Listor each show only their own kind', () {
+      expect(keysOf(SharedContentFilter.menus), ['menu_m1']);
+      expect(keysOf(SharedContentFilter.shoppingLists), ['list_s1']);
     });
   });
 }

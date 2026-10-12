@@ -18,12 +18,23 @@ class StarRatingRow extends StatelessWidget {
   final ValueChanged<double>? onRatingChanged;
   final String Function(int starValue)? semanticsLabel;
 
+  /// Width and height of each star's cell. Null packs the stars tight; a
+  /// value spreads them out so each is a full touch target, as the family
+  /// rating screen draws them.
+  final double? slot;
+
+  /// Draw an unrated star as the same solid star in the muted colour, not as
+  /// an outline.
+  final bool solidEmpty;
+
   const StarRatingRow({
     super.key,
     required this.rating,
     this.size = AppDimensions.iconSizeL,
     this.onRatingChanged,
     this.semanticsLabel,
+    this.slot,
+    this.solidEmpty = false,
   });
 
   @override
@@ -38,15 +49,24 @@ class StarRatingRow extends StatelessWidget {
         final isFilled = starValue <= rating;
         final isHalf = !isFilled && starValue - 0.5 <= rating;
 
-        final star = ButleryIcon(
+        final icon = ButleryIcon(
           isFilled
               ? ButleryIcons.star
               : isHalf
               ? ButleryIcons.starHalf
+              : solidEmpty
+              ? ButleryIcons.star
               : ButleryIcons.starOutline,
           color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
           size: size,
         );
+        final star = slot == null
+            ? icon
+            : SizedBox(
+                width: slot,
+                height: slot,
+                child: Center(child: icon),
+              );
 
         if (onRatingChanged == null) return star;
 

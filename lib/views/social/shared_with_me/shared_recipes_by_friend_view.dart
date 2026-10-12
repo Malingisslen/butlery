@@ -1,7 +1,7 @@
 /// Per-friend filtered view of shared recipes (BUT-1000).
 /// Shows only the recipes a single friend has shared with the current user,
-/// reusing the same coordinator ViewModel, card scaffold, and pull-to-refresh
-/// as the main "Shared with me" list — just scoped to one sharer.
+/// reusing the same coordinator ViewModel, row and pull-to-refresh as the main
+/// "Shared with me" list, scoped to one sharer.
 
 // lib/views/social/shared_with_me/shared_recipes_by_friend_view.dart
 
@@ -12,14 +12,13 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// View listing recipes shared with the current user by one specific friend.
 class SharedRecipesByFriendView extends StatefulWidget {
@@ -79,27 +78,30 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.sharedRecipesByFriendTitle(friendDisplayName),
-        backTo: friendDisplayName,
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: Column(
-            children: [
-              LayoutComponents.offlineIndicator(),
-              Expanded(
-                child: Consumer<SharedContentCoordinatorViewModel>(
-                  builder: (context, viewModel, _) =>
-                      _buildBody(context, viewModel),
-                ),
+    final viewModel = context.watch<SharedContentCoordinatorViewModel>();
+    final recipes = viewModel.recipeViewModel.recipesSharedBy(friendId);
+    return ButleryPage.undersida(
+      title: context.l10n.sharedFromHeading(friendDisplayName),
+      backTo: friendDisplayName,
+      ruleUnderBar: true,
+      secondaryLine: recipes.isEmpty
+          ? null
+          : context.l10n.sharedFromSummary(
+              recipes.length,
+              timeago.format(
+                recipes
+                    .map((r) => r.sharedAt)
+                    .reduce(
+                      (a, b) => a.isAfter(b) ? a : b,
+                    ),
+                locale: 'sv',
               ),
-            ],
-          ),
-        ),
+            ),
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          Expanded(child: _buildBody(context, viewModel, recipes)),
+        ],
       ),
     );
   }
@@ -107,6 +109,7 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
   Widget _buildBody(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
+    List<SharedRecipe> recipes,
   ) {
     if (viewModel.isGloballyLoading || viewModel.recipeViewModel.isLoading) {
       return StateWidget.loading(message: context.l10n.loadingRecipes);
@@ -119,8 +122,6 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
       );
     }
 
-    final recipes = viewModel.recipeViewModel.recipesSharedBy(friendId);
-
     if (recipes.isEmpty) {
       return StateWidget.empty(
         title: context.l10n.sharedNoRecipesFromFriend(friendDisplayName),
@@ -132,15 +133,24 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
-        padding: AppDimensions.screenPadding,
+        padding: ButleryPageBody.margin(
+          context,
+          top: AppDimensions.space16,
+          bottom: AppDimensions.space32,
+        ),
         itemCount: recipes.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.space4),
+            const SizedBox(height: AppDimensions.space12),
         itemBuilder: (context, index) {
           final sharedRecipe = recipes[index];
           return KeyedSubtree(
             key: ValueKey(sharedRecipe.id),
-            child: SharedRecipeCard.build(context, viewModel, sharedRecipe),
+            child: SharedRecipeCard.build(
+              context,
+              viewModel,
+              sharedRecipe,
+              byFriend: true,
+            ),
           );
         },
       ),

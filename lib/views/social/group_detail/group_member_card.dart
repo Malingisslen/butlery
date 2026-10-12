@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -46,8 +47,15 @@ class GroupMemberCard {
     final cs = Theme.of(context).colorScheme;
     // Only removable members participate in multi-select (owner/self excluded).
     final selectable = canRemoveMember;
+    final ownerBadge = _isGroupOwner(member, group);
+    // The creator is only named when not the owner too: the sketch shows one
+    // badge, "Ägare".
+    final creatorBadge = _isGroupCreator(member, group) && !ownerBadge;
 
     final tile = ListTile(
+      contentPadding: EdgeInsets.zero,
+      // The theme paints every ListTile raised; these rows sit on paper.
+      tileColor: Colors.transparent,
       selected: isSelectionMode && isSelected,
       // Chosen is surface.selected with a real border, never a tint.
       // surfaceContainerHighest is surface.raised, which carries
@@ -74,11 +82,12 @@ class GroupMemberCard {
               color: isSelected ? cs.onSurface : cs.outline,
               size: AppDimensions.iconSizeL,
             )
-          : SocialAvatarComponents.avatar(
-              announceName: false,
-              size: ImageSize.medium,
+          : UserAvatar(
+              imageUrl: member.avatarUrl,
               displayName: member.displayName,
-              user: member,
+              explicitSize: 48,
+              round: true,
+              announceName: false,
             ),
       // The row's label already starts with the name; the visible name is
       // left out of the announcement so it is not read twice.
@@ -91,138 +100,102 @@ class GroupMemberCard {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (removalFailure != null)
-            Text(
+      subtitle: removalFailure == null
+          ? null
+          : Text(
               removalFailureText(context, removalFailure),
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),
             ),
-          Row(
-            children: [
-              if (_isGroupOwner(member, group))
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space4,
-                    vertical: AppDimensions.badgePaddingY,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  child: Text(
-                    context.l10n.groupOwner,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              if (_isGroupCreator(member, group))
-                Container(
-                  margin: EdgeInsetsDirectional.only(
-                    start: _isGroupOwner(member, group)
-                        ? AppDimensions.space4
-                        : 0,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space4,
-                    vertical: AppDimensions.badgePaddingY,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  child: Text(
-                    context.l10n.groupCreator,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-      trailing: showMenu && !isSelectionMode
-          ? PressFill(
-              surface: PressSurface.base,
-              child: PopupMenuButton<String>(
-                icon: const ButleryIcon(ButleryIcons.moreVertical),
-                onSelected: (value) async {
-                  if (value == 'remove') {
-                    final success = await GroupDetailActions.removeMember(
-                      context,
-                      member,
-                      group,
-                    );
-                    if (success) {
-                      onRemoved();
-                    }
-                  } else if (value == 'report') {
-                    await GroupDetailActions.reportMember(context, member);
-                  }
-                },
-                itemBuilder: (context) => [
-                  if (canRemoveMember)
-                    ButleryMenuItem(
-                      value: 'remove',
-                      child: Row(
-                        children: [
-                          ButleryIcon(
-                            ButleryIcons.userMinus,
-                            size: AppDimensions.iconSizeM,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          const SizedBox(width: AppDimensions.space4),
-                          Text(
-                            context.l10n.groupRemoveFromGroup,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
+      trailing: isSelectionMode || !(showMenu || ownerBadge)
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (ownerBadge) _roleBadge(context.l10n.groupOwner),
+                if (creatorBadge) _roleBadge(context.l10n.groupCreator),
+                if (showMenu)
+                  PressFill(
+                    surface: PressSurface.base,
+                    child: PopupMenuButton<String>(
+                      icon: const ButleryIcon(ButleryIcons.moreVertical),
+                      onSelected: (value) async {
+                        if (value == 'remove') {
+                          final success = await GroupDetailActions.removeMember(
+                            context,
+                            member,
+                            group,
+                          );
+                          if (success) {
+                            onRemoved();
+                          }
+                        } else if (value == 'report') {
+                          await GroupDetailActions.reportMember(
+                            context,
+                            member,
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        if (canRemoveMember)
+                          ButleryMenuItem(
+                            value: 'remove',
+                            child: Row(
+                              children: [
+                                ButleryIcon(
+                                  ButleryIcons.userMinus,
+                                  size: AppDimensions.iconSizeM,
                                   color: Theme.of(context).colorScheme.error,
                                 ),
+                                const SizedBox(width: AppDimensions.space4),
+                                Text(
+                                  context.l10n.groupRemoveFromGroup,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  if (canReportMember)
-                    ButleryMenuItem(
-                      value: 'report',
-                      child: Row(
-                        children: [
-                          ButleryIcon(
-                            ButleryIcons.flag,
-                            size: AppDimensions.iconSizeM,
-                            color: Theme.of(context).colorScheme.error,
+                        if (canReportMember)
+                          ButleryMenuItem(
+                            value: 'report',
+                            child: Row(
+                              children: [
+                                ButleryIcon(
+                                  ButleryIcons.flag,
+                                  size: AppDimensions.iconSizeM,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                                const SizedBox(width: AppDimensions.space4),
+                                Text(context.l10n.reportContent),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: AppDimensions.space4),
-                          Text(context.l10n.reportContent),
-                        ],
-                      ),
+                      ],
                     ),
-                ],
-              ),
-            )
-          : null,
-    );
-
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space4,
-      ),
-      child: removalFailure == null
-          ? tile
-          : Semantics(
-              label: context.l10n.a11yMemberRemoveFailed(member.displayName),
-              child: tile,
+                  ),
+              ],
             ),
     );
+
+    // The rows sit between hairlines in a ButleryListSection, so no card.
+    return removalFailure == null
+        ? tile
+        : Semantics(
+            label: context.l10n.a11yMemberRemoveFailed(member.displayName),
+            child: tile,
+          );
   }
+
+  /// "Ägare" and "Skapare" as a status badge with a little room before
+  /// whatever follows it.
+  static Widget _roleBadge(String label) => Padding(
+    padding: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
+    child: UnifiedBadge.status(label: label),
+  );
 
   static String removalFailureText(
     BuildContext context,

@@ -16,177 +16,156 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// Builds friend request card widgets for incoming and sent requests
+/// Builds the rows of the friend requests list, incoming and sent. Rows sit in
+/// a ButleryListSection, so they carry no card of their own.
 class FriendRequestCard {
+  static const double _avatarSize = 48;
+
+  /// [selecting] is the "Välj" mode: the row gets a checkbox and a tap toggles
+  /// it, and the answer buttons step aside.
   static Widget buildIncomingCard(
     BuildContext context,
     FriendRequest request,
     FriendsViewModel viewModel,
     bool isSelected,
-    Function(bool) onSelectionChanged,
-  ) {
+    Function(bool) onSelectionChanged, {
+    bool selecting = false,
+  }) {
     final userProfile = viewModel.getUserProfile(request.fromUserId);
     final displayName =
         userProfile?.displayName ?? context.l10n.friendRequestTitle;
-    final avatarUrl = userProfile?.avatarUrl;
+    final cs = Theme.of(context).colorScheme;
+    final hasMessage = request.message?.isNotEmpty == true;
 
-    // Chosen is surface.selected with a real border, never a tint
-    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-    // :108-119). surfaceContainerHighest is surface.raised, which
-    // carries surface.selected's values in both modes; the border is
-    // text.primary (onSurface): ink on light, paper on dark.
-    return Card(
-      color: isSelected
-          ? Theme.of(context).colorScheme.surfaceContainerHighest
-          : null,
-      shape: isSelected
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.onSurface,
-                width: 1.5,
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (selecting) ...[
+                Checkbox(
+                  value: isSelected,
+                  onChanged: (value) => onSelectionChanged(value ?? false),
+                ),
+                const SizedBox(width: AppDimensions.space4),
+              ],
+              ExcludeSemantics(
+                child: UserAvatar(
+                  imageUrl: userProfile?.avatarUrl,
+                  displayName: displayName,
+                  explicitSize: _avatarSize,
+                  round: true,
+                  announceName: false,
+                ),
               ),
-            )
-          : null,
-      child: Semantics(
-        label: context.l10n.a11yFriendRequestIncoming,
-        button: true,
-        selected: isSelected,
-        child: InkWell(
-          onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.space12),
-            child: Column(
-              children: [
-                Row(
+              const SizedBox(width: AppDimensions.space12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      value: isSelected,
-                      onChanged: (value) => onSelectionChanged(value ?? false),
+                    Text(
+                      displayName,
+                      style: AppTextStyles.bodyBold.copyWith(
+                        color: cs.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: AppDimensions.space4),
-
-                    SocialAvatarComponents.avatar(
-                      announceName: false,
-                      size: ImageSize.small,
-                      imageUrl: avatarUrl,
-                      displayName: displayName,
-                    ),
-                    const SizedBox(width: AppDimensions.space12),
-
-                    // Request info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            displayName,
-                            style: AppTextStyles.titleMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            context.l10n.socialWantsToBeFriend,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          if (request.message?.isNotEmpty == true) ...[
-                            const SizedBox(height: AppDimensions.space4),
-                            Container(
-                              padding: const EdgeInsets.all(
-                                AppDimensions.space4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(
-                                  AppDimensions.radiusControl,
-                                ),
-                              ),
-                              child: Text(
-                                '"${request.message!}"',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            request.timeAgoText,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      context.l10n.socialWantsToBeFriend,
+                      style: AppTextStyles.captionBase.copyWith(
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
-
-                // Actions (not shown during bulk selection)
-                if (!isSelected) ...[
-                  const SizedBox(height: AppDimensions.space12),
-                  // Acceptera first, then the decline action, in the order
-                  // drawn in Skarmar v12 del 3 #forfragningar, which labels
-                  // the decline action "Avböj" (del 3:406, :420).
-                  Row(
-                    children: [
-                      // PQ-18 = A (produktbeslut 2026-09-23, revised after
-                      // the prototype): every incoming row keeps a saffron
-                      // "Acceptera", as drawn. This is a deliberate exception
-                      // to one saffron action per view (Komponentark
-                      // v1:843-844; Grafisk manual v6:219), for friend
-                      // requests only.
-                      Expanded(
-                        child: HeroButton(
-                          key: ValueKey('friendRequest.accept.${request.id}'),
-                          label: context.l10n.commonAccept,
-                          semanticLabel: context.l10n
-                              .a11yAcceptFriendRequestFrom(displayName),
-                          icon: ButleryIcons.check,
-                          busy: viewModel.isAccepting(request.id),
-                          busyLabel: context.l10n.socialAccepting,
-                          onPressed: viewModel.isLoading
-                              ? null
-                              : () =>
-                                    _acceptRequest(context, request, viewModel),
-                          expand: true,
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.space12),
-                      Expanded(
-                        child: ActionButtons.outlinedButton(
-                          context,
-                          label: context.l10n.socialDecline,
-                          semanticLabel: context.l10n
-                              .a11yDeclineFriendRequestFrom(displayName),
-                          icon: ButleryIcons.x,
-                          onPressed: viewModel.isLoading
-                              ? null
-                              : () =>
-                                    _rejectRequest(context, request, viewModel),
-                        ),
-                      ),
-                    ],
+              ),
+              const SizedBox(width: AppDimensions.space8),
+              Text(
+                request.timeAgoText,
+                style: AppTextStyles.captionBase.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          if (hasMessage) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Text(
+              '"${request.message!}"',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontStyle: FontStyle.italic,
+                color: cs.onSurfaceVariant,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (!selecting) ...[
+            const SizedBox(height: AppDimensions.space12),
+            // Acceptera first, then the decline action, in the order drawn
+            // in Skarmar v12 del 3 #forfragningar, which labels the decline
+            // action "Avböj" (del 3:406, :420).
+            Row(
+              children: [
+                // PQ-18 = A (produktbeslut 2026-09-23, revised after the
+                // prototype): every incoming row keeps a saffron "Acceptera",
+                // as drawn. This is a deliberate exception to one saffron
+                // action per view (Komponentark v1:843-844; Grafisk manual
+                // v6:219), for friend requests only.
+                Expanded(
+                  child: HeroButton(
+                    key: ValueKey('friendRequest.accept.${request.id}'),
+                    label: context.l10n.commonAccept,
+                    semanticLabel: context.l10n.a11yAcceptFriendRequestFrom(
+                      displayName,
+                    ),
+                    busy: viewModel.isAccepting(request.id),
+                    busyLabel: context.l10n.socialAccepting,
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _acceptRequest(context, request, viewModel),
+                    expand: true,
                   ),
-                ],
+                ),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    label: context.l10n.socialDecline,
+                    semanticLabel: context.l10n.a11yDeclineFriendRequestFrom(
+                      displayName,
+                    ),
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _rejectRequest(context, request, viewModel),
+                  ),
+                ),
               ],
             ),
-          ),
+          ],
+        ],
+      ),
+    );
+
+    if (!selecting) return content;
+    return Semantics(
+      label: context.l10n.a11yFriendRequestIncoming,
+      button: true,
+      selected: isSelected,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => onSelectionChanged(!isSelected),
+          child: content,
         ),
       ),
     );
@@ -197,155 +176,117 @@ class FriendRequestCard {
     FriendRequest request,
     FriendsViewModel viewModel,
     bool isSelected,
-    Function(bool) onSelectionChanged,
-  ) {
+    Function(bool) onSelectionChanged, {
+    bool selecting = false,
+  }) {
     final userProfile = viewModel.getUserProfile(request.toUserId);
     final displayName =
         userProfile?.displayName ?? context.l10n.friendRequestTitle;
-    final avatarUrl = userProfile?.avatarUrl;
-
     final cs = Theme.of(context).colorScheme;
-    Color statusColor;
-    IconData statusIcon;
-    String statusText;
 
-    switch (request.status) {
-      case FriendRequestStatus.pending:
-        statusColor = context.modeColors.warning;
-        statusIcon = ButleryIcons.clock;
-        statusText = context.l10n.socialPendingResponse;
-        break;
-      case FriendRequestStatus.accepted:
-        statusColor = context.modeColors.success;
-        statusIcon = ButleryIcons.circleCheck;
-        statusText = context.l10n.socialAccepted;
-        break;
-      case FriendRequestStatus.rejected:
-        statusColor = cs.error;
-        statusIcon = ButleryIcons.x;
-        statusText = context.l10n.socialDeclined;
-        break;
-      case FriendRequestStatus.expired:
-        statusColor = cs.onSurfaceVariant;
-        statusIcon = ButleryIcons.clock;
-        statusText = context.l10n.socialExpired;
-        break;
-      default:
-        statusColor = cs.onSurfaceVariant;
-        statusIcon = ButleryIcons.circleHelp;
-        statusText = context.l10n.socialUnknownStatus;
-    }
+    final (statusColor, statusText) = switch (request.status) {
+      FriendRequestStatus.pending => (
+        cs.onSurfaceVariant,
+        context.l10n.socialPendingResponse,
+      ),
+      FriendRequestStatus.accepted => (
+        context.modeColors.success,
+        context.l10n.socialAccepted,
+      ),
+      FriendRequestStatus.rejected => (cs.error, context.l10n.socialDeclined),
+      FriendRequestStatus.expired => (
+        cs.onSurfaceVariant,
+        context.l10n.socialExpired,
+      ),
+      _ => (cs.onSurfaceVariant, context.l10n.socialUnknownStatus),
+    };
+    final selectable = selecting && request.isPending;
 
-    // Chosen is surface.selected with a real border, never a tint
-    // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-    // :108-119). surfaceContainerHighest is surface.raised, which
-    // carries surface.selected's values in both modes; the border is
-    // text.primary (onSurface): ink on light, paper on dark.
-    return Card(
-      color: isSelected
-          ? Theme.of(context).colorScheme.surfaceContainerHighest
-          : null,
-      shape: isSelected
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.onSurface,
-                width: 1.5,
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
+        child: Row(
+          children: [
+            if (selectable) ...[
+              Checkbox(
+                value: isSelected,
+                onChanged: (value) => onSelectionChanged(value ?? false),
               ),
-            )
-          : null,
-      child: Semantics(
-        label: context.l10n.a11yFriendRequestSent,
-        button: true,
-        selected: isSelected,
+              const SizedBox(width: AppDimensions.space4),
+            ],
+            ExcludeSemantics(
+              child: UserAvatar(
+                imageUrl: userProfile?.avatarUrl,
+                displayName: displayName,
+                explicitSize: _avatarSize,
+                round: true,
+                announceName: false,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (request.message?.isNotEmpty == true)
+                    Text(
+                      request.message!,
+                      style: AppTextStyles.captionBase.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  Text(
+                    '$statusText · ${request.timeAgoText}',
+                    style: AppTextStyles.captionBase.copyWith(
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Cancel for pending requests, not while choosing.
+            if (request.isPending && !selecting)
+              TextButton(
+                onPressed: () =>
+                    _cancelSentRequest(context, request, viewModel),
+                style: ButtonStyle(
+                  foregroundColor: WidgetStatePropertyAll(
+                    AppModeColors.textWarning(Theme.of(context).brightness),
+                  ),
+                ),
+                child: Semantics(
+                  label: context.l10n.socialCancelRequest,
+                  excludeSemantics: true,
+                  child: Text(context.l10n.commonCancel),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    if (!selectable) return content;
+    return Semantics(
+      label: context.l10n.a11yFriendRequestSent,
+      button: true,
+      selected: isSelected,
+      child: PressFill(
+        surface: PressSurface.base,
         child: InkWell(
           onTap: () => onSelectionChanged(!isSelected),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.space12),
-            child: Row(
-              children: [
-                if (request.isPending)
-                  Checkbox(
-                    value: isSelected,
-                    onChanged: (value) => onSelectionChanged(value ?? false),
-                  )
-                else
-                  const SizedBox(
-                    width: AppDimensions.space24,
-                  ), // Placeholder for alignment
-
-                const SizedBox(width: AppDimensions.space4),
-
-                SocialAvatarComponents.avatar(
-                  announceName: false,
-                  size: ImageSize.small,
-                  imageUrl: avatarUrl,
-                  displayName: displayName,
-                ),
-                const SizedBox(width: AppDimensions.space12),
-
-                // Request info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: AppTextStyles.titleMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (request.message?.isNotEmpty == true)
-                        Text(
-                          request.message!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            fontStyle: FontStyle.italic,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      const SizedBox(height: AppDimensions.space4),
-                      Row(
-                        children: [
-                          ButleryIcon(
-                            statusIcon,
-                            size: AppDimensions.iconSizeS,
-                            color: statusColor,
-                          ),
-                          const SizedBox(width: AppDimensions.space4),
-                          Text(
-                            statusText,
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: statusColor,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            request.timeAgoText,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Cancel button for pending requests (not during selection)
-                if (request.isPending && !isSelected)
-                  IconButton(
-                    onPressed: () =>
-                        _cancelSentRequest(context, request, viewModel),
-                    icon: ButleryIcon(ButleryIcons.x, color: cs.error),
-                    tooltip: context.l10n.socialCancelRequest,
-                  ),
-              ],
-            ),
-          ),
+          child: content,
         ),
       ),
     );

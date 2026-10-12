@@ -1975,12 +1975,24 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String personalTagRuleCount(int count) {
-    return '$count regler';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count regler',
+      one: '1 regel',
+    );
+    return '$_temp0';
   }
 
   @override
   String personalTagRuleCountActive(int enabled, int total) {
-    return '$enabled/$total regler aktiva';
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'regler',
+      one: 'regel',
+    );
+    return '$enabled av $total $_temp0 på';
   }
 
   @override
@@ -3802,7 +3814,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get groupSharedContent => 'Delat innehåll';
+  String get groupSharedContent => 'Delat i gruppen';
 
   @override
   String get groupShareShoppingList => 'Dela inköpslista';
@@ -4755,7 +4767,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String messagingSelectedMembers(int count) {
-    return 'Valda medlemmar ($count)';
+    return 'Deltagare · $count valda';
   }
 
   @override
@@ -5122,11 +5134,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get indicatorBackOnline => 'Ansluten igen';
 
   @override
-  String get householdToggle => 'Markera som hushåll';
+  String get householdToggle => 'Det här är hushållet';
 
   @override
   String get householdToggleDescription =>
-      'Hushållets allergier sammanställs för menyplanering';
+      'Hushållets allergier räknas med i menyn';
 
   @override
   String get householdJoinTitle => 'Gå med i hushållet';
@@ -6183,7 +6195,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileAvatarUploaded => 'Avataren är uppladdad.';
 
   @override
-  String get profileBio => 'Beskrivning';
+  String get profileBio => 'Om mig';
 
   @override
   String get profileBioHint => 'Beskriv dig som matlagare (max 160 tecken)';
@@ -6248,7 +6260,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileNewUser => 'Ny användare';
 
   @override
-  String get profilePrivacySettings => 'Integritetsinställningar';
+  String get profilePrivacySettings => 'Integritet';
 
   @override
   String get profileResetChanges => 'Återställ ändringar';
@@ -6257,7 +6269,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileSaved => 'Profilen är sparad.';
 
   @override
-  String get profileSaveProfile => 'Spara profil';
+  String get profileSaveProfile => 'Spara ändringar';
 
   @override
   String get profileSearchableByEmail => 'Sökbar via e-post';
@@ -7307,17 +7319,17 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String sharedTabRecipes(int count) {
-    return 'Recept ($count)';
+    return 'Recept · $count';
   }
 
   @override
   String sharedTabMenus(int count) {
-    return 'Menyer ($count)';
+    return 'Menyer · $count';
   }
 
   @override
   String sharedTabShoppingLists(int count) {
-    return 'Inköpslistor ($count)';
+    return 'Listor · $count';
   }
 
   @override
@@ -14826,7 +14838,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moderatorReasonLabel => 'Anledning';
 
   @override
-  String get moderatorReporterLabel => 'Rapporterat av';
+  String get moderatorReporterLabel => 'Anmäld av';
 
   @override
   String get moderatorReporterErased => 'Anmälarens konto är raderat';
@@ -15426,7 +15438,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get whoAteSkip => 'hoppa över';
+  String get whoAteSkip => 'Hoppa över';
 
   @override
   String get a11yToggleDiner => 'Markera som äter';
@@ -15488,7 +15500,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyRatingTitle => 'vad tyckte ni?';
+  String get familyRatingTitle => 'Vad tyckte ni?';
 
   @override
   String get familyRatingIntro =>
@@ -15498,7 +15510,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get familyRatingYou => 'du';
 
   @override
-  String get familyRatingSave => 'spara betyg';
+  String get familyRatingSave => 'Spara';
 
   @override
   String get familyRatingPrivateNote =>
@@ -17377,20 +17389,20 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSuggestionTitle => 'Förslag till ändring';
 
   @override
-  String recipeSuggestionIntroOwner(String name, String date) {
-    return '$name föreslår det här. Förslaget sparas till $date.';
+  String recipeSuggestionIntroOwner(String name, String title) {
+    return '$name föreslår en ändring i $title. Ditt recept ändras bara om du använder förslaget.';
   }
 
   @override
-  String recipeSuggestionIntroMine(String date) {
-    return 'Det här föreslog du. Förslaget sparas till $date.';
+  String recipeSuggestionIntroMine(String title) {
+    return 'Du föreslog en ändring i $title. Receptet ändras bara om ägaren använder förslaget.';
   }
 
   @override
   String get recipeSuggestionSuggestedLabel => 'Förslaget';
 
   @override
-  String get recipeSuggestionCurrentLabel => 'Receptet nu';
+  String get recipeSuggestionCurrentLabel => 'Nu';
 
   @override
   String get recipeSuggestionAccept => 'Använd förslaget';
@@ -17775,13 +17787,13 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String recipeSuggestionIntroOwnerUpdated(String name, String date) {
-    return '$name har uppdaterat sitt förslag till det här. Förslaget sparas till $date.';
+  String recipeSuggestionIntroOwnerUpdated(String name, String title) {
+    return '$name har uppdaterat sitt förslag till $title. Ditt recept ändras bara om du använder förslaget.';
   }
 
   @override
-  String recipeSuggestionIntroMineUpdated(String date) {
-    return 'Det här föreslog du, och det ersatte ditt förra förslag. Förslaget sparas till $date.';
+  String recipeSuggestionIntroMineUpdated(String title) {
+    return 'Du föreslog en ändring i $title, och den ersatte ditt förra förslag. Receptet ändras bara om ägaren använder förslaget.';
   }
 
   @override
@@ -18923,7 +18935,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagDetailAddRule => 'Lägg till regel';
 
   @override
-  String get tagDetailRunRulesAll => 'Kör reglerna på alla recept';
+  String get tagDetailRunRulesAll => 'Kör reglerna nu';
 
   @override
   String get tagDetailShareTag => 'Dela taggen';
@@ -20641,4 +20653,406 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaRemoveLink => 'Ta bort';
+
+  @override
+  String groupSharedRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recept',
+      one: 'recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedMenusLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'menyer',
+      one: 'meny',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedListsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'inköpslistor',
+      one: 'inköpslista',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInvitedLabel => 'Inbjuden';
+
+  @override
+  String get groupInviteLink => '+ Bjud in';
+
+  @override
+  String get groupMembersHeading => 'Medlemmar';
+
+  @override
+  String get groupShareSheetButton => 'Dela recept, meny eller lista';
+
+  @override
+  String get messagingNewGroupChat => 'Ny gruppchatt';
+
+  @override
+  String get profileChangePhoto => 'Ändra bild';
+
+  @override
+  String get profileDisplayNameAvailable => 'Ledigt';
+
+  @override
+  String get sharedSaveAction => 'Spara';
+
+  @override
+  String get sharedSavedState => 'Sparad';
+
+  @override
+  String sharedFromNameAgo(String name, String time) {
+    return 'från $name · $time';
+  }
+
+  @override
+  String sharedSharedAgo(String time) {
+    return 'delad $time';
+  }
+
+  @override
+  String get sharedNewMark => 'ny';
+
+  @override
+  String sharedFromHeading(String name) {
+    return 'Från $name';
+  }
+
+  @override
+  String sharedFromSummary(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '$count recept',
+    );
+    return '$_temp0 · senast $time';
+  }
+
+  @override
+  String socialFriendsSection(int count) {
+    return 'Vänner · $count';
+  }
+
+  @override
+  String get socialRequestsSelect => 'Välj';
+
+  @override
+  String socialRequestsIncomingSection(int count) {
+    return 'Inkommande · $count';
+  }
+
+  @override
+  String socialRequestsSentSection(int count) {
+    return 'Skickade · $count';
+  }
+
+  @override
+  String get messagingAboutConversation => 'Om samtalet';
+
+  @override
+  String messagingConversationSubline(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count med i samtalet',
+      one: '1 med i samtalet',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get messagingConversationNameRow => 'Samtalets namn';
+
+  @override
+  String get messagingAddSomeoneRow => 'Lägg till någon';
+
+  @override
+  String get messagingInConversationSection => 'Med i samtalet';
+
+  @override
+  String get messagingMemberYou => 'du';
+
+  @override
+  String messagingRemoveFromConversationTitle(String name) {
+    return 'Ta bort $name ur samtalet?';
+  }
+
+  @override
+  String messagingRemoveFromConversationBody(String name) {
+    return '$name slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.';
+  }
+
+  @override
+  String get messagingLeaveConversationRow => 'Lämna samtalet';
+
+  @override
+  String get messagingLeaveConversationSub =>
+      'Du slutar se nya meddelanden. Det du skrivit ligger kvar.';
+
+  @override
+  String recipeRowMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String publicProfileRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count publika recept',
+      one: '1 publikt recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get friendProfileBetweenYou => 'Mellan er';
+
+  @override
+  String get friendProfileSharedWithYouSub => 'Ligger under Delat med mig';
+
+  @override
+  String get friendProfilePublicRecipesSub =>
+      'Synliga för alla, inte bara för dig';
+
+  @override
+  String friendProfileShareLinkRow(String owner) {
+    return 'Dela en länk till $owner profil';
+  }
+
+  @override
+  String get friendProfileShareLinkSub =>
+      'Visar den publika sidan, inget ni delat';
+
+  @override
+  String profileFriendsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'vänner',
+      one: 'vän',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePublicRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'publika recept',
+      one: 'publikt recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminOpsSectionTitle => 'Drift · senaste händelser';
+
+  @override
+  String get adminOpsSparseTitle => 'Glest med flit.';
+
+  @override
+  String get adminOpsSparseBody =>
+      'Loggen fylls när appen har användare. Att den är kort betyder inte att något saknas.';
+
+  @override
+  String get adminOpsEventNotificationCleanup => 'Notiser städade';
+
+  @override
+  String get adminOpsEventIngredientCleanup => 'Ingredienser städade';
+
+  @override
+  String get adminOpsEventSystemEventsCleanup => 'Driftloggen städad';
+
+  @override
+  String get adminOpsEventSocialRequestsCleanup =>
+      'Gamla förfrågningar städade';
+
+  @override
+  String get adminOpsEventAuditLogCleanup => 'Granskningslogg städad';
+
+  @override
+  String get adminOpsEventDeletionAuditLogCleanup => 'Raderingslogg städad';
+
+  @override
+  String get adminParsingSectionTitle => 'Parsning per domän';
+
+  @override
+  String get adminParsingColSuccess => 'Lyckat';
+
+  @override
+  String get adminParsingColStuck => 'Fastnar på';
+
+  @override
+  String get adminParsingTableNote =>
+      'Tryck på en rad för att se importerna. Fältet i sista kolumnen är det som oftast rättas för domänen.';
+
+  @override
+  String get moderatorContentTypeRecipe => 'Recept';
+
+  @override
+  String get moderatorContentTypeComment => 'Kommentar';
+
+  @override
+  String get moderatorContentTypeMessage => 'Meddelande';
+
+  @override
+  String get moderatorContentTypeProfile => 'Profil';
+
+  @override
+  String get moderatorContentTypeCookSnap => 'Matbild';
+
+  @override
+  String get moderatorContentTypeGroup => 'Grupp';
+
+  @override
+  String get moderatorStatusNew => 'Ny';
+
+  @override
+  String get moderatorStatusInReview => 'Granskas';
+
+  @override
+  String get moderatorStatusActioned => 'Åtgärdad';
+
+  @override
+  String get moderatorStatusClosed => 'Stängd';
+
+  @override
+  String get moderatorCloseTooltip => 'Stäng rapporten';
+
+  @override
+  String get familyRatingNotSet => 'inte satt';
+
+  @override
+  String get familyRatingNoteSkip =>
+      'Den som hoppar över får ingen rad och räknas inte in i snittet. Betyget går alltid att ändra, och det senaste ersätter det tidigare.';
+
+  @override
+  String get familyRatingNoteCounts =>
+      'Betyget räknas in i receptets publika snitt';
+
+  @override
+  String get familyRatingNoteAnonymous =>
+      ', anonymt och utan att någon identitet visas.';
+
+  @override
+  String get cookbookStatRecipes => 'recept';
+
+  @override
+  String get cookbookStatSort => 'sortering';
+
+  @override
+  String get cookbookStatSortAlphabetical => 'A–Ö';
+
+  @override
+  String get cookbookStatSortCustom => 'Egen';
+
+  @override
+  String get cookbookStatUpdated => 'senast ändrad';
+
+  @override
+  String get tagDetailNewRule => '+ Ny regel';
+
+  @override
+  String get tagDetailRulesHeading => 'Automatiska regler';
+
+  @override
+  String get tagDetailStatChanged => 'senast ändrad';
+
+  @override
+  String tagDetailRuleTagged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'taggade $count recept',
+      one: 'taggade 1 recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRecipesHeading(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept med taggen',
+      one: '1 recept med taggen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tagDetailRuleSummaryNumber(
+    String type,
+    String operator,
+    String value,
+  ) {
+    return '$type $operator $value';
+  }
+
+  @override
+  String get tagEditSheetTitle => 'Redigera taggen';
+
+  @override
+  String tagDetailStatRulesValue(int enabled, int total) {
+    return '$enabled av $total';
+  }
+
+  @override
+  String tagDetailStatRules(int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: 'regler på',
+      one: 'regel på',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagUnusedHeading(int count) {
+    return 'Oanvända ($count)';
+  }
+
+  @override
+  String get personalTagDeleteAllShort => 'Radera alla';
+
+  @override
+  String get conflictDiffMineName => 'Din';
+
+  @override
+  String get conflictDiffTheirsName => 'Deras';
+
+  @override
+  String get conflictDiffApplies => 'Gäller';
+
+  @override
+  String conflictDiffIntro(String name, String title) {
+    return 'Du och $name ändrade samtidigt i $title. Bara en av versionerna gäller – så här skiljer de sig.';
+  }
+
+  @override
+  String get conflictDiffIntroPlain =>
+      'Ni ändrade samtidigt. Bara en av versionerna gäller – så här skiljer de sig.';
+
+  @override
+  String recipeSuggestionKeptNote(String date) {
+    return 'Förslaget sparas till $date. Sedan tas det bort.';
+  }
 }

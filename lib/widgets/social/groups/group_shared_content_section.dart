@@ -1,9 +1,7 @@
 // lib/widgets/social/groups/group_shared_content_section.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -13,6 +11,7 @@ import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/social/groups/shared_content_card.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -34,9 +33,10 @@ class GroupSharedContentSection extends StatefulWidget {
       _GroupSharedContentSectionState();
 }
 
-class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
+  /// The list whose items are shown under the count tiles; null keeps them
+  /// folded, as the page is drawn.
+  int? _open;
   late GroupSharedContentService _contentService;
   late Stream<List<SharedContentItem>> _recipes;
   late Stream<List<SharedContentItem>> _menus;
@@ -45,7 +45,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _contentService = ServiceLocator.get<GroupSharedContentService>();
     _subscribe();
   }
@@ -63,20 +62,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   void didUpdateWidget(GroupSharedContentSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.group.id != widget.group.id) _subscribe();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  int _getTotalItems(
-    List<SharedContentItem> recipes,
-    List<SharedContentItem> menus,
-    List<SharedContentItem> shoppingLists,
-  ) {
-    return recipes.length + menus.length + shoppingLists.length;
   }
 
   Widget _buildTabContent(
@@ -285,12 +270,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                 final recipes = recipesSnapshot.data ?? [];
                 final menus = menusSnapshot.data ?? [];
                 final shoppingLists = shoppingListsSnapshot.data ?? [];
-                final totalItems = _getTotalItems(
-                  recipes,
-                  menus,
-                  shoppingLists,
-                );
-
                 if (recipesSnapshot.hasError ||
                     menusSnapshot.hasError ||
                     shoppingListsSnapshot.hasError) {
@@ -320,126 +299,68 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                   );
                 }
 
+                final l10n = context.l10n;
+                final lists = [recipes, menus, shoppingLists];
+                final labels = [
+                  l10n.groupSharedRecipesLabel(recipes.length),
+                  l10n.groupSharedMenusLabel(menus.length),
+                  l10n.groupSharedListsLabel(shoppingLists.length),
+                ];
+                final open = _open;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section header
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.groupSharedContent,
+                        style: AppTextStyles.titleBold,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.space12),
                     Row(
                       children: [
-                        Text(
-                          context.l10n.groupSharedContent,
-                          style: AppTextStyles.titleBold,
-                        ),
-                        if (totalItems > 0) ...[
-                          const SizedBox(width: AppDimensions.space4),
-                          Builder(
-                            builder: (context) {
-                              final cs = Theme.of(context).colorScheme;
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.space8,
-                                  vertical: AppDimensions.space4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: cs.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radiusControl,
-                                  ),
-                                ),
-                                child: Text(
-                                  totalItems.toString(),
-                                  style: AppTextStyles.labelLarge.copyWith(
-                                    color: cs.onSurface,
-                                  ),
-                                ),
-                              );
-                            },
+                        for (var i = 0; i < 3; i++) ...[
+                          if (i > 0)
+                            const SizedBox(width: AppDimensions.space8),
+                          Expanded(
+                            child: _CountTile(
+                              count: lists[i].length,
+                              label: labels[i],
+                              selected: open == i,
+                              onTap: () =>
+                                  setState(() => _open = open == i ? null : i),
+                            ),
                           ),
                         ],
                       ],
                     ),
-                    const SizedBox(height: AppDimensions.space8),
-
-                    // Tab bar
-                    Builder(
-                      builder: (context) {
-                        final cs = Theme.of(context).colorScheme;
-                        return DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: cs.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusControl,
-                            ),
-                          ),
-                          child: TabBar(
-                            // Tabs carry the canonical ring (ButleryTab), never a focus tint
-                            // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
-                            overlayColor: ButleryControlFocus.withoutFocusTint(
-                              null,
-                            ),
-                            controller: _tabController,
-                            indicatorColor: cs.onSurface,
-                            labelColor: cs.onSurface,
-                            unselectedLabelColor: cs.onSurfaceVariant,
-                            tabs: [
-                              ButleryTab(
-                                icon: const ButleryIcon(
-                                  ButleryIcons.utensils,
-                                  size: AppDimensions.iconSizeM,
-                                ),
-                                text:
-                                    '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
-                              ),
-                              ButleryTab(
-                                icon: const ButleryIcon(
-                                  ButleryIcons.calendar,
-                                  size: AppDimensions.iconSizeM,
-                                ),
-                                text:
-                                    '${context.l10n.groupTabMenus} (${menus.length})',
-                              ),
-                              ButleryTab(
-                                icon: const ButleryIcon(
-                                  ButleryIcons.shoppingCart,
-                                  size: AppDimensions.iconSizeM,
-                                ),
-                                text:
-                                    '${context.l10n.groupTabLists} (${shoppingLists.length})',
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppDimensions.space8),
-
-                    // Tab content
-                    SizedBox(
-                      height: 400, // Fixed height for content area
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildTabContent(
+                    if (open != null) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      SizedBox(
+                        height: 400, // Fixed height for content area
+                        child: switch (open) {
+                          0 => _buildTabContent(
                             recipes,
-                            context.l10n.groupNoRecipesShared,
-                            context.l10n.groupNoRecipesSharedSubtitle,
+                            l10n.groupNoRecipesShared,
+                            l10n.groupNoRecipesSharedSubtitle,
                             ButleryIcons.utensils,
                           ),
-                          _buildTabContent(
+                          1 => _buildTabContent(
                             menus,
-                            context.l10n.groupNoMenusShared,
-                            context.l10n.groupNoMenusSharedSubtitle,
+                            l10n.groupNoMenusShared,
+                            l10n.groupNoMenusSharedSubtitle,
                             ButleryIcons.calendar,
                           ),
-                          _buildTabContent(
+                          _ => _buildTabContent(
                             shoppingLists,
-                            context.l10n.groupNoShoppingListsShared,
-                            context.l10n.groupNoShoppingListsSharedSubtitle,
+                            l10n.groupNoShoppingListsShared,
+                            l10n.groupNoShoppingListsSharedSubtitle,
                             ButleryIcons.shoppingCart,
                           ),
-                        ],
+                        },
                       ),
-                    ),
+                    ],
                   ],
                 );
               },
@@ -447,6 +368,76 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
           },
         );
       },
+    );
+  }
+}
+
+/// One count of what the group holds, "7 recept": an outlined paper tile
+/// that opens that list under the row.
+class _CountTile extends StatelessWidget {
+  const _CountTile({
+    required this.count,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int count;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$count $label',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space12,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+              border: Border.all(
+                color: selected ? cs.onSurface : cs.outlineVariant,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$count',
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+                // A word is never broken across lines: it shrinks to fit.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    label,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
