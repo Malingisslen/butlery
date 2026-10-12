@@ -234,6 +234,8 @@ Namnet fyller vi i åt dig när du skapar kontot, och du kan ändra det innan ko
 
 **Överföring:** Inloggningen går genom Firebase Authentication (Google LLC, USA), som omfattas av EU-USA Data Privacy Framework och standardavtalsklausuler (se 6.4). Google och Apple ansvarar själva för hur de för över uppgifter om ditt konto utanför EU/EES.
 
+**När du kopplar från Apple:** Kopplar du från Apple under Konto och säkerhet, Inloggningssätt, på iPhone eller iPad ber vi Apple ta bort Butlerys koppling till ditt Apple-konto, som vid radering. På Android och webben tar du själv bort Butlery under Logga in med Apple i ditt Apple-konto.
+
 **När du raderar ditt konto:** Har du loggat in med Apple och begär radering i appen på iPhone eller iPad ber vi Apple att ta bort Butlerys koppling till ditt Apple-konto direkt, innan raderingen påbörjas. Om Apple inte svarar raderas kontot ändå. På Android och webben kan vi inte be Apple om det ännu; där kan du själv ta bort Butlery under Logga in med Apple i inställningarna för ditt Apple-konto. Har du loggat in med Google kan du själv ta bort Butlerys åtkomst i inställningarna för ditt Google-konto.
 
 ---
