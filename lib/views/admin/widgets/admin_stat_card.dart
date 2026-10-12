@@ -5,10 +5,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// A square summary stat box used across the admin dashboard tabs: a big value
-/// over a small label. Mirrors the visual of the import-health summary cards so
-/// every admin tab reads the same. Square corners (no radius) per the design
-/// language.
+/// A summary stat card used across the admin dashboard tabs: a small label in
+/// capitals over a big value, as the drawn admin panel sets it.
 class AdminStatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -31,29 +29,30 @@ class AdminStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      width: AppDimensions.cardWidthSmall,
-      padding: const EdgeInsets.all(AppDimensions.space12),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // A Wrap, not a Row with an Expanded label: the card sits both in
+          // a Row of Expanded cards and in an unbounded Wrap.
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
-                child: Text(value, style: AppTextStyles.headlineBold),
+              Text(
+                label.toUpperCase(),
+                style: AppTextStyles.overline.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
               ?action,
             ],
           ),
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            label,
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-          ),
+          const SizedBox(height: AppDimensions.space8),
+          Text(value, style: AppTextStyles.displaySmall),
           if (deltaPercent != null) ...[
             const SizedBox(height: AppDimensions.space4),
             _DeltaChip(deltaPercent: deltaPercent!),

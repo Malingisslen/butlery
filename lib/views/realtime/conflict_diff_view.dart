@@ -48,9 +48,13 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/realtime/conflict_field_label.dart';
+import 'package:butlery/widgets/common/bold_in_text.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/diff_field_row.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// How [ConflictDiffView] was left. A back arrow gives null, the same as
@@ -220,7 +224,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
       // 'Redigeringskonflikt' draws the back arrow; B-45).
       appBar: ButleryTopBar.undersida(title: context.l10n.conflictDiffTitle),
       body: SafeArea(
-        child: _diff.isEmpty ? _buildNoChanges(context) : _buildDiffList(),
+        child: _diff.isEmpty
+            ? _buildNoChanges(context)
+            : _buildDiffList(context),
       ),
       bottomNavigationBar: _localLost
           ? _buildKeepBar(context)
@@ -245,14 +251,54 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
     );
   }
 
-  Widget _buildDiffList() {
-    return ListView.separated(
+  Widget _buildDiffList(BuildContext context) {
+    final l = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final saffron = context.modeColors.textAccent;
+    final remoteApplies =
+        widget.event.chosenStrategy == ConflictResolutionStrategy.remoteWon;
+    final name = widget.event.remoteValue.lastEditedByDisplayName.trim();
+    final title = widget.event.remoteValue.toFirestore()['title'];
+    final named = name.isNotEmpty && title is String && title.isNotEmpty;
+
+    DiffVersion mine(String? text) => DiffVersion(
+      name: l.conflictDiffMineName,
+      text: text,
+      marker: remoteApplies ? cs.onSurface : saffron,
+      emphasised: !remoteApplies,
+      badge: remoteApplies ? null : l.conflictDiffApplies,
+    );
+    DiffVersion theirs(String? text) => DiffVersion(
+      name: name.isEmpty ? l.conflictDiffTheirsName : name,
+      text: text,
+      marker: remoteApplies ? saffron : cs.onSurface,
+      emphasised: remoteApplies,
+      badge: remoteApplies ? l.conflictDiffApplies : null,
+    );
+
+    return ListView(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      itemCount: _diff.changedFields.length,
-      separatorBuilder: (_, __) =>
+      children: [
+        BoldInText(
+          named ? l.conflictDiffIntro(name, title) : l.conflictDiffIntroPlain,
+          bold: [
+            if (named) ...[name, title],
+          ],
+        ),
+        const SizedBox(height: AppDimensions.space16),
+        for (final field in _diff.changedFields) ...[
+          const Divider(),
           const SizedBox(height: AppDimensions.space12),
-      itemBuilder: (context, index) =>
-          ConflictDiffFieldCard(field: _diff.changedFields[index]),
+          DiffFieldRow(
+            title: conflictFieldLabel(l, field.fieldKey),
+            emptyText: l.conflictDiffEmptyValue,
+            versions: remoteApplies
+                ? [theirs(field.remoteText), mine(field.localText)]
+                : [mine(field.localText), theirs(field.remoteText)],
+          ),
+          const SizedBox(height: AppDimensions.space12),
+        ],
+      ],
     );
   }
 
@@ -273,20 +319,11 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
             // v1:365, :372; produktregler.md:902). What the button does is
             // unchanged (P4-U19 owns the recovery path and its look).
             children: [
-              BusyButtonSemantics(
+              HeroButton(
+                key: const ValueKey('conflictDiff.keepMine'),
+                label: context.l10n.conflictDiffKeepMine,
                 busy: _saving,
-                name: context.l10n.conflictDiffKeepMine,
-                child: FilledButton(
-                  key: const ValueKey('conflictDiff.keepMine'),
-                  onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
-                  style: _saving
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  child: Text(context.l10n.conflictDiffKeepMine),
-                ),
+                onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
               ),
               const SizedBox(height: AppDimensions.space8),
               OutlinedButton(
@@ -339,125 +376,6 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// A single changed field, showing the local and remote values stacked with
-/// colour-coded accents (success = my version, warning = collaborator's).
-///
-/// P5-U27b: also the field card of the suggestion view, which names the two
-/// values "Förslaget" and "Receptet nu" through [localLabel] and
-/// [remoteLabel]. Without them the conflict labels are used.
-class ConflictDiffFieldCard extends StatelessWidget {
-  final ConflictFieldDiff field;
-  final String? localLabel;
-  final String? remoteLabel;
-
-  const ConflictDiffFieldCard({
-    super.key,
-    required this.field,
-    this.localLabel,
-    this.remoteLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final butlery = context.modeColors;
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      padding: const EdgeInsets.all(AppDimensions.space12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            field.fieldKey,
-            style: AppTextStyles.contentLabel.copyWith(
-              color: cs.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.space8),
-          _ValueRow(
-            label: localLabel ?? context.l10n.conflictDiffLocalLabel,
-            text: field.localText,
-            accent: butlery.success,
-            labelColor: butlery.onSuccessContainer,
-            background: butlery.surfaceTintSuccess,
-            textColor: cs.onSurface,
-          ),
-          const SizedBox(height: AppDimensions.space8),
-          _ValueRow(
-            label: remoteLabel ?? context.l10n.conflictDiffRemoteLabel,
-            text: field.remoteText,
-            accent: butlery.warning,
-            labelColor: AppModeColors.textWarning(cs.brightness),
-            background: butlery.surfaceTintWarning,
-            textColor: cs.onSurface,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ValueRow extends StatelessWidget {
-  final String label;
-  final String? text;
-  final Color accent;
-  final Color labelColor;
-  final Color background;
-  final Color textColor;
-
-  const _ValueRow({
-    required this.label,
-    required this.text,
-    required this.accent,
-    required this.labelColor,
-    required this.background,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final value = text;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: background,
-        border: Border(
-          left: BorderSide(
-            color: accent,
-            width: AppDimensions.borderWidthThick,
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.all(AppDimensions.space8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.captionText.copyWith(color: labelColor),
-          ),
-          const SizedBox(height: AppDimensions.space4),
-          Text(
-            value == null || value.isEmpty
-                ? context.l10n.conflictDiffEmptyValue
-                : value,
-            style: AppTextStyles.contentLabel.copyWith(
-              color: textColor,
-              fontStyle: (value == null || value.isEmpty)
-                  ? FontStyle.italic
-                  : FontStyle.normal,
-            ),
-          ),
-        ],
       ),
     );
   }

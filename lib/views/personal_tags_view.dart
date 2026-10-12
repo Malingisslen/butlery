@@ -380,7 +380,6 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               if (unused.isNotEmpty)
                 UnusedTagsSection(
                   unusedTags: unused,
-                  viewModel: viewModel,
                   onDeleteAll: () =>
                       _confirmDeleteUnusedTags(context, viewModel),
                 ),

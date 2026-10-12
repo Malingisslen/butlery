@@ -116,8 +116,8 @@ void main() {
   // Captures live l10n so assertions never hardcode copy that can drift.
   late String keepMine;
   late String noChanges;
-  late String localLabel;
-  late String remoteLabel;
+  late String mineName;
+  late String theirsName;
   late String emptyValue;
 
   Widget harness(ConflictEvent event) {
@@ -127,8 +127,8 @@ void main() {
         builder: (context) {
           keepMine = context.l10n.conflictDiffKeepMine;
           noChanges = context.l10n.conflictDiffNoChanges;
-          localLabel = context.l10n.conflictDiffLocalLabel;
-          remoteLabel = context.l10n.conflictDiffRemoteLabel;
+          mineName = context.l10n.conflictDiffMineName;
+          theirsName = context.l10n.conflictDiffTheirsName;
           emptyValue = context.l10n.conflictDiffEmptyValue;
           return ConflictDiffView(event: event);
         },
@@ -313,8 +313,10 @@ void main() {
     await tester.pumpWidget(harness(event));
     await tester.pumpAndSettle();
 
-    expect(find.text(localLabel), findsOneWidget);
-    expect(find.text(remoteLabel), findsOneWidget);
+    expect(find.text(mineName), findsOneWidget);
+    // The other version carries the editor's name, not the fallback.
+    expect(find.text('Erik'), findsOneWidget);
+    expect(find.text(theirsName), findsNothing);
     expect(find.text('Min titel'), findsOneWidget);
     expect(find.text('Deras titel'), findsOneWidget);
   });

@@ -11,6 +11,8 @@ import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/views/admin/widgets/metric_charts.dart';
 import 'package:butlery/views/admin/widgets/metric_drilldown.dart';
+import 'package:butlery/widgets/admin/admin_table.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Renders one resolved metric by its [MetricValue] kind. The `switch` is
 /// exhaustive over the sealed type — adding a 6th kind is a compile error here,
@@ -80,7 +82,7 @@ class MetricRenderer extends StatelessWidget {
   }
 }
 
-/// A titled header bar with an optional trailing action (the info button).
+/// A section title with an optional trailing action (the info button).
 class _TableHeader extends StatelessWidget {
   final String title;
   final Widget? action;
@@ -88,21 +90,30 @@ class _TableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      color: cs.surfaceContainerHighest,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space12,
-        vertical: AppDimensions.space8,
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Row(
         children: [
-          Expanded(
-            child: Text(title, style: AppTextStyles.labelMedium),
-          ),
+          Expanded(child: SectionHeading(title)),
           ?action,
         ],
+      ),
+    );
+  }
+}
+
+class _NoData extends StatelessWidget {
+  const _NoData();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.space12),
+      child: Text(
+        context.l10n.adminMetricNoData,
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -123,44 +134,23 @@ class _LabelValueTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _TableHeader(title: title, action: action),
         if (rows.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.space12),
-            child: Text(
-              context.l10n.adminMetricNoData,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          )
+          const _NoData()
         else
-          for (final (label, value) in rows)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space12,
-                vertical: AppDimensions.space8,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: AppTextStyles.bodyMedium,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    formatMetricValue(value, format),
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
+          AdminTable(
+            columns: const [
+              AdminTableColumn(label: '', flex: 3),
+              AdminTableColumn(label: '', alignEnd: true),
+            ],
+            rows: [
+              for (final (label, value) in rows)
+                AdminTableRow(cells: [label, formatMetricValue(value, format)]),
+            ],
+          ),
       ],
     );
   }
@@ -191,62 +181,43 @@ class _MatrixTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _TableHeader(title: title, action: action),
         if (value.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.space12),
-            child: Text(
-              context.l10n.adminMetricNoData,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          )
+          const _NoData()
         else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: [
-                const DataColumn(label: Text('')),
-                for (final c in value.colLabels)
-                  DataColumn(
-                    label: Text(c, style: AppTextStyles.labelMedium),
-                  ),
-              ],
-              rows: [
-                for (var r = 0; r < value.rowLabels.length; r++)
-                  DataRow(
-                    // A drillable matrix makes each row tappable → its label
-                    // (e.g. a domain) is passed to the drilldown handler.
-                    onSelectChanged: drilldown == null
-                        ? null
-                        : (_) => handleMetricDrilldown(
-                            context,
-                            drilldown!.kind,
-                            value.rowLabels[r],
-                          ),
-                    cells: [
-                      DataCell(
-                        Text(
+          AdminTable(
+            columns: [
+              AdminTableColumn(
+                label: drilldown == null
+                    ? ''
+                    : context.l10n.adminImportColDomain,
+                flex: 3,
+              ),
+              for (final c in value.colLabels)
+                AdminTableColumn(label: c, alignEnd: true),
+            ],
+            rows: [
+              for (var r = 0; r < value.rowLabels.length; r++)
+                AdminTableRow(
+                  // A drillable matrix makes each row tappable → its label
+                  // (e.g. a domain) is passed to the drilldown handler.
+                  onTap: drilldown == null
+                      ? null
+                      : () => handleMetricDrilldown(
+                          context,
+                          drilldown!.kind,
                           value.rowLabels[r],
-                          style: AppTextStyles.labelMedium,
                         ),
-                      ),
-                      for (var c = 0; c < value.colLabels.length; c++)
-                        DataCell(
-                          Text(
-                            formatMetricValue(value.cells[r][c], _formatFor(c)),
-                            style: AppTextStyles.bodyMedium,
-                          ),
-                        ),
-                    ],
-                  ),
-              ],
-            ),
+                  cells: [
+                    value.rowLabels[r],
+                    for (var c = 0; c < value.colLabels.length; c++)
+                      formatMetricValue(value.cells[r][c], _formatFor(c)),
+                  ],
+                ),
+            ],
           ),
       ],
     );
