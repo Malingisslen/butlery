@@ -340,6 +340,9 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
           child: CollaborativeShoppingItems(
             viewModel: viewModel,
             onToggleItem: onToggleItem,
+            onClearCompleted: viewModel.canEdit
+                ? () => actions.handleMenuAction(context, 'clear_completed')
+                : null,
           ),
         ),
       ],
@@ -425,10 +428,9 @@ class _UnaddedTextNotice extends StatelessWidget {
 /// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
 /// the header when someone else updates this shared list while it is open.
 ///
-/// A notice box, not the danger-coloured [ConflictBanner]: surface.tint.warning
-/// fill, no border, the 8 px control radius, no icon, text.body (B83-2d). Sits between the header's
-/// participant/activity row and "Lägg till vara" — the widget position in
-/// [_CollaborativeShoppingViewContent._buildListContent] draws it there.
+/// Drawn as a list row (v10-2): a warning plate with the warning edge and a
+/// hairline under it, the text in text.body, and a dismiss control. Sits
+/// between the header's participant row and "Lägg till vara".
 class _UpdatedByNotice extends StatelessWidget {
   const _UpdatedByNotice({
     super.key,
@@ -451,13 +453,16 @@ class _UpdatedByNotice extends StatelessWidget {
         container: true,
         liveRegion: true,
         child: Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space4,
-          ),
+          margin: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintWarning,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+            border: Border(
+              left: BorderSide(
+                color: AppModeColors.textWarning(Theme.of(context).brightness),
+                width: 3,
+              ),
+              bottom: BorderSide(color: Theme.of(context).dividerColor),
+            ),
           ),
           child: Row(
             children: [

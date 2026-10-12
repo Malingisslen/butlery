@@ -4807,7 +4807,7 @@
   "collaborativeAdd": "Lägg till",
   "collaborativeAddFirstItem": "Lägg till den första varan",
   "collaborativeAdding": "Lägger till …",
-  "collaborativeAddItemHint": "Skriv varunamn …",
+  "collaborativeAddItemHint": "Lägg till vara …",
   "collaborativeClearAll": "Rensa alla",
   "collaborativeClearCompleted": "Rensa avprickade",
   "collaborativeClearCompletedConfirm": "Vill du rensa alla avprickade varor?",
@@ -5840,6 +5840,14 @@
       }
     }
   },
+  "a11yShoppingItemMoreOptions": "Fler val för {name}",
+  "@a11yShoppingItemMoreOptions": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11ySharedRecipe": "Delat recept",
   "a11ySharedMenu": "Delad meny",
   "a11yRemoveProfileImage": "Ta bort profilbild",
@@ -5873,7 +5881,6 @@
   "onboardingAllergenTreeNut": "Trädnötter",
   "onboardingAllergenCrustacean": "Kräftdjur",
   "onboardingAllergenMollusc": "Blötdjur",
-  "onboardingShowAllAllergens": "Visa alla allergener",
   "onboardingShowFewerAllergens": "Visa färre",
   "filterVegetarian": "Vegetarisk",
   "filterVegan": "Vegansk",
@@ -6195,29 +6202,29 @@
     }
   },
   "onboardingSkipConfirmTitle": "Hoppa över introduktionen?",
-  "onboardingSkipConfirmMessage": "Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.",
+  "onboardingSkipConfirmMessage": "Du hinner inte ställa in allergier nu. Du kan göra det när som helst i inställningarna.",
   "onboardingSkip": "Hoppa över",
   "onboardingBack": "Tillbaka",
   "onboardingNext": "Nästa",
-  "onboardingComplete": "Slutför",
-  "onboardingAgeGateTitle": "Hur gammal är du?",
-  "onboardingAgeGateSubtitle": "Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).",
+  "onboardingComplete": "Klar",
+  "onboardingAgeGateTitle": "Vilket år är du född?",
+  "onboardingAgeGateSubtitle": "Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.",
   "onboardingAgeGateBirthYearLabel": "Födelseår",
-  "onboardingAgeGateBirthYearHint": "Välj ditt födelseår",
-  "onboardingAgeGatePrivacyNote": "Vi lagrar bara året, inte hela datumet.",
+  "onboardingAgeGateBirthYearHint": "Välj ett år",
+  "onboardingAgeGatePrivacyNote": "Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.",
   "onboardingAgeGateTooYoungTitle": "Butlery är för 15 år och uppåt",
-  "onboardingAgeGateTooYoungBody": "Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.",
+  "onboardingAgeGateTooYoungBody": "Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.",
   "onboardingAgeGateSignOut": "Logga ut",
   "onboardingAgeGateParentOption": "En vuxen kan skapa ett konto åt dig",
   "onboardingAgeGateParentInfoTitle": "Be en vuxen om hjälp",
   "onboardingAgeGateParentInfoBody": "Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.",
   "onboardingAgeRejectedTitle": "Kontot kunde inte skapas",
   "onboardingAgeRejectedBody": "Butlery är tillgängligt för dig som fyllt 15 år. Vi kan inte skapa ditt konto just nu.",
-  "onboardingWelcomeTitle": "Välkommen. Butlery står redo.",
-  "onboardingWelcomeDescription": "Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.",
-  "onboardingWelcomeNote": "Du kan alltid ändra dessa i inställningarna senare.",
-  "onboardingAllergenTitle": "Allergier & intoleranser",
-  "onboardingAllergenDescription": "Välj de allergener du vill spara och filtrera recept efter.",
+  "onboardingWelcomeTitle": "Välkommen. Jag sköter veckan.",
+  "onboardingWelcomeDescription": "Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.",
+  "onboardingWelcomeNote": "Två frågor kvar. Sedan är du inne.",
+  "onboardingAllergenTitle": "Något ni undviker?",
+  "onboardingAllergenDescription": "Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.",
   "onboardingAllergenGluten": "Gluten",
   "onboardingAllergenMilk": "Mjölk",
   "onboardingAllergenNuts": "Nötter",
@@ -6226,35 +6233,100 @@
   "onboardingAllergenFish": "Fisk",
   "onboardingAllergenShellfish": "Skaldjur",
   "onboardingAllergenSesame": "Sesam",
-  "onboardingDietaryTitle": "Kostpreferenser",
-  "onboardingDietaryDescription": "Har du några kostpreferenser? Vi kan filtrera recept åt dig.",
-  "onboardingDietaryVegetarian": "Vegetarian",
-  "onboardingDietaryVegan": "Vegan",
-  "onboardingDietaryPescetarian": "Pescetarian",
-  "onboardingDietaryVegetarianDesc": "Inga kött- eller fiskprodukter",
-  "onboardingDietaryVeganDesc": "Inga animaliska produkter",
-  "onboardingDietaryPescetarianDesc": "Fisk men inget kött",
-  "onboardingDietaryGlutenFree": "Glutenfri",
-  "onboardingDietaryLactoseFree": "Laktosfri",
-  "onboardingDietaryHalal": "Halalanpassad",
-  "onboardingDietaryKosher": "Kosheranpassad",
-  "onboardingDietaryGlutenFreeDesc": "Inga gluteninnehållande ingredienser",
-  "onboardingDietaryLactoseFreeDesc": "Inga mejeriprodukter med laktos",
-  "onboardingDietaryHalalDesc": "Följer halalregler för mat",
-  "onboardingDietaryKosherDesc": "Följer kosherregler för mat",
   "onboardingSkippedBanner": "Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?",
   "onboardingSkippedBannerAction": "Öppna inställningar",
   "onboardingWelcomeBanner": "Välkommen till Butlery. Allt är klart – lägg till ditt första recept så kommer du igång.",
   "onboardingWelcomeBannerAction": "Lägg till recept",
-  "onboardingImportTitle": "Importera ditt första recept",
-  "onboardingImportDescription": "Kom igång snabbt genom att importera ett recept från webben eller ett foto.",
-  "onboardingImportUrlTitle": "Från en webbadress",
-  "onboardingImportPhotoTitle": "Importera från foto",
-  "onboardingImportPhotoDescription": "Ta ett foto eller välj från galleriet",
-  "onboardingImportSkipNote": "Du kan hoppa över detta steg och importera senare.",
+  "onboardingImportTitle": "Ta med ett recept du redan lagar",
+  "onboardingImportDescription": "Klistra in en länk. Jag läser den och du får granska innan något sparas.",
+  "onboardingImportUrlTitle": "Länk till receptet",
+  "onboardingImportPhotoTitle": "Fotografera en sida",
+  "onboardingImportPhotoDescription": "Ur en kokbok eller en handskriven lapp",
   "onboardingResumeTitle": "Avsluta din profil",
   "onboardingResumeBody": "30 sekunder kvar",
   "onboardingResumeCta": "Fortsätt",
+  "onboardingAgeGateParentTitle": "En vuxen kan skapa kontot",
+  "onboardingAgeGateParentBody": "En förälder skapar ett eget konto och lägger till dig som matgäst i hushållet. Då planeras maten med dig i räkningen.",
+  "onboardingAgeGateNothingSaved": "Kontot du började skapa tas bort. Inget sparas.",
+  "onboardingWelcomeQuestionAllergens": "Vad hushållet inte tål",
+  "onboardingWelcomeQuestionRecipe": "Ett recept du redan lagar",
+  "onboardingAllergenNote": "Det här gäller dig. Allergier för fler i hushållet lägger du till senare. Har du valt något planeras recept med okänt allergeninnehåll aldrig automatiskt.",
+  "onboardingShowAllAllergens": "{kind, select, nine{Visa alla nio till} other{Visa alla {count} till}}",
+  "@onboardingShowAllAllergens": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingImportFromClipboard": "Hämtad ur ditt urklipp. Byt om det var fel länk.",
+  "onboardingImportSkipNote": "{kind, select, one{Hoppar du över får du ett startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} two{Hoppar du över får du två startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} three{Hoppar du över får du tre startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} four{Hoppar du över får du fyra startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} five{Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} six{Hoppar du över får du sex startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} seven{Hoppar du över får du sju startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} eight{Hoppar du över får du åtta startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} nine{Hoppar du över får du nio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} ten{Hoppar du över får du tio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} other{Hoppar du över får du {count} startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.}}",
+  "@onboardingImportSkipNote": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStepOf": "Steg {current} av {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupTitle": "Jag dukar upp",
+  "onboardingSetupBody": "Ett par sekunder. Sedan har du en app med innehåll i.",
+  "onboardingSetupSaving": "Sparar allergenerna",
+  "onboardingSetupSaved": "Allergenerna sparade",
+  "onboardingSetupSavedNone": "Inga allergener angivna",
+  "onboardingSetupRecipes": "Lägger startrecept i Mina recept",
+  "onboardingSetupRecipesDone": "{kind, select, one{Ett startrecept lagt i Mina recept} two{Två startrecept lagda i Mina recept} three{Tre startrecept lagda i Mina recept} four{Fyra startrecept lagda i Mina recept} five{Fem startrecept lagda i Mina recept} six{Sex startrecept lagda i Mina recept} seven{Sju startrecept lagda i Mina recept} eight{Åtta startrecept lagda i Mina recept} nine{Nio startrecept lagda i Mina recept} ten{Tio startrecept lagda i Mina recept} other{{count} startrecept lagda i Mina recept}}",
+  "@onboardingSetupRecipesDone": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingSetupRecipesFailed": "Startrecepten kunde inte läggas till",
+  "onboardingSetupWeek": "Lägger en exempelvecka och dess inköpslista",
+  "onboardingSetupWeekDone": "Exempelvecka och inköpslista klara",
+  "onboardingSetupWeekFailed": "Ingen exempelvecka lades till",
+  "onboardingSetupProgress": "{count, plural, =0{Noll av tre klara} =1{En av tre klara} =2{Två av tre klara} other{Tre av tre klara}}",
+  "@onboardingSetupProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneTitle": "Varsågod. Det är dukat.",
+  "onboardingDoneBody": "{kind, select, zero{Allt går att ändra när du vill.} one{Ett recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} two{Två recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} three{Tre recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} four{Fyra recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} five{Fem recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} six{Sex recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} seven{Sju recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} eight{Åtta recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} nine{Nio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} ten{Tio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} other{{count} recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.}}",
+  "@onboardingDoneBody": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingDoneRedirect": "Tar dig till dina recept …",
   "cookingModePortions": "Portioner",
   "feedbackSendLabel": "Skicka feedback",
   "feedbackCategoryLabel": "Kategori",
@@ -9460,8 +9532,8 @@
       }
     }
   },
-  "emailVerificationTitle": "Verifiera din e-post",
-  "emailVerificationMessage": "Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.",
+  "emailVerificationTitle": "Bekräfta din e-post",
+  "emailVerificationMessage": "Vi har skickat en länk till {email}. Skärmen går vidare av sig själv när du klickat.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
@@ -9470,7 +9542,7 @@
     }
   },
   "emailVerificationResend": "Skicka igen",
-  "emailVerificationResendCountdown": "Du kan skicka igen om {seconds} s",
+  "emailVerificationResendCountdown": "Skicka igen ({seconds} s)",
   "@emailVerificationResendCountdown": {
     "description": "BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).",
     "placeholders": {
@@ -9479,7 +9551,7 @@
       }
     }
   },
-  "emailVerificationContinue": "Fortsätt ändå",
+  "emailVerificationContinue": "Fortsätt utan att bekräfta",
   "emailVerificationSuccess": "E-posten är verifierad.",
   "a11yCookingModeFontScale": "Ändra textstorlek",
   "a11yCookingModeClose": "Stäng tillagningsläge",
@@ -9593,7 +9665,8 @@
   "quickCaptureSave": "Spara",
   "quickCaptureSaved": "Receptet är sparat.",
   "quickCaptureEditAction": "Redigera",
-  "quickCaptureTitleHint": "Vad heter receptet?",
+  "quickCaptureTitleHint": "Vad heter rätten?",
+  "quickCaptureHelp": "Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.",
   "a11ySwipeEditAction": "Redigera recept",
   "a11ySwipeDeleteAction": "Radera receptet",
   "a11yRecipeSelected": "{title}, markerad",
@@ -11535,6 +11608,8 @@
   "buttonBusySaving": "Sparar …",
   "loadingProfileBusy": "Hämtar din profil …",
   "loadingOnboardingResume": "Hämtar var du slutade …",
+  "startSplashTagline": "Din butler i köket",
+  "startSplashBusy": "Dukar upp ditt kök …",
   "loadingOpeningPage": "Öppnar sidan …",
   "loadingStartingApp": "Startar Butlery …",
   "recipeSaveToMyKitchen": "Spara till mitt kök",
@@ -15928,6 +16003,10 @@
   "guestUpgradeDone": "Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.",
   "@guestUpgradeDone": {
     "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeDoneProvider": "Kontot är skapat. Allt du gjort som gäst finns kvar.",
+  "@guestUpgradeDoneProvider": {
+    "description": "Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)"
   },
   "guestUpgradeFinishFailed": "Kontot är skapat men kunde inte göras klart. Försök igen.",
   "@guestUpgradeFinishFailed": {

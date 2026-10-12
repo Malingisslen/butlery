@@ -23,6 +23,8 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 
 class _UserCredential extends Fake implements UserCredential {}
 
+class _MockUser extends Mock implements User {}
+
 final _credential = AuthCredential(
   providerId: 'google.com',
   signInMethod: 'google.com',
@@ -49,6 +51,7 @@ void main() {
     when(() => repo.providerIds).thenReturn(const ['password']);
     when(() => repo.providerCredential(any())).thenReturn(_credential);
     when(() => repo.providerEmail(any())).thenReturn(null);
+    when(() => repo.providerDisplayName(any())).thenReturn(null);
     when(() => repo.linkCredential(any())).thenAnswer((_) async {});
     when(() => repo.linkWithProviderFlow(any())).thenAnswer((_) async {});
     when(() => repo.unlinkProvider(any())).thenAnswer((_) async {});
@@ -112,6 +115,85 @@ void main() {
         auth.providerAccountEmail(SignInProvider.google),
         'a@example.com',
       );
+    });
+  });
+
+  group('the name a guest takes from a linked provider', () {
+    test(
+      'only the provider\'s first name is taken, trimmed, and read per provider',
+      () {
+        when(
+          () => repo.providerDisplayName('google.com'),
+        ).thenReturn('  Malin Gisslén ');
+        when(
+          () => repo.providerDisplayName('apple.com'),
+        ).thenReturn('Apple Namn');
+        final guest = _MockUser();
+        when(() => guest.displayName).thenReturn('Gästens namn');
+        when(() => repo.currentUser).thenReturn(guest);
+
+        expect(auth.linkedProviderName(SignInProvider.google), 'Malin');
+        expect(auth.linkedProviderName(SignInProvider.apple), 'Apple');
+      },
+    );
+
+    test('a blank provider name falls back to the first name', () {
+      when(() => repo.providerDisplayName('google.com')).thenReturn('   ');
+      final user = _MockUser();
+      when(() => user.displayName).thenReturn('Malin Gisslén');
+      when(() => repo.currentUser).thenReturn(user);
+
+      expect(auth.linkedProviderName(SignInProvider.google), 'Malin');
+    });
+
+    test('no name anywhere gives null', () {
+      expect(auth.linkedProviderName(SignInProvider.apple), isNull);
+    });
+  });
+
+  group('linking a provider to a guest', () {
+    test(
+      'hands back the attempt itself, so a refusal keeps its code',
+      () async {
+        platform.answer(SignInProvider.google, googleTokens());
+        when(() => repo.linkCredential(any())).thenThrow(
+          FirebaseAuthException(code: 'credential-already-in-use'),
+        );
+
+        final attempt = await auth.linkProviderToGuest(SignInProvider.google);
+
+        expect(attempt.outcome, ProviderSignInOutcome.failed);
+        expect(attempt.error?.code, 'credential-already-in-use');
+      },
+    );
+
+    test(
+      'a closed sheet comes back as cancelled and a link as signedIn',
+      () async {
+        expect(
+          (await auth.linkProviderToGuest(SignInProvider.google)).outcome,
+          ProviderSignInOutcome.cancelled,
+        );
+        platform.answer(SignInProvider.google, googleTokens());
+
+        final attempt = await auth.linkProviderToGuest(SignInProvider.google);
+
+        expect(attempt.outcome, ProviderSignInOutcome.signedIn);
+        verify(() => repo.linkCredential(_credential)).called(1);
+      },
+    );
+
+    test('without a provider service nothing is linked', () async {
+      final bare = AuthService(
+        authRepository: repo,
+        analyticsService: MockFactory.createAnalyticsService(),
+      );
+      addTearDown(bare.dispose);
+
+      final attempt = await bare.linkProviderToGuest(SignInProvider.google);
+
+      expect(attempt.outcome, ProviderSignInOutcome.failed);
+      verifyNever(() => repo.linkCredential(any()));
     });
   });
 

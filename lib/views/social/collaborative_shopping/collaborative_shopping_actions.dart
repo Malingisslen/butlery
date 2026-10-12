@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
@@ -49,6 +50,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
     // inköpslista'; Komponentark v1 §01 pattern 2).
     return ButleryTopBar.undersida(
+      light: true,
       title: viewModel.listTitle,
       actions: [
         _buildShareAction(context),
@@ -106,31 +108,18 @@ class CollaborativeShoppingActions extends BaseActionHandler
       return _buildReadOnlySection(context);
     }
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: AppDimensions.borderWidthThin,
-          ),
-        ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.layoutMargin,
+        AppDimensions.space4,
+        AppDimensions.layoutMargin,
+        AppDimensions.space12,
       ),
       child: Row(
         children: [
           Expanded(child: _buildItemInput(context)),
           const SizedBox(width: AppDimensions.space8),
-          // Flexible(loose) keeps the button at its natural width (visually
-          // identical to a plain non-flex child) while routing it through the
-          // flex-child layout path. A bare FilledButton.icon as a NON-flex Row
-          // child is measured by RenderFlex at an UNBOUNDED main-axis width
-          // (Flex._constraintsForNonFlexChild leaves width unconstrained),
-          // which makes its min-tap-target (_RenderInputPadding) assert
-          // "BoxConstraints forces an infinite width" whenever the Row is laid
-          // out without a tight width. As a flex child it gets bounded space
-          // instead — robust under any parent constraints (BUT-1184).
-          Flexible(child: _buildAddButton(context)),
+          _buildAddButton(context),
         ],
       ),
     );
@@ -198,16 +187,13 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Widget _buildAddButton(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: viewModel.isAddingItem ? null : onAddItem,
-      icon: ButleryIcon(
-        viewModel.isAddingItem ? ButleryIcons.hourglass : ButleryIcons.plus,
-      ),
-      label: Text(
-        viewModel.isAddingItem
-            ? context.l10n.collaborativeAdding
-            : context.l10n.collaborativeAdd,
-      ),
+    final adding = viewModel.isAddingItem;
+    return SaffronSquareButton(
+      semanticLabel: adding
+          ? context.l10n.collaborativeAdding
+          : context.l10n.collaborativeAdd,
+      onPressed: adding ? null : onAddItem,
+      icon: adding ? ButleryIcons.hourglass : ButleryIcons.plus,
     );
   }
 

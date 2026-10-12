@@ -11698,7 +11698,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAddItemHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv varunamn …'**
+  /// **'Lägg till vara …'**
   String get collaborativeAddItemHint;
 
   /// No description provided for @collaborativeClearAll.
@@ -13729,6 +13729,12 @@ abstract class AppLocalizations {
   /// **'Ta bort {name}'**
   String a11yDeleteItem(String name);
 
+  /// No description provided for @a11yShoppingItemMoreOptions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String a11yShoppingItemMoreOptions(String name);
+
   /// No description provided for @a11ySharedRecipe.
   ///
   /// In sv, this message translates to:
@@ -13926,12 +13932,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Blötdjur'**
   String get onboardingAllergenMollusc;
-
-  /// No description provided for @onboardingShowAllAllergens.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa alla allergener'**
-  String get onboardingShowAllAllergens;
 
   /// No description provided for @onboardingShowFewerAllergens.
   ///
@@ -14782,7 +14782,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSkipConfirmMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.'**
+  /// **'Du hinner inte ställa in allergier nu. Du kan göra det när som helst i inställningarna.'**
   String get onboardingSkipConfirmMessage;
 
   /// No description provided for @onboardingSkip.
@@ -14806,19 +14806,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingComplete.
   ///
   /// In sv, this message translates to:
-  /// **'Slutför'**
+  /// **'Klar'**
   String get onboardingComplete;
 
   /// No description provided for @onboardingAgeGateTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Hur gammal är du?'**
+  /// **'Vilket år är du född?'**
   String get onboardingAgeGateTitle;
 
   /// No description provided for @onboardingAgeGateSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).'**
+  /// **'Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.'**
   String get onboardingAgeGateSubtitle;
 
   /// No description provided for @onboardingAgeGateBirthYearLabel.
@@ -14830,13 +14830,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateBirthYearHint.
   ///
   /// In sv, this message translates to:
-  /// **'Välj ditt födelseår'**
+  /// **'Välj ett år'**
   String get onboardingAgeGateBirthYearHint;
 
   /// No description provided for @onboardingAgeGatePrivacyNote.
   ///
   /// In sv, this message translates to:
-  /// **'Vi lagrar bara året, inte hela datumet.'**
+  /// **'Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.'**
   String get onboardingAgeGatePrivacyNote;
 
   /// No description provided for @onboardingAgeGateTooYoungTitle.
@@ -14848,7 +14848,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateTooYoungBody.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.'**
+  /// **'Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.'**
   String get onboardingAgeGateTooYoungBody;
 
   /// No description provided for @onboardingAgeGateSignOut.
@@ -14890,31 +14890,31 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Välkommen. Butlery står redo.'**
+  /// **'Välkommen. Jag sköter veckan.'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.'**
+  /// **'Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.'**
   String get onboardingWelcomeDescription;
 
   /// No description provided for @onboardingWelcomeNote.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan alltid ändra dessa i inställningarna senare.'**
+  /// **'Två frågor kvar. Sedan är du inne.'**
   String get onboardingWelcomeNote;
 
   /// No description provided for @onboardingAllergenTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Allergier & intoleranser'**
+  /// **'Något ni undviker?'**
   String get onboardingAllergenTitle;
 
   /// No description provided for @onboardingAllergenDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Välj de allergener du vill spara och filtrera recept efter.'**
+  /// **'Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.'**
   String get onboardingAllergenDescription;
 
   /// No description provided for @onboardingAllergenGluten.
@@ -14965,102 +14965,6 @@ abstract class AppLocalizations {
   /// **'Sesam'**
   String get onboardingAllergenSesame;
 
-  /// No description provided for @onboardingDietaryTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kostpreferenser'**
-  String get onboardingDietaryTitle;
-
-  /// No description provided for @onboardingDietaryDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Har du några kostpreferenser? Vi kan filtrera recept åt dig.'**
-  String get onboardingDietaryDescription;
-
-  /// No description provided for @onboardingDietaryVegetarian.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vegetarian'**
-  String get onboardingDietaryVegetarian;
-
-  /// No description provided for @onboardingDietaryVegan.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vegan'**
-  String get onboardingDietaryVegan;
-
-  /// No description provided for @onboardingDietaryPescetarian.
-  ///
-  /// In sv, this message translates to:
-  /// **'Pescetarian'**
-  String get onboardingDietaryPescetarian;
-
-  /// No description provided for @onboardingDietaryVegetarianDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga kött- eller fiskprodukter'**
-  String get onboardingDietaryVegetarianDesc;
-
-  /// No description provided for @onboardingDietaryVeganDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga animaliska produkter'**
-  String get onboardingDietaryVeganDesc;
-
-  /// No description provided for @onboardingDietaryPescetarianDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Fisk men inget kött'**
-  String get onboardingDietaryPescetarianDesc;
-
-  /// No description provided for @onboardingDietaryGlutenFree.
-  ///
-  /// In sv, this message translates to:
-  /// **'Glutenfri'**
-  String get onboardingDietaryGlutenFree;
-
-  /// No description provided for @onboardingDietaryLactoseFree.
-  ///
-  /// In sv, this message translates to:
-  /// **'Laktosfri'**
-  String get onboardingDietaryLactoseFree;
-
-  /// No description provided for @onboardingDietaryHalal.
-  ///
-  /// In sv, this message translates to:
-  /// **'Halalanpassad'**
-  String get onboardingDietaryHalal;
-
-  /// No description provided for @onboardingDietaryKosher.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kosheranpassad'**
-  String get onboardingDietaryKosher;
-
-  /// No description provided for @onboardingDietaryGlutenFreeDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga gluteninnehållande ingredienser'**
-  String get onboardingDietaryGlutenFreeDesc;
-
-  /// No description provided for @onboardingDietaryLactoseFreeDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga mejeriprodukter med laktos'**
-  String get onboardingDietaryLactoseFreeDesc;
-
-  /// No description provided for @onboardingDietaryHalalDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Följer halalregler för mat'**
-  String get onboardingDietaryHalalDesc;
-
-  /// No description provided for @onboardingDietaryKosherDesc.
-  ///
-  /// In sv, this message translates to:
-  /// **'Följer kosherregler för mat'**
-  String get onboardingDietaryKosherDesc;
-
   /// No description provided for @onboardingSkippedBanner.
   ///
   /// In sv, this message translates to:
@@ -15088,38 +14992,32 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingImportTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ditt första recept'**
+  /// **'Ta med ett recept du redan lagar'**
   String get onboardingImportTitle;
 
   /// No description provided for @onboardingImportDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Kom igång snabbt genom att importera ett recept från webben eller ett foto.'**
+  /// **'Klistra in en länk. Jag läser den och du får granska innan något sparas.'**
   String get onboardingImportDescription;
 
   /// No description provided for @onboardingImportUrlTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Från en webbadress'**
+  /// **'Länk till receptet'**
   String get onboardingImportUrlTitle;
 
   /// No description provided for @onboardingImportPhotoTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera från foto'**
+  /// **'Fotografera en sida'**
   String get onboardingImportPhotoTitle;
 
   /// No description provided for @onboardingImportPhotoDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Ta ett foto eller välj från galleriet'**
+  /// **'Ur en kokbok eller en handskriven lapp'**
   String get onboardingImportPhotoDescription;
-
-  /// No description provided for @onboardingImportSkipNote.
-  ///
-  /// In sv, this message translates to:
-  /// **'Du kan hoppa över detta steg och importera senare.'**
-  String get onboardingImportSkipNote;
 
   /// No description provided for @onboardingResumeTitle.
   ///
@@ -15138,6 +15036,156 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Fortsätt'**
   String get onboardingResumeCta;
+
+  /// No description provided for @onboardingAgeGateParentTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'En vuxen kan skapa kontot'**
+  String get onboardingAgeGateParentTitle;
+
+  /// No description provided for @onboardingAgeGateParentBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'En förälder skapar ett eget konto och lägger till dig som matgäst i hushållet. Då planeras maten med dig i räkningen.'**
+  String get onboardingAgeGateParentBody;
+
+  /// No description provided for @onboardingAgeGateNothingSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot du började skapa tas bort. Inget sparas.'**
+  String get onboardingAgeGateNothingSaved;
+
+  /// No description provided for @onboardingWelcomeQuestionAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad hushållet inte tål'**
+  String get onboardingWelcomeQuestionAllergens;
+
+  /// No description provided for @onboardingWelcomeQuestionRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett recept du redan lagar'**
+  String get onboardingWelcomeQuestionRecipe;
+
+  /// No description provided for @onboardingAllergenNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här gäller dig. Allergier för fler i hushållet lägger du till senare. Har du valt något planeras recept med okänt allergeninnehåll aldrig automatiskt.'**
+  String get onboardingAllergenNote;
+
+  /// No description provided for @onboardingShowAllAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, nine{Visa alla nio till} other{Visa alla {count} till}}'**
+  String onboardingShowAllAllergens(String kind, int count);
+
+  /// No description provided for @onboardingImportFromClipboard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtad ur ditt urklipp. Byt om det var fel länk.'**
+  String get onboardingImportFromClipboard;
+
+  /// No description provided for @onboardingImportSkipNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, one{Hoppar du över får du ett startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} two{Hoppar du över får du två startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} three{Hoppar du över får du tre startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} four{Hoppar du över får du fyra startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} five{Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} six{Hoppar du över får du sex startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} seven{Hoppar du över får du sju startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} eight{Hoppar du över får du åtta startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} nine{Hoppar du över får du nio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} ten{Hoppar du över får du tio startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.} other{Hoppar du över får du {count} startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.}}'**
+  String onboardingImportSkipNote(String kind, int count);
+
+  /// No description provided for @onboardingStepOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {current} av {total}'**
+  String onboardingStepOf(int current, int total);
+
+  /// No description provided for @onboardingSetupTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag dukar upp'**
+  String get onboardingSetupTitle;
+
+  /// No description provided for @onboardingSetupBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett par sekunder. Sedan har du en app med innehåll i.'**
+  String get onboardingSetupBody;
+
+  /// No description provided for @onboardingSetupSaving.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparar allergenerna'**
+  String get onboardingSetupSaving;
+
+  /// No description provided for @onboardingSetupSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergenerna sparade'**
+  String get onboardingSetupSaved;
+
+  /// No description provided for @onboardingSetupSavedNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga allergener angivna'**
+  String get onboardingSetupSavedNone;
+
+  /// No description provided for @onboardingSetupRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägger startrecept i Mina recept'**
+  String get onboardingSetupRecipes;
+
+  /// No description provided for @onboardingSetupRecipesDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, one{Ett startrecept lagt i Mina recept} two{Två startrecept lagda i Mina recept} three{Tre startrecept lagda i Mina recept} four{Fyra startrecept lagda i Mina recept} five{Fem startrecept lagda i Mina recept} six{Sex startrecept lagda i Mina recept} seven{Sju startrecept lagda i Mina recept} eight{Åtta startrecept lagda i Mina recept} nine{Nio startrecept lagda i Mina recept} ten{Tio startrecept lagda i Mina recept} other{{count} startrecept lagda i Mina recept}}'**
+  String onboardingSetupRecipesDone(String kind, int count);
+
+  /// No description provided for @onboardingSetupRecipesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Startrecepten kunde inte läggas till'**
+  String get onboardingSetupRecipesFailed;
+
+  /// No description provided for @onboardingSetupWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägger en exempelvecka och dess inköpslista'**
+  String get onboardingSetupWeek;
+
+  /// No description provided for @onboardingSetupWeekDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exempelvecka och inköpslista klara'**
+  String get onboardingSetupWeekDone;
+
+  /// No description provided for @onboardingSetupWeekFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen exempelvecka lades till'**
+  String get onboardingSetupWeekFailed;
+
+  /// No description provided for @onboardingSetupProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Noll av tre klara} =1{En av tre klara} =2{Två av tre klara} other{Tre av tre klara}}'**
+  String onboardingSetupProgress(int count);
+
+  /// No description provided for @onboardingDoneTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varsågod. Det är dukat.'**
+  String get onboardingDoneTitle;
+
+  /// No description provided for @onboardingDoneBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{kind, select, zero{Allt går att ändra när du vill.} one{Ett recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} two{Två recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} three{Tre recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} four{Fyra recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} five{Fem recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} six{Sex recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} seven{Sju recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} eight{Åtta recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} nine{Nio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} ten{Tio recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.} other{{count} recept och en exempelvecka väntar på dig. Allt går att ändra när du vill.}}'**
+  String onboardingDoneBody(String kind, int count);
+
+  /// No description provided for @onboardingDoneRedirect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tar dig till dina recept …'**
+  String get onboardingDoneRedirect;
 
   /// No description provided for @cookingModePortions.
   ///
@@ -22442,13 +22490,13 @@ abstract class AppLocalizations {
   /// No description provided for @emailVerificationTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Verifiera din e-post'**
+  /// **'Bekräfta din e-post'**
   String get emailVerificationTitle;
 
   /// No description provided for @emailVerificationMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.'**
+  /// **'Vi har skickat en länk till {email}. Skärmen går vidare av sig själv när du klickat.'**
   String emailVerificationMessage(String email);
 
   /// No description provided for @emailVerificationResend.
@@ -22460,13 +22508,13 @@ abstract class AppLocalizations {
   /// BUT-2146: the resend wait, shown under the button so the button's name does not change every second (produktregler.md 13.7).
   ///
   /// In sv, this message translates to:
-  /// **'Du kan skicka igen om {seconds} s'**
+  /// **'Skicka igen ({seconds} s)'**
   String emailVerificationResendCountdown(int seconds);
 
   /// No description provided for @emailVerificationContinue.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsätt ändå'**
+  /// **'Fortsätt utan att bekräfta'**
   String get emailVerificationContinue;
 
   /// No description provided for @emailVerificationSuccess.
@@ -22862,8 +22910,14 @@ abstract class AppLocalizations {
   /// No description provided for @quickCaptureTitleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Vad heter receptet?'**
+  /// **'Vad heter rätten?'**
   String get quickCaptureTitleHint;
+
+  /// No description provided for @quickCaptureHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparas som ett kort utan detaljer – du kan importera ingredienser och steg när du vill.'**
+  String get quickCaptureHelp;
 
   /// No description provided for @a11ySwipeEditAction.
   ///
@@ -26007,6 +26061,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Hämtar var du slutade …'**
   String get loadingOnboardingResume;
+
+  /// No description provided for @startSplashTagline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din butler i köket'**
+  String get startSplashTagline;
+
+  /// No description provided for @startSplashBusy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dukar upp ditt kök …'**
+  String get startSplashBusy;
 
   /// No description provided for @loadingOpeningPage.
   ///
@@ -31755,6 +31821,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.'**
   String get guestUpgradeDone;
+
+  /// Guest upgrade: the guest linked Google or Apple and the account is ready (BUT-916)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat. Allt du gjort som gäst finns kvar.'**
+  String get guestUpgradeDoneProvider;
 
   /// Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)
   ///

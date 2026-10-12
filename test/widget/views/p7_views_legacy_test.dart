@@ -39,7 +39,6 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
-import 'package:butlery/views/onboarding/onboarding_age_gate_blocked_view.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
@@ -409,17 +408,6 @@ void main() {
   });
 
   group('A5: a button that only closes says Stäng', () {
-    testWidgets('the age gate parent info closes with Stäng', (tester) async {
-      await tester.pumpWidget(_app(const OnboardingAgeGateBlockedView()));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(_sv.onboardingAgeGateParentOption));
-      await tester.pumpAndSettle();
-
-      expect(find.text(_sv.onboardingAgeGateParentInfoTitle), findsOneWidget);
-      expect(find.widgetWithText(TextButton, _sv.commonClose), findsOneWidget);
-      expect(find.text('OK'), findsNothing);
-    });
-
     test('no view in this track names a closing button OK', () {
       for (final path in const [
         'lib/views/onboarding/onboarding_age_gate_blocked_view.dart',

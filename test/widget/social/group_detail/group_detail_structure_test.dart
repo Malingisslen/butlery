@@ -5,10 +5,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/friend_category.dart';
@@ -228,35 +228,19 @@ void main() {
     });
   });
 
-  testWidgets(
-    'the empty-vote CTA opens Routes.addRecipe, a route that exists',
-    (tester) async {
-      final vm = _MockViewModel();
-      when(vm.pickMealVoteSuggestions).thenAnswer((_) async => []);
-      final opened = <String?>[];
+  testWidgets('the empty-vote CTA opens the add sheet', (tester) async {
+    final vm = _MockViewModel();
+    when(vm.pickMealVoteSuggestions).thenAnswer((_) async => []);
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: _VoteHost(vm: vm),
-          onGenerateRoute: (settings) {
-            opened.add(settings.name);
-            return MaterialPageRoute<void>(
-              settings: settings,
-              builder: (_) => const Scaffold(body: Text('add-recipe-page')),
-            );
-          },
-        ),
-      );
-      await tester.tap(find.text('vote'));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      createLocalizedTestApp(wrapInScaffold: false, child: _VoteHost(vm: vm)),
+    );
+    await tester.tap(find.text('vote'));
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
 
-      expect(opened, contains(Routes.addRecipe));
-      expect(opened, isNot(contains('/add-recipe')));
-      expect(find.text('add-recipe-page'), findsOneWidget);
-    },
-  );
+    expect(find.byType(ButleryAddSheet), findsOneWidget);
+  });
 }

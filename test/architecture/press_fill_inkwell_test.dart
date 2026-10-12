@@ -14,7 +14,6 @@ final _fab = RegExp(r'(?<![\w.])FloatingActionButton(\.\w+)?\(');
 const _waiting = <String, int>{
   'lib/views/social/friend_requests/friend_request_card.dart': 2,
   'lib/views/social/public_profile_view.dart': 1,
-  'lib/views/unified_shopping/widgets/shopping_item_tiles.dart': 1,
   'lib/widgets/common/cards/selection_card.dart': 1,
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
   'lib/widgets/common/friends/category_display_widgets.dart': 2,
