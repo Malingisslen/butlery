@@ -167,8 +167,7 @@ class FriendRequestsHeaderBuilder {
 }
 
 /// A strip under the subpage bar that stands on the page's own surface
-/// (surface.base) rather than the bar's ink: text, icons and the focus ring
-/// take the page's colours again.
+/// (surface.base).
 class _PageSurfaceStrip extends StatelessWidget implements PreferredSizeWidget {
   const _PageSurfaceStrip({required this.child});
 
