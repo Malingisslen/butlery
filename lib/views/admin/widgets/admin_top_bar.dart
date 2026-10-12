@@ -39,9 +39,9 @@ class AdminTopBar extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppDimensions.space16,
-                    right: AppDimensions.space8,
+                  padding: const EdgeInsetsDirectional.only(
+                    start: AppDimensions.space16,
+                    end: AppDimensions.space8,
                   ),
                   child: Text(
                     l10n.adminBarTitle,
