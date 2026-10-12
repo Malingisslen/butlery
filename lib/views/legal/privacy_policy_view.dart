@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/legal/legal_document.dart';
+import 'package:butlery/widgets/legal/legal_link_foot.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -185,6 +186,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     return LegalDocument(
       content: _policyContent!,
       webLinksEnabled: _isOnline,
+      current: LegalDocumentKind.privacy,
     );
   }
 }

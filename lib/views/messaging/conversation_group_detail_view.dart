@@ -67,7 +67,6 @@ class _ConversationGroupDetailContentState
               viewModel.memberCount,
             )
           : null,
-      lightBar: true,
       body: _buildBody(context, viewModel),
     );
   }

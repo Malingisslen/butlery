@@ -30,8 +30,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 ///
 /// The ring is ink on light and paper on dark (tokens.json:155-160). That
 /// follows the theme's brightness, except where a component paints its own
-/// surface of the other kind: the subpage top bar stands on surface.ink in
-/// light mode too (Komponentark v1:73), and an ink ring there would vanish.
+/// surface of the other kind, where an ink ring would vanish.
 /// Such a component wraps its content in a [FocusRingSurface].
 class FocusRingSurface extends InheritedWidget {
   const FocusRingSurface({

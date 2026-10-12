@@ -3814,51 +3814,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String groupSharedRecipesLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'recipes',
-      one: 'recipe',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String groupSharedMenusLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'menus',
-      one: 'menu',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String groupSharedListsLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'shopping lists',
-      one: 'shopping list',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get groupInvitedLabel => 'Invited';
-
-  @override
-  String get groupInviteLink => '+ Invite';
-
-  @override
-  String get groupMembersHeading => 'Members';
-
-  @override
-  String get groupShareSheetButton => 'Share a recipe, menu or list';
-
-  @override
   String get groupSharedContent => 'Shared in the group';
 
   @override
@@ -4095,7 +4050,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentAnalyticsDescription =>
-      'Help us improve the app by sharing usage statistics. We collect information about how you use the app to identify bugs and improve the user experience.';
+      'How the app is used, never what you cook.';
 
   @override
   String get consentWhatWeLog => 'What we log';
@@ -4127,7 +4082,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentPushNotificationsDescription =>
-      'Get notifications about comments on your recipes, when friends share with you and other activities.';
+      'The system\'s permission is set separately, in the settings.';
 
   @override
   String get consentGoodToKnow => 'Good to know';
@@ -4184,7 +4139,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataExportGdprDescription =>
-      'Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.';
+      'You have the right to get your data in a format that can be read and moved. The file is JSON.';
 
   @override
   String get dataExportExporting => 'Exporting your data …';
@@ -4211,7 +4166,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataExportClear => 'Clear export';
 
   @override
-  String get dataExportWhatsIncluded => 'What\'s included in the export?';
+  String get dataExportWhatsIncluded => 'What comes with it';
 
   @override
   String get dataExportIncludesProfile => 'Profile and settings';
@@ -4802,9 +4757,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get messagingNewGroupChat => 'New group chat';
-
-  @override
   String get messagingNoFriendsAvailable => 'No friends available';
 
   @override
@@ -4870,7 +4822,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String mfaRegistered(String time) {
-    return 'Registered: $time';
+    return 'Registered $time';
   }
 
   @override
@@ -6296,12 +6248,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileDisplayName => 'Display name';
 
   @override
-  String get profileChangePhoto => 'Change picture';
-
-  @override
-  String get profileDisplayNameAvailable => 'Available';
-
-  @override
   String get profileDisplayNameHint => 'Your name as others see it';
 
   @override
@@ -7381,41 +7327,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedSearchHint => 'Search shared content...';
 
   @override
-  String get sharedSaveAction => 'Save';
-
-  @override
-  String get sharedSavedState => 'Saved';
-
-  @override
-  String sharedFromNameAgo(String name, String time) {
-    return 'from $name · $time';
-  }
-
-  @override
-  String sharedSharedAgo(String time) {
-    return 'shared $time';
-  }
-
-  @override
-  String get sharedNewMark => 'new';
-
-  @override
-  String sharedFromHeading(String name) {
-    return 'From $name';
-  }
-
-  @override
-  String sharedFromSummary(int count, String time) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count recipes',
-      one: '$count recipe',
-    );
-    return '$_temp0 · latest $time';
-  }
-
-  @override
   String sharedTabRecipes(int count) {
     return 'Recipes · $count';
   }
@@ -7946,24 +7857,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialGroups => 'Groups';
-
-  @override
-  String socialFriendsSection(int count) {
-    return 'Friends · $count';
-  }
-
-  @override
-  String get socialRequestsSelect => 'Select';
-
-  @override
-  String socialRequestsIncomingSection(int count) {
-    return 'Incoming · $count';
-  }
-
-  @override
-  String socialRequestsSentSection(int count) {
-    return 'Sent · $count';
-  }
 
   @override
   String get socialIncoming => 'Incoming';
@@ -18843,106 +18736,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendProfileRemoveFriend => 'Remove as friend';
 
   @override
-  String get messagingAboutConversation => 'About the conversation';
-
-  @override
-  String messagingConversationSubline(String name, int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count in the conversation',
-      one: '1 in the conversation',
-    );
-    return '$name · $_temp0';
-  }
-
-  @override
-  String get messagingConversationNameRow => 'Conversation name';
-
-  @override
-  String get messagingAddSomeoneRow => 'Add someone';
-
-  @override
-  String get messagingInConversationSection => 'In the conversation';
-
-  @override
-  String get messagingMemberYou => 'you';
-
-  @override
-  String messagingRemoveFromConversationTitle(String name) {
-    return 'Remove $name from the conversation?';
-  }
-
-  @override
-  String messagingRemoveFromConversationBody(String name) {
-    return '$name stops seeing new messages. What has already been written stays, and the account is not affected. You can invite them again.';
-  }
-
-  @override
-  String get messagingLeaveConversationRow => 'Leave the conversation';
-
-  @override
-  String get messagingLeaveConversationSub =>
-      'You stop seeing new messages. What you wrote stays.';
-
-  @override
-  String recipeRowMinutes(int minutes) {
-    return '$minutes min';
-  }
-
-  @override
-  String publicProfileRecipeCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count public recipes',
-      one: '1 public recipe',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get friendProfileBetweenYou => 'Between you';
-
-  @override
-  String get friendProfileSharedWithYouSub => 'Found under Shared with me';
-
-  @override
-  String get friendProfilePublicRecipesSub =>
-      'Visible to everyone, not only you';
-
-  @override
-  String friendProfileShareLinkRow(String owner) {
-    return 'Share a link to $owner profile';
-  }
-
-  @override
-  String get friendProfileShareLinkSub =>
-      'Shows the public page, nothing you have shared';
-
-  @override
-  String profileFriendsLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'friends',
-      one: 'friend',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String profilePublicRecipesLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'public recipes',
-      one: 'public recipe',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get familyAccountsSection => 'Accounts in the household';
 
   @override
@@ -20164,7 +19957,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appealFormIntro =>
-      'Tell us why you think the decision is wrong. The decision is reviewed again and you get a new answer in the app.';
+      'The decision is reviewed again and you get a new answer in the app.';
 
   @override
   String get appealFormHint => 'Write your reasons here';
@@ -20626,6 +20419,409 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signInMethodsPasswordFailed =>
       'The password couldn\'t be set. Try again.';
+
+  @override
+  String get consentTermsHeading => 'Conditions for the app to exist';
+
+  @override
+  String get consentEssentialTitle => 'Essential operation';
+
+  @override
+  String get consentEssentialBody =>
+      'Sign-in, your recipes, sync between your devices.';
+
+  @override
+  String get consentDataProcessingBody =>
+      'Saving what you write, so it is still there tomorrow.';
+
+  @override
+  String get consentRequiredNoteBefore =>
+      'These cannot be switched off — without them there is no service to say yes or no to. To leave altogether, the way is to ';
+
+  @override
+  String get consentRequiredNoteBold => 'delete the account';
+
+  @override
+  String get consentRequiredNoteAfter => ', not a switch here.';
+
+  @override
+  String get consentYourChoices => 'Your choices';
+
+  @override
+  String get consentMarketing => 'Mailings';
+
+  @override
+  String get consentMarketingDescription =>
+      'News about the app. Never anyone else\'s offers.';
+
+  @override
+  String get consentSocial => 'Social';
+
+  @override
+  String get consentSocialDescription => 'Friends, shared lists, comments.';
+
+  @override
+  String consentSavedVersion(String version, String date, String device) {
+    return 'Saved version $version · $date$device. We keep the version to be able to show what you said yes to, not just that you did.';
+  }
+
+  @override
+  String get consentHistory => 'History';
+
+  @override
+  String get consentHistorySubtitle => 'What you said yes and no to, and when';
+
+  @override
+  String get consentHistoryEmpty => 'No saved choices yet.';
+
+  @override
+  String get consentRevokeAllOptional => 'Revoke everything optional';
+
+  @override
+  String get consentHistoryNoneOn => 'No optional consents';
+
+  @override
+  String get dataExportPageTitle => 'Get your data';
+
+  @override
+  String get dataExportHeadline => 'Everything you put in, in one file';
+
+  @override
+  String get dataExportIncludesRecipesComments =>
+      'Your recipes, comments and ratings';
+
+  @override
+  String get dataExportIncludesSocial =>
+      'Friends, messages and activity history';
+
+  @override
+  String get dataExportFileTitle => 'Your export (JSON)';
+
+  @override
+  String pendingDeletionNoticeTitle(String date) {
+    return 'The account is deleted on $date';
+  }
+
+  @override
+  String get pendingDeletionNoticeBody =>
+      'Until then everything is kept, and you can undo the deletion. After that nothing can be restored.';
+
+  @override
+  String pendingDeletionListHeading(String date) {
+    return 'This is deleted on $date';
+  }
+
+  @override
+  String get pendingDeletionItemRecipes => 'Recipes, menus and lists';
+
+  @override
+  String get pendingDeletionItemRecipesNote => 'everything you created';
+
+  @override
+  String get pendingDeletionItemRatings => 'Ratings, comments and cook snaps';
+
+  @override
+  String get pendingDeletionItemRatingsNote =>
+      'also on other people\'s recipes';
+
+  @override
+  String get pendingDeletionItemHousehold => 'Household and shares';
+
+  @override
+  String get pendingDeletionItemHouseholdNote =>
+      'you are removed, the lists stay with the others';
+
+  @override
+  String get pendingDeletionItemCache => 'Search index and local cache';
+
+  @override
+  String get pendingDeletionItemCacheNote => 'cleared first of all';
+
+  @override
+  String get legalLinkTerms => 'Terms';
+
+  @override
+  String get legalLinkPrivacy => 'Privacy';
+
+  @override
+  String get legalLinkGuidelines => 'Guidelines';
+
+  @override
+  String get legalLinkContact => 'Contact';
+
+  @override
+  String get legalCommunityGuidelinesTitle => 'How we treat each other';
+
+  @override
+  String get accountSecurityEmailNow => 'Now: ';
+
+  @override
+  String get accountSecurityRepeatNewPassword => 'Repeat new password';
+
+  @override
+  String get decisionOutcomeLabel => 'Outcome:';
+
+  @override
+  String get decisionAppealLink => 'I want to appeal';
+
+  @override
+  String get myReportsStatusActioned => 'Actioned';
+
+  @override
+  String get myContentDecisionsIntro =>
+      'Decisions about things you have posted. Each decision can be appealed once.';
+
+  @override
+  String get myReportsIntro =>
+      'What you have reported and what has happened since. We tell you the outcome, also when it went against you.';
+
+  @override
+  String get appealFormQuestion => 'Why do you think the decision is wrong?';
+
+  @override
+  String trashRowDeleted(String when, String left) {
+    return 'Deleted $when · $left';
+  }
+
+  @override
+  String get trashDeletedToday => 'today';
+
+  @override
+  String trashUrgentLeft(String left, String day) {
+    return '$left — gone for good on $day';
+  }
+
+  @override
+  String trashUrgentToday(String left) {
+    return '$left — gone for good today';
+  }
+
+  @override
+  String get licensesIntro =>
+      'What Butlery is built on, and the terms it comes with.';
+
+  @override
+  String get mfaOnTitle => 'On';
+
+  @override
+  String get mfaOffTitle => 'Not on';
+
+  @override
+  String get mfaLostPhoneTitle => 'If the phone is gone';
+
+  @override
+  String get mfaLostPhoneBody =>
+      'When you turned the protection on you got ten one-time codes to write down. With one of them you get in even without the phone.';
+
+  @override
+  String get mfaRemoveLink => 'Remove';
+
+  @override
+  String groupSharedRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'recipes',
+      one: 'recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedMenusLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'menus',
+      one: 'menu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupSharedListsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'shopping lists',
+      one: 'shopping list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInvitedLabel => 'Invited';
+
+  @override
+  String get groupInviteLink => '+ Invite';
+
+  @override
+  String get groupMembersHeading => 'Members';
+
+  @override
+  String get groupShareSheetButton => 'Share a recipe, menu or list';
+
+  @override
+  String get messagingNewGroupChat => 'New group chat';
+
+  @override
+  String get profileChangePhoto => 'Change picture';
+
+  @override
+  String get profileDisplayNameAvailable => 'Available';
+
+  @override
+  String get sharedSaveAction => 'Save';
+
+  @override
+  String get sharedSavedState => 'Saved';
+
+  @override
+  String sharedFromNameAgo(String name, String time) {
+    return 'from $name · $time';
+  }
+
+  @override
+  String sharedSharedAgo(String time) {
+    return 'shared $time';
+  }
+
+  @override
+  String get sharedNewMark => 'new';
+
+  @override
+  String sharedFromHeading(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String sharedFromSummary(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '$count recipe',
+    );
+    return '$_temp0 · latest $time';
+  }
+
+  @override
+  String socialFriendsSection(int count) {
+    return 'Friends · $count';
+  }
+
+  @override
+  String get socialRequestsSelect => 'Select';
+
+  @override
+  String socialRequestsIncomingSection(int count) {
+    return 'Incoming · $count';
+  }
+
+  @override
+  String socialRequestsSentSection(int count) {
+    return 'Sent · $count';
+  }
+
+  @override
+  String get messagingAboutConversation => 'About the conversation';
+
+  @override
+  String messagingConversationSubline(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count in the conversation',
+      one: '1 in the conversation',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get messagingConversationNameRow => 'Conversation name';
+
+  @override
+  String get messagingAddSomeoneRow => 'Add someone';
+
+  @override
+  String get messagingInConversationSection => 'In the conversation';
+
+  @override
+  String get messagingMemberYou => 'you';
+
+  @override
+  String messagingRemoveFromConversationTitle(String name) {
+    return 'Remove $name from the conversation?';
+  }
+
+  @override
+  String messagingRemoveFromConversationBody(String name) {
+    return '$name stops seeing new messages. What has already been written stays, and the account is not affected. You can invite them again.';
+  }
+
+  @override
+  String get messagingLeaveConversationRow => 'Leave the conversation';
+
+  @override
+  String get messagingLeaveConversationSub =>
+      'You stop seeing new messages. What you wrote stays.';
+
+  @override
+  String recipeRowMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String publicProfileRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count public recipes',
+      one: '1 public recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get friendProfileBetweenYou => 'Between you';
+
+  @override
+  String get friendProfileSharedWithYouSub => 'Found under Shared with me';
+
+  @override
+  String get friendProfilePublicRecipesSub =>
+      'Visible to everyone, not only you';
+
+  @override
+  String friendProfileShareLinkRow(String owner) {
+    return 'Share a link to $owner profile';
+  }
+
+  @override
+  String get friendProfileShareLinkSub =>
+      'Shows the public page, nothing you have shared';
+
+  @override
+  String profileFriendsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'friends',
+      one: 'friend',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profilePublicRecipesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'public recipes',
+      one: 'public recipe',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get adminOpsSectionTitle => 'Operations · recent events';

@@ -83,7 +83,6 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
     return ButleryPage.undersida(
       title: context.l10n.sharedFromHeading(friendDisplayName),
       backTo: friendDisplayName,
-      lightBar: true,
       ruleUnderBar: true,
       secondaryLine: recipes.isEmpty
           ? null

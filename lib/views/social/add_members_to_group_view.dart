@@ -107,11 +107,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   ) {
     // A subpage of the group (Skarmar v12 del 3 'Lägg till medlemmar';
     // Komponentark v1 §01 pattern 2), with the group's name as the line
-    // under the title. The bar is ink in both modes, so its text actions are
-    // paper (onPrimary, #F5F4ED in both schemes).
-    final onBar = TextButton.styleFrom(
-      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-    );
+    // under the title.
     return ButleryTopBar.undersida(
       title: viewModel.group == null
           ? context.l10n.groupAddMembers
@@ -120,13 +116,11 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       actions: [
         if (viewModel.hasSelectedFriends)
           TextButton(
-            style: onBar,
             onPressed: viewModel.selectAllVisible,
             child: Text(context.l10n.commonSelectAll),
           ),
         if (viewModel.hasSelectedFriends)
           TextButton(
-            style: onBar,
             onPressed: viewModel.clearAllSelections,
             child: Text(context.l10n.commonClear),
           ),

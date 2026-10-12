@@ -31,11 +31,32 @@ class MarkdownBody extends StatefulWidget {
   /// active: opening the mail app needs no connection.
   final bool webLinksEnabled;
 
+  /// Drawn right under the date and version line, before the first heading.
+  final Widget? afterIntro;
+
+  /// One key per `##` heading in document order, so a table of contents can
+  /// scroll to it. Extra keys are ignored.
+  final List<GlobalKey> headingKeys;
+
   const MarkdownBody({
     super.key,
     required this.data,
     this.webLinksEnabled = true,
+    this.afterIntro,
+    this.headingKeys = const [],
   });
+
+  /// The `##` headings of [data] as the page shows them.
+  static List<String> headingsOf(String data) => [
+    for (final line in data.split('\n'))
+      if (line.startsWith('## ')) displayHeading(line.substring(3).trim()),
+  ];
+
+  /// "3. Spam" reads "3 · Spam", as the sketch numbers its sections.
+  static String displayHeading(String heading) => heading.replaceFirstMapped(
+    RegExp(r'^(\d+)\.\s+'),
+    (m) => '${m[1]} · ',
+  );
 
   @override
   State<MarkdownBody> createState() => _MarkdownBodyState();
@@ -176,11 +197,12 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       color: cs.onSurface,
       height: 1.6,
     );
-    final metaStyle = AppTextStyles.bodySmall.copyWith(
+    final metaStyle = AppTextStyles.captionBase.copyWith(
       color: cs.onSurfaceVariant,
     );
     final headingColor = cs.onSurface;
     var beforeFirstRule = _blocks.any((b) => b.type == _BlockType.rule);
+    var h2Index = 0;
 
     final children = <Widget>[];
     if (!widget.webLinksEnabled && _hasWebLinks) {
@@ -207,6 +229,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           if (beforeFirstRule) {
             beforeFirstRule = false;
             children.add(const AccentRule.inline());
+            if (widget.afterIntro != null) children.add(widget.afterIntro!);
           } else {
             children.add(const Divider(height: AppDimensions.space32));
           }
@@ -214,12 +237,24 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           // The page bar already carries the document's name.
           break;
         case _BlockType.h2:
+          final key = h2Index < widget.headingKeys.length
+              ? widget.headingKeys[h2Index]
+              : null;
+          h2Index++;
           children.add(
-            _para(
-              block.tokens,
-              AppTextStyles.titleLargeBold.copyWith(color: headingColor),
-              linkColor,
-              top: AppDimensions.space16,
+            KeyedSubtree(
+              key: key,
+              child: _para(
+                [
+                  for (final t in block.tokens)
+                    t.kind == _TokenKind.text
+                        ? _Token.text(MarkdownBody.displayHeading(t.text))
+                        : t,
+                ],
+                AppTextStyles.titleLargeBold.copyWith(color: headingColor),
+                linkColor,
+                top: AppDimensions.space16,
+              ),
             ),
           );
         case _BlockType.h3:

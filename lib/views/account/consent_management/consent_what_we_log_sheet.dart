@@ -64,7 +64,7 @@ Future<void> showConsentWhatWeLogSheet(BuildContext context) {
           ),
           child: Text(
             l10n.consentWhatWeLogIntro,
-            style: AppTextStyles.bodySmall.copyWith(color: muted),
+            style: AppTextStyles.captionBase.copyWith(color: muted),
           ),
         ),
         for (final (label, eventNames) in categories)
@@ -79,7 +79,7 @@ Future<void> showConsentWhatWeLogSheet(BuildContext context) {
                 const SizedBox(height: AppDimensions.space4),
                 Text(
                   eventNames.join(', '),
-                  style: AppTextStyles.bodySmall.copyWith(color: muted),
+                  style: AppTextStyles.captionBase.copyWith(color: muted),
                 ),
               ],
             ),

@@ -6319,48 +6319,6 @@ abstract class AppLocalizations {
   /// **'Delad av {name}'**
   String groupSharedBy(String name);
 
-  /// No description provided for @groupSharedRecipesLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{recept} other{recept}}'**
-  String groupSharedRecipesLabel(int count);
-
-  /// No description provided for @groupSharedMenusLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{meny} other{menyer}}'**
-  String groupSharedMenusLabel(int count);
-
-  /// No description provided for @groupSharedListsLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{inköpslista} other{inköpslistor}}'**
-  String groupSharedListsLabel(int count);
-
-  /// No description provided for @groupInvitedLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inbjuden'**
-  String get groupInvitedLabel;
-
-  /// No description provided for @groupInviteLink.
-  ///
-  /// In sv, this message translates to:
-  /// **'+ Bjud in'**
-  String get groupInviteLink;
-
-  /// No description provided for @groupMembersHeading.
-  ///
-  /// In sv, this message translates to:
-  /// **'Medlemmar'**
-  String get groupMembersHeading;
-
-  /// No description provided for @groupShareSheetButton.
-  ///
-  /// In sv, this message translates to:
-  /// **'Dela recept, meny eller lista'**
-  String get groupShareSheetButton;
-
   /// No description provided for @groupSharedContent.
   ///
   /// In sv, this message translates to:
@@ -6724,13 +6682,13 @@ abstract class AppLocalizations {
   /// No description provided for @consentAnalytics.
   ///
   /// In sv, this message translates to:
-  /// **'Analysdata'**
+  /// **'Analys'**
   String get consentAnalytics;
 
   /// No description provided for @consentAnalyticsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.'**
+  /// **'Hur appen används, aldrig vad du lagar.'**
   String get consentAnalyticsDescription;
 
   /// No description provided for @consentWhatWeLog.
@@ -6790,7 +6748,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentPushNotificationsDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.'**
+  /// **'Systemets tillåtelse styrs separat, i inställningarna.'**
   String get consentPushNotificationsDescription;
 
   /// No description provided for @consentGoodToKnow.
@@ -6892,7 +6850,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportGdprDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.'**
+  /// **'Du har rätt att få ut dina uppgifter i ett format som går att läsa och flytta. Filen är JSON.'**
   String get dataExportGdprDescription;
 
   /// No description provided for @dataExportExporting.
@@ -6946,7 +6904,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportWhatsIncluded.
   ///
   /// In sv, this message translates to:
-  /// **'Vad ingår i exporten?'**
+  /// **'Det här följer med'**
   String get dataExportWhatsIncluded;
 
   /// No description provided for @dataExportIncludesProfile.
@@ -7933,12 +7891,6 @@ abstract class AppLocalizations {
   /// **'{name} borttagen från gruppen'**
   String messagingMemberRemoved(String name);
 
-  /// No description provided for @messagingNewGroupChat.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ny gruppchatt'**
-  String get messagingNewGroupChat;
-
   /// No description provided for @messagingNoFriendsAvailable.
   ///
   /// In sv, this message translates to:
@@ -8062,7 +8014,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaRegistered.
   ///
   /// In sv, this message translates to:
-  /// **'Registrerad: {time}'**
+  /// **'Registrerad {time}'**
   String mfaRegistered(String time);
 
   /// No description provided for @mfaRegisteredMethods.
@@ -10459,18 +10411,6 @@ abstract class AppLocalizations {
   /// **'Visningsnamn'**
   String get profileDisplayName;
 
-  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar
-  ///
-  /// In sv, this message translates to:
-  /// **'Ändra bild'**
-  String get profileChangePhoto;
-
-  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free
-  ///
-  /// In sv, this message translates to:
-  /// **'Ledigt'**
-  String get profileDisplayNameAvailable;
-
   /// No description provided for @profileDisplayNameHint.
   ///
   /// In sv, this message translates to:
@@ -12277,48 +12217,6 @@ abstract class AppLocalizations {
   /// **'Sök delat innehåll …'**
   String get sharedSearchHint;
 
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own
-  ///
-  /// In sv, this message translates to:
-  /// **'Spara'**
-  String get sharedSaveAction;
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved
-  ///
-  /// In sv, this message translates to:
-  /// **'Sparad'**
-  String get sharedSavedState;
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item
-  ///
-  /// In sv, this message translates to:
-  /// **'från {name} · {time}'**
-  String sharedFromNameAgo(String name, String time);
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page
-  ///
-  /// In sv, this message translates to:
-  /// **'delad {time}'**
-  String sharedSharedAgo(String time);
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item
-  ///
-  /// In sv, this message translates to:
-  /// **'ny'**
-  String get sharedNewMark;
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page
-  ///
-  /// In sv, this message translates to:
-  /// **'Från {name}'**
-  String sharedFromHeading(String name);
-
-  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, one{{count} recept} other{{count} recept}} · senast {time}'**
-  String sharedFromSummary(int count, String time);
-
   /// No description provided for @sharedTabRecipes.
   ///
   /// In sv, this message translates to:
@@ -13158,30 +13056,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Grupper'**
   String get socialGroups;
-
-  /// No description provided for @socialFriendsSection.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänner · {count}'**
-  String socialFriendsSection(int count);
-
-  /// No description provided for @socialRequestsSelect.
-  ///
-  /// In sv, this message translates to:
-  /// **'Välj'**
-  String get socialRequestsSelect;
-
-  /// No description provided for @socialRequestsIncomingSection.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inkommande · {count}'**
-  String socialRequestsIncomingSection(int count);
-
-  /// No description provided for @socialRequestsSentSection.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skickade · {count}'**
-  String socialRequestsSentSection(int count);
 
   /// No description provided for @socialIncoming.
   ///
@@ -22346,7 +22220,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalCommunityGuidelines.
   ///
   /// In sv, this message translates to:
-  /// **'Gemenskapsriktlinjer'**
+  /// **'Communityriktlinjer'**
   String get legalCommunityGuidelines;
 
   /// No description provided for @legalOpenSourceLicenses.
@@ -30634,120 +30508,6 @@ abstract class AppLocalizations {
   /// **'Ta bort som vän'**
   String get friendProfileRemoveFriend;
 
-  /// Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page
-  ///
-  /// In sv, this message translates to:
-  /// **'Om samtalet'**
-  String get messagingAboutConversation;
-
-  /// Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page
-  ///
-  /// In sv, this message translates to:
-  /// **'{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}'**
-  String messagingConversationSubline(String name, int count);
-
-  /// Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog
-  ///
-  /// In sv, this message translates to:
-  /// **'Samtalets namn'**
-  String get messagingConversationNameRow;
-
-  /// Skiss rättad spår 7 (2026-10-12): row that opens the friend picker
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till någon'**
-  String get messagingAddSomeoneRow;
-
-  /// Skiss rättad spår 7 (2026-10-12): section title above the members
-  ///
-  /// In sv, this message translates to:
-  /// **'Med i samtalet'**
-  String get messagingInConversationSection;
-
-  /// Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list
-  ///
-  /// In sv, this message translates to:
-  /// **'du'**
-  String get messagingMemberYou;
-
-  /// Skiss rättad spår 7 (2026-10-12): question in the inline confirmation
-  ///
-  /// In sv, this message translates to:
-  /// **'Ta bort {name} ur samtalet?'**
-  String messagingRemoveFromConversationTitle(String name);
-
-  /// Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation
-  ///
-  /// In sv, this message translates to:
-  /// **'{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.'**
-  String messagingRemoveFromConversationBody(String name);
-
-  /// Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page
-  ///
-  /// In sv, this message translates to:
-  /// **'Lämna samtalet'**
-  String get messagingLeaveConversationRow;
-
-  /// Skiss rättad spår 7 (2026-10-12): second line of the leave row
-  ///
-  /// In sv, this message translates to:
-  /// **'Du slutar se nya meddelanden. Det du skrivit ligger kvar.'**
-  String get messagingLeaveConversationSub;
-
-  /// Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row
-  ///
-  /// In sv, this message translates to:
-  /// **'{minutes} min'**
-  String recipeRowMinutes(int minutes);
-
-  /// Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 publikt recept} other{{count} publika recept}}'**
-  String publicProfileRecipeCount(int count);
-
-  /// Skiss rättad spår 7 (2026-10-12): section title on the friend profile
-  ///
-  /// In sv, this message translates to:
-  /// **'Mellan er'**
-  String get friendProfileBetweenYou;
-
-  /// Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row
-  ///
-  /// In sv, this message translates to:
-  /// **'Ligger under Delat med mig'**
-  String get friendProfileSharedWithYouSub;
-
-  /// Skiss rättad spår 7 (2026-10-12): second line of the public recipes row
-  ///
-  /// In sv, this message translates to:
-  /// **'Synliga för alla, inte bara för dig'**
-  String get friendProfilePublicRecipesSub;
-
-  /// Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form
-  ///
-  /// In sv, this message translates to:
-  /// **'Dela en länk till {owner} profil'**
-  String friendProfileShareLinkRow(String owner);
-
-  /// Skiss rättad spår 7 (2026-10-12): second line of the share-link row
-  ///
-  /// In sv, this message translates to:
-  /// **'Visar den publika sidan, inget ni delat'**
-  String get friendProfileShareLinkSub;
-
-  /// Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{vän} other{vänner}}'**
-  String profileFriendsLabel(int count);
-
-  /// Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{publikt recept} other{publika recept}}'**
-  String profilePublicRecipesLabel(int count);
-
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
   ///
   /// In sv, this message translates to:
@@ -32605,7 +32365,7 @@ abstract class AppLocalizations {
   /// BUT-2353: appeal form explanation
   ///
   /// In sv, this message translates to:
-  /// **'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.'**
+  /// **'Beslutet granskas igen och du får ett nytt besked i appen.'**
   String get appealFormIntro;
 
   /// BUT-2353: appeal text field hint
@@ -33315,6 +33075,588 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet kunde inte sättas. Försök igen.'**
   String get signInMethodsPasswordFailed;
+
+  /// Spår 6, v60: heading over the box with the two consents that cannot be switched off
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkor för att appen finns'**
+  String get consentTermsHeading;
+
+  /// Spår 6, v60: title of the locked consent for essential services
+  ///
+  /// In sv, this message translates to:
+  /// **'Nödvändig drift'**
+  String get consentEssentialTitle;
+
+  /// Spår 6, v60: reason for the essential-services consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning, dina recept, synk mellan dina enheter.'**
+  String get consentEssentialBody;
+
+  /// Spår 6, v60: reason for the data-processing consent
+  ///
+  /// In sv, this message translates to:
+  /// **'Att spara det du skriver in, så att det finns kvar i morgon.'**
+  String get consentDataProcessingBody;
+
+  /// Spår 6, v60: first part of the note under the locked consents; the bold part follows
+  ///
+  /// In sv, this message translates to:
+  /// **'De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen '**
+  String get consentRequiredNoteBefore;
+
+  /// Spår 6, v60: bold part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **'radera kontot'**
+  String get consentRequiredNoteBold;
+
+  /// Spår 6, v60: last part of the note under the locked consents
+  ///
+  /// In sv, this message translates to:
+  /// **', inte ett reglage här.'**
+  String get consentRequiredNoteAfter;
+
+  /// Spår 6, v60: heading over the optional consent switches
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val'**
+  String get consentYourChoices;
+
+  /// Spår 6, v60: marketing consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Utskick'**
+  String get consentMarketing;
+
+  /// Spår 6, v60: what the marketing consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyheter om appen. Aldrig andras erbjudanden.'**
+  String get consentMarketingDescription;
+
+  /// Spår 6, v60: social-features consent switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Socialt'**
+  String get consentSocial;
+
+  /// Spår 6, v60: what the social consent covers
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, delade listor, kommentarer.'**
+  String get consentSocialDescription;
+
+  /// Spår 6, v60: the line that says which version, when and on which device the consent was saved; device is empty or starts with ' · '
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat version {version} · {date}{device}. Vi behåller versionen för att kunna visa vad du sa ja till, inte bara att du gjorde det.'**
+  String consentSavedVersion(String version, String date, String device);
+
+  /// Spår 6, v60: row that opens the consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Historik'**
+  String get consentHistory;
+
+  /// Spår 6, v60: subtitle of the consent history row
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad du sagt ja och nej till, och när'**
+  String get consentHistorySubtitle;
+
+  /// Spår 6, v60: empty consent history
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade val ännu.'**
+  String get consentHistoryEmpty;
+
+  /// Spår 6, v60: red text button under the save button
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkalla allt valfritt'**
+  String get consentRevokeAllOptional;
+
+  /// Spår 6, v60: history line when no optional consent was on
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga valfria samtycken'**
+  String get consentHistoryNoneOn;
+
+  /// Spår 6, v61: page title of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämta ut dina uppgifter'**
+  String get dataExportPageTitle;
+
+  /// Spår 6, v61: heading of the data export
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt du lagt in, i en fil'**
+  String get dataExportHeadline;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept, kommentarer och betyg'**
+  String get dataExportIncludesRecipesComments;
+
+  /// Spår 6, v61: included item
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, meddelanden och aktivitetshistorik'**
+  String get dataExportIncludesSocial;
+
+  /// Spår 6, v61: title of the finished export file card
+  ///
+  /// In sv, this message translates to:
+  /// **'Din export (JSON)'**
+  String get dataExportFileTitle;
+
+  /// Spår 6, v62: title of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}'**
+  String pendingDeletionNoticeTitle(String date);
+
+  /// Spår 6, v62: body of the notice box on the pending-deletion page
+  ///
+  /// In sv, this message translates to:
+  /// **'Tills dess finns allt kvar, och du kan ångra raderingen. Efter det går inget att återskapa.'**
+  String get pendingDeletionNoticeBody;
+
+  /// Spår 6, v62: heading over the list of what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här raderas den {date}'**
+  String pendingDeletionListHeading(String date);
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept, menyer och listor'**
+  String get pendingDeletionItemRecipes;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'allt du skapat'**
+  String get pendingDeletionItemRecipesNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg, kommentarer och cook snaps'**
+  String get pendingDeletionItemRatings;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'även i andras recept'**
+  String get pendingDeletionItemRatingsNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll och delningar'**
+  String get pendingDeletionItemHousehold;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'du lyfts ur, listorna finns kvar hos de andra'**
+  String get pendingDeletionItemHouseholdNote;
+
+  /// Spår 6, v62: what is deleted
+  ///
+  /// In sv, this message translates to:
+  /// **'Sökindex och lokal cache'**
+  String get pendingDeletionItemCache;
+
+  /// Spår 6, v62: what is deleted, detail
+  ///
+  /// In sv, this message translates to:
+  /// **'rensas först av allt'**
+  String get pendingDeletionItemCacheNote;
+
+  /// Link at the foot of a legal document to the terms of service
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkoren'**
+  String get legalLinkTerms;
+
+  /// Link at the foot of a legal document to the privacy policy
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet'**
+  String get legalLinkPrivacy;
+
+  /// Link at the foot of a legal document to the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Riktlinjer'**
+  String get legalLinkGuidelines;
+
+  /// Link at the foot of a legal document that opens a mail to support
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontakt'**
+  String get legalLinkContact;
+
+  /// Page title of the community guidelines
+  ///
+  /// In sv, this message translates to:
+  /// **'Så gör vi mot varandra'**
+  String get legalCommunityGuidelinesTitle;
+
+  /// Label before the current e-mail address at the top of the change e-mail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Nu: '**
+  String get accountSecurityEmailNow;
+
+  /// Label of the second new-password field on the change password page
+  ///
+  /// In sv, this message translates to:
+  /// **'Upprepa nytt lösenord'**
+  String get accountSecurityRepeatNewPassword;
+
+  /// Bold label opening the outcome note of a moderation matter
+  ///
+  /// In sv, this message translates to:
+  /// **'Utfall:'**
+  String get decisionOutcomeLabel;
+
+  /// Link in a moderation row or decision that opens the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag vill överklaga'**
+  String get decisionAppealLink;
+
+  /// Status pill on a report that led to an action
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get myReportsStatusActioned;
+
+  /// Intro line under the title of Beslut om mitt innehåll
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om sådant du lagt upp. Varje beslut kan överklagas en gång.'**
+  String get myContentDecisionsIntro;
+
+  /// Intro line under the title of Mina rapporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du anmält och vad som hänt sedan. Vi berättar utfallet, också när det gick emot dig.'**
+  String get myReportsIntro;
+
+  /// Heading above the appeal text field
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför tycker du att beslutet är fel?'**
+  String get appealFormQuestion;
+
+  /// Subtitle of a trash row: when it was deleted and how long is left
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderad {when} · {left}'**
+  String trashRowDeleted(String when, String left);
+
+  /// 'When' of a trash row deleted today
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag'**
+  String get trashDeletedToday;
+
+  /// Subtitle of a trash row with little time left; day is the weekday
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott på {day}'**
+  String trashUrgentLeft(String left, String day);
+
+  /// Subtitle of a trash row that expires today
+  ///
+  /// In sv, this message translates to:
+  /// **'{left} — raderas för gott i dag'**
+  String trashUrgentToday(String left);
+
+  /// Intro line under the title of the licences page
+  ///
+  /// In sv, this message translates to:
+  /// **'Det Butlery bygger på, och villkoren det följer med.'**
+  String get licensesIntro;
+
+  /// Title of the note on the two-step verification page when it is on
+  ///
+  /// In sv, this message translates to:
+  /// **'Påslagen'**
+  String get mfaOnTitle;
+
+  /// Title of the note on the two-step verification page when it is off
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte påslagen'**
+  String get mfaOffTitle;
+
+  /// Section heading about backup codes on the two-step verification page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om telefonen är borta'**
+  String get mfaLostPhoneTitle;
+
+  /// Body under the backup codes heading
+  ///
+  /// In sv, this message translates to:
+  /// **'När du slog på skyddet fick du tio engångskoder att skriva ned. Med en av dem kommer du in även utan telefonen.'**
+  String get mfaLostPhoneBody;
+
+  /// Text link that removes a registered two-step method
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get mfaRemoveLink;
+
+  /// No description provided for @groupSharedRecipesLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{recept} other{recept}}'**
+  String groupSharedRecipesLabel(int count);
+
+  /// No description provided for @groupSharedMenusLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{meny} other{menyer}}'**
+  String groupSharedMenusLabel(int count);
+
+  /// No description provided for @groupSharedListsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{inköpslista} other{inköpslistor}}'**
+  String groupSharedListsLabel(int count);
+
+  /// No description provided for @groupInvitedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjuden'**
+  String get groupInvitedLabel;
+
+  /// No description provided for @groupInviteLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Bjud in'**
+  String get groupInviteLink;
+
+  /// No description provided for @groupMembersHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmar'**
+  String get groupMembersHeading;
+
+  /// No description provided for @groupShareSheetButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela recept, meny eller lista'**
+  String get groupShareSheetButton;
+
+  /// No description provided for @messagingNewGroupChat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny gruppchatt'**
+  String get messagingNewGroupChat;
+
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra bild'**
+  String get profileChangePhoto;
+
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free
+  ///
+  /// In sv, this message translates to:
+  /// **'Ledigt'**
+  String get profileDisplayNameAvailable;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get sharedSaveAction;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad'**
+  String get sharedSavedState;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'från {name} · {time}'**
+  String sharedFromNameAgo(String name, String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'delad {time}'**
+  String sharedSharedAgo(String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get sharedNewMark;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'Från {name}'**
+  String sharedFromHeading(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, one{{count} recept} other{{count} recept}} · senast {time}'**
+  String sharedFromSummary(int count, String time);
+
+  /// No description provided for @socialFriendsSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner · {count}'**
+  String socialFriendsSection(int count);
+
+  /// No description provided for @socialRequestsSelect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get socialRequestsSelect;
+
+  /// No description provided for @socialRequestsIncomingSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkommande · {count}'**
+  String socialRequestsIncomingSection(int count);
+
+  /// No description provided for @socialRequestsSentSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickade · {count}'**
+  String socialRequestsSentSection(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om samtalet'**
+  String get messagingAboutConversation;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}'**
+  String messagingConversationSubline(String name, int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtalets namn'**
+  String get messagingConversationNameRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the friend picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till någon'**
+  String get messagingAddSomeoneRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): section title above the members
+  ///
+  /// In sv, this message translates to:
+  /// **'Med i samtalet'**
+  String get messagingInConversationSection;
+
+  /// Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list
+  ///
+  /// In sv, this message translates to:
+  /// **'du'**
+  String get messagingMemberYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): question in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name} ur samtalet?'**
+  String messagingRemoveFromConversationTitle(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.'**
+  String messagingRemoveFromConversationBody(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna samtalet'**
+  String get messagingLeaveConversationRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the leave row
+  ///
+  /// In sv, this message translates to:
+  /// **'Du slutar se nya meddelanden. Det du skrivit ligger kvar.'**
+  String get messagingLeaveConversationSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String recipeRowMinutes(int minutes);
+
+  /// Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 publikt recept} other{{count} publika recept}}'**
+  String publicProfileRecipeCount(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): section title on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Mellan er'**
+  String get friendProfileBetweenYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row
+  ///
+  /// In sv, this message translates to:
+  /// **'Ligger under Delat med mig'**
+  String get friendProfileSharedWithYouSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the public recipes row
+  ///
+  /// In sv, this message translates to:
+  /// **'Synliga för alla, inte bara för dig'**
+  String get friendProfilePublicRecipesSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela en länk till {owner} profil'**
+  String friendProfileShareLinkRow(String owner);
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the share-link row
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar den publika sidan, inget ni delat'**
+  String get friendProfileShareLinkSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{vän} other{vänner}}'**
+  String profileFriendsLabel(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{publikt recept} other{publika recept}}'**
+  String profilePublicRecipesLabel(int count);
 
   /// Skiss spår 9 (v65): heading above the ops-log table
   ///

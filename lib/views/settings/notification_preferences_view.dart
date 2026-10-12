@@ -178,7 +178,6 @@ class _NotificationPreferencesViewState
     return ButleryPage.undersida(
       title: context.l10n.settingsNotificationSettings,
       backTo: context.l10n.settingsAppTitle,
-      lightBar: true,
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),

@@ -1,9 +1,6 @@
 /// TR::FLOW::06::byt-epost::omverifiering-bada under BUT-2171 = A (Malin,
 /// 2026-10-07): Firebase's flow is kept, so only the new address confirms
-/// and the current one is told afterwards with a way to undo. The view says
-/// so before the change is asked for, the change goes through
-/// reauthentication, and the current address
-/// stays the one shown until the link is opened.
+/// and the current one is told afterwards with a way to undo.
 library;
 
 import 'dart:async';
@@ -134,8 +131,9 @@ void main() {
       expect(
         tester
             .widget<Text>(find.byKey(const ValueKey('accountEmail.current')))
-            .data,
-        'gammal@example.com',
+            .textSpan!
+            .toPlainText(),
+        '${l10n.accountSecurityEmailNow}gammal@example.com',
       );
       final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
       expect(bar.title, l10n.settingsAccountEmail);
@@ -156,7 +154,7 @@ void main() {
       ]);
       expect(find.text(l10n.accountSecurityEmailVerificationSent), findsOne);
       // The current address still applies until the link is opened.
-      expect(find.text('gammal@example.com'), findsOneWidget);
+      expect(find.textContaining('gammal@example.com'), findsOneWidget);
     },
   );
 

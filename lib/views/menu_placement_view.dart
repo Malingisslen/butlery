@@ -126,13 +126,8 @@ class _MenuPlacementViewContent extends StatelessWidget {
                 horizontal: AppDimensions.space8,
                 vertical: AppDimensions.space4,
               ),
-              // The pill on the ink bar: the bar's own paper foreground for
-              // both the border and the text, never a faded copy
-              // (tokens.json:40-53). #placera draws it on paper with
-              // border.subtle; on the subpage's ink that would not read.
-              // Interpretation.
               decoration: BoxDecoration(
-                border: Border.all(color: cs.onPrimary),
+                border: Border.all(color: cs.onSurface),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               ),
               child: Text(
@@ -141,7 +136,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
                   vm.totalCount,
                 ),
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: cs.onPrimary,
+                  color: cs.onSurface,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),

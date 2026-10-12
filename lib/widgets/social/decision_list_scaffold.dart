@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -22,6 +23,7 @@ class DecisionListScaffold extends StatelessWidget {
     required this.emptyTitle,
     required this.onRefresh,
     this.backTo,
+    this.intro,
     super.key,
   });
 
@@ -35,6 +37,9 @@ class DecisionListScaffold extends StatelessWidget {
   final String emptyTitle;
   final Future<void> Function() onRefresh;
   final String? backTo;
+
+  /// One line of secondary text above the rows.
+  final String? intro;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +72,19 @@ class DecisionListScaffold extends StatelessWidget {
           horizontal: ButleryTopBar.sideMargin(context),
           vertical: AppDimensions.space8,
         ),
-        children: [ButleryListSection(rows: rows)],
+        children: [
+          if (intro != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.space8),
+              child: Text(
+                intro!,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ButleryListSection(rows: rows),
+        ],
       ),
     );
   }

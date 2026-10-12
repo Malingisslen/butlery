@@ -115,12 +115,14 @@ class ButleryListRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.selected,
+    this.emphasis = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.nav,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.nav,
        centered = false,
        enabled = true,
-       emphasis = false,
        strongValue = false,
        checked = false,
        onChanged = null;
@@ -135,7 +137,9 @@ class ButleryListRow extends StatelessWidget {
     this.emphasis = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.toggle,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.toggle,
        centered = false,
        strongValue = false,
        selected = null,
@@ -158,7 +162,9 @@ class ButleryListRow extends StatelessWidget {
     this.centered = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.danger,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.danger,
        selected = null,
        enabled = true,
        emphasis = false,
@@ -178,7 +184,9 @@ class ButleryListRow extends StatelessWidget {
     this.strongValue = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.info,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.info,
        centered = false,
        selected = null,
        enabled = true,
@@ -188,6 +196,32 @@ class ButleryListRow extends StatelessWidget {
        count = 0,
        countLabel = null,
        leading = null,
+       trailing = null,
+       checked = false,
+       onChanged = null;
+
+  /// A line that tells something and leads nowhere, with an optional glyph:
+  /// the check and cross rows of Hämta ut dina uppgifter. [muted] sets the
+  /// text in secondary ink, for what does not apply.
+  const ButleryListRow.note({
+    required this.label,
+    this.leading,
+    this.leadingColor,
+    this.subtitle,
+    bool muted = false,
+    this.emphasis = false,
+    this.identifier,
+    super.key,
+  }) : _muted = muted,
+       _kind = _RowKind.info,
+       centered = false,
+       selected = null,
+       enabled = true,
+       strongValue = false,
+       onTap = null,
+       value = null,
+       count = 0,
+       countLabel = null,
        trailing = null,
        checked = false,
        onChanged = null;
@@ -234,6 +268,12 @@ class ButleryListRow extends StatelessWidget {
   /// An information row's figure set in bold ink, as the sketch's counts.
   final bool strongValue;
 
+  /// The colour of [leading]; secondary ink when null.
+  final Color? leadingColor;
+
+  bool get muted => _muted;
+  final bool _muted;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -245,6 +285,8 @@ class ButleryListRow extends StatelessWidget {
         ? AppModeColors.textDisabled(cs.brightness)
         : danger
         ? cs.error
+        : muted
+        ? cs.onSurfaceVariant
         : cs.onSurface;
 
     if (centered) {
@@ -284,7 +326,9 @@ class ButleryListRow extends StatelessWidget {
         child: Row(
           children: [
             if (leading != null) ...[
-              ExcludeSemantics(child: ButleryIcon(leading!, color: mutedText)),
+              ExcludeSemantics(
+                child: ButleryIcon(leading!, color: leadingColor ?? mutedText),
+              ),
               const SizedBox(width: AppDimensions.space12),
             ],
             Expanded(

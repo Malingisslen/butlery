@@ -1,6 +1,6 @@
 // lib/widgets/common/layout/page_rule.dart
 //
-// The 2 px ink rule the light subpage bar stands over in the sketches
+// The 2 px ink rule the subpage bar stands over in the sketches
 // (Notisval, Min familj): it closes the header and starts the content.
 library;
 

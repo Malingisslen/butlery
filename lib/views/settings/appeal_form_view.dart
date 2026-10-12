@@ -12,8 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/viewmodels/settings/appeal_form_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -81,8 +80,18 @@ class _AppealFormViewState extends State<AppealFormView> {
               vertical: AppDimensions.space16,
             ),
             children: [
-              Text(l10n.appealFormIntro, style: AppTextStyles.bodyMedium),
+              TintedNote.labelled(
+                label: l10n.decisionOutcomeLabel,
+                text: decisionHeadline(l10n, widget.args.outcome.decision),
+              ),
               const SizedBox(height: AppDimensions.space16),
+              Text(l10n.appealFormQuestion, style: AppTextStyles.titleBold),
+              const SizedBox(height: AppDimensions.space4),
+              Text(
+                l10n.appealFormIntro,
+                style: AppTextStyles.bodyMedium.copyWith(color: muted),
+              ),
+              const SizedBox(height: AppDimensions.space12),
               LabeledField(
                 child: TextField(
                   controller: _controller,
@@ -104,24 +113,9 @@ class _AppealFormViewState extends State<AppealFormView> {
                 ),
               ),
               const SizedBox(height: AppDimensions.space8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.info,
-                    size: AppDimensions.iconSizeS,
-                    color: muted,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Expanded(
-                    child: Text(
-                      owner
-                          ? l10n.appealFormOnceOwner
-                          : l10n.appealFormOnceReporter,
-                      style: AppTextStyles.bodySmall.copyWith(color: muted),
-                    ),
-                  ),
-                ],
+              Text(
+                owner ? l10n.appealFormOnceOwner : l10n.appealFormOnceReporter,
+                style: AppTextStyles.captionBase.copyWith(color: muted),
               ),
               const SizedBox(height: AppDimensions.space16),
               FilledButton(

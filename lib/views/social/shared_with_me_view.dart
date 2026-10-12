@@ -93,7 +93,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
     return ButleryPage.undersida(
       title: context.l10n.profileSharedWithMe,
       backTo: context.l10n.moreTitle,
-      lightBar: true,
       ruleUnderBar: false,
       body: Column(
         children: [

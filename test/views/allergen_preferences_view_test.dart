@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/widgets/common/list/butlery_checkbox_grid.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -112,27 +113,44 @@ void main() {
     );
   });
 
-  testWidgets('every allergen and diet option is a chip', (tester) async {
+  testWidgets('every allergen and diet option is a cell of the checkbox grid', (
+    tester,
+  ) async {
     await pumpView(tester);
 
     for (final label in [
       ...AllergenPreferenceOptions.allergens.values,
       ...AllergenPreferenceOptions.dietary.values,
     ]) {
-      expect(find.widgetWithText(FilterChip, label), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(ButleryCheckboxGrid),
+          matching: find.text(label),
+        ),
+        findsOneWidget,
+      );
     }
   });
 
-  testWidgets('tapping a chip saves at once and shows the snackbar', (
+  testWidgets('the retag action is an outlined button above the maintenance '
+      'rows', (tester) async {
+    await pumpView(tester);
+
+    final retag = find.widgetWithText(
+      OutlinedButton,
+      AppLocalizationsSv().allergenRetagRow,
+    );
+    await tester.ensureVisible(retag);
+    expect(retag, findsOneWidget);
+  });
+
+  testWidgets('tapping a checkbox saves at once and shows the snackbar', (
     tester,
   ) async {
     await pumpView(tester);
 
     await tester.tap(
-      find.widgetWithText(
-        FilterChip,
-        AllergenPreferenceOptions.allergens['gluten']!,
-      ),
+      find.text(AllergenPreferenceOptions.allergens['gluten']!),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));

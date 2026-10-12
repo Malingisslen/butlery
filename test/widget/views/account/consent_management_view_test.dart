@@ -1,6 +1,6 @@
-// Samtycken under Integritet & data: every switch saves at once and writes
-// one consent record, a failed save shows what is really stored, and "Stäng av
-// alla valfria" confirms before it revokes.
+// Samtycken under Integritet & data: the switches change a draft and "Spara
+// mina val" writes one consent record, a failed save shows what is really
+// stored, and "Återkalla allt valfritt" confirms before it revokes.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,17 +94,29 @@ void main() {
     matching: find.byType(Switch),
   );
 
-  testWidgets('shows required purposes as Krävs, optional ones as switches, '
-      'and no Spara button or card', (tester) async {
+  Future<void> save(WidgetTester tester) async {
+    await tester.ensureVisible(find.text(sv.consentSaveMyChoices));
+    await tester.tap(find.text(sv.consentSaveMyChoices));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('shows the two locked purposes in a note and the five optional '
+      'ones as switches, with Spara mina val', (tester) async {
     await pump(tester);
 
-    expect(find.text(sv.consentRequiredValue), findsNWidgets(2));
+    expect(find.text(sv.consentEssentialTitle), findsOneWidget);
+    expect(find.text(sv.consentDataProcessing), findsOneWidget);
+    expect(find.byType(Switch), findsNWidgets(5));
     expect(tester.widget<Switch>(switchOf(sv.consentAnalytics)).value, isTrue);
     expect(
       tester.widget<Switch>(switchOf(sv.consentPushNotifications)).value,
       isFalse,
     );
-    expect(find.text(sv.consentSaveMyChoices), findsNothing);
+    expect(find.text(sv.consentSaveMyChoices), findsOneWidget);
+    expect(
+      find.text(sv.consentSavedVersion('1.1.0', '1 januari', ' · test')),
+      findsOneWidget,
+    );
     expect(find.byType(Card), findsNothing);
     expect(find.text(sv.settingsBlockedPeople), findsNothing);
     expect(find.text(sv.blockedUsersTitle), findsNothing);
@@ -120,13 +132,15 @@ void main() {
     expect(bar().backTo, isNull);
   });
 
-  testWidgets('flipping a switch saves once with only that purpose changed', (
-    tester,
-  ) async {
+  testWidgets('flipping a switch saves nothing until Spara mina val, and '
+      'then only that purpose changed', (tester) async {
     await pump(tester);
 
     await tester.tap(find.text(sv.consentPushNotifications));
     await tester.pumpAndSettle();
+    verifyNever(() => service.saveConsent(any()));
+
+    await save(tester);
 
     final saved =
         verify(() => service.saveConsent(captureAny())).captured.single
@@ -149,6 +163,7 @@ void main() {
 
     await tester.tap(find.text(sv.consentAiProcessing));
     await tester.pumpAndSettle();
+    await save(tester);
 
     expect(find.text(sv.consentSaved), findsNothing);
     expect(find.textContaining(sv.errorGeneric), findsWidgets);
@@ -170,12 +185,36 @@ void main() {
     expect(find.text(sv.consentLogCategoryRecipes), findsOneWidget);
   });
 
-  testWidgets('Stäng av alla valfria asks first, then revokes', (
+  testWidgets('Historik lists the saved versions', (tester) async {
+    when(service.getConsentHistory).thenAnswer(
+      (_) async => [
+        UserConsent(
+          userId: 'u1',
+          purposes: stored,
+          grantedAt: DateTime(2026, 1, 1),
+          consentVersion: '1.0.0',
+          deviceInfo: 'test',
+        ),
+      ],
+    );
+    await pump(tester);
+
+    await tester.tap(find.text(sv.consentHistory));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('1.0.0 · ${sv.consentAnalytics}'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Återkalla allt valfritt asks first, then revokes', (
     tester,
   ) async {
     await pump(tester);
 
-    await tester.tap(find.text(sv.consentTurnOffAllOptional));
+    await tester.ensureVisible(find.text(sv.consentRevokeAllOptional));
+    await tester.tap(find.text(sv.consentRevokeAllOptional));
     await tester.pumpAndSettle();
     expect(find.text(sv.consentRevokeAllTitle), findsOneWidget);
     verifyNever(service.revokeOptionalConsents);
@@ -184,7 +223,8 @@ void main() {
     await tester.pumpAndSettle();
     verifyNever(service.revokeOptionalConsents);
 
-    await tester.tap(find.text(sv.consentTurnOffAllOptional));
+    await tester.ensureVisible(find.text(sv.consentRevokeAllOptional));
+    await tester.tap(find.text(sv.consentRevokeAllOptional));
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(

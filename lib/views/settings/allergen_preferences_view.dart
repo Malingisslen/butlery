@@ -17,8 +17,8 @@ import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_checkbox_grid.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 /// Allergens and diets the user wants status for, and where it is shown.
@@ -74,7 +74,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ButleryListSection(
           title: l10n.allergenSectionAllergens,
           rows: [
-            _ChipRow(
+            ButleryCheckboxGrid(
               options: AllergenPreferenceOptions.allergens,
               isSelected: viewModel.isAllergenTracked,
               onToggle: (key) => change(() => viewModel.toggleAllergen(key)),
@@ -84,7 +84,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ButleryListSection(
           title: l10n.allergenSectionDietary,
           rows: [
-            _ChipRow(
+            ButleryCheckboxGrid(
               options: AllergenPreferenceOptions.dietary,
               isSelected: viewModel.isDietaryTracked,
               onToggle: (key) => change(() => viewModel.toggleDietary(key)),
@@ -136,13 +136,17 @@ class _AllergenPreferencesContent extends StatelessWidget {
           padding: EdgeInsets.only(top: AppDimensions.space8),
           child: AllergenDisclaimer(),
         ),
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space16),
+          child: OutlinedButton.icon(
+            onPressed: () => _showRetagDialog(context),
+            icon: const ButleryIcon(ButleryIcons.refreshCw),
+            label: Text(l10n.allergenRetagRow),
+          ),
+        ),
         ButleryListSection(
           title: l10n.allergenSectionMaintenance,
           rows: [
-            ButleryListRow(
-              label: l10n.allergenRetagRow,
-              onTap: () => _showRetagDialog(context),
-            ),
             ButleryListRow.danger(
               label: l10n.allergenResetToDefaults,
               onTap: () => _confirmReset(context, viewModel, change),
@@ -199,40 +203,6 @@ class _AllergenPreferencesContent extends StatelessWidget {
           confirmText: l10n.allergenReset,
         );
     if (confirmed) await change(viewModel.resetToDefaults);
-  }
-}
-
-class _ChipRow extends StatelessWidget {
-  const _ChipRow({
-    required this.options,
-    required this.isSelected,
-    required this.onToggle,
-  });
-
-  final Map<String, String> options;
-  final bool Function(String key) isSelected;
-  final ValueChanged<String> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
-      child: Wrap(
-        spacing: AppDimensions.space4,
-        runSpacing: AppDimensions.space4,
-        children: options.entries.map((e) {
-          final selected = isSelected(e.key);
-          return PressFill(
-            surface: selected ? PressSurface.ink : PressSurface.base,
-            child: FilterChip(
-              label: Text(e.value),
-              selected: selected,
-              onSelected: (_) => onToggle(e.key),
-            ),
-          );
-        }).toList(),
-      ),
-    );
   }
 }
 

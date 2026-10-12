@@ -65,7 +65,6 @@ class _MinFamiljContent extends StatelessWidget {
     return ButleryPage.undersida(
       title: l10n.familyTitle,
       backTo: l10n.moreTitle,
-      lightBar: true,
       // The ink rule stands under the intro text here, not under the bar.
       ruleUnderBar: false,
       body: vm.isLoading

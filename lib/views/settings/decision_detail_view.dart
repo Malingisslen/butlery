@@ -18,7 +18,11 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
+import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
@@ -183,15 +187,39 @@ class _SubjectBlock extends StatelessWidget {
         ? null
         : l10n.decisionReportedOnLabel(formatDecisionDate(l10n, reportedAt));
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return _Block(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label(
           context,
           owner ? l10n.decisionConcernsLabel : l10n.decisionYouReportedLabel,
         ),
-        if (big != null) Text(big, style: AppTextStyles.titleSmall),
-        if (small != null)
-          Text(small, style: AppTextStyles.bodySmall.copyWith(color: muted)),
+        const SizedBox(height: AppDimensions.space8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(
+              child: ButleryIcon(
+                DecisionRow.glyphFor(type),
+                size: AppDimensions.iconSizeM,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (big != null) Text(big, style: AppTextStyles.bodyBold),
+                  if (small != null)
+                    Text(
+                      small,
+                      style: AppTextStyles.captionBase.copyWith(color: muted),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -208,40 +236,24 @@ class _DecisionBlock extends StatelessWidget {
     final outcome = vm.outcome;
     final report = vm.report;
     if (outcome == null) {
-      return _Block(
-        emphasis: true,
-        children: [
-          Text(
-            reportOutcomeText(
-              l10n,
-              report?.status ?? ReportStatus.closed,
-              report?.moderatorAction,
-            ),
-            style: AppTextStyles.bodyMedium,
-          ),
-        ],
+      return TintedNote.labelled(
+        label: l10n.decisionOutcomeLabel,
+        text: reportOutcomeText(
+          l10n,
+          report?.status ?? ReportStatus.closed,
+          report?.moderatorAction,
+        ),
       );
     }
     final decidedAt = outcome.decidedAt;
     final motivation = outcome.motivation;
-    return _Block(
-      emphasis: true,
-      children: [
-        if (decidedAt != null)
-          _label(
-            context,
-            l10n.decisionDateLabel(formatDecisionDate(l10n, decidedAt)),
-          ),
-        Text(
-          decisionHeadline(l10n, outcome.decision),
-          style: AppTextStyles.titleSmall,
-        ),
-        if (motivation != null)
-          Text(
-            motivationText(l10n, motivation),
-            style: AppTextStyles.bodyMedium,
-          ),
-      ],
+    return TintedNote.labelled(
+      label: l10n.decisionOutcomeLabel,
+      text: [
+        if (decidedAt != null) formatDecisionDate(l10n, decidedAt),
+        decisionHeadline(l10n, outcome.decision),
+        if (motivation != null) motivationText(l10n, motivation),
+      ].join('. '),
     );
   }
 }
@@ -291,28 +303,33 @@ class _AppealBlock extends StatelessWidget {
       return _note(context, ButleryIcons.info, l10n.appealWindowClosedInfo);
     }
     final deadline = outcome.appealDeadline;
-    return _Block(
+    final linkStyle = AppTextStyles.bodyMedium.copyWith(
+      color: ModeColors.of(Theme.of(context).brightness).textLink,
+      decoration: TextDecoration.underline,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.appealPromptTitle, style: AppTextStyles.titleSmall),
-        if (deadline != null)
+        const Divider(height: AppDimensions.space32),
+        Text(l10n.appealPromptTitle, style: AppTextStyles.titleBold),
+        if (deadline != null) ...[
+          const SizedBox(height: AppDimensions.space4),
           Text(
             l10n.appealPromptBody(formatDecisionDate(l10n, deadline)),
             style: AppTextStyles.bodyMedium,
           ),
-        const SizedBox(height: AppDimensions.space4),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: OutlinedButton(
-            onPressed: () async {
-              final sent = await Navigator.pushNamed(
-                context,
-                Routes.appealForm,
-                arguments: AppealFormArgs(role: vm.role, outcome: outcome),
-              );
-              if (sent == true) await vm.reload();
-            },
-            child: Text(l10n.appealButton),
-          ),
+        ],
+        ButleryLink(
+          semanticLabel: l10n.decisionAppealLink,
+          onTap: () async {
+            final sent = await Navigator.pushNamed(
+              context,
+              Routes.appealForm,
+              arguments: AppealFormArgs(role: vm.role, outcome: outcome),
+            );
+            if (sent == true) await vm.reload();
+          },
+          child: Text(l10n.decisionAppealLink, style: linkStyle),
         ),
       ],
     );
@@ -370,7 +387,7 @@ class _AppealBlock extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.bodySmall.copyWith(color: muted),
+              style: AppTextStyles.captionBase.copyWith(color: muted),
             ),
           ),
         ],

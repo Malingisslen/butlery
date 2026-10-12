@@ -19,10 +19,8 @@
 // Beslut B-45 (beslutslogg.md rad 52): ingen Cupertino-gren. Plattformskänslan
 // sitter i rörelse och gest, inte i fältets form.
 //
-// Rotnivån är ljus: papper med ink-text, i mörkt läge samma tokens mörka
-// värden (Komponentark v1 rad 62). Undersidan är mörk: surface.ink med
-// papperstext, samma i båda lägena (Komponentark v1 rad 73). Ingen accentlinje och ingen dekorillustration —
-// de fyra mönstren är uttömmande, och det är en tolkning av en tystnad.
+// Ingen accentlinje och ingen dekorillustration — de fyra mönstren är
+// uttömmande, och det är en tolkning av en tystnad.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -78,8 +76,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   }) : pattern = ButleryTopBarPattern.rot,
        backTo = null,
        onBack = null,
-       implyBack = false,
-       light = false;
+       implyBack = false;
 
   /// Mönster 2 · Undersida (Komponentark v1 rad 71–78).
   ///
@@ -98,7 +95,6 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.backTo,
     this.onBack,
     this.implyBack = true,
-    this.light = false,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
     this.actions = const [],
@@ -134,11 +130,6 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Vad bakåtpilen gör. Null ger [Navigator.maybePop].
   final VoidCallback? onBack;
 
-  /// Ritar undersidan på papper med ink-text i stället för på surface.ink, som
-  /// skisserna gör för vyer där Malin valt ljus rubrik (skissgranskningen
-  /// 2026-10-11). Raderna i `design/screen-register.json` säger vilka vyer.
-  final bool light;
-
   /// Om undersidan ritar bakåtpilen när rutten går att poppa. Falskt ger en
   /// undersida utan pil, för en vy som själv säger att den inte har någon
   /// väg tillbaka (BaseScaffold.showBackButton). [onBack] ger alltid en pil.
@@ -160,8 +151,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Centrera titeln. Båda ritade mönstren är vänsterställda.
   final bool centerTitle;
 
-  /// Ersätter fältets yta. Null ger surface.base på rotnivån och surface.ink
-  /// på undersidan.
+  /// Ersätter fältets yta. Null ger surface.base.
   final Color? backgroundColor;
 
   /// Ersätter text- och ikonfärgen, även sekundärradens. Null ger
@@ -240,9 +230,6 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   bool get _isRoot => pattern == ButleryTopBarPattern.rot;
 
-  /// Rotnivån och en ljus undersida ritas på papper.
-  bool get _onPaper => _isRoot || light;
-
   /// Titelns stil. En [titleStyle] läggs ovanpå mönstrets roll, så att det
   /// som inte anges (till exempel radhöjden) kommer från rollen. Då räknar
   /// [preferredSize] alltid med en känd radhöjd.
@@ -287,18 +274,12 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     //                      (tokens.json rad 54)
     //   onSurfaceVariant = text.secondary #5B6959 ljust / #A9B2A0 mörkt
     //                      (tokens.json rad 62)
-    //   primary          = surface.ink    #24382C i båda lägena
-    //   onPrimary        = papper         #F5F4ED i båda lägena
-    // Rotnivån ritas på surface och undersidan på primary (Komponentark v1
-    // rad 62 och 73).
     final cs = Theme.of(context).colorScheme;
-    final background = backgroundColor ?? (_onPaper ? cs.surface : cs.primary);
-    final foreground =
-        foregroundColor ?? (_onPaper ? cs.onSurface : cs.onPrimary);
+    final background = backgroundColor ?? cs.surface;
+    final foreground = foregroundColor ?? cs.onSurface;
     // text.secondary är mätt mot surface.base. På en annan yta vet fältet
     // inget om kontrasten, så sekundärraden följer då förgrundsfärgen.
-    final secondary =
-        foregroundColor ?? (_onPaper ? cs.onSurfaceVariant : foreground);
+    final secondary = foregroundColor ?? cs.onSurfaceVariant;
 
     // An action that needs a selection is off at zero with its name still
     // readable (produktregler.md:876), in the disabled role and never
@@ -306,10 +287,9 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     // otherwise fade the foreground to 38 %. text.disabled.onRaised
     // (#788477 light, #93A48D dark; tokens.json:198) is the surface-safe
     // disabled text and clears 3:1 on surface.base in both modes. On a
-    // bar with another surface (the subpage's ink, or a caller's colour)
-    // disabled is not drawn, so the fade stays there (beslut-paket2.md,
-    // "disabled on surface.ink").
-    final Color? disabledForeground = _onPaper && backgroundColor == null
+    // bar with a caller's own colour the disabled role is not drawn, so the
+    // fade stays there.
+    final Color? disabledForeground = backgroundColor == null
         ? AppModeColors.textDisabled(cs.brightness)
         : null;
 
@@ -418,8 +398,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
         surfaceTintColor: Colors.transparent,
         child: SafeArea(
           bottom: false,
-          // Fokusringen följer fältets yta, inte temats läge: på undersidans
-          // ink är ringen papper även i ljust läge (tokens.json:155-160).
+          // Fokusringen följer fältets yta, inte temats läge.
           child: FocusRingSurface(
             brightness: ThemeData.estimateBrightnessForColor(background),
             child: IconTheme.merge(
@@ -469,15 +448,11 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Appens textknappsstil med fältets förgrund som textfärg.
   ///
-  /// Appens textknapp är ink (cs.primary, button_themes.dart). På
-  /// undersidans ink-yta (Komponentark v1 rad 73) blev en textknapp bland
-  /// åtgärderna ink på ink. Här tar den fältets förgrund, papper på
-  /// undersidan och text.primary på rotnivån, precis som ikonknapparna.
+  /// Textknappen tar fältets förgrund, precis som ikonknapparna.
   ///
   /// Bara det aktiva läget byts. Det inaktiva behåller appens färg
-  /// (text.disabled), eftersom inaktivt på surface.ink inte är ritat (öppen
-  /// fråga i beslut-paket2.md, "disabled on surface.ink"). Fokusringen,
-  /// 48 dp minsta höjd och resten av stilen ärvs.
+  /// (text.disabled). Fokusringen, 48 dp minsta höjd och resten av stilen
+  /// ärvs.
   static ButtonStyle _onBarTextButtonStyle(
     BuildContext context,
     Color foreground,
