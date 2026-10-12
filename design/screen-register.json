@@ -220,7 +220,7 @@
    ]
   },
   "lib/views/file_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_4_import#12"
    ],
@@ -229,7 +229,7 @@
    ]
   },
   "lib/views/fran_sociala_medier_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_4_import#10"
    ],
@@ -266,7 +266,7 @@
    ]
   },
   "lib/views/importera_fran_arkiv_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#15",
     "etapp_4_import#21"
@@ -499,7 +499,7 @@
    ]
   },
   "lib/views/photo_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#14",
     "etapp_4_import#11"
@@ -641,7 +641,7 @@
    ]
   },
   "lib/views/skriv_sjalv_recept_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_2_familj_och_socialt#13",
     "etapp_4_import#7"
@@ -678,7 +678,7 @@
    ]
   },
   "lib/views/social/create_shared_shopping_list_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#14"
    ],
@@ -826,7 +826,7 @@
    ]
   },
   "lib/views/voice_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "etapp_9_socialt_och_komponenter#22"
    ],
