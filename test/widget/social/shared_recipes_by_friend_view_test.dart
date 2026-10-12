@@ -361,10 +361,13 @@ void main() {
         expect(find.byKey(const ValueKey('r2')), findsOneWidget);
         expect(find.byKey(const ValueKey('r3')), findsOneWidget);
 
-        // Each recipe's title renders inside its card.
-        expect(find.text('Köttbullar'), findsOneWidget);
-        expect(find.text('Pannkakor'), findsOneWidget);
-        expect(find.text('Ärtsoppa'), findsOneWidget);
+        // Each recipe's title renders in its row; an unread one carries "ny".
+        for (final title in ['Köttbullar', 'Pannkakor', 'Ärtsoppa']) {
+          expect(
+            find.textContaining(title, findRichText: true),
+            findsOneWidget,
+          );
+        }
       },
     );
 

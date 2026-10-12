@@ -1,6 +1,6 @@
 // Mer, omtänkt del 4: the group page has one home per action. The ⋯ sheet
-// holds edit / report / leave / delete, "Lägg till medlemmar" is a single row
-// at the end of the member list, and the empty-vote CTA opens a route that
+// holds edit / report / leave / delete, "+ Bjud in" is a single control in the
+// member list's heading row, and the empty-vote CTA opens a route that
 // exists.
 
 import 'package:flutter/material.dart';
@@ -156,24 +156,37 @@ void main() {
   });
 
   group('GroupShareSection', () {
-    testWidgets('has the three share rows and each fires its own callback', (
-      tester,
-    ) async {
+    testWidgets('the sheet has the three share rows and each fires its own '
+        'callback', (tester) async {
       final taps = <String>[];
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: GroupShareSection(
-            onShareRecipe: () => taps.add('recipe'),
-            onShareMenu: () => taps.add('menu'),
-            onShareShoppingList: () => taps.add('list'),
+          child: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => GroupShareSection.showSheet(
+                context,
+                onShareRecipe: () => taps.add('recipe'),
+                onShareMenu: () => taps.add('menu'),
+                onShareShoppingList: () => taps.add('list'),
+              ),
+              child: const Text('open'),
+            ),
           ),
         ),
       );
 
-      expect(find.text('DELA MED GRUPPEN'), findsOneWidget);
-      await tester.tap(find.text('Dela ett recept'));
-      await tester.tap(find.text('Dela veckomenyn'));
-      await tester.tap(find.text('Dela en inköpslista'));
+      for (final (label, key) in [
+        ('Dela ett recept', 'recipe'),
+        ('Dela veckomenyn', 'menu'),
+        ('Dela en inköpslista', 'list'),
+      ]) {
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+        expect(find.text('Dela med gruppen'), findsOneWidget);
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        expect(taps.last, key);
+      }
       expect(taps, ['recipe', 'menu', 'list']);
     });
   });
@@ -207,24 +220,26 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('an admin gets exactly one "Lägg till medlemmar" row', (
+    testWidgets('an admin gets exactly one "+ Bjud in" control', (
       tester,
     ) async {
       _bootstrap(_Permissions(uid: 'me-uid', admin: true));
       var adds = 0;
       await pumpList(tester, () => adds++);
 
-      expect(find.text('MEDLEMMAR · 1'), findsOneWidget);
-      expect(find.text('Lägg till medlemmar'), findsOneWidget);
-      await tester.tap(find.text('Lägg till medlemmar'));
+      expect(find.text('Medlemmar'), findsOneWidget);
+      expect(find.text('+ Bjud in'), findsOneWidget);
+      await tester.tap(find.text('+ Bjud in'));
       expect(adds, 1);
     });
 
-    testWidgets('someone who cannot invite gets no add row', (tester) async {
+    testWidgets('someone who cannot invite gets no invite control', (
+      tester,
+    ) async {
       _bootstrap(_Permissions(uid: 'me-uid'));
       await pumpList(tester, () {});
 
-      expect(find.text('Lägg till medlemmar'), findsNothing);
+      expect(find.text('+ Bjud in'), findsNothing);
     });
   });
 

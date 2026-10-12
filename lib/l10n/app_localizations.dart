@@ -6313,10 +6313,52 @@ abstract class AppLocalizations {
   /// **'Delad av {name}'**
   String groupSharedBy(String name);
 
+  /// No description provided for @groupSharedRecipesLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{recept} other{recept}}'**
+  String groupSharedRecipesLabel(int count);
+
+  /// No description provided for @groupSharedMenusLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{meny} other{menyer}}'**
+  String groupSharedMenusLabel(int count);
+
+  /// No description provided for @groupSharedListsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{inköpslista} other{inköpslistor}}'**
+  String groupSharedListsLabel(int count);
+
+  /// No description provided for @groupInvitedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjuden'**
+  String get groupInvitedLabel;
+
+  /// No description provided for @groupInviteLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Bjud in'**
+  String get groupInviteLink;
+
+  /// No description provided for @groupMembersHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmar'**
+  String get groupMembersHeading;
+
+  /// No description provided for @groupShareSheetButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela recept, meny eller lista'**
+  String get groupShareSheetButton;
+
   /// No description provided for @groupSharedContent.
   ///
   /// In sv, this message translates to:
-  /// **'Delat innehåll'**
+  /// **'Delat i gruppen'**
   String get groupSharedContent;
 
   /// No description provided for @groupShareShoppingList.
@@ -7885,6 +7927,12 @@ abstract class AppLocalizations {
   /// **'{name} borttagen från gruppen'**
   String messagingMemberRemoved(String name);
 
+  /// No description provided for @messagingNewGroupChat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny gruppchatt'**
+  String get messagingNewGroupChat;
+
   /// No description provided for @messagingNoFriendsAvailable.
   ///
   /// In sv, this message translates to:
@@ -7912,7 +7960,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingSelectedMembers.
   ///
   /// In sv, this message translates to:
-  /// **'Valda medlemmar ({count})'**
+  /// **'Deltagare · {count} valda'**
   String messagingSelectedMembers(int count);
 
   /// No description provided for @messagingTryAnotherKeyword.
@@ -8530,13 +8578,13 @@ abstract class AppLocalizations {
   /// No description provided for @householdToggle.
   ///
   /// In sv, this message translates to:
-  /// **'Markera som hushåll'**
+  /// **'Det här är hushållet'**
   String get householdToggle;
 
   /// No description provided for @householdToggleDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Hushållets allergier sammanställs för menyplanering'**
+  /// **'Hushållets allergier räknas med i menyn'**
   String get householdToggleDescription;
 
   /// BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet
@@ -10318,7 +10366,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileBio.
   ///
   /// In sv, this message translates to:
-  /// **'Beskrivning'**
+  /// **'Om mig'**
   String get profileBio;
 
   /// No description provided for @profileBioHint.
@@ -10405,6 +10453,18 @@ abstract class AppLocalizations {
   /// **'Visningsnamn'**
   String get profileDisplayName;
 
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra bild'**
+  String get profileChangePhoto;
+
+  /// Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free
+  ///
+  /// In sv, this message translates to:
+  /// **'Ledigt'**
+  String get profileDisplayNameAvailable;
+
   /// No description provided for @profileDisplayNameHint.
   ///
   /// In sv, this message translates to:
@@ -10444,7 +10504,7 @@ abstract class AppLocalizations {
   /// No description provided for @profilePrivacySettings.
   ///
   /// In sv, this message translates to:
-  /// **'Integritetsinställningar'**
+  /// **'Integritet'**
   String get profilePrivacySettings;
 
   /// No description provided for @profileResetChanges.
@@ -10462,7 +10522,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileSaveProfile.
   ///
   /// In sv, this message translates to:
-  /// **'Spara profil'**
+  /// **'Spara ändringar'**
   String get profileSaveProfile;
 
   /// No description provided for @profileSearchableByEmail.
@@ -12211,22 +12271,64 @@ abstract class AppLocalizations {
   /// **'Sök delat innehåll …'**
   String get sharedSearchHint;
 
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get sharedSaveAction;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad'**
+  String get sharedSavedState;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'från {name} · {time}'**
+  String sharedFromNameAgo(String name, String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'delad {time}'**
+  String sharedSharedAgo(String time);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item
+  ///
+  /// In sv, this message translates to:
+  /// **'ny'**
+  String get sharedNewMark;
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page
+  ///
+  /// In sv, this message translates to:
+  /// **'Från {name}'**
+  String sharedFromHeading(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, one{{count} recept} other{{count} recept}} · senast {time}'**
+  String sharedFromSummary(int count, String time);
+
   /// No description provided for @sharedTabRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Recept ({count})'**
+  /// **'Recept · {count}'**
   String sharedTabRecipes(int count);
 
   /// No description provided for @sharedTabMenus.
   ///
   /// In sv, this message translates to:
-  /// **'Menyer ({count})'**
+  /// **'Menyer · {count}'**
   String sharedTabMenus(int count);
 
   /// No description provided for @sharedTabShoppingLists.
   ///
   /// In sv, this message translates to:
-  /// **'Inköpslistor ({count})'**
+  /// **'Listor · {count}'**
   String sharedTabShoppingLists(int count);
 
   /// No description provided for @sharedShowImported.
@@ -13050,6 +13152,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Grupper'**
   String get socialGroups;
+
+  /// No description provided for @socialFriendsSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner · {count}'**
+  String socialFriendsSection(int count);
+
+  /// No description provided for @socialRequestsSelect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj'**
+  String get socialRequestsSelect;
+
+  /// No description provided for @socialRequestsIncomingSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkommande · {count}'**
+  String socialRequestsIncomingSection(int count);
+
+  /// No description provided for @socialRequestsSentSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickade · {count}'**
+  String socialRequestsSentSection(int count);
 
   /// No description provided for @socialIncoming.
   ///
@@ -30483,6 +30609,120 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort som vän'**
   String get friendProfileRemoveFriend;
+
+  /// Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Om samtalet'**
+  String get messagingAboutConversation;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}'**
+  String messagingConversationSubline(String name, int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtalets namn'**
+  String get messagingConversationNameRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): row that opens the friend picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till någon'**
+  String get messagingAddSomeoneRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): section title above the members
+  ///
+  /// In sv, this message translates to:
+  /// **'Med i samtalet'**
+  String get messagingInConversationSection;
+
+  /// Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list
+  ///
+  /// In sv, this message translates to:
+  /// **'du'**
+  String get messagingMemberYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): question in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name} ur samtalet?'**
+  String messagingRemoveFromConversationTitle(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.'**
+  String messagingRemoveFromConversationBody(String name);
+
+  /// Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna samtalet'**
+  String get messagingLeaveConversationRow;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the leave row
+  ///
+  /// In sv, this message translates to:
+  /// **'Du slutar se nya meddelanden. Det du skrivit ligger kvar.'**
+  String get messagingLeaveConversationSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String recipeRowMinutes(int minutes);
+
+  /// Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 publikt recept} other{{count} publika recept}}'**
+  String publicProfileRecipeCount(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): section title on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Mellan er'**
+  String get friendProfileBetweenYou;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row
+  ///
+  /// In sv, this message translates to:
+  /// **'Ligger under Delat med mig'**
+  String get friendProfileSharedWithYouSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the public recipes row
+  ///
+  /// In sv, this message translates to:
+  /// **'Synliga för alla, inte bara för dig'**
+  String get friendProfilePublicRecipesSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela en länk till {owner} profil'**
+  String friendProfileShareLinkRow(String owner);
+
+  /// Skiss rättad spår 7 (2026-10-12): second line of the share-link row
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar den publika sidan, inget ni delat'**
+  String get friendProfileShareLinkSub;
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{vän} other{vänner}}'**
+  String profileFriendsLabel(int count);
+
+  /// Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{publikt recept} other{publika recept}}'**
+  String profilePublicRecipesLabel(int count);
 
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
   ///

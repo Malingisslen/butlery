@@ -41,6 +41,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_media_row.dart';
+import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -226,22 +228,31 @@ void main() {
     testWidgets('renders the three Swedish tab labels', (tester) async {
       await pumpView(tester);
 
-      Finder tabLabel(String text) =>
-          find.descendant(of: find.byType(TabBar), matching: find.text(text));
+      Finder tabLabel(String text) => find.descendant(
+        of: find.byType(UnderlineTabs<int>),
+        matching: find.text(text),
+      );
       expect(tabLabel(_tabFeed), findsOneWidget);
       expect(tabLabel(_tabFriends), findsOneWidget);
       expect(tabLabel(_tabGroups), findsOneWidget);
       expect(tabLabel(_findFriends), findsNothing);
 
-      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(tabBar.controller?.length, 3);
+      expect(
+        tester
+            .widget<UnderlineTabs<int>>(find.byType(UnderlineTabs<int>))
+            .values,
+        hasLength(3),
+      );
     });
 
     testWidgets('has no floating action button on any tab', (tester) async {
       await pumpView(tester);
       for (final tab in [_tabFriends, _tabGroups, _tabFeed]) {
         await tester.tap(
-          find.descendant(of: find.byType(TabBar), matching: find.text(tab)),
+          find.descendant(
+            of: find.byType(UnderlineTabs<int>),
+            matching: find.text(tab),
+          ),
         );
         await tester.pumpAndSettle();
         expect(find.byType(FloatingActionButton), findsNothing);
@@ -305,8 +316,12 @@ void main() {
 
         expect(find.text('Namn eller e-postadress'), findsOneWidget);
         expect(find.text('Dela din profillänk'), findsOneWidget);
-        final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-        expect(tabBar.controller?.index, 1);
+        expect(
+          tester
+              .widget<UnderlineTabs<int>>(find.byType(UnderlineTabs<int>))
+              .selected,
+          1,
+        );
       },
     );
 
@@ -399,14 +414,20 @@ void main() {
       await tester.tap(find.text(_tabFriends));
       await tester.pumpAndSettle();
 
-      final annaTile = tester.widget<ListTile>(
-        find.widgetWithText(ListTile, 'Anna'),
+      expect(
+        tester
+            .widget<ButleryMediaRow>(
+              find.widgetWithText(ButleryMediaRow, 'Anna'),
+            )
+            .subtitle,
+        'Bakar surdeg',
       );
-      expect((annaTile.subtitle! as Text).data, 'Bakar surdeg');
-      final boTile = tester.widget<ListTile>(
-        find.widgetWithText(ListTile, 'Bo'),
+      expect(
+        tester
+            .widget<ButleryMediaRow>(find.widgetWithText(ButleryMediaRow, 'Bo'))
+            .subtitle,
+        isNull,
       );
-      expect(boTile.subtitle, isNull);
       expect(find.text('Online'), findsNothing);
 
       await tester.tap(find.text('Bo'));
@@ -543,7 +564,7 @@ void main() {
         // The hardcoded Swedish "temporarily disabled" message replaces the whole
         // tabbed UI.
         expect(find.text(_socialDisabled), findsOneWidget);
-        expect(find.byType(TabBar), findsNothing);
+        expect(find.byType(UnderlineTabs<int>), findsNothing);
         expect(find.text(_tabFeed), findsNothing);
       },
     );

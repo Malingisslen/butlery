@@ -248,15 +248,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.byType(SegmentedButton<CookingSkillLevel>),
+          find.text('Erfaren'),
           findsOneWidget,
           reason:
               'skill selector must still render in the profile-edit section',
-        );
-        expect(
-          find.widgetWithText(FilterChip, 'italiensk'),
-          findsOneWidget,
-          reason: 'cuisine chips must still render in the profile-edit section',
         );
         expect(
           find.byType(StyledInput),
@@ -264,14 +259,24 @@ void main() {
           reason: 'the bio field must remain in the profile-edit section',
         );
 
+        // The cuisines moved behind a row that opens a sheet.
         expect(vm.cuisineAffinities, isEmpty, reason: 'precondition');
-        await tester.tap(find.widgetWithText(FilterChip, 'italiensk'));
+        await tester.tap(find.text('Favoritkök'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('italiensk'));
         await tester.pump();
         expect(
           vm.cuisineAffinities,
           contains('italiensk'),
-          reason: 'toggling a chip in the profile section must reach the VM',
+          reason: 'choosing a cuisine in the sheet must reach the VM',
         );
+        // The barrier above the sheet.
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Erfaren'));
+        await tester.pump();
+        expect(vm.cookingSkillLevel, CookingSkillLevel.intermediate);
       },
     );
   });

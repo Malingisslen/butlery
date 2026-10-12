@@ -25,18 +25,33 @@ class GroupDetailAppBar {
     return ButleryTopBar.undersida(
       title: group.name,
       backTo: context.l10n.socialFriendsAndGroups,
-      actions: [
-        PressFill(
-          surface: PressSurface.base,
-          child: IconButton(
-            icon: const ButleryIcon(ButleryIcons.moreVertical),
-            tooltip: context.l10n.socialMoreOptions,
-            onPressed: () =>
-                _openSheet(context, group, onMenuAction, isResolvingLeave),
-          ),
-        ),
-      ],
+      actions: actions(
+        context,
+        group: group,
+        isResolvingLeave: isResolvingLeave,
+        onMenuAction: onMenuAction,
+      ),
     );
+  }
+
+  /// The bar's one action, ⋯, for a page that draws its own bar.
+  static List<Widget> actions(
+    BuildContext context, {
+    required FriendCategory group,
+    bool isResolvingLeave = false,
+    required Function(String action) onMenuAction,
+  }) {
+    return [
+      PressFill(
+        surface: PressSurface.base,
+        child: IconButton(
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
+          tooltip: context.l10n.socialMoreOptions,
+          onPressed: () =>
+              _openSheet(context, group, onMenuAction, isResolvingLeave),
+        ),
+      ),
+    ];
   }
 
   // The sheet closes first, then the page acts, so a dialog never opens
