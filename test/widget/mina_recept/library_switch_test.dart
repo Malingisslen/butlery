@@ -105,14 +105,21 @@ void main() {
 
     expect(find.text('Alla recept'), findsOneWidget);
     expect(find.text('Kokböcker'), findsOneWidget);
-    expect(
-      tester.getSize(find.byType(InkWell).first).height,
-      greaterThanOrEqualTo(AppDimensions.minTouchTarget),
-    );
+    final tabs = find.byType(InkWell);
+    expect(tabs, findsNWidgets(2));
+    for (final tab in tabs.evaluate()) {
+      expect(
+        tester.getSize(find.byElementPredicate((e) => e == tab)).height,
+        greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+      );
+    }
 
     await tester.tap(find.text('Kokböcker'));
     await tester.pump();
     expect(changes, [true]);
+    await tester.tap(find.text('Alla recept'));
+    await tester.pump();
+    expect(changes, [true, false]);
     expect(tester.takeException(), isNull);
   });
 }
