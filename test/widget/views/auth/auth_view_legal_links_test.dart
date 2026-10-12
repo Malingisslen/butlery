@@ -357,41 +357,40 @@ void main() {
       }
       expect(
         tester.getSize(find.byType(TermsConsentRow)).height,
-        lessThan(_kMinTapTarget * 1.5),
+        lessThan(_kMinTapTarget * 2),
         reason: 'the row is the box and the sentence, not a tall link line',
       );
     });
 
-    testWidgets('consent checkboxes provide a >=48dp tap target', (
+    testWidgets('the consent box is tappable across a full-height target', (
       tester,
     ) async {
       await pumpRegisterMode(tester);
 
-      // BUT-1426 / WCAG 2.5.5: the consent boxes were SizedBox(24,24), which
-      // clamped the hit area to half the minimum. The terms-accept checkbox
-      // must now sit in a >=48dp box. Asserting the
-      // rendered size (not a literal in the widget) keeps this honest against
-      // a refactor that swaps the SizedBox for Padding/constraints.
-      final checkboxFinders = find.byType(Checkbox);
+      // BUT-1426 / WCAG 2.5.5: the box itself is drawn small, so the padded
+      // region around it is the target. Measure the rendered region, and tap
+      // its lower edge, away from the drawn box.
+      final checkbox = find.byType(Checkbox);
       expect(
-        checkboxFinders,
+        checkbox,
         findsOneWidget,
         reason: 'register mode shows the terms consent checkbox',
       );
+      final target = find.ancestor(
+        of: checkbox,
+        matching: find.byWidgetPredicate(
+          (w) => w is GestureDetector && w.behavior == HitTestBehavior.opaque,
+        ),
+      );
+      await tester.ensureVisible(checkbox);
+      await tester.pumpAndSettle(_kPumpCap);
+      final rect = tester.getRect(target);
+      expect(rect.height, greaterThanOrEqualTo(_kMinTapTarget));
+      expect(tester.widget<Checkbox>(checkbox).value, isFalse);
 
-      for (final element in checkboxFinders.evaluate()) {
-        final size = tester.getSize(find.byWidget(element.widget));
-        expect(
-          size.width,
-          greaterThanOrEqualTo(_kMinTapTarget),
-          reason: 'checkbox tap target width must be >=48dp',
-        );
-        expect(
-          size.height,
-          greaterThanOrEqualTo(_kMinTapTarget),
-          reason: 'checkbox tap target height must be >=48dp',
-        );
-      }
+      await tester.tapAt(rect.bottomLeft + const Offset(4, -4));
+      await tester.pump();
+      expect(tester.widget<Checkbox>(checkbox).value, isTrue);
     });
   });
 }
