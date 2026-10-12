@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -14,7 +13,6 @@ import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/star_rating_row.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Collapsible recipe-detail section: the household's family-rating breakdown
@@ -85,11 +83,16 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
         children: [
           _header(context, vm, l10n),
           if (_expanded) ...[
+            Container(
+              height: 2,
+              margin: const EdgeInsets.only(top: AppDimensions.space4),
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             const SizedBox(height: AppDimensions.space12),
             _hero(context, vm, l10n),
             const SizedBox(height: AppDimensions.space8),
             for (var i = 0; i < vm.rows.length; i++)
-              _dinerRow(context, vm.rows[i], l10n, initials[i]),
+              _dinerRow(context, vm, vm.rows[i], l10n, initials[i]),
             _comparison(context, l10n),
             _legend(context, l10n),
           ],
@@ -117,19 +120,19 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             child: Container(
               padding: AppDimensions.paddingVertical8,
               decoration: BoxDecoration(
-                border: Border(left: BorderSide(color: cs.secondary, width: 3)),
+                border: Border(left: BorderSide(color: cs.outline, width: 3)),
               ),
               child: Row(
                 children: [
                   const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.familyRatingSectionTitle,
-                    style: AppTextStyles.titleSmall.copyWith(
+                    style: AppTextStyles.bodySmallBold.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space8),
-                  _familyPill(context, vm.familyAverageDisplay),
+                  _familyPill(context, vm.familyAverageDisplay, l10n),
                   const Spacer(),
                   ButleryIcon(
                     _expanded
@@ -146,27 +149,28 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     );
   }
 
-  Widget _familyPill(BuildContext context, String value) {
+  Widget _familyPill(
+    BuildContext context,
+    String value,
+    AppLocalizations l10n, {
+    bool large = false,
+  }) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: AppDimensions.statusPillPadding,
-      color: cs.primary,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            ButleryIcons.users,
-            size: AppDimensions.iconSize14,
-            color: cs.onPrimary,
-          ),
-          const SizedBox(width: AppDimensions.space4),
-          Text(
-            value,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: cs.onPrimary,
-            ),
-          ),
-        ],
+      padding: large
+          ? const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space8,
+            )
+          : AppDimensions.statusPillPadding,
+      decoration: BoxDecoration(
+        color: cs.primary,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+      ),
+      child: Text(
+        l10n.familyRatingHouseholdPill(value),
+        style: (large ? AppTextStyles.bodySmallBold : AppTextStyles.labelSmall)
+            .copyWith(color: cs.onPrimary),
       ),
     );
   }
@@ -177,28 +181,18 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     AppLocalizations l10n,
   ) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.paddingAll12,
-      decoration: BoxDecoration(
-        color: context.modeColors.heroPaleGreen,
-        border: Border(
-          left: BorderSide(color: cs.onSurface, width: 4),
-          bottom: BorderSide(
-            color: context.modeColors.recipeCardBottomBorder,
-            width: 3,
-          ),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
-          _familyPill(context, vm.familyAverageDisplay),
+          _familyPill(context, vm.familyAverageDisplay, l10n, large: true),
           const SizedBox(width: AppDimensions.space12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 l10n.familyRatingAverageLabel,
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyles.bodySmallBold,
               ),
               Text(
                 l10n.familyRatingCount(vm.familyCount),
@@ -215,13 +209,13 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
 
   Widget _dinerRow(
     BuildContext context,
+    FamilyRatingBreakdownViewModel vm,
     DinerRatingDisplay row,
     AppLocalizations l10n,
     String initials,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final isHolder =
-        row.member.type == HouseholdMemberType.user && !row.isProxy;
+    final isYou = vm.isCurrentUser(row);
     return Semantics(
       button: true,
       label: l10n.a11yEditMemberRating,
@@ -235,7 +229,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               padding: AppDimensions.paddingVertical8,
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: cs.surface, width: 1),
+                  bottom: BorderSide(color: cs.outlineVariant),
                 ),
               ),
               child: Row(
@@ -244,6 +238,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     name: row.member.displayName,
                     color: parseAvatarColor(context, row.member.avatarColor),
                     size: 34,
+                    round: true,
                     initials: initials,
                   ),
                   const SizedBox(width: AppDimensions.space8),
@@ -256,14 +251,14 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                             Flexible(
                               child: Text(
                                 row.member.displayName,
-                                style: AppTextStyles.bodyBold,
+                                style: AppTextStyles.bodySmallBold,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (isHolder) ...[
+                            if (isYou) ...[
                               const SizedBox(width: AppDimensions.space4),
                               Text(
-                                l10n.familyRatingYou,
+                                '· ${l10n.familyRatingYou}',
                                 style: AppTextStyles.captionBold.copyWith(
                                   color: cs.onSurface,
                                 ),
@@ -273,22 +268,26 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                         ),
                         if (row.isProxy && row.enteredByName != null)
                           Text(
-                            l10n.familyRatingProxyEntered(row.enteredByName!),
+                            '${l10n.familyRatingProxyEntered(row.enteredByName!)}'
+                            ' · ${_shortDate(row.lastUpdated)}',
                             style: AppTextStyles.captionText.copyWith(
                               color: cs.onSurfaceVariant,
                               fontStyle: FontStyle.italic,
                             ),
+                          )
+                        else
+                          Text(
+                            l10n.familyRatingUpdated(
+                              _shortDate(row.lastUpdated),
+                            ),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
-                        Text(
-                          l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
-                          style: AppTextStyles.captionText.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  StarRatingRow(rating: row.stars.toDouble(), size: 16),
+                  _StarNumber(value: row.stars.toDouble()),
                 ],
               ),
             ),
@@ -317,28 +316,28 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       margin: AppDimensions.paddingOnlyTop12,
       padding: AppDimensions.paddingOnlyTop12,
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: cs.surface, width: 2)),
+        border: Border(top: BorderSide(color: cs.outlineVariant, width: 2)),
       ),
       child: Column(
         children: [
           if (showCommunity)
             _compareRow(
               context,
-              color: cs.secondary,
+              color: cs.onSurfaceVariant,
               label: l10n.familyRatingCommunityLabel,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
-                    style: AppTextStyles.bodyBold.copyWith(
+                    style: AppTextStyles.bodySmallBold.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
                   if (communityCount != null) ...[
-                    const SizedBox(width: AppDimensions.space8),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
-                      l10n.familyRatingCount(communityCount),
+                      '· ${l10n.familyRatingCount(communityCount)}',
                       style: AppTextStyles.captionText.copyWith(
                         color: cs.onSurfaceVariant,
                       ),
@@ -352,9 +351,9 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           if (showPersonal)
             _compareRow(
               context,
-              color: context.modeColors.warning,
+              color: AppModeColors.actionPrimary(cs.brightness),
               label: l10n.familyRatingYourOwnLabel,
-              trailing: StarRatingRow(rating: personal, size: 16),
+              trailing: _StarNumber(value: personal),
             ),
         ],
       ),
@@ -367,8 +366,10 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     final cs = Theme.of(context).colorScheme;
     return Container(
       margin: AppDimensions.paddingOnlyTop12,
-      padding: AppDimensions.paddingAll8,
-      color: cs.surface,
+      padding: AppDimensions.paddingVertical8,
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -406,11 +407,39 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(width: AppDimensions.space8),
             Text(
               label,
-              style: AppTextStyles.bodyBold,
+              style: AppTextStyles.bodySmallBold,
             ),
           ],
         ),
         trailing,
+      ],
+    );
+  }
+}
+
+/// A rating as one star and the number ("★ 5,0"), as Skarmar v12 del 3
+/// #betygsoversikt draws a row's verdict.
+class _StarNumber extends StatelessWidget {
+  const _StarNumber({required this.value});
+
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ButleryIcon(
+          ButleryIcons.star,
+          size: AppDimensions.iconSize14,
+          color: context.modeColors.starGold,
+        ),
+        const SizedBox(width: AppDimensions.space4),
+        Text(
+          value.toStringAsFixed(1).replaceAll('.', ','),
+          style: AppTextStyles.bodySmallBold.copyWith(color: cs.onSurface),
+        ),
       ],
     );
   }

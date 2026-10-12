@@ -207,6 +207,30 @@ void main() {
       );
       expect(find.text('E'), findsOneWidget);
     });
+
+    for (final round in [true, false]) {
+      testWidgets('round: $round draws the shape it names', (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: FamilyAvatar(
+              name: 'Emma',
+              color: Colors.purple,
+              round: round,
+            ),
+          ),
+        );
+        final box = tester.widget<Container>(
+          find.descendant(
+            of: find.byType(FamilyAvatar),
+            matching: find.byType(Container),
+          ),
+        );
+        expect(
+          (box.decoration! as BoxDecoration).shape,
+          round ? BoxShape.circle : BoxShape.rectangle,
+        );
+      });
+    }
   });
 
   // BUT-2205: the row's own fill used to sit above the ink layer, so a
