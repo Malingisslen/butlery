@@ -286,7 +286,9 @@ class UnusedTagsSection extends StatelessWidget {
                 onPressed: onDeleteAll,
                 child: Text(
                   l10n.personalTagDeleteAllShort,
-                  style: AppTextStyles.labelMediumBold.copyWith(color: cs.error),
+                  style: AppTextStyles.labelMediumBold.copyWith(
+                    color: cs.error,
+                  ),
                 ),
               ),
             ],
