@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 12, 2026
-**Version:** 1.15.0
+**Version:** 1.16.0
 
 ---
 

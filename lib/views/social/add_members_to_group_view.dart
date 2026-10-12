@@ -182,18 +182,71 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildFriendsList(AddMembersToGroupViewModel viewModel) {
+    final members = viewModel.memberFriends.map((f) => f.uid).toSet();
+    final rows = [...viewModel.filteredFriends, ...viewModel.memberFriends]
+      ..sort((a, b) => a.displayName.compareTo(b.displayName));
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
-      itemCount: viewModel.filteredFriends.length,
+      itemCount: rows.length,
       itemBuilder: (context, index) {
-        final friend = viewModel.filteredFriends[index];
+        final friend = rows[index];
         return KeyedSubtree(
           key: ValueKey(friend.uid),
-          child: _buildFriendTile(friend, viewModel),
+          child: members.contains(friend.uid)
+              ? _buildMemberTile(friend)
+              : _buildFriendTile(friend, viewModel),
         );
       },
     );
   }
+
+  Widget _buildMemberTile(UserProfile friend) {
+    final cs = Theme.of(context).colorScheme;
+    final status = context.l10n.groupAlreadyMember;
+    return Semantics(
+      label: '${friend.displayName}, $status',
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.space12,
+            ),
+            child: Row(
+              children: [
+                _friendAvatar(friend),
+                const SizedBox(width: AppDimensions.space16),
+                Expanded(
+                  child: Text(
+                    friend.displayName,
+                    style: AppTextStyles.titleBold,
+                  ),
+                ),
+                Text(
+                  status,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _friendAvatar(UserProfile friend) => FamilyAvatar(
+    name: friend.displayName,
+    initials: friend.displayName.isEmpty
+        ? '?'
+        : friend.displayName.characters.first.toUpperCase(),
+    color: Theme.of(context).colorScheme.primary,
+    size: AppDimensions.avatarSizeLg,
+    round: true,
+  );
 
   Widget _buildFriendTile(
     UserProfile friend,
@@ -230,15 +283,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 ),
                 child: Row(
                   children: [
-                    FamilyAvatar(
-                      name: friend.displayName,
-                      initials: friend.displayName.isEmpty
-                          ? '?'
-                          : friend.displayName.characters.first.toUpperCase(),
-                      color: Theme.of(context).colorScheme.primary,
-                      size: AppDimensions.avatarSizeLg,
-                      round: true,
-                    ),
+                    _friendAvatar(friend),
                     const SizedBox(width: AppDimensions.space16),
                     Expanded(
                       child: Text(

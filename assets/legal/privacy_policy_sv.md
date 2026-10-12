@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 12 oktober 2026
-**Version:** 1.15.0
+**Version:** 1.16.0
 
 ---
 

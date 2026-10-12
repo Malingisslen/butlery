@@ -170,6 +170,21 @@ void main() {
       );
     });
 
+    test('lists the friends who already belong to the group, not the rest', () {
+      expect(viewModel.memberFriends.map((f) => f.uid), [
+        'existing-member-1',
+      ]);
+    });
+
+    test('narrows the members with the search query like the others', () {
+      viewModel.updateSearch('existing');
+      expect(viewModel.memberFriends.map((f) => f.uid), [
+        'existing-member-1',
+      ]);
+      viewModel.updateSearch('Anna');
+      expect(viewModel.memberFriends, isEmpty);
+    });
+
     test('should exclude friends with pending invitations', () {
       expect(
         viewModel.availableFriends.any((f) => f.uid == 'friend-with-pending'),

@@ -9799,6 +9799,12 @@ abstract class AppLocalizations {
   /// **'Lägg till i {group}'**
   String groupAddToGroup(String group);
 
+  /// Row label for a friend who already belongs to the group
+  ///
+  /// In sv, this message translates to:
+  /// **'Redan medlem'**
+  String get groupAlreadyMember;
+
   /// No description provided for @groupAllFriendsAlreadyMembers.
   ///
   /// In sv, this message translates to:
@@ -15402,6 +15408,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Du har inte behörighet till adminpanelen.'**
   String get adminNotAuthorized;
+
+  /// No description provided for @adminBarTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery Admin'**
+  String get adminBarTitle;
+
+  /// No description provided for @adminBarSignedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggad som {email}'**
+  String adminBarSignedIn(String email);
 
   /// No description provided for @adminSignOut.
   ///
