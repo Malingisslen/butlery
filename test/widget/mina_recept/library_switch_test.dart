@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/mina_recept/library_switch.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -9,47 +10,70 @@ void main() {
   Future<List<bool>> pumpSwitch(
     WidgetTester tester, {
     required bool showCookbooks,
+    double textScale = 1.0,
   }) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final changes = <bool>[];
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: LibrarySwitch(
-          showCookbooks: showCookbooks,
-          onChanged: changes.add,
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(textScale)),
+            child: LibrarySwitch(
+              showCookbooks: showCookbooks,
+              onChanged: changes.add,
+            ),
+          ),
         ),
       ),
     );
     return changes;
   }
 
-  // A single-choice SegmentedButton reports its chosen segment as checked
-  // within a mutually exclusive group.
-  Matcher chosen(bool isChosen) => containsSemantics(
-    hasCheckedState: true,
-    isChecked: isChosen,
-    isInMutuallyExclusiveGroup: true,
+  Matcher tab({required bool selected}) => containsSemantics(
+    isButton: true,
+    hasSelectedState: true,
+    isSelected: selected,
   );
 
-  testWidgets('both segments render with their Swedish labels', (tester) async {
+  testWidgets('both tabs render with their Swedish labels', (tester) async {
     await pumpSwitch(tester, showCookbooks: false);
 
     expect(find.text('Alla recept'), findsOneWidget);
     expect(find.text('Kokböcker'), findsOneWidget);
+    expect(
+      tester.getCenter(find.text('Alla recept')).dx,
+      lessThan(tester.getCenter(find.text('Kokböcker')).dx),
+    );
   });
 
-  testWidgets('only the chosen segment reports itself as selected', (
-    tester,
-  ) async {
+  testWidgets('only the chosen tab reports itself as selected', (tester) async {
     final handle = tester.ensureSemantics();
     try {
       await pumpSwitch(tester, showCookbooks: false);
-      expect(tester.getSemantics(find.text('Alla recept')), chosen(true));
-      expect(tester.getSemantics(find.text('Kokböcker')), chosen(false));
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Alla recept')),
+        tab(selected: true),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Kokböcker')),
+        tab(selected: false),
+      );
 
       await pumpSwitch(tester, showCookbooks: true);
       await tester.pump();
-      expect(tester.getSemantics(find.text('Alla recept')), chosen(false));
-      expect(tester.getSemantics(find.text('Kokböcker')), chosen(true));
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Alla recept')),
+        tab(selected: false),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Kokböcker')),
+        tab(selected: true),
+      );
     } finally {
       handle.dispose();
     }
@@ -75,65 +99,31 @@ void main() {
     expect(changes, [false]);
   });
 
-  group('at large text on a narrow phone', () {
-    Future<List<bool>> pumpLarge(
-      WidgetTester tester, {
-      required bool showCookbooks,
-    }) async {
-      tester.view.physicalSize = const Size(360, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final changes = <bool>[];
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Builder(
-            builder: (context) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(2.0)),
-              child: LibrarySwitch(
-                showCookbooks: showCookbooks,
-                onChanged: changes.add,
-              ),
-            ),
-          ),
-        ),
+  testWidgets('at 200 % text both tabs stay and are at least a touch target '
+      'high', (tester) async {
+    final changes = await pumpSwitch(
+      tester,
+      showCookbooks: false,
+      textScale: 2.0,
+    );
+
+    expect(find.text('Alla recept'), findsOneWidget);
+    expect(find.text('Kokböcker'), findsOneWidget);
+    final tabs = find.byType(InkWell);
+    expect(tabs, findsNWidgets(2));
+    for (final tab in tabs.evaluate()) {
+      expect(
+        tester.getSize(find.byElementPredicate((e) => e == tab)).height,
+        greaterThanOrEqualTo(AppDimensions.minTouchTarget),
       );
-      return changes;
     }
 
-    ChoiceChip chip(WidgetTester tester, String label) =>
-        tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, label));
-
-    testWidgets('the switch becomes two chips, not a segmented button', (
-      tester,
-    ) async {
-      await pumpLarge(tester, showCookbooks: false);
-
-      expect(find.byType(SegmentedButton<bool>), findsNothing);
-      expect(find.byType(ChoiceChip), findsNWidgets(2));
-      expect(find.text('Alla recept'), findsOneWidget);
-      expect(find.text('Kokböcker'), findsOneWidget);
-    });
-
-    testWidgets('only the chosen chip is selected', (tester) async {
-      await pumpLarge(tester, showCookbooks: true);
-
-      expect(chip(tester, 'Alla recept').selected, isFalse);
-      expect(chip(tester, 'Kokböcker').selected, isTrue);
-    });
-
-    testWidgets('tapping Kokböcker asks for the cookbooks, tapping the chip '
-        'already chosen asks for nothing', (tester) async {
-      final changes = await pumpLarge(tester, showCookbooks: false);
-
-      await tester.tap(find.text('Alla recept'));
-      await tester.pump();
-      expect(changes, isEmpty);
-
-      await tester.tap(find.text('Kokböcker'));
-      await tester.pump();
-      expect(changes, [true]);
-    });
+    await tester.tap(find.text('Kokböcker'));
+    await tester.pump();
+    expect(changes, [true]);
+    await tester.tap(find.text('Alla recept'));
+    await tester.pump();
+    expect(changes, [true, false]);
+    expect(tester.takeException(), isNull);
   });
 }
