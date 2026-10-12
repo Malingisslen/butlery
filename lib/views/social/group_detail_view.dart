@@ -38,6 +38,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/widgets/social/activity_pings_feed.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Group detail view with member management and sharing capabilities.
 class GroupDetailView extends StatefulWidget {
@@ -381,6 +382,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     final members = _viewModel.members;
 
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: GroupDetailAppBar.build(
         context,
         group: group,

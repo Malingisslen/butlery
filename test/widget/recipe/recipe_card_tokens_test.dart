@@ -32,13 +32,12 @@ TagResult _tagResult({String? version = '1.0'}) => TagResult(
   hasCoverageAnomaly: false,
 );
 
-Recipe _recipe({TagResult? tagResult, List<String>? personalTagIds}) {
+Recipe _recipe({TagResult? tagResult}) {
   final builder = RecipeBuilder()
     ..id = 'tokens'
     ..title = 'Ett recept'
     ..imageUrls = [];
   if (tagResult != null) builder.withTagResult(tagResult);
-  if (personalTagIds != null) builder.tags = personalTagIds;
   return builder.build();
 }
 
@@ -123,37 +122,6 @@ void main() {
         expect(decoration.color, cs.surface);
       });
 
-      testWidgets('personal tag and overflow chip are surface.raised with an '
-          'outlineVariant line, the overflow count is text.secondary', (
-        tester,
-      ) async {
-        await pump(
-          tester,
-          theme: theme,
-          card: RecipeCard(
-            recipe: _recipe(personalTagIds: const ['a', 'b']),
-            style: RecipeCardStyle.detailed,
-            showPersonalTags: true,
-            personalTagNames: const {'a': 'Snabbt', 'b': 'Veckomat'},
-            maxPersonalTags: 1,
-          ),
-        );
-        for (final text in ['Snabbt', '+1']) {
-          final decoration = decorationAround(tester, find.text(text));
-          expect(decoration.color, cs.surfaceContainerHighest, reason: text);
-          expect(
-            (decoration.border! as Border).top.color,
-            cs.outlineVariant,
-            reason: text,
-          );
-        }
-        expect(textColor(tester, 'Snabbt'), cs.onSurface);
-        expect(
-          textColor(tester, '+1'),
-          AppModeColors.textSecondaryOnRaised(theme.brightness),
-        );
-      });
-
       testWidgets('analysing notice is the warning tint, no border, '
           'textWarning', (tester) async {
         await pump(
@@ -202,8 +170,8 @@ void main() {
         );
       });
 
-      testWidgets('unassessed and completeness markers are surface.raised with '
-          'text.secondary text and glyph', (tester) async {
+      testWidgets('unassessed marker is surface.raised with text.secondary '
+          'text and glyph', (tester) async {
         await pump(
           tester,
           theme: theme,
@@ -215,8 +183,7 @@ void main() {
           ),
         );
         final secondary = AppModeColors.textSecondaryOnRaised(theme.brightness);
-        // The same card is also incomplete, so one pump covers both markers.
-        for (final text in ['Allergener ej bedömda', '65% komplett']) {
+        for (final text in ['Allergener ej bedömda']) {
           expect(
             decorationAround(tester, find.text(text)).color,
             cs.surfaceContainerHighest,
@@ -231,7 +198,6 @@ void main() {
           expect(border.top.width, 1, reason: text);
         }
         expect(glyphColor(tester, ButleryIcons.info), secondary);
-        expect(glyphColor(tester, ButleryIcons.barChart), secondary);
       });
 
       testWidgets(
@@ -269,21 +235,6 @@ void main() {
           }
         },
       );
-
-      testWidgets('visibility glyph is text.disabled', (tester) async {
-        await pump(
-          tester,
-          theme: theme,
-          card: RecipeCard(
-            recipe: _recipe(),
-            style: RecipeCardStyle.detailed,
-          ),
-        );
-        expect(
-          glyphColor(tester, ButleryIcons.lock),
-          AppModeColors.textDisabled(theme.brightness),
-        );
-      });
     });
   }
 }

@@ -5845,6 +5845,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupAddMembers => 'Add members';
 
   @override
+  String groupAddToGroup(String group) {
+    return 'Add to $group';
+  }
+
+  @override
   String get groupAllFriendsAlreadyMembers =>
       'All your friends are already members of this group, or you have already sent invitations to them.';
 
@@ -13641,6 +13646,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsNoTags => 'No tags used yet';
 
   @override
+  String statsCountedNote(int count) {
+    return 'Counted over $count recipes on this phone. The figures cover your collection as it has been fetched here – not a calculation on the server.';
+  }
+
+  @override
   String get statsDistinctMealTypes => 'Meal Types';
 
   @override
@@ -13941,6 +13951,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsMarkAllReadShort => 'Mark all as read';
+
+  @override
+  String notificationsUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread',
+      one: '1 unread',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsNote =>
+      'Twenty at a time, older ones load as you scroll. Long-press to select several.';
 
   @override
   String notificationsDismissed(int count) {
@@ -18592,6 +18620,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get familyProfilesSection => 'Family profiles';
 
   @override
+  String familyAccountsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String familyProfilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count profiles',
+      one: '1 profile',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get familyAddMemberRow => 'Add family member';
 
   @override
@@ -18647,6 +18697,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCategoriesSection => 'What you get notifications about';
+
+  @override
+  String get notifCategoriesFootnote =>
+      'Muted categories still show in the notification inbox – they are only not sent as push.';
 
   @override
   String get notifDigestSection => 'Summary';

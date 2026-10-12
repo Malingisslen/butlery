@@ -28,6 +28,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/offline_service.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:butlery/views/legal/terms_of_service_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -80,9 +81,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // The real asset is declared in pubspec under assets/legal/, so the
-      // SelectableText body renders with actual non-empty content.
-      final body = tester.widget<SelectableText>(find.byType(SelectableText));
-      expect(body.data, isNotNull);
+      // markdown body renders with actual non-empty content.
+      final body = tester.widget<MarkdownBody>(find.byType(MarkdownBody));
       expect(body.data, isNotEmpty);
     });
 

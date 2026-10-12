@@ -19,6 +19,7 @@ import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class ConversationGroupDetailView extends StatelessWidget {
@@ -41,6 +42,7 @@ class ConversationGroupDetailView extends StatelessWidget {
       child: Consumer<GroupDetailViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
+            bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
             appBar: _buildAppBar(context, viewModel),
             body: SafeArea(
               child: ButleryPageBody(

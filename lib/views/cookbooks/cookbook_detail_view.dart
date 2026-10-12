@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// One cookbook opened (BUT-1325): cover, description, and its recipes in
 /// the book's order, each with the book's own note.
@@ -117,6 +118,7 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
     final padding = AppDimensions.responsiveContentPadding(context);
 
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: ButleryTopBar.undersida(
         title: tag.name,
         actions: [
