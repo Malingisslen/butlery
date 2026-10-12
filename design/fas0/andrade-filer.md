@@ -696,7 +696,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/77-community-guidelines.png` | `7e2aa9263f6d7e26d38b6b45f2fed05e4b896b989bd093323cfc4ea9e46bde5f` |
 | `skiss-mot-app/78-menu-placement.png` | `25f7bed1d7fb77c098c703d2280facdb42d1fc9dfcffa5d5a2ca0af461d575b1` |
 | `skiss-mot-app/79-conversation-group-detail.png` | `f3db531e98d7b9bd10a631a702470182be172eb0992b5de21189512813971b6d` |
-| `skiss-mot-app/80-create-group-conversation.png` | `60d72191b0ff1b3f0a49168fa28925ab4387d3f3568c4233eb4844a03c061129` |
+| `skiss-mot-app/80-create-group-conversation.png` | `53fa3d3b3e53d451598e4fa6a84af6fdc06322807928ebf5bac70725e2b00bc9` |
 | `skiss-mot-app/81-account-email.png` | `bd1e3a907763fd8bbdc3d36c2104f050ff7819374f5aff433fdc6daf4fe88591` |
 | `skiss-mot-app/82-account-password.png` | `250b17684535b3945eb488311f9dade9ccf215384cb996cb4991ac1eda2b8db4` |
 | `skiss-mot-app/83-help-area.png` | `2ed8aba580762023d05572c51e1db7835fdf61be91c71178703c315fc0e7cd5b` |
