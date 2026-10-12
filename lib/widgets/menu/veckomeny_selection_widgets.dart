@@ -16,19 +16,17 @@ import 'package:butlery/services/unified/operations/cooking/cooking_session_modu
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
 
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
 
-/// The list/calendar switch under the week menu's root bar: the component
-/// sheet's segment, the chosen half filled (the approved week menu picture,
-/// design/skiss-mot-app/21-veckomeny.png). The shape is [ButlerySegmentSwitch]'s,
-/// as Hem's "Alla recept | Kokböcker" is.
+/// The list/calendar tabs under the week menu's root bar: underlined text
+/// tabs, as Hem's "Alla recept | Kokböcker" are (Malin 2026-10-12).
 class VeckomenyViewModeToggle extends StatelessWidget {
   final VeckomenyViewMode mode;
   final ValueChanged<VeckomenyViewMode> onSelect;
@@ -41,11 +39,12 @@ class VeckomenyViewModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ButlerySegmentSwitch<VeckomenyViewMode>(
-      choices: [
-        (VeckomenyViewMode.lista, context.l10n.weeklyMenuToggleList),
-        (VeckomenyViewMode.kalender, context.l10n.weeklyMenuToggleCalendar),
-      ],
+    return UnderlineTabs<VeckomenyViewMode>(
+      values: VeckomenyViewMode.values,
+      labelOf: (value) => switch (value) {
+        VeckomenyViewMode.lista => context.l10n.weeklyMenuToggleList,
+        VeckomenyViewMode.kalender => context.l10n.weeklyMenuToggleCalendar,
+      },
       selected: mode,
       onChanged: onSelect,
     );

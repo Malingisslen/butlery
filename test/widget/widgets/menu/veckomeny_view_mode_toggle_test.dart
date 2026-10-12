@@ -1,6 +1,5 @@
-/// The week menu's Lista/Kalender switch under the root bar: the component
-/// sheet's segment with the chosen half filled (the approved week menu
-/// picture). Each half is at least 48 dp.
+/// The week menu's Lista/Kalender tabs under the root bar: underlined text
+/// tabs. Each tab is at least 48 dp.
 library;
 
 import 'package:flutter/material.dart';
@@ -38,17 +37,28 @@ void main() {
       expect(selected, VeckomenyViewMode.lista);
     });
 
-    testWidgets('the chosen half is the segment that is selected', (
+    testWidgets('the chosen tab is the one that reports itself as selected', (
       tester,
     ) async {
+      final handle = tester.ensureSemantics();
       await tester.pumpWidget(_toggle(VeckomenyViewMode.kalender, (_) {}));
-      final switchWidget = tester.widget<SegmentedButton<VeckomenyViewMode>>(
-        find.byType(SegmentedButton<VeckomenyViewMode>),
+      Matcher tab({required bool selected}) => containsSemantics(
+        isButton: true,
+        hasSelectedState: true,
+        isSelected: selected,
       );
-      expect(switchWidget.selected, {VeckomenyViewMode.kalender});
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Kalender')),
+        tab(selected: true),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Lista')),
+        tab(selected: false),
+      );
+      handle.dispose();
     });
 
-    testWidgets('each half can be activated by a screen reader and is named '
+    testWidgets('each tab can be activated by a screen reader and is named '
         'once', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(_toggle(VeckomenyViewMode.lista, (_) {}));
@@ -60,7 +70,7 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('each half is at least 48 dp tall', (tester) async {
+    testWidgets('each tab is at least 48 dp tall', (tester) async {
       await tester.pumpWidget(_toggle(VeckomenyViewMode.lista, (_) {}));
       for (final label in ['Lista', 'Kalender']) {
         final ink = find.ancestor(
