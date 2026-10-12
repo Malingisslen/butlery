@@ -6271,6 +6271,13 @@
   "adminPasswordLabel": "Lösenord",
   "adminLoginFailed": "Inloggning misslyckades",
   "adminNotAuthorized": "Du har inte behörighet till adminpanelen.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Inloggad som {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Logga ut",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "Ingen feedback än",

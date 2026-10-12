@@ -15235,6 +15235,18 @@ abstract class AppLocalizations {
   /// **'Du har inte behörighet till adminpanelen.'**
   String get adminNotAuthorized;
 
+  /// No description provided for @adminBarTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery Admin'**
+  String get adminBarTitle;
+
+  /// No description provided for @adminBarSignedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggad som {email}'**
+  String adminBarSignedIn(String email);
+
   /// No description provided for @adminSignOut.
   ///
   /// In sv, this message translates to:

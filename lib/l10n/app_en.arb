@@ -6237,6 +6237,13 @@
   "adminPasswordLabel": "Password",
   "adminLoginFailed": "Login failed",
   "adminNotAuthorized": "You do not have access to the admin panel.",
+  "adminBarTitle": "Butlery Admin",
+  "adminBarSignedIn": "Signed in as {email}",
+  "@adminBarSignedIn": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
   "adminSignOut": "Log out",
   "adminFeedbackInboxTitle": "Feedback",
   "adminFeedbackEmpty": "No feedback yet",

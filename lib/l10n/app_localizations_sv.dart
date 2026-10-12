@@ -9082,6 +9082,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminNotAuthorized => 'Du har inte behörighet till adminpanelen.';
 
   @override
+  String get adminBarTitle => 'Butlery Admin';
+
+  @override
+  String adminBarSignedIn(String email) {
+    return 'Inloggad som $email';
+  }
+
+  @override
   String get adminSignOut => 'Logga ut';
 
   @override
