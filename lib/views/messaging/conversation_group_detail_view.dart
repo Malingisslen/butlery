@@ -1,25 +1,22 @@
 // lib/views/messaging/conversation_group_detail_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/dialogs/inline_destructive_confirmation.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
-import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class ConversationGroupDetailView extends StatelessWidget {
@@ -39,39 +36,38 @@ class ConversationGroupDetailView extends StatelessWidget {
         friendsService: ServiceLocator.get(),
         chatGroupRepository: ServiceLocator.get(),
       ),
-      child: Consumer<GroupDetailViewModel>(
-        builder: (context, viewModel, child) {
-          return Scaffold(
-            bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-            appBar: _buildAppBar(context, viewModel),
-            body: SafeArea(
-              child: ButleryPageBody(
-                width: PageWidth.text,
-                child: _buildBody(context, viewModel),
-              ),
-            ),
-          );
-        },
-      ),
+      child: const _ConversationGroupDetailContent(),
     );
   }
+}
 
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context,
-    GroupDetailViewModel viewModel,
-  ) {
-    // A subpage of the chat (Komponentark v1 §01 pattern 2; Skarmar v12
-    // etapp 9 'Chattens gruppinfo' draws the back arrow).
-    return ButleryTopBar.undersida(
-      title: context.l10n.messagingGroupInfo,
-      actions: [
-        if (viewModel.isAdmin)
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.pencil),
-            onPressed: () => _showEditGroupNameDialog(context, viewModel),
-            tooltip: context.l10n.messagingEditGroupName,
-          ),
-      ],
+class _ConversationGroupDetailContent extends StatefulWidget {
+  const _ConversationGroupDetailContent();
+
+  @override
+  State<_ConversationGroupDetailContent> createState() =>
+      _ConversationGroupDetailContentState();
+}
+
+class _ConversationGroupDetailContentState
+    extends State<_ConversationGroupDetailContent> {
+  /// The member whose removal is being confirmed under their row.
+  String? _confirmingMemberId;
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.watch<GroupDetailViewModel>();
+    // A subpage of the chat (Skarmar v12 etapp 9 #9 'Om samtalet'): the
+    // group's name and size sit under the title in the bar.
+    return ButleryPage.undersida(
+      title: context.l10n.messagingAboutConversation,
+      secondaryLine: viewModel.hasConversation
+          ? context.l10n.messagingConversationSubline(
+              viewModel.groupTitle,
+              viewModel.memberCount,
+            )
+          : null,
+      body: _buildBody(context, viewModel),
     );
   }
 
@@ -96,115 +92,107 @@ class ConversationGroupDetailView extends StatelessWidget {
       );
     }
 
+    final l10n = context.l10n;
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Group info card
-            GroupInfoCard(
-              groupTitle: viewModel.groupTitle,
-              memberCount: viewModel.memberCount,
-              createdAt: viewModel.createdAt,
-              isAdmin: viewModel.isAdmin,
+      padding: ButleryPageBody.margin(context, bottom: AppDimensions.space32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ButleryListSection(
+            rows: [
+              viewModel.isAdmin
+                  ? ButleryListRow(
+                      label: l10n.messagingConversationNameRow,
+                      value: viewModel.groupTitle,
+                      onTap: () => _showEditGroupNameDialog(context, viewModel),
+                    )
+                  : ButleryListRow.info(
+                      label: l10n.messagingConversationNameRow,
+                      value: viewModel.groupTitle,
+                    ),
+              ButleryListRow(
+                label: l10n.messagingAddSomeoneRow,
+                onTap: () => _showAddMembersDialog(context, viewModel),
+              ),
+            ],
+          ),
+          ButleryListSection(
+            title: l10n.messagingInConversationSection,
+            rows: [
+              for (final memberId in viewModel.memberIds)
+                _buildMemberRow(context, viewModel, memberId),
+            ],
+          ),
+          if (_confirmingMemberId != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.space16),
+              child: _buildRemovalConfirmation(
+                context,
+                viewModel,
+                _confirmingMemberId!,
+              ),
             ),
-
-            const SizedBox(height: AppDimensions.space32),
-
-            // Members section
-            _buildMembersSection(context, viewModel),
-
-            const SizedBox(height: AppDimensions.space32),
-
-            // Action buttons
-            _buildActionButtons(context, viewModel),
+          const SizedBox(height: AppDimensions.space16),
+          ButleryListSection(
+            rows: [
+              ButleryListRow.danger(
+                label: l10n.messagingLeaveConversationRow,
+                subtitle: l10n.messagingLeaveConversationSub,
+                onTap: viewModel.isLeavingGroup
+                    ? () {}
+                    : () => _confirmLeaveGroup(context, viewModel),
+              ),
+            ],
+          ),
+          if (viewModel.error != null) ...[
+            const SizedBox(height: AppDimensions.space8),
+            Text(
+              viewModel.error!,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildMembersSection(
+  Widget _buildMemberRow(
     BuildContext context,
     GroupDetailViewModel viewModel,
+    String memberId,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              context.l10n.messagingMembersCount(viewModel.memberCount),
-              style: AppTextStyles.titleLargeBold,
-            ),
-            ActionButtons.textButton(
-              context,
-              label: context.l10n.commonAdd,
-              icon: ButleryIcons.userPlus,
-              onPressed: () => _showAddMembersDialog(context, viewModel),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppDimensions.space8),
-
-        // Member list
-        ...viewModel.memberIds.map((memberId) {
-          final displayName = viewModel.getMemberDisplayName(memberId);
-          final avatarUrl = viewModel.getMemberAvatarUrl(memberId);
-          final isCurrentUser = memberId == viewModel.currentUserId;
-          final canRemove = viewModel.isAdmin && !isCurrentUser;
-
-          return GroupMemberItem(
-            displayName: displayName,
-            avatarUrl: avatarUrl,
-            isCurrentUser: isCurrentUser,
-            canRemove: canRemove,
-            onRemove: canRemove
-                ? () => _confirmRemoveMember(
-                    context,
-                    viewModel,
-                    memberId,
-                    displayName,
-                  )
-                : null,
-          );
-        }),
-      ],
+    final displayName = viewModel.getMemberDisplayName(memberId);
+    final isCurrentUser = memberId == viewModel.currentUserId;
+    final canRemove = viewModel.isAdmin && !isCurrentUser;
+    return GroupMemberItem(
+      displayName: displayName,
+      avatarUrl: viewModel.getMemberAvatarUrl(memberId),
+      isCurrentUser: isCurrentUser,
+      canRemove: canRemove,
+      onRemove: canRemove
+          ? () => setState(() => _confirmingMemberId = memberId)
+          : null,
     );
   }
 
-  Widget _buildActionButtons(
+  Widget _buildRemovalConfirmation(
     BuildContext context,
     GroupDetailViewModel viewModel,
+    String memberId,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Leave group button
-        ActionButtons.secondaryButton(
-          context,
-          label: context.l10n.messagingLeaveGroup,
-          icon: ButleryIcons.logOut,
-          onPressed: viewModel.isLeavingGroup
-              ? null
-              : () => _confirmLeaveGroup(context, viewModel),
-          isLoading: viewModel.isLeavingGroup,
-        ),
-
-        if (viewModel.error != null) ...[
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            viewModel.error!,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ],
+    final name = viewModel.getMemberDisplayName(memberId);
+    return InlineDestructiveConfirmation(
+      title: context.l10n.messagingRemoveFromConversationTitle(name),
+      message: context.l10n.messagingRemoveFromConversationBody(name),
+      confirmLabel: context.l10n.commonRemove,
+      onCancel: () => setState(() => _confirmingMemberId = null),
+      onConfirm: () {
+        setState(() => _confirmingMemberId = null);
+        _removeMember(context, viewModel, memberId, name);
+      },
     );
   }
 
@@ -310,34 +298,24 @@ class ConversationGroupDetailView extends StatelessWidget {
     }
   }
 
-  Future<void> _confirmRemoveMember(
+  Future<void> _removeMember(
     BuildContext context,
     GroupDetailViewModel viewModel,
     String memberId,
     String memberName,
   ) async {
-    final confirmed = await DestructiveConfirmationDialog.show(
-      context,
-      title: context.l10n.messagingRemoveMemberConfirmTitle(memberName),
-      primaryActionText: context.l10n.messagingRemoveMemberAction,
-      primaryActionIcon: ButleryIcons.userMinus,
-    );
-
-    if (confirmed == true && context.mounted) {
-      final success = await viewModel.removeMember(memberId);
-      if (context.mounted) {
-        if (success) {
-          SnackBarUtils.showSuccess(
-            context,
-            context.l10n.messagingMemberRemoved(memberName),
-          );
-        } else {
-          SnackBarUtils.showFailure(
-            context,
-            what: viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
-          );
-        }
-      }
+    final success = await viewModel.removeMember(memberId);
+    if (!context.mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.messagingMemberRemoved(memberName),
+      );
+    } else {
+      SnackBarUtils.showFailure(
+        context,
+        what: viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
+      );
     }
   }
 

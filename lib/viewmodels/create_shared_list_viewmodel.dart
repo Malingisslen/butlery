@@ -24,6 +24,7 @@ class CreateSharedListViewModel extends BaseViewModel {
   String _title = '';
   String _description = '';
   List<String> _selectedFriendIds = [];
+  bool _membersCanEdit = true;
   Map<String, List<Recipe>>? _menu;
 
   // UI state — `isCreating` is operation-specific; `error`/loading come from BaseViewModel.
@@ -40,6 +41,9 @@ class CreateSharedListViewModel extends BaseViewModel {
   String get description => _description;
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
   Map<String, List<Recipe>>? get menu => _menu;
+
+  /// Whether the people invited may add and tick off items, or only read.
+  bool get membersCanEdit => _membersCanEdit;
 
   bool get isCreating => _isCreating;
   bool get isTitleValid => _title.trim().isNotEmpty;
@@ -114,6 +118,18 @@ class CreateSharedListViewModel extends BaseViewModel {
     }
   }
 
+  void setMembersCanEdit(bool value) {
+    if (_membersCanEdit == value) return;
+    _membersCanEdit = value;
+    notifyListeners();
+  }
+
+  void toggleFriend(String friendId) {
+    final next = List<String>.of(_selectedFriendIds);
+    if (!next.remove(friendId)) next.add(friendId);
+    updateSelectedFriends(next);
+  }
+
   void updateSelectedFriends(List<String> friendIds) {
     if (!listEquals(_selectedFriendIds, friendIds)) {
       _selectedFriendIds = List.from(friendIds);
@@ -127,6 +143,7 @@ class CreateSharedListViewModel extends BaseViewModel {
     _title = '';
     _description = '';
     _selectedFriendIds.clear();
+    _membersCanEdit = true;
     clearError();
     notifyListeners();
     AppLogger.info('🗑️ Formulär rensat');
@@ -164,6 +181,7 @@ class CreateSharedListViewModel extends BaseViewModel {
         name: trimmedTitle,
         description: hasDescription ? trimmedDescription : null,
         memberIds: List.of(_selectedFriendIds),
+        allowGuestEditing: _membersCanEdit,
       );
       final listId = created.listId;
       _notInvitedNames = [

@@ -1,7 +1,6 @@
 /// Navigation and container theme configurations.
 ///
 /// **UI Redesign:**
-/// - AppBar: Primary background with onPrimary text
 /// - Bottom Nav: Primary background
 /// - Tab Bar: the saffron plate line under the selected word
 /// - Dialogs/Sheets: Surface

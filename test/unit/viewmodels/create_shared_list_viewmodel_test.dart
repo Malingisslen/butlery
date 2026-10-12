@@ -270,7 +270,7 @@ void main() {
       await future;
 
       expect(viewModel.isCreating, isFalse);
-      expect(viewModel.createButtonText, equals('Skapa & Dela'));
+      expect(viewModel.createButtonText, equals('Skapa och dela'));
     });
   });
 

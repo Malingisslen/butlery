@@ -115,11 +115,14 @@ class ButleryListRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.selected,
+    this.emphasis = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.nav,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.nav,
+       centered = false,
        enabled = true,
-       emphasis = false,
        strongValue = false,
        checked = false,
        onChanged = null;
@@ -134,7 +137,10 @@ class ButleryListRow extends StatelessWidget {
     this.emphasis = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.toggle,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.toggle,
+       centered = false,
        strongValue = false,
        selected = null,
        onTap = null,
@@ -146,13 +152,19 @@ class ButleryListRow extends StatelessWidget {
 
   /// The destructive row, in text.danger, last on its page. What it does is
   /// confirmed by the dialog it opens, not by the row.
+  ///
+  /// [centered] draws it as the sketch's last line of a profile page: the
+  /// words centred under the rows, no chevron.
   const ButleryListRow.danger({
     required this.label,
     required VoidCallback this.onTap,
     this.subtitle,
+    this.centered = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.danger,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.danger,
        selected = null,
        enabled = true,
        emphasis = false,
@@ -172,7 +184,10 @@ class ButleryListRow extends StatelessWidget {
     this.strongValue = false,
     this.identifier,
     super.key,
-  }) : _kind = _RowKind.info,
+  }) : _muted = false,
+       leadingColor = null,
+       _kind = _RowKind.info,
+       centered = false,
        selected = null,
        enabled = true,
        emphasis = false,
@@ -181,6 +196,32 @@ class ButleryListRow extends StatelessWidget {
        count = 0,
        countLabel = null,
        leading = null,
+       trailing = null,
+       checked = false,
+       onChanged = null;
+
+  /// A line that tells something and leads nowhere, with an optional glyph:
+  /// the check and cross rows of Hämta ut dina uppgifter. [muted] sets the
+  /// text in secondary ink, for what does not apply.
+  const ButleryListRow.note({
+    required this.label,
+    this.leading,
+    this.leadingColor,
+    this.subtitle,
+    bool muted = false,
+    this.emphasis = false,
+    this.identifier,
+    super.key,
+  }) : _muted = muted,
+       _kind = _RowKind.info,
+       centered = false,
+       selected = null,
+       enabled = true,
+       strongValue = false,
+       onTap = null,
+       value = null,
+       count = 0,
+       countLabel = null,
        trailing = null,
        checked = false,
        onChanged = null;
@@ -209,6 +250,9 @@ class ButleryListRow extends StatelessWidget {
   /// the selected surface behind its full width.
   final bool? selected;
 
+  /// A danger row drawn as centred words with no chevron.
+  final bool centered;
+
   final String? identifier;
   final VoidCallback? onTap;
   final bool checked;
@@ -224,6 +268,12 @@ class ButleryListRow extends StatelessWidget {
   /// An information row's figure set in bold ink, as the sketch's counts.
   final bool strongValue;
 
+  /// The colour of [leading]; secondary ink when null.
+  final Color? leadingColor;
+
+  bool get muted => _muted;
+  final bool _muted;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -235,7 +285,35 @@ class ButleryListRow extends StatelessWidget {
         ? AppModeColors.textDisabled(cs.brightness)
         : danger
         ? cs.error
+        : muted
+        ? cs.onSurfaceVariant
         : cs.onSurface;
+
+    if (centered) {
+      return Semantics(
+        container: true,
+        button: true,
+        identifier: identifier,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyBold.copyWith(color: labelColor),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     Widget rowContent(double rowWidth) => ConstrainedBox(
       constraints: const BoxConstraints(
@@ -248,7 +326,9 @@ class ButleryListRow extends StatelessWidget {
         child: Row(
           children: [
             if (leading != null) ...[
-              ExcludeSemantics(child: ButleryIcon(leading!, color: mutedText)),
+              ExcludeSemantics(
+                child: ButleryIcon(leading!, color: leadingColor ?? mutedText),
+              ),
               const SizedBox(width: AppDimensions.space12),
             ],
             Expanded(

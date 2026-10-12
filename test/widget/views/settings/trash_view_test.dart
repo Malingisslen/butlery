@@ -67,7 +67,8 @@ void main() {
   testWidgets('shows loading until the first list arrives', (tester) async {
     await open(tester);
     expect(find.text('Laddar papperskorgen …'), findsOneWidget);
-    expect(find.byTooltip('Fler åtgärder'), findsNothing);
+    expect(find.text('Återställ alla'), findsNothing);
+    expect(find.text('Töm papperskorgen'), findsNothing);
   });
 
   testWidgets('empty trash says so and that recipes are kept 30 days', (
@@ -104,11 +105,64 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Pannkakor'), findsOneWidget);
-    expect(find.text('30 dagar kvar'), findsOneWidget);
-    expect(find.text('2 dagar kvar'), findsOneWidget);
+    expect(find.text('Raderad i dag · 30 dagar kvar'), findsOneWidget);
+    expect(find.textContaining('2 dagar kvar'), findsOneWidget);
+    expect(find.textContaining('raderas för gott på'), findsOneWidget);
     // Only the 2-day row carries the warning mark.
     expect(find.byKey(const ValueKey('trashUrgentMark')), findsOneWidget);
     expect(find.text('Markera alla'), findsNothing);
+  });
+
+  testWidgets('the subtitle names the date it was deleted, the weekday it '
+      'goes for good, and "today" on the last day', (tester) async {
+    final fixed = DateTime(2026, 10, 12, 12);
+    await withClock(Clock.fixed(fixed), () async {
+      await open(tester);
+      await push(tester, [
+        trashItemFor(
+          'e',
+          title: 'Tre kvar',
+          now: fixed,
+          age: const Duration(days: 27),
+        ),
+        trashItemFor(
+          'f',
+          title: 'Två kvar',
+          now: fixed,
+          age: const Duration(days: 28),
+        ),
+        trashItemFor(
+          'g',
+          title: 'Sista dagen',
+          now: fixed,
+          age: const Duration(days: 30),
+        ),
+      ]);
+
+      String subtitleOf(String title) => tester
+          .widgetList<Text>(
+            find.descendant(
+              of: find.ancestor(
+                of: find.text(title),
+                matching: find.byType(ButleryListRow),
+              ),
+              matching: find.byType(Text),
+            ),
+          )
+          .map((t) => t.data)
+          .whereType<String>()
+          .firstWhere((t) => t != title);
+
+      expect(subtitleOf('Tre kvar'), 'Raderad 15 sep. · 3 dagar kvar');
+      expect(
+        subtitleOf('Två kvar'),
+        '2 dagar kvar — raderas för gott på onsdag',
+      );
+      expect(
+        subtitleOf('Sista dagen'),
+        contains('raderas för gott i dag'),
+      );
+    });
   });
 
   testWidgets('the mark starts below 3 days left, not at 3', (tester) async {
@@ -117,14 +171,14 @@ void main() {
       trashItemFor('c', now: now, age: const Duration(days: 27)),
       trashItemFor('d', now: now, age: const Duration(days: 28)),
     ]);
-    expect(find.text('3 dagar kvar'), findsOneWidget);
-    expect(find.text('2 dagar kvar'), findsOneWidget);
+    expect(find.textContaining('3 dagar kvar'), findsOneWidget);
+    expect(find.textContaining('2 dagar kvar'), findsOneWidget);
     final mark = find.byKey(const ValueKey('trashUrgentMark'));
     expect(mark, findsOneWidget);
     expect(
       find.descendant(
         of: find.ancestor(
-          of: find.text('2 dagar kvar'),
+          of: find.textContaining('2 dagar kvar'),
           matching: find.byType(ButleryListRow),
         ),
         matching: mark,
@@ -194,15 +248,9 @@ void main() {
     expect(find.text('Receptet raderades för alltid'), findsOneWidget);
   });
 
-  Future<void> openMenu(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Fler åtgärder'));
-    await tester.pumpAndSettle();
-  }
-
-  testWidgets('the menu restores every recipe', (tester) async {
+  testWidgets('Återställ alla restores every recipe', (tester) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
-    await openMenu(tester);
 
     await tester.tap(find.text('Återställ alla'));
     await tester.pumpAndSettle();
@@ -214,7 +262,6 @@ void main() {
   testWidgets('empty trash asks first, then empties it', (tester) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
-    await openMenu(tester);
 
     await tester.tap(find.text('Töm papperskorgen'));
     await tester.pumpAndSettle();
@@ -240,7 +287,6 @@ void main() {
   ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
-    await openMenu(tester);
 
     await tester.tap(find.text('Töm papperskorgen'));
     await tester.pumpAndSettle();
@@ -261,7 +307,6 @@ void main() {
       doneIds: ['a'],
       failures: {'b': TrashFailure.expired},
     );
-    await openMenu(tester);
 
     await tester.tap(find.text('Återställ alla'));
     await tester.pumpAndSettle();

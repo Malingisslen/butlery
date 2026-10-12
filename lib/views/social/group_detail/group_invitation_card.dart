@@ -1,5 +1,7 @@
 // lib/views/social/group_detail/group_invitation_card.dart
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -25,101 +27,66 @@ class GroupInvitationCard {
     String? inviteeName,
   }) {
     final name = (inviteeName?.isNotEmpty ?? false) ? inviteeName : null;
+    final cs = Theme.of(context).colorScheme;
     return RepaintBoundary(
-      child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: ListTile(
-          leading: Stack(
-            children: [
-              // The row is about who was invited, not who invited them.
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    name != null ? name.characters.first.toUpperCase() : '?',
-                    style: AppTextStyles.bodyBold.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        // The theme paints every ListTile raised; these rows sit on paper.
+        tileColor: Colors.transparent,
+        // The row is about who was invited, not who invited them.
+        leading: _DashedAvatar(
+          initial: name != null ? name.characters.first.toUpperCase() : '?',
+        ),
+        title: Text(
+          name ?? context.l10n.groupInvitationSent,
+          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}',
+          style: AppTextStyles.captionBase.copyWith(color: cs.onSurfaceVariant),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              context.l10n.groupInvitedLabel,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
               ),
-              // Pending indicator
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          title: Text(
-            name ?? context.l10n.groupInvitationSent,
-            style: AppTextStyles.titleMedium.copyWith(
-              color: Theme.of(context).colorScheme.tertiary,
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${context.l10n.groupInvitationSentDate}: ${invitation.timeAgoText}',
-              ),
-              Text(
-                '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}',
-              ),
-            ],
-          ),
-          trailing: PressFill(
-            surface: PressSurface.base,
-            child: PopupMenuButton<String>(
-              icon: ButleryIcon(
-                ButleryIcons.moreVertical,
-                color: Theme.of(context).colorScheme.tertiary,
-              ),
-              onSelected: (value) => _handleAction(
-                context,
-                value,
-                invitation,
-                name,
-                onCancelled,
-              ),
-              itemBuilder: (context) => [
-                ButleryMenuItem(
-                  value: 'cancel_invitation',
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.x,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(width: AppDimensions.space4),
-                      Text(
-                        context.l10n.groupCancelInvitation,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
+            PressFill(
+              surface: PressSurface.base,
+              child: PopupMenuButton<String>(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                onSelected: (value) => _handleAction(
+                  context,
+                  value,
+                  invitation,
+                  name,
+                  onCancelled,
+                ),
+                itemBuilder: (context) => [
+                  ButleryMenuItem(
+                    value: 'cancel_invitation',
+                    child: Row(
+                      children: [
+                        ButleryIcon(ButleryIcons.x, color: cs.error),
+                        const SizedBox(width: AppDimensions.space4),
+                        Text(
+                          context.l10n.groupCancelInvitation,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: cs.error),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -180,4 +147,63 @@ class GroupInvitationCard {
       }
     }
   }
+}
+
+/// The invited person's avatar: a dashed circle, since they are not in the
+/// group yet.
+class _DashedAvatar extends StatelessWidget {
+  const _DashedAvatar({required this.initial});
+
+  final String initial;
+
+  static const double _size = 48;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return CustomPaint(
+      painter: _DashedCirclePainter(color: cs.onSurfaceVariant),
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: Center(
+          child: Text(
+            initial,
+            style: AppTextStyles.bodyBold.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedCirclePainter extends CustomPainter {
+  const _DashedCirclePainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final radius = (size.shortestSide - paint.strokeWidth) / 2;
+    final center = size.center(Offset.zero);
+    const dashCount = 20;
+    const sweep = 2 * math.pi / dashCount;
+    for (var i = 0; i < dashCount; i++) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        i * sweep,
+        sweep * 0.55,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedCirclePainter oldDelegate) =>
+      oldDelegate.color != color;
 }

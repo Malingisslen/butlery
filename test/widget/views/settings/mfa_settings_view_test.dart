@@ -88,6 +88,10 @@ void main() {
     await pump(tester);
 
     expect(find.text('Min telefon'), findsOneWidget);
+    expect(find.text('Påslagen'), findsOneWidget);
+    expect(find.textContaining('tio engångskoder'), findsOneWidget);
+    // The lost-phone section only tells; it offers no control of its own.
+    expect(find.text('Visa reservkoder'), findsNothing);
     expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
 
     await tester.tap(find.byIcon(ButleryIcons.trash2));
@@ -110,7 +114,7 @@ void main() {
 
     await pump(tester);
 
-    expect(find.text('MFA inaktiverat'), findsOneWidget);
+    expect(find.text('Inte påslagen'), findsOneWidget);
     expect(find.text('Aktivera MFA för extra säkerhet.'), findsOneWidget);
     expect(find.text('Slå på tvåstegsverifiering'), findsOneWidget);
     expect(find.byKey(const ValueKey('mfa.turnOn')), findsOneWidget);
@@ -488,11 +492,7 @@ void main() {
         ],
       );
       await pump(tester);
-      final d = DateTime.fromMillisecondsSinceEpoch(1759320000 * 1000);
-      final expected =
-          '${d.year}-${d.month.toString().padLeft(2, '0')}-'
-          '${d.day.toString().padLeft(2, '0')}';
-      expect(find.text('Registrerad: $expected'), findsOneWidget);
+      expect(find.text('Registrerad 1 oktober 2025'), findsOneWidget);
     });
   });
 }

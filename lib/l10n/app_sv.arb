@@ -57,7 +57,9 @@
   "authResetPassword": "Återställ lösenord",
   "authForgotPassword": "Glömt lösenord?",
   "authEnterPassword": "Ange ditt lösenord",
-  "authPasswordMinLength": "Minst 6 tecken",
+  "authPasswordChoose": "Välj ett starkt lösenord",
+  "passwordRuleHint": "Tolv eller fler tecken, eller tre ord du minns. Kravet står här – inte som ett fel efter att du skrivit.",
+  "guestUpgradeNameHint": "Vad ska jag kalla dig?",
   "authResetPasswordInstructions": "Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.",
   "imageAddImage": "Lägg till bild",
   "commentDeletedUndoMessage": "Kommentaren raderad",
@@ -421,7 +423,6 @@
   "validationEmailRequired": "E-post krävs",
   "validationPasswordRequired": "Lösenord krävs",
   "validationInvalidAmount": "Ogiltigt antal",
-  "validationPasswordTooShort": "Lösenordet måste vara minst 6 tecken",
   "validationGenericRequired": "Detta fält krävs",
   "validationEmailInvalid": "Ogiltig e-postadress",
   "errorGeneric": "Det gick inte att slutföra. Försök igen.",
@@ -2583,7 +2584,7 @@
       }
     }
   },
-  "groupSharedContent": "Delat innehåll",
+  "groupSharedContent": "Delat i gruppen",
   "groupShareShoppingList": "Dela inköpslista",
   "groupShoppingListViewComingSoon": "Inköpslistevisning: {title} (kommer snart)",
   "@groupShoppingListViewComingSoon": {
@@ -2763,8 +2764,8 @@
   "consentOptionalTitle": "Valfria samtycken",
   "consentOptionalDescription": "Du kan när som helst aktivera eller inaktivera dessa samtycken.",
   "consentRejectAll": "Avvisa alla",
-  "consentAnalytics": "Analysdata",
-  "consentAnalyticsDescription": "Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.",
+  "consentAnalytics": "Analys",
+  "consentAnalyticsDescription": "Hur appen används, aldrig vad du lagar.",
   "consentWhatWeLog": "Vad vi loggar",
   "consentWhatWeLogIntro": "Anonyma händelser vi loggar för att förbättra appen:",
   "consentLogCategoryUsage": "Appanvändning",
@@ -2774,7 +2775,7 @@
   "consentLogCategorySocial": "Socialt",
   "consentLogCategoryOnboarding": "Introduktion",
   "consentPushNotifications": "Push-notiser",
-  "consentPushNotificationsDescription": "Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.",
+  "consentPushNotificationsDescription": "Systemets tillåtelse styrs separat, i inställningarna.",
   "consentGoodToKnow": "Bra att veta",
   "consentInfoImmediate": "Dina ändringar träder i kraft omedelbart",
   "consentInfoChangeAnytime": "Du kan ändra dina samtycken när som helst",
@@ -2791,7 +2792,7 @@
   "consentRenewalLater": "Senare",
   "dataExportTitle": "Exportera mina data",
   "dataExportDownloadTitle": "Ladda ner dina data",
-  "dataExportGdprDescription": "Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.",
+  "dataExportGdprDescription": "Du har rätt att få ut dina uppgifter i ett format som går att läsa och flytta. Filen är JSON.",
   "dataExportExporting": "Exporterar dina data …",
   "dataExportMayTakeSeconds": "Detta kan ta några sekunder",
   "dataExportFailed": "Export misslyckades",
@@ -2800,7 +2801,7 @@
   "dataExportFileSize": "Filstorlek",
   "dataExportSaveFile": "Spara fil",
   "dataExportClear": "Rensa export",
-  "dataExportWhatsIncluded": "Vad ingår i exporten?",
+  "dataExportWhatsIncluded": "Det här följer med",
   "dataExportIncludesProfile": "Profil och inställningar",
   "dataExportIncludesRecipes": "Alla dina recept",
   "dataExportIncludesFriends": "Vänner och sociala kontakter",
@@ -3196,7 +3197,7 @@
   "messagingNoFriendsFound": "Inga vänner hittades",
   "messagingSearchFriends": "Sök vänner …",
   "messagingSelectAtLeastTwoMembers": "Välj minst 2 medlemmar nedan",
-  "messagingSelectedMembers": "Valda medlemmar ({count})",
+  "messagingSelectedMembers": "Deltagare · {count} valda",
   "@messagingSelectedMembers": {
     "placeholders": {
       "count": {
@@ -3219,7 +3220,7 @@
   "mfaDisabled": "MFA inaktiverat",
   "mfaEnabled": "MFA aktiverat",
   "mfaEnableForSecurity": "Aktivera MFA för extra säkerhet.",
-  "mfaRegistered": "Registrerad: {time}",
+  "mfaRegistered": "Registrerad {time}",
   "@mfaRegistered": {
     "placeholders": {
       "time": {
@@ -3443,8 +3444,8 @@
     }
   },
   "indicatorBackOnline": "Ansluten igen",
-  "householdToggle": "Markera som hushåll",
-  "householdToggleDescription": "Hushållets allergier sammanställs för menyplanering",
+  "householdToggle": "Det här är hushållet",
+  "householdToggleDescription": "Hushållets allergier räknas med i menyn",
   "householdJoinTitle": "Gå med i hushållet",
   "@householdJoinTitle": {
     "description": "BUT-2267: group page, a member of a group the owner marked as household who has not joined its shared household yet"
@@ -4281,7 +4282,7 @@
   "profileAddAvatar": "Lägg till avatar",
   "profileAvatarRemoved": "Avatar borttagen",
   "profileAvatarUploaded": "Avataren är uppladdad.",
-  "profileBio": "Beskrivning",
+  "profileBio": "Om mig",
   "profileBioHint": "Beskriv dig som matlagare (max 160 tecken)",
   "profileNoBio": "Ingen beskrivning ännu",
   "profileChangeAvatar": "Ändra avatar",
@@ -4309,10 +4310,10 @@
   },
   "profileLoading": "Laddar profil …",
   "profileNewUser": "Ny användare",
-  "profilePrivacySettings": "Integritetsinställningar",
+  "profilePrivacySettings": "Integritet",
   "profileResetChanges": "Återställ ändringar",
   "profileSaved": "Profilen är sparad.",
-  "profileSaveProfile": "Spara profil",
+  "profileSaveProfile": "Spara ändringar",
   "profileSearchableByEmail": "Sökbar via e-post",
   "profileSearchableByEmailDescription": "Andra kan hitta dig genom din e-postadress",
   "profileShowOnlineStatus": "Visa onlinestatus",
@@ -4608,7 +4609,7 @@
   "importPreviewTitle": "Förhandsgranska import",
   "importSelectAll": "Markera alla",
   "importDeselectAll": "Avmarkera alla",
-  "importConfirmButton": "Importera ({count})",
+  "importConfirmButton": "Spara {count} recept",
   "@importConfirmButton": {
     "placeholders": {
       "count": {
@@ -4981,7 +4982,7 @@
   "sharedNoShoppingLists": "Inga delade inköpslistor",
   "sharedNoShoppingListsDescription": "Inköpslistor som delas med dig visas här",
   "sharedSearchHint": "Sök delat innehåll …",
-  "sharedTabRecipes": "Recept ({count})",
+  "sharedTabRecipes": "Recept · {count}",
   "@sharedTabRecipes": {
     "placeholders": {
       "count": {
@@ -4989,7 +4990,7 @@
       }
     }
   },
-  "sharedTabMenus": "Menyer ({count})",
+  "sharedTabMenus": "Menyer · {count}",
   "@sharedTabMenus": {
     "placeholders": {
       "count": {
@@ -4997,7 +4998,7 @@
       }
     }
   },
-  "sharedTabShoppingLists": "Inköpslistor ({count})",
+  "sharedTabShoppingLists": "Listor · {count}",
   "@sharedTabShoppingLists": {
     "placeholders": {
       "count": {
@@ -8310,7 +8311,7 @@
     }
   },
   "buttonCreating": "Skapar …",
-  "buttonCreateAndShare": "Skapa & Dela",
+  "buttonCreateAndShare": "Skapa och dela",
   "analysisNoContentExtracted": "Inget innehåll extraherat",
   "analysisContainsIngredients": "Innehåller ingredienser",
   "analysisNoIngredientsFound": "Ingen ingredienssektion hittades",
@@ -8827,7 +8828,7 @@
       }
     }
   },
-  "validationPasswordMinEight": "Lösenordet måste vara minst 8 tecken",
+  "validationPasswordRule": "Lösenordet behöver tolv eller fler tecken, eller tre ord du minns.",
   "validationDisplayNameLabel": "Visningsnamn",
   "validationCommentLabel": "Kommentar",
   "validationAmountMustBePositive": "Antal måste vara ett positivt nummer",
@@ -9451,9 +9452,12 @@
     "description": "FAQ answer 5: how to report problems"
   },
   "legalTermsOfService": "Användarvillkor",
-  "legalCommunityGuidelines": "Gemenskapsriktlinjer",
+  "legalCommunityGuidelines": "Communityriktlinjer",
   "legalOpenSourceLicenses": "Öppen källkod-licenser",
   "authTermsAcceptPrefix": "Jag accepterar ",
+  "authTermsConsentPrefix": "Jag godkänner ",
+  "authTermsConsentTermsLink": "användarvillkoren",
+  "authTermsConsentPrivacyLink": "integritetspolicyn",
   "authTermsAcceptMiddle": " och ",
   "authTermsAcceptRequired": "Du måste acceptera villkoren för att skapa ett konto",
   "a11yTermsOfServiceLink": "Användarvillkor",
@@ -10308,19 +10312,19 @@
       }
     }
   },
-  "heirloomToggle": "Detta är ett arvegods",
+  "heirloomToggle": "Det här är ett arvegods",
   "@heirloomToggle": {
     "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp)."
   },
-  "heirloomWriterLabel": "Vem skrev receptet?",
+  "heirloomWriterLabel": "Vems handskrift?",
   "@heirloomWriterLabel": {
     "description": "BUT-410: text field label for the name of the original recipe writer."
   },
-  "heirloomYearLabel": "Vilket år?",
+  "heirloomYearLabel": "År",
   "@heirloomYearLabel": {
     "description": "BUT-410: text field label for the year the recipe was written down."
   },
-  "heirloomNoteLabel": "Kort notering",
+  "heirloomNoteLabel": "Notis",
   "@heirloomNoteLabel": {
     "description": "BUT-410: multiline text field label for a short heirloom origin note."
   },
@@ -14129,7 +14133,7 @@
   "@setNewPasswordChecking": {
     "description": "BUT-2170: shown while the reset link is checked."
   },
-  "setNewPasswordForAccount": "Gäller kontot {email}.",
+  "setNewPasswordForAccount": "Välj ett nytt lösenord för {email}",
   "@setNewPasswordForAccount": {
     "description": "BUT-2170: names the account the reset link belongs to.",
     "placeholders": {
@@ -16070,10 +16074,12 @@
   "@guestTryWithoutAccount": {
     "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
   },
-  "guestStartBody": "Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.",
+  "guestStartBody": "Samma frågor som för ett nytt konto. Det du sparar som gäst följer med om du skapar ett konto senare.",
   "@guestStartBody": {
     "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
   },
+  "guestStartYearNote": "Vi sparar bara året, inte hela datumet.",
+  "guestStartBackToSignIn": "Tillbaka till inloggningen",
   "guestStartPreparing": "Gör i ordning ditt gästkonto",
   "@guestStartPreparing": {
     "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
@@ -16423,7 +16429,7 @@
   "@appealFormTitle": {
     "description": "BUT-2353: title of the appeal form"
   },
-  "appealFormIntro": "Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.",
+  "appealFormIntro": "Beslutet granskas igen och du får ett nytt besked i appen.",
   "@appealFormIntro": {
     "description": "BUT-2353: appeal form explanation"
   },
@@ -17101,6 +17107,489 @@
   "@signInMethodsPasswordFailed": {
     "description": "BUT-916 slice B: add password failed for a reason without its own text"
   },
+  "consentTermsHeading": "Villkor för att appen finns",
+  "@consentTermsHeading": {
+    "description": "Spår 6, v60: heading over the box with the two consents that cannot be switched off"
+  },
+  "consentEssentialTitle": "Nödvändig drift",
+  "@consentEssentialTitle": {
+    "description": "Spår 6, v60: title of the locked consent for essential services"
+  },
+  "consentEssentialBody": "Inloggning, dina recept, synk mellan dina enheter.",
+  "@consentEssentialBody": {
+    "description": "Spår 6, v60: reason for the essential-services consent"
+  },
+  "consentDataProcessingBody": "Att spara det du skriver in, så att det finns kvar i morgon.",
+  "@consentDataProcessingBody": {
+    "description": "Spår 6, v60: reason for the data-processing consent"
+  },
+  "consentRequiredNoteBefore": "De här går inte att stänga av — utan dem finns ingen tjänst att säga ja eller nej till. Vill du bort helt är vägen ",
+  "@consentRequiredNoteBefore": {
+    "description": "Spår 6, v60: first part of the note under the locked consents; the bold part follows"
+  },
+  "consentRequiredNoteBold": "radera kontot",
+  "@consentRequiredNoteBold": {
+    "description": "Spår 6, v60: bold part of the note under the locked consents"
+  },
+  "consentRequiredNoteAfter": ", inte ett reglage här.",
+  "@consentRequiredNoteAfter": {
+    "description": "Spår 6, v60: last part of the note under the locked consents"
+  },
+  "consentYourChoices": "Dina val",
+  "@consentYourChoices": {
+    "description": "Spår 6, v60: heading over the optional consent switches"
+  },
+  "consentMarketing": "Utskick",
+  "@consentMarketing": {
+    "description": "Spår 6, v60: marketing consent switch"
+  },
+  "consentMarketingDescription": "Nyheter om appen. Aldrig andras erbjudanden.",
+  "@consentMarketingDescription": {
+    "description": "Spår 6, v60: what the marketing consent covers"
+  },
+  "consentSocial": "Socialt",
+  "@consentSocial": {
+    "description": "Spår 6, v60: social-features consent switch"
+  },
+  "consentSocialDescription": "Vänner, delade listor, kommentarer.",
+  "@consentSocialDescription": {
+    "description": "Spår 6, v60: what the social consent covers"
+  },
+  "consentSavedVersion": "Sparat version {version} · {date}{device}. Vi behåller versionen för att kunna visa vad du sa ja till, inte bara att du gjorde det.",
+  "@consentSavedVersion": {
+    "description": "Spår 6, v60: the line that says which version, when and on which device the consent was saved; device is empty or starts with ' · '",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "consentHistory": "Historik",
+  "@consentHistory": {
+    "description": "Spår 6, v60: row that opens the consent history"
+  },
+  "consentHistorySubtitle": "Vad du sagt ja och nej till, och när",
+  "@consentHistorySubtitle": {
+    "description": "Spår 6, v60: subtitle of the consent history row"
+  },
+  "consentHistoryEmpty": "Inga sparade val ännu.",
+  "@consentHistoryEmpty": {
+    "description": "Spår 6, v60: empty consent history"
+  },
+  "consentRevokeAllOptional": "Återkalla allt valfritt",
+  "@consentRevokeAllOptional": {
+    "description": "Spår 6, v60: red text button under the save button"
+  },
+  "consentHistoryNoneOn": "Inga valfria samtycken",
+  "@consentHistoryNoneOn": {
+    "description": "Spår 6, v60: history line when no optional consent was on"
+  },
+  "dataExportPageTitle": "Hämta ut dina uppgifter",
+  "@dataExportPageTitle": {
+    "description": "Spår 6, v61: page title of the data export"
+  },
+  "dataExportHeadline": "Allt du lagt in, i en fil",
+  "@dataExportHeadline": {
+    "description": "Spår 6, v61: heading of the data export"
+  },
+  "dataExportIncludesRecipesComments": "Dina recept, kommentarer och betyg",
+  "@dataExportIncludesRecipesComments": {
+    "description": "Spår 6, v61: included item"
+  },
+  "dataExportIncludesSocial": "Vänner, meddelanden och aktivitetshistorik",
+  "@dataExportIncludesSocial": {
+    "description": "Spår 6, v61: included item"
+  },
+  "dataExportFileTitle": "Din export (JSON)",
+  "@dataExportFileTitle": {
+    "description": "Spår 6, v61: title of the finished export file card"
+  },
+  "pendingDeletionNoticeTitle": "Kontot raderas {date}",
+  "@pendingDeletionNoticeTitle": {
+    "description": "Spår 6, v62: title of the notice box on the pending-deletion page",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingDeletionNoticeBody": "Tills dess finns allt kvar, och du kan ångra raderingen. Efter det går inget att återskapa.",
+  "@pendingDeletionNoticeBody": {
+    "description": "Spår 6, v62: body of the notice box on the pending-deletion page"
+  },
+  "pendingDeletionListHeading": "Det här raderas den {date}",
+  "@pendingDeletionListHeading": {
+    "description": "Spår 6, v62: heading over the list of what is deleted",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingDeletionItemRecipes": "Recept, menyer och listor",
+  "@pendingDeletionItemRecipes": {
+    "description": "Spår 6, v62: what is deleted"
+  },
+  "pendingDeletionItemRecipesNote": "allt du skapat",
+  "@pendingDeletionItemRecipesNote": {
+    "description": "Spår 6, v62: what is deleted, detail"
+  },
+  "pendingDeletionItemRatings": "Betyg, kommentarer och cook snaps",
+  "@pendingDeletionItemRatings": {
+    "description": "Spår 6, v62: what is deleted"
+  },
+  "pendingDeletionItemRatingsNote": "även i andras recept",
+  "@pendingDeletionItemRatingsNote": {
+    "description": "Spår 6, v62: what is deleted, detail"
+  },
+  "pendingDeletionItemHousehold": "Hushåll och delningar",
+  "@pendingDeletionItemHousehold": {
+    "description": "Spår 6, v62: what is deleted"
+  },
+  "pendingDeletionItemHouseholdNote": "du lyfts ur, listorna finns kvar hos de andra",
+  "@pendingDeletionItemHouseholdNote": {
+    "description": "Spår 6, v62: what is deleted, detail"
+  },
+  "pendingDeletionItemCache": "Sökindex och lokal cache",
+  "@pendingDeletionItemCache": {
+    "description": "Spår 6, v62: what is deleted"
+  },
+  "pendingDeletionItemCacheNote": "rensas först av allt",
+  "@pendingDeletionItemCacheNote": {
+    "description": "Spår 6, v62: what is deleted, detail"
+  },
+  "legalLinkTerms": "Villkoren",
+  "@legalLinkTerms": {
+    "description": "Link at the foot of a legal document to the terms of service"
+  },
+  "legalLinkPrivacy": "Integritet",
+  "@legalLinkPrivacy": {
+    "description": "Link at the foot of a legal document to the privacy policy"
+  },
+  "legalLinkGuidelines": "Riktlinjer",
+  "@legalLinkGuidelines": {
+    "description": "Link at the foot of a legal document to the community guidelines"
+  },
+  "legalLinkContact": "Kontakt",
+  "@legalLinkContact": {
+    "description": "Link at the foot of a legal document that opens a mail to support"
+  },
+  "legalCommunityGuidelinesTitle": "Så gör vi mot varandra",
+  "@legalCommunityGuidelinesTitle": {
+    "description": "Page title of the community guidelines"
+  },
+  "accountSecurityEmailNow": "Nu: ",
+  "@accountSecurityEmailNow": {
+    "description": "Label before the current e-mail address at the top of the change e-mail page"
+  },
+  "accountSecurityRepeatNewPassword": "Upprepa nytt lösenord",
+  "@accountSecurityRepeatNewPassword": {
+    "description": "Label of the second new-password field on the change password page"
+  },
+  "decisionOutcomeLabel": "Utfall:",
+  "@decisionOutcomeLabel": {
+    "description": "Bold label opening the outcome note of a moderation matter"
+  },
+  "decisionAppealLink": "Jag vill överklaga",
+  "@decisionAppealLink": {
+    "description": "Link in a moderation row or decision that opens the appeal form"
+  },
+  "myReportsStatusActioned": "Åtgärdad",
+  "@myReportsStatusActioned": {
+    "description": "Status pill on a report that led to an action"
+  },
+  "myContentDecisionsIntro": "Beslut om sådant du lagt upp. Varje beslut kan överklagas en gång.",
+  "@myContentDecisionsIntro": {
+    "description": "Intro line under the title of Beslut om mitt innehåll"
+  },
+  "myReportsIntro": "Det du anmält och vad som hänt sedan. Vi berättar utfallet, också när det gick emot dig.",
+  "@myReportsIntro": {
+    "description": "Intro line under the title of Mina rapporter"
+  },
+  "appealFormQuestion": "Varför tycker du att beslutet är fel?",
+  "@appealFormQuestion": {
+    "description": "Heading above the appeal text field"
+  },
+  "trashRowDeleted": "Raderad {when} · {left}",
+  "@trashRowDeleted": {
+    "description": "Subtitle of a trash row: when it was deleted and how long is left",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDeletedToday": "i dag",
+  "@trashDeletedToday": {
+    "description": "'When' of a trash row deleted today"
+  },
+  "trashUrgentLeft": "{left} — raderas för gott på {day}",
+  "@trashUrgentLeft": {
+    "description": "Subtitle of a trash row with little time left; day is the weekday",
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "trashUrgentToday": "{left} — raderas för gott i dag",
+  "@trashUrgentToday": {
+    "description": "Subtitle of a trash row that expires today",
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "licensesIntro": "Det Butlery bygger på, och villkoren det följer med.",
+  "@licensesIntro": {
+    "description": "Intro line under the title of the licences page"
+  },
+  "mfaOnTitle": "Påslagen",
+  "@mfaOnTitle": {
+    "description": "Title of the note on the two-step verification page when it is on"
+  },
+  "mfaOffTitle": "Inte påslagen",
+  "@mfaOffTitle": {
+    "description": "Title of the note on the two-step verification page when it is off"
+  },
+  "mfaLostPhoneTitle": "Om telefonen är borta",
+  "@mfaLostPhoneTitle": {
+    "description": "Section heading about backup codes on the two-step verification page"
+  },
+  "mfaLostPhoneBody": "När du slog på skyddet fick du tio engångskoder att skriva ned. Med en av dem kommer du in även utan telefonen.",
+  "@mfaLostPhoneBody": {
+    "description": "Body under the backup codes heading"
+  },
+  "mfaRemoveLink": "Ta bort",
+  "@mfaRemoveLink": {
+    "description": "Text link that removes a registered two-step method"
+  },
+  "groupSharedRecipesLabel": "{count, plural, =1{recept} other{recept}}",
+  "@groupSharedRecipesLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedMenusLabel": "{count, plural, =1{meny} other{menyer}}",
+  "@groupSharedMenusLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSharedListsLabel": "{count, plural, =1{inköpslista} other{inköpslistor}}",
+  "@groupSharedListsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupInvitedLabel": "Inbjuden",
+  "groupInviteLink": "+ Bjud in",
+  "groupMembersHeading": "Medlemmar",
+  "groupShareSheetButton": "Dela recept, meny eller lista",
+  "messagingNewGroupChat": "Ny gruppchatt",
+  "profileChangePhoto": "Ändra bild",
+  "@profileChangePhoto": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the saffron text under the avatar"
+  },
+  "profileDisplayNameAvailable": "Ledigt",
+  "@profileDisplayNameAvailable": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Redigera profil, the name is free"
+  },
+  "sharedSaveAction": "Spara",
+  "@sharedSaveAction": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, saves the shared item to the user own"
+  },
+  "sharedSavedState": "Sparad",
+  "@sharedSavedState": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, the item is already saved"
+  },
+  "sharedFromNameAgo": "från {name} · {time}",
+  "@sharedFromNameAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item",
+    "placeholders": {"name": {"type": "String"}, "time": {"type": "String"}}
+  },
+  "sharedSharedAgo": "delad {time}",
+  "@sharedSharedAgo": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under a shared item on one friend page",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "sharedNewMark": "ny",
+  "@sharedNewMark": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, marks an unread shared item"
+  },
+  "sharedFromHeading": "Från {name}",
+  "@sharedFromHeading": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, heading of one friend page",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "sharedFromSummary": "{count, plural, one{{count} recept} other{{count} recept}} · senast {time}",
+  "@sharedFromSummary": {
+    "description": "Skiss rättad spår 7 (2026-10-12): Delat med mig, line under the heading",
+    "placeholders": {"count": {"type": "int"}, "time": {"type": "String"}}
+  },
+  "socialFriendsSection": "Vänner · {count}",
+  "@socialFriendsSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSelect": "Välj",
+  "socialRequestsIncomingSection": "Inkommande · {count}",
+  "@socialRequestsIncomingSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSentSection": "Skickade · {count}",
+  "@socialRequestsSentSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messagingAboutConversation": "Om samtalet",
+  "@messagingAboutConversation": {
+    "description": "Skiss rättad spår 7 (2026-10-12): title of the group conversation detail page"
+  },
+  "messagingConversationSubline": "{name} · {count, plural, =1{1 med i samtalet} other{{count} med i samtalet}}",
+  "@messagingConversationSubline": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line in the bar of the group conversation detail page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messagingConversationNameRow": "Samtalets namn",
+  "@messagingConversationNameRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the rename dialog"
+  },
+  "messagingAddSomeoneRow": "Lägg till någon",
+  "@messagingAddSomeoneRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row that opens the friend picker"
+  },
+  "messagingInConversationSection": "Med i samtalet",
+  "@messagingInConversationSection": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title above the members"
+  },
+  "messagingMemberYou": "du",
+  "@messagingMemberYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): lower-case marker after your own name in the member list"
+  },
+  "messagingRemoveFromConversationTitle": "Ta bort {name} ur samtalet?",
+  "@messagingRemoveFromConversationTitle": {
+    "description": "Skiss rättad spår 7 (2026-10-12): question in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveFromConversationBody": "{name} slutar se nya meddelanden. Det som redan skrivits ligger kvar, och kontot påverkas inte. Du kan bjuda in personen igen.",
+  "@messagingRemoveFromConversationBody": {
+    "description": "Skiss rättad spår 7 (2026-10-12): what removing a member does, in the inline confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingLeaveConversationRow": "Lämna samtalet",
+  "@messagingLeaveConversationRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): danger row on the group conversation detail page"
+  },
+  "messagingLeaveConversationSub": "Du slutar se nya meddelanden. Det du skrivit ligger kvar.",
+  "@messagingLeaveConversationSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the leave row"
+  },
+  "recipeRowMinutes": "{minutes} min",
+  "@recipeRowMinutes": {
+    "description": "Skiss rättad spår 7 (2026-10-12): cooking time on a recipe row",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "publicProfileRecipeCount": "{count, plural, =1{1 publikt recept} other{{count} publika recept}}",
+  "@publicProfileRecipeCount": {
+    "description": "Skiss rättad spår 7 (2026-10-12): line above the recipes on a public profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendProfileBetweenYou": "Mellan er",
+  "@friendProfileBetweenYou": {
+    "description": "Skiss rättad spår 7 (2026-10-12): section title on the friend profile"
+  },
+  "friendProfileSharedWithYouSub": "Ligger under Delat med mig",
+  "@friendProfileSharedWithYouSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the shared-with-you row"
+  },
+  "friendProfilePublicRecipesSub": "Synliga för alla, inte bara för dig",
+  "@friendProfilePublicRecipesSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the public recipes row"
+  },
+  "friendProfileShareLinkRow": "Dela en länk till {owner} profil",
+  "@friendProfileShareLinkRow": {
+    "description": "Skiss rättad spår 7 (2026-10-12): row on the friend profile; owner is the name already in genitive form",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileShareLinkSub": "Visar den publika sidan, inget ni delat",
+  "@friendProfileShareLinkSub": {
+    "description": "Skiss rättad spår 7 (2026-10-12): second line of the share-link row"
+  },
+  "profileFriendsLabel": "{count, plural, =1{vän} other{vänner}}",
+  "@profileFriendsLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the friend count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePublicRecipesLabel": "{count, plural, =1{publikt recept} other{publika recept}}",
+  "@profilePublicRecipesLabel": {
+    "description": "Skiss rättad spår 7 (2026-10-12): label after the public recipe count on a profile",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "adminOpsSectionTitle": "Drift · senaste händelser",
   "@adminOpsSectionTitle": {
     "description": "Skiss spår 9 (v65): heading above the ops-log table"
@@ -17352,5 +17841,104 @@
         "type": "String"
       }
     }
-  }
+  },
+  "importLinkOrCaptionLabel": "Länk eller bildtext",
+  "importPasteHelp": "Klistra in länken till inlägget, eller hela bildtexten om du redan kopierat den.",
+  "importCaptionWarningLead": "Ett inlägg har ingen receptstruktur – bara bildtexten. Jag tar bort emoji och städar mängderna, men ",
+  "importCaptionWarningEmphasis": "du får ofta rätta något",
+  "importVideoNotRead": "Videons innehåll läses aldrig. Det som inte står i text finns inte för importen – och det ska sägas innan, inte upptäckas efter.",
+  "importFetchRecipe": "Hämta receptet",
+  "shoppingNewSharedListTitle": "Ny delad lista",
+  "shoppingSharedListNameLabel": "Listans namn",
+  "shoppingShareWithHeading": "Dela med",
+  "shoppingPermissionHeading": "Behörighet",
+  "shoppingPermissionCanEdit": "Kan redigera",
+  "shoppingPermissionReadOnlyTab": "Endast läsa",
+  "shoppingPermissionCanEditHelp": "Alla kan lägga till och bocka av varor i realtid.",
+  "shoppingPermissionViewOnlyHelp": "De du delar med kan se listan men inte ändra den.",
+  "shoppingNoFriendsToShareWith": "Du har inga vänner att dela med än.",
+  "importMoreFilters": "Fler",
+  "importArchivedHeading": "Arkiverade recept · {count}",
+  "@importArchivedHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importRestoreCount": "Återställ {count} recept",
+  "@importRestoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importFiltersTitle": "Filter",
+  "importTimeHeading": "Tid",
+  "importTagsHeading": "Taggar",
+  "importRecipeMinutes": "{minutes} min",
+  "@importRecipeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importUpToMinutes": "Högst {minutes} min",
+  "@importUpToMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importArchiveTitle": "Ur arkivet",
+  "importPreviewFoundCount": "{count} recept hittades",
+  "@importPreviewFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewParsedCount": "{count} tolkade",
+  "@importPreviewParsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewProgress": "{selected} av {total}",
+  "@importPreviewProgress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewUnreadHeading": "Kunde inte tolkas",
+  "importPreviewReadyHeading": "Klara att spara",
+  "voiceListeningWord": "hör dig …",
+  "importPhotoCameraButton": "Fota nu",
+  "importPhotoLibraryButton": "Ur bildbiblioteket",
+  "importPhotoPagesHeading": "Sidor · {count}",
+  "@importPhotoPagesHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heirloomToggleSubtitle": "Fotot sparas med receptet, som källa",
+  "importPhotoHeirloomHint": "Handskrivna arvsrecept? Originalbilden sparas på receptkortet.",
+  "recipeDescriptionOptional": "Beskrivning (valfritt)",
+  "recipeMethodHeading": "Gör så här",
+  "importPhotoRestartTitle": "Börja om?",
+  "importPhotoRestartMessage": "Sidorna du redan tagit tas bort om du väljer en ny bild.",
+  "importPhotoRestartAction": "Börja om"
 }

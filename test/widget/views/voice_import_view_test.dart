@@ -2,7 +2,7 @@
 /// A's big mic — Malin's pick 2026-07-13).
 ///
 /// Intent: pin the wizard's contract — three always-typable cards, one
-/// recording at a time with the large stop control in the active card,
+/// recording at a time with the stop control in the active part,
 /// transcript landing editable in its own card, the import button
 /// unlocking only when all three sections have text, and voice failures
 /// degrading to a quiet notice with typing untouched.
@@ -109,12 +109,18 @@ void main() {
     production.ServiceLocator.reset();
   });
 
-  Future<void> pump(WidgetTester tester) => tester.pumpWidget(
-    createLocalizedTestApp(
-      wrapInScaffold: false,
-      child: VoiceImportView(permissionGateway: _GrantedGateway()),
-    ),
-  );
+  // Tall enough for all three parts, so the third mic is on screen to tap.
+  Future<void> pump(WidgetTester tester) {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    return tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: VoiceImportView(permissionGateway: _GrantedGateway()),
+      ),
+    );
+  }
 
   testWidgets('renders three cards, all typable, submit locked', (
     tester,
@@ -156,7 +162,7 @@ void main() {
       expect(
         find.byIcon(ButleryIcons.stop),
         findsOneWidget,
-        reason: "direction A's big stop control shows in the active card",
+        reason: 'the stop control shows in the active part',
       );
       // The other cards' mics pause while one records.
       expect(find.byIcon(ButleryIcons.mic), findsNWidgets(2));
@@ -189,6 +195,7 @@ void main() {
       await tester.tap(find.byIcon(ButleryIcons.mic).at(2)); // steps
       await tester.pumpAndSettle();
       expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
+      expect(find.text('hör dig …'), findsOneWidget);
 
       // The service fires the per-capture cap callback — no user tap.
       voice.capturedOnAutoStopped!();

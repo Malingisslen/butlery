@@ -109,7 +109,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LicensesView), findsOneWidget);
-      expect(find.text(sv.licensesOflHeading), findsOneWidget);
+      expect(find.text('2 · ${sv.licensesOflHeading}'), findsOneWidget);
       expect(
         find.byTooltip(sv.commonBackTo(sv.settingsHelpTitle)),
         findsOneWidget,

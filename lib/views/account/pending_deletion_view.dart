@@ -7,14 +7,17 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/profile/dialogs/deletion_schedule_dialogs.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -143,68 +146,99 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
       title: l10n.pendingDeletionTitle,
       width: PageWidth.compact,
       showTabBar: false,
-      body: SingleChildScrollView(
-        padding: ButleryPageBody.margin(
-          context,
-          top: AppDimensions.space12,
-          bottom: AppDimensions.space12,
-        ),
-        child: ListenableBuilder(
-          listenable: _viewModel,
-          builder: (context, _) {
-            final busy = _viewModel.isLoading;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: ButleryIcon(
-                    ButleryIcons.triangleAlert,
-                    size: AppDimensions.iconSizeXxl,
-                    color: cs.error,
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) {
+          final busy = _viewModel.isLoading;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: ButleryPageBody.margin(
+                    context,
+                    top: AppDimensions.space16,
+                    bottom: AppDimensions.space16,
                   ),
-                ),
-                const SizedBox(height: AppDimensions.space32),
-                Text(
-                  l10n.pendingDeletionBody(date),
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppDimensions.space32),
-                if (busy)
-                  Center(
-                    child: PlateLineMessage(
-                      message: l10n.accountDeletingProgress,
+                  children: [
+                    TintedNote.titled(
+                      title: l10n.pendingDeletionNoticeTitle(date),
+                      body: l10n.pendingDeletionNoticeBody,
                     ),
-                  )
-                else ...[
-                  ActionButtons.primaryButton(
-                    context,
-                    label: l10n.pendingDeletionUndo,
-                    onPressed: _undo,
-                    isExpanded: true,
-                  ),
-                  const SizedBox(height: AppDimensions.space8),
-                  ActionButtons.outlinedButton(
-                    context,
-                    label: l10n.pendingDeletionDeleteNow,
-                    onPressed: _deleteNow,
-                    isExpanded: true,
-                  ),
-                  const SizedBox(height: AppDimensions.space8),
-                  ActionButtons.textButton(
-                    context,
-                    label: l10n.profileLogout,
-                    onPressed: () => AuthActionHandler.handleLogout(context),
-                    isExpanded: true,
-                  ),
-                ],
-              ],
-            );
-          },
-        ),
+                    ButleryListSection(
+                      title: l10n.pendingDeletionListHeading(date),
+                      rows: [
+                        for (final (title, note) in [
+                          (
+                            l10n.pendingDeletionItemRecipes,
+                            l10n.pendingDeletionItemRecipesNote,
+                          ),
+                          (
+                            l10n.pendingDeletionItemRatings,
+                            l10n.pendingDeletionItemRatingsNote,
+                          ),
+                          (
+                            l10n.pendingDeletionItemHousehold,
+                            l10n.pendingDeletionItemHouseholdNote,
+                          ),
+                          (
+                            l10n.pendingDeletionItemCache,
+                            l10n.pendingDeletionItemCacheNote,
+                          ),
+                        ])
+                          ButleryListRow.note(
+                            emphasis: true,
+                            label: title,
+                            subtitle: note,
+                            leading: ButleryIcons.trash2,
+                            leadingColor: cs.error,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: ButleryPageBody.margin(
+                  context,
+                  top: AppDimensions.space12,
+                  bottom: AppDimensions.space12,
+                ),
+                child: busy
+                    ? Center(
+                        child: PlateLineMessage(
+                          message: l10n.accountDeletingProgress,
+                        ),
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          HeroButton(
+                            label: l10n.pendingDeletionUndo,
+                            onPressed: _undo,
+                            expand: true,
+                          ),
+                          const SizedBox(height: AppDimensions.space8),
+                          OutlinedButton.icon(
+                            style: ComponentThemes.deleteButtonStyle(cs),
+                            onPressed: _deleteNow,
+                            icon: const ButleryIcon(ButleryIcons.trash2),
+                            label: Text(l10n.pendingDeletionDeleteNow),
+                          ),
+                          const SizedBox(height: AppDimensions.space8),
+                          ActionButtons.textButton(
+                            context,
+                            label: l10n.profileLogout,
+                            onPressed: () =>
+                                AuthActionHandler.handleLogout(context),
+                            isExpanded: true,
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -204,7 +205,7 @@ void main() {
           // Act
           final result = await viewModel.signIn(
             email: 'test@example.com',
-            password: 'password123',
+            password: 'password-12345',
           );
 
           // Assert - Verify behavior, not call count
@@ -218,7 +219,7 @@ void main() {
         // Act
         final result = await viewModel.signIn(
           email: '',
-          password: 'password123',
+          password: 'password-12345',
         );
 
         // Assert - Service should not be called due to validation failure
@@ -243,7 +244,7 @@ void main() {
         for (final email in invalidEmails) {
           final result = await viewModel.signIn(
             email: email,
-            password: 'password123',
+            password: 'password-12345',
           );
           expect(result, isFalse, reason: 'Should reject email: $email');
           expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
@@ -269,7 +270,7 @@ void main() {
           for (final email in validEmails) {
             final result = await viewModel.signIn(
               email: email,
-              password: 'password123',
+              password: 'password-12345',
             );
             expect(result, isTrue, reason: 'Should accept email: $email');
           }
@@ -290,52 +291,12 @@ void main() {
         expect(viewModel.errorMessage, equals('Lösenord kan inte vara tomt'));
       });
 
-      test('should reject password shorter than 8 characters', () async {
-        // Arrange
-        final shortPasswords = [
-          '',
-          '1',
-          '12',
-          '123',
-          '1234',
-          '12345',
-          '123456',
-          '1234567',
-        ];
-
-        // Act & Assert
-        for (final password in shortPasswords) {
-          final result = await viewModel.signIn(
-            email: 'test@example.com',
-            password: password,
-          );
-          expect(
-            result,
-            isFalse,
-            reason: 'Should reject password length: ${password.length}',
-          );
-          // Check appropriate error message based on length
-          if (password.isEmpty) {
-            expect(
-              viewModel.errorMessage,
-              equals('Lösenord kan inte vara tomt'),
-            );
-          } else {
-            expect(viewModel.errorMessage, contains('minst 8 tecken'));
-          }
-        }
-      });
-
-      test('should accept password with exactly 8 characters', () async {
-        // Arrange - Use default successful behavior (shouldSucceed = true)
-
-        // Act
+      test('should not refuse a short password at sign-in', () async {
+        // An older account may have a shorter password than sign-up asks for.
         final result = await viewModel.signIn(
           email: 'test@example.com',
-          password: '12345678',
+          password: '1234567',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
@@ -347,7 +308,7 @@ void main() {
           // Act
           final result = await viewModel.signIn(
             email: '  test@example.com  ',
-            password: 'password123',
+            password: 'password-12345',
           );
 
           // Assert
@@ -366,7 +327,7 @@ void main() {
         // Act
         final result = await viewModel.signIn(
           email: 'test@example.com',
-          password: 'password123',
+          password: 'password-12345',
         );
 
         // Assert
@@ -392,13 +353,37 @@ void main() {
         },
       );
 
+      test('a new password must be twelve characters or three words', () async {
+        for (final weak in ['kort', '12345678', 'ab cd']) {
+          final result = await viewModel.register(
+            email: 'test@example.com',
+            password: weak,
+            displayName: 'Test User',
+          );
+          expect(result, isFalse, reason: weak);
+          expect(
+            viewModel.errorMessage,
+            equals(AppLocale.current.validationPasswordRule),
+            reason: weak,
+          );
+        }
+        for (final fine in ['x' * 12, 'rött gult grönt']) {
+          final result = await viewModel.register(
+            email: 'test@example.com',
+            password: fine,
+            displayName: 'Test User',
+          );
+          expect(result, isTrue, reason: fine);
+        }
+      });
+
       test('should validate all fields before registration', () async {
         // Arrange - test empty fields
 
         // Act & Assert - empty email
         var result = await viewModel.register(
           email: '',
-          password: 'password123',
+          password: 'password-12345',
           displayName: 'Test User',
         );
         expect(result, isFalse);
@@ -416,7 +401,7 @@ void main() {
         // Act & Assert - empty display name
         result = await viewModel.register(
           email: 'test@example.com',
-          password: 'password123',
+          password: 'password-12345',
           displayName: '',
         );
         expect(result, isFalse);
@@ -434,7 +419,7 @@ void main() {
         for (final name in shortNames) {
           final result = await viewModel.register(
             email: 'test@example.com',
-            password: 'password123',
+            password: 'password-12345',
             displayName: name,
           );
           expect(
@@ -463,7 +448,7 @@ void main() {
         // Act
         final result = await viewModel.register(
           email: 'test@example.com',
-          password: 'password123',
+          password: 'password-12345',
           displayName: 'AB',
         );
 
@@ -485,7 +470,7 @@ void main() {
         for (final name in swedishNames) {
           final result = await viewModel.register(
             email: 'test@example.com',
-            password: 'password123',
+            password: 'password-12345',
             displayName: name,
           );
           expect(result, isTrue, reason: 'Should accept display name: $name');
@@ -500,7 +485,7 @@ void main() {
           // Act
           final result = await viewModel.register(
             email: '  test@example.com  ',
-            password: 'password123',
+            password: 'password-12345',
             displayName: 'Test User',
           );
 
@@ -520,7 +505,7 @@ void main() {
         // Act
         final result = await viewModel.register(
           email: 'test@example.com',
-          password: 'password123',
+          password: 'password-12345',
           displayName: 'Test User',
         );
 
@@ -637,7 +622,7 @@ void main() {
         viewModel.addListener(() => notificationCount++);
 
         // Act - trigger validation error
-        viewModel.signIn(email: '', password: 'password123');
+        viewModel.signIn(email: '', password: 'password-12345');
 
         // Assert
         expect(notificationCount, greaterThan(0));
@@ -751,7 +736,7 @@ void main() {
         // Act - start multiple sign ins
         final future1 = viewModel.signIn(
           email: 'test1@example.com',
-          password: 'password123',
+          password: 'password-12345',
         );
         final future2 = viewModel.signIn(
           email: 'test2@example.com',
@@ -773,7 +758,7 @@ void main() {
         // Act
         final result = await viewModel.signIn(
           email: longEmail,
-          password: 'password123',
+          password: 'password-12345',
         );
 
         // Assert
@@ -808,7 +793,7 @@ void main() {
         for (final name in specialNames) {
           final result = await viewModel.register(
             email: 'test@example.com',
-            password: 'password123',
+            password: 'password-12345',
             displayName: name,
           );
           expect(result, isTrue, reason: 'Should accept display name: $name');
@@ -821,7 +806,7 @@ void main() {
         // Act
         final result = await viewModel.signIn(
           email: 'first.last@sub.domain.example.com',
-          password: 'password123',
+          password: 'password-12345',
         );
 
         // Assert
@@ -834,7 +819,7 @@ void main() {
         // Act
         final result = await viewModel.signIn(
           email: 'user123@example456.com',
-          password: 'password123',
+          password: 'password-12345',
         );
 
         // Assert
@@ -851,7 +836,7 @@ void main() {
           // Act
           final result = await viewModel.register(
             email: 'åäö@example.com',
-            password: 'lösenordÅÄÖ',
+            password: 'lösenordÅÄÖ123',
             displayName: 'Åsa Öberg',
           );
 
@@ -874,7 +859,7 @@ void main() {
           for (final email in swedishDomains) {
             final result = await viewModel.signIn(
               email: email,
-              password: 'password123',
+              password: 'password-12345',
             );
             expect(result, isTrue, reason: 'Should accept email: $email');
           }

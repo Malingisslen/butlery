@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=931-->
+<!--manifest:files=935-->
 
 ## Reporoten
 
@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `993083e81c724dba97f273e8e4395db99e9959e88189b714edeee9851b1bcda4` |
+| `beslutslogg.md` | `feb657338d411514a1a785410e93528ceef98e90220bcdf46360561b5d95b895` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `32f8cc5966a2c71ca68577f9d061a21007c7f437ee4c249983ab61c1b6ee41a4` |
+| `screen-register.json` | `a2e9c41822af20eda64dc28ea430aedac9114e365f928f73f847291fbdec6b78` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -633,16 +633,16 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/09-mer.png` | `2684dc20c174910be324cd697234d0956aff6f130bd938c1f22c11af57b9f22f` |
 | `skiss-mot-app/10-delad-inkopslista.png` | `3705e4000d95f4f5600ec9b08b1665113bc6e47785005a716c37a0fa7fd45035` |
 | `skiss-mot-app/10-inkopslista.png` | `126d55fb6e5c88b98faf9a22eaed7ab4c8662729fc87ac29914cbeaecca6e81b` |
-| `skiss-mot-app/100-friend-requests-reexport.png` | `462626a290abd5f429b8e99f7b5b0767f9fc53309f3f03f9ca46fd854b799bf2` |
-| `skiss-mot-app/101-friends-list.png` | `001d6f212072819bf72bc4b0226ccaa6302bc89bb5420ba3d4175bb0635e1cbf` |
-| `skiss-mot-app/102-group-detail.png` | `e76ada3b5d36d89a3fcae5c1d4e7497f4daa2d5b22e8d119798ce8ed4654389f` |
+| `skiss-mot-app/100-friend-requests-reexport.png` | `f05b232614a7728313db86e80429e0819b93faef8dbd024b9668f1e4bbc845d1` |
+| `skiss-mot-app/101-friends-list.png` | `c4ce7d97b80b89472829ca648e7af7254c2694746994a9ec16cb3d28b189668a` |
+| `skiss-mot-app/102-group-detail.png` | `04930eecafe1bbb26312786fbfde10def90bb929bedbb809db5d5b465c571365` |
 | `skiss-mot-app/103-menu-preview.png` | `7bcd859d734072e7be9a2b06910a02a1be8a7dbd2557b076ce88483d957763e6` |
-| `skiss-mot-app/104-public-profile.png` | `785647e3a56b140fe1da20d2b52f8ae5b9dd99435fdc9b833c077c0935fd9ebe` |
-| `skiss-mot-app/105-shared-recipes-by-friend.png` | `c5888738c6c8a704345b20ede3de7a0af6ebea1dc34d2d3b70992136b50f4435` |
-| `skiss-mot-app/106-shared-with-me.png` | `d43e79cd36818e156734fb499137a6dccf56323c8ee3186469452ef8135cd5dd` |
-| `skiss-mot-app/107-user-profile-edit.png` | `167730b6885e9b2e1153604c07d65c24284eb03bb6c5b637f8c1ffc4e3bbbae7` |
+| `skiss-mot-app/104-public-profile.png` | `d8192cadc18ad2294ebfcda6aaa492a0b26f627cd7ef0a7cc4ef0c04cabc7189` |
+| `skiss-mot-app/105-shared-recipes-by-friend.png` | `53e4f7b3a1767128d7cf288f2ad19017ec273482cf00dabfda0751aa368573a2` |
+| `skiss-mot-app/106-shared-with-me.png` | `ad77b974b49a8d24e38f8bdd8233db45eb5c591ea66aa47f7478962cb4c02f75` |
+| `skiss-mot-app/107-user-profile-edit.png` | `740c99ddff501942682638ef758276c63a97a609b51d3176469b6c1abb0d3f9e` |
 | `skiss-mot-app/108-tag-detail.png` | `9aa65795010ea845ac50964bc0055bb4287f5fef1b33a9c5d3630cb2a8ca2624` |
-| `skiss-mot-app/109-voice-import.png` | `ac96cc10da5a2c0008f00ae288759eb6962bf6fb9cc3c7716f3eb5255402d143` |
+| `skiss-mot-app/109-voice-import.png` | `96bcaeed23cb651af17bf5dca4590c63cf0911532b4b397c305712df37788b32` |
 | `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
 | `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
 | `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
@@ -677,9 +677,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/52-morkt-inloggning.png` | `c49ad4f7bcd2e1935b4f6aa7b47ea0ae996e8787b94ce15bedd5fa3745ca22e7` |
 | `skiss-mot-app/53-morkt-recepteditor.png` | `54fd6b655ff23e9960510a10f550041dcce5e65922811de53978e390d985dedc` |
 | `skiss-mot-app/54-morkt-onboarding-allergener.png` | `ee14631fb659ca79f8219cc527cfc8126f7807edec3efbe1458ce6cebc620479` |
-| `skiss-mot-app/60-consent-management.png` | `0634dea23526a259bd64104a13d09f18ef54115e0bc4dfe2a70a19cc87f91ae1` |
-| `skiss-mot-app/61-data-export.png` | `d86a08780f98b4ba38320edc975109376fa048228aaa913ae57b4c682054b115` |
-| `skiss-mot-app/62-pending-deletion.png` | `88e05f27dcecabcaaa056d7f9f26ab41c9b67b4eb875e30babd6594f35879f61` |
+| `skiss-mot-app/60-consent-management.png` | `cc87953d0411692fe863493ecb2ff70c8f7311a0d87270e1ce0636d49eda267c` |
+| `skiss-mot-app/61-data-export.png` | `62e2d014b32d6bbff8903a245dc6fa8a116e48ad682cdd81847f54b49d1170e1` |
+| `skiss-mot-app/62-pending-deletion.png` | `17d0a6dbf990d2f153d268b010a99da98cb44a071d581bdc8a03ee9e9a375fe3` |
 | `skiss-mot-app/63-metric-tab.png` | `f7423c08b6d7f651569e71a2d3b0f93917313319f82a6960a82b1fedf395a295` |
 | `skiss-mot-app/64-moderator-review.png` | `209cad6285e3f95cfbdb810168d21036aa001549c9fa2b99a800c5e66bf9f656` |
 | `skiss-mot-app/65-ops-log.png` | `f52d6a36ac6dee6a27a0a55bb0bd86e011227b2a704096eee45d5b240019015b` |
@@ -690,38 +690,42 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/70-set-new-password.png` | `82ecee7cd0094496b135965f46b60ad586028953f9fa3eca65987bc940ac5940` |
 | `skiss-mot-app/71-cookbook-detail.png` | `671aaee6d499fe399775aa4006f5ec62aa0bef67297517675d111d16c571828a` |
 | `skiss-mot-app/72-family-rating-entry.png` | `fe7fe4f424a2ec4acae2d57b1ab3ee3efe50c1adc347e5d992a254e873a56903` |
-| `skiss-mot-app/73-file-import.png` | `4713b56bf11af1ac0d7a461ce0db0e1e637cf8fc75507ee9ed9a0ac241374e48` |
-| `skiss-mot-app/74-fran-sociala-medier.png` | `7a9121f9c7f3a4b0d45480b6ee680551fe444578287be9c100c40826fb3893c6` |
+| `skiss-mot-app/73-file-import.png` | `80d8511482f898264164873e6b4cae7fe950c341683dced66035a54bfdd061ff` |
+| `skiss-mot-app/74-fran-sociala-medier.png` | `29ed22ebb9538e2bc3f00cb62dc3acd8b0fd5450959cbf4a1553288c3a2d991e` |
 | `skiss-mot-app/75-group-weekly-menu.png` | `39eaa6bd904e0aa22e18f1c610cf090529b079d056b92250111740c10f8c3da9` |
-| `skiss-mot-app/76-importera-fran-arkiv.png` | `72e020811b90336ff02dc9028754c9dde3a84b195a49ff08f2a8ea630db93a52` |
-| `skiss-mot-app/77-community-guidelines.png` | `7e2aa9263f6d7e26d38b6b45f2fed05e4b896b989bd093323cfc4ea9e46bde5f` |
+| `skiss-mot-app/76-importera-fran-arkiv.png` | `615f1ae2c510787b152225850da483d8c51ec914faa4badeeb9a7e3c3505d642` |
+| `skiss-mot-app/77-community-guidelines.png` | `1e48a6b1788599b106b94cfa6c9fc8602e3801daf6bda45ad3bfb959b62601b9` |
 | `skiss-mot-app/78-menu-placement.png` | `1e15d5c7622a0539540dd381873892a76ccdd597572d62e086845d09d2281855` |
-| `skiss-mot-app/79-conversation-group-detail.png` | `80a94f5468a696d95ec1b78befa8b0535d33d3ceb846bd4d2be6996c1fe268bf` |
-| `skiss-mot-app/80-create-group-conversation.png` | `d83c4c264933dfaacc9cb55b1c0aadfc1b36e9631cdeab042df9c750e041da52` |
-| `skiss-mot-app/81-account-email.png` | `bd1e3a907763fd8bbdc3d36c2104f050ff7819374f5aff433fdc6daf4fe88591` |
-| `skiss-mot-app/82-account-password.png` | `250b17684535b3945eb488311f9dade9ccf215384cb996cb4991ac1eda2b8db4` |
-| `skiss-mot-app/83-help-area.png` | `2ed8aba580762023d05572c51e1db7835fdf61be91c71178703c315fc0e7cd5b` |
+| `skiss-mot-app/79-conversation-group-detail.png` | `f3db531e98d7b9bd10a631a702470182be172eb0992b5de21189512813971b6d` |
+| `skiss-mot-app/80-create-group-conversation.png` | `53fa3d3b3e53d451598e4fa6a84af6fdc06322807928ebf5bac70725e2b00bc9` |
+| `skiss-mot-app/81-account-email.png` | `a32ff482a2a5b4284ea14f09744d487479acf99f96b04a2c342070a9aaf258f7` |
+| `skiss-mot-app/82-account-password.png` | `53363f2a674a5e43670de6ec4464721cdb65008eb8a15195d0c5b34c26122766` |
+| `skiss-mot-app/83-help-area.png` | `59465a3c6bea08bc956df7aebcb09b09b65040d466ad19c5d586adc3de59fa73` |
 | `skiss-mot-app/84-personal-tags.png` | `77108a2794ff5def129fd1ff24957165bd9db22c51fa4c52c62ddc0e865dd7cd` |
-| `skiss-mot-app/85-photo-import.png` | `d21f2d2897de1feb1aea3a3e308084d85c2c1782a251899d40eaebff590ae681` |
+| `skiss-mot-app/85-photo-import.png` | `28c49f510c2988a17678df9eba83170aa31810e28f24e7a9830f3f618fe6a03d` |
 | `skiss-mot-app/86-conflict-diff.png` | `23eabdc9d51b7375c9e2869c2c3459c6650484a33944c310683766ef00d281c4` |
 | `skiss-mot-app/87-recipe-suggestion.png` | `2d3bd61a5df7540c9c0c4b04abfe60bf84fb70d493d197d8318fa95a4101c6d0` |
-| `skiss-mot-app/88-allergen-preferences.png` | `b7f8d319ac2ed29633568d8e53b5f601a5b5d94f412dd4c309171ce446afcb93` |
-| `skiss-mot-app/89-appeal-form.png` | `3ccc8cda574721f8d73a617a4114466c0689fe56a4ffe947b3a3ef3e3d586408` |
-| `skiss-mot-app/90-decision-detail.png` | `9ca65d51c6a26f35fbdf6050a22a3dc934c92069c9ea42b10528ca62b98f0b13` |
-| `skiss-mot-app/91-licenses.png` | `e3c071e754b6afbbd620666106beefe988eac11764575cf6972b85470cee907a` |
-| `skiss-mot-app/92-mfa-settings.png` | `d8b7248b664cea235cfe27bedb59db1b7709216c8bad72b1d9e4ed393c4594d1` |
-| `skiss-mot-app/93-my-content-decisions.png` | `fd7fea9a3108a9f38a0d56eacd2a2b6580d813690ed3b429e536cdbda1c9b223` |
-| `skiss-mot-app/94-my-reports.png` | `c93c8704f21c33875da2eba4bd732d803b6fc1b0589521ad9fbe583482a875c3` |
-| `skiss-mot-app/95-trash.png` | `16e027ab1ce15faa85c28cf2e4cacfdea0475b152dbab47f400652f973d8c88d` |
-| `skiss-mot-app/96-skriv-sjalv-recept.png` | `9d2d8ea8003403a8771ab6dc3ee4f8ad8cec4cdb115912c3c055453be48f5754` |
-| `skiss-mot-app/97-create-shared-shopping-list.png` | `c9ae662d2f76721b747139e9bc072c17e56249fdc4270cbb65c6d1792a0ff9e2` |
-| `skiss-mot-app/98-friend-profile.png` | `ba99a1e8c94e83fd00771986ecb9a1fd88ef25211d2f80d51beaddb80553a295` |
-| `skiss-mot-app/99-friend-requests.png` | `ea8b030c4913b4e40f22752149cc162fa10590aa0dae5db1cfad211f19574e69` |
+| `skiss-mot-app/88-allergen-preferences.png` | `e4edd8525961176fcb651031f698ed9e253c0ce2da5c9c18588bf468dafb2266` |
+| `skiss-mot-app/89-appeal-form.png` | `e33fcc85d45b27274bec9aab0b69f5d3c508982428dc14f66c1b7f96eeb190a7` |
+| `skiss-mot-app/90-decision-detail.png` | `f1db34ade6ace58b4c36950986c5a6b5b54144e3b9894d602b01a2fbfdf15e1e` |
+| `skiss-mot-app/91-licenses.png` | `3d614184a2aaac74ad7c396b86d058c42eb17f05ea5b48a8a7fe9cc5c364ebbe` |
+| `skiss-mot-app/92-mfa-settings.png` | `6772895963a67c90aaae0e409b8595c0f10a8215c5f2a2b224740ed171200930` |
+| `skiss-mot-app/93-my-content-decisions.png` | `0adbdaebdd9521fc8f60c5b7781ebbeb7971d8d22cf3410fad6ddff74c404cc2` |
+| `skiss-mot-app/94-my-reports.png` | `a1ec1c9cc47964bca8f3a358d93092871280fe3d93ba2be372a5167145f5a3fa` |
+| `skiss-mot-app/95-trash.png` | `d7f8c8293caff66bdab2d531b9cbfe29cf2dad96648c22c19f2c7bb60ca2e46d` |
+| `skiss-mot-app/96-skriv-sjalv-recept.png` | `074641046c5847db25b7d81104d6d06d717fb9edaabb8b951335ec6f567a3b89` |
+| `skiss-mot-app/97-create-shared-shopping-list.png` | `67ad1ebccb8b6e424218e37cbc84ba6a8f9de148fcc79ee5df5b123a72f082f9` |
+| `skiss-mot-app/98-friend-profile.png` | `dc72b5e788adb81a961527c99ad1794d64bfb0fd25786467dcc5e60b273da112` |
+| `skiss-mot-app/99-friend-requests.png` | `f05b232614a7728313db86e80429e0819b93faef8dbd024b9668f1e4bbc845d1` |
 | `skiss-mot-app/spar4/allergen.png` | `6508fd2dea1465d70ec32e2382aa3dbc3439babad5b2eae71eb1449958e2c426` |
 | `skiss-mot-app/spar4/setup_active.png` | `c49b5229459437b1fa931a90ce1090025038e9d6999cfbe613f1ca7bad6c5a2b` |
 | `skiss-mot-app/spar4/setup_done.png` | `099d6352118a30abf185d9402557b3beb75061a6d88c4acf1807323dd0ef984d` |
 | `skiss-mot-app/spar4/splash.png` | `6a46ad84585d4c9604ec9e93282ec1b4ec912a21eefdfd08cd45bb73014a399e` |
 | `skiss-mot-app/spar4/welcome.png` | `4b3e22327056fb12589ffa45da80d25afdc9ae1c77b05d3525b289fb800f5df7` |
+| `skiss-mot-app/spar8/67-guest-start.png` | `db2589378cd31abe11711b82e558810c427178890b7c12dd9ac60c9dbbfac65f` |
+| `skiss-mot-app/spar8/68-guest-upgrade.png` | `cb2968bcfe7463da3d334b00f70d15e68c7adf28509c416325bb2e00db37fa58` |
+| `skiss-mot-app/spar8/69-mfa-challenge.png` | `37ec3c9a45b3b3f95d18d7e6bdaff47e200b73fce6344378e2e51980b1712872` |
+| `skiss-mot-app/spar8/70-set-new-password.png` | `df3d1e7616e0ff3cb1b12c4837f7c966066657e589e4f0f4ed75091ac9f76cd4` |
 | `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |

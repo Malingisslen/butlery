@@ -264,7 +264,6 @@ class _CollaborativeAppBar extends StatelessWidget
         final isCollaborative = status.isCollaborative;
         final participants = status.participants;
 
-        final cs = Theme.of(context).colorScheme;
         // The subpage bar (Komponentark v1 §01 pattern 2; B-45). Shared
         // content no longer tints the bar: the badge carries it, as in the
         // recipe editor (P4-U07; tokens.json:40-53).
@@ -289,9 +288,6 @@ class _CollaborativeAppBar extends StatelessWidget
                           ? '${participants.length}'
                           : context.l10n.collaborativeShared,
                       icon: ButleryIcons.users,
-                      // Paper on the ink bar (onPrimary, both schemes).
-                      color: cs.onPrimary,
-                      onInk: true,
                     ),
                   ),
                 ),

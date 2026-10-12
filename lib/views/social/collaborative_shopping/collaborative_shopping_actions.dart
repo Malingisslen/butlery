@@ -50,7 +50,6 @@ class CollaborativeShoppingActions extends BaseActionHandler
     // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
     // inköpslista'; Komponentark v1 §01 pattern 2).
     return ButleryTopBar.undersida(
-      light: true,
       title: viewModel.listTitle,
       actions: [
         _buildShareAction(context),

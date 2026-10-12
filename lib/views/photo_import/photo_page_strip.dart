@@ -11,40 +11,37 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
-/// Shows each captured page as a thumbnail (drag to reorder — order is the OCR
-/// concatenation order), a remove button per page, and an "add page" tile while
-/// under the [PhotoImportViewModel.maxPages] cap. Hidden entirely until at least
-/// one image exists, and the reorder hint only surfaces with 2+ pages so the
-/// single-photo flow stays visually unchanged.
+/// Shows each captured page as a numbered thumbnail (drag to reorder — order is
+/// the OCR concatenation order), a remove button per page, and an "add page"
+/// tile while under the [PhotoImportViewModel.maxPages] cap. Hidden entirely
+/// until at least one image exists.
 class PhotoPageStrip extends StatelessWidget {
   final PhotoImportViewModel viewModel;
 
   const PhotoPageStrip({super.key, required this.viewModel});
 
-  static const double _thumbSize = 96;
+  static const double _thumbWidth = 88;
+  static const double _thumbHeight = 112;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final pages = viewModel.pageImages;
     if (pages.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (viewModel.hasMultiplePages) ...[
-          Text(
-            context.l10n.importPhotoPagesCombined(viewModel.pageCount),
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-          ),
-          const SizedBox(height: AppDimensions.space4),
-        ],
+        SectionHeading(
+          context.l10n.importPhotoPagesHeading(viewModel.pageCount),
+        ),
+        const SizedBox(height: AppDimensions.space8),
         SizedBox(
-          height: _thumbSize + 28,
+          height: _thumbHeight,
           child: ReorderableListView.builder(
             scrollDirection: Axis.horizontal,
             buildDefaultDragHandles: viewModel.hasMultiplePages,
@@ -60,7 +57,8 @@ class PhotoPageStrip extends StatelessWidget {
                       start: AppDimensions.space4,
                     ),
                     child: _AddPageTile(
-                      size: _thumbSize,
+                      width: _thumbWidth,
+                      height: _thumbHeight,
                       onPressed: viewModel.isProcessing
                           ? null
                           : () => _showAddPageSource(context),
@@ -76,7 +74,8 @@ class PhotoPageStrip extends StatelessWidget {
                 child: _PageThumbnail(
                   bytes: pages[index],
                   pageNumber: index + 1,
-                  size: _thumbSize,
+                  width: _thumbWidth,
+                  height: _thumbHeight,
                   onRemove: viewModel.isProcessing
                       ? null
                       : () => viewModel.removePage(index),
@@ -130,101 +129,95 @@ class PhotoPageStrip extends StatelessWidget {
 class _PageThumbnail extends StatelessWidget {
   final Uint8List bytes;
   final int pageNumber;
-  final double size;
+  final double width;
+  final double height;
   final VoidCallback? onRemove;
 
   const _PageThumbnail({
     required this.bytes,
     required this.pageNumber,
-    required this.size,
+    required this.width,
+    required this.height,
     required this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              child: Image.memory(
-                bytes,
-                height: size,
-                width: size,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              top: AppDimensions.space4,
-              right: AppDimensions.space4,
-              child: Semantics(
-                label: context.l10n.a11yRemovePhotoPage(pageNumber),
-                button: true,
-                child: OverlayButton.remove(
-                  onPressed: onRemove,
-                  tooltip: context.l10n.a11yRemovePhotoPage(pageNumber),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: ColoredBox(
+          color: cs.secondaryContainer,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.memory(bytes, fit: BoxFit.cover),
+              Positioned(
+                top: AppDimensions.space4,
+                right: AppDimensions.space4,
+                child: Semantics(
+                  label: context.l10n.a11yRemovePhotoPage(pageNumber),
+                  button: true,
+                  child: OverlayButton.remove(
+                    onPressed: onRemove,
+                    tooltip: context.l10n.a11yRemovePhotoPage(pageNumber),
+                  ),
                 ),
               ),
-            ),
-          ],
+              Positioned(
+                left: AppDimensions.space8,
+                bottom: AppDimensions.space4,
+                child: Text(
+                  context.l10n.importPhotoPageLabel(pageNumber),
+                  style: AppTextStyles.badgeLarge.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppDimensions.space4),
-        Text(
-          context.l10n.importPhotoPageLabel(pageNumber),
-          style: AppTextStyles.badgeLarge.copyWith(color: cs.onSurfaceVariant),
-        ),
-      ],
+      ),
     );
   }
 }
 
 class _AddPageTile extends StatelessWidget {
-  final double size;
+  final double width;
+  final double height;
   final VoidCallback? onPressed;
 
-  const _AddPageTile({required this.size, required this.onPressed});
+  const _AddPageTile({
+    required this.width,
+    required this.height,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final color = onPressed == null ? cs.outlineVariant : cs.onSurfaceVariant;
     return Semantics(
       label: context.l10n.importPhotoAddPage,
       button: true,
+      excludeSemantics: true,
       child: PressFill(
         surface: PressSurface.base,
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           child: Container(
-            height: size,
-            width: size,
+            height: height,
+            width: width,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(
-                color: onPressed == null ? cs.outlineVariant : cs.onSurface,
-                width: AppDimensions.borderWidthStandard,
-              ),
+              border: Border.all(color: color),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ButleryIcon(
-                  ButleryIcons.camera,
-                  color: onPressed == null ? cs.outlineVariant : cs.onSurface,
-                  size: AppDimensions.iconSizeM,
-                ),
-                const SizedBox(height: AppDimensions.space4),
-                Text(
-                  context.l10n.importPhotoAddPage,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.badgeLarge.copyWith(
-                    color: onPressed == null ? cs.outlineVariant : cs.onSurface,
-                  ),
-                ),
-              ],
+            child: Center(
+              child: ButleryIcon(ButleryIcons.plus, color: color),
             ),
           ),
         ),

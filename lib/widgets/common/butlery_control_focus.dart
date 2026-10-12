@@ -40,11 +40,16 @@ class ButleryControlFocus extends StatelessWidget {
   const ButleryControlFocus({
     required this.child,
     this.borderRadius = BorderRadius.zero,
+    this.enforceMinSize = true,
     super.key,
   });
 
   /// The control.
   final Widget child;
+
+  /// False for a control that stands inside a line of text: the ring then
+  /// follows [child] and the line keeps its own height.
+  final bool enforceMinSize;
 
   /// The wrapper's corner radius. The ring runs parallel to it.
   final BorderRadius borderRadius;
@@ -98,13 +103,15 @@ class ButleryControlFocus extends StatelessWidget {
         borderRadius: borderRadius,
         // A minimum only: tight constraints from the parent (a tab in an
         // Expanded) still reach the control unchanged.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: minSize,
-            minHeight: minSize,
-          ),
-          child: child,
-        ),
+        child: enforceMinSize
+            ? ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: minSize,
+                  minHeight: minSize,
+                ),
+                child: child,
+              )
+            : child,
       ),
     );
   }

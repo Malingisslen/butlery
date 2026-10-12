@@ -246,9 +246,17 @@ void main() {
       expect(FormValidators.authPassword()(''), isNotNull);
       // Without isSignUp, any non-empty password passes.
       expect(FormValidators.authPassword()('short'), isNull);
-      // With isSignUp, min length is enforced.
+      // With isSignUp, the new-password rule is enforced.
       expect(FormValidators.authPassword(isSignUp: true)('short'), isNotNull);
-      expect(FormValidators.authPassword(isSignUp: true)('longenough'), isNull);
+      expect(
+        FormValidators.authPassword(isSignUp: true)('longenough'),
+        isNotNull,
+      );
+      expect(FormValidators.authPassword(isSignUp: true)('x' * 12), isNull);
+      expect(
+        FormValidators.authPassword(isSignUp: true)('ab cd ef gh'),
+        isNull,
+      );
     });
   });
 
@@ -323,8 +331,13 @@ void main() {
       expect(v('short'), isNotNull);
     });
 
-    test('at or above min returns null', () {
-      expect(v('longenough'), isNull);
+    test('twelve characters, or three words, returns null', () {
+      expect(v('x' * 12), isNull);
+      expect(v('ab cd ef gh'), isNull);
+    });
+
+    test('one long word under twelve characters is refused', () {
+      expect(v('longenough'), isNotNull);
     });
   });
 

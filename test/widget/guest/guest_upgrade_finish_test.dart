@@ -98,6 +98,8 @@ void main() {
       find.byKey(GuestUpgradeView.passwordKey),
       'Hemligt123!x',
     );
+    await tester.ensureVisible(find.byType(Checkbox));
+    await tester.tap(find.byType(Checkbox));
     await tester.ensureVisible(find.byKey(GuestUpgradeView.submitKey));
     await tester.tap(find.byKey(GuestUpgradeView.submitKey));
     await tester.pumpAndSettle();

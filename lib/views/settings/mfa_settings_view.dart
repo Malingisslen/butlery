@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -15,7 +16,9 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/views/settings/mfa_backup_codes_dialog.dart';
 import 'package:butlery/views/settings/mfa_enrollment_forms.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -290,73 +293,91 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   Widget _buildInfoCard() {
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Row(
-          children: [
-            ButleryIcon(
-              _hasMfa ? ButleryIcons.shieldCheck : ButleryIcons.shield,
-              color: _hasMfa
-                  ? context.modeColors.success
-                  : context.modeColors.warning,
-              size: AppDimensions.iconSizeXl,
-            ),
-            const SizedBox(width: AppDimensions.space16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _hasMfa
-                        ? context.l10n.mfaEnabled
-                        : context.l10n.mfaDisabled,
-                    style: AppTextStyles.titleBold,
-                  ),
-                  const SizedBox(height: AppDimensions.space4),
-                  Text(
-                    _hasMfa
-                        ? context.l10n.mfaAccountProtected
-                        : context.l10n.mfaEnableForSecurity,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return TintedNote.titled(
+      title: _hasMfa ? context.l10n.mfaOnTitle : context.l10n.mfaOffTitle,
+      body: _hasMfa
+          ? context.l10n.mfaAccountProtected
+          : context.l10n.mfaEnableForSecurity,
+      icon: _hasMfa ? ButleryIcons.shieldCheck : ButleryIcons.shield,
+      iconColor: _hasMfa
+          ? context.modeColors.success
+          : AppModeColors.textWarning(Theme.of(context).brightness),
     );
   }
 
   Widget _buildEnrolledSection() {
+    final cs = Theme.of(context).colorScheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          context.l10n.mfaRegisteredMethods,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: AppDimensions.space8),
-        ..._enrolledFactors.map(
-          (factor) => Card(
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.smartphone),
-              title: Text(factor.displayName ?? context.l10n.mfaAppTitle),
-              subtitle: Text(
-                context.l10n.mfaRegistered(
-                  _formatEnrollmentTime(factor.enrollmentTimestamp),
+        ButleryListSection(
+          title: context.l10n.mfaRegisteredMethods,
+          rows: [
+            for (final factor in _enrolledFactors)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.space8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            factor.displayName ?? context.l10n.mfaAppTitle,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          Text(
+                            context.l10n.mfaRegistered(
+                              _formatEnrollmentTime(factor.enrollmentTimestamp),
+                            ),
+                            style: AppTextStyles.captionBase.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ButleryLink(
+                      semanticLabel: context.l10n.mfaRemoveLink,
+                      onTap: () => _unenrollMfa(factor),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ButleryIcon(
+                            ButleryIcons.trash2,
+                            size: AppDimensions.iconSizeS,
+                            color: cs.error,
+                          ),
+                          const SizedBox(width: AppDimensions.space4),
+                          Text(
+                            context.l10n.mfaRemoveLink,
+                            style: AppTextStyles.bodyBold.copyWith(
+                              color: cs.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              trailing: IconButton(
-                icon: ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                onPressed: () => _unenrollMfa(factor),
+          ],
+        ),
+        ButleryListSection(
+          title: context.l10n.mfaLostPhoneTitle,
+          rows: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.space8,
+              ),
+              child: Text(
+                context.l10n.mfaLostPhoneBody,
+                style: AppTextStyles.bodyMedium,
               ),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -385,6 +406,6 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     final date = DateTime.fromMillisecondsSinceEpoch(
       (timestamp * 1000).toInt(),
     );
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return DateFormat.yMMMMd(context.l10n.localeName).format(date);
   }
 }
