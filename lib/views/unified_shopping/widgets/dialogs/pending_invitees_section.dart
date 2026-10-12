@@ -7,8 +7,8 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 
 /// Pending invitations to one shared list (BUT-2089), shown in the member
 /// dialog. The `social_requests` read rule lets a sender see only their own
@@ -155,32 +155,13 @@ class InviteLevelPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final disabledText = AppModeColors.textDisabled(
-      Theme.of(context).brightness,
-    );
-    return SegmentedButton<SharedListPermission>(
-      showSelectedIcon: false,
-      style: ButtonStyle(
-        // The token, not the theme's translucent default, while a send is busy.
-        foregroundColor: WidgetStateProperty.resolveWith(
-          (states) =>
-              states.contains(WidgetState.disabled) ? disabledText : null,
-        ),
-      ),
-      segments: [
-        ButtonSegment(
-          value: SharedListPermission.view,
-          label: Text(l10n.shoppingPermissionView),
-        ),
-        ButtonSegment(
-          value: SharedListPermission.edit,
-          label: Text(l10n.shoppingPermissionEdit),
-        ),
+    return ButlerySegmentSwitch<SharedListPermission>(
+      choices: [
+        (SharedListPermission.view, l10n.shoppingPermissionView),
+        (SharedListPermission.edit, l10n.shoppingPermissionEdit),
       ],
-      selected: {value},
-      onSelectionChanged: onChanged == null
-          ? null
-          : (selection) => onChanged!(selection.first),
+      selected: value,
+      onChanged: onChanged,
     );
   }
 }

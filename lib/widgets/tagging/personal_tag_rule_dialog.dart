@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
 import 'package:butlery/widgets/styled/field_error_line.dart';
@@ -494,23 +495,15 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           ),
         ),
         const SizedBox(height: AppDimensions.space4),
-        SegmentedButton<MatchMode>(
-          segments: [
-            ButtonSegment(
-              value: MatchMode.all,
-              label: Text(context.l10n.ruleMatchModeAllConditions),
-            ),
-            ButtonSegment(
-              value: MatchMode.any,
-              label: Text(context.l10n.ruleMatchModeAnyCondition),
-            ),
+        ButlerySegmentSwitch<MatchMode>(
+          choices: [
+            (MatchMode.all, context.l10n.ruleMatchModeAllConditions),
+            (MatchMode.any, context.l10n.ruleMatchModeAnyCondition),
           ],
-          selected: {_matchMode},
-          onSelectionChanged: _isSaving
+          selected: _matchMode,
+          onChanged: _isSaving
               ? null
-              : (selection) {
-                  setState(() => _matchMode = selection.first);
-                },
+              : (picked) => setState(() => _matchMode = picked),
         ),
       ],
     );

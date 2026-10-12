@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -240,21 +241,13 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       children: [
         Text(context.l10n.ruleMatchModeLabel, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.space8),
-        SegmentedButton<MatchMode>(
-          segments: [
-            ButtonSegment(
-              value: MatchMode.all,
-              label: Text(context.l10n.ruleMatchModeAllShort),
-            ),
-            ButtonSegment(
-              value: MatchMode.any,
-              label: Text(context.l10n.ruleMatchModeAnyShort),
-            ),
+        ButlerySegmentSwitch<MatchMode>(
+          choices: [
+            (MatchMode.all, context.l10n.ruleMatchModeAllShort),
+            (MatchMode.any, context.l10n.ruleMatchModeAnyShort),
           ],
-          selected: {_matchMode},
-          onSelectionChanged: (selection) {
-            setState(() => _matchMode = selection.first);
-          },
+          selected: _matchMode,
+          onChanged: (picked) => setState(() => _matchMode = picked),
         ),
       ],
     );
