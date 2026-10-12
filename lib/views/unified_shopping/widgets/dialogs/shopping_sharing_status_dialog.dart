@@ -1,5 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -350,18 +352,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: cs.surface,
-            child: Text(
-              // Keyed off the RESOLVED name, not the rendered one: the unknown
-              // fallback is a sentence, and its initial ("O" for "Okänd
-              // användare") would read as a real person's initial.
-              knownName != null ? knownName[0].toUpperCase() : '?',
-              style: AppTextStyles.labelLarge.copyWith(
-                color: cs.onSurface,
-              ),
-            ),
+          // Keyed off the RESOLVED name, not the rendered one: the unknown
+          // fallback is a sentence, and its initial ("O" for "Okänd
+          // användare") would read as a real person's initial.
+          AvatarCircle(
+            displayName: knownName.orEmpty(),
+            tone: AvatarCircleTone.paper,
           ),
           const SizedBox(width: AppDimensions.space8),
           Expanded(

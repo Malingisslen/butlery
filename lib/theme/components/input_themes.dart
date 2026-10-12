@@ -39,6 +39,9 @@ class InputThemes {
       ),
     );
     return InputDecorationTheme(
+      // Dense drops Material's 48 dp floor on the box; LabeledField pads the
+      // hit area back to 48 (B-03).
+      isDense: true,
       filled: true,
       fillColor: WidgetStateColor.resolveWith(
         (states) => states.contains(WidgetState.disabled)
@@ -69,7 +72,7 @@ class InputThemes {
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space12,
+        vertical: AppDimensions.fieldVisualPaddingY,
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),

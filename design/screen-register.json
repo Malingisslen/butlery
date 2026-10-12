@@ -92,7 +92,7 @@
    ]
   },
   "lib/views/auth/guest_start_view.dart": {
-   "status": "godkänd",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_3_onboarding#1"
    ],
@@ -101,7 +101,7 @@
    ]
   },
   "lib/views/auth/guest_upgrade_view.dart": {
-   "status": "godkänd",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_3_onboarding#2"
    ],

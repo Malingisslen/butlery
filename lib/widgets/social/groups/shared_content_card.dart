@@ -1,5 +1,6 @@
 // lib/widgets/social/groups/shared_content_card.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
@@ -129,24 +130,12 @@ class SharedContentCard extends StatelessWidget {
                 // Shared by info
                 Row(
                   children: [
-                    if (item.sharedByAvatarUrl != null)
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundImage: NetworkImage(item.sharedByAvatarUrl!),
-                      )
-                    else
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundColor: cs.surface,
-                        child: Text(
-                          item.sharedByDisplayName.isNotEmpty
-                              ? item.sharedByDisplayName[0].toUpperCase()
-                              : '?',
-                          style: AppTextStyles.textXs.copyWith(
-                            color: cs.onSurface,
-                          ),
-                        ),
-                      ),
+                    AvatarCircle(
+                      imageUrl: item.sharedByAvatarUrl,
+                      displayName: item.sharedByDisplayName,
+                      size: AvatarCircleSize.inline,
+                      tone: AvatarCircleTone.paper,
+                    ),
                     const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
