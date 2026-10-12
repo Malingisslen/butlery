@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
+import 'package:butlery/views/admin/widgets/admin_top_bar.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/views/admin/admin_url_state_stub.dart'
     if (dart.library.js_interop) 'package:butlery/views/admin/admin_url_state_web.dart';
 
-/// Top-level admin shell: a NavigationRail switching between the admin tools.
-/// Reached only after the admin gate in `admin_main.dart`.
+/// Top-level admin shell: one dark bar with the admin tools as tabs, and the
+/// chosen tool under it. Reached only after the admin gate in `admin_main.dart`.
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
 
@@ -23,8 +22,26 @@ class AdminShell extends StatefulWidget {
   State<AdminShell> createState() => _AdminShellState();
 }
 
-class _AdminShellState extends State<AdminShell> {
+class _AdminShellState extends State<AdminShell>
+    with SingleTickerProviderStateMixin {
+  late final TabController _controller;
   late int _index = _initialIndex();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TabController(
+      length: _pages.length,
+      vsync: this,
+      initialIndex: _index,
+    )..addListener(_onTab);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   /// Initial tab from the URL (`?tab=<index>`), clamped to a valid tab.
   int _initialIndex() {
@@ -34,9 +51,10 @@ class _AdminShellState extends State<AdminShell> {
     return parsed.clamp(0, _pages.length - 1);
   }
 
-  void _selectTab(int index) {
-    setState(() => _index = index);
-    writeTabParam(index);
+  void _onTab() {
+    if (_controller.indexIsChanging || _controller.index == _index) return;
+    setState(() => _index = _controller.index);
+    writeTabParam(_index);
   }
 
   // Not const: the registry-driven tabs (MetricTabView) carry a closure for
@@ -74,103 +92,27 @@ class _AdminShellState extends State<AdminShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final auth = ServiceLocator.get<AuthService>();
     return Scaffold(
       body: Column(
         children: [
-          const AnomalyBanner(),
-          Expanded(
-            child: Row(
-              children: [
-                AdminRail(selectedIndex: _index, onSelected: _selectTab),
-                const VerticalDivider(width: 1),
-                Expanded(child: _pages[_index]),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The admin shell's six tabs (produktregler.md:626): feedback, import,
-/// engagement, parsing, recipes and ops.
-///
-/// Each tab carries the canonical focus ring around a 48 dp box and no focus
-/// tint (Grafisk manual v6:209, :381; fas2/block288-uxfrysning.json
-/// CSR::ROLE::tab::FOCUSED). The rail builds its own InkResponse around the
-/// icon, so the ring follows that ancestor's focus node
-/// (ButleryAncestorFocusRing), as a TabBar tab does.
-class AdminRail extends StatelessWidget {
-  const AdminRail({
-    required this.selectedIndex,
-    required this.onSelected,
-    super.key,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  static NavigationRailDestination _destination(
-    IconData icon,
-    IconData selectedIcon,
-    String label,
-  ) {
-    return NavigationRailDestination(
-      icon: ButleryAncestorFocusRing(
-        child: ButleryControlFocus.box(child: ButleryIcon(icon)),
-      ),
-      selectedIcon: ButleryAncestorFocusRing(
-        child: ButleryControlFocus.box(child: ButleryIcon(selectedIcon)),
-      ),
-      label: Text(label),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Theme(
-      data: ButleryControlFocus.themeWithoutFocusTint(Theme.of(context)),
-      child: PressFill(
-        surface: PressSurface.base,
-        child: NavigationRail(
-          selectedIndex: selectedIndex,
-          onDestinationSelected: onSelected,
-          labelType: NavigationRailLabelType.all,
-          destinations: [
-            _destination(
-              ButleryIcons.messageSquare,
-              ButleryIcons.messageSquare,
+          AdminTopBar(
+            controller: _controller,
+            labels: [
               l10n.adminNavFeedback,
-            ),
-            _destination(
-              ButleryIcons.download,
-              ButleryIcons.download,
               l10n.adminNavImport,
-            ),
-            _destination(
-              ButleryIcons.users,
-              ButleryIcons.users,
               l10n.adminNavEngagement,
-            ),
-            _destination(
-              ButleryIcons.file,
-              ButleryIcons.file,
               l10n.adminNavParsing,
-            ),
-            _destination(
-              ButleryIcons.utensils,
-              ButleryIcons.utensils,
               l10n.adminNavRecipes,
-            ),
-            _destination(
-              ButleryIcons.server,
-              ButleryIcons.server,
               l10n.adminNavOps,
-            ),
-          ],
-        ),
+            ],
+            email: auth.currentUserEmail,
+            onSignOut: auth.signOut,
+          ),
+          const AnomalyBanner(),
+          Expanded(child: _pages[_index]),
+        ],
       ),
     );
   }

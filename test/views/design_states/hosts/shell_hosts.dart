@@ -54,11 +54,16 @@ StreamController<List<FeedbackEntry>> _adminRepositories(HostContext ctx) {
   return stream;
 }
 
-FeedbackEntry _entry(String id, String text) => FeedbackEntry(
+FeedbackEntry _entry(
+  String id,
+  String text, {
+  FeedbackStatus status = FeedbackStatus.newReport,
+}) => FeedbackEntry(
   id: id,
   userId: 'u1',
   category: FeedbackCategory.bug,
   description: text,
+  status: status,
   recentInteractions: const [],
   createdAt: DateTime.utc(2026, 9, 20, 8),
 );
@@ -135,10 +140,22 @@ final shellHosts = <String, StateHost>{
   'admin::DEFAULT': StateHost(
     build: (ctx) async {
       final stream = _adminRepositories(ctx);
-      scheduleMicrotask(
+      // After the shell has subscribed: a broadcast event sent before that is
+      // lost, and the screen would stay on its loading line.
+      Timer(
+        const Duration(milliseconds: 50),
         () => stream.add([
           _entry('f1', 'Knappen Spara svarar inte i receptredigeraren'),
-          _entry('f2', 'Veckomenyn visar fel vecka efter midnatt'),
+          _entry(
+            'f2',
+            'Veckomenyn visar fel vecka efter midnatt',
+            status: FeedbackStatus.triaged,
+          ),
+          _entry(
+            'f3',
+            'Krasch vid export av stor lista',
+            status: FeedbackStatus.resolved,
+          ),
         ]),
       );
       return const AdminShell();
