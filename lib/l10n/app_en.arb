@@ -4624,7 +4624,7 @@
   "importPreviewTitle": "Preview import",
   "importSelectAll": "Select all",
   "importDeselectAll": "Deselect all",
-  "importConfirmButton": "Import ({count})",
+  "importConfirmButton": "Save {count} recipes",
   "@importConfirmButton": {
     "placeholders": {
       "count": {
@@ -8350,7 +8350,7 @@
     }
   },
   "buttonCreating": "Creating...",
-  "buttonCreateAndShare": "Create & Share",
+  "buttonCreateAndShare": "Create and share",
   "analysisNoContentExtracted": "No content extracted",
   "analysisContainsIngredients": "Contains ingredients",
   "analysisNoIngredientsFound": "No ingredients section found",
@@ -10291,15 +10291,15 @@
   "@heirloomToggle": {
     "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe."
   },
-  "heirloomWriterLabel": "Who wrote the recipe?",
+  "heirloomWriterLabel": "Whose handwriting?",
   "@heirloomWriterLabel": {
     "description": "BUT-410: text field label for the name of the original recipe writer."
   },
-  "heirloomYearLabel": "Which year?",
+  "heirloomYearLabel": "Year",
   "@heirloomYearLabel": {
     "description": "BUT-410: text field label for the year the recipe was written down."
   },
-  "heirloomNoteLabel": "Short note",
+  "heirloomNoteLabel": "Note",
   "@heirloomNoteLabel": {
     "description": "BUT-410: multiline text field label for a short heirloom origin note."
   },
@@ -16939,5 +16939,104 @@
         "type": "String"
       }
     }
-  }
+  },
+  "importLinkOrCaptionLabel": "Link or caption",
+  "importPasteHelp": "Paste the link to the post, or the whole caption if you have already copied it.",
+  "importCaptionWarningLead": "A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ",
+  "importCaptionWarningEmphasis": "you will often need to fix something",
+  "importVideoNotRead": "The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.",
+  "importFetchRecipe": "Get the recipe",
+  "shoppingNewSharedListTitle": "New shared list",
+  "shoppingSharedListNameLabel": "List name",
+  "shoppingShareWithHeading": "Share with",
+  "shoppingPermissionHeading": "Permission",
+  "shoppingPermissionCanEdit": "Can edit",
+  "shoppingPermissionReadOnlyTab": "Read only",
+  "shoppingPermissionCanEditHelp": "Everyone can add and tick off items in real time.",
+  "shoppingPermissionViewOnlyHelp": "The people you share with can see the list but not change it.",
+  "shoppingNoFriendsToShareWith": "You have no friends to share with yet.",
+  "importMoreFilters": "More",
+  "importArchivedHeading": "Archived recipes · {count}",
+  "@importArchivedHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importRestoreCount": "Restore {count} recipes",
+  "@importRestoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importFiltersTitle": "Filters",
+  "importTimeHeading": "Time",
+  "importTagsHeading": "Tags",
+  "importRecipeMinutes": "{minutes} min",
+  "@importRecipeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importUpToMinutes": "At most {minutes} min",
+  "@importUpToMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "importArchiveTitle": "From the archive",
+  "importPreviewFoundCount": "{count} recipes found",
+  "@importPreviewFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewParsedCount": "{count} read",
+  "@importPreviewParsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewProgress": "{selected} of {total}",
+  "@importPreviewProgress": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewUnreadHeading": "Could not be read",
+  "importPreviewReadyHeading": "Ready to save",
+  "voiceListeningWord": "listening …",
+  "importPhotoCameraButton": "Take photo",
+  "importPhotoLibraryButton": "From the library",
+  "importPhotoPagesHeading": "Pages · {count}",
+  "@importPhotoPagesHeading": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heirloomToggleSubtitle": "The photo is saved with the recipe, as its source",
+  "importPhotoHeirloomHint": "Handwritten heirloom recipes? The original photo is saved on the recipe card.",
+  "recipeDescriptionOptional": "Description (optional)",
+  "recipeMethodHeading": "Method",
+  "importPhotoRestartTitle": "Start over?",
+  "importPhotoRestartMessage": "The pages you already took are removed if you choose a new picture.",
+  "importPhotoRestartAction": "Start over"
 }

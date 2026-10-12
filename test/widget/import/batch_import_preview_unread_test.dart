@@ -15,6 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/list/status_row.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 
 import '../../infrastructure/builders/recipe_builder.dart';
@@ -100,9 +101,12 @@ void main() {
       find.text('2 rader kunde inte läsas. Tryck för att granska receptet.'),
       findsOneWidget,
     );
-    expect(find.byType(CheckboxListTile), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is StatusRow && w.checked != null),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.byWidgetPredicate((w) => w is FilledButton));
+    await tester.tap(find.byWidgetPredicate((w) => w is ElevatedButton));
     await tester.pumpAndSettle();
     expect(popped.single, [clean]);
   });
@@ -146,40 +150,40 @@ void main() {
     await tester.tap(find.text('Markera alla'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byWidgetPredicate((w) => w is FilledButton));
+    await tester.tap(find.byWidgetPredicate((w) => w is ElevatedButton));
     await tester.pumpAndSettle();
     expect(popped.single, [clean]);
   });
 
-  testWidgets('a batch of only unread recipes has nothing to select', (
-    tester,
-  ) async {
-    final single = RecipeBuilder()
-        .withId('single')
-        .withTitle('Kålpudding')
-        .withIngredients(['1 vitkålshuvud', '% tsk salt'])
-        .build();
-    await pumpPreview(
+  testWidgets(
+    'a batch of only unread recipes offers no select-all and cannot be saved',
+    (
       tester,
-      recipes: [unread, single],
-      popped: [],
-      editorArgs: [],
-    );
+    ) async {
+      final single = RecipeBuilder()
+          .withId('single')
+          .withTitle('Kålpudding')
+          .withIngredients(['1 vitkålshuvud', '% tsk salt'])
+          .build();
+      await pumpPreview(
+        tester,
+        recipes: [unread, single],
+        popped: [],
+        editorArgs: [],
+      );
 
-    expect(
-      find.text('1 rad kunde inte läsas. Tryck för att granska receptet.'),
-      findsOneWidget,
-    );
-    expect(find.text('Markera alla'), findsOneWidget);
-    await tester.tap(find.text('Markera alla'));
-    await tester.pumpAndSettle();
-    expect(find.text('Markera alla'), findsOneWidget);
+      expect(
+        find.text('1 rad kunde inte läsas. Tryck för att granska receptet.'),
+        findsOneWidget,
+      );
+      expect(find.text('Markera alla'), findsNothing);
 
-    final confirm = tester.widget<ButtonStyleButton>(
-      find.byWidgetPredicate((w) => w is FilledButton),
-    );
-    expect(confirm.onPressed, isNull);
-  });
+      final confirm = tester.widget<ButtonStyleButton>(
+        find.byWidgetPredicate((w) => w is ElevatedButton),
+      );
+      expect(confirm.onPressed, isNull);
+    },
+  );
 
   group('BUT-2317 the review on every open', () {
     late ParsedRecipeCache cache;

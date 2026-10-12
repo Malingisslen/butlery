@@ -13,17 +13,15 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/import/voice_section_card.dart';
 
 /// "Tala in recept" — guided voice dictation import (voice plan roadmap #2).
 ///
-/// Direction B (Malin, 2026-07-13): all three sections as checklist cards
-/// on ONE screen, recordable in any order, with direction A's big
-/// microphone inside the active card. Every field stays typable — voice is
-/// an offer, never a gate.
+/// All three parts on ONE screen, recordable in any order. Every field stays
+/// typable — voice is an offer, never a gate.
 class VoiceImportView extends StatefulWidget {
   const VoiceImportView({
     super.key,
@@ -204,11 +202,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
     ];
 
     return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
-      // on the canonical top bar, left-aligned as drawn (v1:73).
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.voiceImportTitle,
-      ),
+      appBar: ButleryTopBar.undersida(title: context.l10n.voiceImportTitle),
       body: ButleryPageBody(
         width: PageWidth.text,
         child: ListView(
@@ -220,8 +214,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.space8),
-            for (final s in sections) ...[
+            for (final s in sections)
               VoiceSectionCard(
                 key: ValueKey('voice-section-${s.section.name}'),
                 index: s.section.index + 1,
@@ -235,9 +228,14 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 onMicTap: () => _onMicTap(s.section),
                 onChanged: (v) => vm.updateText(s.section, v),
               ),
-              const SizedBox(height: AppDimensions.space8),
-            ],
-            const SizedBox(height: AppDimensions.space4),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomActionContainer(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Semantics(
               identifier: 'btn-voice-import-submit',
               button: true,
@@ -246,15 +244,15 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
               child: ActionButtons.primaryButton(
                 context,
                 label: context.l10n.voiceImportSubmit,
-                icon: ButleryIcons.download,
                 onPressed: vm.canImport ? _onImport : null,
                 isLoading: vm.isImporting,
                 loadingText: context.l10n.voiceImportImporting,
+                isExpanded: true,
               ),
             ),
             if (!vm.canImport && !vm.isImporting)
               Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.space4),
+                padding: const EdgeInsets.only(top: AppDimensions.space8),
                 child: Text(
                   context.l10n.voiceImportSubmitHint,
                   textAlign: TextAlign.center,

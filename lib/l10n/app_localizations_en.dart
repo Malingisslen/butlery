@@ -6811,7 +6811,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importConfirmButton(int count) {
-    return 'Import ($count)';
+    return 'Save $count recipes';
   }
 
   @override
@@ -12251,7 +12251,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonCreating => 'Creating...';
 
   @override
-  String get buttonCreateAndShare => 'Create & Share';
+  String get buttonCreateAndShare => 'Create and share';
 
   @override
   String get analysisNoContentExtracted => 'No content extracted';
@@ -14724,13 +14724,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heirloomToggle => 'This is an heirloom recipe';
 
   @override
-  String get heirloomWriterLabel => 'Who wrote the recipe?';
+  String get heirloomWriterLabel => 'Whose handwriting?';
 
   @override
-  String get heirloomYearLabel => 'Which year?';
+  String get heirloomYearLabel => 'Year';
 
   @override
-  String get heirloomNoteLabel => 'Short note';
+  String get heirloomNoteLabel => 'Note';
 
   @override
   String heirloomFrom(String name, int year) {
@@ -20820,4 +20820,150 @@ class AppLocalizationsEn extends AppLocalizations {
   String recipeSuggestionKeptNote(String date) {
     return 'The suggestion is kept until $date. Then it is removed.';
   }
+
+  @override
+  String get importLinkOrCaptionLabel => 'Link or caption';
+
+  @override
+  String get importPasteHelp =>
+      'Paste the link to the post, or the whole caption if you have already copied it.';
+
+  @override
+  String get importCaptionWarningLead =>
+      'A post has no recipe structure – only the caption. I remove emoji and tidy the amounts, but ';
+
+  @override
+  String get importCaptionWarningEmphasis =>
+      'you will often need to fix something';
+
+  @override
+  String get importVideoNotRead =>
+      'The video itself is never read. What is not written in text does not exist for the import – and that should be said up front, not found out afterwards.';
+
+  @override
+  String get importFetchRecipe => 'Get the recipe';
+
+  @override
+  String get shoppingNewSharedListTitle => 'New shared list';
+
+  @override
+  String get shoppingSharedListNameLabel => 'List name';
+
+  @override
+  String get shoppingShareWithHeading => 'Share with';
+
+  @override
+  String get shoppingPermissionHeading => 'Permission';
+
+  @override
+  String get shoppingPermissionCanEdit => 'Can edit';
+
+  @override
+  String get shoppingPermissionReadOnlyTab => 'Read only';
+
+  @override
+  String get shoppingPermissionCanEditHelp =>
+      'Everyone can add and tick off items in real time.';
+
+  @override
+  String get shoppingPermissionViewOnlyHelp =>
+      'The people you share with can see the list but not change it.';
+
+  @override
+  String get shoppingNoFriendsToShareWith =>
+      'You have no friends to share with yet.';
+
+  @override
+  String get importMoreFilters => 'More';
+
+  @override
+  String importArchivedHeading(int count) {
+    return 'Archived recipes · $count';
+  }
+
+  @override
+  String importRestoreCount(int count) {
+    return 'Restore $count recipes';
+  }
+
+  @override
+  String get importFiltersTitle => 'Filters';
+
+  @override
+  String get importTimeHeading => 'Time';
+
+  @override
+  String get importTagsHeading => 'Tags';
+
+  @override
+  String importRecipeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String importUpToMinutes(int minutes) {
+    return 'At most $minutes min';
+  }
+
+  @override
+  String get importArchiveTitle => 'From the archive';
+
+  @override
+  String importPreviewFoundCount(int count) {
+    return '$count recipes found';
+  }
+
+  @override
+  String importPreviewParsedCount(int count) {
+    return '$count read';
+  }
+
+  @override
+  String importPreviewProgress(int selected, int total) {
+    return '$selected of $total';
+  }
+
+  @override
+  String get importPreviewUnreadHeading => 'Could not be read';
+
+  @override
+  String get importPreviewReadyHeading => 'Ready to save';
+
+  @override
+  String get voiceListeningWord => 'listening …';
+
+  @override
+  String get importPhotoCameraButton => 'Take photo';
+
+  @override
+  String get importPhotoLibraryButton => 'From the library';
+
+  @override
+  String importPhotoPagesHeading(int count) {
+    return 'Pages · $count';
+  }
+
+  @override
+  String get heirloomToggleSubtitle =>
+      'The photo is saved with the recipe, as its source';
+
+  @override
+  String get importPhotoHeirloomHint =>
+      'Handwritten heirloom recipes? The original photo is saved on the recipe card.';
+
+  @override
+  String get recipeDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get recipeMethodHeading => 'Method';
+
+  @override
+  String get importPhotoRestartTitle => 'Start over?';
+
+  @override
+  String get importPhotoRestartMessage =>
+      'The pages you already took are removed if you choose a new picture.';
+
+  @override
+  String get importPhotoRestartAction => 'Start over';
 }

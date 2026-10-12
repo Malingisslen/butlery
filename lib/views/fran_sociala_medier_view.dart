@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -335,10 +336,6 @@ class _FranSocialaMedierViewContentState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Instruktionstext
-                _buildInstructions(context),
-                const SizedBox(height: AppDimensions.space32),
-
                 // Show if recipe comes from URL
                 if (viewModel.sourceUrl != null) ...[
                   SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
@@ -358,15 +355,22 @@ class _FranSocialaMedierViewContentState
                   const SizedBox(height: AppDimensions.space8),
                 ],
 
-                // Text field for recipe
                 _buildTextInput(context, viewModel),
-                const SizedBox(height: AppDimensions.space32),
+                const SizedBox(height: AppDimensions.space8),
+                Text(
+                  context.l10n.importPasteHelp,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                _buildCaptionWarning(context),
+                const SizedBox(height: AppDimensions.space16),
 
-                // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                 UtilityComponents.primaryButton(
                   context,
-                  label: context.l10n.importPreviewAndEdit,
-                  icon: ButleryIcons.eye,
+                  label: context.l10n.importFetchRecipe,
+                  icon: ButleryIcons.zap,
                   onPressed: viewModel.isParsing || !viewModel.canParse
                       ? null
                       : () => _parseAndNavigate(context),
@@ -383,6 +387,13 @@ class _FranSocialaMedierViewContentState
                     preserved: context.l10n.errorPreservedLink,
                   ),
                 ],
+                const SizedBox(height: AppDimensions.space16),
+                TintedNote(
+                  child: Text(
+                    context.l10n.importVideoNotRead,
+                    style: TintedNote.textStyle(context),
+                  ),
+                ),
               ],
             ),
           ),
@@ -391,38 +402,33 @@ class _FranSocialaMedierViewContentState
     );
   }
 
-  Widget _buildInstructions(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child: Column(
+  Widget _buildCaptionWarning(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final style = TintedNote.textStyle(context);
+    return TintedNote(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.info,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Text(
-                context.l10n.importTipsTitle,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ],
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
+            size: AppDimensions.iconSizeM,
+            color: cs.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.space8),
-          Text(
-            context.l10n.importTipsContent,
-            style: AppTextStyles.bodySmall,
+          const SizedBox(width: AppDimensions.space12),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: style,
+                text: context.l10n.importCaptionWarningLead,
+                children: [
+                  TextSpan(
+                    text: context.l10n.importCaptionWarningEmphasis,
+                    style: style.merge(AppTextStyles.bodySmallBold),
+                  ),
+                  const TextSpan(text: '.'),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -439,26 +445,22 @@ class _FranSocialaMedierViewContentState
       });
     }
 
-    return Container(
-      constraints: const BoxConstraints(
-        minHeight: 200,
-        maxHeight: 400,
-      ),
-      child: LabeledField(
-        child: TextField(
-          controller: _textController,
-          onChanged: (text) => _onTextChanged(text, viewModel),
-          decoration: InputDecoration(
-            hintText: context.l10n.importPasteRecipeHint,
-            hintMaxLines: 10,
-          ),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-          maxLength: 10000,
-          expands: true,
-          textAlignVertical: TextAlignVertical.top,
-          style: AppTextStyles.bodyMedium,
+    return LabeledField(
+      label: context.l10n.importLinkOrCaptionLabel,
+      child: TextField(
+        controller: _textController,
+        onChanged: (text) => _onTextChanged(text, viewModel),
+        decoration: InputDecoration(
+          hintText: context.l10n.importPasteRecipeHint,
+          hintMaxLines: 10,
+          counterText: '',
         ),
+        keyboardType: TextInputType.multiline,
+        minLines: 8,
+        maxLines: 14,
+        maxLength: 10000,
+        textAlignVertical: TextAlignVertical.top,
+        style: AppTextStyles.bodyMedium,
       ),
     );
   }
