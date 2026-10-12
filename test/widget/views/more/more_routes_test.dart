@@ -76,6 +76,7 @@ void main() {
       Routes.settingsAccountSecurity,
       Routes.settingsAccountEmail,
       Routes.settingsAccountPassword,
+      Routes.settingsAccountSignInMethods,
       Routes.settingsAccountTwoStep,
       Routes.settingsPrivacy,
       Routes.settingsBlocked,

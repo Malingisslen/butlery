@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.14.0
+**Senast uppdaterad:** 12 oktober 2026
+**Version:** 1.15.0
 
 ---
 
@@ -234,6 +234,8 @@ Namnet fyller vi i åt dig när du skapar kontot, och du kan ändra det innan ko
 
 **Överföring:** Inloggningen går genom Firebase Authentication (Google LLC, USA), som omfattas av EU-USA Data Privacy Framework och standardavtalsklausuler (se 6.4). Google och Apple ansvarar själva för hur de för över uppgifter om ditt konto utanför EU/EES.
 
+**När du kopplar från Apple:** Kopplar du från Apple under Konto och säkerhet, Inloggningssätt, på iPhone eller iPad ber vi Apple ta bort Butlerys koppling till ditt Apple-konto, som vid radering. På Android och webben tar du själv bort Butlery under Logga in med Apple i ditt Apple-konto.
+
 **När du raderar ditt konto:** Har du loggat in med Apple och begär radering i appen på iPhone eller iPad ber vi Apple att ta bort Butlerys koppling till ditt Apple-konto direkt, innan raderingen påbörjas. Om Apple inte svarar raderas kontot ändå. På Android och webben kan vi inte be Apple om det ännu; där kan du själv ta bort Butlery under Logga in med Apple i inställningarna för ditt Apple-konto. Har du loggat in med Google kan du själv ta bort Butlerys åtkomst i inställningarna för ditt Google-konto.
 
 ---
@@ -255,7 +257,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
-| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du raderar kontot | Fullgörande av avtal |
+| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |

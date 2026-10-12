@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 11, 2026
-**Version:** 1.14.0
+**Last updated:** October 12, 2026
+**Version:** 1.15.0
 
 ---
 
@@ -233,6 +233,8 @@ We fill in the name for you when you create the account, and you can change it b
 
 **Transfer:** Sign-in goes through Firebase Authentication (Google LLC, USA), which is covered by the EU-US Data Privacy Framework and Standard Contractual Clauses (see 6.4). Google and Apple are themselves responsible for how they transfer data about your account outside the EU/EEA.
 
+**When you unlink Apple:** If you unlink Apple under Account and security, Sign-in methods, on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account, as when you delete your account. On Android and the web you remove Butlery yourself under Sign in with Apple in your Apple account.
+
 **When you delete your account:** If you signed in with Apple and request deletion in the app on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account straight away, before the deletion starts. If Apple does not respond, the account is deleted anyway. On Android and the web we cannot ask Apple to do this yet; there you can remove Butlery yourself under Sign in with Apple in your Apple account settings. If you signed in with Google, you can remove Butlery's access yourself in your Google account settings.
 
 ---
@@ -254,7 +256,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
-| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you delete the account | Performance of contract |
+| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |

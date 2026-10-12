@@ -20022,4 +20022,111 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountSecurityEmailCannotConfirmHere =>
       'The change can\'t be confirmed on this device, because the account\'s sign-in isn\'t available here. Change the address on a device where you can sign in to the account.';
+
+  @override
+  String get settingsSignInMethodsTitle => 'Sign-in methods';
+
+  @override
+  String get signInMethodsEmailName => 'E-mail';
+
+  @override
+  String get signInMethodsPassword => 'E-mail and password';
+
+  @override
+  String get signInMethodsOn => 'On';
+
+  @override
+  String get signInMethodsNotLinked => 'Not linked';
+
+  @override
+  String get signInMethodsLink => 'Link';
+
+  @override
+  String get signInMethodsUnlink => 'Unlink';
+
+  @override
+  String get signInMethodsSetPassword => 'Set password';
+
+  @override
+  String signInMethodsSetPasswordBody(String email) {
+    return 'The password is for $email. You can then also sign in with e-mail and password.';
+  }
+
+  @override
+  String get signInMethodsLastOne =>
+      'The last sign-in method can\'t be removed. You always need at least one way to sign in.';
+
+  @override
+  String signInMethodsOnlyProvider(String provider) {
+    return '$provider is the way you sign in right now and can\'t be unlinked. Set a password or link another method first.';
+  }
+
+  @override
+  String get signInMethodsNoAddress =>
+      'A password can\'t be set, because the account has no e-mail address.';
+
+  @override
+  String signInMethodsUnlinkTitle(String provider) {
+    return 'Unlink $provider?';
+  }
+
+  @override
+  String signInMethodsUnlinkBody(String provider) {
+    return 'You can no longer sign in with $provider.';
+  }
+
+  @override
+  String get signInMethodsInsteadPassword =>
+      'You sign in with e-mail and password instead.';
+
+  @override
+  String signInMethodsInsteadProvider(String provider) {
+    return 'You sign in with $provider instead.';
+  }
+
+  @override
+  String get signInMethodsUnlinkAppleAsks =>
+      'Apple shows its sheet once more, so that we can ask Apple to remove the link.';
+
+  @override
+  String get signInMethodsUnlinkAppleYourself =>
+      'Butlery stays under Sign in with Apple in your Apple account until you remove it there.';
+
+  @override
+  String signInMethodsLinked(String provider) {
+    return '$provider is linked to the account.';
+  }
+
+  @override
+  String signInMethodsUnlinked(String provider) {
+    return '$provider is unlinked.';
+  }
+
+  @override
+  String get signInMethodsPasswordSet =>
+      'The password is set. You can now sign in with e-mail and password.';
+
+  @override
+  String signInMethodsAlreadyUsed(String provider) {
+    return 'That $provider account is already used by another Butlery account.';
+  }
+
+  @override
+  String signInMethodsAlreadyLinked(String provider) {
+    return '$provider is already linked to the account.';
+  }
+
+  @override
+  String signInMethodsLinkFailed(String provider) {
+    return '$provider couldn\'t be linked to the account. Try again.';
+  }
+
+  @override
+  String signInMethodsUnlinkFailed(String provider) {
+    return '$provider couldn\'t be unlinked. The sign-in method is still there.';
+  }
+
+  @override
+  String get signInMethodsPasswordFailed =>
+      'The password couldn\'t be set. Try again.';
 }

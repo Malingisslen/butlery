@@ -16641,5 +16641,164 @@
   "accountSecurityEmailCannotConfirmHere": "Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.",
   "@accountSecurityEmailCannotConfirmHere": {
     "description": "BUT-916 C7: no password, and the account's Google/Apple sign-in is not offered on this platform"
+  },
+  "settingsSignInMethodsTitle": "Inloggningssätt",
+  "@settingsSignInMethodsTitle": {
+    "description": "BUT-916 slice B: title of the sign-in methods page and its row on Konto & säkerhet"
+  },
+  "signInMethodsEmailName": "E-post",
+  "@signInMethodsEmailName": {
+    "description": "BUT-916 slice B: short name of e-mail and password in the row summary"
+  },
+  "signInMethodsPassword": "E-post och lösenord",
+  "@signInMethodsPassword": {
+    "description": "BUT-916 slice B: row for the password sign-in"
+  },
+  "signInMethodsOn": "Påslaget",
+  "@signInMethodsOn": {
+    "description": "BUT-916 slice B: state of a sign-in method that is set up and cannot be removed"
+  },
+  "signInMethodsNotLinked": "Inte kopplat",
+  "@signInMethodsNotLinked": {
+    "description": "BUT-916 slice B: state of a provider that is not linked"
+  },
+  "signInMethodsLink": "Koppla",
+  "@signInMethodsLink": {
+    "description": "BUT-916 slice B: action that links Google or Apple"
+  },
+  "signInMethodsUnlink": "Koppla från",
+  "@signInMethodsUnlink": {
+    "description": "BUT-916 slice B: action and confirm button that unlink Google or Apple"
+  },
+  "signInMethodsSetPassword": "Sätt lösenord",
+  "@signInMethodsSetPassword": {
+    "description": "BUT-916 slice B: action, dialog title and button for adding a password"
+  },
+  "signInMethodsSetPasswordBody": "Lösenordet gäller för {email}. Du kan då också logga in med e-post och lösenord.",
+  "@signInMethodsSetPasswordBody": {
+    "description": "BUT-916 slice B: what the new password is for",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLastOne": "Det sista inloggningssättet kan inte tas bort. Du behöver alltid minst ett sätt att logga in.",
+  "@signInMethodsLastOne": {
+    "description": "BUT-916 slice B: note under the list"
+  },
+  "signInMethodsOnlyProvider": "{provider} är det sätt du loggar in med just nu och kan inte kopplas från. Sätt ett lösenord eller koppla ett annat sätt först.",
+  "@signInMethodsOnlyProvider": {
+    "description": "BUT-916 slice B: note when the one method left is a provider",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsNoAddress": "Ett lösenord går inte att sätta, eftersom kontot saknar e-postadress.",
+  "@signInMethodsNoAddress": {
+    "description": "BUT-916 slice B: set password refused, the account has no address"
+  },
+  "signInMethodsUnlinkTitle": "Koppla från {provider}?",
+  "@signInMethodsUnlinkTitle": {
+    "description": "BUT-916 slice B: unlink dialog title",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkBody": "Du kan inte längre logga in med {provider}.",
+  "@signInMethodsUnlinkBody": {
+    "description": "BUT-916 slice B: unlink dialog, what stops working",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsInsteadPassword": "Du loggar in med e-post och lösenord i stället.",
+  "@signInMethodsInsteadPassword": {
+    "description": "BUT-916 slice B: unlink dialog, what remains"
+  },
+  "signInMethodsInsteadProvider": "Du loggar in med {provider} i stället.",
+  "@signInMethodsInsteadProvider": {
+    "description": "BUT-916 slice B: unlink dialog, what remains when there is no password",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkAppleAsks": "Apple visar sin ruta en gång till, så att vi kan be Apple ta bort kopplingen.",
+  "@signInMethodsUnlinkAppleAsks": {
+    "description": "BUT-916 slice B: unlink Apple where the app can revoke the Apple tokens"
+  },
+  "signInMethodsUnlinkAppleYourself": "Butlery finns kvar under Logga in med Apple i ditt Apple-konto tills du tar bort det där.",
+  "@signInMethodsUnlinkAppleYourself": {
+    "description": "BUT-916 slice B: unlink Apple where the app cannot revoke the Apple tokens"
+  },
+  "signInMethodsLinked": "{provider} är kopplat till kontot.",
+  "@signInMethodsLinked": {
+    "description": "BUT-916 slice B: snackbar after linking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinked": "{provider} är frånkopplat.",
+  "@signInMethodsUnlinked": {
+    "description": "BUT-916 slice B: snackbar after unlinking",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordSet": "Lösenordet är satt. Du kan nu logga in med e-post och lösenord.",
+  "@signInMethodsPasswordSet": {
+    "description": "BUT-916 slice B: snackbar after adding a password"
+  },
+  "signInMethodsAlreadyUsed": "Det {provider}-kontot används redan av ett annat Butlery-konto.",
+  "@signInMethodsAlreadyUsed": {
+    "description": "BUT-916 slice B: link refused, the provider account belongs to another user",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsAlreadyLinked": "{provider} är redan kopplat till kontot.",
+  "@signInMethodsAlreadyLinked": {
+    "description": "BUT-916 slice B: link refused, already linked",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsLinkFailed": "{provider} kunde inte kopplas till kontot. Försök igen.",
+  "@signInMethodsLinkFailed": {
+    "description": "BUT-916 slice B: link failed for a reason without its own text",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsUnlinkFailed": "{provider} kunde inte kopplas från. Inloggningssättet är kvar.",
+  "@signInMethodsUnlinkFailed": {
+    "description": "BUT-916 slice B: unlink failed",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "signInMethodsPasswordFailed": "Lösenordet kunde inte sättas. Försök igen.",
+  "@signInMethodsPasswordFailed": {
+    "description": "BUT-916 slice B: add password failed for a reason without its own text"
   }
 }

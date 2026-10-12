@@ -11242,3 +11242,44 @@ the `BatchOperationsFirebaseRepository` mixin, which this class does not mix in,
 path exists. Pin: the new test seeds a cookbook and updates from a copy with a different
 description; with the override reverted, the fake's deep merge would overwrite `description`
 and the equality on `stored` reddens. Verdict: pass.
+
+## 2026-10-11 — BUT-916 slice B, "Inloggningssätt" (link/unlink/add password)
+
+Reviewed staged `auth_repository.dart`, `firebase_auth_repository.dart`,
+`provider_sign_in_service.dart`, `auth_provider_flows.dart`; neighbours read:
+`account_sign_in_methods_view.dart`, `account_sign_in_methods_viewmodel.dart`, the
+`auth_action_handler.dart` diff. Finding (blocking): `_link` in the view calls
+`linkProvider` with no `AuthActionHandler.reauthenticate`, and `_unlink` re-authenticates
+only for Apple where `appleRevokesHere` (native iOS); Google unlink and every link run on
+the existing session. Chain: unlocked session -> link attacker's Google -> unlink victim's
+Google -> account signs in only through the attacker. `addPassword` does re-authenticate.
+No plan/ADR for slice B recorded a decision to skip it (grepped tasks/ and docs/).
+Non-blocking: `canUnlinkAny` reads cached `providerData` (no reload), so a second device's
+unlink is invisible; whether Firebase refuses unlinking the last provider was not measured.
+Apple authorization code from a native link sheet (`_keep`) is not dropped after the link.
+Principle added to the repo-guards-audit chapter. Verdict: fail (1 blocking).
+
+## 2026-10-11 — BUT-916 slice B re-review (same four files, current bytes)
+
+All three earlier points verified in code. View: `_link`, `_unlink` and `_setPassword` each
+await `_confirmItIsYou()` (-> `AuthActionHandler.reauthenticate`) before the VM call, on
+every platform branch; `_unlink` forces Apple's sheet only where it yields a revocation code,
+otherwise the C7 default. The only lib/ callers of `linkProvider`/`unlinkProvider`/
+`addPasswordSignIn` are the VM, which only the view calls. `ProviderSignInService.
+unlinkProvider` awaits `reloadCurrentUser()` before `canUnlinkAny` (a reload failure
+throws -> caught -> refusal, fail-closed). `linkProvider`'s native branch clears
+`_googleTokens` and `_appleAuthorizationCode` in a `finally`. Residual, non-blocking: an
+Apple code obtained by the RE-AUTHENTICATION before a link or add-password stays in memory
+(by design for deletion/unlink) until sign-out or the next revocation; a 5-minute one-time
+code, spent nowhere else. Verdict: pass.
+
+## 2026-10-11 — BUT-916 slice B re-review (comment-only delta), verified clean
+
+Re-review after one doc-comment sentence about the password step was struck in
+`lib/services/auth/auth_provider_flows.dart`. Re-read whole: that file,
+`provider_sign_in_service.dart`, `auth_repository.dart`, `firebase_auth_repository.dart`.
+Confirmed `account_sign_in_methods_view.dart` calls `_confirmItIsYou` (→
+`AuthActionHandler.reauthenticate`) before link, unlink and set-password. Last-method
+guard: `unlinkProvider` reloads the user before `canUnlinkAny`. No new PII logging in the
+repository diff. No new principle; existing "sign-in methods are a credential change"
+bullet in repo-guards-audit covers it.

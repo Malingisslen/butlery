@@ -366,6 +366,90 @@ class ProviderSignInService {
     }
   }
 
+  static const Set<String> _methodIds = {
+    'password',
+    'google.com',
+    'apple.com',
+  };
+
+  /// The ways the signed-in account can sign in with. Provider data that is
+  /// not there to read counts as one password method, the app's old default.
+  Set<String> get signInMethods {
+    final ids = _repo.providerIds.toSet().intersection(_methodIds);
+    return ids.isEmpty ? {'password'} : ids;
+  }
+
+  bool isLinked(SignInProvider provider) =>
+      signInMethods.contains(provider.providerId);
+
+  /// The address a linked provider holds, which may be Apple's relay.
+  String? providerEmail(SignInProvider provider) =>
+      _repo.providerEmail(provider.providerId);
+
+  /// Whether one method can go without leaving the account unable to sign
+  /// in.
+  bool get canUnlinkAny => signInMethods.length > 1;
+
+  /// Whether Apple's tokens can be revoked on this device: only its own
+  /// sheet gives the one-time code that takes.
+  bool get revokesApple =>
+      _platform.flowFor(SignInProvider.apple) == ProviderFlow.native;
+
+  /// Adds [provider] to the signed-in account. The provider's address need
+  /// not match the account's: the account is the one that is signed in.
+  Future<ProviderAttempt> linkProvider(SignInProvider provider) async {
+    try {
+      switch (_platform.flowFor(provider)) {
+        case ProviderFlow.unavailable:
+          return const ProviderAttempt.failed();
+        case ProviderFlow.native:
+          final tokens = await _platform.obtainTokens(provider);
+          if (tokens == null) return const ProviderAttempt.cancelled();
+          _keep(tokens);
+          try {
+            await _repo.linkCredential(_repo.providerCredential(tokens));
+          } finally {
+            _googleTokens = null;
+            _appleAuthorizationCode = null;
+          }
+        case ProviderFlow.firebase:
+          await _repo.linkWithProviderFlow(provider);
+      }
+      return const ProviderAttempt.signedIn();
+    } on FirebaseAuthException catch (e) {
+      if (_cancelCodes.contains(e.code)) {
+        return const ProviderAttempt.cancelled();
+      }
+      AppLogger.warning('Provider link refused: ${e.code}');
+      return ProviderAttempt.failed(e);
+    } catch (e) {
+      AppLogger.warning('Provider link failed: ${e.runtimeType}');
+      return const ProviderAttempt.failed();
+    }
+  }
+
+  /// Removes [provider] from the account. For Apple the app's Apple tokens
+  /// are revoked first, which needs the one-time code of a fresh Apple sheet
+  /// (`reauthenticate`); without a code the revocation is logged as not done
+  /// and the method still goes. Throws when Firebase refuses the unlink.
+  Future<void> unlinkProvider(SignInProvider provider) async {
+    await _repo.reloadCurrentUser();
+    if (!canUnlinkAny) throw StateError('The last sign-in method stays');
+    if (provider == SignInProvider.apple) await revokeAppleIfLinked();
+    await _repo.unlinkProvider(provider.providerId);
+    AppLogger.info('Unlinked ${provider.providerId} from the account');
+  }
+
+  /// Adds e-mail and password to an account made with Google or Apple, on
+  /// the address the account already has (an Apple relay address works).
+  Future<void> addPassword(String password) async {
+    final email = _repo.currentUser?.email;
+    if (email == null || email.isEmpty) {
+      throw StateError('The account has no address to set a password on');
+    }
+    await _repo.linkEmailPassword(email, password);
+  }
+
   /// Drops everything held for the session and signs the Google SDK out.
   Future<void> signOut() async {
     _pendingLink = null;

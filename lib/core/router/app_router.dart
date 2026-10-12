@@ -38,6 +38,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/views/more/account_email_view.dart';
 import 'package:butlery/views/more/account_password_view.dart';
+import 'package:butlery/views/more/account_sign_in_methods_view.dart';
 import 'package:butlery/views/more/app_settings_view.dart';
 import 'package:butlery/views/more/help_area_view.dart';
 import 'package:butlery/views/more/blocked_users_view.dart';
@@ -434,6 +435,13 @@ class AppRouter {
         case Routes.settingsAccountPassword:
           return _buildRoute(
             const AccountPasswordView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAccountSignInMethods:
+          return _buildRoute(
+            const AccountSignInMethodsView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

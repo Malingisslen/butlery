@@ -105,6 +105,16 @@ abstract class AuthRepository {
   /// Links [credential] to the signed-in user.
   Future<void> linkCredential(AuthCredential credential);
 
+  /// The address [providerId] (`google.com`, `apple.com`) holds for the
+  /// signed-in user, or null when it is not linked or carries none.
+  String? providerEmail(String providerId);
+
+  /// Adds [provider] to the signed-in user through Firebase's own sheet.
+  Future<void> linkWithProviderFlow(SignInProvider provider);
+
+  /// Removes [providerId] from the signed-in user.
+  Future<void> unlinkProvider(String providerId);
+
   /// Re-authenticates the signed-in user with [tokens], which refreshes the
   /// token's `auth_time`.
   Future<void> reauthenticateWithProviderTokens(ProviderTokens tokens);
