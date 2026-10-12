@@ -22553,6 +22553,12 @@ abstract class AppLocalizations {
   /// **'Ändra textstorlek'**
   String get a11yCookingModeFontScale;
 
+  /// No description provided for @a11yCookingModeRotate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vrid skärmen'**
+  String get a11yCookingModeRotate;
+
   /// No description provided for @a11yCookingModeClose.
   ///
   /// In sv, this message translates to:

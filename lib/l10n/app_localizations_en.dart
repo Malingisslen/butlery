@@ -13603,6 +13603,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCookingModeFontScale => 'Change text size';
 
   @override
+  String get a11yCookingModeRotate => 'Rotate screen';
+
+  @override
   String get a11yCookingModeClose => 'Close cooking mode';
 
   @override
