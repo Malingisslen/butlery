@@ -125,9 +125,6 @@ class ContentCard extends StatelessWidget {
   /// Same contract as [showAllergenBadges], derived from [userDietaryPrefs].
   final bool? showDietaryBadges;
 
-  /// Favorite toggle handler for recipe cards
-  final VoidCallback? onFavoriteToggle;
-
   /// Pantry match percentage (0.0..1.0) for recipe cards — displayed as
   /// a badge when the "Laga med vad jag har" filter is active.
   final double? matchPercent;
@@ -158,7 +155,6 @@ class ContentCard extends StatelessWidget {
     this.userDietaryPrefs,
     this.showAllergenBadges,
     this.showDietaryBadges,
-    this.onFavoriteToggle,
     this.matchPercent,
     this.pooledStats,
   });
@@ -192,11 +188,7 @@ class ContentCard extends StatelessWidget {
       recipe: recipe,
       onTap: onTap != null ? (_) => onTap!() : null,
       onLongPress: onLongPress != null ? (_) => onLongPress!() : null,
-      onFavoriteToggle: onFavoriteToggle != null
-          ? (_) => onFavoriteToggle!()
-          : null,
       showImage: showImage,
-      showTags: showTags,
       showMetadata: showMetadata,
       margin: margin,
       padding: padding,
@@ -365,7 +357,7 @@ class ContentCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       showImage: showImage,
-      showTags: false, // Compact doesn't show tags
+      showTags: false,
       showMetadata: showMetadata,
     );
   }

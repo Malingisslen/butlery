@@ -36,11 +36,11 @@ void main() {
   });
 
   /// A recipe the tagger settled: one FREE allergen and one CONTAINS.
-  Recipe assessed() =>
+  Recipe assessed({bool withPhoto = false}) =>
       (RecipeBuilder()
             ..id = 'assessed'
             ..title = 'Köttbullar med potatismos och lingonsylt'
-            ..imageUrls = []
+            ..imageUrls = withPhoto ? ['https://example.com/a.jpg'] : []
             ..withTagResult(
               TagResult(
                 tags: const {},
@@ -118,9 +118,7 @@ void main() {
         wrapInScaffold: false,
         child: Scaffold(
           // Wide enough that the DETAILED layout's own rows are not the thing
-          // under test. It used to be load-bearing for a different reason —
-          // the completeness chip overflowed in a narrow box — and that is no
-          // longer true: all three chips wrap since BUT-1911.
+          // under test.
           body: SizedBox(
             width: 360,
             child: RecipeCard(
@@ -266,9 +264,7 @@ void main() {
     // aspect ratio cannot be right at both ends.
     //
     // 280dp is below the two-column threshold, so it is here to prove the
-    // single-column fallback and not a two-column tile: measured, two columns
-    // at that width leaves the title row 48 logical pixels while its two
-    // trailing icons alone need 52.
+    // single-column fallback and not a two-column tile.
     const geometries = <String, Size>{
       '412dp phone': Size(1236, 2600),
       '360dp phone': Size(1080, 2400),
@@ -314,12 +310,6 @@ void main() {
                       type: ContentCardType.recipe,
                       style: ContentCardStyle.grid,
                       userAllergenPrefs: allergenPrefs,
-                      // `MinaReceptRecipeCard` always passes one outside
-                      // selection mode, and it puts a 32px button in the title
-                      // row. Without it the harness measures a card the screen
-                      // never draws — and the title row is the tightest thing
-                      // on a narrow tile.
-                      onFavoriteToggle: () {},
                     ),
                   ),
                 ),
@@ -425,6 +415,7 @@ void main() {
         size: const Size(960, 1704),
         scale: 2.0,
         allergenPrefs: const {'gluten', 'mjölk'},
+        recipe: assessed(withPhoto: true),
       );
 
       // The invariant is the SHAPE, not a pixel count: the photo is the one
@@ -440,15 +431,14 @@ void main() {
             .first,
       );
       expect(photo.width, greaterThan(0));
-      // The LITERAL 0.75, not `recipeGridImageAspectRatio`. Dividing by the
-      // same constant the widget reads restates `AspectRatio`'s own guarantee
-      // and cannot fail; the finder above is then the only thing doing work.
-      // The number is the covered fact here, so it is written out.
+      // The LITERAL 9/16, not a constant the widget reads: dividing by the
+      // same constant restates `AspectRatio`'s own guarantee and cannot fail.
+      // The number is the covered fact here (Komponentark v1: bild 16:9).
       expect(
         photo.height,
-        closeTo(photo.width * 0.75, 0.5),
+        closeTo(photo.width * 9 / 16, 0.5),
         reason:
-            'the recipe photo must keep its 4:3 shape at 2x on a 320dp phone '
+            'the recipe photo must keep its 16:9 shape at 2x on a 320dp phone '
             '— it was the slack in a fixed box before BUT-1911 and rendered '
             'zero pixels tall there',
       );

@@ -15,8 +15,6 @@ void main() {
   });
 
   group('recipe card without a photo (B-04)', () {
-    // The grid tile keeps its image box: a plate beside the title and the
-    // buttons does not fit in a half-width tile.
     for (final style in [RecipeCardStyle.detailed, RecipeCardStyle.compact]) {
       testWidgets('$style collapses the image box to a 36 dp plate', (
         tester,
