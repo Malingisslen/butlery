@@ -1,19 +1,13 @@
 // Every checkbox in the app is ButleryCheckbox or ButleryCheckboxTile, so the
 // 24 dp box, the edge, the tick, the focus ring and the touch target are drawn
 // in one place (tokens.json controls.checkbox). A Material Checkbox or
-// CheckboxListTile built by hand is a second checkbox, and none is left
-// outside the list.
+// CheckboxListTile built by hand is a second checkbox, and none is left.
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-// Files another open branch rewrites; whoever merges after them deletes the
-// entry in the same change.
-const _notYetMoved = <String, int>{
-  'lib/views/social/add_members_to_group_view.dart': 1,
-  'lib/widgets/import/batch_import_preview.dart': 1,
-};
+const _notYetMoved = <String, int>{};
 
 String _code(String path) => File(path)
     .readAsStringSync()

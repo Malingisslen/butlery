@@ -95,7 +95,6 @@ class _PublicProfileContent extends StatelessWidget {
       // is the page's own heading. A page reached from a link or a search
       // result has no tab to stand under, so the tab bar is left out.
       title: '',
-      lightBar: true,
       ruleUnderBar: false,
       showTabBar: false,
       actions: [

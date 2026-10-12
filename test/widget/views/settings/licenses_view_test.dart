@@ -67,13 +67,15 @@ void main() {
         expectedDocuments(),
       );
       expect(LicensesView.assets.first, LicensesView.noticesAsset);
-      for (final heading in [
+      final headings = [
         sv.licensesNoticesHeading,
         sv.licensesOflHeading,
         sv.licensesLivsmedelsverketHeading,
-      ]) {
-        expect(find.text(heading), findsOneWidget);
+      ];
+      for (var i = 0; i < headings.length; i++) {
+        expect(find.text('${i + 1} · ${headings[i]}'), findsOneWidget);
       }
+      expect(find.text(sv.licensesIntro), findsOneWidget);
       // The retired legacy families are gone from the page.
       expect(find.text('Josefin Sans'), findsNothing);
       expect(find.text('Space Grotesk'), findsNothing);

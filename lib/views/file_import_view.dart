@@ -3,6 +3,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -86,41 +87,38 @@ class _FileImportViewState extends State<FileImportView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Instructions
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.space12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.l10n.importFromFileTitle,
-                          style: AppTextStyles.headlineSmall,
-                        ),
-                        const SizedBox(height: AppDimensions.space8),
-                        Text(
-                          context.l10n.importFileColumnsRequired,
-                          style: AppTextStyles.bodyMedium,
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        _buildRequirement(context.l10n.importColumnTitle),
-                        _buildRequirement(
-                          context.l10n.importColumnIngredients,
-                        ),
-                        _buildRequirement(
-                          context.l10n.importColumnInstructions,
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Text(
-                          context.l10n.importFileColumnsOptional,
-                          style: AppTextStyles.bodyMedium,
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        _buildOptional(context.l10n.importColumnCookingTime),
-                        _buildOptional(context.l10n.importColumnServings),
-                        _buildOptional(context.l10n.importColumnCategory),
-                        _buildOptional(context.l10n.importColumnTags),
-                      ],
-                    ),
+                TintedNote(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.importFromFileTitle,
+                        style: AppTextStyles.headlineSmall,
+                      ),
+                      const SizedBox(height: AppDimensions.space8),
+                      Text(
+                        context.l10n.importFileColumnsRequired,
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                      const SizedBox(height: AppDimensions.space4),
+                      _buildRequirement(context.l10n.importColumnTitle),
+                      _buildRequirement(
+                        context.l10n.importColumnIngredients,
+                      ),
+                      _buildRequirement(
+                        context.l10n.importColumnInstructions,
+                      ),
+                      const SizedBox(height: AppDimensions.space4),
+                      Text(
+                        context.l10n.importFileColumnsOptional,
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                      const SizedBox(height: AppDimensions.space4),
+                      _buildOptional(context.l10n.importColumnCookingTime),
+                      _buildOptional(context.l10n.importColumnServings),
+                      _buildOptional(context.l10n.importColumnCategory),
+                      _buildOptional(context.l10n.importColumnTags),
+                    ],
                   ),
                 ),
 
@@ -193,17 +191,15 @@ class _FileImportViewState extends State<FileImportView> {
                     padding: const EdgeInsets.only(
                       top: AppDimensions.space12,
                     ),
-                    child: Card(
-                      color: _vm.failedCount > 0
-                          ? Theme.of(context).colorScheme.errorContainer
-                          : Theme.of(context).colorScheme.primaryContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.space8),
-                        child: Text(
-                          _vm.statusMessage!,
-                          style: AppTextStyles.bodyMedium,
-                          textAlign: TextAlign.center,
+                    child: TintedNote(
+                      child: Text(
+                        _vm.statusMessage!,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: _vm.failedCount > 0
+                              ? Theme.of(context).colorScheme.error
+                              : null,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

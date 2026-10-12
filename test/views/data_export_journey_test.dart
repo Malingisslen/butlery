@@ -90,9 +90,9 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     expect(service.calls, 1);
-    expect(find.text(_sv.dataExportSuccess), findsOneWidget);
+    expect(find.text(_sv.dataExportFileTitle), findsOneWidget);
     expect(
-      find.textContaining('${_sv.dataExportFileSize}: 1 KB'),
+      find.textContaining('1 KB · '),
       findsOneWidget,
     );
     expect(_saveFile, findsOneWidget, reason: 'the file can now be saved');
@@ -133,7 +133,7 @@ void main() {
 
     expect(service.calls, 2);
     expect(find.text(_sv.dataExportNetworkTitle), findsNothing);
-    expect(find.text(_sv.dataExportSuccess), findsOneWidget);
+    expect(find.text(_sv.dataExportFileTitle), findsOneWidget);
     expect(_saveFile, findsOneWidget);
   });
 
@@ -156,7 +156,7 @@ void main() {
 
     expect(service.calls, 2);
     expect(find.text(_sv.dataExportFailed), findsNothing);
-    expect(find.text(_sv.dataExportSuccess), findsOneWidget);
+    expect(find.text(_sv.dataExportFileTitle), findsOneWidget);
     expect(_saveFile, findsOneWidget);
   });
 }

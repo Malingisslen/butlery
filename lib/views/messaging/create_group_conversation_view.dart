@@ -83,7 +83,6 @@ class _CreateGroupConversationViewState
             // A form with its own bottom action (B-54): no tab bar.
             child: ButleryPage.undersida(
               title: context.l10n.messagingNewGroupChat,
-              lightBar: true,
               ruleUnderBar: false,
               showTabBar: false,
               actions: [

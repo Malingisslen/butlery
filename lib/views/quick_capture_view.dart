@@ -67,7 +67,6 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
       // A subpage under Lägg till recept (Komponentark v1:71-78; Skarmar
       // v12 del 1 'Snabbspara').
       appBar: ButleryTopBar.undersida(
-        light: true,
         title: context.l10n.addSheetQuickSaveTitle,
       ),
       body: SafeArea(

@@ -85,6 +85,9 @@ class _QualityFakeViewModel extends ChangeNotifier
   List<Uint8List> get pageImages => [imageBytes!];
 
   @override
+  int get pageCount => 1;
+
+  @override
   bool get hasMultiplePages => false;
 
   @override

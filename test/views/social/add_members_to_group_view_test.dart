@@ -149,6 +149,25 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('the box in a friend row shows the pick and one tap on it '
+      'toggles it once', (tester) async {
+    await pumpView(tester);
+
+    Finder boxIn(String name) => find.descendant(
+      of: find.ancestor(of: find.text(name), matching: find.byType(InkWell)),
+      matching: find.byType(Checkbox),
+    );
+    bool ticked(String name) => tester.widget<Checkbox>(boxIn(name)).value!;
+
+    expect(ticked('Anna Lindqvist'), isFalse);
+
+    await tester.tap(boxIn('Anna Lindqvist'));
+    await tester.pump();
+
+    expect(ticked('Anna Lindqvist'), isTrue);
+    expect(ticked('Cecilia Berg'), isFalse);
+  });
+
   testWidgets('a friend already in the group stays in the list as a row that '
       'says so and cannot be picked', (tester) async {
     final handle = tester.ensureSemantics();

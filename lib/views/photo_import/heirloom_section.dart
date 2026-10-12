@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// BUT-410 heirloom toggle + metadata form.
@@ -59,94 +60,103 @@ class _HeirloomSectionState extends State<HeirloomSection> {
     final vm = widget.viewModel;
     final currentYear = clock.now().year;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              context.l10n.heirloomToggle,
-              style: AppTextStyles.titleSmall,
-            ),
-            value: vm.isHeirloom,
-            onChanged: (v) => vm.isHeirloom = v,
-          ),
-          if (vm.isHeirloom) ...[
-            const SizedBox(height: AppDimensions.space4),
-            if (vm.isOfflineQueued)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: AppDimensions.space8),
-                padding: const EdgeInsets.all(AppDimensions.space12),
-                decoration: BoxDecoration(
-                  color: context.modeColors.surfaceTintWarning,
-                ),
-                child: Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.wifiOff,
-                      color: AppModeColors.textWarning(cs.brightness),
-                      size: AppDimensions.iconSizeM,
-                    ),
-                    const SizedBox(width: AppDimensions.space4),
-                    Expanded(
-                      child: Text(
-                        context.l10n.heirloomUploadOffline,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: context.modeColors.onWarningContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            LabeledField(
-              label: context.l10n.heirloomWriterLabel,
-              child: TextField(
-                controller: _writerCtrl,
-                maxLength: 100,
-                onChanged: (v) => vm.heirloomWriterName = v,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            LabeledField(
-              label: context.l10n.heirloomYearLabel,
-              child: TextField(
-                controller: _yearCtrl,
-                maxLength: 4,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                onChanged: (v) {
-                  // Silently clear out-of-range — HeirloomMetadata's ctor
-                  // would throw otherwise, and we don't want to block typing.
-                  final parsed = int.tryParse(v);
-                  vm.heirloomYear =
-                      (parsed == null || parsed < 1800 || parsed > currentYear)
-                      ? null
-                      : parsed;
-                },
-              ),
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            LabeledField(
-              label: context.l10n.heirloomNoteLabel,
-              child: TextField(
-                controller: _noteCtrl,
-                maxLength: 200,
-                maxLines: 3,
-                onChanged: (v) => vm.heirloomNote = v,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ButleryListSection(
+          rows: [
+            ButleryListRow.toggle(
+              label: context.l10n.heirloomToggle,
+              subtitle: context.l10n.heirloomToggleSubtitle,
+              checked: vm.isHeirloom,
+              onChanged: (v) => vm.isHeirloom = v,
             ),
           ],
+        ),
+        if (vm.isHeirloom) ...[
+          const SizedBox(height: AppDimensions.space8),
+          if (vm.isOfflineQueued)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: AppDimensions.space8),
+              padding: const EdgeInsets.all(AppDimensions.space12),
+              decoration: BoxDecoration(
+                color: context.modeColors.surfaceTintWarning,
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusControl,
+                ),
+              ),
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.wifiOff,
+                    color: AppModeColors.textWarning(cs.brightness),
+                    size: AppDimensions.iconSizeM,
+                  ),
+                  const SizedBox(width: AppDimensions.space4),
+                  Expanded(
+                    child: Text(
+                      context.l10n.heirloomUploadOffline,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: context.modeColors.onWarningContainer,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          LabeledField(
+            label: context.l10n.heirloomWriterLabel,
+            child: TextField(
+              controller: _writerCtrl,
+              maxLength: 100,
+              onChanged: (v) => vm.heirloomWriterName = v,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: LabeledField(
+                  label: context.l10n.heirloomYearLabel,
+                  child: TextField(
+                    controller: _yearCtrl,
+                    maxLength: 4,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (v) {
+                      // Silently clear out-of-range — HeirloomMetadata's ctor
+                      // would throw otherwise, and we don't want to block
+                      // typing.
+                      final parsed = int.tryParse(v);
+                      vm.heirloomYear =
+                          (parsed == null ||
+                              parsed < 1800 ||
+                              parsed > currentYear)
+                          ? null
+                          : parsed;
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.space12),
+              Expanded(
+                flex: 2,
+                child: LabeledField(
+                  label: context.l10n.heirloomNoteLabel,
+                  child: TextField(
+                    controller: _noteCtrl,
+                    maxLength: 200,
+                    maxLines: 3,
+                    onChanged: (v) => vm.heirloomNote = v,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
-      ),
+      ],
     );
   }
 }

@@ -10,9 +10,9 @@ import 'package:butlery/models/social/decision_detail_args.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_list_scaffold.dart';
+import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 
@@ -64,6 +64,7 @@ class _MyReportsContent extends StatelessWidget {
     final vm = context.watch<MyReportsViewModel>();
     return DecisionListScaffold(
       title: l10n.myReportsTitle,
+      intro: l10n.myReportsIntro,
       // Reached from Hjälp & om only (help_area_view).
       backTo: l10n.settingsHelpTitle,
       isLoading: vm.isLoading,
@@ -87,12 +88,38 @@ class _MyReportsContent extends StatelessWidget {
     final l10n = context.l10n;
     final outcome = vm.outcomeFor(report);
     final date = formatDecisionDate(l10n, report.createdAt);
-    final text = reportOutcomeText(l10n, report.status, vm.decisionFor(report));
-    return ButleryListRow(
+    final decision = vm.decisionFor(report);
+    final closed = report.status == ReportStatus.closed;
+    final open = outcome?.appeal?.status == AppealStatus.open;
+    return DecisionRow(
       key: ValueKey('report-${report.id}'),
-      label: reportReasonDisplay(l10n, report.reason),
-      subtitle: '$date\n$text',
-      trailing: _badge(context, report, outcome),
+      contentType: report.contentType,
+      title: reportReasonDisplay(l10n, report.reason),
+      subtitle:
+          '${decisionSubject(l10n, report.contentType, owner: false)} · $date',
+      outcome: closed || decision != null
+          ? [
+              reportOutcomeText(l10n, report.status, decision),
+              if (open) l10n.appealUnderReview,
+            ].join(' ')
+          : null,
+      status: _badge(context, report, outcome),
+      onAppeal:
+          outcome != null &&
+              outcome.appeal == null &&
+              outcome.canAppeal(DateTime.now())
+          ? () async {
+              final sent = await Navigator.pushNamed(
+                context,
+                Routes.appealForm,
+                arguments: AppealFormArgs(
+                  role: AppealRole.reporter,
+                  outcome: outcome,
+                ),
+              );
+              if (sent == true && context.mounted) await vm.refresh();
+            }
+          : null,
       onTap: () async {
         await Navigator.pushNamed(
           context,
@@ -128,10 +155,15 @@ class _MyReportsContent extends StatelessWidget {
         icon: ButleryIcons.inbox,
         tone: BadgeTone.neutral,
       ),
-      ReportStatus.inReview || ReportStatus.actioned => UnifiedBadge.status(
+      ReportStatus.inReview => UnifiedBadge.status(
         label: l10n.myReportsStatusReviewed,
         icon: ButleryIcons.search,
         tone: BadgeTone.warning,
+      ),
+      ReportStatus.actioned => UnifiedBadge.status(
+        label: l10n.myReportsStatusActioned,
+        icon: ButleryIcons.circleCheck,
+        tone: BadgeTone.success,
       ),
       ReportStatus.closed => UnifiedBadge.status(
         label: l10n.myReportsStatusClosed,

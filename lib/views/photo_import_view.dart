@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -24,7 +25,6 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -32,12 +32,17 @@ import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/views/photo_import/image_preview.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
+import 'package:butlery/views/photo_import/photo_permission_notice_card.dart';
+import 'package:butlery/views/photo_import/photo_quality_warning.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/image_source_buttons.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
-import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+export 'package:butlery/views/photo_import/photo_permission_notice_card.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
@@ -206,63 +211,6 @@ class _PhotoImportViewState extends State<PhotoImportView> {
 class _PhotoImportViewContent extends StatelessWidget {
   const _PhotoImportViewContent();
 
-  void _showImageSourceDialog(BuildContext context) {
-    final viewModel = context.read<PhotoImportViewModel>();
-
-    showButlerySheet<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.space16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  context.l10n.importChooseImageSource,
-                  style: AppTextStyles.headlineSmall,
-                ),
-                const SizedBox(height: AppDimensions.space32),
-
-                // Kamera-alternativ
-                ListTile(
-                  leading: ButleryIcon(
-                    ButleryIcons.camera,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                  title: Text(context.l10n.importTakePhoto),
-                  subtitle: Text(context.l10n.importTakePhotoSubtitle),
-                  onTap: () {
-                    Navigator.pop(context);
-                    viewModel.pickImageFromCamera();
-                  },
-                ),
-
-                // Galleri-alternativ
-                ListTile(
-                  leading: ButleryIcon(
-                    ButleryIcons.image,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                  title: Text(context.l10n.importChooseFromGallery),
-                  subtitle: Text(context.l10n.importChooseFromGallerySubtitle),
-                  onTap: () {
-                    Navigator.pop(context);
-                    viewModel.pickImageFromGallery();
-                  },
-                ),
-
-                const SizedBox(height: AppDimensions.space32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void _navigateToTextImport(
     BuildContext context,
     PhotoImportViewModel viewModel,
@@ -377,20 +325,39 @@ class _PhotoImportViewContent extends StatelessWidget {
     );
   }
 
+  /// The top buttons begin a fresh import, so staged pages go; asking first
+  /// keeps a stray tap from dropping several photographed pages (BUT-954,
+  /// hard-destructive class).
+  Future<void> _startOver(
+    BuildContext context,
+    PhotoImportViewModel viewModel,
+    Future<void> Function() pick,
+  ) async {
+    final staged = viewModel.pageCount;
+    if (staged > 0) {
+      final ok = await ConfirmationDialog.show(
+        context,
+        title: context.l10n.importPhotoRestartTitle,
+        message: context.l10n.importPhotoRestartMessage,
+        primaryActionText: context.l10n.importPhotoRestartAction,
+      );
+      if (ok != true || !context.mounted) return;
+    }
+    await pick();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<PhotoImportViewModel>();
+    final readPages = viewModel.unreadPageCount > 0 && !viewModel.hasError;
 
-    return LayoutComponents.mainMenu(
-      currentIndex: null,
-      title: context.l10n.importFromPhoto,
+    return Scaffold(
+      appBar: ButleryTopBar.undersida(title: context.l10n.importFromPhoto),
       body: SafeArea(
         child: Column(
           children: [
             LayoutComponents.offlineIndicator(),
             Expanded(
-              // RESPONSIVE: Center and constrain content on large screens
               child: ButleryPageBody(
                 width: PageWidth.text,
                 child: SingleChildScrollView(
@@ -398,91 +365,28 @@ class _PhotoImportViewContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Information om funktionen
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(AppDimensions.space16),
-                        decoration: BoxDecoration(
-                          color: cs.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusControl,
-                          ),
-                          border: Border.all(color: cs.outlineVariant),
-                        ),
-                        child: Row(
-                          children: [
-                            ButleryIcon(
-                              ButleryIcons.info,
-                              size: AppDimensions.iconSizeM,
-                              color: cs.onSurface,
-                            ),
-                            const SizedBox(width: AppDimensions.space4),
-                            Expanded(
-                              child: Text(
-                                context.l10n.importPhotoDescription,
-                                style: AppTextStyles.bodySmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.space32),
-
-                      UtilityComponents.primaryButton(
-                        context,
-                        label: viewModel.hasImage
-                            ? context.l10n.importChooseNewImage
-                            : context.l10n.importChooseImage,
-                        icon: ButleryIcons.camera,
-                        onPressed: viewModel.isProcessing
+                      ImageSourceButtons(
+                        cameraLabel: context.l10n.importPhotoCameraButton,
+                        libraryLabel: context.l10n.importPhotoLibraryButton,
+                        onCamera: viewModel.isProcessing
                             ? null
-                            : () => _showImageSourceDialog(context),
-                        isExpanded: true,
+                            : () => _startOver(
+                                context,
+                                viewModel,
+                                viewModel.pickImageFromCamera,
+                              ),
+                        onLibrary: viewModel.isProcessing
+                            ? null
+                            : () => _startOver(
+                                context,
+                                viewModel,
+                                viewModel.pickImageFromGallery,
+                              ),
                       ),
-                      const SizedBox(height: AppDimensions.space8),
+                      const SizedBox(height: AppDimensions.space16),
 
-                      // BUT-684: handwritten-recipe opt-in. Set before picking a
-                      // photo — routes the import through the handwriting-tuned
-                      // OCR instead of the standard printed-text OCR. SwitchListTile
-                      // is a self-labeling Material primitive (no extra Semantics).
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: cs.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusControl,
-                          ),
-                          border: Border.all(color: cs.outlineVariant),
-                        ),
-                        child: SwitchListTile(
-                          value: viewModel.isHandwritten,
-                          // BUT-1460: switchable except while an import is
-                          // processing, and it cannot be switched on while more
-                          // than one page is staged (the handwriting path reads
-                          // one image; see canToggleHandwritten).
-                          onChanged: viewModel.canToggleHandwritten
-                              ? (value) => viewModel.setHandwritten(value)
-                              : null,
-                          title: Text(
-                            context.l10n.importHandwrittenToggle,
-                            style: AppTextStyles.titleSmall,
-                          ),
-                          subtitle: Text(
-                            context.l10n.importHandwrittenToggleSubtitle,
-                            style: AppTextStyles.bodySmall,
-                          ),
-                          secondary: ButleryIcon(
-                            ButleryIcons.pencil,
-                            color: cs.onSurface,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.space12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.space32),
-
-                      // Flow 07: what the permission answer means here, and the  claim-lint:ok reindented only
-                      // way on (flows-roles-budget.md:98-106).  claim-lint:ok reindented only, cites a design doc
+                      // Flow 07: what the permission answer means here, and the
+                      // way on (flows-roles-budget.md).
                       if (viewModel.permissionNotice != null) ...[
                         PhotoPermissionNoticeCard(
                           notice: viewModel.permissionNotice!,
@@ -497,154 +401,62 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Navigator.pushNamed(context, Routes.manualEntry);
                           },
                         ),
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
 
-                      // Bildvisning
                       ImagePreview(viewModel: viewModel),
-                      const SizedBox(height: AppDimensions.space32),
+                      if (viewModel.hasImage || viewModel.isProcessing)
+                        const SizedBox(height: AppDimensions.space16),
 
                       // BUT-903: multi-page strip — thumbnails of every photo
-                      // combined into one recipe, plus the "add page" tile. Renders
-                      // nothing until at least one image exists.
+                      // combined into one recipe, plus the "add page" tile.
                       if (viewModel.hasImage) ...[
                         PhotoPageStrip(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
 
-                      // BUT-410: heirloom toggle + form, only when an image exists.
-                      // Kept between the preview and OCR-quality warnings so the
-                      // user sees it as a property of the chosen photo.
-                      if (viewModel.hasImage) ...[
-                        HeirloomSection(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.space32),
-                      ],
+                      // BUT-684: handwritten-recipe opt-in. Set before picking a
+                      // photo — routes the import through the handwriting-tuned
+                      // OCR instead of the standard printed-text OCR.
+                      ButleryListSection(
+                        rows: [
+                          ButleryListRow.toggle(
+                            label: context.l10n.importHandwrittenToggle,
+                            subtitle:
+                                context.l10n.importHandwrittenToggleSubtitle,
+                            checked: viewModel.isHandwritten,
+                            // BUT-1460: switchable except while an import is
+                            // processing, and it cannot be switched on while
+                            // more than one page is staged (the handwriting
+                            // path reads one image; see canToggleHandwritten).
+                            enabled: viewModel.canToggleHandwritten,
+                            onChanged: viewModel.setHandwritten,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.space16),
 
-                      // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are
-                      // taken or chosen first and the text is read only here,
-                      // the view's one saffron action (Skarmar v12 del 2
-                      // #fotoimport :704-706; Grafisk manual v6:219).
-                      if (viewModel.unreadPageCount > 0 &&
-                          !viewModel.hasError) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          child: HeroButton(
-                            key: const ValueKey('photo-import-read-pages'),
-                            label: context.l10n.importReadPages(
-                              viewModel.unreadPageCount,
-                            ),
-                            onPressed: viewModel.canReadPages
-                                ? viewModel.readPages
-                                : null,
+                      // BUT-410: heirloom toggle + form, only when an image
+                      // exists, so the user sees it as a property of the photo.
+                      if (viewModel.hasImage)
+                        HeirloomSection(viewModel: viewModel)
+                      else
+                        Text(
+                          context.l10n.importPhotoHeirloomHint,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.space32),
-                      ],
+                      const SizedBox(height: AppDimensions.space16),
 
-                      // Quality warning (Phase 2 Enhancement)
                       if (viewModel.hasImage &&
                           viewModel.qualityScore != null &&
                           viewModel.qualityScore! < 0.6 &&
                           !viewModel.hasError) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(
-                            AppDimensions.space12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.modeColors.surfaceTintWarning,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusControl,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  ButleryIcon(
-                                    ButleryIcons.triangleAlert,
-                                    color: AppModeColors.textWarning(
-                                      cs.brightness,
-                                    ),
-                                    size: AppDimensions.iconSizeM,
-                                  ),
-                                  const SizedBox(width: AppDimensions.space4),
-                                  Expanded(
-                                    child: Text(
-                                      context.l10n.importImageQualityLow(
-                                        (viewModel.qualityScore! * 100).toInt(),
-                                      ),
-                                      style: AppTextStyles.titleSmall.copyWith(
-                                        color: context
-                                            .modeColors
-                                            .onWarningContainer,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (viewModel.recommendations != null &&
-                                  viewModel.recommendations!.isNotEmpty) ...[
-                                const SizedBox(
-                                  height: AppDimensions.space8,
-                                ),
-                                Text(
-                                  context.l10n.importImprovementSuggestions,
-                                  style: AppTextStyles.badgeLarge.copyWith(
-                                    color:
-                                        context.modeColors.onWarningContainer,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: AppDimensions.space4,
-                                ),
-                                ...viewModel.recommendations!.map(
-                                  (rec) => Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: AppDimensions.space4,
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '• ',
-                                          style: AppTextStyles.bodySmall
-                                              .copyWith(
-                                                color: context
-                                                    .modeColors
-                                                    .onWarningContainer,
-                                              ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            rec,
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                                  color: context
-                                                      .modeColors
-                                                      .onWarningContainer,
-                                                ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: AppDimensions.space8),
-                              Text(
-                                context.l10n.importOcrMayFail,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: context.modeColors.onWarningContainer,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
+                        PhotoQualityWarning(viewModel: viewModel),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
 
                       // Error container with recovery options
@@ -660,7 +472,6 @@ class _PhotoImportViewContent extends StatelessWidget {
 
                         // Error recovery buttons (only shown when image is available)
                         if (viewModel.hasImage) ...[
-                          // Retry OCR button
                           UtilityComponents.primaryButton(
                             context,
                             label: context.l10n.commonRetry,
@@ -687,7 +498,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           ),
                         ],
 
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
 
                       // OCR-resultat
@@ -708,7 +519,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                         ),
                         const SizedBox(height: AppDimensions.space8),
                         TextDisplayCard(text: viewModel.ocrText),
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space16),
                         if (viewModel.hasMultipleRecipes)
                           UtilityComponents.primaryButton(
                             context,
@@ -731,8 +542,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                 _navigateToTextImport(context, viewModel),
                             isExpanded: true,
                           ),
-                        // Add bottom padding for safe scrolling
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
                     ],
                   ),
@@ -742,48 +552,19 @@ class _PhotoImportViewContent extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// The permission notice on photo import, per flow 07
-/// (flows-roles-budget.md:98-106): [MediaPermissionNoticeCard] with
-/// import's own words for a no and its fallbacks. No camera leads to the
-/// library, no library leads to writing the recipe yourself
-/// (flows-roles-budget.md:105).
-class PhotoPermissionNoticeCard extends StatelessWidget {
-  const PhotoPermissionNoticeCard({
-    super.key,
-    required this.notice,
-    required this.onAskAgain,
-    required this.onOpenSettings,
-    required this.onChooseFromGallery,
-    required this.onWriteYourself,
-  });
-
-  final PhotoPermissionNotice notice;
-  final VoidCallback onAskAgain;
-  final VoidCallback onOpenSettings;
-  final VoidCallback onChooseFromGallery;
-  final VoidCallback onWriteYourself;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final camera = notice.source == ImageSource.camera;
-    return MediaPermissionNoticeCard(
-      source: notice.source,
-      outcome: notice.outcome,
-      deniedMessage: camera ? l10n.permCameraDenied : l10n.permPhotosDenied,
-      onAskAgain: onAskAgain,
-      onOpenSettings: onOpenSettings,
-      fallbackLabel: camera
-          ? l10n.permFallbackGallery
-          : l10n.permFallbackWriteYourself,
-      onFallback: camera ? onChooseFromGallery : onWriteYourself,
-      fallbackKey: ValueKey(
-        camera ? 'permission-fallback-gallery' : 'permission-fallback-write',
-      ),
+      // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
+      // chosen first and the text is read only here, the view's one saffron
+      // action (Skarmar v12 del 2 #fotoimport :704-706; Grafisk manual v6:219).
+      bottomNavigationBar: readPages
+          ? BottomActionContainer(
+              child: HeroButton(
+                key: const ValueKey('photo-import-read-pages'),
+                label: context.l10n.importReadPages(viewModel.unreadPageCount),
+                expand: true,
+                onPressed: viewModel.canReadPages ? viewModel.readPages : null,
+              ),
+            )
+          : null,
     );
   }
 }

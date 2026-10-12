@@ -119,7 +119,6 @@ class _FriendProfileViewState extends State<FriendProfileView> {
       // name is the page's own heading under it.
       title: '',
       backTo: l10n.socialFriendsAndGroups,
-      lightBar: true,
       ruleUnderBar: false,
       actions: [
         FriendProfileMenuButton(

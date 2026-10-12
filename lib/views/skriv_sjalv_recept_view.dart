@@ -391,6 +391,14 @@ class _SkrivSjalvReceptViewContentState
               : context.l10n.recipeWriteNew,
           backTo: viewModel.isEditing ? null : context.l10n.addRecipeTitle,
           actions: [
+            IconButton(
+              key: const ValueKey('skriv-sjalv-save-check'),
+              icon: const ButleryIcon(ButleryIcons.check),
+              tooltip: context.l10n.recipeSave,
+              onPressed: saveBlocked || _isSaving || viewModel.isSaving
+                  ? null
+                  : _saveRecipe,
+            ),
             DraftSaveIndicator(
               isSaving: viewModel.isAutoSaving,
               hasRecentSave: viewModel.hasRecentAutoSave,
@@ -574,7 +582,7 @@ class _SkrivSjalvReceptViewContentState
                         // Beskrivning
                         StyledInput(
                           controller: _descriptionController,
-                          label: context.l10n.recipeDescription,
+                          label: context.l10n.recipeDescriptionOptional,
                           maxLines: 2,
                           minLines: 2,
                           textInputAction: TextInputAction.next,
@@ -592,31 +600,40 @@ class _SkrivSjalvReceptViewContentState
                         ),
                         const SizedBox(height: AppDimensions.space32),
 
-                        // Portioner
-                        StyledInput(
-                          controller: _portionsController,
-                          label: context.l10n.recipePortions,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          onChanged: (value) =>
-                              viewModel.setPortions(int.tryParse(value)),
-                          showWarning: viewModel.fieldsNeedingImprovement
-                              .contains('portions'),
-                          validator: FormValidators.portions(),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Tid
-                        StyledInput(
-                          controller: _timeMinutesController,
-                          label: context.l10n.recipeTimeMinutes,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.next,
-                          onChanged: (value) =>
-                              viewModel.setTimeMinutes(int.tryParse(value)),
-                          showWarning: viewModel.fieldsNeedingImprovement
-                              .contains('totalTime'),
-                          validator: FormValidators.cookingTime(),
+                        // Portioner och tid
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: StyledInput(
+                                controller: _portionsController,
+                                label: context.l10n.recipePortions,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (value) => viewModel.setPortions(
+                                  int.tryParse(value),
+                                ),
+                                showWarning: viewModel.fieldsNeedingImprovement
+                                    .contains('portions'),
+                                validator: FormValidators.portions(),
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.space12),
+                            Expanded(
+                              child: StyledInput(
+                                controller: _timeMinutesController,
+                                label: context.l10n.recipeTimeMinutes,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (value) => viewModel.setTimeMinutes(
+                                  int.tryParse(value),
+                                ),
+                                showWarning: viewModel.fieldsNeedingImprovement
+                                    .contains('totalTime'),
+                                validator: FormValidators.cookingTime(),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: AppDimensions.space32),
 
@@ -676,6 +693,7 @@ class _SkrivSjalvReceptViewContentState
 
                         // Instruktioner
                         _buildDynamicList(
+                          heading: context.l10n.recipeMethodHeading,
                           label: context.l10n.recipeInstruction,
                           controllers: viewModel.instructionControllers,
                           onUpdate: viewModel.updateInstruction,
@@ -815,6 +833,7 @@ class _SkrivSjalvReceptViewContentState
   }
 
   Widget _buildDynamicList({
+    required String heading,
     required String label,
     required List<TextEditingController> controllers,
     required Function(int, String) onUpdate,
@@ -826,7 +845,7 @@ class _SkrivSjalvReceptViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.labelLarge),
+        Text(heading, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.space8),
         if (controllers.isNotEmpty && onReorder != null)
           ReorderableListView.builder(

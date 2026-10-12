@@ -88,6 +88,25 @@ void main() {
     expect(glyphOf(tester, hide), ButleryIcons.eyeOff);
   });
 
+  testWidgets('the rule line names the length the form really enforces, and '
+      'the confirm field says what it repeats', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AccountPasswordView(),
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('accountPassword.rule')))
+          .data,
+      l10n.passwordRuleHint,
+    );
+    expect(find.text(l10n.accountSecurityRepeatNewPassword), findsOneWidget);
+  });
+
   Future<void> pumpView(WidgetTester tester) async {
     await tester.pumpWidget(
       createLocalizedTestApp(

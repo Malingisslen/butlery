@@ -25,14 +25,8 @@ class ButleryCheckbox extends StatelessWidget {
   /// tokens.json controls.checkbox.size, drawn on the field's edge.
   static const double boxSize = 24;
 
-  // Material has no size setting for its checkbox and draws it at this size,
-  // so the token's box is scaled up from it.
-  static const double _materialBox = 18;
-  static const double _scale = boxSize / _materialBox;
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final onChanged = this.onChanged;
     return ButleryControlFocus(
       borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
@@ -45,24 +39,44 @@ class ButleryCheckbox extends StatelessWidget {
           excludeFromSemantics: true,
           onTap: onChanged == null ? null : () => onChanged(!value),
           child: Center(
-            child: SizedBox.square(
-              dimension: boxSize,
-              child: Transform.scale(
-                scale: _scale,
-                child: SizedBox.square(
-                  dimension: _materialBox,
-                  child: Theme(
-                    data: theme.copyWith(checkboxTheme: _preScaled(theme)),
-                    child: Checkbox(
-                      value: value,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      onChanged: onChanged == null
-                          ? null
-                          : (checked) => onChanged(checked ?? false),
-                    ),
-                  ),
-                ),
-              ),
+            child: _TokenBox(value: value, onChanged: onChanged),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The token's 24 dp box, scaled up from Material's 18 dp one.
+class _TokenBox extends StatelessWidget {
+  const _TokenBox({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  // Material has no size setting for its checkbox and draws it at this size,
+  // so the token's box is scaled up from it.
+  static const double _materialBox = 18;
+  static const double _scale = ButleryCheckbox.boxSize / _materialBox;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onChanged = this.onChanged;
+    return SizedBox.square(
+      dimension: ButleryCheckbox.boxSize,
+      child: Transform.scale(
+        scale: _scale,
+        child: SizedBox.square(
+          dimension: _materialBox,
+          child: Theme(
+            data: theme.copyWith(checkboxTheme: _preScaled(theme)),
+            child: Checkbox(
+              value: value,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: onChanged == null
+                  ? null
+                  : (checked) => onChanged(checked ?? false),
             ),
           ),
         ),
@@ -84,6 +98,25 @@ class ButleryCheckbox extends StatelessWidget {
                   shape.borderRadius.resolve(TextDirection.ltr) * (1 / _scale),
             )
           : shape,
+    );
+  }
+}
+
+/// The box alone, for a row that owns the tap, the focus and the screen-reader
+/// stop (a pick-many row built by hand): it draws the state and takes nothing.
+class ButleryCheckboxMark extends StatelessWidget {
+  const ButleryCheckboxMark({required this.checked, super.key});
+
+  final bool checked;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: ExcludeFocus(
+        child: IgnorePointer(
+          child: _TokenBox(value: checked, onChanged: (_) {}),
+        ),
+      ),
     );
   }
 }

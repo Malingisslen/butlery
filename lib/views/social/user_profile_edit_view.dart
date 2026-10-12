@@ -259,7 +259,6 @@ class _UserProfileEditViewContentState
       child: ButleryPage.undersida(
         title: context.l10n.profileEditProfile,
         backTo: context.l10n.moreTitle,
-        lightBar: true,
         ruleUnderBar: false,
         // A form: the save bar takes the tab bar's place (B-54).
         showTabBar: false,

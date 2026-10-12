@@ -49,6 +49,28 @@ void main() {
     });
   });
 
+  group('ButleryCheckboxMark', () {
+    testWidgets('draws the state at 24 dp and takes no tap', (tester) async {
+      var taps = 0;
+      await _pump(
+        tester,
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => taps++,
+          child: const ButleryCheckboxMark(checked: true),
+        ),
+      );
+
+      final box = tester.widget<Checkbox>(find.byType(Checkbox));
+      expect(box.value, isTrue);
+      expect(tester.getSize(find.byType(Checkbox)), const Size(24, 24));
+
+      await tester.tap(find.byType(Checkbox));
+      // The row around the mark owns the tap, so it reaches the row once.
+      expect(taps, 1);
+    });
+  });
+
   group('ButleryCheckboxTile', () {
     testWidgets('a tap on the row toggles once and reads as one checked stop', (
       tester,

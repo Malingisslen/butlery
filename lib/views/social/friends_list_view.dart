@@ -137,7 +137,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent> {
     return ButleryPage.undersida(
       title: context.l10n.socialFriendsAndGroups,
       backTo: context.l10n.moreTitle,
-      lightBar: true,
       ruleUnderBar: false,
       actions: actions,
       body: body,
