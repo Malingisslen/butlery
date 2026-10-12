@@ -11,9 +11,14 @@ class ParsingDomainStat {
   final int corrections;
   final ParsingIssue topIssue;
 
+  /// Share of the domain's imports that succeeded, 0-100. Null when the
+  /// domain has no import record.
+  final int? successPercent;
+
   const ParsingDomainStat({
     required this.domain,
     required this.corrections,
     required this.topIssue,
+    this.successPercent,
   });
 }

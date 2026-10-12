@@ -680,10 +680,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/60-consent-management.png` | `0634dea23526a259bd64104a13d09f18ef54115e0bc4dfe2a70a19cc87f91ae1` |
 | `skiss-mot-app/61-data-export.png` | `d86a08780f98b4ba38320edc975109376fa048228aaa913ae57b4c682054b115` |
 | `skiss-mot-app/62-pending-deletion.png` | `88e05f27dcecabcaaa056d7f9f26ab41c9b67b4eb875e30babd6594f35879f61` |
-| `skiss-mot-app/63-metric-tab.png` | `ae02233b663d587a66ffc9e5f2dbfffb87e8356d21b0031f108bb40a9d859fea` |
+| `skiss-mot-app/63-metric-tab.png` | `f7423c08b6d7f651569e71a2d3b0f93917313319f82a6960a82b1fedf395a295` |
 | `skiss-mot-app/64-moderator-review.png` | `209cad6285e3f95cfbdb810168d21036aa001549c9fa2b99a800c5e66bf9f656` |
-| `skiss-mot-app/65-ops-log.png` | `c48e7995d1ad7d4b1bf2516d6aa9eb2fc62364d999687b93d420694e769314c8` |
-| `skiss-mot-app/66-parsing-details.png` | `5ea6f753d2cbe9b260bcba735d72a495a5d9d28822fd2282402578edffda7621` |
+| `skiss-mot-app/65-ops-log.png` | `f52d6a36ac6dee6a27a0a55bb0bd86e011227b2a704096eee45d5b240019015b` |
+| `skiss-mot-app/66-parsing-details.png` | `d1904fdc09327d435c30fff15c41906ac8f951143c55012f8b1c98bf00e0c2a0` |
 | `skiss-mot-app/67-guest-start.png` | `485d9d9ecf4e1d726b924124e63956f65f4cf82fbee554b3e8fdd1aedef1d18e` |
 | `skiss-mot-app/68-guest-upgrade.png` | `d698ab97b41902214ad70b8d758e20a5579c923c64f14b82c41d30d038714b8e` |
 | `skiss-mot-app/69-mfa-challenge.png` | `2cea24da00839929ae555661820ac1f2fd4839fe772465611f9835cb9ac4f102` |

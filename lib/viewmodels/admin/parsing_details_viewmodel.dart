@@ -3,6 +3,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/admin/parsing_domain_stat.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
+import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -15,6 +16,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// rules-gated to isAdmin.
 class ParsingDetailsViewModel extends BaseViewModel {
   final ParsingCorrectionRepository _repository;
+  final SiteConfigRepository? _siteConfigs;
 
   /// Bound on how many domains we fetch per-domain detail for, to cap read
   /// cost. Beyond this, rows still show counts but `topIssue` stays [none].
@@ -23,9 +25,13 @@ class ParsingDetailsViewModel extends BaseViewModel {
   List<ParsingDomainStat> _stats = const [];
   int _totalCorrections = 0;
 
-  ParsingDetailsViewModel({ParsingCorrectionRepository? repository})
-    : _repository =
-          repository ?? ServiceLocator.get<ParsingCorrectionRepository>();
+  ParsingDetailsViewModel({
+    ParsingCorrectionRepository? repository,
+    SiteConfigRepository? siteConfigs,
+  }) : _repository =
+           repository ?? ServiceLocator.get<ParsingCorrectionRepository>(),
+       _siteConfigs =
+           siteConfigs ?? ServiceLocator.tryGet<SiteConfigRepository>();
 
   /// Domains with corrections, most-corrected first.
   List<ParsingDomainStat> get stats => _stats;
@@ -40,6 +46,7 @@ class ParsingDetailsViewModel extends BaseViewModel {
         final entries = domainCounts.entries.toList()
           ..sort((a, b) => b.value.compareTo(a.value));
 
+        final rates = await _importRates();
         final stats = <ParsingDomainStat>[];
         var total = 0;
         for (var i = 0; i < entries.length; i++) {
@@ -61,6 +68,7 @@ class ParsingDetailsViewModel extends BaseViewModel {
               domain: entry.key,
               corrections: entry.value,
               topIssue: issue,
+              successPercent: rates[entry.key],
             ),
           );
         }
@@ -75,6 +83,24 @@ class ParsingDetailsViewModel extends BaseViewModel {
       },
       errorPrefix: AppLocale.current.adminParsingStatsLoadFailed,
     );
+  }
+
+  /// Import success per domain, from the import-health records. A failed read
+  /// leaves the column empty rather than failing the tab.
+  Future<Map<String, int>> _importRates() async {
+    final repo = _siteConfigs;
+    if (repo == null) return const {};
+    try {
+      final configs = await repo.getAllConfigs();
+      return {
+        for (final c in configs)
+          if (c.successCount + c.failureCount > 0)
+            c.domain: (c.successRate * 100).round(),
+      };
+    } catch (e) {
+      AppLogger.warning('ParsingDetails: import rates unavailable: $e');
+      return const {};
+    }
   }
 
   Future<void> refresh() => load();
