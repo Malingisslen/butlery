@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +15,10 @@ import 'package:butlery/viewmodels/notifications_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// In-app notification inbox showing notification history.
 class NotificationsView extends StatelessWidget {
@@ -121,34 +121,10 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     BuildContext context,
     NotificationsViewModel vm,
   ) {
-    final hasUnread = vm.entries.any((e) => !e.opened);
     // A subpage (Komponentark v1 §01 pattern 2; Skarmar v12 etapp 6
-    // 'Notiscentral — inkorgen' draws the back arrow).
-    return ButleryTopBar.undersida(
-      title: context.l10n.notificationsTitle,
-      actions: [
-        // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
-        // the action would be a no-op and shouldn't suggest otherwise.
-        PressFill(
-          surface: PressSurface.base,
-          child: PopupMenuButton<String>(
-            icon: const ButleryIcon(ButleryIcons.moreVertical),
-            enabled: hasUnread,
-            onSelected: (value) {
-              if (value == 'mark_all_read') {
-                vm.markAllAsOpened();
-              }
-            },
-            itemBuilder: (context) => [
-              ButleryMenuItem<String>(
-                value: 'mark_all_read',
-                child: Text(context.l10n.notificationsMarkAllRead),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    // 'Notiscentral — inkorgen' draws the back arrow). Mark-all-read is the
+    // band at the top of the list, as the sketch draws it.
+    return ButleryTopBar.undersida(title: context.l10n.notificationsTitle);
   }
 
   PreferredSizeWidget _buildSelectionAppBar(
@@ -204,12 +180,14 @@ class _NotificationsContentState extends State<_NotificationsContent> {
           return false;
         },
         child: ListView.builder(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.space12,
-          ),
-          itemCount: vm.entries.length + (vm.isLoadingMore ? 1 : 0),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space24),
+          // The band first, then one row per entry, the next page's plate
+          // line while it loads, and the note last.
+          itemCount: 2 + vm.entries.length + (vm.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
-            if (index == vm.entries.length) {
+            if (index == 0) return _MarkAllReadBand(vm: vm);
+            final entryIndex = index - 1;
+            if (entryIndex == vm.entries.length && vm.isLoadingMore) {
               // Loading the next page: the plate line with what is fetched.
               return Padding(
                 padding: const EdgeInsets.all(AppDimensions.space16),
@@ -220,20 +198,104 @@ class _NotificationsContentState extends State<_NotificationsContent> {
                 ),
               );
             }
-            final entry = vm.entries[index];
-            return _NotificationTile(
+            if (entryIndex >= vm.entries.length) {
+              return const _InboxNote();
+            }
+            final entry = vm.entries[entryIndex];
+            return Column(
               key: ValueKey(entry.id),
-              entry: entry,
-              isSelectionMode: _selectionMode,
-              isSelected: _selectedIds.contains(entry.id),
-              onTap: _selectionMode
-                  ? () => _toggle(entry.id)
-                  : () => _handleEntryTap(vm, entry),
-              onLongPress: _selectionMode
-                  ? null
-                  : () => _enterSelection(entry.id),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _NotificationTile(
+                  entry: entry,
+                  isSelectionMode: _selectionMode,
+                  isSelected: _selectedIds.contains(entry.id),
+                  onTap: _selectionMode
+                      ? () => _toggle(entry.id)
+                      : () => _handleEntryTap(vm, entry),
+                  onLongPress: _selectionMode
+                      ? null
+                      : () => _enterSelection(entry.id),
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// "Markera alla lästa" with the count of unread, on the green band above
+/// the list. Without anything unread it reads as information, not a control.
+class _MarkAllReadBand extends StatelessWidget {
+  const _MarkAllReadBand({required this.vm});
+
+  final NotificationsViewModel vm;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final unread = vm.entries.where((e) => !e.opened).length;
+    final hasUnread = unread > 0;
+    final color = hasUnread ? cs.onSurface : cs.onSurfaceVariant;
+    return Semantics(
+      button: true,
+      enabled: hasUnread,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: hasUnread ? vm.markAllAsOpened : null,
+          child: TintedNote.band(
+            child: Row(
+              children: [
+                ExcludeSemantics(
+                  child: ButleryIcon(
+                    ButleryIcons.listCheck,
+                    color: color,
+                    size: AppDimensions.iconSizeS,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: Text(
+                    l10n.notificationsMarkAllReadShort,
+                    style: AppTextStyles.bodyBold.copyWith(color: color),
+                  ),
+                ),
+                Text(
+                  l10n.notificationsUnreadCount(unread),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The note under the list: how many load at a time and how to pick several.
+class _InboxNote extends StatelessWidget {
+  const _InboxNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: ButleryPageBody.margin(context, top: AppDimensions.space16),
+      child: TintedNote(
+        child: Text(
+          context.l10n.notificationsNote,
+          style: TintedNote.textStyle(context),
         ),
       ),
     );
@@ -248,7 +310,6 @@ class _NotificationTile extends StatelessWidget {
   final VoidCallback? onLongPress;
 
   const _NotificationTile({
-    super.key,
     required this.entry,
     required this.onTap,
     this.isSelectionMode = false,
@@ -263,6 +324,9 @@ class _NotificationTile extends StatelessWidget {
     final chosen = isSelectionMode && isSelected;
     return ListTile(
       selected: chosen,
+      // A row on the page's paper with a hairline under it, as the sketch
+      // draws it; the theme's raised tile is for cards.
+      tileColor: Colors.transparent,
       // Chosen is surface.selected with a real border, never a tint
       // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
       // :108-119). surfaceContainerHighest is surface.raised, which
@@ -273,7 +337,9 @@ class _NotificationTile extends StatelessWidget {
       // otherwise paint them colorScheme.primary, which is ink in dark mode
       // too and vanishes on surface.selected (#2F4437).
       selectedColor: cs.onSurface,
-      shape: chosen ? Border.all(color: cs.onSurface, width: 1.5) : null,
+      shape: chosen
+          ? Border.all(color: cs.onSurface, width: 1.5)
+          : const RoundedRectangleBorder(),
       leading: isSelectionMode
           ? ButleryIcon(
               isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,

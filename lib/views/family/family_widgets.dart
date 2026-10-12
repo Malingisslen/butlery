@@ -36,11 +36,16 @@ Color parseAvatarColor(BuildContext context, String? hex) {
   return Theme.of(context).colorScheme.primary;
 }
 
+/// Square colored avatar with initials (SQUARE design language).
 class FamilyAvatar extends StatelessWidget {
   final String name;
   final Color color;
   final double size;
   final String? initials;
+
+  /// A circle instead of the square, as the household and member lists are
+  /// drawn (Skärmar v12 #familj, #medlemmar).
+  final bool round;
 
   const FamilyAvatar({
     super.key,
@@ -48,6 +53,7 @@ class FamilyAvatar extends StatelessWidget {
     required this.color,
     this.size = 42,
     this.initials,
+    this.round = false,
   });
 
   @override
@@ -55,7 +61,9 @@ class FamilyAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      decoration: round
+          ? BoxDecoration(color: color, shape: BoxShape.circle)
+          : BoxDecoration(color: color),
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
@@ -167,6 +175,7 @@ class FamilyAccountRow extends StatelessWidget {
       container: true,
       child: _FamilyRowContent(
         avatar: FamilyAvatar(
+          round: true,
           name: member.displayName,
           color: parseAvatarColor(context, member.avatarColor),
           size: _avatarSize,
@@ -211,6 +220,7 @@ class FamilyMemberRow extends StatelessWidget {
           onTap: onTap,
           child: _FamilyRowContent(
             avatar: FamilyAvatar(
+              round: true,
               name: profile.name,
               color: parseAvatarColor(context, profile.avatarColor),
               size: _avatarSize,

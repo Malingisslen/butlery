@@ -1,5 +1,6 @@
 /**
- * Firestore rules tests for a household's nutrition food choices (BUT-643).
+ * Firestore rules tests for a household's nutrition food choices (BUT-643)
+ * and its own nutrition amounts (the amount tests further down).
  *
  * `households/{hid}.nutritionFoodChoices` maps an ingredient key to a
  * Livsmedelsverket food id. Each write names the one key it changes in
@@ -293,8 +294,271 @@ test("a household cannot be created with choices", async () => {
   }));
 });
 
+// ---- The household's own amounts: `nutritionAmountChoices` ----------------
+
+const amount = (key: string) =>
+  new firebase.firestore.FieldPath("nutritionAmountChoices", key);
+
+const UUID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
+const FIRESTORE_ID = "AbCdEfGhIjKlMnOpQrSt";
+
+async function writeAmount(
+  uid: string,
+  key: string,
+  value: unknown,
+  extra: unknown[] = [],
+  named: string = key,
+): Promise<unknown> {
+  return householdAs(uid).update(
+    amount(key), value,
+    "nutritionAmountKey", named,
+    "updatedAt", serverTs(),
+    ...extra,
+  );
+}
+
+test("edit member sets an amount for every recipe", async () => {
+  await reseed();
+  await assertSucceeds(
+    writeAmount(EDITOR, "kycklingfile", { a: 600, u: "g" })
+  );
+});
+
+test("admin member sets a decimal amount", async () => {
+  await reseed();
+  await assertSucceeds(
+    writeAmount(ADMIN_MEMBER, "salt", { a: 1.5, u: "tsk" })
+  );
+});
+
+test("an amount for one recipe works for a UUID and a Firestore id", async () => {
+  for (const id of [UUID, FIRESTORE_ID]) {
+    await reseed();
+    await assertSucceeds(
+      writeAmount(EDITOR, `r_${id}_kycklingfile`, { a: 450, u: "g" })
+    );
+  }
+});
+
+test("first amount on a household that has none", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc(`households/${HOUSEHOLD_ID}`)
+      .set(householdBody());
+  });
+  await assertSucceeds(writeAmount(EDITOR, "salt", { a: 1, u: "tsk" }));
+});
+
+test("an amount can be removed", async () => {
+  await reseed({
+    nutritionAmountChoices: { salt: { a: 1, u: "tsk" } },
+    nutritionAmountKey: "salt",
+  });
+  await assertSucceeds(
+    writeAmount(EDITOR, "salt", firebase.firestore.FieldValue.delete())
+  );
+});
+
+test("view member and stranger cannot write an amount", async () => {
+  await reseed();
+  await assertFails(writeAmount(VIEWER, "salt", { a: 1, u: "tsk" }));
+  await assertFails(writeAmount(STRANGER, "salt", { a: 1, u: "tsk" }));
+});
+
+test("an amount cannot ride along with another household field", async () => {
+  for (const [field, value] of [
+    ["name", "Nytt namn"],
+    ["memberUserIds", [EDITOR]],
+    ["memberPermissions", { [EDITOR]: "admin" }],
+    ["sourceGroupId", "g1"],
+    ["sourceGroupOwnerId", "u9"],
+    ["createdBy", EDITOR],
+    ["createdAt", new Date(0)],
+    ["members", []],
+  ] as const) {
+    await reseed();
+    await assertFails(
+      writeAmount(EDITOR, "salt", { a: 1, u: "tsk" }, [field, value])
+    );
+  }
+  // An admin may rename in the same write, as before; membership and the
+  // group link stay out of reach.
+  for (const [field, value] of [
+    ["memberUserIds", [EDITOR]],
+    ["memberPermissions", { [EDITOR]: "admin" }],
+    ["sourceGroupId", "g1"],
+  ] as const) {
+    await reseed();
+    await assertFails(
+      writeAmount(ADMIN_MEMBER, "salt", { a: 1, u: "tsk" }, [field, value])
+    );
+  }
+});
+
+test("an admin may rename the household in the same write as an amount", async () => {
+  await reseed();
+  await assertSucceeds(
+    writeAmount(ADMIN_MEMBER, "salt", { a: 1, u: "tsk" }, ["name", "Nytt namn"])
+  );
+});
+
+test("an amount and a food choice cannot be written together by an edit member", async () => {
+  await reseed();
+  await assertFails(writeAmount(
+    EDITOR, "salt", { a: 1, u: "tsk" },
+    [choice("dill"), 456, "nutritionChoiceKey", "dill"],
+  ));
+});
+
+test("the written amount key must be the named key", async () => {
+  await reseed();
+  await assertFails(
+    writeAmount(EDITOR, "salt", { a: 1, u: "tsk" }, [], "dill")
+  );
+});
+
+test("two amount keys in one write are refused", async () => {
+  await reseed();
+  await assertFails(householdAs(EDITOR).update(
+    amount("salt"), { a: 1, u: "tsk" },
+    amount("dill"), { a: 1, u: "msk" },
+    "nutritionAmountKey", "salt",
+    "updatedAt", serverTs(),
+  ));
+});
+
+test("replacing the whole amount map is refused, for editor and admin", async () => {
+  for (const uid of [EDITOR, ADMIN_MEMBER]) {
+    await reseed({
+      nutritionAmountChoices: { dill: { a: 1, u: "msk" } },
+      nutritionAmountKey: "dill",
+    });
+    await assertFails(householdAs(uid).update({
+      nutritionAmountChoices: { salt: { a: 1, u: "tsk" } },
+      nutritionAmountKey: "salt",
+      updatedAt: serverTs(),
+    }));
+  }
+});
+
+test("admin cannot write a malformed map through the rename arm", async () => {
+  await reseed();
+  await assertFails(householdAs(ADMIN_MEMBER).update({
+    name: "Familjen Berg-Ek",
+    nutritionAmountChoices: { "johan svensson": "fritext" },
+    updatedAt: serverTs(),
+  }));
+});
+
+test("amount keys: the longest fit is allowed, one over is refused", async () => {
+  const ok60 = "a".repeat(60);
+  const okUuid = `r_${UUID}_${"a".repeat(60)}`;
+  const okLongestId = `r_${"X".repeat(40)}_${"a".repeat(60)}`;
+  const bad61 = "a".repeat(61);
+  const badId41 = `r_${"X".repeat(41)}_salt`;
+  const badKey61 = `r_${UUID}_${"a".repeat(61)}`;
+  for (const key of [ok60, okUuid, okLongestId]) {
+    await reseed();
+    await assertSucceeds(writeAmount(EDITOR, key, { a: 1, u: "g" }));
+  }
+  for (const key of [bad61, badId41, badKey61, "Salt", "salt-och"]) {
+    await reseed();
+    await assertFails(writeAmount(EDITOR, key, { a: 1, u: "g" }));
+  }
+});
+
+test("an upper-case recipe id fits only the recipe shape", async () => {
+  await reseed();
+  await assertFails(
+    writeAmount(EDITOR, `R_${FIRESTORE_ID}_salt`, { a: 1, u: "g" })
+  );
+  await assertFails(writeAmount(EDITOR, "kycklingFile", { a: 1, u: "g" }));
+  // Upper case is allowed in the recipe id only, never in the ingredient part.
+  await assertFails(
+    writeAmount(EDITOR, `r_${UUID}_Salt`, { a: 1, u: "g" })
+  );
+  await assertFails(
+    writeAmount(EDITOR, `r_${FIRESTORE_ID}_Salt`, { a: 1, u: "g" })
+  );
+});
+
+test("an amount value must be exactly {a, u}", async () => {
+  for (const value of [
+    { a: 1 },
+    { u: "g" },
+    { a: 1, u: "g", note: "hej" },
+    "600 g",
+    600,
+    null,
+  ]) {
+    await reseed();
+    await assertFails(writeAmount(EDITOR, "salt", value));
+  }
+});
+
+test("an amount must be a number above 0 and at most 100000", async () => {
+  for (const a of [0, -5, 100001, "5", true]) {
+    await reseed();
+    await assertFails(writeAmount(EDITOR, "salt", { a, u: "g" }));
+  }
+  await reseed();
+  await assertSucceeds(writeAmount(EDITOR, "salt", { a: 100000, u: "g" }));
+});
+
+test("only listed units are accepted", async () => {
+  for (const u of ["g", "kg", "ml", "dl", "l", "msk", "tsk", "krm", "st"]) {
+    await reseed();
+    await assertSucceeds(writeAmount(EDITOR, "salt", { a: 1, u }));
+  }
+  for (const u of ["nypa", "pkt", "G", "", "hela receptet", 5]) {
+    await reseed();
+    await assertFails(writeAmount(EDITOR, "salt", { a: 1, u }));
+  }
+});
+
+test("amount updatedAt must be the server time", async () => {
+  await reseed();
+  await assertFails(householdAs(EDITOR).update(
+    amount("salt"), { a: 1, u: "tsk" },
+    "nutritionAmountKey", "salt",
+    "updatedAt", new Date(),
+  ));
+});
+
+test("the amount map is capped at 300", async () => {
+  const full: Record<string, unknown> = {};
+  for (let i = 0; i < 300; i++) full[`k${i}`] = { a: 1, u: "g" };
+  await reseed({ nutritionAmountChoices: full, nutritionAmountKey: "k0" });
+  await assertFails(writeAmount(EDITOR, "salt", { a: 1, u: "tsk" }));
+  await assertSucceeds(writeAmount(EDITOR, "k1", { a: 2, u: "g" }));
+  await assertSucceeds(
+    writeAmount(EDITOR, "k2", firebase.firestore.FieldValue.delete())
+  );
+});
+
+test("a household cannot be created with amounts", async () => {
+  const ctx = env.authenticatedContext(ADMIN_MEMBER).firestore();
+  const solo = {
+    name: "Vårt hushåll",
+    members: [{ userId: ADMIN_MEMBER, permission: "admin", addedAt: new Date() }],
+    memberUserIds: [ADMIN_MEMBER],
+    memberPermissions: { [ADMIN_MEMBER]: "admin" },
+    createdBy: ADMIN_MEMBER,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    schemaVersion: 1,
+  };
+  await assertFails(ctx.doc(`households/hn-new-amt-${Date.now()}`).set({
+    ...solo,
+    nutritionAmountChoices: { salt: { a: 1, u: "tsk" } },
+  }));
+  await assertFails(ctx.doc(`households/hn-new-amtkey-${Date.now()}`).set({
+    ...solo,
+    nutritionAmountKey: "salt",
+  }));
+});
+
 async function run(): Promise<void> {
-  console.log("household nutrition choices rules tests\n");
+  console.log("household nutrition choices and amounts rules tests\n");
   const rules = fs.readFileSync(RULES_PATH, "utf8");
   env = await initializeTestEnvironment({
     projectId: PROJECT_ID,

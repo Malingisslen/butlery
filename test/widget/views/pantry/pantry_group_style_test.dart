@@ -1,7 +1,7 @@
 /// The pantry's place groups and its add button as drawn in Skarmar v12
 /// etapp 2 #skafferivyn, in the dark theme where the phone test found them
-/// off: a paper edge and a saffron rule around each group, and an ink add
-/// button on the dark page.
+/// off: a paper bar on each group band, a saffron bar on "går ut snart", and
+/// an ink add button on the dark page.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,9 +13,12 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_view.dart';
+import 'package:butlery/widgets/common/list/section_band.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/offline_banner_support.dart';
@@ -95,37 +98,64 @@ void main() {
     return AppTheme.darkTheme.colorScheme;
   }
 
-  Border groupBorder(WidgetTester tester, String heading) {
+  SectionBand band(WidgetTester tester, String heading) =>
+      tester.widget<SectionBand>(
+        find.ancestor(
+          of: find.text(heading.toUpperCase()),
+          matching: find.byType(SectionBand),
+        ),
+      );
+
+  Border barOf(WidgetTester tester, String heading) {
     final box = tester.widget<Container>(
       find
-          .ancestor(of: find.text(heading), matching: find.byType(Container))
-          .last,
+          .descendant(
+            of: find.ancestor(
+              of: find.text(heading.toUpperCase()),
+              matching: find.byType(SectionBand),
+            ),
+            matching: find.byWidgetPredicate(
+              (w) =>
+                  w is Container &&
+                  w.decoration is BoxDecoration &&
+                  (w.decoration! as BoxDecoration).border is Border,
+            ),
+          )
+          .first,
     );
     return (box.decoration! as BoxDecoration).border! as Border;
   }
 
-  testWidgets('a place group has a muted edge and a hairline, not the recipe '
-      'card frame', (tester) async {
+  testWidgets('a place group is a standard band with a paper bar and its '
+      'count', (tester) async {
     final cs = await pumpDark(tester);
 
-    final border = groupBorder(tester, 'skafferi');
-    expect(border.left.color, cs.outline);
-    expect(border.bottom.color, cs.outlineVariant);
+    expect(band(tester, 'skafferi').tone, SectionBandTone.standard);
+    expect(band(tester, 'skafferi').count, '1');
+    // text.primary on the dark page: paper, never the ink of cs.primary.
+    final bar = barOf(tester, 'skafferi').left;
+    expect(bar.color, cs.onSurface);
+    expect(bar.color, isNot(cs.primary));
   });
 
-  testWidgets('"går ut snart" takes the danger tone on its edge', (
+  testWidgets('"går ut snart" takes the warning tone on its bar', (
     tester,
   ) async {
     final cs = await pumpDark(tester);
 
-    expect(groupBorder(tester, 'går ut snart').left.color, cs.error);
+    expect(band(tester, 'går ut snart').tone, SectionBandTone.warning);
+    final bar = barOf(tester, 'går ut snart').left;
+    expect(bar.color, AppModeColors.actionPrimary(cs.brightness));
+    expect(bar.color, isNot(barOf(tester, 'skafferi').left.color));
   });
 
-  testWidgets('the group heading is 13 px, as drawn', (tester) async {
+  testWidgets('the group heading is the shared capitals overline', (
+    tester,
+  ) async {
     await pumpDark(tester);
 
-    final heading = tester.widget<Text>(find.text('skafferi'));
-    expect(heading.style?.fontSize, 13);
+    final heading = tester.widget<Text>(find.text('SKAFFERI'));
+    expect(heading.style?.fontSize, AppTextStyles.sectionHeading.fontSize);
   });
 
   testWidgets('the add button stands out from the dark page', (tester) async {

@@ -71,6 +71,9 @@ void main() {
     await fs.collection('households').doc(_hh).set({
       ...hh.toFirestore(),
       'nutritionFoodChoices': {'koriander': 123},
+      'nutritionAmountChoices': {
+        'salt': {'a': 1, 'u': 'tsk'},
+      },
     });
 
     final householdRepo = FirebaseHouseholdRepository(
@@ -157,6 +160,13 @@ void main() {
   test('exports the household nutrition food choices', () async {
     final out = await manager.exportFamily(_malin);
     expect(out['nutrition_food_choices'], {'koriander': 123});
+  });
+
+  test('exports the household nutrition amounts', () async {
+    final out = await manager.exportFamily(_malin);
+    expect(out['nutrition_amount_choices'], {
+      'salt': {'a': 1.0, 'u': 'tsk'},
+    });
   });
 
   test('includes only the caller\'s own and caller-entered verdicts', () async {
@@ -300,6 +310,8 @@ void main() {
     expect(out['household_id'], 'hh-bare');
     expect(out.containsKey('nutrition_food_choices'), isTrue);
     expect(out['nutrition_food_choices'], isEmpty);
+    expect(out.containsKey('nutrition_amount_choices'), isTrue);
+    expect(out['nutrition_amount_choices'], isEmpty);
   });
 
   test('a household the requester joined exports only the diners they '

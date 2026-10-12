@@ -6,7 +6,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
@@ -14,6 +16,11 @@ import 'package:butlery/widgets/common/butlery_link.dart';
 ///
 /// We render this in-house rather than pull in `flutter_markdown` (discontinued
 /// upstream) for one screen.
+///
+/// Drawn as the sketch reads (Skärmar v12 #juridik): the top `#` title is the
+/// page bar's job and is not repeated, the lines up to the first `---` are
+/// the document's date and version in secondary text over the saffron rule,
+/// and the headings are bold ink.
 class MarkdownBody extends StatefulWidget {
   final String data;
 
@@ -164,7 +171,16 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     final tt = theme.textTheme;
     // text.link: #8A5212 light, #DCA968 dark.
     final linkColor = ModeColors.of(theme.brightness).textLink;
-    final bodyStyle = tt.bodyMedium?.copyWith(height: 1.6) ?? const TextStyle();
+    final cs = theme.colorScheme;
+    final bodyStyle = AppTextStyles.bodyMedium.copyWith(
+      color: cs.onSurface,
+      height: 1.6,
+    );
+    final metaStyle = AppTextStyles.bodySmall.copyWith(
+      color: cs.onSurfaceVariant,
+    );
+    final headingColor = cs.onSurface;
+    var beforeFirstRule = _blocks.any((b) => b.type == _BlockType.rule);
 
     final children = <Widget>[];
     if (!widget.webLinksEnabled && _hasWebLinks) {
@@ -188,32 +204,31 @@ class _MarkdownBodyState extends State<MarkdownBody> {
         case _BlockType.gap:
           children.add(const SizedBox(height: AppDimensions.space4));
         case _BlockType.rule:
-          children.add(const Divider(height: AppDimensions.space32));
+          if (beforeFirstRule) {
+            beforeFirstRule = false;
+            children.add(const AccentRule.inline());
+          } else {
+            children.add(const Divider(height: AppDimensions.space32));
+          }
         case _BlockType.h1:
-          children.add(
-            _para(
-              block.tokens,
-              tt.headlineSmall,
-              linkColor,
-              top: AppDimensions.space8,
-            ),
-          );
+          // The page bar already carries the document's name.
+          break;
         case _BlockType.h2:
           children.add(
             _para(
               block.tokens,
-              tt.titleLarge,
+              AppTextStyles.titleLargeBold.copyWith(color: headingColor),
               linkColor,
-              top: AppDimensions.space8,
+              top: AppDimensions.space16,
             ),
           );
         case _BlockType.h3:
           children.add(
             _para(
               block.tokens,
-              tt.titleMedium,
+              AppTextStyles.titleBold.copyWith(color: headingColor),
               linkColor,
-              top: AppDimensions.space4,
+              top: AppDimensions.space8,
             ),
           );
         case _BlockType.bullet:
@@ -242,7 +257,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           children.add(
             _para(
               block.tokens,
-              bodyStyle,
+              beforeFirstRule ? metaStyle : bodyStyle,
               linkColor,
               top: AppDimensions.space4,
             ),

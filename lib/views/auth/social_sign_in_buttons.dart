@@ -37,12 +37,11 @@ class SocialSignInButtons extends StatelessWidget {
         if (viewModel.isProviderOffered(provider)) provider,
     ];
     if (offered.isEmpty) return const SizedBox.shrink();
-    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final provider in offered) ...[
-          _ProviderButton(
+          ProviderButton(
             provider: provider,
             onPressed: viewModel.isLoading
                 ? null
@@ -53,23 +52,7 @@ class SocialSignInButtons extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppDimensions.space8),
-        Row(
-          children: [
-            Expanded(child: Divider(color: cs.outlineVariant)),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space16,
-              ),
-              child: Text(
-                context.l10n.commonOr,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Expanded(child: Divider(color: cs.outlineVariant)),
-          ],
-        ),
+        const ProviderOrDivider(),
         const SizedBox(height: AppDimensions.space24),
       ],
     );
@@ -114,8 +97,37 @@ class SocialSignInButtons extends StatelessWidget {
   }
 }
 
-class _ProviderButton extends StatelessWidget {
-  const _ProviderButton({required this.provider, required this.onPressed});
+/// The "eller" line between the provider buttons and an e-mail form.
+class ProviderOrDivider extends StatelessWidget {
+  const ProviderOrDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: cs.outlineVariant)),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.space16,
+          ),
+          child: Text(
+            context.l10n.commonOr,
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ),
+        Expanded(child: Divider(color: cs.outlineVariant)),
+      ],
+    );
+  }
+}
+
+class ProviderButton extends StatelessWidget {
+  const ProviderButton({
+    super.key,
+    required this.provider,
+    required this.onPressed,
+  });
 
   final SignInProvider provider;
   final VoidCallback? onPressed;

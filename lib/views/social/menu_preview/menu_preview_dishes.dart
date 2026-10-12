@@ -108,6 +108,9 @@ class _MenuPreviewDishList extends StatelessWidget {
               for (final recipe in recipes) ...[
                 ContentCard.compactRecipe(
                   recipe: recipe,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.space16,
+                  ),
                   onTap: () => Navigator.pushNamed(
                     context,
                     '/receptDetalj',

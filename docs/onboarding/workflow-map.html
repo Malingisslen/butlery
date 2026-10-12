@@ -607,9 +607,9 @@
     },
     {
       "id": "v-onboarding",
-      "label": "Onboarding-guiden (ålder, allergener, kost)",
+      "label": "Onboarding-guiden (ålder, allergener, import, dukat)",
       "context": "view",
-      "path": "lib/views/onboarding/onboarding_view.dart, lib/views/onboarding/onboarding_age_gate_page.dart, lib/views/onboarding/onboarding_allergen_page.dart, lib/views/onboarding/onboarding_dietary_page.dart"
+      "path": "lib/views/onboarding/onboarding_view.dart, lib/views/onboarding/onboarding_age_gate_page.dart, lib/views/onboarding/onboarding_allergen_page.dart, lib/views/onboarding/onboarding_import_page.dart, lib/views/onboarding/onboarding_setup_page.dart"
     },
     {
       "id": "vm-onboarding",
@@ -727,9 +727,9 @@
     },
     {
       "id": "v-add-recipe-hub",
-      "label": "Lägg till recept-nav (4 vägar)",
+      "label": "Lägg till recept-ark (plusknappen)",
       "context": "view",
-      "path": "lib/views/lagg_till_recept_view.dart"
+      "path": "lib/widgets/common/navigation/add_sheet.dart"
     },
     {
       "id": "v-quick-capture",
@@ -3281,7 +3281,7 @@
         {
           "from": "v-onboarding",
           "to": "vm-onboarding",
-          "payload": "toggleAllergen()/toggleDietaryPref() på allergen- och kostsidorna",
+          "payload": "toggleAllergen() på allergensidan",
           "transport": "method call",
           "verified": true
         },

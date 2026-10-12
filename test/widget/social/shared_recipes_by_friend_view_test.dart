@@ -23,6 +23,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -228,6 +229,21 @@ Widget _wrap() => MaterialApp(
   ),
 );
 
+/// The matches that are not part of the tab bar under the page, which the
+/// page template adds and which draws its own indicator shapes.
+List<Element> _outsideBottomNav(Finder finder) => finder
+    .evaluate()
+    .where(
+      (e) => find
+          .ancestor(
+            of: find.byElementPredicate((x) => x == e),
+            matching: find.byType(ButleryBottomNavigation),
+          )
+          .evaluate()
+          .isEmpty,
+    )
+    .toList();
+
 void main() {
   setUp(() async {
     await GetIt.instance.reset();
@@ -317,13 +333,18 @@ void main() {
             ],
           ),
         );
+        // The tab bar under the page takes room from a lazy list, so give all
+        // three cards one screen.
+        tester.view.physicalSize = const Size(800, 1600);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
         await tester.pumpWidget(_wrap());
         await tester.pump();
 
         // The non-empty branch builds a ListView, NOT the empty StateWidget.
         expect(
-          find.byType(ListView),
-          findsOneWidget,
+          _outsideBottomNav(find.byType(ListView)),
+          hasLength(1),
           reason: 'a non-empty friend list must render the scrollable list',
         );
         expect(
@@ -382,8 +403,8 @@ void main() {
           return false;
         });
         expect(
-          rounded,
-          findsNothing,
+          _outsideBottomNav(rounded),
+          isEmpty,
           reason: 'the view chrome must stay square (no rounded corners)',
         );
       },

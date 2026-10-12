@@ -239,6 +239,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     name: row.member.displayName,
                     color: parseAvatarColor(context, row.member.avatarColor),
                     size: 40,
+                    round: true,
                     initials: initials,
                   ),
                   const SizedBox(width: AppDimensions.space8),

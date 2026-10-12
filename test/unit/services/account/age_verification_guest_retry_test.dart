@@ -70,6 +70,22 @@ void main() {
     verify(() => callable.call<dynamic>()).called(1);
   });
 
+  for (final provider in ['google.com', 'apple.com']) {
+    test(
+      'an unfinished upgrade of a $provider account is retried too',
+      () async {
+        final u = user(provider: provider);
+        when(() => auth.currentUser).thenReturn(u);
+
+        expect(
+          await service.retryUnfinishedGuestUpgrade(birthYear: 1990),
+          isTrue,
+        );
+        verify(() => callable.call<dynamic>()).called(1);
+      },
+    );
+  }
+
   test('it is retried once per account on the device, also across starts '
       'and when the server refuses it', () async {
     final u = user();
@@ -177,7 +193,7 @@ void main() {
     verifyNever(() => callable.call<dynamic>());
   });
 
-  test('a guest, a Google account or a profile with no birth year is left '
+  test('a guest, a phone-only account or a profile with no birth year is left '
       'alone', () async {
     final guest = user(anonymous: true);
     when(() => auth.currentUser).thenReturn(guest);
@@ -186,8 +202,8 @@ void main() {
       isFalse,
     );
 
-    final google = user(provider: 'google.com');
-    when(() => auth.currentUser).thenReturn(google);
+    final phone = user(provider: 'phone');
+    when(() => auth.currentUser).thenReturn(phone);
     expect(
       await service.retryUnfinishedGuestUpgrade(birthYear: 1990),
       isFalse,

@@ -34,6 +34,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -825,16 +826,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               recipes: recipes,
               allergenPrefs: allergenPrefs,
             )
-          else
+          else if (Breakpoints.isMobile(context))
+            // Rows draw their own hairline (Komponentark v1 receptlistrad), so
+            // on a phone they stand edge to edge.
             SliverResponsiveListGrid<Recipe>(
               items: recipes,
-              tabletColumns: 2,
-              desktopColumns: 3,
-              spacing: AppDimensions.responsiveGridSpacing(context),
+              spacing: 0,
               padding: AppDimensions.responsiveContentPadding(context),
-              gridChildAspectRatio: AppDimensions.recipeGridAspectRatio(
-                context,
-              ),
               animate: true,
               itemBuilder: (context, recipe) => MinaReceptRecipeCard(
                 viewModel: viewModel,
@@ -842,6 +840,24 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 allergenPrefs: allergenPrefs,
                 onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
                 index: recipes.indexOf(recipe),
+              ),
+            )
+          else
+            // A row is as tall as its content, so a wide layout columns them
+            // without a fixed aspect ratio.
+            SliverPadding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              sliver: SliverContentSizedGrid(
+                spacing: AppDimensions.responsiveGridSpacing(context),
+                columns: Breakpoints.isDesktop(context) ? 3 : 2,
+                itemCount: recipes.length,
+                itemBuilder: (context, index) => MinaReceptRecipeCard(
+                  viewModel: viewModel,
+                  recipe: recipes[index],
+                  allergenPrefs: allergenPrefs,
+                  onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                  index: index,
+                ),
               ),
             ),
           if (viewModel.canLoadMore)

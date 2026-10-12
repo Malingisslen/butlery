@@ -18,7 +18,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/choice_option.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
@@ -67,8 +67,8 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
       // A subpage under Lägg till recept (Komponentark v1:71-78; Skarmar
       // v12 del 1 'Snabbspara').
       appBar: ButleryTopBar.undersida(
-        title: context.l10n.quickCaptureTitle,
-        backTo: context.l10n.addRecipeTitle,
+        light: true,
+        title: context.l10n.addSheetQuickSaveTitle,
       ),
       body: SafeArea(
         child: ButleryPageBody(
@@ -98,10 +98,22 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                       },
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.space32),
-                  _MealTypeSelector(
-                    selected: vm.mealType,
-                    onChanged: vm.setMealType,
+                  const SizedBox(height: AppDimensions.space24),
+                  LabeledField(
+                    label: context.l10n.importMealType,
+                    child: ChoiceOptionWrap<String>(
+                      values: RecipeFormState.mealTypes,
+                      labelOf: (type) => type,
+                      selected: vm.mealType,
+                      onChanged: vm.setMealType,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  Text(
+                    context.l10n.quickCaptureHelp,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const Spacer(),
                   // BUT-403: `btn-quick-save` identifier for browser a11y.
@@ -152,38 +164,6 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
         preserved: context.l10n.errorPreservedForm,
       );
     }
-  }
-}
-
-/// Meal type chip selector.
-class _MealTypeSelector extends StatelessWidget {
-  const _MealTypeSelector({
-    required this.selected,
-    required this.onChanged,
-  });
-
-  final String selected;
-  final ValueChanged<String> onChanged;
-
-  static const _mealTypes = RecipeFormState.mealTypes;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppDimensions.space8,
-      runSpacing: AppDimensions.space8,
-      children: _mealTypes.map((type) {
-        final isSelected = type == selected;
-        return PressFill(
-          surface: isSelected ? PressSurface.ink : PressSurface.base,
-          child: ChoiceChip(
-            label: Text(type),
-            selected: isSelected,
-            onSelected: (_) => onChanged(type),
-          ),
-        );
-      }).toList(),
-    );
   }
 }
 

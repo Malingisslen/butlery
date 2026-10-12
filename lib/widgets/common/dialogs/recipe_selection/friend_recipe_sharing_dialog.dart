@@ -5,7 +5,7 @@ import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -103,8 +103,10 @@ class FriendRecipeSharingDialog extends StatelessWidget {
     if (!viewModel.hasRecipes) {
       return StateWidget.noRecipes(
         onAction: () {
+          // The navigator outlives this dialog, so the sheet can open from it.
+          final navigatorContext = Navigator.of(context).context;
           Navigator.pop(context);
-          Navigator.pushNamed(context, Routes.addRecipe);
+          showButleryAddSheet(navigatorContext);
         },
       );
     }

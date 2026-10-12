@@ -17,10 +17,10 @@ import 'package:butlery/views/family/household_portions_sheet.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
 import 'package:butlery/views/settings/widgets/meal_allergen_scope_tile.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -62,12 +62,12 @@ class _MinFamiljContent extends StatelessWidget {
     final vm = context.watch<MinFamiljViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: l10n.familyTitle,
-        backTo: l10n.moreTitle,
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+    return ButleryPage.undersida(
+      title: l10n.familyTitle,
+      backTo: l10n.moreTitle,
+      lightBar: true,
+      // The ink rule stands under the intro text here, not under the bar.
+      ruleUnderBar: false,
       body: vm.isLoading
           // The plate line says what it fetches (produktregler.md:163).
           ? StateWidget.loading(message: l10n.loadingFamily)
@@ -76,33 +76,29 @@ class _MinFamiljContent extends StatelessWidget {
               message: vm.error!,
               onAction: () => vm.load(),
             )
-          : SafeArea(
-              child: ButleryPageBody(
-                width: PageWidth.text,
-                child: ListView(
-                  padding: EdgeInsetsDirectional.only(
-                    start: ButleryTopBar.sideMargin(context),
-                    end: ButleryTopBar.sideMargin(context),
-                    bottom: AppDimensions.space24,
-                  ),
-                  children: [
-                    const SizedBox(height: AppDimensions.space8),
-                    Text(
-                      l10n.familyIntro,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                    _accountsSection(vm, l10n),
-                    _familySection(context, vm, l10n),
-                    ButleryListSection(
-                      title: l10n.familyMealsSection,
-                      rows: const [_PortionsRow()],
-                    ),
-                    const _HouseholdAllergenSection(),
-                  ],
-                ),
+          : ListView(
+              padding: ButleryPageBody.margin(
+                context,
+                bottom: AppDimensions.space24,
               ),
+              children: [
+                const SizedBox(height: AppDimensions.space8),
+                Text(
+                  l10n.familyIntro,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                const PageRule.inline(),
+                _accountsSection(vm, l10n),
+                _familySection(context, vm, l10n),
+                ButleryListSection(
+                  title: l10n.familyMealsSection,
+                  rows: const [_PortionsRow()],
+                ),
+                const _HouseholdAllergenSection(),
+              ],
             ),
     );
   }
@@ -116,8 +112,9 @@ class _MinFamiljContent extends StatelessWidget {
 
   Widget _accountsSection(MinFamiljViewModel vm, AppLocalizations l10n) {
     final initials = _initials(vm);
-    return ButleryListSection(
+    return ButleryListSection.counted(
       title: l10n.familyAccountsSection,
+      count: l10n.familyAccountsCount(vm.accounts.length),
       rows: [
         for (var i = 0; i < vm.accounts.length; i++)
           FamilyAccountRow(
@@ -136,8 +133,9 @@ class _MinFamiljContent extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     final initials = _initials(vm);
-    return ButleryListSection(
+    return ButleryListSection.counted(
       title: l10n.familyProfilesSection,
+      count: l10n.familyProfilesCount(vm.familyMembers.length),
       rows: [
         for (var i = 0; i < vm.familyMembers.length; i++)
           FamilyMemberRow(
@@ -145,10 +143,15 @@ class _MinFamiljContent extends StatelessWidget {
             onTap: () => _openForm(context, existing: vm.familyMembers[i]),
             initials: initials[vm.accounts.length + i],
           ),
-        ButleryListRow(
-          label: l10n.familyAddMemberRow,
-          leading: ButleryIcons.plus,
-          onTap: () => _openForm(context),
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.space16),
+          child: ActionButtons.outlinedButton(
+            context,
+            label: l10n.familyAddMemberRow,
+            icon: ButleryIcons.plus,
+            isExpanded: true,
+            onPressed: () => _openForm(context),
+          ),
         ),
       ],
     );

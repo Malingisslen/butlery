@@ -365,7 +365,7 @@ void main() {
         expect(decoration.border, isNull);
       });
 
-      testWidgets('a ticked-off item keeps its note and trash at full colour', (
+      testWidgets('a ticked-off item keeps its note and menu at full colour', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -395,7 +395,7 @@ void main() {
           cs.onSurfaceVariant,
         );
         expect(
-          tester.widget<Icon>(find.byIcon(ButleryIcons.trash2)).color,
+          tester.widget<Icon>(find.byIcon(ButleryIcons.moreVertical)).color,
           cs.onSurfaceVariant,
         );
       });

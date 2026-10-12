@@ -1,55 +1,27 @@
 // lib/views/unified_shopping/widgets/shopping_item_tiles.dart
 //
-// UI Redesign: Square checkboxes (22px, 2px green border)
-// Animated check-off: scale pulse on checkbox, smooth fill transition
+// The personal list's rows: ShoppingRow with the item's actions in its menu.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/shopping/shopping_row.dart';
 
 /// Static API surface for shopping item tiles.
 ///
-/// Delegates to [ShoppingItemTile] for animated item rendering.
+/// Delegates to [ShoppingItemTile], one [ShoppingRow] per item.
 ///
 /// BUT-403 identifier scheme:
 ///  - `item-toggle-{index}` on each item row for browser a11y queries
 ///  - `test-shopping-item-{index}` ValueKey for Flutter widget tests
 class ShoppingItemTiles {
-  /// BUT-948: the whole-tile long-press drag was replaced by a per-row grip
-  /// handle inside [ShoppingItemTile] (so long-press is free for multi-select).
-  /// This now just delegates to [buildItemTile]; the drag lives on the handle.
-  static Widget buildDraggableItemTile(
-    BuildContext context,
-    UnifiedShoppingItem item,
-    bool isCompleted,
-    Function(UnifiedShoppingItem) onItemTap,
-    Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem, {
-    VoidCallback? onMoveToCategory,
-    int? visualIndex,
-  }) {
-    return buildItemTile(
-      context,
-      item,
-      isCompleted,
-      onItemTap,
-      onEditItem,
-      onDeleteItem,
-      onMoveToCategory: onMoveToCategory,
-      visualIndex: visualIndex,
-    );
-  }
-
-  /// Builds an item tile with animated check-off transitions.
+  /// Builds the row for [item].
   static Widget buildItemTile(
     BuildContext context,
     UnifiedShoppingItem item,
@@ -111,11 +83,9 @@ class ShoppingItemTiles {
   }
 }
 
-/// Animated shopping item tile with check-off transitions.
-///
-/// Provides a scale pulse on the checkbox and smooth fill-color
-/// transition when toggling between checked/unchecked states.
-class ShoppingItemTile extends StatefulWidget {
+/// One item of the personal list: the shared row, with the item's own
+/// actions behind its menu and the long-press that starts a selection.
+class ShoppingItemTile extends StatelessWidget {
   const ShoppingItemTile({
     super.key,
     required this.item,
@@ -139,314 +109,84 @@ class ShoppingItemTile extends StatefulWidget {
   final int? visualIndex;
 
   @override
-  State<ShoppingItemTile> createState() => _ShoppingItemTileState();
-}
-
-class _ShoppingItemTileState extends State<ShoppingItemTile>
-    with SingleTickerProviderStateMixin {
-  static const double _checkboxSize = 22.0;
-  static const double _checkboxBorderWidth = 2.0;
-  static const double _checkIconSize = 14.0;
-  static const double _pulseScale = 1.2;
-  static const double _priorityDotSize = 8.0;
-
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: AppMotion.micro,
-    );
-    _pulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 1.0,
-          end: _pulseScale,
-        ).chain(CurveTween(curve: AppMotion.curve)),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-          begin: _pulseScale,
-          end: 1.0,
-        ).chain(CurveTween(curve: AppMotion.curve)),
-        weight: 50,
-      ),
-    ]).animate(_pulseController);
-  }
-
-  @override
-  void didUpdateWidget(ShoppingItemTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isCompleted != widget.isCompleted) {
-      // Skip the decorative scale-pulse when the user has reduced motion on.
-      // The fill-color change still happens (informational), just instantly.
-      if (!isReducedMotion(context)) {
-        _pulseController.forward(from: 0);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     // Nullable: a tile rendered outside a selection context (e.g. in isolation
     // tests) simply isn't selectable — it degrades to the plain check-off tile.
     final selection = context.watch<ShoppingSelectionManager?>();
     final selectionMode = selection?.isSelectionMode ?? false;
-    final selected = selection?.isSelected(widget.item.id) ?? false;
+    final selected = selection?.isSelected(item.id) ?? false;
+    final l10n = context.l10n;
 
-    return RepaintBoundary(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.space4),
-        // A chosen row is surface.selected with a 1.5 px text.primary
-        // border, never a 12 % ink tint (enhet-3 valda tonplattor
-        // shopping_item_tiles.dart:211; tokens.json:40-53, surface.selected;
-        // Skarmar v12 etapp 9 #flerbar). primaryContainer is surface.selected
-        // and onSurface text.primary in both schemes; cs.primary is ink in
-        // both modes and would vanish on dark.
-        decoration: BoxDecoration(
-          color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          border: Border.all(
-            color: selected ? cs.onSurface : cs.outlineVariant,
-            width: selected ? 1.5 : AppDimensions.borderWidthStandard,
-          ),
-        ),
-        child: Semantics(
-          identifier: widget.visualIndex != null
-              ? 'item-toggle-${widget.visualIndex}'
-              : null,
-          label: selectionMode
-              ? context.l10n.a11yShoppingSelectItem
-              : (widget.isCompleted
-                    ? context.l10n.a11yShoppingItemChecked
-                    : context.l10n.a11yShoppingItemUnchecked),
-          button: true,
-          checked: selectionMode ? null : widget.isCompleted,
-          selected: selectionMode ? selected : null,
-          enabled: true,
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              key: widget.visualIndex != null
-                  ? ValueKey('test-shopping-item-${widget.visualIndex}')
-                  : null,
-              // BUT-948: in selection mode tap toggles selection; otherwise tap
-              // checks the item off and long-press enters selection.
-              onTap: selectionMode
-                  ? () => selection!.toggleSelection(widget.item.id)
-                  : () => widget.onItemTap(widget.item),
-              onLongPress: (selection == null || selectionMode)
-                  ? null
-                  : () => selection.enterSelectionMode(widget.item.id),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.space12),
-                child: Row(
-                  children: [
-                    if (selectionMode) ...[
-                      ButleryIcon(
-                        selected
-                            ? ButleryIcons.circleCheck
-                            : ButleryIcons.circle,
-                        color: selected ? cs.onSurface : cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
+    return ShoppingRow(
+      name: item.name,
+      amount: item.quantityText,
+      note: item.note,
+      checked: isCompleted,
+      selectionMode: selectionMode,
+      selected: selected,
+      semanticIdentifier: visualIndex != null
+          ? 'item-toggle-$visualIndex'
+          : null,
+      tapKey: visualIndex != null
+          ? ValueKey('test-shopping-item-$visualIndex')
+          : null,
+      // BUT-948: in selection mode tap toggles selection; otherwise tap
+      // checks the item off and long-press enters selection.
+      onTap: selectionMode
+          ? () => selection!.toggleSelection(item.id)
+          : () => onItemTap(item),
+      onLongPress: (selection == null || selectionMode)
+          ? null
+          : () => selection.enterSelectionMode(item.id),
+      trailing: selectionMode
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (item.priority > 3) _PriorityDot(priority: item.priority),
+                ShoppingRowMenu(
+                  itemName: item.name,
+                  actions: [
+                    ShoppingRowAction(
+                      label: l10n.commonEdit,
+                      icon: ButleryIcons.pencil,
+                      onSelected: () => onEditItem(item),
+                    ),
+                    if (onMoveToCategory != null && !isCompleted)
+                      ShoppingRowAction(
+                        label: l10n.shoppingMoveToCategory,
+                        icon: ButleryIcons.move,
+                        onSelected: onMoveToCategory!,
                       ),
-                      const SizedBox(width: AppDimensions.space12),
-                    ],
-                    _buildAnimatedCheckbox(cs),
-                    const SizedBox(width: AppDimensions.space12),
-                    _buildItemDetails(cs),
-                    if (widget.item.priority > 3) _buildPriorityIndicator(cs),
-                    if (!selectionMode) _buildActionButtons(context, cs),
+                    ShoppingRowAction(
+                      label: l10n.commonDelete,
+                      icon: ButleryIcons.trash2,
+                      onSelected: () => onDeleteItem(item),
+                    ),
                   ],
                 ),
-              ),
+              ],
             ),
-          ),
-        ),
-      ),
     );
   }
+}
 
-  Widget _buildAnimatedCheckbox(ColorScheme cs) {
-    return ScaleTransition(
-      scale: _pulseAnimation,
-      child: AnimatedContainer(
-        duration: AppMotion.micro.respectingMotion(context),
-        curve: AppMotion.curve,
-        width: _checkboxSize,
-        height: _checkboxSize,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          // Ticked: control.checked.background, ink in both modes, edge
-          // and fill (tokens.json:145-148). Unticked: a text.primary edge
-          // (onSurface), ink on light, paper on dark, where ink vanished.
-          border: Border.all(
-            color: widget.isCompleted ? cs.primary : cs.onSurface,
-            width: _checkboxBorderWidth,
-          ),
-          color: widget.isCompleted ? cs.primary : cs.surfaceContainerHighest,
-        ),
-        child: AnimatedSwitcher(
-          duration: AppMotion.micro.respectingMotion(context),
-          switchInCurve: AppMotion.curve,
-          switchOutCurve: AppMotion.curve,
-          child: widget.isCompleted
-              ? ButleryIcon(
-                  ButleryIcons.check,
-                  key: const ValueKey('check-icon'),
-                  size: _checkIconSize,
-                  color: cs.surfaceContainerHighest,
-                )
-              : const SizedBox.shrink(key: ValueKey('empty-icon')),
-        ),
-      ),
-    );
-  }
+class _PriorityDot extends StatelessWidget {
+  const _PriorityDot({required this.priority});
 
-  Widget _buildItemDetails(ColorScheme cs) {
-    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // BUT-2193 (Malin, 2026-10-03): a row may cut a long name at the
-          // normal text size.
-          Text(
-            widget.item.displayText,
-            style: AppTextStyles.contentTitle.copyWith(
-              color: widget.isCompleted ? cs.onSurfaceVariant : cs.onSurface,
-              decoration: widget.isCompleted
-                  ? TextDecoration.lineThrough
-                  : TextDecoration.none,
-            ),
-            maxLines: largeText ? null : 2,
-            overflow: largeText ? null : TextOverflow.ellipsis,
-          ),
-          if (widget.item.note?.isNotEmpty == true) ...[
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              widget.item.note!,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-                decoration: widget.isCompleted
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
-              ),
-              maxLines: largeText ? null : 1,
-              overflow: largeText ? null : TextOverflow.ellipsis,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+  final int priority;
 
-  Widget _buildPriorityIndicator(ColorScheme cs) {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      width: _priorityDotSize,
-      height: _priorityDotSize,
-      margin: const EdgeInsetsDirectional.only(start: 8),
+      width: 8,
+      height: 8,
+      margin: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
       decoration: BoxDecoration(
-        color: _getPriorityColor(cs, widget.item.priority),
+        color: priority >= 4 ? cs.onSurface : cs.onSurfaceVariant,
         shape: BoxShape.circle,
       ),
     );
-  }
-
-  Widget _buildActionButtons(BuildContext context, ColorScheme cs) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // BUT-948: the drag-to-move shortcut now lives on this grip handle
-        // (long-press is reserved for multi-select). Category-move is also still
-        // available via the move-to-category button below.
-        if (widget.onMoveToCategory != null && !widget.isCompleted)
-          _buildDragHandle(context, cs),
-        if (widget.onMoveToCategory != null && !widget.isCompleted)
-          AppIconButton(
-            icon: ButleryIcons.move,
-            onPressed: widget.onMoveToCategory,
-            semanticLabel: context.l10n.shoppingMoveToCategory,
-            color: cs.onSurfaceVariant,
-            iconSize: AppDimensions.iconSizeS,
-          ),
-        AppIconButton(
-          icon: ButleryIcons.pencil,
-          onPressed: () => widget.onEditItem(widget.item),
-          semanticLabel: context.l10n.a11yEditItem(widget.item.name),
-          color: cs.onSurfaceVariant,
-          iconSize: AppDimensions.iconSizeS,
-        ),
-        AppIconButton(
-          icon: ButleryIcons.trash2,
-          onPressed: () => widget.onDeleteItem(widget.item),
-          semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
-          color: cs.onSurfaceVariant,
-          iconSize: AppDimensions.iconSizeS,
-        ),
-      ],
-    );
-  }
-
-  /// BUT-948: grip handle that initiates the category-move drag (replaces the
-  /// old whole-tile long-press drag). The existing category DragTarget accepts
-  /// the dragged [UnifiedShoppingItem] unchanged.
-  Widget _buildDragHandle(BuildContext context, ColorScheme cs) {
-    return Draggable<UnifiedShoppingItem>(
-      data: widget.item,
-      feedback: Material(
-        elevation: 4,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
-          padding: const EdgeInsets.all(AppDimensions.space12),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(color: cs.onSurface, width: 2),
-          ),
-          child: Text(
-            widget.item.displayText,
-            style: AppTextStyles.contentTitle.copyWith(color: cs.onSurface),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-      childWhenDragging: const SizedBox.shrink(),
-      child: Semantics(
-        // Drag-only affordance: announce what it is, but NOT as a button —
-        // it doesn't respond to a screen-reader activate/tap (the accessible
-        // path is the move-to-category button). `button: true` was misleading.
-        label: context.l10n.a11yShoppingReorderHandle,
-        child: ButleryIcon(
-          ButleryIcons.drag,
-          color: cs.onSurfaceVariant,
-          size: AppDimensions.iconSizeS,
-        ),
-      ),
-    );
-  }
-
-  static Color _getPriorityColor(ColorScheme cs, int priority) {
-    switch (priority) {
-      case 4:
-      case 5:
-        return cs.onSurface;
-      default:
-        return cs.onSurfaceVariant;
-    }
   }
 }
