@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -87,7 +88,7 @@ class ShoppingRow extends StatefulWidget {
 
 class _ShoppingRowState extends State<ShoppingRow>
     with SingleTickerProviderStateMixin {
-  static const double _boxSize = 24;
+  static const double _boxSize = ButleryCheckbox.boxSize;
   static const double _pulseScale = 1.2;
 
   late final AnimationController _pulse = AnimationController(

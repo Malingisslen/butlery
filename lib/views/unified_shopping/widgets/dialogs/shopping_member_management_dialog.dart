@@ -19,6 +19,7 @@ import 'package:butlery/services/unified/operations/list_invitation_operations.d
 import 'package:butlery/views/unified_shopping/widgets/dialogs/pending_invitees_section.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Comprehensive member management dialog for collaborative shopping list administration
 class ShoppingMemberManagementDialog extends StatefulWidget {
@@ -655,7 +656,7 @@ class _ShoppingMemberManagementDialogState
     final isSelected = _selectedFriends.contains(friend.uid);
     final invited = _pendingInvitees.contains(friend.uid);
 
-    return CheckboxListTile(
+    return ButleryCheckboxTile(
       secondary: CircleAvatar(
         radius: 20,
         backgroundColor: cs.surface,
@@ -685,7 +686,7 @@ class _ShoppingMemberManagementDialogState
           ? null
           : (selected) {
               setState(() {
-                if (selected == true) {
+                if (selected) {
                   _selectedFriends.add(friend.uid);
                 } else {
                   _selectedFriends.remove(friend.uid);

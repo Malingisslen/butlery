@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Shows a multi-select dialog to pick recipes to link.
 /// Returns `List<Recipe>` on confirm, null on cancel.
@@ -211,13 +212,9 @@ class _RecipePickerItem extends StatelessWidget {
         recipe.mealType,
         style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
       ),
-      trailing: Checkbox(
+      trailing: ButleryCheckbox(
         value: isSelected,
-        onChanged: (v) => onSelectionChanged(v ?? false),
-        activeColor: cs.primary,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
+        onChanged: onSelectionChanged,
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );

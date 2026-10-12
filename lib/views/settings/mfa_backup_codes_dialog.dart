@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// How long copied backup codes stay on the clipboard. Clipboards are read by
 /// other apps and synced between devices, so the codes are wiped after a
@@ -92,13 +93,13 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
             icon: const ButleryIcon(ButleryIcons.copy),
             label: Text(l10n.mfaBackupCodesCopy),
           ),
-          CheckboxListTile(
+          ButleryCheckboxTile(
+            boxFirst: true,
             key: const ValueKey('mfa.backupCodes.saved'),
             contentPadding: EdgeInsets.zero,
             value: _saved,
-            onChanged: (v) => setState(() => _saved = v ?? false),
+            onChanged: (v) => setState(() => _saved = v),
             title: Text(l10n.mfaBackupCodesSaved),
-            controlAffinity: ListTileControlAffinity.leading,
           ),
         ],
       ),

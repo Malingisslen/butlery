@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
@@ -311,7 +312,7 @@ void main() {
         await tester.pump();
 
         expect(find.text('Anna Svensson'), findsOneWidget);
-        expect(find.byType(CheckboxListTile), findsNWidgets(5));
+        expect(find.byType(ButleryCheckboxTile), findsNWidgets(5));
       });
     });
 
@@ -371,7 +372,7 @@ void main() {
 
         expect(find.text('Anna Svensson'), findsOneWidget);
         expect(find.text('Erik Johansson'), findsOneWidget);
-        expect(find.byType(CheckboxListTile), findsNWidgets(5));
+        expect(find.byType(ButleryCheckboxTile), findsNWidgets(5));
       });
 
       testWidgets('shows friends section header icon', (
@@ -533,7 +534,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(CheckboxListTile).first);
+        await tester.tap(find.byType(ButleryCheckboxTile).first);
         await tester.pump();
 
         expect(capturedSelection, contains('user1'));
@@ -562,7 +563,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(CheckboxListTile).first);
+        await tester.tap(find.byType(ButleryCheckboxTile).first);
         await tester.pump();
 
         expect(capturedSelection, isEmpty);
@@ -589,9 +590,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(CheckboxListTile).first);
+        await tester.tap(find.byType(ButleryCheckboxTile).first);
         await tester.pump();
-        await tester.tap(find.byType(CheckboxListTile).at(1));
+        await tester.tap(find.byType(ButleryCheckboxTile).at(1));
         await tester.pump();
 
         expect(capturedSelection, containsAll(['user1', 'user2']));
@@ -744,7 +745,7 @@ void main() {
 
         // Select individual friend not in category
         await tester.tap(
-          find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'),
+          find.widgetWithText(ButleryCheckboxTile, 'Sofia Lindberg'),
         );
         await tester.pump();
 
@@ -774,7 +775,7 @@ void main() {
         expect(chip.selected, isTrue);
       });
 
-      testWidgets('CheckboxListTile reflects pre-selected state', (
+      testWidgets('ButleryCheckboxTile reflects pre-selected state', (
         WidgetTester tester,
       ) async {
         mockFriendsService.setFriendsState(
@@ -793,8 +794,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final checkbox = tester.widget<CheckboxListTile>(
-          find.widgetWithText(CheckboxListTile, 'Anna Svensson'),
+        final checkbox = tester.widget<ButleryCheckboxTile>(
+          find.widgetWithText(ButleryCheckboxTile, 'Anna Svensson'),
         );
         expect(checkbox.value, isTrue);
       });

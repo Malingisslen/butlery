@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/buttons/square_check_box.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class CheckRow extends StatelessWidget {
@@ -52,7 +52,7 @@ class CheckRow extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    SquareCheckBox(checked: checked),
+                    ButleryCheckboxMark(checked: checked),
                     const SizedBox(width: AppDimensions.space12),
                     Expanded(
                       child: Column(

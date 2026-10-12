@@ -11,6 +11,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 enum ShareTargetType { friends, groups }
 
@@ -259,7 +260,7 @@ class ShareTargetSelectionEnhanced {
                   ),
                 )
               : null,
-          trailing: Checkbox(
+          trailing: ButleryCheckbox(
             value: isSelected,
             onChanged: isExistingCollaborator
                 ? null
@@ -343,7 +344,7 @@ class ShareTargetSelectionEnhanced {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          trailing: Checkbox(
+          trailing: ButleryCheckbox(
             value: isSelected,
             onChanged: (_) => onGroupToggled(group.id),
           ),

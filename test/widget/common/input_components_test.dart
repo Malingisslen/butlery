@@ -94,17 +94,15 @@ void main() {
       expect(cb.onChanged, isNotNull);
     });
 
-    testWidgets('forwards activeColor and debounceDuration', (tester) async {
+    testWidgets('forwards debounceDuration', (tester) async {
       const dur = Duration(milliseconds: 999);
       final widget = InputComponents.debouncedCheckbox(
         value: false,
         onChanged: null,
-        activeColor: const Color(0xFF112233),
         debounceDuration: dur,
       );
       final cb = widget as DebouncedCheckbox;
       expect(cb.value, isFalse);
-      expect(cb.activeColor, const Color(0xFF112233));
       expect(cb.debounceDuration, dur);
       expect(cb.onChanged, isNull);
     });

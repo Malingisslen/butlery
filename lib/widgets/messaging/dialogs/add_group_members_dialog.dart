@@ -4,6 +4,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Dialog for selecting friends to add to a group conversation.
 class AddGroupMembersDialog extends StatefulWidget {
@@ -83,11 +84,11 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
                   final friend = _filteredFriends[index];
                   final isSelected = _selectedIds.contains(friend.uid);
 
-                  return CheckboxListTile(
+                  return ButleryCheckboxTile(
                     value: isSelected,
                     onChanged: (selected) {
                       setState(() {
-                        if (selected == true) {
+                        if (selected) {
                           _selectedIds.add(friend.uid);
                         } else {
                           _selectedIds.remove(friend.uid);

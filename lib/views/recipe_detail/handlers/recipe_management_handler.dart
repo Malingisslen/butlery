@@ -16,6 +16,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -256,7 +257,6 @@ class RecipeManagementHandler {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final dialogCs = Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => AlertDialog(
             title: Text(context.l10n.collaborationEnableTitle),
@@ -266,12 +266,11 @@ class RecipeManagementHandler {
               child: ListView(
                 children: friends
                     .map(
-                      (friend) => CheckboxListTile(
+                      (friend) => ButleryCheckboxTile(
                         title: Text(friend.displayName),
                         value: selectedIds.contains(friend.uid),
-                        activeColor: dialogCs.primary,
                         onChanged: (v) => setDialogState(() {
-                          if (v == true) {
+                          if (v) {
                             selectedIds.add(friend.uid);
                           } else {
                             selectedIds.remove(friend.uid);

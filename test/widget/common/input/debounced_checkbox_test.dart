@@ -49,25 +49,6 @@ void main() {
         expect(checkbox.value, false);
       });
 
-      testWidgets('should apply custom active color', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: DebouncedCheckbox(
-                value: true,
-                onChanged: (_) {},
-                activeColor: Colors.red,
-              ),
-            ),
-          ),
-        );
-
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.activeColor, Colors.red);
-      });
-
       testWidgets('should use default debounce duration', (
         WidgetTester tester,
       ) async {
@@ -540,7 +521,7 @@ void main() {
                     leading: DebouncedCheckbox(
                       value: completedItems.contains(id),
                       onChanged: (checked) {
-                        if (checked ?? false) {
+                        if (checked) {
                           completedItems.add(id);
                         } else {
                           completedItems.remove(id);

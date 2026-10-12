@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/buttons/square_check_box.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
@@ -87,7 +87,7 @@ class PersonCheckRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppDimensions.space12),
-                    SquareCheckBox(checked: checked),
+                    ButleryCheckboxMark(checked: checked),
                   ],
                 ),
               ),
