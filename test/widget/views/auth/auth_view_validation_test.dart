@@ -156,7 +156,9 @@ void main() {
 
       expect(find.bySemanticsLabel(RegExp('^Jag godkänner')), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Jag godkänner användarvillkoren och integritetspolicyn'),
+        find.bySemanticsLabel(
+          'Jag godkänner användarvillkoren och integritetspolicyn',
+        ),
         findsNothing,
       );
       handle.dispose();
