@@ -107,7 +107,7 @@ void main() {
     );
   });
 
-  testWidgets('all six outcome lines render', (tester) async {
+  testWidgets('every decided outcome renders its line', (tester) async {
     await pump(
       tester,
       [
@@ -133,8 +133,9 @@ void main() {
       },
     );
 
-    expect(find.textContaining(sv.myReportsOutcomeReceived), findsOneWidget);
-    expect(find.textContaining(sv.myReportsOutcomeInReview), findsOneWidget);
+    // A matter still open says it with its pill, not with an outcome.
+    expect(find.textContaining(sv.myReportsOutcomeReceived), findsNothing);
+    expect(find.textContaining(sv.myReportsOutcomeInReview), findsNothing);
     expect(
       find.textContaining(sv.myReportsOutcomeContentRemoved),
       findsNWidgets(2),
@@ -156,11 +157,12 @@ void main() {
     ]);
 
     expect(find.text('INKOMMEN'), findsOneWidget);
-    expect(find.text('GRANSKAS'), findsNWidgets(2));
+    expect(find.text('GRANSKAS'), findsOneWidget);
+    expect(find.text(sv.myReportsStatusActioned.toUpperCase()), findsOneWidget);
     expect(find.text('AVSLUTAD'), findsOneWidget);
     expect(find.byIcon(ButleryIcons.inbox), findsOneWidget);
-    expect(find.byIcon(ButleryIcons.search), findsNWidgets(2));
-    expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.search), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsNWidgets(2));
   });
 
   testWidgets('the mail appeal button is gone from the rows', (tester) async {
@@ -170,7 +172,7 @@ void main() {
     expect(find.byType(TextButton), findsNothing);
   });
 
-  testWidgets('every row has a chevron and opens its decision with what the '
+  testWidgets('a row opens its decision with what the '
       'list already holds', (tester) async {
     final pushed = <RouteSettings>[];
     final closed = _report('4', ReportStatus.closed);
@@ -187,8 +189,14 @@ void main() {
       },
     );
 
-    expect(find.byIcon(ButleryIcons.chevronRight), findsNWidgets(2));
-    await tester.tap(find.byKey(const ValueKey('report-4')));
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byKey(const ValueKey('report-4')),
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
 
     expect(pushed.last.name, Routes.decisionDetail);
@@ -219,5 +227,42 @@ void main() {
 
     expect(find.text(sv.decisionStatusAppealed.toUpperCase()), findsOneWidget);
     expect(find.text(sv.myReportsStatusClosed.toUpperCase()), findsNothing);
+  });
+
+  testWidgets('"Jag vill överklaga" shows only where an appeal can still be '
+      'made, and opens the form for the reporter', (tester) async {
+    final pushed = <RouteSettings>[];
+    final outcome = _outcome('4', ModeratorDecision.noAction);
+    await pump(
+      tester,
+      [_report('4', ReportStatus.closed), _report('5', ReportStatus.closed)],
+      outcomes: {
+        '4': outcome,
+        '5': _outcome(
+          '5',
+          ModeratorDecision.noAction,
+          appeal: const ModerationAppeal(
+            status: AppealStatus.open,
+            text: 'x',
+          ),
+        ),
+      },
+      onGenerateRoute: (settings) {
+        pushed.add(settings);
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const Scaffold(body: Text('form')),
+        );
+      },
+    );
+
+    expect(find.text(sv.decisionAppealLink), findsOneWidget);
+    await tester.tap(find.text(sv.decisionAppealLink));
+    await tester.pumpAndSettle();
+
+    expect(pushed.last.name, Routes.appealForm);
+    final args = pushed.last.arguments! as AppealFormArgs;
+    expect(args.role, AppealRole.reporter);
+    expect(args.outcome, same(outcome));
   });
 }
