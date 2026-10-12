@@ -15368,7 +15368,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyRatingCommunityLabel => 'Everyone who has cooked it';
+  String get familyRatingCommunityLabel => 'Everyone who cooked it';
 
   @override
   String get familyRatingYourOwnLabel => 'Your own rating';

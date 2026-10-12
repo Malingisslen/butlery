@@ -26,6 +26,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
+import 'package:butlery/views/family/family_widgets.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -191,5 +192,22 @@ void main() {
     expect(find.text('Hushåll 4,0'), findsNWidgets(2));
     expect(find.text('· du'), findsOneWidget);
     expect(find.textContaining('Ifylld av Malin'), findsOneWidget);
+    final avatars = tester.widgetList<FamilyAvatar>(find.byType(FamilyAvatar));
+    expect(avatars, isNotEmpty);
+    expect(avatars.every((a) => a.round), isTrue);
+  });
+
+  testWidgets('"· du" marks only the signed-in account holder', (tester) async {
+    await tester.runAsync(() async {
+      await rate(_malin, HouseholdMemberType.user, 5);
+      await rate(_johan, HouseholdMemberType.user, 3, enteredBy: _johan);
+    });
+    await pumpBreakdown(tester);
+
+    await tester.tap(find.text('Hushållets betyg'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('· du'), findsOneWidget);
+    expect(find.textContaining('Ifylld av'), findsNothing);
   });
 }

@@ -25537,7 +25537,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingCommunityLabel.
   ///
   /// In sv, this message translates to:
-  /// **'Alla som lagat det'**
+  /// **'Alla som lagat'**
   String get familyRatingCommunityLabel;
 
   /// No description provided for @familyRatingYourOwnLabel.

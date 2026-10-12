@@ -11154,7 +11154,7 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "Everyone who has cooked it",
+  "familyRatingCommunityLabel": "Everyone who cooked it",
   "familyRatingYourOwnLabel": "Your own rating",
   "familyRatingLegend": "Household ratings are private. Ink = household, grey = everyone, saffron = yours.",
   "recipeFamilyRatingPill": "family {rating}",

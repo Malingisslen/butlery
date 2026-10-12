@@ -11273,7 +11273,7 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "Alla som lagat det",
+  "familyRatingCommunityLabel": "Alla som lagat",
   "familyRatingYourOwnLabel": "Ditt eget betyg",
   "familyRatingLegend": "Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.",
   "recipeFamilyRatingPill": "familj {rating}",

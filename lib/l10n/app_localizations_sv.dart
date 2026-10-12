@@ -15474,7 +15474,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyRatingCommunityLabel => 'Alla som lagat det';
+  String get familyRatingCommunityLabel => 'Alla som lagat';
 
   @override
   String get familyRatingYourOwnLabel => 'Ditt eget betyg';

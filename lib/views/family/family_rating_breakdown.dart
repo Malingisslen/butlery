@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -93,7 +92,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             _hero(context, vm, l10n),
             const SizedBox(height: AppDimensions.space8),
             for (var i = 0; i < vm.rows.length; i++)
-              _dinerRow(context, vm.rows[i], l10n, initials[i]),
+              _dinerRow(context, vm, vm.rows[i], l10n, initials[i]),
             _comparison(context, l10n),
             _legend(context, l10n),
           ],
@@ -128,7 +127,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                   const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.familyRatingSectionTitle,
-                    style: AppTextStyles.bodyBold.copyWith(
+                    style: _strong.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
@@ -193,7 +192,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             children: [
               Text(
                 l10n.familyRatingAverageLabel,
-                style: AppTextStyles.bodyBold,
+                style: _strong,
               ),
               Text(
                 l10n.familyRatingCount(vm.familyCount),
@@ -210,13 +209,13 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
 
   Widget _dinerRow(
     BuildContext context,
+    FamilyRatingBreakdownViewModel vm,
     DinerRatingDisplay row,
     AppLocalizations l10n,
     String initials,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final isHolder =
-        row.member.type == HouseholdMemberType.user && !row.isProxy;
+    final isYou = vm.isCurrentUser(row);
     return Semantics(
       button: true,
       label: l10n.a11yEditMemberRating,
@@ -238,7 +237,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                   FamilyAvatar(
                     name: row.member.displayName,
                     color: parseAvatarColor(context, row.member.avatarColor),
-                    size: 40,
+                    size: 34,
                     round: true,
                     initials: initials,
                   ),
@@ -252,11 +251,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                             Flexible(
                               child: Text(
                                 row.member.displayName,
-                                style: AppTextStyles.bodyBold,
+                                style: _strong,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (isHolder) ...[
+                            if (isYou) ...[
                               const SizedBox(width: AppDimensions.space4),
                               Text(
                                 '· ${l10n.familyRatingYou}',
@@ -331,7 +330,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                 children: [
                   Text(
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
-                    style: AppTextStyles.bodyBold.copyWith(
+                    style: _strong.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
@@ -408,7 +407,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(width: AppDimensions.space8),
             Text(
               label,
-              style: AppTextStyles.bodyBold,
+              style: _strong,
             ),
           ],
         ),
@@ -439,9 +438,12 @@ class _StarNumber extends StatelessWidget {
         const SizedBox(width: AppDimensions.space4),
         Text(
           value.toStringAsFixed(1).replaceAll('.', ','),
-          style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+          style: _strong.copyWith(color: cs.onSurface),
         ),
       ],
     );
   }
 }
+
+TextStyle get _strong =>
+    AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w700);
