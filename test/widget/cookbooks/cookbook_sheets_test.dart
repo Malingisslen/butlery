@@ -502,6 +502,27 @@ void main() {
     });
 
     group('note dialog', () {
+      testWidgets('a row pencil opens the dialog for that recipe', (
+        tester,
+      ) async {
+        await openBook(
+          tester,
+          details: const CookbookDetails(recipeNotes: {'r1': 'Gammal'}),
+        );
+
+        // r1 has a note; the first "Skriv text" belongs to r2.
+        await tester.tap(find.byTooltip(l10n.cookbookWriteNote).first);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.text('Köttbullar'),
+          ),
+          findsOneWidget,
+        );
+      });
+
       testWidgets(
         'a long press on a row opens the dialog for that recipe, empty',
         (

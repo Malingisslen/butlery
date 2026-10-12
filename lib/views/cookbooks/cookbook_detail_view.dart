@@ -309,37 +309,36 @@ class _RecipeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Semantics(
-      customSemanticsActions: {
-        CustomSemanticsAction(
-          label: note == null ? l10n.cookbookWriteNote : l10n.cookbookEditNote,
-        ): onEditNote,
-      },
-      child: RecipeThumbRow(
-        recipe: recipe,
-        note: note,
-        onTap: reordering ? null : onOpen,
-        // BUT-948 exception: long-press writes the book's note for the recipe;
-        // the list is not a multi-select surface.
-        onLongPress: reordering ? null : onEditNote,
-        trailing: reordering
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    tooltip: l10n.a11yMoveRecipeUp(recipe.title),
-                    icon: const ButleryIcon(ButleryIcons.arrowUp),
-                    onPressed: index == 0 ? null : () => onMove(-1),
-                  ),
-                  IconButton(
-                    tooltip: l10n.a11yMoveRecipeDown(recipe.title),
-                    icon: const ButleryIcon(ButleryIcons.arrowDown),
-                    onPressed: index == count - 1 ? null : () => onMove(1),
-                  ),
-                ],
-              )
-            : null,
-      ),
+    return RecipeThumbRow(
+      recipe: recipe,
+      note: note,
+      onTap: reordering ? null : onOpen,
+      // BUT-948 exception: long-press writes the book's note for the recipe;
+      // the list is not a multi-select surface.
+      onLongPress: reordering ? null : onEditNote,
+      trailing: reordering
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: l10n.a11yMoveRecipeUp(recipe.title),
+                  icon: const ButleryIcon(ButleryIcons.arrowUp),
+                  onPressed: index == 0 ? null : () => onMove(-1),
+                ),
+                IconButton(
+                  tooltip: l10n.a11yMoveRecipeDown(recipe.title),
+                  icon: const ButleryIcon(ButleryIcons.arrowDown),
+                  onPressed: index == count - 1 ? null : () => onMove(1),
+                ),
+              ],
+            )
+          : IconButton(
+              tooltip: note == null
+                  ? l10n.cookbookWriteNote
+                  : l10n.cookbookEditNote,
+              icon: const ButleryIcon(ButleryIcons.pencil),
+              onPressed: onEditNote,
+            ),
     );
   }
 }

@@ -687,7 +687,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/68-guest-upgrade.png` | `d698ab97b41902214ad70b8d758e20a5579c923c64f14b82c41d30d038714b8e` |
 | `skiss-mot-app/69-mfa-challenge.png` | `2cea24da00839929ae555661820ac1f2fd4839fe772465611f9835cb9ac4f102` |
 | `skiss-mot-app/70-set-new-password.png` | `82ecee7cd0094496b135965f46b60ad586028953f9fa3eca65987bc940ac5940` |
-| `skiss-mot-app/71-cookbook-detail.png` | `72baa8d67d2541fc523d766fb58ef6ba40143f4f3cb35cdb72942846a091f84b` |
+| `skiss-mot-app/71-cookbook-detail.png` | `671aaee6d499fe399775aa4006f5ec62aa0bef67297517675d111d16c571828a` |
 | `skiss-mot-app/72-family-rating-entry.png` | `fe7fe4f424a2ec4acae2d57b1ab3ee3efe50c1adc347e5d992a254e873a56903` |
 | `skiss-mot-app/73-file-import.png` | `4713b56bf11af1ac0d7a461ce0db0e1e637cf8fc75507ee9ed9a0ac241374e48` |
 | `skiss-mot-app/74-fran-sociala-medier.png` | `7a9121f9c7f3a4b0d45480b6ee680551fe444578287be9c100c40826fb3893c6` |
