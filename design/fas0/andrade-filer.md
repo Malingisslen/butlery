@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=930-->
+<!--manifest:files=931-->
 
 ## Reporoten
 
@@ -621,6 +621,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
+| `skiss-mot-app/01-hem-forslag.png` | `8ee7682113865981f58249603a997024410cdbbd9af7968fd1f170a73d9423ef` |
 | `skiss-mot-app/01-hem.png` | `acd3e3a3a6a9a4599098ab96d4431600ea61df863a195b1cb2392fedee289ac5` |
 | `skiss-mot-app/02-hem-tomt.png` | `46352476425bdf12b0631ccd83495540c3d476da9ff800a1616199ab000378fd` |
 | `skiss-mot-app/03-hem-laddar.png` | `22a9e3cfc80096f57eebfb5aabc486215324f3f333e0594e0c179b5cd24b3c27` |

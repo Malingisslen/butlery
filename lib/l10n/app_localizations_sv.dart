@@ -17841,6 +17841,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get hemStartCooking => 'Börja laga';
 
   @override
+  String get hemSuggestion => 'Förslag';
+
+  @override
+  String get hemSwapSuggestion => 'Byt förslag';
+
+  @override
   String get hemSwapDish => 'Byt rätt';
 
   @override

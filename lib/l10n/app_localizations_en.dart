@@ -17744,6 +17744,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hemStartCooking => 'Start cooking';
 
   @override
+  String get hemSuggestion => 'Suggestion';
+
+  @override
+  String get hemSwapSuggestion => 'Change suggestion';
+
+  @override
   String get hemSwapDish => 'Change dish';
 
   @override

@@ -29026,6 +29026,18 @@ abstract class AppLocalizations {
   /// **'Börja laga'**
   String get hemStartCooking;
 
+  /// HEM-HERO: label of the hero card when no dinner is planned and a safe library recipe is suggested (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag'**
+  String get hemSuggestion;
+
+  /// HEM-HERO: changes the suggested recipe to the next safe one (produktregler.md § 6.1, row 3).
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt förslag'**
+  String get hemSwapSuggestion;
+
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Opens the week menu to change the planned dish.
   ///
   /// In sv, this message translates to:

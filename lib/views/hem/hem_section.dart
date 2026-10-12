@@ -6,6 +6,9 @@
 //       receptbiblioteket direkt under". The date line and the greeting, then
 //       the ink "Ikväll" band with "Börja laga" (saffron), "Byt rätt"
 //       (outlined in paper) and the pantry line "allt i skafferiet".
+//   produktregler.md § 6.1 row 3: with no dinner planned, a safe library
+//       recipe takes the band's place, marked "Förslag", "Byt rätt" reading
+//       "Byt förslag".
 //   Skarmar v12 del 4 #hemladdar (:616-650) and #hemfel (:704-742): in
 //       hem_plan_states.dart.
 //   Skarmar v12 del 4 #hemoffline (:651-703): the offline banner at the top
@@ -146,7 +149,8 @@ class HemSection extends StatelessWidget {
           HemTonightCard(
             hero: hero,
             onStartCooking: onStartCooking,
-            onSwap: onOpenMenu,
+            onSwap: hero.isSuggestion ? viewModel.nextSuggestion : onOpenMenu,
+            canSwap: !hero.isSuggestion || viewModel.canSwapSuggestion,
           ),
           if (!isOnline && fetchedAt != null)
             HemFetchedAtLine(fetchedAt: fetchedAt),
@@ -241,12 +245,16 @@ class HemTonightCard extends StatelessWidget {
     required this.hero,
     required this.onStartCooking,
     required this.onSwap,
+    this.canSwap = true,
     super.key,
   });
 
   final HemHero hero;
   final ValueChanged<Recipe> onStartCooking;
   final VoidCallback onSwap;
+
+  /// False for a suggestion with nothing else to change to.
+  final bool canSwap;
 
   static const Key startCookingKey = ValueKey('hem-start-cooking');
   static const Key swapKey = ValueKey('hem-swap-dish');
@@ -258,9 +266,12 @@ class HemTonightCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final recipe = hero.recipe;
     final paper = cs.onPrimary;
+    final entry = hero.entry;
     final label = hero.isTonight
         ? l10n.hemTonight
-        : _weekday(context, hero.entry.day.isoWeekday);
+        : entry == null
+        ? l10n.hemSuggestion
+        : _weekday(context, entry.day.isoWeekday);
     final meta = [
       label,
       if (recipe?.timeMinutes != null)
@@ -312,7 +323,7 @@ class HemTonightCard extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space4),
             Text(
-              recipe?.title ?? hero.entry.recipeTitle,
+              (recipe?.title ?? entry?.recipeTitle).orEmpty(),
               key: const ValueKey('hem-tonight-title'),
               style: AppTextStyles.headlineSmall.copyWith(color: paper),
             ),
@@ -329,13 +340,16 @@ class HemTonightCard extends StatelessWidget {
                     minimumSize: const Size(0, AppDimensions.minTouchTarget),
                     onPressed: () => onStartCooking(recipe),
                   ),
-                ActionButtons.actionButton(
-                  context,
-                  key: swapKey,
-                  style: ActionButtonStyle.outlinedOnInk,
-                  label: l10n.hemSwapDish,
-                  onPressed: onSwap,
-                ),
+                if (canSwap)
+                  ActionButtons.actionButton(
+                    context,
+                    key: swapKey,
+                    style: ActionButtonStyle.outlinedOnInk,
+                    label: hero.isSuggestion
+                        ? l10n.hemSwapSuggestion
+                        : l10n.hemSwapDish,
+                    onPressed: onSwap,
+                  ),
                 if (hero.allInPantry)
                   Text(
                     l10n.hemAllInPantry,
