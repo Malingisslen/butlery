@@ -15290,10 +15290,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyRatingSectionTitle => 'betyg';
+  String get familyRatingSectionTitle => 'Hushållets betyg';
 
   @override
-  String get familyRatingAverageLabel => 'hushållets snitt';
+  String get familyRatingAverageLabel => 'Hushållets snitt';
 
   @override
   String familyRatingCount(int count) {
@@ -15302,18 +15302,23 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String familyRatingUpdated(String date) {
-    return 'uppdaterad $date';
+    return 'Uppdaterad $date';
   }
 
   @override
-  String get familyRatingCommunityLabel => 'alla';
+  String get familyRatingCommunityLabel => 'Alla som lagat det';
 
   @override
-  String get familyRatingYourOwnLabel => 'ditt eget betyg';
+  String get familyRatingYourOwnLabel => 'Ditt eget betyg';
 
   @override
   String get familyRatingLegend =>
-      'Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.';
+      'Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.';
+
+  @override
+  String familyRatingHouseholdPill(String value) {
+    return 'Hushåll $value';
+  }
 
   @override
   String recipeFamilyRatingPill(String rating) {
@@ -15356,7 +15361,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String familyRatingProxyEntered(String name) {
-    return 'inmatat av $name';
+    return 'Ifylld av $name';
   }
 
   @override

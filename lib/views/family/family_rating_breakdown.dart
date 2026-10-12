@@ -128,12 +128,12 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                   const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.familyRatingSectionTitle,
-                    style: AppTextStyles.titleSmall.copyWith(
+                    style: AppTextStyles.bodyBold.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space8),
-                  _familyPill(context, vm.familyAverageDisplay),
+                  _familyPill(context, vm.familyAverageDisplay, l10n),
                   const Spacer(),
                   ButleryIcon(
                     _expanded
@@ -150,30 +150,28 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     );
   }
 
-  Widget _familyPill(BuildContext context, String value) {
+  Widget _familyPill(
+    BuildContext context,
+    String value,
+    AppLocalizations l10n, {
+    bool large = false,
+  }) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: AppDimensions.statusPillPadding,
+      padding: large
+          ? const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space8,
+            )
+          : AppDimensions.statusPillPadding,
       decoration: BoxDecoration(
         color: cs.primary,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            ButleryIcons.users,
-            size: AppDimensions.iconSize14,
-            color: cs.onPrimary,
-          ),
-          const SizedBox(width: AppDimensions.space4),
-          Text(
-            value,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: cs.onPrimary,
-            ),
-          ),
-        ],
+      child: Text(
+        l10n.familyRatingHouseholdPill(value),
+        style: (large ? AppTextStyles.bodySmallBold : AppTextStyles.labelSmall)
+            .copyWith(color: cs.onPrimary),
       ),
     );
   }
@@ -188,14 +186,14 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
-          _familyPill(context, vm.familyAverageDisplay),
+          _familyPill(context, vm.familyAverageDisplay, l10n, large: true),
           const SizedBox(width: AppDimensions.space12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 l10n.familyRatingAverageLabel,
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyles.bodyBold,
               ),
               Text(
                 l10n.familyRatingCount(vm.familyCount),
@@ -240,7 +238,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                   FamilyAvatar(
                     name: row.member.displayName,
                     color: parseAvatarColor(context, row.member.avatarColor),
-                    size: 34,
+                    size: 40,
                     initials: initials,
                   ),
                   const SizedBox(width: AppDimensions.space8),
@@ -260,7 +258,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                             if (isHolder) ...[
                               const SizedBox(width: AppDimensions.space4),
                               Text(
-                                l10n.familyRatingYou,
+                                '· ${l10n.familyRatingYou}',
                                 style: AppTextStyles.captionBold.copyWith(
                                   color: cs.onSurface,
                                 ),
@@ -270,18 +268,22 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                         ),
                         if (row.isProxy && row.enteredByName != null)
                           Text(
-                            l10n.familyRatingProxyEntered(row.enteredByName!),
+                            '${l10n.familyRatingProxyEntered(row.enteredByName!)}'
+                            ' · ${_shortDate(row.lastUpdated)}',
                             style: AppTextStyles.captionText.copyWith(
                               color: cs.onSurfaceVariant,
                               fontStyle: FontStyle.italic,
                             ),
+                          )
+                        else
+                          Text(
+                            l10n.familyRatingUpdated(
+                              _shortDate(row.lastUpdated),
+                            ),
+                            style: AppTextStyles.captionText.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
-                        Text(
-                          l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
-                          style: AppTextStyles.captionText.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -333,9 +335,9 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     ),
                   ),
                   if (communityCount != null) ...[
-                    const SizedBox(width: AppDimensions.space8),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
-                      l10n.familyRatingCount(communityCount),
+                      '· ${l10n.familyRatingCount(communityCount)}',
                       style: AppTextStyles.captionText.copyWith(
                         color: cs.onSurfaceVariant,
                       ),

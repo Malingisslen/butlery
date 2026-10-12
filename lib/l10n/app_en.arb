@@ -11017,8 +11017,8 @@
       }
     }
   },
-  "familyRatingSectionTitle": "ratings",
-  "familyRatingAverageLabel": "family average",
+  "familyRatingSectionTitle": "Household ratings",
+  "familyRatingAverageLabel": "Household average",
   "familyRatingCount": "{count} ratings",
   "@familyRatingCount": {
     "placeholders": {
@@ -11027,7 +11027,7 @@
       }
     }
   },
-  "familyRatingUpdated": "updated {date}",
+  "familyRatingUpdated": "Updated {date}",
   "@familyRatingUpdated": {
     "placeholders": {
       "date": {
@@ -11035,9 +11035,17 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "everyone",
-  "familyRatingYourOwnLabel": "your own rating",
-  "familyRatingLegend": "Ink = your household's average (private). Grey = all users' rating. Saffron = your own rating.",
+  "familyRatingCommunityLabel": "Everyone who has cooked it",
+  "familyRatingYourOwnLabel": "Your own rating",
+  "familyRatingLegend": "Household ratings are private. Ink = household, grey = everyone, saffron = yours.",
+  "familyRatingHouseholdPill": "Household {value}",
+  "@familyRatingHouseholdPill": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "recipeFamilyRatingPill": "family {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -11092,7 +11100,7 @@
   "pooledCommunityLabel": "butlery rating",
   "pooledHouseholdLabel": "everyone in your kitchen",
   "a11yPooledHouseholdPill": "Your kitchen's rating",
-  "familyRatingProxyEntered": "entered by {name}",
+  "familyRatingProxyEntered": "Entered by {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
       "name": {

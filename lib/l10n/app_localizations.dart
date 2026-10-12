@@ -25411,13 +25411,13 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingSectionTitle.
   ///
   /// In sv, this message translates to:
-  /// **'betyg'**
+  /// **'Hushållets betyg'**
   String get familyRatingSectionTitle;
 
   /// No description provided for @familyRatingAverageLabel.
   ///
   /// In sv, this message translates to:
-  /// **'hushållets snitt'**
+  /// **'Hushållets snitt'**
   String get familyRatingAverageLabel;
 
   /// No description provided for @familyRatingCount.
@@ -25429,26 +25429,32 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingUpdated.
   ///
   /// In sv, this message translates to:
-  /// **'uppdaterad {date}'**
+  /// **'Uppdaterad {date}'**
   String familyRatingUpdated(String date);
 
   /// No description provided for @familyRatingCommunityLabel.
   ///
   /// In sv, this message translates to:
-  /// **'alla'**
+  /// **'Alla som lagat det'**
   String get familyRatingCommunityLabel;
 
   /// No description provided for @familyRatingYourOwnLabel.
   ///
   /// In sv, this message translates to:
-  /// **'ditt eget betyg'**
+  /// **'Ditt eget betyg'**
   String get familyRatingYourOwnLabel;
 
   /// No description provided for @familyRatingLegend.
   ///
   /// In sv, this message translates to:
-  /// **'Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.'**
+  /// **'Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.'**
   String get familyRatingLegend;
+
+  /// No description provided for @familyRatingHouseholdPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll {value}'**
+  String familyRatingHouseholdPill(String value);
 
   /// No description provided for @recipeFamilyRatingPill.
   ///
@@ -25507,7 +25513,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingProxyEntered.
   ///
   /// In sv, this message translates to:
-  /// **'inmatat av {name}'**
+  /// **'Ifylld av {name}'**
   String familyRatingProxyEntered(String name);
 
   /// No description provided for @a11yToggleRatingBreakdown.

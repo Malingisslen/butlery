@@ -182,11 +182,14 @@ void main() {
     });
     await pumpBreakdown(tester);
 
-    await tester.tap(find.text('betyg'));
+    await tester.tap(find.text('Hushållets betyg'));
     await tester.pumpAndSettle();
 
     expect(find.text('Malin'), findsOneWidget);
     expect(find.text('5,0'), findsOneWidget);
     expect(find.text('3,0'), findsOneWidget);
+    expect(find.text('Hushåll 4,0'), findsNWidgets(2));
+    expect(find.text('· du'), findsOneWidget);
+    expect(find.textContaining('Ifylld av Malin'), findsOneWidget);
   });
 }

@@ -11136,8 +11136,8 @@
       }
     }
   },
-  "familyRatingSectionTitle": "betyg",
-  "familyRatingAverageLabel": "hushållets snitt",
+  "familyRatingSectionTitle": "Hushållets betyg",
+  "familyRatingAverageLabel": "Hushållets snitt",
   "familyRatingCount": "{count} betyg",
   "@familyRatingCount": {
     "placeholders": {
@@ -11146,7 +11146,7 @@
       }
     }
   },
-  "familyRatingUpdated": "uppdaterad {date}",
+  "familyRatingUpdated": "Uppdaterad {date}",
   "@familyRatingUpdated": {
     "placeholders": {
       "date": {
@@ -11154,9 +11154,17 @@
       }
     }
   },
-  "familyRatingCommunityLabel": "alla",
-  "familyRatingYourOwnLabel": "ditt eget betyg",
-  "familyRatingLegend": "Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.",
+  "familyRatingCommunityLabel": "Alla som lagat det",
+  "familyRatingYourOwnLabel": "Ditt eget betyg",
+  "familyRatingLegend": "Hushållets betyg är privata. Bläck = hushållet, grått = alla, saffran = ditt.",
+  "familyRatingHouseholdPill": "Hushåll {value}",
+  "@familyRatingHouseholdPill": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "recipeFamilyRatingPill": "familj {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -11211,7 +11219,7 @@
   "pooledCommunityLabel": "butlery-betyget",
   "pooledHouseholdLabel": "alla i ditt kök",
   "a11yPooledHouseholdPill": "Ditt köks betyg",
-  "familyRatingProxyEntered": "inmatat av {name}",
+  "familyRatingProxyEntered": "Ifylld av {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
       "name": {
