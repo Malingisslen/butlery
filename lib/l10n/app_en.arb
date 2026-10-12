@@ -9484,6 +9484,7 @@
   "emailVerificationContinue": "Continue without confirming",
   "emailVerificationSuccess": "Email verified.",
   "a11yCookingModeFontScale": "Change text size",
+  "a11yCookingModeRotate": "Rotate screen",
   "a11yCookingModeClose": "Close cooking mode",
   "a11yRecipeFavorited": "Recipe added to favorites",
   "a11yRecipeUnfavorited": "Recipe removed from favorites",

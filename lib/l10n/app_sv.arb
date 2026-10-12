@@ -9558,6 +9558,7 @@
   "emailVerificationContinue": "Fortsätt utan att bekräfta",
   "emailVerificationSuccess": "E-posten är verifierad.",
   "a11yCookingModeFontScale": "Ändra textstorlek",
+  "a11yCookingModeRotate": "Vrid skärmen",
   "a11yCookingModeClose": "Stäng tillagningsläge",
   "a11yRecipeFavorited": "Recept tillagt i favoriter",
   "a11yRecipeUnfavorited": "Recept borttaget från favoriter",
