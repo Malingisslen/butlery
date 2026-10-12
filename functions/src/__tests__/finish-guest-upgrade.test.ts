@@ -155,15 +155,25 @@ const cases = [
     },
   },
   {
-    name: "the callable refuses a provider other than password, and no auth at all",
+    name: "the callable refuses a provider other than password, Google or Apple, and no auth at all",
     fn: async () => {
-      for (const provider of ["google.com", "apple.com", "custom", undefined]) {
+      for (const provider of ["custom", "phone", undefined]) {
         const { err, limiterCalls } = await runCallable(caller("u", provider));
         assertEqual(err?.message, "upgrade-provider-not-supported", `message (${provider})`);
         assertEqual(limiterCalls.length, 0, `limiter not reached (${provider})`);
       }
       const { err } = await runCallable(undefined);
       assertEqual(err?.code, "unauthenticated", "no auth");
+    },
+  },
+  {
+    name: "a caller who linked Google or Apple reaches the limiter like a password caller",
+    fn: async () => {
+      for (const provider of ["google.com", "apple.com"]) {
+        const { err, limiterCalls } = await runCallable(caller("u", provider));
+        assertEqual(err?.message, "sentinel: reached the rate limiter", `sentinel (${provider})`);
+        assertEqual(JSON.stringify(limiterCalls), JSON.stringify(["finishGuestUpgrade"]), `key (${provider})`);
+      }
     },
   },
   {
