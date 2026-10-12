@@ -20487,4 +20487,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeMethodHeading => 'Gör så här';
+
+  @override
+  String get importPhotoRestartTitle => 'Börja om?';
+
+  @override
+  String get importPhotoRestartMessage =>
+      'Sidorna du redan tagit tas bort om du väljer en ny bild.';
+
+  @override
+  String get importPhotoRestartAction => 'Börja om';
 }

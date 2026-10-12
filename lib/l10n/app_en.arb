@@ -16467,5 +16467,8 @@
   "heirloomToggleSubtitle": "The photo is saved with the recipe, as its source",
   "importPhotoHeirloomHint": "Handwritten heirloom recipes? The original photo is saved on the recipe card.",
   "recipeDescriptionOptional": "Description (optional)",
-  "recipeMethodHeading": "Method"
+  "recipeMethodHeading": "Method",
+  "importPhotoRestartTitle": "Start over?",
+  "importPhotoRestartMessage": "The pages you already took are removed if you choose a new picture.",
+  "importPhotoRestartAction": "Start over"
 }

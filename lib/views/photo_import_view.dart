@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -324,6 +325,27 @@ class _PhotoImportViewContent extends StatelessWidget {
     );
   }
 
+  /// The top buttons begin a fresh import, so staged pages go; asking first
+  /// keeps a stray tap from dropping several photographed pages (BUT-954,
+  /// hard-destructive class).
+  Future<void> _startOver(
+    BuildContext context,
+    PhotoImportViewModel viewModel,
+    Future<void> Function() pick,
+  ) async {
+    final staged = viewModel.pageCount;
+    if (staged > 0) {
+      final ok = await ConfirmationDialog.show(
+        context,
+        title: context.l10n.importPhotoRestartTitle,
+        message: context.l10n.importPhotoRestartMessage,
+        primaryActionText: context.l10n.importPhotoRestartAction,
+      );
+      if (ok != true || !context.mounted) return;
+    }
+    await pick();
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PhotoImportViewModel>();
@@ -348,10 +370,18 @@ class _PhotoImportViewContent extends StatelessWidget {
                         libraryLabel: context.l10n.importPhotoLibraryButton,
                         onCamera: viewModel.isProcessing
                             ? null
-                            : viewModel.pickImageFromCamera,
+                            : () => _startOver(
+                                context,
+                                viewModel,
+                                viewModel.pickImageFromCamera,
+                              ),
                         onLibrary: viewModel.isProcessing
                             ? null
-                            : viewModel.pickImageFromGallery,
+                            : () => _startOver(
+                                context,
+                                viewModel,
+                                viewModel.pickImageFromGallery,
+                              ),
                       ),
                       const SizedBox(height: AppDimensions.space16),
 

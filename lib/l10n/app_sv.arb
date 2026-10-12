@@ -17099,5 +17099,8 @@
   "heirloomToggleSubtitle": "Fotot sparas med receptet, som källa",
   "importPhotoHeirloomHint": "Handskrivna arvsrecept? Originalbilden sparas på receptkortet.",
   "recipeDescriptionOptional": "Beskrivning (valfritt)",
-  "recipeMethodHeading": "Gör så här"
+  "recipeMethodHeading": "Gör så här",
+  "importPhotoRestartTitle": "Börja om?",
+  "importPhotoRestartMessage": "Sidorna du redan tagit tas bort om du väljer en ny bild.",
+  "importPhotoRestartAction": "Börja om"
 }

@@ -20436,4 +20436,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeMethodHeading => 'Method';
+
+  @override
+  String get importPhotoRestartTitle => 'Start over?';
+
+  @override
+  String get importPhotoRestartMessage =>
+      'The pages you already took are removed if you choose a new picture.';
+
+  @override
+  String get importPhotoRestartAction => 'Start over';
 }

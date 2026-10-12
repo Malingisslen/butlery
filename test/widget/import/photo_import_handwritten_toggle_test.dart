@@ -55,6 +55,14 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   }
 
   @override
+  int pageCount = 0;
+
+  int picks = 0;
+
+  @override
+  Future<void> pickImageFromCamera() async => picks++;
+
+  @override
   bool get hasImage => false;
 
   @override
@@ -216,5 +224,39 @@ void main() {
       isNull,
       reason: 'a processing import must not be interruptible via the toggle',
     );
+  });
+
+  testWidgets('the camera button asks before dropping staged pages', (
+    tester,
+  ) async {
+    fakeVm = _FakePhotoImportViewModel()..pageCount = 3;
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Fota nu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Börja om?'), findsOneWidget);
+    expect(
+      find.text('Sidorna du redan tagit tas bort om du väljer en ny bild.'),
+      findsOneWidget,
+    );
+    expect(fakeVm.picks, 0);
+
+    await tester.tap(find.text('Börja om').last);
+    await tester.pumpAndSettle();
+    expect(fakeVm.picks, 1);
+  });
+
+  testWidgets('with no pages staged the camera button starts at once', (
+    tester,
+  ) async {
+    fakeVm = _FakePhotoImportViewModel();
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Fota nu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Börja om?'), findsNothing);
+    expect(fakeVm.picks, 1);
   });
 }

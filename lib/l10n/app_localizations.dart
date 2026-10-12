@@ -33129,6 +33129,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Gör så här'**
   String get recipeMethodHeading;
+
+  /// No description provided for @importPhotoRestartTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om?'**
+  String get importPhotoRestartTitle;
+
+  /// No description provided for @importPhotoRestartMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidorna du redan tagit tas bort om du väljer en ny bild.'**
+  String get importPhotoRestartMessage;
+
+  /// No description provided for @importPhotoRestartAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja om'**
+  String get importPhotoRestartAction;
 }
 
 class _AppLocalizationsDelegate
