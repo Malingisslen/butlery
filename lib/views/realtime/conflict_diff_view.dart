@@ -53,7 +53,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/conflict_field_label.dart';
 import 'package:butlery/widgets/common/bold_in_text.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/diff_field_row.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -216,18 +216,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      backgroundColor: cs.surface,
-      // The subpage bar (Komponentark v1 §01 pattern 2; Skarmar v12 del 3
-      // 'Redigeringskonflikt' draws the back arrow; B-45).
-      appBar: ButleryTopBar.undersida(title: context.l10n.conflictDiffTitle),
-      body: SafeArea(
-        child: _diff.isEmpty
-            ? _buildNoChanges(context)
-            : _buildDiffList(context),
-      ),
+    return ButleryPage.undersida(
+      title: context.l10n.conflictDiffTitle,
+      body: _diff.isEmpty ? _buildNoChanges(context) : _buildDiffList(context),
       bottomNavigationBar: _localLost
           ? _buildKeepBar(context)
           : _canUseTheirs

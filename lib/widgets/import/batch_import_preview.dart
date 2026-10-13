@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -15,7 +16,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/utils/recipe_merge.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
@@ -187,18 +187,16 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
     final unreadRows = _rows.where((r) => r.unread > 0).toList();
     final readyRows = _batchRows.toList();
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: widget.backTo ?? l10n.importPreviewTitle,
-        backTo: widget.backTo,
-        actions: [
-          Center(
-            child: UnifiedBadge.status(
-              label: l10n.importPreviewProgress(_selected.length, _rows.length),
-            ),
+    return ButleryPage.undersida(
+      title: widget.backTo ?? l10n.importPreviewTitle,
+      backTo: widget.backTo,
+      actions: [
+        Center(
+          child: UnifiedBadge.status(
+            label: l10n.importPreviewProgress(_selected.length, _rows.length),
           ),
-        ],
-      ),
+        ),
+      ],
       body: ListView(
         padding: AppDimensions.responsiveContentPadding(context),
         children: [

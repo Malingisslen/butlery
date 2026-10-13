@@ -35,7 +35,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/realtime/conflict_field_label.dart';
 import 'package:butlery/widgets/common/bold_in_text.dart';
 import 'package:butlery/widgets/common/diff_field_row.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -154,33 +154,29 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l = context.l10n;
     final decides = _decidesHere;
-    return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: ButleryTopBar.undersida(title: l.recipeSuggestionTitle),
-      body: SafeArea(
-        child: FutureBuilder<ConflictDiff>(
-          future: _diff,
-          builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done) {
-              return StateWidget.loading(message: l.recipeSuggestionLoading);
-            }
-            final error = snap.error;
-            if (error is RecipeSuggestionTargetMissing) {
-              return StateWidget.error(message: l.recipeSuggestionRecipeGone);
-            }
-            if (error != null || !snap.hasData) {
-              return StateWidget.error(
-                message: l.recipeSuggestionLoadFailed,
-                actionLabel: l.commonRetry,
-                onAction: () => setState(() => _diff = _load()),
-              );
-            }
-            return _content(context, snap.data!);
-          },
-        ),
+    return ButleryPage.undersida(
+      title: l.recipeSuggestionTitle,
+      body: FutureBuilder<ConflictDiff>(
+        future: _diff,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return StateWidget.loading(message: l.recipeSuggestionLoading);
+          }
+          final error = snap.error;
+          if (error is RecipeSuggestionTargetMissing) {
+            return StateWidget.error(message: l.recipeSuggestionRecipeGone);
+          }
+          if (error != null || !snap.hasData) {
+            return StateWidget.error(
+              message: l.recipeSuggestionLoadFailed,
+              actionLabel: l.commonRetry,
+              onAction: () => setState(() => _diff = _load()),
+            );
+          }
+          return _content(context, snap.data!);
+        },
       ),
       bottomNavigationBar: decides ? _decisionBar(context) : null,
     );

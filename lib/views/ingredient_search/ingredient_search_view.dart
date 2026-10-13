@@ -13,10 +13,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 import 'package:butlery/views/ingredient_search/ingredient_chip_input.dart';
 import 'package:butlery/views/ingredient_search/ingredient_match_row.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -59,20 +58,8 @@ class _IngredientSearchContent extends StatelessWidget {
     final vm = context.watch<IngredientSearchViewModel>();
     final l10n = context.l10n;
 
-    return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45), drawn with a light bar as
-      // Skarmar v12 del 3 #ingredienssok has it.
-      appBar: ButleryTopBar.undersida(
-        title: l10n.ingredientSearchHeading,
-      ),
-      bottomNavigationBar: ButleryBottomNavigation(
-        currentIndex: 0,
-        items: ButleryAdaptiveNavigation.getNavigationItems(context),
-        onTap: (index) {
-          final items = ButleryAdaptiveNavigation.getNavigationItems(context);
-          Navigator.pushNamed(context, items[index].route);
-        },
-      ),
+    return ButleryPage.undersida(
+      title: l10n.ingredientSearchHeading,
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),
