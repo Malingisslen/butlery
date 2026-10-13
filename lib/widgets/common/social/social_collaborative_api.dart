@@ -59,24 +59,6 @@ class SocialCollaborativeApi {
     );
   }
 
-  /// Build collaborative app bar widget
-  static Widget collaborativeAppBar({
-    required BuildContext context,
-    required String contentId,
-    Recipe? recipe,
-    bool showParticipants = true,
-    bool showStatus = true,
-    int maxParticipants = 3,
-    VoidCallback? onTap,
-  }) {
-    return CollaborativeIndicators.collaborativeAppBar(
-      context: context,
-      contentId: contentId,
-      recipe: recipe,
-      title: context.l10n.socialEditRecipe,
-    );
-  }
-
   /// Build smart collaborative banner
   static Widget smartCollaborativeBanner({
     required BuildContext context,

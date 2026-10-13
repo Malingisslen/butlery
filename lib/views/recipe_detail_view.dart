@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -37,7 +37,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -311,12 +310,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         // (enhet-0 recipeDeleting; content-style-guide.md:63, :84). The bar
         // keeps the recipe's name so the user still knows where they are.
         if (viewModel.isDeleting) {
-          return Scaffold(
-            appBar: ButleryTopBar.undersida(
-              title: viewModel.recipe.title,
-              backTo: widget.backTo,
-            ),
-            backgroundColor: cs.surface,
+          return ButleryPage.undersida(
+            title: viewModel.recipe.title,
+            backTo: widget.backTo,
             body: StateWidget.loading(message: context.l10n.recipeDeleting),
           );
         }

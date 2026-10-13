@@ -68,27 +68,6 @@ class CollaborativeIndicators {
     );
   }
 
-  /// AppBar with collaborative background color and smart status detection
-  static PreferredSizeWidget collaborativeAppBar({
-    required BuildContext context,
-    required String contentId,
-    String contentType = 'recipe',
-    Recipe? recipe,
-    Map<String, List<Recipe>>? menuData,
-    String? title,
-    List<Widget>? actions,
-  }) {
-    return CollaborativeStatusWidgets.appBar(
-      context: context,
-      contentId: contentId,
-      contentType: contentType,
-      recipe: recipe,
-      menuData: menuData,
-      title: title,
-      actions: actions,
-    );
-  }
-
   /// Smart collaborative banner with ViewModel integration
   static Widget smartCollaborativeBanner({
     required BuildContext context,

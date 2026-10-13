@@ -27,8 +27,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
 
@@ -116,9 +115,11 @@ class _MenuPlacementViewContent extends StatelessWidget {
       // A subpage of the week menu (Komponentark v1:71-78; Skarmar v12 del 2
       // #placera draws the back arrow, the title and the "2 av 5 rätter
       // placerade" pill).
-      child: BaseScaffold(
+      child: ButleryPage.undersida(
         title: context.l10n.menuPlacementTitle,
         backTo: context.l10n.menuWeek,
+        showTabBar: false,
+        width: PageWidth.wide,
         actions: [
           Center(
             child: Container(
@@ -183,29 +184,26 @@ class _MenuPlacementViewContent extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, MenuPlacementViewModel vm) {
-    return ButleryPageBody(
-      width: PageWidth.wide,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _WeekNavRow(vm: vm),
-          _HintBanner(vm: vm),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space16,
-                vertical: AppDimensions.space8,
-              ),
-              child: PlacementGrid(vm: vm),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeekNavRow(vm: vm),
+        _HintBanner(vm: vm),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space8,
             ),
+            child: PlacementGrid(vm: vm),
           ),
-          PlacementTray(
-            vm: vm,
-            onAutoRest: () => _onAutoRest(context, vm),
-            onConfirm: () => _onConfirm(context, vm),
-          ),
-        ],
-      ),
+        ),
+        PlacementTray(
+          vm: vm,
+          onAutoRest: () => _onAutoRest(context, vm),
+          onConfirm: () => _onConfirm(context, vm),
+        ),
+      ],
     );
   }
 

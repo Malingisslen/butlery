@@ -1,7 +1,6 @@
 // lib/widgets/social/collaborative/components/collaborative_status_widgets.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -13,7 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/collaborative/components/collaborative_participants_widgets.dart';
 
-/// Status badges, banners, and app bars for collaborative content
+/// Status badges and banners for collaborative content
 class CollaborativeStatusWidgets {
   /// Compact badge to show that content is shared/collaborative
   static Widget statusBadge({
@@ -151,26 +150,6 @@ class CollaborativeStatusWidgets {
     );
   }
 
-  /// AppBar with collaborative background color and smart status detection
-  static PreferredSizeWidget appBar({
-    required BuildContext context,
-    required String contentId,
-    String contentType = 'recipe',
-    Recipe? recipe,
-    Map<String, List<Recipe>>? menuData,
-    String? title,
-    List<Widget>? actions,
-  }) {
-    return _CollaborativeAppBar(
-      contentId: contentId,
-      contentType: contentType,
-      recipe: recipe,
-      menuData: menuData,
-      title: title,
-      actions: actions,
-    );
-  }
-
   /// Smart collaborative banner with ViewModel integration
   static Widget smartBanner({
     required BuildContext context,
@@ -228,81 +207,4 @@ class CollaborativeStatusWidgets {
       // Silently ignore - status refresh is non-critical
     }
   }
-}
-
-/// Private AppBar widget that properly implements PreferredSizeWidget
-class _CollaborativeAppBar extends StatelessWidget
-    implements PreferredSizeWidget {
-  final String contentId;
-  final String contentType;
-  final Recipe? recipe;
-  final Map<String, List<Recipe>>? menuData;
-  final String? title;
-  final List<Widget>? actions;
-
-  const _CollaborativeAppBar({
-    required this.contentId,
-    this.contentType = 'recipe',
-    this.recipe,
-    this.menuData,
-    this.title,
-    this.actions,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CollaborativeStatusViewModel>(
-      builder: (context, viewModel, child) {
-        // Get collaborative status
-        final status = contentType == 'recipe'
-            ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
-            : viewModel.getMenuCollaborativeStatus(
-                contentId,
-                menuData?.map((key, recipes) => MapEntry(key, recipes)),
-              );
-
-        final isCollaborative = status.isCollaborative;
-        final participants = status.participants;
-
-        // The subpage bar (Komponentark v1 §01 pattern 2; B-45). Shared
-        // content no longer tints the bar: the badge carries it, as in the
-        // recipe editor (P4-U07; tokens.json:40-53).
-        return ButleryTopBar.undersida(
-          title: title ?? context.l10n.collaborativeContent,
-          actions: [
-            // Show collaborative badge if content is collaborative
-            if (isCollaborative) ...[
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.space4,
-                ),
-                child: Center(
-                  child: Tooltip(
-                    message: participants.isNotEmpty
-                        ? context.l10n.collaborativeSharedWithCount(
-                            participants.length,
-                          )
-                        : context.l10n.collaborativeSharedContent,
-                    child: CollaborativeStatusWidgets.statusBadge(
-                      text: participants.isNotEmpty
-                          ? '${participants.length}'
-                          : context.l10n.collaborativeShared,
-                      icon: ButleryIcons.users,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-
-            // Include other actions
-            if (actions != null) ...actions!,
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  Size get preferredSize =>
-      const ButleryTopBar.undersida(title: '').preferredSize;
 }

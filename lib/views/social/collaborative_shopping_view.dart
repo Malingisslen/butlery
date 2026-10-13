@@ -4,7 +4,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -246,18 +246,17 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<CollaborativeShoppingViewModel>();
 
-    return Scaffold(
-      appBar: actions.buildAppBar(context),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.wide,
-          child: Column(
-            children: [
-              LayoutComponents.offlineIndicator(),
-              Expanded(child: _buildBody(context, viewModel)),
-            ],
-          ),
-        ),
+    // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
+    // inköpslista'; Komponentark v1 §01 pattern 2).
+    return ButleryPage.undersida(
+      title: viewModel.listTitle,
+      actions: actions.buildBarActions(context),
+      width: PageWidth.wide,
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          Expanded(child: _buildBody(context, viewModel)),
+        ],
       ),
     );
   }

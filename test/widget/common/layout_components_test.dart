@@ -539,9 +539,6 @@ void main() {
   // a per-widget unit test should pull in. They are exercised by integration
   // tests / view-level smoke tests instead:
   //
-  // SKIP: LayoutComponents.mainMenu        — pulls AdaptiveNavigationScaffold
-  //                                          with the live tab modules.
-  // SKIP: LayoutComponents.simpleLayout    — ButleryHeader needs l10n + theme.
   // SKIP: LayoutComponents.offlineIndicator/offlineStatusIcon — need
   //                                          OfflineService registered in
   //                                          ServiceLocator.
@@ -549,14 +546,6 @@ void main() {
   //       real MenuViewModel (full service stack).
   // ---------------------------------------------------------------------
   group('Heavy-dependency facade methods', () {
-    testWidgets('mainMenu — covered by integration tests', (tester) async {
-      // SKIP: requires live tab views (MinaReceptView etc) and ServiceLocator.
-    }, skip: true);
-
-    testWidgets('simpleLayout — covered by view-level tests', (tester) async {
-      // SKIP: requires localizations and ServiceLocator-backed services.
-    }, skip: true);
-
     testWidgets('offlineIndicator — covered by status indicator tests', (
       tester,
     ) async {

@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -213,44 +213,45 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           )
         : null;
 
+    if (!twoPanes) {
+      return ButleryPage.rot(
+        title: selecting
+            ? context.l10n.bulkSelectedCount(selectedCount)
+            : context.l10n.shoppingRootTitle,
+        titleStyle: titleStyle,
+        secondaryLine: countLine,
+        secondaryLineIsLive: !selecting,
+        leading: leading,
+        actions: actions,
+        width: PageWidth.wide,
+        floatingActionButton: fab,
+        bottomNavigationBar: bulkBar,
+        body: Column(
+          children: [
+            _buildTabBar(context),
+            Expanded(child: _buildTabViews(context, viewModel)),
+          ],
+        ),
+      );
+    }
+
+    // BUT-723: beside the list of lists the bar belongs to the right side,
+    // so on a tablet in landscape each side draws its own.
     return Scaffold(
-      // BUT-723: beside the list of lists the bar belongs to the right side,
-      // so on a tablet in landscape each side draws its own.
-      appBar: twoPanes
-          ? null
-          : ButleryTopBar.rot(
-              title: selecting
-                  ? context.l10n.bulkSelectedCount(selectedCount)
-                  : context.l10n.shoppingRootTitle,
-              titleStyle: titleStyle,
-              secondaryLine: countLine,
-              secondaryLineIsLive: !selecting,
-              leading: leading,
-              actions: actions,
-            ),
-      floatingActionButton: twoPanes ? null : fab,
-      bottomNavigationBar: twoPanes ? null : bulkBar,
-      body: twoPanes
-          ? _buildTwoPanes(
-              context,
-              viewModel,
-              title: selecting
-                  ? context.l10n.bulkSelectedCount(selectedCount)
-                  : isShoppingTab
-                  ? (activeList?.name ?? context.l10n.shoppingRootTitle)
-                  : context.l10n.shoppingTabPantry,
-              titleStyle: titleStyle,
-              leading: leading,
-              actions: actions,
-              floatingActionButton: fab,
-              bottomBar: bulkBar,
-            )
-          : Column(
-              children: [
-                _buildTabBar(context),
-                Expanded(child: _buildTabViews(context, viewModel)),
-              ],
-            ),
+      body: _buildTwoPanes(
+        context,
+        viewModel,
+        title: selecting
+            ? context.l10n.bulkSelectedCount(selectedCount)
+            : isShoppingTab
+            ? (activeList?.name ?? context.l10n.shoppingRootTitle)
+            : context.l10n.shoppingTabPantry,
+        titleStyle: titleStyle,
+        leading: leading,
+        actions: actions,
+        floatingActionButton: fab,
+        bottomBar: bulkBar,
+      ),
     );
   }
 

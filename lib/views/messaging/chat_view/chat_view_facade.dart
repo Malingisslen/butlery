@@ -10,8 +10,8 @@ import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/messaging/chat_app_bar.dart';
+import 'package:butlery/widgets/messaging/chat_menu_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/messaging/typing_indicator.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
@@ -86,8 +86,10 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
   @override
   Widget build(BuildContext context) {
     if (!_messagingEnabled) {
-      return Scaffold(
-        appBar: ButleryTopBar.undersida(title: context.l10n.chatTitle),
+      return ButleryPage.undersida(
+        title: context.l10n.chatTitle,
+        showTabBar: false,
+        width: PageWidth.wide,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.space12),
@@ -105,12 +107,20 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
       value: _viewModel,
       child: Consumer<ChatViewModel>(
         builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: ChatAppBar(
-              conversation: viewModel.conversation ?? widget.conversation,
-              backTo: widget.backTo,
-              onMenuAction: _actionHandler.handleMenuAction,
-            ),
+          final conversation = viewModel.conversation ?? widget.conversation;
+          return ButleryPage.undersida(
+            title: ChatBarText.title(context, conversation),
+            secondaryLine: ChatBarText.participantLine(context, conversation),
+            secondaryLineIsLive: false,
+            backTo: widget.backTo,
+            showTabBar: false,
+            width: PageWidth.wide,
+            actions: [
+              ChatMenuButton(
+                conversation: conversation,
+                onMenuAction: _actionHandler.handleMenuAction,
+              ),
+            ],
             body: Column(
               children: [
                 // Message stream takes most of the space

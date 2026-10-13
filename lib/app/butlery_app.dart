@@ -781,7 +781,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           // gains while keeping our layouts intact.
           //
           // Per-scaffold `AccessibilityUtils.clampTextScaling` wrappers in
-          // `base_scaffold.dart`, `adaptive_navigation.dart`, and
+          // `adaptive_navigation.dart` and
           // `unified_badge.dart` become redundant but harmless — a clamp
           // applied twice still resolves to the tighter bound.
           final mq = MediaQuery.of(context);

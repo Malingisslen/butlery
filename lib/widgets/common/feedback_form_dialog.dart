@@ -12,7 +12,7 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -55,16 +55,15 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Dialog.fullscreen(
-      child: Scaffold(
-        // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
-        appBar: ButleryTopBar.undersida(
-          accentRule: false,
-          title: context.l10n.feedbackSendLabel,
-          leading: IconButton(
-            icon: const ButleryIcon(ButleryIcons.x),
-            tooltip: context.l10n.commonClose,
-            onPressed: () => Navigator.pop(context),
-          ),
+      // A modal: X, never a back arrow (Komponentark v1:57, pattern 4).
+      child: ButleryPage.undersida(
+        ruleUnderBar: false,
+        showTabBar: false,
+        title: context.l10n.feedbackSendLabel,
+        leading: IconButton(
+          icon: const ButleryIcon(ButleryIcons.x),
+          tooltip: context.l10n.commonClose,
+          onPressed: () => Navigator.pop(context),
         ),
         body: SingleChildScrollView(
           padding: AppDimensions.screenPadding,

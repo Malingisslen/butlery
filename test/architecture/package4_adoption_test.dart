@@ -26,7 +26,6 @@ const _plateLineFiles = [
   'lib/widgets/common/buttons/action_buttons.dart',
   'lib/widgets/common/dialogs/base_dialog.dart',
   'lib/widgets/common/dialogs/confirmation_dialogs.dart',
-  'lib/widgets/common/scaffolds/form_scaffold.dart',
   'lib/widgets/common/input/debounced_button.dart',
   'lib/app/auth/auth_wrapper.dart',
   'lib/app/butlery_app.dart',
@@ -44,15 +43,12 @@ const _plateLineFiles = [
   'lib/widgets/common/service/service_widgets.dart',
   'lib/widgets/common/layout/layout_scaffolds.dart',
   'lib/widgets/common/layout_components.dart',
-  'lib/widgets/common/scaffolds/base_scaffold.dart',
 ];
 
 /// The shared scaffolds that draw the canonical subpage top bar.
 const _scaffoldFiles = [
   'lib/widgets/common/layout/layout_scaffolds.dart',
   'lib/widgets/common/layout_components.dart',
-  'lib/widgets/common/scaffolds/base_scaffold.dart',
-  'lib/widgets/common/scaffolds/form_scaffold.dart',
 ];
 
 String _code(String path) => File(path)
@@ -84,7 +80,6 @@ void main() {
       _offenders([
         'lib/widgets/common/buttons/action_buttons.dart',
         'lib/widgets/common/dialogs/base_dialog.dart',
-        'lib/widgets/common/scaffolds/form_scaffold.dart',
       ], RegExp(r'commonLoading|commonWorking')),
       isEmpty,
     );

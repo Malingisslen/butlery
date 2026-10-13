@@ -28,9 +28,9 @@ Route<dynamic>? _routes(RouteSettings settings) {
   if (name == '/simple') {
     return MaterialPageRoute<void>(
       settings: settings,
-      builder: (_) => LayoutScaffolds.simpleLayout(
+      builder: (context) => Scaffold(
         body: const Text('simple page'),
-        showBottomNav: true,
+        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       ),
     );
   }
@@ -403,9 +403,11 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           theme: AppTheme.lightTheme,
-          home: LayoutScaffolds.simpleLayout(
-            body: const Text('simple page'),
-            showBottomNav: true,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: const Text('simple page'),
+              bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+            ),
           ),
         ),
       );

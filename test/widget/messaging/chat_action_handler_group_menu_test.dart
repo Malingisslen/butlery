@@ -37,7 +37,8 @@ import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/messaging/chat_app_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/messaging/chat_menu_button.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -147,14 +148,19 @@ void main() {
     await tester.pumpWidget(
       createLocalizedTestApp(
         child: Builder(
-          builder: (context) => Scaffold(
-            appBar: ChatAppBar(
-              conversation: conversation,
-              onMenuAction: (action) => ChatActionHandler(
-                conversationId: _conversationId,
-                context: context,
-              ).handleMenuAction(action),
-            ),
+          builder: (context) => ButleryPage.undersida(
+            title: ChatBarText.title(context, conversation),
+            showTabBar: false,
+            actions: [
+              ChatMenuButton(
+                conversation: conversation,
+                onMenuAction: (action) => ChatActionHandler(
+                  conversationId: _conversationId,
+                  context: context,
+                ).handleMenuAction(action),
+              ),
+            ],
+            body: const SizedBox.shrink(),
           ),
         ),
       ),

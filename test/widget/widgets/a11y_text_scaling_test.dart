@@ -14,7 +14,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -98,16 +98,16 @@ void main() {
     });
   });
 
-  group('BUT-763 BaseScaffold AppBar text-scaling clamp', () {
+  group('BUT-763 ButleryPage AppBar text-scaling clamp', () {
     testWidgets(
-      'BaseScaffold AppBar with long title renders clean at 2x text scale',
+      'ButleryPage AppBar with long title renders clean at 2x text scale',
       (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
             child: MediaQuery(
               data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
-              child: const BaseScaffold(
+              child: const ButleryPage.undersida(
                 title: 'Veckomeny för familjen Andersson — lång svensk titel',
                 body: SizedBox.shrink(),
               ),
@@ -120,9 +120,9 @@ void main() {
       },
     );
 
-    testWidgets('BaseScaffold top bar grows with the text instead of '
+    testWidgets('ButleryPage top bar grows with the text instead of '
         'clamping it', (tester) async {
-      // Package 4: BaseScaffold draws ButleryTopBar.undersida, whose height
+      // Package 4: ButleryPage draws ButleryTopBar.undersida, whose height
       // follows its content up to 200 % text (tillganglighetshandoff:85),
       // so the BUT-763 clamp is no longer needed and the title keeps the
       // user's text size.
@@ -132,7 +132,7 @@ void main() {
             wrapInScaffold: false,
             child: MediaQuery(
               data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-              child: const BaseScaffold(
+              child: const ButleryPage.undersida(
                 title: 'Receptbok',
                 body: SizedBox.shrink(),
               ),

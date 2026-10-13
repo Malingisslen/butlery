@@ -1,7 +1,5 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 //
-// Package 4: the simple layout's top bar is the canonical
-// ButleryTopBar.undersida (Komponentark v1 §01 pattern 2; B-45).
 // BUT-188: IndexedStack for tab state preservation
 // PQ-17: the shell's four tabs Hem · Meny · Inköp · Mer and the separate
 // plus (tillganglighetshandoff 'Navigation & toppfält').
@@ -14,7 +12,6 @@ import 'package:butlery/views/more/more_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/core/router/app_router.dart';
@@ -22,9 +19,8 @@ import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 
-/// Layout scaffold components for main navigation and simple layouts
-/// This module provides the core layout structures including
-/// main menu with bottom navigation and simple layout for detail views.
+/// Layout scaffold components for main navigation.
+/// This module provides the main menu with bottom navigation.
 class LayoutScaffolds {
   /// Hem: the greeting and the recipe library (Skarmar v12 del 1
   /// #hemrecept). Today the library.
@@ -75,28 +71,6 @@ class LayoutScaffolds {
       currentIndex: null,
       items: items,
       onTap: (index) => Navigator.pushNamed(context, items[index].route),
-    );
-  }
-
-  /// Simple layout for views without bottom navigation.
-  /// For detail views and dialogs
-  static Widget simpleLayout({
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    PreferredSizeWidget? appBar,
-    Widget? floatingActionButton,
-    bool showBottomNav = false,
-    int? bottomNavIndex,
-  }) {
-    return _SimpleLayout(
-      body: body,
-      title: title,
-      actions: actions,
-      appBar: appBar,
-      floatingActionButton: floatingActionButton,
-      showBottomNav: showBottomNav,
-      bottomNavIndex: bottomNavIndex,
     );
   }
 }
@@ -223,58 +197,6 @@ class _MainMenuLayoutState extends State<_MainMenuLayout>
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Simple layout for views without bottom navigation.
-///
-/// A detail view, so its top bar is [ButleryTopBar.undersida] (Komponentark
-/// v1:71-78): back arrow named "Tillbaka" and the title in 14/700.
-class _SimpleLayout extends StatelessWidget {
-  final Widget body;
-  final String? title;
-  final List<Widget>? actions;
-  final PreferredSizeWidget? appBar;
-  final Widget? floatingActionButton;
-  final bool showBottomNav;
-  final int? bottomNavIndex;
-
-  const _SimpleLayout({
-    required this.body,
-    this.title,
-    this.actions,
-    this.appBar,
-    this.floatingActionButton,
-    this.showBottomNav = false,
-    this.bottomNavIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar:
-          appBar ??
-          (title != null
-              ? ButleryTopBar.undersida(
-                  title: title!,
-                  actions: actions ?? const [],
-                )
-              : null),
-      body: body,
-      floatingActionButton: floatingActionButton,
-      bottomNavigationBar: showBottomNav && !DetailPane.isInside(context)
-          ? ButleryBottomNavigation(
-              currentIndex: bottomNavIndex,
-              items: ButleryAdaptiveNavigation.getNavigationItems(context),
-              onTap: (index) {
-                final route = ButleryAdaptiveNavigation.getNavigationItems(
-                  context,
-                )[index].route;
-                Navigator.pushNamed(context, route);
-              },
-            )
-          : null,
     );
   }
 }

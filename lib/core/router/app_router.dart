@@ -83,7 +83,7 @@ import 'package:butlery/views/sync/sync_queue_view.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -667,33 +667,35 @@ class AppRouter {
   static Route<dynamic> _errorRoute([String? message]) {
     if (message != null) AppLogger.warning(message);
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
-        appBar: ButleryTopBar.undersida(title: context.l10n.errorTitle),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ButleryIcon(
-                ButleryIcons.triangleAlert,
-                size: AppDimensions.iconSizeXl,
-                color: Theme.of(context).colorScheme.error,
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ButleryPage.undersida(
+            title: context.l10n.errorTitle,
+            width: PageWidth.compact,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.triangleAlert,
+                    size: AppDimensions.iconSizeXl,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: AppDimensions.space32),
+                  Text(
+                    context.l10n.errorPageNotFound,
+                    style: AppTextStyles.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  ElevatedButton(
+                    onPressed: () =>
+                        Navigator.of(context).pushReplacementNamed(Routes.home),
+                    child: Text(context.l10n.errorBackToStart),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppDimensions.space32),
-              Text(
-                context.l10n.errorPageNotFound,
-                style: AppTextStyles.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppDimensions.space16),
-              ElevatedButton(
-                onPressed: () =>
-                    Navigator.of(context).pushReplacementNamed(Routes.home),
-                child: Text(context.l10n.errorBackToStart),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = 0.0;
         const end = 1.0;

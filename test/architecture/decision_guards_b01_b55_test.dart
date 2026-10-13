@@ -141,12 +141,18 @@ void main() {
         [
           'lib/views/account/pending_deletion_view.dart',
           'lib/views/auth/mfa_challenge_view.dart',
+          'lib/views/edit_recipe_view.dart',
           'lib/views/family/family_member_form_view.dart',
+          'lib/views/menu_placement_view.dart',
+          'lib/views/messaging/chat_view/chat_view_facade.dart',
           'lib/views/messaging/create_group_conversation_view.dart',
           'lib/views/quick_capture_view.dart',
+          'lib/views/settings/appeal_form_view.dart',
+          'lib/views/skriv_sjalv_recept_view.dart',
           'lib/views/social/group_detail_view.dart',
           'lib/views/social/public_profile_view.dart',
           'lib/views/social/user_profile_edit_view.dart',
+          'lib/widgets/common/feedback_form_dialog.dart',
         ],
         reason: 'B-54: en ny vy som göms menyn behöver ett beslut',
       );

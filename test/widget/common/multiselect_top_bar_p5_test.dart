@@ -22,6 +22,7 @@ import 'package:butlery/viewmodels/recipe_list/recipe_selection_manager.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
+import '../../infrastructure/helpers/mina_recept_selection_bar.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';

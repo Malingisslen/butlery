@@ -13,7 +13,7 @@ import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/viewmodels/settings/appeal_form_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
@@ -71,8 +71,9 @@ class _AppealFormViewState extends State<AppealFormView> {
     final owner = widget.args.role == AppealRole.owner;
     return ChangeNotifierProvider<AppealFormViewModel>.value(
       value: _vm,
-      child: BaseScaffold(
+      child: ButleryPage.undersida(
         title: l10n.appealFormTitle,
+        showTabBar: false,
         body: Consumer<AppealFormViewModel>(
           builder: (context, vm, _) => ListView(
             padding: EdgeInsets.symmetric(

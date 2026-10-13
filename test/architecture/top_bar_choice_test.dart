@@ -13,24 +13,8 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tools/design_migration_census.dart' show stripComments;
 
 const _builtDirectly = {
-  'lib/core/router/app_router.dart',
-  'lib/views/edit_recipe_view.dart',
-  'lib/views/messaging/chat_view/chat_view_facade.dart',
-  'lib/views/mina_recept/selection_app_bar.dart',
-  'lib/views/recipe_detail_view.dart',
-  'lib/views/skriv_sjalv_recept_view.dart',
-  'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart',
-  'lib/views/social/group_detail/group_detail_app_bar.dart',
   'lib/views/unified_shopping_view.dart',
-  'lib/views/veckomeny_view.dart',
-  'lib/widgets/common/feedback_form_dialog.dart',
   'lib/widgets/common/image/fullscreen_image_viewer.dart',
-  'lib/widgets/common/layout/layout_scaffolds.dart',
-  'lib/widgets/common/routing/deferred_route_loader.dart',
-  'lib/widgets/common/scaffolds/base_scaffold.dart',
-  'lib/widgets/menu/group_weekly_menu_widget.dart',
-  'lib/widgets/messaging/chat_app_bar.dart',
-  'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart',
 };
 
 final _bar = RegExp(r'\bButleryTopBar\.(?:rot|undersida)\(');

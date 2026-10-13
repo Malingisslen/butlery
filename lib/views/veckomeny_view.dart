@@ -26,14 +26,13 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
@@ -542,12 +541,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     MenuViewModel viewModel,
     WeeklyMenuPlanViewModel planVm,
   ) {
-    return Scaffold(
-      appBar: ButleryTopBar.rot(
-        title: context.l10n.menuWeek,
-        secondaryLine: _weekLine(context, planVm),
-        actions: _buildHeaderActions(context, viewModel),
-      ),
+    return ButleryPage.rot(
+      title: context.l10n.menuWeek,
+      secondaryLine: _weekLine(context, planVm),
+      actions: _buildHeaderActions(context, viewModel),
+      width: PageWidth.wide,
       body: _buildBody(context, viewModel),
       // BUT-2275: the footer is the Scaffold's bottom slot, so the shopping
       // button never covers "Jag placerar själv".
@@ -767,166 +765,163 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
-    return ButleryPageBody(
-      width: PageWidth.wide,
-      // At large text on a short phone the top of the page took the whole
-      // height and left the planning panel none (BUT-2341), so it scrolls
-      // once it would leave the content under [_minContentHeight], and never
-      // takes more than a third of a body shorter than that.
-      child: LayoutBuilder(
-        // The State's context, not the builder's: below the Scaffold the
-        // keyboard inset is stripped, and the draft card reads it.
-        builder: (_, constraints) => Column(
-          children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: math.max(
-                  constraints.maxHeight / 3,
-                  constraints.maxHeight - _minContentHeight,
-                ),
-              ),
-              child: SingleChildScrollView(
-                primary: false,
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    // BUT-407: online-members presence bar (union across groups).
-                    const FamilyPresenceBar(),
-                    // BUT-408: live cooking session card for the user's groups.
-                    const VeckomenyCookingSessionCard(),
-                    ?_buildDraftCard(context, viewModel),
-                    // A new generation would overwrite the menu for everyone.
-                    if (widget.realtimeMenuId == null)
-                      Padding(
-                        padding: AppDimensions.responsiveContentPadding(
-                          context,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          spacing: AppDimensions.space12,
-                          children: [
-                            VeckomenyViewModeToggle(
-                              mode: _viewMode,
-                              onSelect: (mode) => unawaited(_setViewMode(mode)),
-                            ),
-                            VeckomenyPromptRow(
-                              controller: _promptController,
-                              focusNode: _promptFocusNode,
-                              isGenerating: viewModel.isGenerating,
-                              hasMenu: viewModel.hasMenu,
-                              // A planned week asks its question in the field
-                              // alone; the label and button come back once
-                              // there is text or no week yet.
-                              compact:
-                                  _viewMode == VeckomenyViewMode.kalender &&
-                                  context
-                                      .watch<WeeklyMenuPlanViewModel>()
-                                      .hasEntries &&
-                                  _promptController.text.isEmpty,
-                              onClear: () {
-                                _promptController.clear();
-                                setState(() {});
-                              },
-                              onChanged: () => setState(() {}),
-                              onGenerate: () => unawaited(_generateMenu()),
-                              // Voice prompt (kb-whisper plan): transcript lands
-                              // EDITABLE here — the user reviews before generating.
-                              voiceButton: VoicePromptButton(
-                                enabled: !viewModel.isGenerating,
-                                onTranscript: (text) {
-                                  _promptController.text = text;
-                                  _promptController.selection =
-                                      TextSelection.collapsed(
-                                        offset: text.length,
-                                      );
-                                  _promptFocusNode.requestFocus();
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (widget.realtimeMenuId case final id?)
-                      ConflictBanner(filterDocId: id),
-                  ],
-                ),
+    // At large text on a short phone the top of the page took the whole
+    // height and left the planning panel none (BUT-2341), so it scrolls
+    // once it would leave the content under [_minContentHeight], and never
+    // takes more than a third of a body shorter than that.
+    return LayoutBuilder(
+      // The State's context, not the builder's: below the Scaffold the
+      // keyboard inset is stripped, and the draft card reads it.
+      builder: (_, constraints) => Column(
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: math.max(
+                constraints.maxHeight / 3,
+                constraints.maxHeight - _minContentHeight,
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: AppDimensions.responsiveHorizontalPadding(context),
-                child: viewModel.isGenerating
-                    // The week while it is planned: the plate line with
-                    // text in the content area, never an overlay over the
-                    // view (Skarmar v12 del 1 #veckogenererarpanel;
-                    // ux-beslut.json D-03).
-                    ? SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const VeckomenyGeneratingOverlay(),
-                            const SizedBox(height: AppDimensions.space16),
-                            VeckomenyPlanningCancelFooter(
-                              onCancel: _cancelPlanning,
-                            ),
-                          ],
-                        ),
-                      )
-                    : _viewMode == VeckomenyViewMode.kalender &&
-                          widget.realtimeMenuId == null
-                    ? SingleChildScrollView(
-                        // BUT-1611: per-meal "who's home" lives inside the
-                        // calendar (faces on each slot + a collapsible
-                        // week overview), not a separate strip.
-                        child: CalendarWeeklyMenuWidget(
-                          onRefinePrompt: _promptFocusNode.requestFocus,
-                        ),
-                      )
-                    : Column(
+            child: SingleChildScrollView(
+              primary: false,
+              child: Column(
+                children: [
+                  LayoutComponents.offlineIndicator(),
+                  // BUT-407: online-members presence bar (union across groups).
+                  const FamilyPresenceBar(),
+                  // BUT-408: live cooking session card for the user's groups.
+                  const VeckomenyCookingSessionCard(),
+                  ?_buildDraftCard(context, viewModel),
+                  // A new generation would overwrite the menu for everyone.
+                  if (widget.realtimeMenuId == null)
+                    Padding(
+                      padding: AppDimensions.responsiveContentPadding(
+                        context,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: AppDimensions.space12,
                         children: [
-                          // P5-U25: fewer dishes than asked is a partial
-                          // outcome, named above the list.
-                          if (viewModel.partialOutcome != null &&
-                              !viewModel.hasError)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppDimensions.space8,
-                              ),
-                              child: VeckomenyPartialResult(
-                                outcome: viewModel.partialOutcome!,
-                              ),
+                          VeckomenyViewModeToggle(
+                            mode: _viewMode,
+                            onSelect: (mode) => unawaited(_setViewMode(mode)),
+                          ),
+                          VeckomenyPromptRow(
+                            controller: _promptController,
+                            focusNode: _promptFocusNode,
+                            isGenerating: viewModel.isGenerating,
+                            hasMenu: viewModel.hasMenu,
+                            // A planned week asks its question in the field
+                            // alone; the label and button come back once
+                            // there is text or no week yet.
+                            compact:
+                                _viewMode == VeckomenyViewMode.kalender &&
+                                context
+                                    .watch<WeeklyMenuPlanViewModel>()
+                                    .hasEntries &&
+                                _promptController.text.isEmpty,
+                            onClear: () {
+                              _promptController.clear();
+                              setState(() {});
+                            },
+                            onChanged: () => setState(() {}),
+                            onGenerate: () => unawaited(_generateMenu()),
+                            // Voice prompt (kb-whisper plan): transcript lands
+                            // EDITABLE here — the user reviews before generating.
+                            voiceButton: VoicePromptButton(
+                              enabled: !viewModel.isGenerating,
+                              onTranscript: (text) {
+                                _promptController.text = text;
+                                _promptController.selection =
+                                    TextSelection.collapsed(
+                                      offset: text.length,
+                                    );
+                                _promptFocusNode.requestFocus();
+                                setState(() {});
+                              },
                             ),
-                          Expanded(
-                            child:
-                                viewModel.noMatchOutcome != null &&
-                                    !viewModel.hasError
-                                // P6-U01: nothing matched is its own
-                                // outcome, never "Ett fel uppstod".
-                                ? VeckomenyNoMatch(
-                                    outcome: viewModel.noMatchOutcome!,
-                                    onEditPrompt: _promptFocusNode.requestFocus,
-                                    onPlanYourself: () => unawaited(
-                                      _setViewMode(
-                                        VeckomenyViewMode.kalender,
-                                      ),
-                                    ),
-                                  )
-                                : MenuContentWidgets.buildMenuContent(
-                                    context,
-                                    viewModel: viewModel,
-                                    votingViewModel: viewModel.votingViewModel,
-                                    onRetry: _promptController.text.isNotEmpty
-                                        ? () => unawaited(_generateMenu())
-                                        : null,
-                                  ),
                           ),
                         ],
                       ),
+                    ),
+                  if (widget.realtimeMenuId case final id?)
+                    ConflictBanner(filterDocId: id),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: AppDimensions.responsiveHorizontalPadding(context),
+              child: viewModel.isGenerating
+                  // The week while it is planned: the plate line with
+                  // text in the content area, never an overlay over the
+                  // view (Skarmar v12 del 1 #veckogenererarpanel;
+                  // ux-beslut.json D-03).
+                  ? SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const VeckomenyGeneratingOverlay(),
+                          const SizedBox(height: AppDimensions.space16),
+                          VeckomenyPlanningCancelFooter(
+                            onCancel: _cancelPlanning,
+                          ),
+                        ],
+                      ),
+                    )
+                  : _viewMode == VeckomenyViewMode.kalender &&
+                        widget.realtimeMenuId == null
+                  ? SingleChildScrollView(
+                      // BUT-1611: per-meal "who's home" lives inside the
+                      // calendar (faces on each slot + a collapsible
+                      // week overview), not a separate strip.
+                      child: CalendarWeeklyMenuWidget(
+                        onRefinePrompt: _promptFocusNode.requestFocus,
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        // P5-U25: fewer dishes than asked is a partial
+                        // outcome, named above the list.
+                        if (viewModel.partialOutcome != null &&
+                            !viewModel.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppDimensions.space8,
+                            ),
+                            child: VeckomenyPartialResult(
+                              outcome: viewModel.partialOutcome!,
+                            ),
+                          ),
+                        Expanded(
+                          child:
+                              viewModel.noMatchOutcome != null &&
+                                  !viewModel.hasError
+                              // P6-U01: nothing matched is its own
+                              // outcome, never "Ett fel uppstod".
+                              ? VeckomenyNoMatch(
+                                  outcome: viewModel.noMatchOutcome!,
+                                  onEditPrompt: _promptFocusNode.requestFocus,
+                                  onPlanYourself: () => unawaited(
+                                    _setViewMode(
+                                      VeckomenyViewMode.kalender,
+                                    ),
+                                  ),
+                                )
+                              : MenuContentWidgets.buildMenuContent(
+                                  context,
+                                  viewModel: viewModel,
+                                  votingViewModel: viewModel.votingViewModel,
+                                  onRetry: _promptController.text.isNotEmpty
+                                      ? () => unawaited(_generateMenu())
+                                      : null,
+                                ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

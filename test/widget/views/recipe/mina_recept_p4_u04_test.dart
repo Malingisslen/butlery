@@ -1,8 +1,7 @@
 /// P4-U04: Mina recept takes in the new components.
 ///
-/// - The selection bar is the root bar with other content: the count in
-///   place of the title and "Avbryt" in place of the back arrow, never an X
-///   (produktregler.md:873; Skarmar v12 etapp 9 #flervalingang).
+/// - The selection mode shows the count and "Avbryt" in place of the back
+///   arrow, never an X.
 /// - A chosen card is surface.selected with a real border, never a tint
 ///   (tokens.json:116-119, opacityLadder :40-53; #flerbar).
 /// - The empty library has exactly one saffron action (produktregler.md:292;
@@ -22,9 +21,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
-import 'package:butlery/views/mina_recept/selection_app_bar.dart';
+import '../../../infrastructure/helpers/mina_recept_selection_bar.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -98,15 +96,12 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('is the root bar with the count and Avbryt, no X, no back', (
+    testWidgets('shows the count and Avbryt, no X, no back', (
       tester,
     ) async {
       await pumpBar(tester);
 
-      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
-      expect(bar.pattern, ButleryTopBarPattern.rot);
       expect(find.text('1 valda'), findsOneWidget);
-      expect(find.text('12 recept'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.x), findsNothing);
       expect(find.byType(BackButton), findsNothing);

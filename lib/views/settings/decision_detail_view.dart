@@ -16,7 +16,7 @@ import 'package:butlery/viewmodels/settings/decision_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
@@ -24,7 +24,6 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// One decision: what it was about, what was decided and why, and the appeal
 /// (offer, own text, or the final answer). Reporter and owner share this view.
@@ -80,11 +79,10 @@ class _Content extends StatelessWidget {
     final l10n = context.l10n;
     final vm = context.watch<DecisionDetailViewModel>();
     final owner = vm.role == AppealRole.owner;
-    return BaseScaffold(
+    return ButleryPage.undersida(
       title: owner
           ? l10n.decisionDetailOwnerTitle
           : l10n.decisionDetailReporterTitle,
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: _body(context, vm),
     );
   }

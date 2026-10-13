@@ -92,7 +92,7 @@ const _files = [
   'lib/widgets/common/social_components/social_builder_components.dart',
   'lib/widgets/common/social_components/social_group_components.dart',
   'lib/widgets/messaging/builders/message_content_builder.dart',
-  'lib/widgets/messaging/chat_app_bar.dart',
+  'lib/widgets/messaging/chat_menu_button.dart',
   'lib/widgets/messaging/dialogs/block_group_member_dialog.dart',
   'lib/widgets/common/image/fullscreen_image_viewer.dart',
   'lib/widgets/messaging/new_conversation_dialog.dart',

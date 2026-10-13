@@ -16,7 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/group_weekly_menu_viewmodel.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -54,11 +54,12 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     final vm = context.watch<GroupWeeklyMenuViewModel>();
     _surfaceEditNotice(vm);
 
-    return Scaffold(
-      // A subpage (Komponentark v1:71-78): the group's week is opened from
-      // the group chat, so the back arrow returns there.
-      appBar: ButleryTopBar.undersida(title: widget.groupName),
-      body: SafeArea(child: _body(context, vm)),
+    // A subpage (Komponentark v1:71-78): the group's week is opened from
+    // the group chat, so the back arrow returns there.
+    return ButleryPage.undersida(
+      title: widget.groupName,
+      width: PageWidth.wide,
+      body: _body(context, vm),
     );
   }
 

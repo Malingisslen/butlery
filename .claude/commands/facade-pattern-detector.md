@@ -58,7 +58,6 @@ class ChatViewFacade extends StatefulWidget {
 }
 
 // Separata filer:
-// - chat_app_bar.dart
 // - chat_message_stream.dart
 // - chat_input_section.dart
 // - typing_indicator.dart
