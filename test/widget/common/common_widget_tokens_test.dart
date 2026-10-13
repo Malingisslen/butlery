@@ -15,6 +15,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -343,7 +344,7 @@ void main() {
           const RealtimeStatusBanner(
             isOnline: false,
             statusDescription: 'Ingen anslutning',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
           ),
         );
 
@@ -367,7 +368,7 @@ void main() {
               ),
             )
             .firstWhere(
-              (t) => t.data != '🔴' && t.data != 'Ingen anslutning',
+              (t) => t.data != 'Ingen anslutning',
             );
         expect(title.style?.color, cs.onErrorContainer);
       });

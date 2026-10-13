@@ -268,6 +268,10 @@ void main() {
       'lib/models/realtime/realtime_recipe.dart',
       'lib/widgets/common/search_filter/filter_models.dart',
       'lib/viewmodels/shopping/shopping_analytics_manager.dart',
+      'lib/models/unified/unified_shopping_item.dart',
+      'lib/widgets/common/indicators/connection_dot.dart',
+      'lib/widgets/common/indicators/realtime_status_widgets.dart',
+      'lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart',
     ];
     expect(
       [
