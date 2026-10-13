@@ -778,7 +778,7 @@ Fältet fylls i förväg ur **urklipp** om det ligger en länk där. En lyckad i
 
 - **Ett ark, två flöden.** Betygsflödet har *Hoppa över* och kräver minst en person; veckomenyns närvaro har *Denna måltid* och *Hela dagen* och tillåter **uttryckligen tomt**. Samma komponent, olika copy — det ska ritas som en.
 - **Arket visas inte för ett solohushåll**, och inte heller när rosterladdningen misslyckas. Båda loggar maten utan närvaro. **Ett tekniskt fel får inte se ut som &quot;du bor ensam&quot;:** vid misslyckad laddning säger raden att hushållet inte kunde läsas, med ett försök igen.
-- **Ovalt bärs av ram och tom ruta**, aldrig av opacitet. Ett namn på 50 % går inte att läsa och tillstånd bärs inte av genomskinlighet. Kryssrutan är 24 px; alla tre knapparna 48 dp.
+- **Ovalt bärs av ram och tom ruta**, aldrig av opacitet. Ett namn på 50 % går inte att läsa och tillstånd bärs inte av genomskinlighet. Kryssrutan är 20 px (B-61); alla tre knapparna 48 dp.
 
 ---
 

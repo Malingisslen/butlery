@@ -48,7 +48,7 @@ BUT-2202). It is the source of truth; `design/NULAGE.md` says where it stands.
 One rule per kind of view. A view does not pick its own bar, colour, title size or rule
 line; it picks the kind, and the shared component draws it (`ButleryPage`,
 `ButleryTopBar`). Decided by Malin 2026-10-11/12: Hem has no bar, every subpage has the
-light bar (B-56), the tab bar shows on every page reached from a tab (B-54).
+light bar (B-60), the tab bar shows on every page reached from a tab (B-54).
 
 | Kind of view | Top | Carried by |
 |---|---|---|
