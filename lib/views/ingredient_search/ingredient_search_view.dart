@@ -64,8 +64,6 @@ class _IngredientSearchContent extends StatelessWidget {
       // Skarmar v12 del 3 #ingredienssok has it.
       appBar: ButleryTopBar.undersida(
         title: l10n.ingredientSearchHeading,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       bottomNavigationBar: ButleryBottomNavigation(
         currentIndex: 0,
