@@ -227,12 +227,15 @@ void main() {
   testWidgets('renders in dark mode with the dark tokens', (tester) async {
     await open(tester, asOwner: true, theme: AppTheme.darkTheme);
     expect(tester.takeException(), isNull);
-    final scaffold = tester.widget<Scaffold>(
-      find.descendant(
-        of: find.byType(RecipeSuggestionView),
-        matching: find.byType(Scaffold),
-      ),
+    final scaffoldFinder = find.descendant(
+      of: find.byType(RecipeSuggestionView),
+      matching: find.byType(Scaffold),
     );
-    expect(scaffold.backgroundColor, AppTheme.darkTheme.colorScheme.surface);
+    final scaffold = tester.widget<Scaffold>(scaffoldFinder);
+    expect(
+      scaffold.backgroundColor ??
+          Theme.of(tester.element(scaffoldFinder)).scaffoldBackgroundColor,
+      AppTheme.darkTheme.colorScheme.surface,
+    );
   });
 }

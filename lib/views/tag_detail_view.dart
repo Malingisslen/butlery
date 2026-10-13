@@ -16,8 +16,7 @@ import 'package:butlery/views/tag_detail/tag_edit_sheet.dart';
 import 'package:butlery/widgets/common/stat_row.dart';
 import 'package:butlery/widgets/tagging/tag_detail_recipes_section.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
@@ -81,22 +80,19 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           );
         }
 
-        return Scaffold(
-          appBar: ButleryTopBar.undersida(
-            title: tag.name,
-            backTo: context.l10n.morePersonalTags,
-            actions: [
-              TextButton(
-                onPressed: () => showTagEditSheet(
-                  context,
-                  tag: tag,
-                  viewModel: viewModel,
-                ),
-                child: Text(context.l10n.cookbookEdit),
+        return ButleryPage.undersida(
+          title: tag.name,
+          backTo: context.l10n.morePersonalTags,
+          actions: [
+            TextButton(
+              onPressed: () => showTagEditSheet(
+                context,
+                tag: tag,
+                viewModel: viewModel,
               ),
-            ],
-          ),
-          bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+              child: Text(context.l10n.cookbookEdit),
+            ),
+          ],
           body: Column(
             children: [
               LayoutComponents.offlineIndicator(),
@@ -109,12 +105,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   }
 
   Widget _stateScaffold(BuildContext context, Widget body) {
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.tagDetailDefaultTitle,
-        backTo: context.l10n.morePersonalTags,
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+    return ButleryPage.undersida(
+      title: context.l10n.tagDetailDefaultTitle,
+      backTo: context.l10n.morePersonalTags,
       body: body,
     );
   }
@@ -127,63 +120,57 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     final l10n = context.l10n;
     final margin = ButleryTopBar.sideMargin(context);
 
-    return SafeArea(
-      child: ButleryPageBody(
-        width: PageWidth.text,
-        child: ListView(
-          padding: EdgeInsetsDirectional.only(
-            start: margin,
-            end: margin,
-            top: AppDimensions.space16,
-            bottom: AppDimensions.space24,
-          ),
-          children: [
-            StatRow(
-              items: [
-                StatRowItem(
-                  value: '${viewModel.getUsageCount(tag.name)}',
-                  label: l10n.cookbookStatRecipes,
-                ),
-                StatRowItem(
-                  value: l10n.tagDetailStatRulesValue(
-                    tag.rules.where((r) => r.isEnabled).length,
-                    tag.rules.length,
-                  ),
-                  label: l10n.tagDetailStatRules(tag.rules.length),
-                ),
-                StatRowItem(
-                  value: DateFormat.MMMd(
-                    Localizations.localeOf(context).toString(),
-                  ).format(tag.updatedAt),
-                  label: l10n.tagDetailStatChanged,
-                ),
-              ],
+    return ListView(
+      padding: EdgeInsetsDirectional.only(
+        start: margin,
+        end: margin,
+        top: AppDimensions.space16,
+        bottom: AppDimensions.space24,
+      ),
+      children: [
+        StatRow(
+          items: [
+            StatRowItem(
+              value: '${viewModel.getUsageCount(tag.name)}',
+              label: l10n.cookbookStatRecipes,
             ),
-            const SizedBox(height: AppDimensions.space16),
-            TagDetailRulesSection(
-              tag: tag,
-              viewModel: viewModel,
-              onEditRule: (rule) =>
-                  TagDetailActions.editRule(context, tag, rule),
-              onDeleteRule: (rule) =>
-                  TagDetailActions.deleteRule(context, tag, rule),
-              onToggleRule: (rule) =>
-                  TagDetailActions.toggleRule(context, tag, rule),
-              onAddRule: () => TagDetailActions.addRule(context, tag),
+            StatRowItem(
+              value: l10n.tagDetailStatRulesValue(
+                tag.rules.where((r) => r.isEnabled).length,
+                tag.rules.length,
+              ),
+              label: l10n.tagDetailStatRules(tag.rules.length),
             ),
-            const SizedBox(height: AppDimensions.space16),
-            OutlinedButton(
-              onPressed: () => TagDetailActions.applyRulesToRecipes(context),
-              child: Text(l10n.tagDetailRunRulesAll),
-            ),
-            const SizedBox(height: AppDimensions.space24),
-            TagDetailRecipesSection(
-              tagId: tag.id,
-              recipeCount: viewModel.getUsageCount(tag.name),
+            StatRowItem(
+              value: DateFormat.MMMd(
+                Localizations.localeOf(context).toString(),
+              ).format(tag.updatedAt),
+              label: l10n.tagDetailStatChanged,
             ),
           ],
         ),
-      ),
+        const SizedBox(height: AppDimensions.space16),
+        TagDetailRulesSection(
+          tag: tag,
+          viewModel: viewModel,
+          onEditRule: (rule) => TagDetailActions.editRule(context, tag, rule),
+          onDeleteRule: (rule) =>
+              TagDetailActions.deleteRule(context, tag, rule),
+          onToggleRule: (rule) =>
+              TagDetailActions.toggleRule(context, tag, rule),
+          onAddRule: () => TagDetailActions.addRule(context, tag),
+        ),
+        const SizedBox(height: AppDimensions.space16),
+        OutlinedButton(
+          onPressed: () => TagDetailActions.applyRulesToRecipes(context),
+          child: Text(l10n.tagDetailRunRulesAll),
+        ),
+        const SizedBox(height: AppDimensions.space24),
+        TagDetailRecipesSection(
+          tagId: tag.id,
+          recipeCount: viewModel.getUsageCount(tag.name),
+        ),
+      ],
     );
   }
 }
