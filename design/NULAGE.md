@@ -4,7 +4,7 @@ Den här filen säger var arbetet står **i dag**. Den är kort med avsikt: om d
 läser äldre sessioner, arbetsplaner eller granskningsanteckningar först får du
 en föråldrad bild.
 
-Senast uppdaterad: 2026-10-09.
+Senast uppdaterad: 2026-10-13.
 
 ---
 
@@ -26,13 +26,13 @@ node tools/block288/uxprov.mjs --root=<rot>
 node tools/block289/visuellprov.mjs --root=<rot>
 ```
 
-Malins 20 produktbeslut från 2026-09-23 ligger i `fas2/produktbeslut-2026-09-23.json` och styr paket 3–8. Senare beslutsrundor ligger i `fas2/produktbeslut-<datum>.json`, en fil per runda; den senaste är runda 8 (2026-10-05). Det som skjuts upp ligger i Linear.
+Produktbesluten från 2026-09-23 till 2026-10-10 (filerna `fas2/produktbeslut-<datum>.json`) står sedan 2026-10-13 också i `beslutslogg.md`, från B-66, med filen och beslutets eget id som källa. Filerna är kvar som underlag; loggen är det som läses. Det som skjuts upp ligger i Linear.
 
 UX-besluten i Block 288 är avgjorda och nedtecknade i `fas2/ux-beslut.json`
 — en överstyrd rad raderas aldrig, den behåller sin tidigare status och pekar
-ut sitt beslut. Ett öppet designbeslut: om Block 287 ska frysas om för att
-rita mörka varianter av reglage, rullningslist och radio i komponentarket
-(BUT-2252). Komponentarket hör till skärmkorpusen, som är orörd sedan
+ut sitt beslut. BUT-2252 (om Block 287 ska frysas om för att rita mörka varianter av
+reglage, rullningslist och radio i komponentarket) är avgjort: Malin valde
+att vänta. Komponentarket hör till skärmkorpusen, som är orörd sedan
 frysningen.
 
 ---
@@ -55,8 +55,8 @@ Migrationen är **82 enheter i 8 paket**, mekaniskt härledda.
 | 3 | interaktionsmönster: ångra, offline, konflikt | **klar och på main** (PR #261 ångra, PR #262 offline, konflikt, kvitto) |
 | 4 | vyerna tar in det nya | **klar och på main** (PR #263) |
 | 5 | tillstånd: 22 ändrade + 7 nya | **klar och på main** (PR #264, rättad i #265) |
-| 6 | flödena | **klar och på main** (PR #269) — tvåstegsverifiering byggd men dold (BUT-2142); offlinekön byggd men inte inkopplad (BUT-2162); regler måste driftsättas (BUT-2164) |
-| 7 | bortstädning av gammal yta och gammal UX | **klar och på main** (PR #270) — inkl. typografi, mått, radier och ikoner (Q7-02 = B); 392 ikonanvändningar väntar på ritade glyfer (BUT-2166) |
+| 6 | flödena | **klar och på main** (PR #269) |
+| 7 | bortstädning av gammal yta och gammal UX | **klar och på main** (PR #270) — inkl. typografi, mått, radier och ikoner (Q7-02 = B) |
 | 8 | verifiering | **klar och på main** (PR #274, `7c2faf8`) — varje känd brist har en biljett i Linear (BUT-2140…2199); Linux-jämförelsebilder av nyckelvyerna jämförs i CI |
 
 Ordningen är bunden. Paket 2 börjar inte förrän paket 1 är oberoende granskat.
@@ -67,14 +67,11 @@ Ordningen är bunden. Paket 2 börjar inte förrän paket 1 är oberoende gransk
 
 Räknat i appen av `tools/design_migration_census.dart`; hela listan står i
 appens `docs/design-migration/census.md` (genereras, redigeras aldrig för hand).
-
-Talen nedan är censusen på appens main 2026-10-05 (`ea4b867`).
-
-- **Paket 8 klart** (Q8-01 = A): testerna är gröna och varje känd brist har en registrerad biljett. Ingen brist saknar biljett.
-- **Migrationen är inte klar:** 63 kända brister (flödesövergångar 31, tillgänglighet 12, interaktionskontroller 10, kontrast 5, interaktion 5) och 393 ikonanvändningar utan ritad glyf (BUT-2166). De fem kontrastbristerna är dataskalans par, som designrepot strök 2026-10-05 (BUT-2191); de försvinner när appen vendrar om tokens.
-- **50 av 81** flödesövergångar är testade. 11 är halvfärdiga, 15 är byggda men går inte att nå (bland annat tvåstegsverifiering BUT-2142, offlinekö BUT-2162, realtidssynk BUT-2151) och 5 saknas.
-- **53 av 53** rent visuella vytillstånd klarar både ljust och mörkt läge.
-- Migrationen är klar först när listorna över kända brister är tomma.
+Siffrorna står inte här: de föråldras. Censusen räknar bara gamla rester och
+kan säga "klar" medan egna dialoger, egna ikonknappar, avatarklasser och
+saknade tillgänglighetsroller finns kvar. De mäts av taken i
+`test/architecture/component_variants_test.dart`; migrationen är klar först när
+varje tak har nått sitt mål (oftast 0).
 
 ---
 

@@ -3,6 +3,8 @@
 **En rad per normativt krav. Ingenting är klart förrän raden har ett bevis-ID i varje kolumn som gäller.**
 Version **1.0** · 2026-07-26. Normativ för *status*. Där den här filen och ett annat dokument säger olika saker om hur långt något är, gäller den här filen.
 
+ID i den här filen (B-14, K-05 m.fl.) är lokala. I `beslutslogg.md` betyder B-nn ett annat beslut; citera ID härifrån utanför filen som EV-B-14.
+
 ### Hur ”inget klipps” faktiskt mäts
 
 En prob som utgår från `.sc-phone` mäter **fel sak**. Den yttre ramen har fast höjd och rapporterar alltid `scrollHeight === clientHeight`; det är de *inre* behållarna med `overflow:hidden` som klipper. Flera ramar (bland dem `#lagastaende320`) saknar dessutom klassen `.sc-phone` helt och missas då i sin helhet.
@@ -280,7 +282,7 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 | B-01 | Betygsflödet är tre steg och *vem åt* går inte att hoppa förbi utan att det syns | familj | `#betygvemat` · `#betygvemarket` | — ❌ | — | design | **implementerad** — `who_is_eating_sheet.dart` läst 2026-07-29: samma ark som närvaron, med skip och minst en person |
 | B-12 | Betygsarket och veckomenyns närvaroark är **samma komponent** — skip och krav på minst en person mot Hela dagen och tillåtet tomt | familj · veckomeny | `#betygvemarket` | — ❌ | — | design | **implementerad** — `_PickerConfig` |
 | B-13 | **En misslyckad rosterladdning får inte se ut som ett solohushåll** — båda loggar i dag maten utan närvaro och tiger | familj | `#betygvemarket` | — ❌ | — | dev | **beslutad** — samma `skipped` för två olika orsaker |
-| B-14 | Ovalt bärs av **ram och tom ruta**, aldrig av opacitet; kryssrutan är 24 px och alla tre knapparna 48 dp | familj | `#betygvemarket` | — ❌ | kontrastmätning | dev | **beslutad** — koden har opacitet 0,5, ruta 26, knappar 44 och 40 |
+| B-14 | Ovalt bärs av **ram och tom ruta**, aldrig av opacitet; kryssrutan är 20 px (B-61, ersätter 24) och alla tre knapparna 48 dp | familj | `#betygvemarket` | — ❌ | kontrastmätning | dev | **beslutad** — koden har opacitet 0,5, ruta 26, knappar 44 och 40 |
 | B-15 | Sparning **spärras** utan vårdnadshavarens samtycke, och när allergener valts utan eget samtycke | familj | `#familjmedlemsamtycke` | — ❌ | — | design | **implementerad** — `_canSave` |
 | B-16 | Avbockat allergensamtycke **raderar valen på plats**; återkallandet ligger inne i allergenkortet | familj | `#familjmedlemsamtycke` | — ❌ | — | design | **implementerad** |
 | B-17 | Samtyckesposten visar **datum och version** på medlemmen | familj | `#familjmedlemsamtycke` | — ❌ | — | design | **implementerad** — `guardianConsent.at` |

@@ -30,12 +30,12 @@ a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:under
   <div style="font-size:13px;color:#37453a;line-height:1.7;max-width:880px;margin-top:14px">Hela systemet på ett ställe — inklusive knappens och fältets lägen, som tidigare bodde i skärmfilen. Kontextmeny och snackbar visas i sammanhang i skärmfilen; här är deras geometri (avsnitt 09 och 08). <b>Fokus</b> visas som 2 px ink-ring med 3 px offset (papper på mörkt), <b>träffyta</b> är minst 48 dp även när kontrollen ser kompakt ut, och inget läge uttrycks med opacitet.</div>
 
   <div style="margin-top:22px;border-top:1px solid #ccd1c2;padding-top:12px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;font-size:12.5px;color:#37453a;line-height:1.7">
-    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Låst geometri</b><br>Kryssruta 24 px, radie 6 · radio 19 px · toggle 34 × 20, knopp 16 · <b>alla ytor med kant och fast mått är border-box</b> — kanten ligger innanför måttet, aldrig utanför.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Låst geometri</b><br>Kryssruta 20 px, radie 6 (B-61) · radio 19 px · toggle 34 × 20, knopp 16 · <b>alla ytor med kant och fast mått är border-box</b> — kanten ligger innanför måttet, aldrig utanför.</div>
     <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Pills</b><br>Chip 12/600 · padding 7 × 13 · <b>kompakt chip i fält</b> 6 × 11 (enda undantaget) · statuspill 10,5/700 · 3 × 9 · badge 2 × 7</div>
     <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Avatarskala</b><br>26 (stack) · 32 (listrad) · 40 (rubrik &amp; specimen) · 54 (profil) · 72 (hero). Inga mellansteg. Stackens 2 px pappersram gör ytterdiametern 30.</div>
     <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Ikonvikt</b><br>Stroke 1,75 vid 15 px och uppåt · 2,2 vid 14 px och nedåt (enda kompensationen) · fyllda glyfer (stjärna, kebab, draghandtag, play) har ingen stroke · listradschevron är 12 px.</div>
     <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Stäng &amp; ta bort</b><br>Bart kryss i åtgärder (stäng vy, ark, chip, rad) — knappens 44 px synliga yta bär formen, hitbox 48 dp. Kryss-i-ring endast som statusglyf vid fel.</div>
-    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Text i UI</b><br>Flik 13/700 · listrad 13/400–600 · etikett 10,5/700 · knapp 14/600. 13,5 och 14,5 finns inte.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Text i UI</b><br>Flik 13/600, vald 700 · listrad 13/400–600 · etikett 10,5/700 · knapp 14/600. 13,5 och 14,5 finns inte.</div>
   </div>
   <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:600">
     <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">01 Toppfält</span>
@@ -103,7 +103,7 @@ a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:under
   <!-- 02 FLIKAR & SEGMENT -->
   <div id="k02" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
     <span style="font-size:15px;font-weight:700;color:#a15a0a">02</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Flikar &amp; segment</span>
-    <span style="margin-left:auto;font-size:12px;color:#627061">Flik: 13/700, tallrikslinje = ordets bredd + 5 px per sida (mätt, aldrig hårdkodad px). Segment: radiogroup.</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Flik: 13/600, vald 700, tallrikslinje = ordets bredd + 5 px per sida (mätt, aldrig hårdkodad px). Segment: radiogroup.</span>
   </div>
   <div style="margin-top:16px;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start">
     <div style="width:320px">
@@ -190,7 +190,7 @@ a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:under
         <span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;color:#627061">Portioner</span><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 9px;background:#e6ead9;border-radius:999px"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1;color:#37453a">−</span><span style="min-width:24px;height:26px;padding:0 5px;background:#F5F4ED;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">1</span><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">+</span></span></span>
         <span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;color:#627061">Portioner</span><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 9px;background:#e6ead9;border-radius:999px;outline:2px solid #24382c;outline-offset:3px"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">−</span><span style="min-width:24px;height:26px;padding:0 5px;background:#F5F4ED;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">4</span><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">+</span></span></span>
       </div>
-      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:330px">Roll spinbutton med värde, min och max. − och + är egna knappar: “Färre portioner”, “Fler portioner”. Synlig höjd 34 px, träffyta 44.</div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:330px">Roll spinbutton med värde, min och max. − och + är egna knappar: “Färre portioner”, “Fler portioner”. Synlig höjd 28 px, träffyta 48 dp.</div>
     </div>
     <div>
       <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Mängdfält i formulär</div>
