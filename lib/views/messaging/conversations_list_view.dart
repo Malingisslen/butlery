@@ -15,8 +15,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
@@ -52,44 +51,36 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     final l10n = context.l10n;
     final margin = ButleryTopBar.sideMargin(context);
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: l10n.messagingTitle,
-        backTo: l10n.moreTitle,
-        actions: [
-          IconButton(
-            onPressed: () => showNewMessageSheet(context),
-            icon: const ButleryIcon(ButleryIcons.pencil),
-            tooltip: l10n.messagesNewMessage,
-          ),
-        ],
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: FocusTraversalGroup(
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    margin,
-                    AppDimensions.space16,
-                    margin,
-                    AppDimensions.space4,
-                  ),
-                  child: ButlerySearchBox(
-                    hintText: l10n.messagesSearchHint,
-                    onChanged: (query) => context
-                        .read<ConversationsViewModel>()
-                        .updateSearchQuery(query),
-                  ),
-                ),
-                Expanded(child: _buildConversationsList(margin)),
-              ],
+    return ButleryPage.undersida(
+      title: l10n.messagingTitle,
+      backTo: l10n.moreTitle,
+      actions: [
+        IconButton(
+          onPressed: () => showNewMessageSheet(context),
+          icon: const ButleryIcon(ButleryIcons.pencil),
+          tooltip: l10n.messagesNewMessage,
+        ),
+      ],
+      body: FocusTraversalGroup(
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                margin,
+                AppDimensions.space16,
+                margin,
+                AppDimensions.space4,
+              ),
+              child: ButlerySearchBox(
+                hintText: l10n.messagesSearchHint,
+                onChanged: (query) => context
+                    .read<ConversationsViewModel>()
+                    .updateSearchQuery(query),
+              ),
             ),
-          ),
+            Expanded(child: _buildConversationsList(margin)),
+          ],
         ),
       ),
     );

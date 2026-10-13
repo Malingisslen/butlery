@@ -16,11 +16,12 @@ class LabeledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     // The ring goes around the input box only, not the helper, error or
     // counter line under it, and shows for keyboard focus (decision D3).
     final field = ButleryFocusRing(
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      bounds: FocusRingBounds.textFieldBox,
+      bounds: FocusRingBounds.textFieldVisualBox,
       child: child,
     );
     if (label == null) return field;
@@ -36,11 +37,13 @@ class LabeledField extends StatelessWidget {
           child: Text(
             label!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.space8),
+        const SizedBox(
+          height: AppDimensions.space8 - AppDimensions.fieldTapPad,
+        ),
         Semantics(label: label, child: field),
       ],
     );

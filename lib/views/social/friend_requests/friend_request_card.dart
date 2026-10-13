@@ -17,7 +17,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
@@ -25,8 +25,6 @@ import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 /// Builds the rows of the friend requests list, incoming and sent. Rows sit in
 /// a ButleryListSection, so they carry no card of their own.
 class FriendRequestCard {
-  static const double _avatarSize = 48;
-
   /// [selecting] is the "Välj" mode: the row gets a checkbox and a tap toggles
   /// it, and the answer buttons step aside.
   static Widget buildIncomingCard(
@@ -59,12 +57,9 @@ class FriendRequestCard {
                 const SizedBox(width: AppDimensions.space4),
               ],
               ExcludeSemantics(
-                child: UserAvatar(
+                child: AvatarCircle(
                   imageUrl: userProfile?.avatarUrl,
                   displayName: displayName,
-                  explicitSize: _avatarSize,
-                  round: true,
-                  announceName: false,
                 ),
               ),
               const SizedBox(width: AppDimensions.space12),
@@ -219,12 +214,9 @@ class FriendRequestCard {
               const SizedBox(width: AppDimensions.space4),
             ],
             ExcludeSemantics(
-              child: UserAvatar(
+              child: AvatarCircle(
                 imageUrl: userProfile?.avatarUrl,
                 displayName: displayName,
-                explicitSize: _avatarSize,
-                round: true,
-                announceName: false,
               ),
             ),
             const SizedBox(width: AppDimensions.space12),

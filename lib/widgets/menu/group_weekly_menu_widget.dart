@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -340,16 +341,6 @@ class _Face extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return CircleAvatar(
-      radius: 14,
-      backgroundColor: scheme.primaryContainer,
-      child: Text(
-        initials,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: scheme.onPrimaryContainer,
-        ),
-      ),
-    );
+    return AvatarCircle(glyph: initials, size: AvatarCircleSize.inline);
   }
 }

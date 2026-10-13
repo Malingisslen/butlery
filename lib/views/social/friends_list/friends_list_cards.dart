@@ -1,5 +1,6 @@
 // lib/views/social/friends_list/friends_list_cards.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -21,13 +22,7 @@ class GroupCard {
     return Card(
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          child: Text(
-            group.emoji ?? '👥',
-            style: AppTextStyles.headlineMedium,
-          ),
-        ),
+        leading: AvatarCircle(glyph: group.emoji ?? '👥'),
         title: Text(
           group.name,
           style: AppTextStyles.titleMedium,

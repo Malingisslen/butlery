@@ -418,9 +418,14 @@ class _QuickTagChip extends StatelessWidget {
         label: Text(tag.name),
         avatar: isSelected
             ? null
-            : CircleAvatar(
-                radius: 6,
-                backgroundColor: cs.onSurface,
+            : SizedBox.square(
+                dimension: AppDimensions.space12,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cs.onSurface,
+                  ),
+                ),
               ),
         selected: isSelected,
         onSelected: (_) => onTap(),

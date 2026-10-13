@@ -13,11 +13,10 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -321,82 +320,72 @@ class _FranSocialaMedierViewContentState
   Widget build(BuildContext context) {
     final viewModel = context.watch<TextImportViewModel>();
 
-    return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
-      // on the canonical top bar, left-aligned as drawn (v1:73).
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.importFromSocialMedia,
-      ),
-      body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: SingleChildScrollView(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Show if recipe comes from URL
-                if (viewModel.sourceUrl != null) ...[
-                  SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
-                  const SizedBox(height: AppDimensions.space8),
-                ],
+    return ButleryPage.undersida(
+      title: context.l10n.importFromSocialMedia,
+      body: SingleChildScrollView(
+        padding: AppDimensions.responsiveContentPadding(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Show if recipe comes from URL
+            if (viewModel.sourceUrl != null) ...[
+              SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
+              const SizedBox(height: AppDimensions.space8),
+            ],
 
-                // BUT-928: same green/orange/red badge as the photo-import
-                // preview step — describes the OCR pass that produced the
-                // initial text (kept visible even if the user edits).
-                if (widget.ocrConfidence != null) ...[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: ConfidenceIndicator(
-                      confidence: widget.ocrConfidence!,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.space8),
-                ],
-
-                _buildTextInput(context, viewModel),
-                const SizedBox(height: AppDimensions.space8),
-                Text(
-                  context.l10n.importPasteHelp,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+            // BUT-928: same green/orange/red badge as the photo-import
+            // preview step — describes the OCR pass that produced the
+            // initial text (kept visible even if the user edits).
+            if (widget.ocrConfidence != null) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ConfidenceIndicator(
+                  confidence: widget.ocrConfidence!,
                 ),
-                const SizedBox(height: AppDimensions.space16),
-                _buildCaptionWarning(context),
-                const SizedBox(height: AppDimensions.space16),
+              ),
+              const SizedBox(height: AppDimensions.space8),
+            ],
 
-                UtilityComponents.primaryButton(
-                  context,
-                  label: context.l10n.importFetchRecipe,
-                  icon: ButleryIcons.zap,
-                  onPressed: viewModel.isParsing || !viewModel.canParse
-                      ? null
-                      : () => _parseAndNavigate(context),
-                  isLoading: viewModel.isParsing,
-                  loadingText: context.l10n.importParsingText,
-                  isExpanded: true,
-                ),
-
-                // Error message
-                if (viewModel.hasError) ...[
-                  const SizedBox(height: AppDimensions.space8),
-                  StateWidget.error(
-                    message: viewModel.error!,
-                    preserved: context.l10n.errorPreservedLink,
-                  ),
-                ],
-                const SizedBox(height: AppDimensions.space16),
-                TintedNote(
-                  child: Text(
-                    context.l10n.importVideoNotRead,
-                    style: TintedNote.textStyle(context),
-                  ),
-                ),
-              ],
+            _buildTextInput(context, viewModel),
+            const SizedBox(height: AppDimensions.space8),
+            Text(
+              context.l10n.importPasteHelp,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
+            const SizedBox(height: AppDimensions.space16),
+            _buildCaptionWarning(context),
+            const SizedBox(height: AppDimensions.space16),
+
+            UtilityComponents.primaryButton(
+              context,
+              label: context.l10n.importFetchRecipe,
+              icon: ButleryIcons.zap,
+              onPressed: viewModel.isParsing || !viewModel.canParse
+                  ? null
+                  : () => _parseAndNavigate(context),
+              isLoading: viewModel.isParsing,
+              loadingText: context.l10n.importParsingText,
+              isExpanded: true,
+            ),
+
+            // Error message
+            if (viewModel.hasError) ...[
+              const SizedBox(height: AppDimensions.space8),
+              StateWidget.error(
+                message: viewModel.error!,
+                preserved: context.l10n.errorPreservedLink,
+              ),
+            ],
+            const SizedBox(height: AppDimensions.space16),
+            TintedNote(
+              child: Text(
+                context.l10n.importVideoNotRead,
+                style: TintedNote.textStyle(context),
+              ),
+            ),
+          ],
         ),
       ),
     );

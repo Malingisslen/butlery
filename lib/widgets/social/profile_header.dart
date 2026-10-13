@@ -1,7 +1,7 @@
 // lib/widgets/social/profile_header.dart
 //
-// The head of a person's page: a round avatar beside the name and one line
-// under it, the bio on paper and the person's two figures (Skarmar v12
+// The head of a person's page: an ink band with a round avatar beside the
+// name and one line under it and the bio, then the person's two figures (Skarmar v12
 // del 3 #publikprofil and etapp 5-7 #18). A friend's profile and a public
 // profile both draw it, so the two pages cannot drift apart.
 library;
@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 /// One figure of a person: "14" and "vänner".
 class ProfileStat {
@@ -52,62 +54,89 @@ class ProfileHeader extends StatelessWidget {
   final List<ProfileStat> stats;
   final ProfileStatsLayout statsLayout;
 
-  static const double _avatarSize = 56;
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final margin = ButleryTopBar.sideMargin(context);
     final hasBio = bio != null && bio!.isNotEmpty;
+    // The band runs edge to edge under the light top bar; the figures
+    // sit on paper below it.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            UserAvatar(
-              imageUrl: avatarUrl,
-              displayName: displayName,
-              explicitSize: _avatarSize,
-              round: true,
-              announceName: false,
+        ColoredBox(
+          color: cs.primary,
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              margin,
+              AppDimensions.space16,
+              margin,
+              AppDimensions.space16,
             ),
-            const SizedBox(width: AppDimensions.space16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      displayName,
-                      style: AppTextStyles.headlineMedium.copyWith(
-                        color: cs.onSurface,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    AvatarCircle(
+                      imageUrl: avatarUrl,
+                      displayName: displayName,
+                      size: AvatarCircleSize.header,
+                      tone: AvatarCircleTone.onInk,
+                    ),
+                    const SizedBox(width: AppDimensions.space16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              displayName,
+                              style: AppTextStyles.headlineMedium.copyWith(
+                                color: cs.onPrimary,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (subline != null)
+                            Text(
+                              subline!,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppModeColors.textSecondaryOnInk(),
+                              ),
+                            ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                if (hasBio) ...[
+                  const SizedBox(height: AppDimensions.space16),
+                  Text(
+                    bio!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onPrimary,
                     ),
                   ),
-                  if (subline != null)
-                    Text(
-                      subline!,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
                 ],
-              ),
+              ],
             ),
-          ],
+          ),
         ),
-        if (hasBio) ...[
-          const SizedBox(height: AppDimensions.space16),
-          Text(bio!, style: AppTextStyles.bodyMedium),
-        ],
-        if (stats.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.space16),
-          statsLayout == ProfileStatsLayout.stacked
-              ? _StackedStats(stats: stats)
-              : _InlineStats(stats: stats),
-        ],
+        if (stats.isNotEmpty)
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              margin,
+              AppDimensions.space16,
+              margin,
+              0,
+            ),
+            child: statsLayout == ProfileStatsLayout.stacked
+                ? _StackedStats(stats: stats)
+                : _InlineStats(stats: stats),
+          ),
       ],
     );
   }

@@ -5,6 +5,7 @@
 /// - Chips: Pill-shaped with primary selection
 /// - Error states use error color (NOT rust)
 
+import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -24,14 +25,14 @@ class InputThemes {
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
     // Fields take the control radius, 8 (tokens.json space.radius.control).
     final radius = BorderRadius.circular(AppDimensions.radiusControl);
-    final resting = OutlineInputBorder(
+    final resting = ButleryFieldBorder(
       borderRadius: radius,
       borderSide: BorderSide(
         color: cs.outline,
         width: AppDimensions.borderWidthStandard,
       ),
     );
-    final error = OutlineInputBorder(
+    final error = ButleryFieldBorder(
       borderRadius: radius,
       borderSide: BorderSide(
         color: cs.error,
@@ -39,6 +40,8 @@ class InputThemes {
       ),
     );
     return InputDecorationTheme(
+      // The decorator is laid out to Material's 48 dp touch target and
+      // ButleryFieldBorder draws its box 40 tall (B-03).
       filled: true,
       fillColor: WidgetStateColor.resolveWith(
         (states) => states.contains(WidgetState.disabled)
@@ -60,7 +63,7 @@ class InputThemes {
       focusedErrorBorder: error,
       // Disabled field: 1 px surface.disabled edge on surface.raised, never
       // opacity (Grafisk manual v6:423; Komponentark v1:423 light, :514 dark).
-      disabledBorder: OutlineInputBorder(
+      disabledBorder: ButleryFieldBorder(
         borderRadius: radius,
         borderSide: BorderSide(
           color: AppModeColors.surfaceDisabled(cs.brightness),
@@ -69,7 +72,7 @@ class InputThemes {
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space12,
+        vertical: AppDimensions.fieldVisualPaddingY,
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),

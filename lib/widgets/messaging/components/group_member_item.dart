@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/list/butlery_media_row.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 
 /// A group member as a row: round avatar, name, "· du" after your own, and
 /// "Ta bort" at the end when the member can be removed. Rows go in a
@@ -30,17 +30,12 @@ class GroupMemberItem extends StatelessWidget {
     this.semanticsLabel,
   });
 
-  static const double _avatarSize = 36;
-
   @override
   Widget build(BuildContext context) {
     final row = ButleryMediaRow(
-      leading: UserAvatar(
+      leading: AvatarCircle(
         imageUrl: avatarUrl,
         displayName: displayName,
-        explicitSize: _avatarSize,
-        round: true,
-        announceName: false,
       ),
       title: displayName,
       titleSuffix: isCurrentUser ? context.l10n.messagingMemberYou : null,
