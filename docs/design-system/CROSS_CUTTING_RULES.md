@@ -23,11 +23,11 @@ top bars) are the decisions that live **only** here.
 
 ## 3. Primary-action placement (BUT-964 / BUT-1357)
 
-The **primary create-action for the current list is a square FAB**; the app-bar overflow is
-for secondary actions. FABs are square app-wide (theme-enforced, BUT-964).
+The **primary create-action for the current list is a FAB**; the app-bar overflow is
+for secondary actions.
 
 Decision tree:
-- A screen showing a **list you can add to** → square FAB as the create-action (e.g. Friends
+- A screen showing a **list you can add to** → FAB as the create-action (e.g. Friends
   tab "Lägg till vän", Groups tab "Skapa grupp").
 - A **detail screen** (not a list) → keep the primary action in the app-bar (documented
   exception, e.g. `tag_detail_view.dart`).
@@ -73,20 +73,9 @@ use `HoverableCard` to gain a subtle pointer-hover lift + click cursor on web/de
 
 ---
 
-## Platform-adaptive top bars (BUT-706 / BUT-1362)
+## Top bars
 
-Use `AdaptiveAppBar` (`lib/widgets/common/adaptive_app_bar.dart`) for `Scaffold.appBar` — it
-renders a native `CupertinoNavigationBar` on iOS and a Material `AppBar` everywhere else. It
-supports title (nullable, auto-ellipsized) / actions / leading / centerTitle / backgroundColor /
-foregroundColor / titleStyle / bottom / iconTheme / actionsIconTheme / systemOverlayStyle /
-elevation. ~39 screens are migrated; new screens should use it rather than a raw `AppBar`.
-
-**Exception — collapsing `SliverAppBar` headers stay Material.** Bars inside a `CustomScrollView`
-(recipe-detail's Hero-image header, `butlery_header`, the shared-content and menu-preview headers)
-keep a Material `SliverAppBar`: an image/flexibleSpace header or a custom-widget title has no
-`CupertinoSliverNavigationBar` equivalent, and the simple ones' iOS large-title treatment is a
-visual/UX decision (tracked in BUT-1362), not a mechanical swap. Each carries a `// BUT-706:`
-comment explaining why.
+One shared bar on both platforms (B-45, B-60): `ButleryTopBar`, reached through `ButleryPage`. The kinds of view and the choice between them are in `.claude/rules/design-system.md`, "The top of a screen".
 
 ## Status of the BUT-1159 children
 

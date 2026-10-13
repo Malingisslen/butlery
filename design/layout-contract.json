@@ -307,11 +307,11 @@
      "columns": 1
     },
     {
-     "fromWidth": 600,
+     "fromWidth": 768,
      "columns": 2
     },
     {
-     "fromWidth": 1024,
+     "fromWidth": 1280,
      "columns": 3
     },
     {
@@ -330,11 +330,7 @@
      "columns": 1
     },
     {
-     "fromWidth": 600,
-     "columns": 2
-    },
-    {
-     "fromWidth": 1024,
+     "fromWidth": 768,
      "columns": 2
     },
     {
@@ -342,7 +338,7 @@
      "columns": 3
     }
    ],
-   "note": "1 · 2 · 2 och 3 från 1920. Kort är bredare än listrader och tål färre spalter."
+   "note": "1 · 2 och 3 från 1920. Kort är bredare än listrader och tål färre spalter."
   }
  ],
  "$gridPoliciesNote": "1920 är en GRID- och VÄRDEGRÄNS inom expanded, inte ett fjärde layoutläge. Två olika trappor är tillåtna; två anonyma parallella modeller är det inte — varje kodplats deklarerar sin policy.",
@@ -544,11 +540,11 @@
      "columns": 1
     },
     {
-     "fromWidth": 600,
+     "fromWidth": 768,
      "columns": 2
     },
     {
-     "fromWidth": 1024,
+     "fromWidth": 1280,
      "columns": 3
     },
     {
@@ -562,11 +558,7 @@
      "columns": 1
     },
     {
-     "fromWidth": 600,
-     "columns": 2
-    },
-    {
-     "fromWidth": 1024,
+     "fromWidth": 768,
      "columns": 2
     },
     {
@@ -574,7 +566,7 @@
      "columns": 3
     }
    ],
-   "kalla": "layout-contract.json#gridPolicies (draft)"
+   "kalla": "layout-contract.json#gridPolicies"
   },
   "observedImplementation": {
    "standardrutnat": [
@@ -613,51 +605,8 @@
    "matpunkter_st": 13,
    "not": "Båda sidor om varje kategorigräns i breakpoints.dart."
   },
-  "discrepancy": [
-   {
-    "policy": "standardrutnat",
-    "steg": "2 spalter",
-    "deklarerat": 600,
-    "observerat": 768,
-    "avvikelse_px": 168
-   },
-   {
-    "policy": "standardrutnat",
-    "steg": "3 spalter",
-    "deklarerat": 1024,
-    "observerat": 1280,
-    "avvikelse_px": 256
-   },
-   {
-    "policy": "standardrutnat",
-    "steg": "4 spalter",
-    "deklarerat": 1920,
-    "observerat": 1920,
-    "avvikelse_px": 0
-   },
-   {
-    "policy": "kortrutnat",
-    "steg": "2 spalter",
-    "deklarerat": 600,
-    "observerat": 768,
-    "avvikelse_px": 168
-   },
-   {
-    "policy": "kortrutnat",
-    "steg": "3 spalter",
-    "deklarerat": 1920,
-    "observerat": 1920,
-    "avvikelse_px": 0
-   },
-   {
-    "policy": "kortrutnat",
-    "steg": "eget steg vid 1024",
-    "deklarerat": "2 spalter deklarerat som eget steg",
-    "observerat": "inget eget steg — 768-steget räcker till 1920",
-    "avvikelse_px": null
-   }
-  ],
-  "normativeDecisionStatus": "OBESLUTAD. Två utfall är möjliga: (a) kontraktet är normativt och appkoden ska rättas, (b) appkoden är normativ och kontraktet ska rättas. Ingen av dem är beslutad. Avvikelsen är registrerad, inte löst."
+  "discrepancy": [],
+  "normativeDecisionStatus": "BESLUTAD 2026-10-13: appkoden är normativ (utfall b). Rutnäten byter spalt vid 768 och 1280 (Breakpoints.tablet och desktop); kontraktets tidigare 600 och 1024 är rättade. Mätningen i observedImplementation är oförändrad."
  },
  "maxbreddFraga": {
   "$regel": "Får INTE lösas genom att tyst anpassa beskrivningen till nuläget.",
