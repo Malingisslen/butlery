@@ -777,7 +777,7 @@ void main() {
         expect(message, contains('Pannkakor'));
         expect(message, contains('delat med'));
         expect(message, contains(testGroupName));
-        expect(message, contains('🍽️'));
+        expect(message, endsWith('!'));
       });
 
       test('should provide multiple recipes success message', () async {
@@ -794,7 +794,7 @@ void main() {
         expect(message, contains('2 recept'));
         expect(message, contains('delade med'));
         expect(message, contains(testGroupName));
-        expect(message, contains('🍽️'));
+        expect(message, endsWith('!'));
       });
     });
 

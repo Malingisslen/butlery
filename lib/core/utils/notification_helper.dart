@@ -58,8 +58,7 @@ class NotificationHelper {
       await send();
 
       // Log success
-      final message =
-          successMessage ?? '✅ $operationName completed successfully';
+      final message = successMessage ?? '$operationName completed successfully';
       AppLogger.info(message);
 
       return true;

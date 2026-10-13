@@ -255,10 +255,27 @@ void main() {
       ];
       expect(found, isEmpty, reason: 'B-44: $file');
     }
+    const ownTextSources = [
+      'lib/services/share_service.dart',
+      'lib/services/unified/operations/personal_shopping_operations.dart',
+      'lib/models/messaging/message.dart',
+      'lib/models/messaging/message_type.dart',
+      'lib/models/shared_menu.dart',
+      'lib/models/realtime/realtime_resource.dart',
+      'lib/models/unified/unified_shopping_list.dart',
+      'lib/widgets/messaging/poll_message_widget.dart',
+      'lib/widgets/messaging/reply_banner.dart',
+      'lib/models/realtime/realtime_recipe.dart',
+      'lib/widgets/common/search_filter/filter_models.dart',
+      'lib/viewmodels/shopping/shopping_analytics_manager.dart',
+    ];
     expect(
-      pictograph.hasMatch(guardSource('lib/services/share_service.dart')),
-      isFalse,
-      reason: 'B-44: delningstexten byggs i share_service',
+      [
+        for (final path in ownTextSources)
+          if (pictograph.hasMatch(guardSource(path))) path,
+      ],
+      isEmpty,
+      reason: 'B-44: texter som Butlery bygger själv',
     );
   });
 

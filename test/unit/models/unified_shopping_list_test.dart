@@ -471,28 +471,6 @@ void main() {
         expect(withBought.summary, equals('3 av 5 varor kvar'));
       });
 
-      test('should show sync status emoji', () {
-        // Synced
-        final synced = testList.copyWith(syncStatus: SyncStatus.synced);
-        expect(synced.syncStatusEmoji, equals('✅'));
-
-        // Pending
-        final pending = testList.copyWith(syncStatus: SyncStatus.pending);
-        expect(pending.syncStatusEmoji, equals('🔄'));
-
-        // Error
-        final error = testList.copyWith(syncStatus: SyncStatus.error);
-        expect(error.syncStatusEmoji, equals('❌'));
-
-        // Conflict
-        final conflict = testList.copyWith(syncStatus: SyncStatus.conflict);
-        expect(conflict.syncStatusEmoji, equals('⚠️'));
-
-        // Local
-        final local = testList.copyWith(syncStatus: SyncStatus.local);
-        expect(local.syncStatusEmoji, equals('📱'));
-      });
-
       test('should format activity summary in Swedish', () {
         // Just now
         final justNow = testList.copyWith(

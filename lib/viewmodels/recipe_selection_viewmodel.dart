@@ -373,9 +373,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
 
     if (_selectedRecipeIds.length == 1) {
       final recipe = selectedRecipes.first;
-      return '${recipe.title} delat med ${targetFriend.displayName}! 🍽️';
+      return '${recipe.title} delat med ${targetFriend.displayName}!';
     } else {
-      return '${_selectedRecipeIds.length} recept delade med ${targetFriend.displayName}! 🍽️';
+      return '${_selectedRecipeIds.length} recept delade med ${targetFriend.displayName}!';
     }
   }
 

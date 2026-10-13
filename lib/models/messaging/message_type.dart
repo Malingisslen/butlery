@@ -6,9 +6,8 @@
 /// **Single Responsibility Focus:**
 /// This module exclusively handles message type classification and display integration:
 /// - **Content Type System**: Comprehensive classification for text, media, content sharing, and system messages
-/// - **Delivery Status Management**: Complete status tracking from sending through read confirmation with visual indicators
+/// - **Delivery Status Management**: Complete status tracking from sending through read confirmation
 /// - **Swedish Localization**: Complete Swedish language support for type names, status descriptions, and UI text
-/// - **Visual Integration**: Rich icon and display name support for consistent UI presentation across message types
 /// **What This Module Does NOT Handle:**
 /// - Message content creation and management (handled by Message model and messaging services)
 /// - Message delivery and transport logic (handled by messaging services and push notification systems)
@@ -16,31 +15,17 @@
 /// - Message persistence and synchronization (handled by messaging repositories)
 /// **Message Type Features:**
 /// - **Rich Content Classification**: Support for text, recipe sharing, menu sharing, shopping list sharing, images, voice, and system messages
-/// - **Visual Consistency**: Comprehensive icon system with emoji-based visual indicators for all message types
 /// - **Swedish Localization**: Complete Swedish language support for all type names and status descriptions
-/// - **Delivery Intelligence**: Advanced status tracking with visual progression indicators and user-friendly descriptions
+/// - **Delivery Intelligence**: Advanced status tracking with user-friendly descriptions
 /// - **Extension Integration**: Powerful extension methods for seamless integration with messaging UI components
 /// **Usage Examples:**
 /// ```dart
 /// // Get message type information for UI display
 /// final messageType = MessageType.recipeShare;
 /// final displayName = messageType.displayName; // "Receptdelning"
-/// final icon = messageType.icon; // "🍽️"
 /// // Display message status with localization
 /// final status = MessageStatus.delivered;
 /// final statusText = status.displayName; // "Levererat"
-/// final statusIcon = status.icon; // "✓✓"
-/// // Use in message UI components
-/// MessageTypeIndicator(
-///   type: message.type,
-///   icon: message.type.icon,
-///   label: message.type.displayName,
-/// );
-/// StatusIndicator(
-///   status: message.status,
-///   icon: message.status.icon,
-///   description: message.status.displayName,
-/// );
 /// ```
 
 // lib/models/messaging/message_type.dart
@@ -144,10 +129,7 @@ enum MessageStatus {
   failed,
 }
 
-/// Extension providing Swedish localization and visual integration for MessageType enumeration.
-/// This extension enhances MessageType with comprehensive UI integration including Swedish-localized
-/// display names and emoji-based visual indicators for consistent messaging interface presentation
-/// and optimal user experience throughout the Swedish-localized application.
+/// Extension providing Swedish localization for MessageType enumeration.
 extension MessageTypeExtension on MessageType {
   /// Gets Swedish-localized display name for the message type for UI presentation.
   /// Provides user-friendly Swedish names for all message types enabling proper localization
@@ -168,29 +150,9 @@ extension MessageTypeExtension on MessageType {
       MessageType.duplicateBlocked => l.messageTypeDuplicateBlocked,
     };
   }
-
-  /// Gets emoji icon representing the message type for visual identification and UI consistency.
-  /// Provides distinctive emoji icons for each message type enabling quick visual identification
-  /// in message lists, conversation bubbles, and type indicators with culturally appropriate
-  /// and universally recognizable symbols for enhanced user interface experience.
-  /// Returns emoji icon appropriate for visual message type representation.
-  String get icon => switch (this) {
-    MessageType.text => '💬',
-    MessageType.recipeShare => '🍽️',
-    MessageType.menuShare => '📋',
-    MessageType.shoppingListShare => '🛒',
-    MessageType.system => 'ℹ️',
-    MessageType.image => '📷',
-    MessageType.voice => '🎤',
-    MessageType.poll => '📊',
-    MessageType.duplicateBlocked => '🚫',
-  };
 }
 
-/// Extension providing Swedish localization and delivery status indicators for MessageStatus enumeration.
-/// This extension enhances MessageStatus with comprehensive delivery tracking including Swedish-localized
-/// status descriptions and visual delivery indicators for messaging interface presentation and delivery
-/// status communication with appropriate progression indicators and user feedback.
+/// Extension providing Swedish localization for MessageStatus enumeration.
 extension MessageStatusExtension on MessageStatus {
   /// Gets Swedish-localized display name for the delivery status for UI presentation.
   /// Provides user-friendly Swedish descriptions for all delivery statuses enabling proper localization
@@ -207,17 +169,4 @@ extension MessageStatusExtension on MessageStatus {
       MessageStatus.failed => l.messageStatusFailed,
     };
   }
-
-  /// Gets emoji icon representing the delivery status for visual delivery tracking and UI consistency.
-  /// Provides distinctive delivery status indicators for each status stage enabling clear visual
-  /// communication of message delivery progression with universally recognized symbols for delivery
-  /// confirmation, read receipts, and error indication in messaging interfaces.
-  /// Returns emoji icon appropriate for delivery status visualization and user feedback.
-  String get icon => switch (this) {
-    MessageStatus.sending => '⏳',
-    MessageStatus.sent => '✓',
-    MessageStatus.delivered => '✓✓',
-    MessageStatus.read => '👁️',
-    MessageStatus.failed => '❌',
-  };
 }

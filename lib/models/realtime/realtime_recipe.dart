@@ -553,7 +553,7 @@ class RealtimeRecipe extends RealtimeResource {
     parts.add('$instructionsCount steg');
 
     if (hasRating) {
-      parts.add('${rating!.toStringAsFixed(1)} ⭐');
+      parts.add('${rating!.toStringAsFixed(1)} ★');
     }
 
     return parts.join(' • ');

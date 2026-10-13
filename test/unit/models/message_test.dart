@@ -491,7 +491,7 @@ void main() {
           recipeTitle: 'Köttbullar',
         );
 
-        expect(message.displayContent, equals('🍽️ Köttbullar'));
+        expect(message.displayContent, equals('Köttbullar'));
       });
 
       test('should format menu share display', () {
@@ -503,7 +503,7 @@ void main() {
           menuTitle: 'Veckans meny',
         );
 
-        expect(message.displayContent, equals('📋 Veckans meny'));
+        expect(message.displayContent, equals('Veckans meny'));
       });
 
       test('should format shopping list share display', () {
@@ -515,7 +515,7 @@ void main() {
           listTitle: 'ICA-listan',
         );
 
-        expect(message.displayContent, equals('🛒 ICA-listan'));
+        expect(message.displayContent, equals('ICA-listan'));
       });
 
       test('should format system message display', () {
@@ -540,7 +540,7 @@ void main() {
           metadata: {}, // Empty metadata
         );
 
-        expect(recipeMsg.displayContent, equals('🍽️ Recept'));
+        expect(recipeMsg.displayContent, equals('Recept'));
 
         final menuMsg = Message(
           id: 'msg_2',
@@ -554,7 +554,7 @@ void main() {
           // No metadata at all
         );
 
-        expect(menuMsg.displayContent, equals('📋 Meny'));
+        expect(menuMsg.displayContent, equals('Meny'));
       });
 
       test('should format image message display', () {
@@ -569,7 +569,7 @@ void main() {
           sentAt: DateTime.now(),
         );
 
-        expect(message.displayContent, equals('📷 Bild'));
+        expect(message.displayContent, equals('Bild'));
       });
 
       test('should format voice message display', () {
@@ -584,7 +584,7 @@ void main() {
           sentAt: DateTime.now(),
         );
 
-        expect(message.displayContent, equals('🎤 Röstmeddelande'));
+        expect(message.displayContent, equals('Röstmeddelande'));
       });
     });
 
@@ -978,7 +978,7 @@ Last line with spaces    ''';
           message.metadata!['recipeTitle'],
           equals('Räksmörgås à la "Skagen"'),
         );
-        expect(message.displayContent, equals('🍽️ Räksmörgås à la "Skagen"'));
+        expect(message.displayContent, equals('Räksmörgås à la "Skagen"'));
       });
     });
   });
