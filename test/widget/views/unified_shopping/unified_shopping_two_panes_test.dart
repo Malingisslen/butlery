@@ -259,4 +259,31 @@ void main() {
     expect(find.byType(ShoppingListsPane), findsNothing);
     expect(find.byType(DropdownButton<String>), findsOneWidget);
   });
+
+  testWidgets(
+    'portrait: selecting rows swaps the add button for the bulk bar and '
+    'Avbryt ends it',
+    (tester) async {
+      await _pumpShopping(tester, _portrait);
+      const addButton = ValueKey('test-shopping-list-add');
+      expect(find.byType(SelectionBulkBar), findsNothing);
+      expect(find.byKey(addButton), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('shopping-select-enter')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SelectionBulkBar), findsOneWidget);
+      expect(find.byKey(addButton), findsNothing);
+      expect(find.text(_sv.bulkSelectedCount(0)), findsWidgets);
+
+      await tester.tap(find.byKey(const ValueKey('shopping-selection-cancel')));
+      await tester.pump();
+
+      expect(find.byType(SelectionBulkBar), findsNothing);
+      expect(
+        find.byKey(const ValueKey('shopping-selection-cancel')),
+        findsNothing,
+      );
+    },
+  );
 }
