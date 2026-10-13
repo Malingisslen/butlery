@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `6d623bf3e902d7229ce2feeb4186df0fcbe163fe68c9f3cafa96c956f169eff9` |
+| `screen-register.json` | `9322881cda268534b54d8b44f32c41f789b82d8f691aa24e50eddf46528df645` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
