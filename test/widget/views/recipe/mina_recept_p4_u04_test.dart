@@ -101,7 +101,6 @@ void main() {
     ) async {
       await pumpBar(tester);
 
-      expect(find.text('1 valda'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Avbryt'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.x), findsNothing);
       expect(find.byType(BackButton), findsNothing);

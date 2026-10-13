@@ -202,11 +202,6 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 .bordered-container { border: 1px solid var(--cream-darker); padding: 16px; }
 .category-header-bar { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 12px; display: flex; justify-content: space-between; }
 
-/* Scaffolds (miniature) */
-.scaffold-mini { width: 140px; height: 240px; background: var(--cream); border: 1px solid var(--cream-darker); display: flex; flex-direction: column; overflow: hidden; font-size: 9px; }
-.scaffold-mini-header { background: var(--green-dark); color: var(--cream); padding: 6px 8px; font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: lowercase; border-bottom: 2px solid var(--rust); }
-.scaffold-mini-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px; text-align: center; color: var(--text-muted); }
-.scaffold-mini-footer { background: var(--white); border-top: 1px solid var(--cream-dark); padding: 6px 8px; }
 
 /* Messaging */
 .msg-bubble { max-width: 70%; padding: 10px 14px; font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
@@ -289,7 +284,6 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   <a href="#content-cards">Content Cards</a>
   <a href="#search-filter">Search &amp; Filter</a>
   <a href="#navigation">Navigation</a>
-  <a href="#scaffolds">Scaffolds</a>
   <a href="#recipe">Recipe</a>
   <a href="#messaging">Messaging</a>
   <a href="#social">Social</a>
@@ -721,23 +715,6 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   </div>
 </div>
 
-<!-- ==================== 9. SCAFFOLDS ==================== -->
-<div class="lib-section" id="scaffolds">
-  <div class="lib-section-title">9. scaffolds &mdash; widgets/common/scaffolds/</div>
-
-  <div class="lib-item-full">
-    <div class="lib-demo" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;background:var(--cream-dark);padding:24px">
-      <div>
-        <div class="lib-label" style="text-align:center">BaseScaffold</div>
-        <div class="scaffold-mini"><div class="scaffold-mini-header">skärm</div><div class="scaffold-mini-body">Content area</div></div>
-      </div>
-      <div>
-        <div class="lib-label" style="text-align:center">FormScaffold</div>
-        <div class="scaffold-mini"><div class="scaffold-mini-header">formulär</div><div class="scaffold-mini-body" style="flex-direction:column;gap:4px;font-size:8px"><div style="background:var(--cream-dark);width:90%;height:8px"></div><div style="background:var(--cream-dark);width:90%;height:8px"></div><div style="background:var(--cream-dark);width:90%;height:16px"></div></div><div class="scaffold-mini-footer" style="text-align:right;font-size:8px;color:var(--green)">Spara</div></div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ==================== 10. RECIPE ==================== -->
 <div class="lib-section" id="recipe">

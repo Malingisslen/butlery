@@ -47,7 +47,6 @@ class ChatViewFacade extends StatefulWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChatAppBar(...),
       body: Column(children: [
         Expanded(child: ChatMessageStream(...)),
         if (hasTyping) TypingIndicator(...),
