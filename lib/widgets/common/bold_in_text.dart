@@ -21,8 +21,8 @@ class BoldInText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final plain = AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant);
-    final strong = AppTextStyles.titleMedium.copyWith(color: cs.onSurface);
+    final plain = AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant);
+    final strong = AppTextStyles.labelLargeBold.copyWith(color: cs.onSurface);
     final names = bold.where((b) => b.isNotEmpty).toList();
     if (names.isEmpty) return Text(text, style: plain);
     final pattern = RegExp(names.map(RegExp.escape).join('|'));

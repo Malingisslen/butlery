@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/widgets/common/input/butlery_switch.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -52,7 +53,7 @@ class TagDetailRulesSection extends StatelessWidget {
                 onPressed: onAddRule,
                 child: Text(
                   l10n.tagDetailNewRule,
-                  style: AppTextStyles.labelLarge.copyWith(
+                  style: AppTextStyles.labelMediumBold.copyWith(
                     color: context.modeColors.textAccent,
                   ),
                 ),
@@ -173,14 +174,14 @@ class _RuleRow extends StatelessWidget {
                       children: [
                         Text(
                           rule.name,
-                          style: AppTextStyles.titleMedium.copyWith(
+                          style: AppTextStyles.bodySmallBold.copyWith(
                             color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(height: AppDimensions.space4),
                         Text(
                           subtitle,
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: AppTextStyles.captionText.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
                         ),
@@ -194,7 +195,10 @@ class _RuleRow extends StatelessWidget {
           const SizedBox(width: AppDimensions.space8),
           Semantics(
             label: rule.name,
-            child: Switch(value: rule.isEnabled, onChanged: (_) => onToggle()),
+            child: ButlerySwitch(
+              value: rule.isEnabled,
+              onChanged: (_) => onToggle(),
+            ),
           ),
         ],
       ),

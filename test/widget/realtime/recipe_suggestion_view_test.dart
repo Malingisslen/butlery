@@ -108,6 +108,12 @@ void main() {
     expect(find.text('title'), findsNothing);
     expect(find.text(l10n.recipeSuggestionSuggestedLabel), findsOneWidget);
     expect(find.text(l10n.recipeSuggestionCurrentLabel), findsOneWidget);
+    // The recipe as it is now is the version that applies, so it carries the
+    // pill and not the suggestion.
+    expect(
+      find.text(l10n.conflictDiffApplies.toUpperCase()),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(RecipeSuggestionView.acceptKey));
     await tester.pumpAndSettle();

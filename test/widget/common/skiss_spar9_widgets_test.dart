@@ -192,8 +192,8 @@ void main() {
 
       final strong = tester.widget<Text>(find.text('Gäller').first).style;
       final plain = tester.widget<Text>(find.text('Gäller inte')).style;
-      expect(strong?.fontWeight, AppTextStyles.titleMedium.fontWeight);
-      expect(plain?.fontWeight, AppTextStyles.bodyLarge.fontWeight);
+      expect(strong?.fontWeight, AppTextStyles.bodySmallBold.fontWeight);
+      expect(plain?.fontWeight, AppTextStyles.bodyMedium.fontWeight);
     });
   });
 

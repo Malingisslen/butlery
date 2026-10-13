@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_switch.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
@@ -388,7 +389,7 @@ class ButleryListRow extends StatelessWidget {
               const SizedBox(width: AppDimensions.space12),
               // The row carries the switch's meaning; the switch is drawn.
               ExcludeSemantics(
-                child: Switch(
+                child: ButlerySwitch(
                   value: checked,
                   onChanged: enabled ? onChanged : null,
                 ),

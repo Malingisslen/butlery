@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/input/butlery_switch.dart';
 
 /// Dialog for creating a new poll in a chat conversation.
 /// Supports 2-4 options, single/multiple choice toggle, and optional deadline.
@@ -229,7 +230,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
               // Multiple choice toggle
               Row(
                 children: [
-                  Switch(
+                  ButlerySwitch(
                     value: _allowMultiple,
                     onChanged: (v) => setState(() => _allowMultiple = v),
                     // The theme's switch: ink track, paper knob when on
