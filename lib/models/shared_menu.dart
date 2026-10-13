@@ -189,7 +189,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     menuSnapshot.forEach((category, recipes) {
       importedMenu[category] = recipes.map((recipe) {
         final attribution =
-            '\n\n📋 ${AppLocale.current.importedFromMenu(sharedByDisplayName, menuTitle)}';
+            '\n\n${AppLocale.current.importedFromMenu(sharedByDisplayName, menuTitle)}';
         final newDescription = recipe.description.isNotEmpty
             ? '${recipe.description}$attribution'
             : '${AppLocale.current.importedRecipeLabel}$attribution';

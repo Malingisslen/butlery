@@ -25,6 +25,7 @@ import 'package:butlery/services/unified/operations/social_recipe_operations.dar
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -141,6 +142,15 @@ void main() {
     expect(find.text('Malin · ${sv.familyRatingYou}'), findsOneWidget);
     expect(find.text('Farfar'), findsOneWidget);
     expect(find.text(sv.familyRatingNotSet), findsNWidgets(2));
+  });
+
+  testWidgets('the recipe is the line under the title and Spara stands where '
+      'the tab bar would', (tester) async {
+    await pumpView(tester);
+
+    expect(find.text('Pannkakor'), findsOneWidget);
+    expect(find.text(sv.familyRatingSave), findsOneWidget);
+    expect(find.byType(ButleryBottomNavigation), findsNothing);
   });
 
   testWidgets('tapping the fourth star gives that diner the score 4,0 and '

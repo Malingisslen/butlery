@@ -57,23 +57,9 @@ class PollMessageWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Poll icon + question
-          Row(
-            children: [
-              const Text(
-                '📊',
-                style: TextStyle(fontSize: AppDimensions.emojiGlyphBody),
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Expanded(
-                child: Text(
-                  poll.question,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    color: textColor,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            poll.question,
+            style: AppTextStyles.bodyBold.copyWith(color: textColor),
           ),
           const SizedBox(height: AppDimensions.space8),
 

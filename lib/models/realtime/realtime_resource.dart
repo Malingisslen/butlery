@@ -44,13 +44,6 @@ enum RealtimeResourceType {
     };
   }
 
-  /// Get icon for resource type
-  String get icon => switch (this) {
-    RealtimeResourceType.recipe => '🍳',
-    RealtimeResourceType.menu => '📋',
-    RealtimeResourceType.shoppingList => '🛒',
-  };
-
   @override
   String toString() => value;
 }

@@ -263,9 +263,9 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
   String get successMessage {
     if (_selectedRecipeIds.length == 1) {
       final recipe = selectedRecipes.first;
-      return '${recipe.title} delat med ${targetGroup.name}! 🍽️';
+      return '${recipe.title} delat med ${targetGroup.name}!';
     } else {
-      return '${_selectedRecipeIds.length} recept delade med ${targetGroup.name}! 🍽️';
+      return '${_selectedRecipeIds.length} recept delade med ${targetGroup.name}!';
     }
   }
 

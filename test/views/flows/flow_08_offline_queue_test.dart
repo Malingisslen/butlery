@@ -372,6 +372,14 @@ void main() {
         return id;
       });
       j.writer.failWith[id] = firestoreError('permission-denied');
+      // The queue page stands in the 600 dp text column, so its three cards
+      // are taller than on the full-width default surface and need height.
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       await pumpApp(tester);
       await openQueue(tester);
 

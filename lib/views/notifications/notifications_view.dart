@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -14,10 +14,8 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// In-app notification inbox showing notification history.
@@ -105,50 +103,29 @@ class _NotificationsContentState extends State<_NotificationsContent> {
   Widget build(BuildContext context) {
     final vm = context.watch<NotificationsViewModel>();
 
-    return Scaffold(
-      appBar: _selectionMode
-          ? _buildSelectionAppBar(context, vm)
-          : _buildDefaultAppBar(context, vm),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: ButleryPageBody(
-        width: PageWidth.text,
-        child: _buildBody(context, vm),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildDefaultAppBar(
-    BuildContext context,
-    NotificationsViewModel vm,
-  ) {
-    // A subpage (Komponentark v1 §01 pattern 2; Skarmar v12 etapp 6
-    // 'Notiscentral — inkorgen' draws the back arrow). Mark-all-read is the
-    // band at the top of the list, as the sketch draws it.
-    return ButleryTopBar.undersida(title: context.l10n.notificationsTitle);
-  }
-
-  PreferredSizeWidget _buildSelectionAppBar(
-    BuildContext context,
-    NotificationsViewModel vm,
-  ) {
     final count = _selectedIds.length;
-    // Same bar, other content: the count replaces the title and the close
-    // action replaces the back arrow, so the bar keeps its height
-    // (produktregler.md:873). Whether it says Avbryt is P5-U31's.
-    return ButleryTopBar.undersida(
-      leading: IconButton(
-        icon: const ButleryIcon(ButleryIcons.x),
-        tooltip: context.l10n.commonClose,
-        onPressed: _cancelSelection,
-      ),
-      title: context.l10n.notificationsSelectedCount(count),
+    // Same bar, other content while choosing: the count replaces the title and
+    // the close action replaces the back arrow.
+    return ButleryPage.undersida(
+      title: _selectionMode
+          ? context.l10n.notificationsSelectedCount(count)
+          : context.l10n.notificationsTitle,
+      leading: _selectionMode
+          ? IconButton(
+              icon: const ButleryIcon(ButleryIcons.x),
+              tooltip: context.l10n.commonClose,
+              onPressed: _cancelSelection,
+            )
+          : null,
       actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.trash2),
-          tooltip: context.l10n.commonDismiss,
-          onPressed: count > 0 ? () => _dismissSelected(vm) : null,
-        ),
+        if (_selectionMode)
+          IconButton(
+            icon: const ButleryIcon(ButleryIcons.trash2),
+            tooltip: context.l10n.commonDismiss,
+            onPressed: count > 0 ? () => _dismissSelected(vm) : null,
+          ),
       ],
+      body: _buildBody(context, vm),
     );
   }
 

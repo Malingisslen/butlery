@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
+import 'package:butlery/widgets/common/indicators/connection_dot.dart';
 
 /// Connection status widgets for collaborative content
 class CollaborativeConnectionWidgets {
@@ -12,7 +14,7 @@ class CollaborativeConnectionWidgets {
   static Widget connectionStatus({
     required bool isOnline,
     required String statusText,
-    String? statusEmoji,
+    ConnectionStatus? status,
     bool showRetryButton = false,
     VoidCallback? onRetry,
   }) {
@@ -34,14 +36,7 @@ class CollaborativeConnectionWidgets {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: modeColors.success,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+                const ConnectionDot(status: ConnectionStatus.connected),
                 const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.collaborativeOnline,
@@ -63,13 +58,8 @@ class CollaborativeConnectionWidgets {
           ),
           child: Row(
             children: [
-              if (statusEmoji != null) ...[
-                Text(
-                  statusEmoji,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: AppDimensions.iconSizeM.toDouble(),
-                  ),
-                ),
+              if (status != null) ...[
+                ConnectionDot(status: status),
                 const SizedBox(width: AppDimensions.space4),
               ],
               Expanded(

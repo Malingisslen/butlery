@@ -338,31 +338,31 @@ class Message {
 
   /// Content display methods for UI presentation and message formatting.
 
-  /// Gets formatted display content based on message type with appropriate icons and Swedish localization.
-  /// Provides type-specific content formatting for message display including icons for rich content,
+  /// Gets formatted display content based on message type with Swedish localization.
+  /// Provides type-specific content formatting for message display including
   /// metadata extraction for shared content titles, and Swedish-localized fallback text for
   /// optimal user experience across all message types and content sharing scenarios.
-  /// Returns formatted display content with icons and titles appropriate for the message type.
+  /// Returns formatted display content with titles appropriate for the message type.
   String get displayContent {
     final l = AppLocale.current;
     switch (type) {
       case MessageType.text:
         return content;
       case MessageType.recipeShare:
-        return '${type.icon} ${metadata?['recipeTitle'] ?? l.messageContentRecipe}';
+        return '${metadata?['recipeTitle'] ?? l.messageContentRecipe}';
       case MessageType.menuShare:
-        return '${type.icon} ${metadata?['menuTitle'] ?? l.messageContentMenu}';
+        return '${metadata?['menuTitle'] ?? l.messageContentMenu}';
       case MessageType.shoppingListShare:
-        return '${type.icon} ${metadata?['listTitle'] ?? l.messageContentShoppingList}';
+        return '${metadata?['listTitle'] ?? l.messageContentShoppingList}';
       case MessageType.system:
         return content;
       case MessageType.image:
-        return '${type.icon} ${l.messageContentImage}';
+        return l.messageContentImage;
       case MessageType.voice:
-        return '${type.icon} ${l.messageContentVoice}';
+        return l.messageContentVoice;
       case MessageType.poll:
         final pollData = metadata?['poll'] as Map<String, dynamic>?;
-        return '${type.icon} ${pollData?['question'] ?? content}';
+        return '${pollData?['question'] ?? content}';
       case MessageType.duplicateBlocked:
         // Empty on purpose (BUT-1904). The sentence a sender reads on a blocked
         // row is a widget-level localized string, not data — this getter has no

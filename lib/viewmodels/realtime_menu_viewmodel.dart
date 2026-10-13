@@ -89,7 +89,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   bool get isOnline => _connectionMonitor.isOnline;
   String get connectionStatusDescription =>
       _connectionMonitor.statusDescription;
-  String get connectionStatusEmoji => _connectionMonitor.statusEmoji;
 
   // Permission system
   String? get currentUserId => _participantManager.currentUserId;

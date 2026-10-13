@@ -733,10 +733,10 @@ void main() {
         final text = operations.exportListAsText('test-list-1');
 
         // Assert
-        expect(text, contains('📋 Veckohandling'));
-        expect(text, contains('📝 Kvar att handla:'));
+        expect(text, startsWith('Veckohandling\n=============\n'));
+        expect(text, contains('\nKvar att handla:\n'));
         expect(text, contains('☐'));
-        expect(text, contains('✅ Inhandlat:'));
+        expect(text, contains('\nInhandlat:\n'));
         expect(text, contains('☑'));
       });
 
@@ -807,8 +807,58 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParent.updateList(any())).called(1);
+        final captured =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
+        expect(
+          captured.items.map((i) => i.name),
+          containsAll(['Mjölk', 'Bröd', 'Smör']),
+        );
+        expect(
+          captured.items.map((i) => i.name),
+          isNot(anyElement(contains('Shopping List'))),
+        );
+        expect(
+          captured.items.map((i) => i.name),
+          isNot(anyElement(contains('Items to buy'))),
+        );
       });
+
+      test(
+        'should skip the title and section headers an export writes',
+        () async {
+          when(
+            () => mockParent.updateList(any()),
+          ).thenAnswer((_) async => true);
+
+          const text = '''
+Veckohandling
+=============
+
+Kvar att handla:
+☐ Mjölk
+☐ Bröd
+
+Inhandlat:
+☑ Smör
+''';
+
+          final result = await operations.importItemsFromText(
+            listId: 'test-list-1',
+            text: text,
+            clearExisting: true,
+          );
+
+          expect(result, isTrue);
+          final captured =
+              verify(() => mockParent.updateList(captureAny())).captured.single
+                  as UnifiedShoppingList;
+          expect(
+            captured.items.map((i) => i.name),
+            equals(['Mjölk', 'Bröd', 'Smör']),
+          );
+        },
+      );
 
       test('should clear existing items when clearExisting is true', () async {
         // Arrange
@@ -1175,8 +1225,6 @@ void main() {
 
         // Assert
         expect(priorities, equals([5, 4, 3, 2, 1]));
-        expect(items.first.priorityEmoji, equals('🔴')); // Highest priority
-        expect(items.last.priorityEmoji, equals('⚪')); // Lowest priority
       });
 
       test('should handle item notes and metadata', () async {

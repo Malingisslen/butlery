@@ -349,9 +349,9 @@ class RecipeRatingSystem {
     final fullStars = rating.floor();
     final hasHalfStar = (rating - fullStars) >= 0.5;
 
-    String stars = '⭐' * fullStars;
+    String stars = '★' * fullStars;
     if (hasHalfStar && fullStars < 5) {
-      stars += '✨'; // Half star representation
+      stars += '½';
     }
 
     return stars;

@@ -83,12 +83,12 @@ class RecipeFilters {
   static const List<FilterOption> ratingFilters = [
     FilterOption(
       id: 'high_rated',
-      label: '4+ ⭐',
+      label: '4+ ★',
       value: 4.0,
     ),
     FilterOption(
       id: 'top_rated',
-      label: '5 ⭐',
+      label: '5 ★',
       value: 5.0,
     ),
   ];

@@ -31,11 +31,10 @@ import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/sync/sync_queue_row.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
@@ -283,125 +282,120 @@ class _SyncQueueViewState extends State<SyncQueueView> {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final queue = _visibleQueue;
-    final side = ButleryTopBar.sideMargin(context);
+    final side = ButleryPageBody.margin(context).start;
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: l10n.syncQueueTitle,
-        backTo: widget.backTo,
-        // The count as drawn, read as words (#synkko: "7").
-        trailing: queue.isEmpty
-            ? null
-            : Semantics(
-                label: l10n.offlineBannerPending(queue.total),
-                excludeSemantics: true,
-                child: Text(
-                  '${queue.total}',
-                  key: SyncQueueView.countKey,
-                  style: AppTextStyles.captionBold.copyWith(
-                    color: cs.onSurfaceVariant,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+    return ButleryPage.undersida(
+      title: l10n.syncQueueTitle,
+      backTo: widget.backTo,
+      // The count as drawn, read as words (#synkko: "7").
+      trailing: queue.isEmpty
+          ? null
+          : Semantics(
+              label: l10n.offlineBannerPending(queue.total),
+              excludeSemantics: true,
+              child: Text(
+                '${queue.total}',
+                key: SyncQueueView.countKey,
+                style: AppTextStyles.captionBold.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // The offline line as a status: here it has nowhere to lead.
-            StatusIndicators.offlineIndicator(),
-            Expanded(
-              child: queue.isEmpty
-                  ? StateWidget.empty(
-                      key: SyncQueueView.emptyKey,
-                      variant: EmptyStateVariant.nothingQueued,
-                    )
-                  : ListView(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                        side,
-                        AppDimensions.space16,
-                        side,
-                        AppDimensions.space16,
-                      ),
-                      children: [
-                        if (queue.needsUser.isNotEmpty) ...[
-                          SectionHeading(
-                            l10n.syncQueueNeedsYouHeader(
-                              queue.needsUser.length,
-                            ),
-                            // text.danger, as drawn (#synkko).
-                            tone: SectionHeadingTone.attention,
-                          ),
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            l10n.syncQueueNeedsYouHint,
-                            style: AppTextStyles.captionBase.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                          for (final change in queue.needsUser)
-                            SyncQueueNeedsYouCard(
-                              key: ValueKey(
-                                'sync-card-${change.kind.name}-${change.id}',
-                              ),
-                              change: change,
-                              busy: _busy.contains(_busyKey(change)),
-                              onRetry: () => _retry(change),
-                              onDiscard: () => unawaited(_discard(change)),
-                              onSaveAsCopy: () => _saveAsCopy(change),
-                              onTrySmaller: () => _trySmaller(change),
-                            ),
-                          const SizedBox(height: AppDimensions.space12),
-                        ],
-                        if (queue.draining.isNotEmpty) ...[
-                          ButleryListSection(
-                            title: l10n.syncQueueQueuedHeader(
-                              queue.draining.length,
-                            ),
-                            rows: [
-                              for (final change in queue.draining)
-                                SyncQueueRow(change: change),
-                            ],
-                          ),
-                          const SizedBox(height: AppDimensions.space4),
-                          Text(
-                            l10n.syncQueueOrderNote,
-                            style: AppTextStyles.captionBase.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
             ),
-            if (!queue.isEmpty)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: cs.outlineVariant)),
-                ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    side,
-                    AppDimensions.space8 + AppDimensions.space4,
-                    side,
-                    AppDimensions.space16,
-                  ),
-                  child: OutlinedButton.icon(
-                    key: SyncQueueView.syncNowKey,
-                    // Offline the queue cannot be sent; the banner above says
-                    // why.
-                    onPressed: _syncing || !_source.isOnline ? null : _syncNow,
-                    icon: const ButleryIcon(ButleryIcons.refreshCw),
-                    label: Text(
-                      _syncing ? l10n.syncQueueSyncing : l10n.syncQueueSyncNow,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // The offline line as a status: here it has nowhere to lead.
+          StatusIndicators.offlineIndicator(),
+          Expanded(
+            child: queue.isEmpty
+                ? StateWidget.empty(
+                    key: SyncQueueView.emptyKey,
+                    variant: EmptyStateVariant.nothingQueued,
+                  )
+                : ListView(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                      side,
+                      AppDimensions.space16,
+                      side,
+                      AppDimensions.space16,
                     ),
+                    children: [
+                      if (queue.needsUser.isNotEmpty) ...[
+                        SectionHeading(
+                          l10n.syncQueueNeedsYouHeader(
+                            queue.needsUser.length,
+                          ),
+                          // text.danger, as drawn (#synkko).
+                          tone: SectionHeadingTone.attention,
+                        ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          l10n.syncQueueNeedsYouHint,
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        for (final change in queue.needsUser)
+                          SyncQueueNeedsYouCard(
+                            key: ValueKey(
+                              'sync-card-${change.kind.name}-${change.id}',
+                            ),
+                            change: change,
+                            busy: _busy.contains(_busyKey(change)),
+                            onRetry: () => _retry(change),
+                            onDiscard: () => unawaited(_discard(change)),
+                            onSaveAsCopy: () => _saveAsCopy(change),
+                            onTrySmaller: () => _trySmaller(change),
+                          ),
+                        const SizedBox(height: AppDimensions.space12),
+                      ],
+                      if (queue.draining.isNotEmpty) ...[
+                        ButleryListSection(
+                          title: l10n.syncQueueQueuedHeader(
+                            queue.draining.length,
+                          ),
+                          rows: [
+                            for (final change in queue.draining)
+                              SyncQueueRow(change: change),
+                          ],
+                        ),
+                        const SizedBox(height: AppDimensions.space4),
+                        Text(
+                          l10n.syncQueueOrderNote,
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
+          if (!queue.isEmpty)
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: cs.outlineVariant)),
+              ),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  side,
+                  AppDimensions.space8 + AppDimensions.space4,
+                  side,
+                  AppDimensions.space16,
+                ),
+                child: OutlinedButton.icon(
+                  key: SyncQueueView.syncNowKey,
+                  // Offline the queue cannot be sent; the banner above says
+                  // why.
+                  onPressed: _syncing || !_source.isOnline ? null : _syncNow,
+                  icon: const ButleryIcon(ButleryIcons.refreshCw),
+                  label: Text(
+                    _syncing ? l10n.syncQueueSyncing : l10n.syncQueueSyncNow,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
