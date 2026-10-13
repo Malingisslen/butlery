@@ -6,7 +6,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +25,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
@@ -151,11 +150,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   @override
   Widget build(BuildContext context) {
     final selection = context.watch<PersonalTagSelectionManager>();
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: selection.isSelectionMode
-          ? _buildSelectionAppBar(context, selection)
-          : _buildAppBar(context),
+    final selecting = selection.isSelectionMode;
+    final page = selecting
+        ? _selectionBarParts(context, selection)
+        : _defaultBarParts(context);
+    return ButleryPage.undersida(
+      title: page.title,
+      backTo: selecting ? null : widget.backTo,
+      leading: page.leading,
+      titleStyle: page.titleStyle,
+      actions: page.actions,
       body: FocusTraversalGroup(
         child: Column(
           children: [
@@ -191,12 +195,14 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  ({String title, Widget? leading, TextStyle? titleStyle, List<Widget> actions})
+  _defaultBarParts(BuildContext context) {
     final tagCount = context.watch<PersonalTagViewModel>().tags.length;
-    return ButleryTopBar.undersida(
+    return (
       title: context.l10n.morePersonalTags,
-      backTo: widget.backTo,
-      actions: [
+      leading: null,
+      titleStyle: null,
+      actions: <Widget>[
         // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
         // produktregler.md:870-874). Long-press stays as a shortcut.
         if (ButlerySelectButton.shownFor(tagCount))
@@ -227,7 +233,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
   }
 
-  PreferredSizeWidget _buildSelectionAppBar(
+  ({String title, Widget? leading, TextStyle? titleStyle, List<Widget> actions})
+  _selectionBarParts(
     BuildContext context,
     PersonalTagSelectionManager selection,
   ) {
@@ -242,7 +249,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     // left instead of an X, the count in tabular figures (produktregler.md
     // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
     // samman taggar").
-    return ButleryTopBar.undersida(
+    return (
       leading: TextButton(
         key: const ValueKey('personal-tags-selection-cancel'),
         onPressed: selection.exitSelection,
@@ -253,7 +260,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       titleStyle: const TextStyle(
         fontFeatures: [FontFeature.tabularFigures()],
       ),
-      actions: [
+      actions: <Widget>[
         IconButton(
           icon: const ButleryIcon(ButleryIcons.merge),
           tooltip: context.l10n.personalTagMergeAction,
@@ -341,48 +348,42 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       groupId,
     ).where((t) => !unusedIds.contains(t.id)).toList();
     final ungrouped = used(null);
-    final margin = ButleryTopBar.sideMargin(context);
+    final margin = ButleryPageBody.margin(context).start;
 
-    return SafeArea(
-      child: ButleryPageBody(
-        width: PageWidth.text,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await viewModel.initialize();
-            await viewModel.loadTagStatistics();
-          },
-          child: ListView(
-            padding: EdgeInsetsDirectional.only(
-              start: margin,
-              end: margin,
-              bottom: AppDimensions.space24,
-            ),
-            children: [
-              ?_buildPartialDelete(context, viewModel),
-              if (ungrouped.isNotEmpty)
-                PersonalTagSection(
-                  title: groups.isEmpty
-                      ? context.l10n.personalTagSectionTags
-                      : context.l10n.personalTagUngroupedSection,
-                  tags: ungrouped,
-                  viewModel: viewModel,
-                ),
-              for (final group in groups)
-                PersonalTagGroupSection(
-                  key: ValueKey(group.id),
-                  group: group,
-                  tags: used(group.id),
-                  viewModel: viewModel,
-                ),
-              if (unused.isNotEmpty)
-                UnusedTagsSection(
-                  unusedTags: unused,
-                  onDeleteAll: () =>
-                      _confirmDeleteUnusedTags(context, viewModel),
-                ),
-            ],
-          ),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await viewModel.initialize();
+        await viewModel.loadTagStatistics();
+      },
+      child: ListView(
+        padding: EdgeInsetsDirectional.only(
+          start: margin,
+          end: margin,
+          bottom: AppDimensions.space24,
         ),
+        children: [
+          ?_buildPartialDelete(context, viewModel),
+          if (ungrouped.isNotEmpty)
+            PersonalTagSection(
+              title: groups.isEmpty
+                  ? context.l10n.personalTagSectionTags
+                  : context.l10n.personalTagUngroupedSection,
+              tags: ungrouped,
+              viewModel: viewModel,
+            ),
+          for (final group in groups)
+            PersonalTagGroupSection(
+              key: ValueKey(group.id),
+              group: group,
+              tags: used(group.id),
+              viewModel: viewModel,
+            ),
+          if (unused.isNotEmpty)
+            UnusedTagsSection(
+              unusedTags: unused,
+              onDeleteAll: () => _confirmDeleteUnusedTags(context, viewModel),
+            ),
+        ],
       ),
     );
   }

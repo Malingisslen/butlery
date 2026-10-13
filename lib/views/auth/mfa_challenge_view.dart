@@ -27,7 +27,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -263,28 +263,29 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop && !_done) _auth.clearPendingMfa();
       },
-      child: Scaffold(
-        appBar: ButleryTopBar.undersida(title: l10n.mfaChallengeTitle),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.layoutMarginOf(context),
-              vertical: AppDimensions.space16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: switch ((_backupMode, widget.provider)) {
-                _ when _signInAfterRecoveryPending => _buildSignInAgain(
-                  context,
-                  cs,
-                ),
-                (false, _) => _buildChallenge(context, cs),
-                (true, final SignInProvider provider)
-                    when !_auth.canRecoverThroughProvider(provider) =>
-                  _buildSupport(context, cs, provider),
-                (true, _) => _buildBackup(context, cs),
-              },
-            ),
+      // A sign-in step: no tab bar (Malin 2026-10-13, B-54).
+      child: ButleryPage.undersida(
+        title: l10n.mfaChallengeTitle,
+        showTabBar: false,
+        width: PageWidth.compact,
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.layoutMarginOf(context),
+            vertical: AppDimensions.space16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: switch ((_backupMode, widget.provider)) {
+              _ when _signInAfterRecoveryPending => _buildSignInAgain(
+                context,
+                cs,
+              ),
+              (false, _) => _buildChallenge(context, cs),
+              (true, final SignInProvider provider)
+                  when !_auth.canRecoverThroughProvider(provider) =>
+                _buildSupport(context, cs, provider),
+              (true, _) => _buildBackup(context, cs),
+            },
           ),
         ),
       ),

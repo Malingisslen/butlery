@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/semantics.dart';
@@ -34,7 +34,6 @@ import 'package:butlery/views/photo_import/image_preview.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
 import 'package:butlery/views/photo_import/photo_permission_notice_card.dart';
 import 'package:butlery/views/photo_import/photo_quality_warning.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/image_source_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -351,206 +350,198 @@ class _PhotoImportViewContent extends StatelessWidget {
     final viewModel = context.watch<PhotoImportViewModel>();
     final readPages = viewModel.unreadPageCount > 0 && !viewModel.hasError;
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(title: context.l10n.importFromPhoto),
-      body: SafeArea(
-        child: Column(
-          children: [
-            LayoutComponents.offlineIndicator(),
-            Expanded(
-              child: ButleryPageBody(
-                width: PageWidth.text,
-                child: SingleChildScrollView(
-                  padding: AppDimensions.responsiveContentPadding(context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ImageSourceButtons(
-                        cameraLabel: context.l10n.importPhotoCameraButton,
-                        libraryLabel: context.l10n.importPhotoLibraryButton,
-                        onCamera: viewModel.isProcessing
-                            ? null
-                            : () => _startOver(
-                                context,
-                                viewModel,
-                                viewModel.pickImageFromCamera,
-                              ),
-                        onLibrary: viewModel.isProcessing
-                            ? null
-                            : () => _startOver(
-                                context,
-                                viewModel,
-                                viewModel.pickImageFromGallery,
-                              ),
+    return ButleryPage.undersida(
+      title: context.l10n.importFromPhoto,
+      body: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ImageSourceButtons(
+                    cameraLabel: context.l10n.importPhotoCameraButton,
+                    libraryLabel: context.l10n.importPhotoLibraryButton,
+                    onCamera: viewModel.isProcessing
+                        ? null
+                        : () => _startOver(
+                            context,
+                            viewModel,
+                            viewModel.pickImageFromCamera,
+                          ),
+                    onLibrary: viewModel.isProcessing
+                        ? null
+                        : () => _startOver(
+                            context,
+                            viewModel,
+                            viewModel.pickImageFromGallery,
+                          ),
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+
+                  // Flow 07: what the permission answer means here, and the
+                  // way on (flows-roles-budget.md).
+                  if (viewModel.permissionNotice != null) ...[
+                    PhotoPermissionNoticeCard(
+                      notice: viewModel.permissionNotice!,
+                      onAskAgain: viewModel.askPermissionAgain,
+                      onOpenSettings: () => OsPermissionHelper.openSettings(),
+                      // A refused add-page keeps the pages already taken.
+                      onChooseFromGallery: viewModel.chooseFromGalleryInstead,
+                      onWriteYourself: () {
+                        viewModel.clearPermissionNotice();
+                        Navigator.pushNamed(context, Routes.manualEntry);
+                      },
+                    ),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
+                  ImagePreview(viewModel: viewModel),
+                  if (viewModel.hasImage || viewModel.isProcessing)
+                    const SizedBox(height: AppDimensions.space16),
+
+                  // BUT-903: multi-page strip — thumbnails of every photo
+                  // combined into one recipe, plus the "add page" tile.
+                  if (viewModel.hasImage) ...[
+                    PhotoPageStrip(viewModel: viewModel),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
+                  // BUT-684: handwritten-recipe opt-in. Set before picking a
+                  // photo — routes the import through the handwriting-tuned
+                  // OCR instead of the standard printed-text OCR.
+                  ButleryListSection(
+                    rows: [
+                      ButleryListRow.toggle(
+                        label: context.l10n.importHandwrittenToggle,
+                        subtitle: context.l10n.importHandwrittenToggleSubtitle,
+                        checked: viewModel.isHandwritten,
+                        // BUT-1460: switchable except while an import is
+                        // processing, and it cannot be switched on while
+                        // more than one page is staged (the handwriting
+                        // path reads one image; see canToggleHandwritten).
+                        enabled: viewModel.canToggleHandwritten,
+                        onChanged: viewModel.setHandwritten,
                       ),
-                      const SizedBox(height: AppDimensions.space16),
-
-                      // Flow 07: what the permission answer means here, and the
-                      // way on (flows-roles-budget.md).
-                      if (viewModel.permissionNotice != null) ...[
-                        PhotoPermissionNoticeCard(
-                          notice: viewModel.permissionNotice!,
-                          onAskAgain: viewModel.askPermissionAgain,
-                          onOpenSettings: () =>
-                              OsPermissionHelper.openSettings(),
-                          // A refused add-page keeps the pages already taken.
-                          onChooseFromGallery:
-                              viewModel.chooseFromGalleryInstead,
-                          onWriteYourself: () {
-                            viewModel.clearPermissionNotice();
-                            Navigator.pushNamed(context, Routes.manualEntry);
-                          },
-                        ),
-                        const SizedBox(height: AppDimensions.space16),
-                      ],
-
-                      ImagePreview(viewModel: viewModel),
-                      if (viewModel.hasImage || viewModel.isProcessing)
-                        const SizedBox(height: AppDimensions.space16),
-
-                      // BUT-903: multi-page strip — thumbnails of every photo
-                      // combined into one recipe, plus the "add page" tile.
-                      if (viewModel.hasImage) ...[
-                        PhotoPageStrip(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.space16),
-                      ],
-
-                      // BUT-684: handwritten-recipe opt-in. Set before picking a
-                      // photo — routes the import through the handwriting-tuned
-                      // OCR instead of the standard printed-text OCR.
-                      ButleryListSection(
-                        rows: [
-                          ButleryListRow.toggle(
-                            label: context.l10n.importHandwrittenToggle,
-                            subtitle:
-                                context.l10n.importHandwrittenToggleSubtitle,
-                            checked: viewModel.isHandwritten,
-                            // BUT-1460: switchable except while an import is
-                            // processing, and it cannot be switched on while
-                            // more than one page is staged (the handwriting
-                            // path reads one image; see canToggleHandwritten).
-                            enabled: viewModel.canToggleHandwritten,
-                            onChanged: viewModel.setHandwritten,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppDimensions.space16),
-
-                      // BUT-410: heirloom toggle + form, only when an image
-                      // exists, so the user sees it as a property of the photo.
-                      if (viewModel.hasImage)
-                        HeirloomSection(viewModel: viewModel)
-                      else
-                        Text(
-                          context.l10n.importPhotoHeirloomHint,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      const SizedBox(height: AppDimensions.space16),
-
-                      if (viewModel.hasImage &&
-                          viewModel.qualityScore != null &&
-                          viewModel.qualityScore! < 0.6 &&
-                          !viewModel.hasError) ...[
-                        PhotoQualityWarning(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.space16),
-                      ],
-
-                      // Error container with recovery options
-                      if (viewModel.hasError) ...[
-                        StateWidget.error(
-                          message: viewModel.error!,
-                          preserved: context.l10n.errorPreservedPhoto,
-                          onAction: viewModel.canRetryOcr
-                              ? null // Don't show clear button when retry is available
-                              : () => viewModel.clearError(),
-                        ),
-                        const SizedBox(height: AppDimensions.space8),
-
-                        // Error recovery buttons (only shown when image is available)
-                        if (viewModel.hasImage) ...[
-                          UtilityComponents.primaryButton(
-                            context,
-                            label: context.l10n.commonRetry,
-                            icon: ButleryIcons.refreshCw,
-                            onPressed: viewModel.isProcessing
-                                ? null
-                                : () => viewModel.retryOcr(),
-                            isExpanded: true,
-                          ),
-                          const SizedBox(height: AppDimensions.space8),
-
-                          // Continue without OCR button (escape route)
-                          UtilityComponents.secondaryButton(
-                            context,
-                            label: context.l10n.importContinueWithoutOcr,
-                            icon: ButleryIcons.pencil,
-                            onPressed: viewModel.isProcessing
-                                ? null
-                                : () => _navigateToManualEntry(
-                                    context,
-                                    viewModel,
-                                  ),
-                            isExpanded: true,
-                          ),
-                        ],
-
-                        const SizedBox(height: AppDimensions.space16),
-                      ],
-
-                      // OCR-resultat
-                      if (viewModel.hasOcrResult) ...[
-                        Row(
-                          children: [
-                            Text(
-                              context.l10n.importInterpretedText,
-                              style: AppTextStyles.headlineSmall,
-                            ),
-                            const SizedBox(width: AppDimensions.space8),
-                            // Confidence indicator (Phase 2 Enhancement)
-                            if (viewModel.confidence != null)
-                              ConfidenceIndicator(
-                                confidence: viewModel.confidence!,
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.space8),
-                        TextDisplayCard(text: viewModel.ocrText),
-                        const SizedBox(height: AppDimensions.space16),
-                        if (viewModel.hasMultipleRecipes)
-                          UtilityComponents.primaryButton(
-                            context,
-                            label: context.l10n.importMultipleRecipesFound(
-                              viewModel.parsedRecipes.length,
-                            ),
-                            icon: ButleryIcons.list,
-                            onPressed: () => _navigateToMultiRecipePicker(
-                              context,
-                              viewModel,
-                            ),
-                            isExpanded: true,
-                          )
-                        else
-                          UtilityComponents.primaryButton(
-                            context,
-                            label: context.l10n.importProceedToEdit,
-                            icon: ButleryIcons.arrowRight,
-                            onPressed: () =>
-                                _navigateToTextImport(context, viewModel),
-                            isExpanded: true,
-                          ),
-                        const SizedBox(height: AppDimensions.space16),
-                      ],
                     ],
                   ),
-                ),
+                  const SizedBox(height: AppDimensions.space16),
+
+                  // BUT-410: heirloom toggle + form, only when an image
+                  // exists, so the user sees it as a property of the photo.
+                  if (viewModel.hasImage)
+                    HeirloomSection(viewModel: viewModel)
+                  else
+                    Text(
+                      context.l10n.importPhotoHeirloomHint,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  const SizedBox(height: AppDimensions.space16),
+
+                  if (viewModel.hasImage &&
+                      viewModel.qualityScore != null &&
+                      viewModel.qualityScore! < 0.6 &&
+                      !viewModel.hasError) ...[
+                    PhotoQualityWarning(viewModel: viewModel),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
+                  // Error container with recovery options
+                  if (viewModel.hasError) ...[
+                    StateWidget.error(
+                      message: viewModel.error!,
+                      preserved: context.l10n.errorPreservedPhoto,
+                      onAction: viewModel.canRetryOcr
+                          ? null // Don't show clear button when retry is available
+                          : () => viewModel.clearError(),
+                    ),
+                    const SizedBox(height: AppDimensions.space8),
+
+                    // Error recovery buttons (only shown when image is available)
+                    if (viewModel.hasImage) ...[
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: context.l10n.commonRetry,
+                        icon: ButleryIcons.refreshCw,
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => viewModel.retryOcr(),
+                        isExpanded: true,
+                      ),
+                      const SizedBox(height: AppDimensions.space8),
+
+                      // Continue without OCR button (escape route)
+                      UtilityComponents.secondaryButton(
+                        context,
+                        label: context.l10n.importContinueWithoutOcr,
+                        icon: ButleryIcons.pencil,
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToManualEntry(
+                                context,
+                                viewModel,
+                              ),
+                        isExpanded: true,
+                      ),
+                    ],
+
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+
+                  // OCR-resultat
+                  if (viewModel.hasOcrResult) ...[
+                    Row(
+                      children: [
+                        Text(
+                          context.l10n.importInterpretedText,
+                          style: AppTextStyles.headlineSmall,
+                        ),
+                        const SizedBox(width: AppDimensions.space8),
+                        // Confidence indicator (Phase 2 Enhancement)
+                        if (viewModel.confidence != null)
+                          ConfidenceIndicator(
+                            confidence: viewModel.confidence!,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.space8),
+                    TextDisplayCard(text: viewModel.ocrText),
+                    const SizedBox(height: AppDimensions.space16),
+                    if (viewModel.hasMultipleRecipes)
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: context.l10n.importMultipleRecipesFound(
+                          viewModel.parsedRecipes.length,
+                        ),
+                        icon: ButleryIcons.list,
+                        onPressed: () => _navigateToMultiRecipePicker(
+                          context,
+                          viewModel,
+                        ),
+                        isExpanded: true,
+                      )
+                    else
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: context.l10n.importProceedToEdit,
+                        icon: ButleryIcons.arrowRight,
+                        onPressed: () =>
+                            _navigateToTextImport(context, viewModel),
+                        isExpanded: true,
+                      ),
+                    const SizedBox(height: AppDimensions.space16),
+                  ],
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
       // chosen first and the text is read only here, the view's one saffron
