@@ -1,6 +1,7 @@
 // lib/widgets/common/indicators/realtime_indicators.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
 
 /// Realtime indicators facade for collaborative features
@@ -14,14 +15,14 @@ class RealtimeIndicators {
   static Widget realtimeStatus({
     required bool isOnline,
     required String statusDescription,
-    required String statusEmoji,
+    required ConnectionStatus status,
     bool showText = false,
     EdgeInsets? padding,
   }) {
     return RealtimeStatusWidget(
       isOnline: isOnline,
       statusDescription: statusDescription,
-      statusEmoji: statusEmoji,
+      status: status,
       showText: showText,
       padding: padding,
     );
@@ -31,13 +32,13 @@ class RealtimeIndicators {
   static Widget realtimeStatusBanner({
     required bool isOnline,
     required String statusDescription,
-    required String statusEmoji,
+    required ConnectionStatus status,
     VoidCallback? onRetry,
   }) {
     return RealtimeStatusBanner(
       isOnline: isOnline,
       statusDescription: statusDescription,
-      statusEmoji: statusEmoji,
+      status: status,
       onRetry: onRetry,
     );
   }

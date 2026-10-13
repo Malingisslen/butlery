@@ -87,13 +87,12 @@ void main() {
       });
     });
 
-    test('should provide status descriptions and emojis', () {
+    test('should provide a status description', () {
       fakeAsync((async) {
         final monitor = ConnectionMonitor(syncService: mockSyncService);
 
         expect(monitor.statusDescription, isA<String>());
         expect(monitor.statusDescription.isNotEmpty, isTrue);
-        expect(monitor.statusEmoji, equals('❓'));
 
         monitor.dispose();
         async.elapse(const Duration(milliseconds: 400));
@@ -485,7 +484,6 @@ void main() {
         expect(() => monitor.isOnline, returnsNormally);
         expect(() => monitor.status, returnsNormally);
         expect(() => monitor.statusDescription, returnsNormally);
-        expect(() => monitor.statusEmoji, returnsNormally);
         expect(() => monitor.debugInfo, returnsNormally);
         expect(() => monitor.connectionUptime, returnsNormally);
         expect(

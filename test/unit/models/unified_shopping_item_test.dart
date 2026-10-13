@@ -7,7 +7,6 @@
 /// - Serialization/deserialization (JSON and Firestore)
 /// - Computed properties and formatting
 /// - Swedish unit formatting and abbreviations
-/// - Priority and emoji mapping
 /// - Edge cases and validation
 library;
 
@@ -378,44 +377,6 @@ void main() {
         // Amount 1 without unit
         final plain = testItem.copyWith(amount: 1, unit: '');
         expect(plain.displayText, equals('Mjölk'));
-      });
-    });
-
-    group('Priority', () {
-      test('should map priority to emoji correctly', () {
-        // Priority 5 (highest) - red
-        final p5 = testItem.copyWith(priority: 5);
-        expect(p5.priorityEmoji, equals('🔴'));
-
-        // Priority 4 - orange
-        final p4 = testItem.copyWith(priority: 4);
-        expect(p4.priorityEmoji, equals('🟠'));
-
-        // Priority 3 - yellow
-        final p3 = testItem.copyWith(priority: 3);
-        expect(p3.priorityEmoji, equals('🟡'));
-
-        // Priority 2 - green
-        final p2 = testItem.copyWith(priority: 2);
-        expect(p2.priorityEmoji, equals('🟢'));
-
-        // Priority 1 (lowest) - white
-        final p1 = testItem.copyWith(priority: 1);
-        expect(p1.priorityEmoji, equals('⚪'));
-      });
-
-      test('should handle null and out-of-range priorities', () {
-        // Null priority defaults to yellow (medium)
-        final noPriority = testItem.copyWith(priority: null);
-        expect(noPriority.priorityEmoji, equals('🟡'));
-
-        // Out of range (too low) defaults to yellow
-        final tooLow = testItem.copyWith(priority: 0);
-        expect(tooLow.priorityEmoji, equals('🟡'));
-
-        // Out of range (too high) defaults to yellow
-        final tooHigh = testItem.copyWith(priority: 10);
-        expect(tooHigh.priorityEmoji, equals('🟡'));
       });
     });
 

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/widgets/common/indicators/realtime_indicators.dart';
 import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
 
@@ -33,7 +34,7 @@ void main() {
           RealtimeIndicators.realtimeStatus(
             isOnline: true,
             statusDescription: 'Online',
-            statusEmoji: '🟢',
+            status: ConnectionStatus.connected,
           ),
         ),
       );
@@ -42,7 +43,7 @@ void main() {
       );
       expect(w.isOnline, isTrue);
       expect(w.statusDescription, 'Online');
-      expect(w.statusEmoji, '🟢');
+      expect(w.status, ConnectionStatus.connected);
       expect(w.showText, isFalse);
     });
 
@@ -52,7 +53,7 @@ void main() {
           RealtimeIndicators.realtimeStatus(
             isOnline: false,
             statusDescription: 'Offline',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
             showText: true,
           ),
         ),
@@ -69,7 +70,7 @@ void main() {
           RealtimeIndicators.realtimeStatus(
             isOnline: true,
             statusDescription: 'd',
-            statusEmoji: 'e',
+            status: ConnectionStatus.unknown,
             padding: const EdgeInsets.all(7),
           ),
         ),
@@ -91,7 +92,7 @@ void main() {
           RealtimeIndicators.realtimeStatusBanner(
             isOnline: false,
             statusDescription: 'Disconnected',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
             onRetry: onRetry,
           ),
         ),
@@ -101,7 +102,7 @@ void main() {
       );
       expect(w.isOnline, isFalse);
       expect(w.statusDescription, 'Disconnected');
-      expect(w.statusEmoji, '🔴');
+      expect(w.status, ConnectionStatus.disconnected);
       expect(w.onRetry, equals(onRetry));
     });
 
@@ -111,7 +112,7 @@ void main() {
           RealtimeIndicators.realtimeStatusBanner(
             isOnline: true,
             statusDescription: 'Connected',
-            statusEmoji: '🟢',
+            status: ConnectionStatus.connected,
           ),
         ),
       );

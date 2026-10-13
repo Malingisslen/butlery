@@ -1,6 +1,6 @@
 /// Widget tests for RealtimeStatusWidget and RealtimeStatusBanner.
 ///
-/// Verifies tooltip, emoji rendering, conditional text visibility, banner
+/// Verifies tooltip, status dot rendering, conditional text visibility, banner
 /// hide-when-online, retry button visibility/callback, and l10n usage.
 library;
 
@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
+import 'package:butlery/widgets/common/indicators/connection_dot.dart';
 import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -26,29 +28,32 @@ Widget _wrap(Widget child) => MaterialApp(
 
 void main() {
   group('RealtimeStatusWidget', () {
-    testWidgets('renders emoji and wraps it in a Tooltip with description', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          const RealtimeStatusWidget(
-            isOnline: true,
-            statusDescription: 'Allt funkar',
-            statusEmoji: '🟢',
+    testWidgets(
+      'renders a status dot and wraps it in a Tooltip with description',
+      (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrap(
+            const RealtimeStatusWidget(
+              isOnline: true,
+              statusDescription: 'Allt funkar',
+              status: ConnectionStatus.connected,
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      expect(find.text('🟢'), findsOneWidget);
-      final tooltip = tester.widget<Tooltip>(
-        find.descendant(
-          of: find.byType(RealtimeStatusWidget),
-          matching: find.byType(Tooltip),
-        ),
-      );
-      expect(tooltip.message, 'Allt funkar');
-    });
+        expect(find.byType(ConnectionDot), findsOneWidget);
+        final tooltip = tester.widget<Tooltip>(
+          find.descendant(
+            of: find.byType(RealtimeStatusWidget),
+            matching: find.byType(Tooltip),
+          ),
+        );
+        expect(tooltip.message, 'Allt funkar');
+      },
+    );
 
     testWidgets('does not render statusDescription text when showText=false', (
       tester,
@@ -58,22 +63,22 @@ void main() {
           const RealtimeStatusWidget(
             isOnline: true,
             statusDescription: 'Allt funkar',
-            statusEmoji: '🟢',
+            status: ConnectionStatus.connected,
           ),
         ),
       );
       await tester.pump();
 
       // Description should NOT be visible as a Text widget (only as tooltip
-      // message). The only visible Text inside the widget is the emoji.
+      // message). The status shows as a dot, so there is no Text at all.
       final texts = find
           .descendant(
             of: find.byType(RealtimeStatusWidget),
             matching: find.byType(Text),
           )
           .evaluate();
-      expect(texts.length, 1);
-      expect((texts.first.widget as Text).data, '🟢');
+      expect(texts, isEmpty);
+      expect(find.byType(ConnectionDot), findsOneWidget);
     });
 
     testWidgets('renders statusDescription text when showText=true', (
@@ -84,7 +89,7 @@ void main() {
           const RealtimeStatusWidget(
             isOnline: false,
             statusDescription: 'Frånkopplad',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
             showText: true,
           ),
         ),
@@ -108,7 +113,7 @@ void main() {
             const RealtimeStatusWidget(
               isOnline: true,
               statusDescription: 'd',
-              statusEmoji: 'e',
+              status: ConnectionStatus.unknown,
             ),
           ),
         );
@@ -134,7 +139,7 @@ void main() {
           const RealtimeStatusWidget(
             isOnline: true,
             statusDescription: 'd',
-            statusEmoji: 'e',
+            status: ConnectionStatus.unknown,
             padding: custom,
           ),
         ),
@@ -160,14 +165,14 @@ void main() {
           const RealtimeStatusBanner(
             isOnline: true,
             statusDescription: 'Connected',
-            statusEmoji: '🟢',
+            status: ConnectionStatus.connected,
           ),
         ),
       );
       await tester.pump();
 
-      // No emoji, no localized "Offline" heading, no retry button when online.
-      expect(find.text('🟢'), findsNothing);
+      // No dot, no localized "Offline" heading, no retry button when online.
+      expect(find.byType(ConnectionDot), findsNothing);
       expect(find.text('Offline'), findsNothing);
       expect(find.byType(TextButton), findsNothing);
       // Banner itself collapses to SizedBox.shrink.
@@ -181,20 +186,20 @@ void main() {
     });
 
     testWidgets(
-      'renders emoji + l10n offline title + description when offline',
+      'renders dot + l10n offline title + description when offline',
       (tester) async {
         await tester.pumpWidget(
           _wrap(
             const RealtimeStatusBanner(
               isOnline: false,
               statusDescription: 'Ingen anslutning',
-              statusEmoji: '🔴',
+              status: ConnectionStatus.disconnected,
             ),
           ),
         );
         await tester.pump();
 
-        expect(find.text('🔴'), findsOneWidget);
+        expect(find.byType(ConnectionDot), findsOneWidget);
         // Swedish l10n: realtimeOffline = "Offline"
         expect(find.text('Offline'), findsOneWidget);
         expect(find.text('Ingen anslutning'), findsOneWidget);
@@ -207,7 +212,7 @@ void main() {
           const RealtimeStatusBanner(
             isOnline: false,
             statusDescription: 'x',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
           ),
         ),
       );
@@ -231,7 +236,7 @@ void main() {
           RealtimeStatusBanner(
             isOnline: false,
             statusDescription: 'x',
-            statusEmoji: '🔴',
+            status: ConnectionStatus.disconnected,
             onRetry: () => taps++,
           ),
         ),

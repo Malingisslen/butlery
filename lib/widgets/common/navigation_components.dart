@@ -4,6 +4,7 @@ import 'package:butlery/models/recipe_unified.dart';
 
 // Import focused modules
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/widgets/common/indicators/realtime_indicators.dart';
 
 /// Facade for navigation components. Delegates to specialized navigation modules.
@@ -34,14 +35,14 @@ class NavigationComponents {
   static Widget realtimeStatus({
     required bool isOnline,
     required String statusDescription,
-    required String statusEmoji,
+    required ConnectionStatus status,
     bool showText = false,
     EdgeInsets? padding,
   }) {
     return RealtimeIndicators.realtimeStatus(
       isOnline: isOnline,
       statusDescription: statusDescription,
-      statusEmoji: statusEmoji,
+      status: status,
       showText: showText,
       padding: padding,
     );
@@ -51,13 +52,13 @@ class NavigationComponents {
   static Widget realtimeStatusBanner({
     required bool isOnline,
     required String statusDescription,
-    required String statusEmoji,
+    required ConnectionStatus status,
     VoidCallback? onRetry,
   }) {
     return RealtimeIndicators.realtimeStatusBanner(
       isOnline: isOnline,
       statusDescription: statusDescription,
-      statusEmoji: statusEmoji,
+      status: status,
       onRetry: onRetry,
     );
   }

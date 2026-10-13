@@ -1225,8 +1225,6 @@ Inhandlat:
 
         // Assert
         expect(priorities, equals([5, 4, 3, 2, 1]));
-        expect(items.first.priorityEmoji, equals('🔴')); // Highest priority
-        expect(items.last.priorityEmoji, equals('⚪')); // Lowest priority
       });
 
       test('should handle item notes and metadata', () async {

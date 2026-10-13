@@ -7,12 +7,14 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
+import 'package:butlery/widgets/common/indicators/connection_dot.dart';
 
 /// Realtime status widget showing connection status
 class RealtimeStatusWidget extends StatelessWidget {
   final bool isOnline;
   final String statusDescription;
-  final String statusEmoji;
+  final ConnectionStatus status;
   final bool showText;
   final EdgeInsets? padding;
 
@@ -20,7 +22,7 @@ class RealtimeStatusWidget extends StatelessWidget {
     super.key,
     required this.isOnline,
     required this.statusDescription,
-    required this.statusEmoji,
+    required this.status,
     this.showText = false,
     this.padding,
   });
@@ -39,11 +41,7 @@ class RealtimeStatusWidget extends StatelessWidget {
                 context,
                 AppMotion.standard,
               ),
-              child: Text(
-                statusEmoji,
-                key: ValueKey(statusEmoji),
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              child: ConnectionDot(key: ValueKey(status), status: status),
             ),
             if (showText) ...[
               const SizedBox(width: AppDimensions.space4),
@@ -76,14 +74,14 @@ class RealtimeStatusWidget extends StatelessWidget {
 class RealtimeStatusBanner extends StatelessWidget {
   final bool isOnline;
   final String statusDescription;
-  final String statusEmoji;
+  final ConnectionStatus status;
   final VoidCallback? onRetry;
 
   const RealtimeStatusBanner({
     super.key,
     required this.isOnline,
     required this.statusDescription,
-    required this.statusEmoji,
+    required this.status,
     this.onRetry,
   });
 
@@ -100,12 +98,7 @@ class RealtimeStatusBanner extends StatelessWidget {
       color: context.modeColors.surfaceTintDanger,
       child: Row(
         children: [
-          Text(
-            statusEmoji,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontSize: AppDimensions.iconSizeM.toDouble(),
-            ),
-          ),
+          ConnectionDot(status: status),
           const SizedBox(
             width: (AppDimensions.space8 + AppDimensions.space4),
           ),

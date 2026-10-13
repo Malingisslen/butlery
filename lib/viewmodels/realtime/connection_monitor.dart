@@ -159,22 +159,6 @@ class ConnectionMonitor {
     }
   }
 
-  /// Get emoji for connection status
-  String get statusEmoji {
-    switch (_status) {
-      case ConnectionStatus.unknown:
-        return '❓';
-      case ConnectionStatus.connecting:
-        return '🔄';
-      case ConnectionStatus.connected:
-        return '🟢';
-      case ConnectionStatus.disconnected:
-        return '🔴';
-      case ConnectionStatus.reconnecting:
-        return '🟡';
-    }
-  }
-
   /// Statistics for debugging
   Map<String, dynamic> get debugInfo {
     return {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 
 // Focused Components
@@ -186,14 +187,14 @@ class CollaborativeIndicators {
   static Widget collaborativeConnectionStatus({
     required bool isOnline,
     required String statusText,
-    String? statusEmoji,
+    ConnectionStatus? status,
     bool showRetryButton = false,
     VoidCallback? onRetry,
   }) {
     return CollaborativeConnectionWidgets.connectionStatus(
       isOnline: isOnline,
       statusText: statusText,
-      statusEmoji: statusEmoji,
+      status: status,
       showRetryButton: showRetryButton,
       onRetry: onRetry,
     );

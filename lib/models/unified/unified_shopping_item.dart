@@ -18,7 +18,7 @@
 /// - **Dual Mode Support**: Seamlessly handles both basic personal shopping and collaborative shared shopping
 /// - **Smart Formatting**: Intelligent display text generation with Swedish unit abbreviations and amount optimization
 /// - **Collaborative Tracking**: Complete user attribution for all item lifecycle events with timestamp precision
-/// - **Priority System**: Visual priority management with emoji indicators and organizational sorting support
+/// - **Priority System**: Visual priority management and organizational sorting support
 /// - **Migration Support**: Backward compatibility with legacy shopping item models for seamless upgrades
 /// **Usage Examples:**
 /// ```dart
@@ -44,7 +44,6 @@
 /// // Smart formatting examples
 /// print(basicItem.displayText); // "1,5 l Mjölk"
 /// print(collabItem.displayText); // "12 st Ägg"
-/// print(collabItem.priorityEmoji); // "🟠" (high priority)
 /// // Toggle purchase status with user tracking
 /// final purchasedItem = collabItem.togglePurchased(
 ///   userId: currentUserId,
@@ -250,7 +249,7 @@ class UnifiedShoppingItem {
   final double? estimatedPrice;
 
   /// Priority level for the shopping item with range 1-5 where 5 is highest priority.
-  /// Used for item organization and visual prioritization with emoji indicators.
+  /// Used for item organization and visual prioritization.
   final int priority;
 
   /// Collaborative claim metadata — "I'll grab this one" (BUT-238).
@@ -500,34 +499,6 @@ class UnifiedShoppingItem {
     if (unitStr.isNotEmpty) return '$formattedAmount $unitStr';
     if (amount != 1.0) return formattedAmount;
     return '';
-  }
-
-  /// Gets the emoji representation for the item's priority level.
-  /// Provides visual priority indicators with color-coded emoji system for quick
-  /// priority identification in shopping lists. Maps priority numbers to intuitive
-  /// emoji representations for enhanced user experience.
-  /// Returns priority emoji based on priority level (1-5 scale).
-  /// **Priority Emoji Mapping:**
-  /// - 5 (Highest): 🔴 (Red circle)
-  /// - 4 (High): 🟠 (Orange circle)
-  /// - 3 (Medium): 🟡 (Yellow circle)
-  /// - 2 (Low): 🟢 (Green circle)
-  /// - 1 (Lowest): ⚪ (White circle)
-  String get priorityEmoji {
-    switch (priority) {
-      case 5:
-        return '🔴'; // Highest
-      case 4:
-        return '🟠'; // High
-      case 3:
-        return '🟡'; // Medium
-      case 2:
-        return '🟢'; // Low
-      case 1:
-        return '⚪'; // Lowest
-      default:
-        return '🟡';
-    }
   }
 
   /// Update methods for shopping item modification with collaborative tracking support.
