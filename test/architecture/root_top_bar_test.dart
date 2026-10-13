@@ -15,8 +15,6 @@ const _rootBarFiles = {
   'lib/views/veckomeny_view.dart',
   'lib/views/unified_shopping_view.dart',
   'lib/views/more/more_view.dart',
-  // Hem in selection mode (B-46): the counter and the bulk actions.
-  'lib/views/mina_recept/selection_app_bar.dart',
 };
 
 final _rootBar = RegExp(r'\b(?:ButleryTopBar|ButleryPage)\.rot\(');

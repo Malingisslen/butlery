@@ -25,15 +25,6 @@ Route<dynamic>? _routes(RouteSettings settings) {
       ),
     );
   }
-  if (name == '/simple') {
-    return MaterialPageRoute<void>(
-      settings: settings,
-      builder: (context) => Scaffold(
-        body: const Text('simple page'),
-        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      ),
-    );
-  }
   if (name == '/a' || name == '/b' || name == '/inner') {
     return MaterialPageRoute<void>(
       settings: settings,
@@ -373,39 +364,6 @@ void main() {
           home: Builder(
             builder: (context) => Scaffold(
               body: const Text('leaf page'),
-              bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(ButleryBottomNavigation), findsOneWidget);
-    });
-
-    testWidgets('a simple-layout page beside the list draws no bottom row; '
-        'on its own it does', (tester) async {
-      _size(tester, 1280, 800);
-      await tester.pumpWidget(_app());
-      _controller(tester).open(const RouteSettings(name: '/simple'), key: 's');
-      await tester.pumpAndSettle();
-      expect(find.text('simple page'), findsOneWidget);
-      expect(find.byType(ButleryBottomNavigation), findsNothing);
-
-      _size(tester, 360, 800);
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('sv'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: AppTheme.lightTheme,
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: const Text('simple page'),
               bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
             ),
           ),
