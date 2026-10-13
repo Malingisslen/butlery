@@ -289,8 +289,6 @@ class _SyncQueueViewState extends State<SyncQueueView> {
       appBar: ButleryTopBar.undersida(
         title: l10n.syncQueueTitle,
         backTo: widget.backTo,
-        backgroundColor: cs.surface,
-        foregroundColor: cs.onSurface,
         // The count as drawn, read as words (#synkko: "7").
         trailing: queue.isEmpty
             ? null

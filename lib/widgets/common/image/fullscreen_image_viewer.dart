@@ -145,14 +145,11 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       backgroundColor: cs.primary,
       extendBodyBehindAppBar: true,
       // A modal over the photo: X with Stäng, never a back arrow
-      // (Komponentark v1:57, pattern 4). The bar stays on the photo's ink
-      // frame; a tap on the photo still hides the bar, and
-      // the X then stays on the photo on its own (Q7-03 = A).
+      // (Komponentark v1:57, pattern 4); a tap on the photo still hides the
+      // bar, and the X then stays on the photo on its own (Q7-03 = A).
       appBar: _showAppBar
           ? ButleryTopBar.undersida(
               accentRule: false,
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
               leading: IconButton(
                 icon: const ButleryIcon(ButleryIcons.x),
                 onPressed: () => Navigator.of(context).pop(),

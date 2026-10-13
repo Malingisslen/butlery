@@ -267,8 +267,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       title: suggests
           ? context.l10n.recipeSuggestChange
           : context.l10n.recipeEdit,
-      backgroundColor: cs.surface,
-      foregroundColor: cs.onSurface,
       leading: IconButton(
         key: const ValueKey('edit-recipe-close'),
         icon: const ButleryIcon(ButleryIcons.x),

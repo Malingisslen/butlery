@@ -42,12 +42,7 @@ void _usesAll(String decision, Map<String, List<String>> expected) {
 
 // Views that already gave their subpage bar a colour when the guard was
 // written. The list only shrinks; a new entry means B-60 was undone.
-const _ownBarColourToday = <String>[
-  'lib/views/edit_recipe_view.dart',
-  'lib/views/ingredient_search/ingredient_search_view.dart',
-  'lib/views/sync/sync_queue_view.dart',
-  'lib/widgets/common/image/fullscreen_image_viewer.dart',
-];
+const _ownBarColourToday = <String>[];
 
 void main() {
   group('B-56 veckomenyn är en tabell', () {
