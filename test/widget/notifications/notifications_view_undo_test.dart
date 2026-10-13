@@ -71,6 +71,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
+  testWidgets('a long press turns the bar into the count with a close button', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: const NotificationsView(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Stäng'), findsNothing);
+
+    await tester.longPress(find.text('Första'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 markerade'), findsOneWidget);
+    expect(find.byTooltip('Stäng'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Stäng'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Stäng'), findsNothing);
+    expect(find.text('1 markerade'), findsNothing);
+  });
+
   testWidgets('dismiss hides the row at once and deletes nothing yet', (
     tester,
   ) async {
