@@ -235,7 +235,7 @@ void main() {
 
         // Both permission choices are offered.
         expect(find.text('Kan redigera'), findsOneWidget);
-        expect(find.text('Endast läsa'), findsOneWidget);
+        expect(find.text('Bara läsning'), findsOneWidget);
       },
     );
 
@@ -470,7 +470,7 @@ void main() {
       });
 
       await pickFriend(tester, 'friend_anna');
-      await tester.tap(find.text('Endast läsa'));
+      await tester.tap(find.text('Bara läsning'));
       await tester.pumpAndSettle();
       expect(
         find.text('De du delar med kan se listan men inte ändra den.'),

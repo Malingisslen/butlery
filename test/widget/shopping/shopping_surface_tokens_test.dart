@@ -242,7 +242,7 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(
-            tester.widget<Text>(find.text('Redigera')).style?.color,
+            tester.widget<Text>(find.text('Redigerare')).style?.color,
             cs.onSurface,
           );
           expect(
@@ -309,7 +309,7 @@ void main() {
         final role = find
             .descendant(
               of: find.byType(DropdownButton<SharedListPermission>),
-              matching: find.text('Redigera'),
+              matching: find.text('Redigerare'),
             )
             .hitTestable();
         expect(role, findsOneWidget);

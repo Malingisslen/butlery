@@ -202,7 +202,7 @@ void main() {
       });
 
       test(
-        'should show "Firebase otillgänglig" when internet connected but Firebase disconnected',
+        'should show "Servern går inte att nå" when internet connected but Firebase disconnected',
         () async {
           // Arrange
           service.startMonitoring();
@@ -212,7 +212,10 @@ void main() {
           await Future.delayed(Duration(milliseconds: 100));
 
           // Assert
-          expect(service.connectionStatusText, equals('Firebase otillgänglig'));
+          expect(
+            service.connectionStatusText,
+            equals('Servern går inte att nå'),
+          );
         },
       );
 
@@ -379,7 +382,7 @@ void main() {
 
         // Assert
         expect(service.isConnectedToFirebase, isFalse);
-        expect(service.connectionStatusText, equals('Firebase otillgänglig'));
+        expect(service.connectionStatusText, equals('Servern går inte att nå'));
       });
 
       test('should handle multiple rapid state changes', () async {

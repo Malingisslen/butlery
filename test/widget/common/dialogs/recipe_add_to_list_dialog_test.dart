@@ -202,7 +202,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('recipeListChoice_new')));
     await tester.pumpAndSettle();
     // Prefilled from the recipe title.
-    expect(find.text('Köttbullar - Ingredienser'), findsOneWidget);
+    expect(find.text('Köttbullar – Ingredienser'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField), 'a');
     await tester.tap(find.text('Lägg till'));

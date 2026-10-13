@@ -191,7 +191,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(errors, hasLength(1));
-      expect(errors.single, startsWith('Fel vid tillägg:'));
+      expect(errors.single, startsWith('Varan kunde inte läggas till'));
+      expect(errors.single, isNot(contains('boom')));
       expect(find.text('La till ”Mjölk”'), findsNothing);
       expect(find.text('Ångra'), findsNothing);
     });
@@ -636,7 +637,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(errors, hasLength(1));
-      expect(errors.single, startsWith('Fel vid uppdatering:'));
+      expect(errors.single, startsWith('Varan kunde inte uppdateras'));
+      expect(errors.single, isNot(contains('boom')));
     });
 
     // BUT-1873 on the edit side: the add dialog pins its input count, and the

@@ -526,7 +526,7 @@ void main() {
         resource = _createResourceWithLastEdit(
           DateTime.now().subtract(Duration(days: 3)),
         );
-        expect(resource.activityText, equals('Aktiv denna veckan'));
+        expect(resource.activityText, equals('Aktiv den här veckan'));
 
         resource = _createResourceWithLastEdit(
           DateTime.now().subtract(Duration(days: 10)),
@@ -599,11 +599,11 @@ void main() {
         );
         expect(
           resource.getUserPermissionText('user_writer'),
-          equals('Skrivare'),
+          equals('Redigerare'),
         );
         expect(
           resource.getUserPermissionText('user_viewer'),
-          equals('Betraktare'),
+          equals('Läsare'),
         );
         expect(resource.getUserPermissionText('user_reader'), equals('Läsare'));
         expect(resource.getUserPermissionText('user_unknown'), isNull);

@@ -18,13 +18,13 @@ void main() {
     // service that reads the text.
     expect(
       sv.permImportCameraBody,
-      'Jag läser texten ur bilden och fyller i receptet åt dig. '
+      'Vi läser texten ur bilden och fyller i receptet åt dig. '
       'Bilden skickas bara för att läsa av texten.',
     );
     expect(sv.permImportCameraBody, isNot(contains('stannar')));
     expect(
       en.permImportCameraBody,
-      'I read the text in the photo and fill in the recipe for you. '
+      'We read the text in the photo and fill in the recipe for you. '
       'The photo is sent only to read the text.',
     );
   });

@@ -210,7 +210,7 @@ void main() {
     // Untick Fest; Vardag stays selected.
     await tester.tap(tagRow('Fest'));
     await tester.pump();
-    expect(find.text('1 valda'), findsOneWidget);
+    expect(find.text('1 vald'), findsOneWidget);
 
     vm.deletes = {vardag.id};
     await tester.tap(find.byKey(const ValueKey('personal-tags-partial-retry')));

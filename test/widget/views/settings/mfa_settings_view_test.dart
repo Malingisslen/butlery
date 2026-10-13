@@ -97,13 +97,13 @@ void main() {
     await tester.tap(find.byIcon(ButleryIcons.trash2));
     await tester.pumpAndSettle();
     // The removal asks first; the way off is intact.
-    expect(find.text('Ta bort MFA?'), findsOneWidget);
+    expect(find.text('Stäng av tvåstegsverifiering?'), findsOneWidget);
     expect(find.byKey(const ValueKey('mfa.turnOn')), findsNothing);
     // The button names what disappears, and Avbryt closes without removing.
     expect(find.text('Ta bort tvåstegsverifiering'), findsOneWidget);
     await tester.tap(find.text('Avbryt'));
     await tester.pumpAndSettle();
-    expect(find.text('Ta bort MFA?'), findsNothing);
+    expect(find.text('Stäng av tvåstegsverifiering?'), findsNothing);
     verifyNever(() => mfa.unenrollMfa(any()));
   });
 
@@ -115,7 +115,10 @@ void main() {
     await pump(tester);
 
     expect(find.text('Inte påslagen'), findsOneWidget);
-    expect(find.text('Aktivera MFA för extra säkerhet.'), findsOneWidget);
+    expect(
+      find.text('Slå på tvåstegsverifiering för extra säkerhet.'),
+      findsOneWidget,
+    );
     expect(find.text('Slå på tvåstegsverifiering'), findsOneWidget);
     expect(find.byKey(const ValueKey('mfa.turnOn')), findsOneWidget);
     expect(find.byType(HeroButton), findsOneWidget);

@@ -32,6 +32,6 @@ void main() {
     expect(sv.messagingRemoveMemberAction, 'Ta bort ur gruppen');
     expect(sv.ratingRemoveAction, 'Ta bort betyget');
     expect(sv.importHeirloomClearAction, 'Ta bort bilden');
-    expect(sv.familyDeleteMember, 'Ta bort familjemedlem');
+    expect(sv.familyDeleteMember, 'Radera matgäst');
   });
 }

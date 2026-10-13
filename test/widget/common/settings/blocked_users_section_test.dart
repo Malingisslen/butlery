@@ -161,7 +161,7 @@ void main() {
       await tester.tap(find.text('u2'));
       await tester.pumpAndSettle();
       expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
-      expect(find.text('1 valda'), findsOneWidget);
+      expect(find.text('1 vald'), findsOneWidget);
 
       await tester.tap(cancel);
       await tester.pumpAndSettle();

@@ -316,7 +316,9 @@ void main() {
           if (portions != originalPortions) {
             expect(
               find.text(
-                'Skalat från $originalPortions till $portions portioner',
+                portions == 1
+                    ? 'Skalat från $originalPortions till 1 portion'
+                    : 'Skalat från $originalPortions till $portions portioner',
               ),
               findsOneWidget,
             );
@@ -584,7 +586,7 @@ void main() {
         // Assert
         expect(find.text('1'), findsOneWidget);
         expect(
-          find.text('Skalat från 4 till 1 portioner'),
+          find.text('Skalat från 4 till 1 portion'),
           findsOneWidget,
         ); // Status text
       });

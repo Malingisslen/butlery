@@ -131,11 +131,11 @@ void main() {
     );
   });
 
-  testWidgets('"Lägg 3 nu, 1 i v." places the tail from Monday next week '
+  testWidgets('"Lägg 3 nu, 1 i vecka" places the tail from Monday next week '
       'and reports both weeks', (tester) async {
     await pickFridayMiddag(tester);
 
-    await tester.tap(find.textContaining('Lägg 3 nu, 1 i v. '));
+    await tester.tap(find.textContaining('Lägg 3 nu, 1 i vecka '));
     await tester.pumpAndSettle();
 
     verify(
@@ -159,7 +159,7 @@ void main() {
     expect(tail.map((r) => r.id), ['r4']);
     expect(
       find.text(
-        '3 recept i veckan, 1 i v. ${IsoWeekUtils.isoWeekNumber(nextWeek)}',
+        '3 recept i veckan, 1 i vecka ${IsoWeekUtils.isoWeekNumber(nextWeek)}',
       ),
       findsOneWidget,
     );
@@ -191,7 +191,7 @@ void main() {
       ),
     );
     expect(
-      find.text('3 av 4 lades till — resten ryms inte i veckan'),
+      find.text('3 av 4 lades till – resten ryms inte i veckan'),
       findsOneWidget,
     );
   });
@@ -210,14 +210,14 @@ void main() {
     ).thenThrow(Exception('offline'));
     await pickFridayMiddag(tester);
 
-    await tester.tap(find.textContaining('Lägg 3 nu, 1 i v. '));
+    await tester.tap(find.textContaining('Lägg 3 nu, 1 i vecka '));
     await tester.pumpAndSettle();
 
     verify(() => viewModel.clearSelection()).called(1);
     expect(
       find.text(
         '3 recept lades i veckan. Resten kunde inte läggas i '
-        'v. ${IsoWeekUtils.isoWeekNumber(nextWeek)}.',
+        'vecka ${IsoWeekUtils.isoWeekNumber(nextWeek)}.',
       ),
       findsOneWidget,
     );

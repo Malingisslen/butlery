@@ -52,7 +52,7 @@ class _MockIdTokenResult extends Mock implements IdTokenResult {}
 // P5-U03: a failed send says the typed text is still in the field
 // (content-style-guide.md:92), after what happened.
 const _clockAheadMessage =
-    'Kunde inte skicka. Telefonens klocka ligger för långt fram — '
+    'Kunde inte skicka. Telefonens klocka ligger för långt fram – '
     'kontrollera datum och tid i inställningarna. '
     'Texten ligger kvar i fältet.';
 const _genericMessage =

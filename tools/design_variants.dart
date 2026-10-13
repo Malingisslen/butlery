@@ -218,10 +218,43 @@ final _scaleAlias = RegExp(
   r'\bAppDimensions\.(?:spacing(?:Xs|Sm|M|Md|L|Lg|Xl|Xxxl)|'
   r'padding(?:S|M|Md|L)|iconSize(?:Action|Info|Display|EmptyState))\b',
 );
-final _forbiddenSv = RegExp(
-  r'artik(?:el|l)|handlingslist|matsedel|\.\.\.|"',
-  caseSensitive: false,
-);
+const _glossary = 'design/ordlista.json';
+
+/// The same matching as test/architecture/ordlista_test.dart: whole words,
+/// compared without case, exception phrases struck first.
+bool Function(String) _glossaryBreaks(String json) {
+  final glossary = jsonDecode(json) as Map<String, dynamic>;
+  const letters = 'A-Za-zÅÄÖåäöÉé';
+  final rules = <({RegExp pattern, List<String> exceptions})>[
+    for (final entry in glossary['ord'] as List)
+      for (final word in (entry as Map<String, dynamic>)['aldrig'] as List)
+        (
+          // Dart's \b only knows ASCII, so word edges are explicit lookarounds.
+          pattern: RegExp(
+            '(?<![$letters])${RegExp.escape((word as String).toLowerCase())}'
+            '(?![$letters])',
+          ),
+          exceptions: [...?(entry['undantag'] as List?)?.cast<String>()],
+        ),
+    for (final sign in glossary['tecken'] as List)
+      (
+        pattern: RegExp(
+          RegExp.escape((sign as Map<String, dynamic>)['aldrig'] as String),
+        ),
+        exceptions: const <String>[],
+      ),
+  ];
+  return (value) {
+    for (final rule in rules) {
+      var text = value.toLowerCase();
+      for (final phrase in rule.exceptions) {
+        text = text.replaceAll(phrase.toLowerCase(), ' ');
+      }
+      if (rule.pattern.hasMatch(text)) return true;
+    }
+    return false;
+  };
+}
 
 /// The count per row of [variantSpecs], each with the files it was found in.
 Map<String, ({int count, Map<String, int> files, List<String> values})>
@@ -372,13 +405,15 @@ countVariants(CensusSource src) {
   }
 
   final arb = src.read(_svArb);
+  final glossary = src.read(_glossary);
   final forbidden = <String>[];
-  if (arb != null) {
+  if (arb != null && glossary != null) {
+    final breaks = _glossaryBreaks(glossary);
     final values = jsonDecode(arb) as Map<String, dynamic>;
     for (final e in values.entries) {
       if (e.key.startsWith('@')) continue;
       final v = e.value;
-      if (v is String && _forbiddenSv.hasMatch(v)) forbidden.add(e.key);
+      if (v is String && breaks(v)) forbidden.add(e.key);
     }
   }
 

@@ -395,7 +395,7 @@ void main() {
     ) async {
       final result = await openAndTapFriday(tester, titles);
 
-      await tester.tap(find.textContaining('Lägg 3 nu, 1 i v. '));
+      await tester.tap(find.textContaining('Lägg 3 nu, 1 i vecka '));
       await tester.pumpAndSettle();
 
       expect(result()?.day, DayOfWeek.fri);
@@ -485,7 +485,7 @@ void main() {
       expect(find.text('Inga lediga platser, 2 recept'), findsOneWidget);
       expect(find.textContaining('Lägg bara'), findsNothing);
 
-      await tester.tap(find.textContaining('Lägg alla i v. '));
+      await tester.tap(find.textContaining('Lägg alla i vecka '));
       await tester.pumpAndSettle();
 
       expect(result()?.spill, SlotSpill.nextWeek);

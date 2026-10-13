@@ -621,7 +621,7 @@ void main() {
         expect(accepted.statusText, equals('Accepterad'));
 
         final rejected = pending.reject();
-        expect(rejected.statusText, equals('Avvisad'));
+        expect(rejected.statusText, equals('Avböjd'));
 
         final cancelled = pending.cancel();
         expect(cancelled.statusText, equals('Avbruten'));

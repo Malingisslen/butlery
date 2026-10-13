@@ -318,7 +318,7 @@ void main() {
           final semantics = tester.widget<Semantics>(semanticsFinder.first);
           // Semantic label: "nötter status okänd"
           expect(semantics.properties.label, contains('nötter'));
-          expect(semantics.properties.label, contains('okänd'));
+          expect(semantics.properties.label, contains('ej kontrollerat'));
         },
       );
     });

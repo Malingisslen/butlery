@@ -337,7 +337,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Swedish title + body are rendered (default locale falls back to sv).
-        expect(find.text('Aktivera aviseringar?'), findsOneWidget);
+        expect(find.text('Aktivera notiser?'), findsOneWidget);
         expect(find.text('Tillåt'), findsOneWidget);
         expect(find.text('Avbryt'), findsOneWidget);
 

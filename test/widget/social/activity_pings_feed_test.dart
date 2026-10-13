@@ -228,7 +228,7 @@ void main() {
       await tester.pump();
 
       // Primary line in Swedish.
-      expect(find.text('Erik puttar på dig'), findsOneWidget);
+      expect(find.text('Erik knuffar till dig'), findsOneWidget);
       // Message suffix rendered with the em-dash + quotes wrapper.
       expect(find.text('— "börja laga?"'), findsOneWidget);
     });
@@ -255,7 +255,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Erik puttar på dig'), findsNothing);
+      expect(find.text('Erik knuffar till dig'), findsNothing);
     });
 
     testWidgets('6 items → only top 5 shown (newest first)', (tester) async {
@@ -294,7 +294,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Erik puttar på dig'), findsNWidgets(5));
+      expect(find.text('Erik knuffar till dig'), findsNWidgets(5));
       // The activity event for "started cooking" falls outside the top 5.
       expect(find.textContaining('började laga'), findsNothing);
     });

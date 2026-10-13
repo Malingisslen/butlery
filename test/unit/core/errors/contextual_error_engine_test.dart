@@ -246,7 +246,7 @@ void main() {
 
   group('unknown error message branches', () {
     test(
-      'with technical details + non-minimal severity uses tech-detail copy',
+      'with technical details + non-minimal severity hides technical details from the copy',
       () {
         final ctx = ErrorContext.fromCurrentState(
           errorType: ErrorType.unknown,
@@ -255,7 +255,8 @@ void main() {
           severity: ErrorSeverity.diagnostic,
         );
         final msg = ContextualErrorEngine.generateMessage(ctx);
-        expect(msg, contains('NPE at line 42'));
+        expect(msg, isNot(contains('NPE at line 42')));
+        expect(msg, contains('Ett oväntat fel uppstod'));
       },
     );
 
