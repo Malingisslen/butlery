@@ -24,6 +24,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 
 import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/factories/recipe_factory.dart';
@@ -100,6 +101,17 @@ void main() {
 
   tearDownAll(() async {
     await BaseUnitTest.teardownUnit();
+  });
+
+  testWidgets('with no pages waiting to be read the page keeps the tab bar', (
+    tester,
+  ) async {
+    arrange(recipes: const [], saveOk: true);
+    await tester.pumpWidget(_wrap(const PhotoImportView()));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ButleryBottomNavigation), findsOneWidget);
+    expect(find.byKey(const ValueKey('photo-import-read-pages')), findsNothing);
   });
 
   Future<void> saveBatch(WidgetTester tester) async {

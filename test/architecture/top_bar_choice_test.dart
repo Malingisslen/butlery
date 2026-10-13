@@ -14,12 +14,9 @@ import '../../tools/design_migration_census.dart' show stripComments;
 
 const _builtDirectly = {
   'lib/core/router/app_router.dart',
-  'lib/views/auth/mfa_challenge_view.dart',
   'lib/views/edit_recipe_view.dart',
   'lib/views/messaging/chat_view/chat_view_facade.dart',
   'lib/views/mina_recept/selection_app_bar.dart',
-  'lib/views/photo_import_view.dart',
-  'lib/views/quick_capture_view.dart',
   'lib/views/recipe_detail_view.dart',
   'lib/views/skriv_sjalv_recept_view.dart',
   'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart',

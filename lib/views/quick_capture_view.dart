@@ -2,11 +2,10 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -63,74 +62,68 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
   Widget build(BuildContext context) {
     final vm = context.watch<_QuickCaptureViewModel>();
 
-    return Scaffold(
-      // A subpage under Lägg till recept (Komponentark v1:71-78; Skarmar
-      // v12 del 1 'Snabbspara').
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.addSheetQuickSaveTitle,
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.compact,
-          child: Padding(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppDimensions.space32),
-                  LabeledField(
-                    label: context.l10n.quickCaptureTitleHint,
-                    child: TextFormField(
-                      controller: _titleController,
-                      errorBuilder: FieldErrorLine.builder,
-                      style: AppTextStyles.bodyLarge,
-                      autofocus: true,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _save(vm),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return context.l10n.validationTitleCannotBeEmpty;
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.space24),
-                  LabeledField(
-                    label: context.l10n.importMealType,
-                    child: ChoiceOptionWrap<String>(
-                      values: RecipeFormState.mealTypes,
-                      labelOf: (type) => type,
-                      selected: vm.mealType,
-                      onChanged: vm.setMealType,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-                  Text(
-                    context.l10n.quickCaptureHelp,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
-                  // BUT-403: `btn-quick-save` identifier for browser a11y.
-                  Semantics(
-                    identifier: 'btn-quick-save',
-                    // The view's one saffron action (Grafisk manual
-                    // v6:219). Busy keeps the name and draws the plate line.
-                    child: HeroButton(
-                      key: const ValueKey('test-quick-capture-save'),
-                      label: context.l10n.quickCaptureSave,
-                      busy: vm.isSaving,
-                      onPressed: () => _save(vm),
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.space32),
-                ],
+    // A focus mode under Lägg till recept: no tab bar (Malin 2026-10-13, B-54).
+    return ButleryPage.undersida(
+      title: context.l10n.addSheetQuickSaveTitle,
+      showTabBar: false,
+      width: PageWidth.compact,
+      body: Padding(
+        padding: AppDimensions.responsiveContentPadding(context),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppDimensions.space32),
+              LabeledField(
+                label: context.l10n.quickCaptureTitleHint,
+                child: TextFormField(
+                  controller: _titleController,
+                  errorBuilder: FieldErrorLine.builder,
+                  style: AppTextStyles.bodyLarge,
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _save(vm),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return context.l10n.validationTitleCannotBeEmpty;
+                    }
+                    return null;
+                  },
+                ),
               ),
-            ),
+              const SizedBox(height: AppDimensions.space24),
+              LabeledField(
+                label: context.l10n.importMealType,
+                child: ChoiceOptionWrap<String>(
+                  values: RecipeFormState.mealTypes,
+                  labelOf: (type) => type,
+                  selected: vm.mealType,
+                  onChanged: vm.setMealType,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space16),
+              Text(
+                context.l10n.quickCaptureHelp,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const Spacer(),
+              // BUT-403: `btn-quick-save` identifier for browser a11y.
+              Semantics(
+                identifier: 'btn-quick-save',
+                // The view's one saffron action (Grafisk manual
+                // v6:219). Busy keeps the name and draws the plate line.
+                child: HeroButton(
+                  key: const ValueKey('test-quick-capture-save'),
+                  label: context.l10n.quickCaptureSave,
+                  busy: vm.isSaving,
+                  onPressed: () => _save(vm),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space32),
+            ],
           ),
         ),
       ),
