@@ -40,10 +40,6 @@ void _usesAll(String decision, Map<String, List<String>> expected) {
   }
 }
 
-// Views that already gave their subpage bar a colour when the guard was
-// written. The list only shrinks; a new entry means B-60 was undone.
-const _ownBarColourToday = <String>[];
-
 void main() {
   group('B-56 veckomenyn är en tabell', () {
     test('grupp- och placeringsvyn ritar samma CalendarWeekGrid', () {
@@ -225,7 +221,7 @@ void main() {
         if (ownColour.hasMatch(_source(path))) found.add(path);
       }
       found.sort();
-      expect(found, _ownBarColourToday, reason: 'B-60: ljust överallt');
+      expect(found, isEmpty, reason: 'B-60: ljust överallt');
     });
   });
 
