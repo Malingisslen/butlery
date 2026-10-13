@@ -109,8 +109,9 @@ void main() {
       });
 
       test('should get star representation', () {
-        final stars = stats.getStarRepresentation(4.5);
-        expect(stars, contains('⭐'));
+        expect(stats.getStarRepresentation(4.5), equals('★★★★½'));
+        expect(stats.getStarRepresentation(3.0), equals('★★★'));
+        expect(stats.getStarRepresentation(5.0), equals('★★★★★'));
       });
 
       test('should get rating category', () {

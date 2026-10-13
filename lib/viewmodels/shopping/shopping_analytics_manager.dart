@@ -46,19 +46,19 @@ class ShoppingAnalyticsManager {
     if (activeList == null) return '';
 
     final buffer = StringBuffer();
-    buffer.writeln('📝 ${activeList.name}');
+    buffer.writeln(activeList.name);
     buffer.writeln('');
 
     for (final category in itemsByCategory.keys) {
-      buffer.writeln('🏷️ $category:');
+      buffer.writeln('$category:');
       for (final item in itemsByCategory[category]!) {
-        final check = item.bought ? '✅' : '⬜';
+        final check = item.bought ? '☑' : '☐';
         buffer.writeln('  $check ${item.displayText}');
       }
       buffer.writeln('');
     }
 
-    buffer.writeln('📊 ${activeList.summary}');
+    buffer.writeln(activeList.summary);
     return buffer.toString();
   }
 }

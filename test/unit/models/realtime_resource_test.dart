@@ -102,12 +102,6 @@ void main() {
         );
       });
 
-      test('should provide emoji icons', () {
-        expect(RealtimeResourceType.recipe.icon, equals('🍳'));
-        expect(RealtimeResourceType.menu.icon, equals('📋'));
-        expect(RealtimeResourceType.shoppingList.icon, equals('🛒'));
-      });
-
       test('should convert to string value', () {
         expect(RealtimeResourceType.recipe.toString(), equals('recipe'));
         expect(RealtimeResourceType.menu.toString(), equals('menu'));

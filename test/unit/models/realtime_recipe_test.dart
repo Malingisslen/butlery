@@ -737,7 +737,7 @@ void main() {
         expect(summary, contains('30 min'));
         expect(summary, contains('3 ingredienser'));
         expect(summary, contains('3 steg'));
-        expect(summary, contains('4.5 ⭐'));
+        expect(summary, contains('4.5 ★'));
       });
 
       test('should generate summary without optional fields', () {
@@ -771,7 +771,7 @@ void main() {
         expect(summary, equals('2 ingredienser • 1 steg'));
         expect(summary, isNot(contains('portioner')));
         expect(summary, isNot(contains('min')));
-        expect(summary, isNot(contains('⭐')));
+        expect(summary, isNot(contains('★')));
       });
 
       test('should match search query in title', () {

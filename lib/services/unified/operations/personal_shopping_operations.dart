@@ -409,7 +409,7 @@ class PersonalShoppingOperations {
     if (list == null) return AppLocale.current.shoppingListNotFound;
 
     final buffer = StringBuffer();
-    buffer.writeln('📋 ${list.name}');
+    buffer.writeln(list.name);
     buffer.writeln('=' * list.name.length);
     buffer.writeln();
 
@@ -417,7 +417,7 @@ class PersonalShoppingOperations {
     final boughtItems = list.items.where((item) => item.bought).toList();
 
     if (activeItems.isNotEmpty) {
-      buffer.writeln('📝 ${AppLocale.current.shoppingRemainingToBuy}');
+      buffer.writeln(AppLocale.current.shoppingRemainingToBuy);
       for (final item in activeItems) {
         buffer.writeln('☐ ${item.displayText}');
       }
@@ -425,7 +425,7 @@ class PersonalShoppingOperations {
     }
 
     if (boughtItems.isNotEmpty) {
-      buffer.writeln('✅ ${AppLocale.current.shoppingAlreadyBought}');
+      buffer.writeln(AppLocale.current.shoppingAlreadyBought);
       for (final item in boughtItems) {
         buffer.writeln('☑ ${item.displayText}');
       }
@@ -496,12 +496,23 @@ class PersonalShoppingOperations {
 
       final itemsToAdd = <UnifiedShoppingItem>[];
 
-      for (final line in lines) {
-        // Skip headers and separators
+      // Lists exported before the pictograms were dropped; written as escapes
+      // so the source itself stays free of them (B-44).
+      const legacyHeaderLeads = ['\u{1F4CB}', '\u{1F4DD}', '\u2705'];
+      final sectionHeaders = {
+        AppLocale.current.shoppingRemainingToBuy,
+        AppLocale.current.shoppingAlreadyBought,
+      };
+
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        // The title is the line above its '=' underline.
+        final isTitle =
+            i + 1 < lines.length && RegExp(r'^=+$').hasMatch(lines[i + 1]);
         if (line.startsWith('=') ||
-            line.startsWith('📋') ||
-            line.startsWith('📝') ||
-            line.startsWith('✅')) {
+            isTitle ||
+            sectionHeaders.contains(line) ||
+            legacyHeaderLeads.any(line.startsWith)) {
           continue;
         }
 

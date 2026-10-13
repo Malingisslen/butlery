@@ -24,7 +24,7 @@ class RatingNotifications {
     required String raterName,
     String? review,
   }) async {
-    final stars = '⭐' * rating.round();
+    final stars = '★' * rating.round();
     final ownerId = recipe.ownerUid;
 
     if (ownerId != null) {
@@ -146,7 +146,7 @@ class RatingNotifications {
     final ownerId = recipe.ownerUid;
     if (ownerId == null) return;
 
-    final stars = '⭐' * rating.round();
+    final stars = '★' * rating.round();
     final message = review?.isNotEmpty == true
         ? 'Fick sin första recension från $raterName: "${_truncateReview(review!)}"'
         : 'Fick sitt första betyg från $raterName: $stars';
@@ -159,7 +159,7 @@ class RatingNotifications {
       variables: {
         'commenterName': 'Butlery',
         'recipeName': recipe.core.title,
-        'commentPreview': '🎉 Grattis! Ditt recept "$message"',
+        'commentPreview': 'Grattis! Ditt recept "$message"',
       },
       additionalData: {
         'recipeId': recipe.id,
@@ -183,22 +183,22 @@ class RatingNotifications {
     if (totalRatings == 5) {
       return {
         'type': 'first_five_ratings',
-        'message': '🎉 Ditt recept har fått 5 betyg!',
+        'message': 'Ditt recept har fått 5 betyg!',
       };
     } else if (totalRatings == 10) {
       return {
         'type': 'ten_ratings',
-        'message': '🌟 Fantastiskt! Ditt recept har fått 10 betyg!',
+        'message': 'Fantastiskt! Ditt recept har fått 10 betyg!',
       };
     } else if (totalRatings == 25) {
       return {
         'type': 'twenty_five_ratings',
-        'message': '🏆 Imponerande! Ditt recept har fått 25 betyg!',
+        'message': 'Imponerande! Ditt recept har fått 25 betyg!',
       };
     } else if (totalRatings == 50) {
       return {
         'type': 'fifty_ratings',
-        'message': '🎊 Otroligt! Ditt recept har fått 50 betyg!',
+        'message': 'Otroligt! Ditt recept har fått 50 betyg!',
       };
     }
 
@@ -208,13 +208,13 @@ class RatingNotifications {
         return {
           'type': 'excellent_rating',
           'message':
-              '⭐ Enastående! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+              'Enastående! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
         };
       } else if (averageRating >= 4.5) {
         return {
           'type': 'great_rating',
           'message':
-              '🌟 Fantastiskt! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+              'Fantastiskt! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
         };
       }
     }
@@ -322,7 +322,7 @@ class RatingNotifications {
 
     final message = ratingCount == 2
         ? 'Ditt recept fick 2 nya betyg!'
-        : 'Ditt recept fick $ratingCount nya betyg! Genomsnitt: ${averageRating.toStringAsFixed(1)} ⭐';
+        : 'Ditt recept fick $ratingCount nya betyg! Genomsnitt: ${averageRating.toStringAsFixed(1)} ★';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,

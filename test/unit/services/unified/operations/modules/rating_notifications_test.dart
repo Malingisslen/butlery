@@ -134,7 +134,7 @@ void main() {
         );
 
         // Assert
-        expect(capturedMessage, contains('⭐⭐⭐⭐')); // 4 stars
+        expect(capturedMessage, contains('★★★★')); // 4 stars
         expect(
           capturedMessage,
           contains('Betygsatte ditt recept'),
@@ -248,6 +248,40 @@ void main() {
             raterName: 'Test',
           ),
           completes,
+        );
+      });
+    });
+
+    group('First rating notification text', () {
+      test('names the rater and shows plain stars with no pictogram', () async {
+        String? preview;
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
+          final variables =
+              invocation.namedArguments[#variables] as Map<String, String>;
+          preview = variables['commentPreview'];
+        });
+
+        await RatingNotifications.sendFirstRatingNotification(
+          notificationService: mockNotificationService,
+          recipe: testRecipe,
+          rating: 5.0,
+          raterName: 'Star Rater',
+        );
+
+        expect(
+          preview,
+          equals(
+            'Grattis! Ditt recept "Fick sitt första betyg från Star Rater: ★★★★★"',
+          ),
         );
       });
     });

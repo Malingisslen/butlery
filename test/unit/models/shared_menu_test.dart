@@ -303,7 +303,6 @@ void main() {
       // Each recipe description is appended with the import attribution.
       for (final recipes in imported.values) {
         for (final r in recipes) {
-          expect(r.description, contains('📋'));
           expect(r.description, contains('Alice'));
         }
       }

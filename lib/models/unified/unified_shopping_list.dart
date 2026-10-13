@@ -400,21 +400,6 @@ class UnifiedShoppingList {
     return l.shoppingListItemsRemaining(unboughtItems, totalItems);
   }
 
-  String get syncStatusEmoji {
-    switch (syncStatus) {
-      case SyncStatus.synced:
-        return '✅';
-      case SyncStatus.pending:
-        return '🔄';
-      case SyncStatus.conflict:
-        return '⚠️';
-      case SyncStatus.local:
-        return '📱';
-      case SyncStatus.error:
-        return '❌';
-    }
-  }
-
   String get activitySummary {
     final l = AppLocale.current;
     // BUT-1697: an empty name means "we know WHO edited but not their name" —

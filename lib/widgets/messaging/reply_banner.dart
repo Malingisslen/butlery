@@ -112,7 +112,7 @@ class ReplyBanner extends StatelessWidget {
       case MessageType.image:
         // Caption is in content for image messages
         return message.content.isNotEmpty
-            ? '📷 ${message.content}'
+            ? message.content
             : context.l10n.messagingImagePreview;
       case MessageType.recipeShare:
         // Recipe title is in metadata
