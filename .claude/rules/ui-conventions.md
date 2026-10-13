@@ -8,7 +8,7 @@ paths:
 
 > Sibling design-system decisions not covered here — square-FAB primary-action placement
 > (BUT-964), the favourite/featured/saved icon convention (BUT-944), date/time formatting
-> tiers (BUT-961), web hover (BUT-710), and platform-adaptive top bars (BUT-706) — live in
+> tiers (BUT-961), web hover (BUT-710), and the shared top bar on both platforms (BUT-706, B-45) — live in
 > [`docs/design-system/CROSS_CUTTING_RULES.md`](../../docs/design-system/CROSS_CUTTING_RULES.md).
 
 ## Responsive Design
@@ -92,7 +92,7 @@ Skip tests that need heavy ViewModel scaffolding — those are covered by the au
 
 ## Long-press semantics (BUT-948)
 
-On **list-selection surfaces**, long-press enters multi-select (mirrors the pantry /
+A selectable list shows *Välj* in the top bar of the view that owns it (B-46), and long-press is the shortcut to the same mode. On **list-selection surfaces**, long-press enters multi-select (mirrors the pantry /
 shopping / personal-tags / group-member pattern: long-press → `enterSelection`, then a
 contextual bulk-action bar replaces the FAB). Canonical implementations:
 `pantry/pantry_item_card.dart`, `unified_shopping/widgets/shopping_item_tiles.dart`,

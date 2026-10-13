@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `e7ebbc5839bfa45af098e4cc866805c116f3a6fd19aaa40d6d75cd09879c3484` |
+| `beslutslogg.md` | `4e803ff74c9b63d85e9cc867130384815e9380abec34bc124d91636f9f35daad` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -592,7 +592,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
-| `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
+| `layout-contract.json` | `20d3d0d0b4c9fd8044d5fbaac9b3853e87682283fb7f613b0beba24bcb0ffa2c` |
 | `legacy-api-contract.json` | `5a19c6475aaa817f18d188697bcfc436335231c53b0eda9da96a2f57f1bd4437` |
 | `legacy-api-contract.schema.json` | `77d2aef24644d42c4cf0aa39533cbaabf1a40d80012509a6758bb745c752c258` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
@@ -893,7 +893,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |
 | `tools/render-analyze.mjs` | `43d16c95a2aa622fc6d63e3a2b41e31c2a2ffb135bc31dbcd3533150374eb428` |
 | `tools/render-measure.mjs` | `073dab655a27255cc5172a115f50258497d3346d9a3e5c37813bd3073253aaa5` |
-| `tools/render-negatives.mjs` | `10362b2febe71fc62c34b78965b0c99902dca396dadbda1ef708dd5a8eff6c69` |
+| `tools/render-negatives.mjs` | `b5eb325556f55abc63580926bee6f385adb9a14651cbadf93637db7f7701278b` |
 | `tools/render-neutrality.mjs` | `54275336bdd61a904a3c111d753dc00b7d8c1a42e9c6954524328163c62ccb51` |
 | `tools/render-probe-dark-fixtures.mjs` | `6751c86290a302cea467d6f0586102e5e69cebcd0f4877773aba6593bd428375` |
 | `tools/render-probe.mjs` | `affead90f9de3dff74cbbfce861ef859f7d9960ba7b078c83ccc0209d6d4d329` |

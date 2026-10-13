@@ -312,12 +312,6 @@ const A = JSON.parse(readFileSync('artifacts.json', 'utf8'));
   }
   // Provet bevisar att kontrollen KAN fälla. En påhittad avvikelse vid 1920
   // måste fällas, och en korrekt mätpunkt får inte fällas.
-  //
-  // De verkliga avvikelserna vid 1180 (deklarerat 3, uppmätt 2) är INTE ett
-  // provfel. De är en registrerad, obesluten avvikelse mellan kontraktet och
-  // implementationen — se layout-contract.json#gridPolicyAvvikelse. Provet får
-  // därför inte kräva att alla mätpunkter stämmer; det skulle tvinga fram ett
-  // normativt beslut som ingen fattat.
   const p = policy.standardrutnat;
   const förväntat1920 = p ? kolumnerVid(p, 1920) : null;
   const fällerFalskt = förväntat1920 !== null && 2 !== förväntat1920;
