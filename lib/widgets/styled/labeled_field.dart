@@ -16,15 +16,13 @@ class LabeledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     // The ring goes around the input box only, not the helper, error or
     // counter line under it, and shows for keyboard focus (decision D3).
-    final field = _TapTargetFrame(
-      semanticLabel: label,
-      child: ButleryFocusRing(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        bounds: FocusRingBounds.textFieldBox,
-        child: child,
-      ),
+    final field = ButleryFocusRing(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      bounds: FocusRingBounds.textFieldVisualBox,
+      child: child,
     );
     if (label == null) return field;
 
@@ -39,61 +37,15 @@ class LabeledField extends StatelessWidget {
           child: Text(
             label!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ),
         const SizedBox(
           height: AppDimensions.space8 - AppDimensions.fieldTapPad,
         ),
-        field,
+        Semantics(label: label, child: field),
       ],
     );
-  }
-}
-
-/// The box is drawn [AppDimensions.controlVisualHeight] tall; this pads the
-/// hit area to the 48 dp touch target (B-03) and hands a tap in the padding
-/// to the field inside.
-class _TapTargetFrame extends StatelessWidget {
-  final Widget child;
-  final String? semanticLabel;
-
-  const _TapTargetFrame({required this.child, this.semanticLabel});
-
-  @override
-  Widget build(BuildContext context) {
-    // MergeSemantics gives the field's node the frame's 48 dp rect, so a
-    // screen reader's touch target is the same as the hit area.
-    return MergeSemantics(
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        excludeFromSemantics: true,
-        onTap: () => _focusField(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.fieldTapPad,
-          ),
-          child: semanticLabel == null
-              ? child
-              : Semantics(label: semanticLabel, child: child),
-        ),
-      ),
-    );
-  }
-
-  static void _focusField(BuildContext context) {
-    EditableTextState? found;
-    void visit(Element element) {
-      if (found != null) return;
-      if (element is StatefulElement && element.state is EditableTextState) {
-        found = element.state as EditableTextState;
-        return;
-      }
-      element.visitChildren(visit);
-    }
-
-    context.visitChildElements(visit);
-    if (found != null && !found!.widget.readOnly) found!.requestKeyboard();
   }
 }

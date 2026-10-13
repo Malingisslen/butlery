@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
@@ -64,6 +65,10 @@ enum FocusRingBounds {
   /// the user types in, without the helper, error or counter line under
   /// it. Falls back to the whole child if no text field box is found.
   textFieldBox,
+
+  /// [textFieldBox] for a field whose border is a [ButleryFieldBorder]: the
+  /// box as drawn, without the slack that pads it to the touch target.
+  textFieldVisualBox,
 
   /// The whole child, grown evenly to at least the 48 dp touch target. For a
   /// control laid out at its content's size, such as a tab whose plate line
@@ -145,7 +150,9 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
     if (widget.bounds == FocusRingBounds.child || !mounted) return whole;
     final root = context.findRenderObject();
     if (root is! RenderBox) return whole;
-    return textFieldInputBox(root) ?? whole;
+    final visual = widget.bounds == FocusRingBounds.textFieldVisualBox;
+    return textFieldInputBox(root, visual: visual) ??
+        (visual ? ButleryFieldBorder.visualBox(whole) : whole);
   }
 
   @override
@@ -236,7 +243,9 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 borderRadius: widget.borderRadius,
                 inflate: -AppDimensions.focusRingWidth / 2,
                 target: _target,
-                followsLayout: widget.bounds == FocusRingBounds.textFieldBox,
+                followsLayout:
+                    widget.bounds != FocusRingBounds.child &&
+                    widget.bounds != FocusRingBounds.minTouchTarget,
               )
             : null,
         child: child,
@@ -259,7 +268,9 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
                 borderRadius: widget.borderRadius,
                 inflate: ButleryFocusRing.inflate,
                 target: _target,
-                followsLayout: widget.bounds == FocusRingBounds.textFieldBox,
+                followsLayout:
+                    widget.bounds != FocusRingBounds.child &&
+                    widget.bounds != FocusRingBounds.minTouchTarget,
               ),
             ),
           ),
@@ -278,7 +289,7 @@ class _ButleryFocusRingState extends State<ButleryFocusRing> {
 /// So: find the RenderEditable, then walk up to the first ancestor that has
 /// such a leaf as a direct child. The helper, error and counter line are
 /// separate children of the decorator, outside the box.
-Rect? textFieldInputBox(RenderBox root) {
+Rect? textFieldInputBox(RenderBox root, {bool visual = false}) {
   RenderEditable? editable;
   void findEditable(RenderObject node) {
     if (editable != null) return;
@@ -303,10 +314,11 @@ Rect? textFieldInputBox(RenderBox root) {
     });
     final found = box;
     if (found != null && found.hasSize && found.attached) {
-      return MatrixUtils.transformRect(
+      final box = MatrixUtils.transformRect(
         found.getTransformTo(root),
         Offset.zero & found.size,
       );
+      return visual ? ButleryFieldBorder.visualBox(box) : box;
     }
     if (identical(node, root)) break;
     node = node.parent;
