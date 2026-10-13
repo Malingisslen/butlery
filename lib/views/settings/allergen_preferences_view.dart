@@ -66,7 +66,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           padding: const EdgeInsets.only(top: AppDimensions.space16),
           child: Text(
             l10n.allergenIntro,
-            style: AppTextStyles.bodyMedium.copyWith(
+            style: AppTextStyles.captionText.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),

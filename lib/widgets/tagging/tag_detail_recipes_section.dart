@@ -72,7 +72,7 @@ class _TagDetailRecipesSectionState extends State<TagDetailRecipesSection> {
             padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
             child: Text(
               context.l10n.tagDetailRecipesHeading(widget.recipeCount),
-              style: AppTextStyles.bodyMedium.copyWith(
+              style: AppTextStyles.captionText.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
