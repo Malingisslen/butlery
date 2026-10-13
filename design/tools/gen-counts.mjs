@@ -23,6 +23,13 @@ const TARGETS = [
 const src = SCREENS.filter(existsSync).map(f => readFileSync(f, 'utf8')).join('\n');
 const count = re => (src.match(re) || []).length;
 
+// Roller per skärmfil för tabellen i tillgänglighetshandoffen. Står utanför
+// `counts` så att COUNT-SUMMARY (som verify.mjs läser) förblir oförändrad.
+const perFile = {};
+SCREENS.filter(existsSync).forEach((f, i) => {
+  perFile['file' + String(i + 1).padStart(2, '0')] = (readFileSync(f, 'utf8').match(/data-a11y-role=/g) || []).length;
+});
+
 const counts = {
   frames: count(/class="sc-phone"/g),
   items: count(/class="sc-item"/g),
@@ -40,7 +47,8 @@ let touched = 0;
 for (const file of TARGETS) {
   if (!existsSync(file)) continue;
   const before = readFileSync(file, 'utf8');
-  const after = before.replace(/<!--n:([a-z]+)-->[\s\S]*?<!--\/n-->/g, (m, key) => {
+  const after = before.replace(/<!--n:([a-zA-Z0-9]+)-->[\s\S]*?<!--\/n-->/g, (m, key) => {
+    if (key in perFile) return '<!--n:' + key + '-->' + perFile[key] + '<!--/n-->';
     if (!(key in counts)) { console.warn('◐ okänd räknare "' + key + '" i ' + file); return m; }
     return '<!--n:' + key + '-->' + counts[key] + '<!--/n-->';
   });

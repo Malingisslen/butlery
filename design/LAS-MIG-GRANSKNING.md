@@ -28,8 +28,8 @@ Källauktoritet: varje artefakt äger sin domän. `00-spec-index.md` är navigat
    för Linear.
 6. Skärmfilerna, i den ordning `00-spec-index.md` listar dem.
 
-**Referens:** `tokens.json` (färg, typografi, mått), `icons.json` (78 ikoner, ett namn per
-begrepp), `testmatris.md` (browserprober), `beslutslogg.md` (B-01…B-50),
+**Referens:** `tokens.json` (färg, typografi, mått), `icons.json` (ikonregistret, ett namn per
+begrepp), `testmatris.md` (browserprober), `beslutslogg.md` (alla B-nummer),
 `content-style-guide.md` (copyton), `plattformsmatris.md` (iOS/Android-skillnader).
 
 **Historiska filer** — läses som kontext, styr inget: `arbetsplan.md`,

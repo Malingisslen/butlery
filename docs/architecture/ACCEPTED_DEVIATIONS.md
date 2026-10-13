@@ -35,11 +35,19 @@ The following intentionally differ from the design mockup — do **not** file
 "doesn't match mockup" findings for them:
 - **Rating badge** is a green pill, not the gold from the mockup.
 - **"Lagat idag" chip** stays in the recipe metadata row even though it's absent from the mockup (it's useful).
-- **UNKNOWN allergen status** is intentionally hidden — only FREE and CONTAINS badges render.
+- **UNKNOWN allergen status** is intentionally hidden — only FREE and CONTAINS badges render. *(Retired 2026-10-13 by B-160, see the dated note below.)*
 - **Cream color scale** is left as-is, intentionally not realigned to mockup values.
 
 **Why:** Each was a considered product/UX call recorded in project memory ("UI/UX Design
 Preferences"). The mockup is a reference, not a contract, on these points. — 2026-06-22
+
+**Superseded 2026-10-13 (B-160 in `design/beslutslogg.md`):** the line "UNKNOWN allergen status
+is intentionally hidden — only FREE and CONTAINS badges render" no longer holds. Malin decided
+that a recipe whose allergen status is unknown says "Ej kontrollerat" in words on every surface
+that shows a recipe (card, detail, menu, sharing). On this date the code still filters UNKNOWN out
+of the allergen badges and shows `tagResultNoAllergens` ("Inga allergener att visa") when nothing
+is left to show (`allergen_status_badge.dart` cites a 2026-08-18 call for the filter). Code that
+still hides UNKNOWN is what the decision retires, not a deviation to protect.
 
 ### [Privacy/GDPR] notification_delivery counterparty is exported, not anonymised (BUT-1450)
 The GDPR data export (`DataExportService`) includes the `notification_delivery` records' raw

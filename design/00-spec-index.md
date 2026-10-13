@@ -35,7 +35,7 @@
 | Luckinventering etapp 9 | **1.0** · 2026-07-29 | `luckor-etapp9.md` | **historisk, fryst** | — · de tre besluten (emoji-regeln, strukna knuffar och svep-tips, behållen röstassistans) är införda i `beslutslogg.md` som B-44, B-47 och B-48 |
 | **Korsgranskning** | **1.0** · 2026-07-29 | `korsgranskning.md` | gällande | **dokumenten mot varandra** |
 | **Blockerande krav** | **1.0** · 2026-07-29 | `blockerande.md` | gällande | **vad som måste vara löst före release** |
-| Beslutslogg <!--auth:decisions:version,file,status--> | **1.6** | `beslutslogg.md` | gällande · ägare DS | **vilka frågor som är avgjorda** — 50 poster |
+| Beslutslogg <!--auth:decisions:version,file,status--> | **1.6** | `beslutslogg.md` | gällande · ägare DS | **vilka frågor som är avgjorda** — antalet räknas ur filen |
 | Komponentark <!--auth:component-contract:status--> | **V1** mot manual V6 | `Butlery Komponentark v1.dc.html` | planerad · ägare DS | **inte normativ** — handritad interaktionsreferens. Komponentkontraktet är en Fas 3-leverabel; domänen är `planned` i källauktoriteten |
 | Skärmar <!--auth:layout-composition:version,file--> | **v12** | `Butlery Skarmar v12.dc.html` (innehåll) + **fjorton delfiler**: `del 1 recept och veckomeny`, `del 2 familj och socialt`, `del 3 sok och skalbevis`, `del 4 morkt lage och etapp 0-1`, `etapp 2`, `etapp 2 inkop och skafferi`, `etapp 3 onboarding`, `etapp 4 import`, `etapp 5-7`, `etapp 6 konto och integritet`, `etapp 9 globala tillstand och flerval`, `etapp 9 socialt och komponenter`, `etapp 10 bred layout`, `etapp 11 breda vyer` | gällande, <!--n:frames-->280<!--/n--> ramar | **instanser** — layout och komposition, aldrig värden |
 | Grafisk manual <!--auth:principles:version,file,status--> | **V6** | `Butlery Grafisk manual v6.dc.html` | gällande · ägare DS | **principer och motiveringar** |
@@ -100,7 +100,7 @@ Versionstabellen ovan valideras av **T-10** i `testmatris.md` mot filernas egna 
 | P1-4 | **Kostikoner** | ✅ stängt — Butlery har inga kostikoner, beslut B-07 |
 | P1-5 | **Ikonräkningen `usages`** | ✅ genererad ur `data-icon` i tre dokument, inte längre handhållen |
 | P1-6 | **Assetmanifestet** — splashreferens, ordmärkena, skrivfelet, källa/runtime/export/dokumentation åtskilda | ✅ åtgärdat, `assets-manifest.json` 1.2 |
-| P1-7 | **Fontens licensmetadata** | ✅ **åtgärdat på fontsidan 2026-07-30 · Butlery Sans 0.626.** Attributionen harmoniserad i sex stilar, OFL-texten konsoliderad till en fil, `app-assets` bär licenser och manifest. `assets/fonts/VALIDATION-0.626.txt`: 18/18 filer rätt version, 24/24 renderingar pixelidentiska — metadata-only. Specen använder 0.626. Formuleringen ”Butlery Sans är inte vårt” struken som för kategorisk: **namnet och våra ändringar tillhör Butlery**, fontprogramvaran förblir OFL. 🔁 Kvar hos releaseansvarig: hela `app-assets` i bundlen och en **hittbar licensrutt** i appen (*Inställningar → Om → Licenser*). Besluten B-25 (struket), B-30, **B-42** |
+| P1-7 | **Fontens licensmetadata** | ✅ **åtgärdat på fontsidan 2026-07-30 · Butlery Sans 0.626.** Attributionen harmoniserad i sex stilar, OFL-texten konsoliderad till en fil, `app-assets` bär licenser och manifest. `assets/fonts/VALIDATION-0.626.txt`: 18/18 filer rätt version, 24/24 renderingar pixelidentiska — metadata-only. Specen använder 0.626. Formuleringen ”Butlery Sans är inte vårt” struken som för kategorisk: **namnet och våra ändringar tillhör Butlery**, fontprogramvaran förblir OFL. 🔁 Kvar hos releaseansvarig: hela `app-assets` i bundlen och en **hittbar licensrutt** i appen (*Inställningar → Om → Licenser*). Besluten B-25 (struket), B-32, **B-42** | <!-- claim-lint:ok historical status line; only B-30 became B-32 -->
 | P1-8 | **Content-guidens motsägelser** — ”vi”, ”ni”, `Tors`, tabulära siffror, utropstecken, `OK`, Radera/Ta bort, navetiketten `Meny` | ✅ åtgärdat, guide 1.1 + besluten B-05, B-06, B-17, B-22, B-23 |
 | P1-9 | **Veckomenyns produktmodell** — måltidsval, delresultat i recept, bekräfta före beräkning, 6–10 s, enhetskonvertering, skafferiavdrag | ✅ åtgärdat, `produktregler.md` § 4 |
 | P1-10 | **Mörkt läge** | ✅ åtgärdat — villkoret i `testmatris.md` § 3, och de två familjerna är ritade i stället för antagna: `#formularmorkt` (fält, fokus, fel, disabled, destruktiv) och `#arkmorkt` (scrim, handtag, radioval, klistrad handling) |
@@ -109,7 +109,7 @@ Versionstabellen ovan valideras av **T-10** i `testmatris.md` mot filernas egna 
 | P1-13 | **Offline-körbar dokumentation** | ✖ **struken** — specen läses online. Beslut B-21 omvänt av B-26 |
 | P1-14 | **Roller och integritet** — redigering av andras recept, kebabmeny per behörighet, gäst kontra länkbehörighet, auditlogg, allergidata, kontolivscykel, behörighetslägen | ✅ åtgärdat, `produktregler.md` § 5 |
 | P1-15 | **Per-vy-tillståndsmatris** — ersätter ”varje vy har alla sex tillstånd” | ✅ åtgärdat, `testmatris.md` § 1 |
-| P1-16 | **Beslutslogg** | ✅ åtgärdat, `beslutslogg.md` (23 poster) |
+| P1-16 | **Beslutslogg** | ✅ åtgärdat, `beslutslogg.md` |
 
 ## Öppet · P2
 
