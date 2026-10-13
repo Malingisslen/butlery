@@ -32,10 +32,7 @@ class ShareService extends BaseService {
   static String get _sourceLabel => AppLocale.current.shareSourceLabel;
   static String get _portionsLabel => AppLocale.current.sharePortionsUnit;
   static String get _minutesLabel => AppLocale.current.shareMinutesUnit;
-  static const String _recipeEmoji = '🍽';
-  static const String _timeEmoji = '⏱';
-  static const String _servingsEmoji = '🍴';
-  static const String _starEmoji = '⭐';
+  static const String _star = '★';
 
   /// Formats recipe as complete text (title, metadata, description, ingredients, instructions, tags, source).
   String formatRecipeComplete(Recipe recipe) {
@@ -54,7 +51,7 @@ class ShareService extends BaseService {
       metadata.add('${recipe.timeMinutes} $_minutesLabel');
     }
     if (recipe.rating != null && recipe.rating! > 0) {
-      metadata.add(_starEmoji * recipe.rating!.round());
+      metadata.add(_star * recipe.rating!.round());
     }
 
     if (metadata.isNotEmpty) {
@@ -102,27 +99,26 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  /// Formats recipe in compact format with emoji (🍽⏱🍴⭐) for messaging/social media.
+  /// Formats recipe in compact format for messaging/social media.
   String formatRecipeCompact(Recipe recipe) {
     final buffer = StringBuffer();
 
-    // Emoji and title
-    buffer.writeln('$_recipeEmoji ${recipe.title}');
+    buffer.writeln(recipe.title);
 
-    // Metadata with emojis
+    // Metadata
     final metadata = <String>[];
     if (recipe.timeMinutes != null) {
       metadata.add(
-        '$_timeEmoji ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
+        '${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
       );
     }
     if (recipe.portions != null) {
       metadata.add(
-        '$_servingsEmoji ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
+        '${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
       );
     }
     if (recipe.rating != null && recipe.rating! > 0) {
-      metadata.add(_starEmoji * recipe.rating!.round());
+      metadata.add(_star * recipe.rating!.round());
     }
 
     if (metadata.isNotEmpty) {
@@ -190,7 +186,7 @@ class ShareService extends BaseService {
     }
     if (recipe.rating != null && recipe.rating! > 0) {
       buffer.writeln(
-        '${AppLocale.current.shareRatingLabelBold} ${_starEmoji * recipe.rating!.round()}',
+        '${AppLocale.current.shareRatingLabelBold} ${_star * recipe.rating!.round()}',
       );
     }
     if (recipe.mealType.isNotEmpty) {
@@ -520,16 +516,16 @@ class ShareService extends BaseService {
           final meta = <String>[];
           if (recipe.timeMinutes != null) {
             meta.add(
-              '⏱ ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
+              '${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
             );
           }
           if (recipe.portions != null) {
             meta.add(
-              '🍴 ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
+              '${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
             );
           }
           if (recipe.rating != null && recipe.rating! > 0) {
-            final stars = List.filled(recipe.rating!.round(), '⭐').join();
+            final stars = _star * recipe.rating!.round();
             meta.add(stars);
           }
 

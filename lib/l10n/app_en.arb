@@ -2120,7 +2120,7 @@
   },
   "shareRecipeTitle": "Share recipe",
   "shareMenuTitle": "Share menu",
-  "shareShoppingListTitle": "🛒 SHOPPING LIST",
+  "shareShoppingListTitle": "SHOPPING LIST",
   "shareCreateAndShare": "Create & Share",
   "shareRecipeWithFriends": "Share recipe with friends",
   "shareMenuWithFriends": "Share weekly menu with friends",
@@ -7943,7 +7943,7 @@
       }
     }
   },
-  "shareMessageRecipeWithTitle": "Do take a look at this recipe: \"{title}\". 👩‍🍳",
+  "shareMessageRecipeWithTitle": "Do take a look at this recipe: \"{title}\".",
   "@shareMessageRecipeWithTitle": {
     "placeholders": {
       "title": {
@@ -7951,8 +7951,8 @@
       }
     }
   },
-  "shareMessageRecipeDefault": "I found a recipe I wanted to share with you. 👩‍🍳",
-  "shareMessageMenuWithTitle": "Here's my weekly menu: \"{title}\" 📋",
+  "shareMessageRecipeDefault": "I found a recipe I wanted to share with you.",
+  "shareMessageMenuWithTitle": "Here's my weekly menu: \"{title}\"",
   "@shareMessageMenuWithTitle": {
     "placeholders": {
       "title": {
@@ -7960,8 +7960,8 @@
       }
     }
   },
-  "shareMessageMenuDefault": "Here's my weekly menu, perhaps for inspiration. 📋",
-  "shareMessageShoppingListWithTitle": "Want to help me with the shopping list: \"{title}\"? 🛒",
+  "shareMessageMenuDefault": "Here's my weekly menu, perhaps for inspiration.",
+  "shareMessageShoppingListWithTitle": "Want to help me with the shopping list: \"{title}\"?",
   "@shareMessageShoppingListWithTitle": {
     "placeholders": {
       "title": {
@@ -7969,7 +7969,7 @@
       }
     }
   },
-  "shareMessageShoppingListDefault": "Want to help me with shopping this week? 🛒",
+  "shareMessageShoppingListDefault": "Want to help me with shopping this week?",
   "textImportSuggestionIngredients": "Include ingredient list for better interpretation",
   "textImportSuggestionInstructions": "Include cooking instructions or steps",
   "textImportSuggestionTime": "Include cooking time if available",
@@ -9050,8 +9050,8 @@
   "shareInstructionsLabelCompact": "Instructions:",
   "shareShoppingListTitleSimple": "Shopping list",
   "shareWeekMenuTitle": "Week menu",
-  "shareWeekMenuTitleEmoji": "🍽 WEEK MENU",
-  "shareSummaryLabel": "📊 Summary:",
+  "shareWeekMenuTitleEmoji": "WEEK MENU",
+  "shareSummaryLabel": "Summary:",
   "shareSummaryRecipesInCategories": "{recipeCount} recipes in {categoryCount} categories",
   "@shareSummaryRecipesInCategories": {
     "placeholders": {
