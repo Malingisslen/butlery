@@ -74,6 +74,50 @@ void main() {
       expect(find.byTooltip('Tillbaka till Mer'), findsOneWidget);
     });
 
+    testWidgets('leading, trailing and a still secondary line reach the bar', (
+      tester,
+    ) async {
+      await pushPage(
+        tester,
+        ButleryPage.undersida(
+          title: 'Taggar',
+          leading: ButleryCancelSelectionButton(onPressed: () {}),
+          trailing: const SizedBox(key: ValueKey('trailing')),
+          secondaryLine: '3 valda',
+          secondaryLineIsLive: false,
+          body: const SizedBox(),
+        ),
+      );
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.secondaryLineIsLive, isFalse);
+      expect(
+        find.byKey(const ValueKey('butlery-select-cancel')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('trailing')), findsOneWidget);
+      expect(find.byTooltip('Tillbaka'), findsNothing);
+    });
+
+    testWidgets('rot forwards trailing and a still secondary line too', (
+      tester,
+    ) async {
+      await pushPage(
+        tester,
+        const ButleryPage.rot(
+          title: 'Veckomeny',
+          trailing: SizedBox(key: ValueKey('rot-trailing')),
+          secondaryLine: 'Vecka 42',
+          secondaryLineIsLive: false,
+          body: SizedBox(),
+        ),
+      );
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.secondaryLineIsLive, isFalse);
+      expect(find.byKey(const ValueKey('rot-trailing')), findsOneWidget);
+    });
+
     testWidgets('undersida keeps the tab bar unless a focus mode opts out', (
       tester,
     ) async {
