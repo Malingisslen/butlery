@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -98,26 +98,25 @@ class _FamilyRatingEntryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     final vm = context.watch<FamilyRatingEntryViewModel>();
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      // A subpage (Komponentark v1:71-78). The recipe is the line under the
-      // title, in the bar's own foreground: the old saffron text on ink was
-      // not readable (tokens.json text roles; saffron is never text on ink).
-      appBar: ButleryTopBar.undersida(
-        title: l10n.familyRatingTitle,
-        secondaryLine: recipeTitle,
-        secondaryLineIsLive: false,
-      ),
+    // The recipe is the line under the title, in the bar's own foreground: the
+    // old saffron text on ink was not readable (tokens.json text roles;
+    // saffron is never text on ink).
+    final initialLoad = vm.isLoading && vm.present.isEmpty;
+    return ButleryPage.undersida(
+      title: l10n.familyRatingTitle,
+      secondaryLine: recipeTitle,
+      secondaryLineIsLive: false,
       // Only the INITIAL load replaces the form with a spinner; during save()
       // the form + (disabled) actions stay put so the screen doesn't flicker.
-      body: (vm.isLoading && vm.present.isEmpty)
+      // The actions take the tab bar's place, and nothing stands there while
+      // the spinner shows.
+      body: initialLoad
           ? StateWidget.loading(message: l10n.loadingFamily)
           : _body(context, vm, l10n),
-      bottomNavigationBar: (vm.isLoading && vm.present.isEmpty)
-          ? null
+      bottomNavigationBar: initialLoad
+          ? const SizedBox.shrink()
           : _actions(context, vm, l10n),
     );
   }

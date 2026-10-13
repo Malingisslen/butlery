@@ -22,6 +22,7 @@ class ButleryPage extends StatelessWidget {
     required this.body,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
+    this.titleStyle,
     this.actions = const [],
     this.leading,
     this.trailing,
@@ -47,6 +48,7 @@ class ButleryPage extends StatelessWidget {
     this.backTo,
     this.secondaryLine,
     this.secondaryLineIsLive = true,
+    this.titleStyle,
     this.actions = const [],
     this.leading,
     this.trailing,
@@ -71,6 +73,10 @@ class ButleryPage extends StatelessWidget {
   /// False for a secondary line that does not change while the page is open,
   /// so a screen reader does not announce it again.
   final bool secondaryLineIsLive;
+
+  /// Laid over the bar's title role, as the selection count does with
+  /// tabular figures.
+  final TextStyle? titleStyle;
   final List<Widget> actions;
 
   /// Replaces the back arrow, as the close button of a selection mode does.
@@ -95,6 +101,7 @@ class ButleryPage extends StatelessWidget {
         title: title,
         secondaryLine: secondaryLine,
         secondaryLineIsLive: secondaryLineIsLive,
+        titleStyle: titleStyle,
         actions: actions,
         leading: leading,
         trailing: trailing,
@@ -104,6 +111,7 @@ class ButleryPage extends StatelessWidget {
         backTo: backTo,
         secondaryLine: secondaryLine,
         secondaryLineIsLive: secondaryLineIsLive,
+        titleStyle: titleStyle,
         actions: actions,
         leading: leading,
         trailing: trailing,

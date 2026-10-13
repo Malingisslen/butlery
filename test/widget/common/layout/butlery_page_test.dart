@@ -85,12 +85,16 @@ void main() {
           trailing: const SizedBox(key: ValueKey('trailing')),
           secondaryLine: '3 valda',
           secondaryLineIsLive: false,
+          titleStyle: const TextStyle(
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
           body: const SizedBox(),
         ),
       );
 
       final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
       expect(bar.secondaryLineIsLive, isFalse);
+      expect(bar.titleStyle?.fontFeatures, isNotEmpty);
       expect(
         find.byKey(const ValueKey('butlery-select-cancel')),
         findsOneWidget,
@@ -104,18 +108,23 @@ void main() {
     ) async {
       await pushPage(
         tester,
-        const ButleryPage.rot(
+        ButleryPage.rot(
           title: 'Veckomeny',
-          trailing: SizedBox(key: ValueKey('rot-trailing')),
+          leading: ButleryCancelSelectionButton(onPressed: () {}),
+          trailing: const SizedBox(key: ValueKey('rot-trailing')),
           secondaryLine: 'Vecka 42',
           secondaryLineIsLive: false,
-          body: SizedBox(),
+          body: const SizedBox(),
         ),
       );
 
       final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
       expect(bar.secondaryLineIsLive, isFalse);
       expect(find.byKey(const ValueKey('rot-trailing')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('butlery-select-cancel')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('undersida keeps the tab bar unless a focus mode opts out', (
