@@ -279,7 +279,7 @@ void main() {
         // Assert
         expect(result, isFalse);
         expect(viewModel.hasParsedRecipe, isFalse);
-        expect(viewModel.error, equals('Vänligen ange text att tolka'));
+        expect(viewModel.error, equals('Ange text att tolka'));
       });
 
       test('should handle parsing error', () async {

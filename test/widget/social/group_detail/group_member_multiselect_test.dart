@@ -393,7 +393,7 @@ void main() {
 
       await tester.longPress(find.byType(ListTile).first);
       await tester.pumpAndSettle();
-      expect(find.text('1 valda'), findsOneWidget);
+      expect(find.text('1 vald'), findsOneWidget);
       await tester.tap(find.byType(ListTile).first);
       await tester.pumpAndSettle();
       expect(find.textContaining('valda'), findsNothing);

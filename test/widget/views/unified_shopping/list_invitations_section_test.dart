@@ -110,7 +110,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Gå med'), findsNWidgets(2));
-    expect(find.text('Neka'), findsNWidgets(2));
+    expect(find.text('Avböj'), findsNWidgets(2));
   });
 
   testWidgets('Gå med accepts, welcomes and removes the card', (tester) async {
@@ -144,20 +144,20 @@ void main() {
     expect(find.text('Gå med'), findsNothing);
   });
 
-  testWidgets('Neka declines, says so and removes the card', (tester) async {
+  testWidgets('Avböj declines, says so and removes the card', (tester) async {
     when(
       () => ops.declineListInvitation('a'),
     ).thenAnswer((_) async => ListInvitationOutcome.declined);
     await show(tester, [_inv('a')]);
 
-    await tester.tap(find.text('Neka'));
+    await tester.tap(find.text('Avböj'));
     await tester.pump();
     await tester.pump();
 
     verify(() => ops.declineListInvitation('a')).called(1);
     verifyNever(() => ops.acceptListInvitation(any()));
-    expect(find.text('Inbjudan nekad'), findsOneWidget);
-    expect(find.text('Neka'), findsNothing);
+    expect(find.text('Inbjudan avböjd'), findsOneWidget);
+    expect(find.text('Avböj'), findsNothing);
   });
 
   testWidgets('while the call runs both buttons are off and a second tap does '
@@ -170,7 +170,7 @@ void main() {
     await tester.pump();
 
     final buttons = tester.widgetList<ButtonStyleButton>(_anyButton).toList();
-    // Neka, Gå med and the three-dot button.
+    // Avböj, Gå med and the three-dot button.
     expect(buttons, hasLength(3));
     // A busy ActionButtons button keeps a no-op handler rather than null
     // (PlateLineButton.ignore); the taps below prove it does nothing.
@@ -182,7 +182,7 @@ void main() {
     );
     expect(buttons.where((b) => b.onPressed == null), hasLength(2));
     await tester.tap(find.text('Gå med'), warnIfMissed: false);
-    await tester.tap(find.text('Neka'), warnIfMissed: false);
+    await tester.tap(find.text('Avböj'), warnIfMissed: false);
     verify(() => ops.acceptListInvitation('a')).called(1);
     verifyNever(() => ops.declineListInvitation(any()));
 
@@ -214,7 +214,7 @@ void main() {
     ).thenAnswer((_) async => ListInvitationOutcome.offline);
     await show(tester, [_inv('a')]);
 
-    await tester.tap(find.text('Neka'));
+    await tester.tap(find.text('Avböj'));
     await tester.pump();
     await tester.pump();
 
@@ -222,7 +222,7 @@ void main() {
       find.textContaining('Nätverksfel. Kontrollera din internetanslutning.'),
       findsOneWidget,
     );
-    expect(find.text('Neka'), findsOneWidget);
+    expect(find.text('Avböj'), findsOneWidget);
     expect(find.text('Gå med'), findsOneWidget);
   });
 

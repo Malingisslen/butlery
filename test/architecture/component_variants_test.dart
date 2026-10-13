@@ -24,7 +24,7 @@ const variantCeilings = {
   'sheet_shape_overrides': 1,
   'direct_font_weights': 5,
   'hardcoded_max_width': 12,
-  'forbidden_words_sv': 2,
+  'forbidden_words_sv': 0,
   'raw_white_black': 1,
   'photo_viewers': 0,
   'alpha_literals': 0,

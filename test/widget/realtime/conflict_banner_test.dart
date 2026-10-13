@@ -401,7 +401,7 @@ void main() {
 
       expect(
         otherDevice,
-        'Du ändrade receptet på en annan enhet. Din version finns kvar — '
+        'Du ändrade receptet på en annan enhet. Din version finns kvar – '
         'välj vilken som gäller.',
       );
       expect(find.text(message), findsOneWidget);

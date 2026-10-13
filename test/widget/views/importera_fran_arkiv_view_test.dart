@@ -100,7 +100,7 @@ void main() {
     await tester.tap(find.text(first.title));
     await tester.pumpAndSettle();
 
-    expect(find.text('1 VALDA'), findsOneWidget);
+    expect(find.text('1 VALD'), findsOneWidget);
     expect(find.text('Återställ 1 recept'), findsOneWidget);
   });
 

@@ -121,7 +121,7 @@ void main() {
       );
 
       expect(
-        find.bySemanticsLabel(RegExp('Redigera familjemedlem')),
+        find.bySemanticsLabel(RegExp('Redigera matgäst')),
         findsOneWidget,
       );
       await tester.tap(find.byType(FamilyMemberRow));

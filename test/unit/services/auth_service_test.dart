@@ -696,7 +696,7 @@ void main() {
           expect(result, false);
           expect(
             authService.errorMessage,
-            contains('Fel email eller lösenord'),
+            contains('Fel e-postadress eller lösenord'),
           );
         },
       );
@@ -727,7 +727,7 @@ void main() {
           expect(result, false);
           expect(
             authService.errorMessage,
-            contains('Fel email eller lösenord'),
+            contains('Fel e-postadress eller lösenord'),
           );
         },
       );
@@ -762,7 +762,7 @@ void main() {
           // All three should produce the exact same message
           expect(messages[0], equals(messages[1]));
           expect(messages[1], equals(messages[2]));
-          expect(messages[0], contains('Fel email eller lösenord'));
+          expect(messages[0], contains('Fel e-postadress eller lösenord'));
         },
       );
 
@@ -810,7 +810,9 @@ void main() {
         expect(result, false);
         expect(
           authService.errorMessage,
-          equals('Lösenordet är för svagt. Använd minst 6 tecken.'),
+          equals(
+            'Lösenordet är för svagt. Använd tolv eller fler tecken, eller tre ord du minns.',
+          ),
         );
       });
 
@@ -836,7 +838,7 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage, equals('Ogiltig email-adress.'));
+        expect(authService.errorMessage, equals('Ogiltig e-postadress.'));
       });
 
       test('should handle too-many-requests error', () async {
@@ -996,7 +998,10 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+        expect(
+          authService.errorMessage,
+          contains('Fel e-postadress eller lösenord'),
+        );
         verify(
           () => mockAuthRepository.signIn(
             email: 'test@example.com',
@@ -1045,7 +1050,7 @@ void main() {
         // Assert
         expect(result, false);
         expect(authService.errorMessage, contains('för svagt'));
-        expect(authService.errorMessage, contains('6 tecken'));
+        expect(authService.errorMessage, contains('tolv eller fler tecken'));
       });
 
       test('should handle empty display name during registration', () async {
@@ -1247,9 +1252,9 @@ void main() {
       test('should provide user-friendly error messages', () async {
         // Arrange
         final technicalErrors = [
-          ('user-not-found', 'Fel email eller lösenord'),
-          ('wrong-password', 'Fel email eller lösenord'),
-          ('invalid-email', 'Ogiltig email'),
+          ('user-not-found', 'Fel e-postadress eller lösenord'),
+          ('wrong-password', 'Fel e-postadress eller lösenord'),
+          ('invalid-email', 'Ogiltig e-postadress'),
           ('weak-password', 'för svagt'),
           ('user-disabled', 'inaktiverats'),
           ('too-many-requests', 'många försök'),

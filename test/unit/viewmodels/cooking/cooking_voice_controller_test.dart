@@ -482,7 +482,7 @@ void main() {
         await speakCommand('Jag har ingen vaniljstång hemma.');
         expect(
           tts.spoken.last,
-          contains('Jag hittade inga ersättningar för vaniljstång'),
+          contains('Vi hittade inga ersättningar för vaniljstång'),
         );
       },
     );
@@ -558,7 +558,7 @@ void main() {
       expect(answer, contains('2 dl mjölk'));
       expect(
         answer,
-        contains('Jag hittade inte saffran bland ingredienserna'),
+        contains('Vi hittade inte saffran bland ingredienserna'),
         reason: 'one unknown part must not sink the whole compound question',
       );
     });
@@ -567,7 +567,7 @@ void main() {
       await speakCommand('Hur mycket saffran behöver jag?');
       expect(
         tts.spoken.last,
-        contains('Jag hittade inte saffran bland ingredienserna'),
+        contains('Vi hittade inte saffran bland ingredienserna'),
       );
     });
 

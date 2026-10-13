@@ -240,9 +240,9 @@ void main() {
       );
       await _open(tester);
 
-      expect(find.textContaining('Ta bort alla dina recept'), findsOneWidget);
+      expect(find.textContaining('Radera alla dina recept'), findsOneWidget);
       expect(
-        find.textContaining('Ta bort alla vänner och meddelanden'),
+        find.textContaining('Radera alla vänner och meddelanden'),
         findsOneWidget,
       );
     });

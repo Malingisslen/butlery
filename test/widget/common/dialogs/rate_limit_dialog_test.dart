@@ -202,8 +202,8 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      // sv: dialogRetryInHours = "Försök igen om {hours} timme(ar)"
-      expect(find.text('Försök igen om 3 timme(ar)'), findsOneWidget);
+      // sv: dialogRetryInHours is an ICU plural (=1 → '1 timme')
+      expect(find.text('Försök igen om 3 timmar'), findsOneWidget);
     });
 
     testWidgets('minutes bucket renders dialogRetryInMinutes with count', (
@@ -226,7 +226,7 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Försök igen om 7 minut(er)'), findsOneWidget);
+      expect(find.text('Försök igen om 7 minuter'), findsOneWidget);
     });
 
     testWidgets('seconds bucket renders dialogRetryInSeconds with count', (
@@ -249,7 +249,7 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Försök igen om 42 sekund(er)'), findsOneWidget);
+      expect(find.text('Försök igen om 42 sekunder'), findsOneWidget);
     });
   });
 
@@ -589,7 +589,7 @@ void main() {
         );
         expect(
           tester
-              .widget<Text>(find.text('Försök igen om 5 minut(er)'))
+              .widget<Text>(find.text('Försök igen om 5 minuter'))
               .style
               ?.color,
           theme.colorScheme.onSurfaceVariant,

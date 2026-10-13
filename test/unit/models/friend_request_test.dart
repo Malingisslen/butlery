@@ -400,7 +400,7 @@ void main() {
             sentAt: clock.now().subtract(Duration(days: 7)),
           );
 
-          expect(request.timeAgoText, equals('1 veckor sedan'));
+          expect(request.timeAgoText, equals('1 vecka sedan'));
         });
       });
     });

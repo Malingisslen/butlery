@@ -387,7 +387,7 @@ void main() {
       await tester.longPress(find.text('Snabbt'));
       await tester.pump();
 
-      expect(find.text('1 valda'), findsOneWidget);
+      expect(find.text('1 vald'), findsOneWidget);
     });
 
     testWidgets('the sort button opens a choice sheet', (tester) async {

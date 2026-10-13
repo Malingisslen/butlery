@@ -99,7 +99,7 @@ void main() {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
-      expect(find.text('din@email.se'), findsOneWidget);
+      expect(find.text('namn@exempel.se'), findsOneWidget);
 
       final fields = tester.widgetList<TextField>(find.byType(TextField));
       expect(fields.any((f) => f.maxLength == 100), isTrue);
@@ -215,7 +215,7 @@ void main() {
         // Remove screenshot IconButton with tooltip — two ButleryIcons.x exist
         // (AppBar leading + screenshot remove) so we scope by tooltip.
         expect(
-          find.byTooltip('Ta bort skärmavbild'),
+          find.byTooltip('Ta bort skärmbild'),
           findsOneWidget,
         );
       },
@@ -229,7 +229,7 @@ void main() {
 
       expect(find.byType(Image), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Ta bort skärmavbild'));
+      await tester.tap(find.byTooltip('Ta bort skärmbild'));
       await tester.pumpAndSettle();
 
       // After removal, label and preview should both be gone.

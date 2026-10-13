@@ -86,7 +86,7 @@ PantryItem _pantryItem(
 /// re-derivation via IsoWeekUtils in the assertions). The name comes from
 /// `AppLocale.current`, which defaults to Swedish in unit tests.
 final _date = DateTime(2026, 6, 10);
-const _expectedListName = 'Inköpslista v.24';
+const _expectedListName = 'Inköpslista vecka 24';
 const _expectedWeekKey = '2026-W24';
 
 Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
@@ -582,7 +582,7 @@ void main() {
       seedTwoRecipePlan();
       final lastWeek = _list(
         'last-week-1',
-        'Inköpslista v.23',
+        'Inköpslista vecka 23',
         generatedForWeek: '2026-W23',
         items: [
           UnifiedShoppingItem(

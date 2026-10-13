@@ -57,15 +57,18 @@ void main() {
       expect(ex.message, AppLocale.current.llmServiceOverloaded);
     });
 
-    test('maps invalid-argument and surfaces the raw cause to the user', () {
-      final ex = LlmException.fromFirebase(
-        Exception('invalid-argument: bad text'),
-      );
+    test(
+      'maps invalid-argument and keeps the raw cause out of the user text',
+      () {
+        final ex = LlmException.fromFirebase(
+          Exception('invalid-argument: bad text'),
+        );
 
-      expect(ex.code, 'invalid-argument');
-      // The l10n template includes the raw error so users have a hint.
-      expect(ex.message, contains('bad text'));
-    });
+        expect(ex.code, 'invalid-argument');
+        expect(ex.message, isNot(contains('bad text')));
+        expect(ex.message, 'Begäran kunde inte behandlas. Försök igen.');
+      },
+    );
 
     test('BUT-582: maps deadline-exceeded to llmTimeout (not generic)', () {
       final ex = LlmException.fromFirebase(Exception('deadline-exceeded'));
@@ -101,8 +104,8 @@ void main() {
       );
 
       expect(ex.code, 'unknown');
-      // The generic l10n template embeds the raw cause for support diagnosis.
-      expect(ex.message, contains('some unrelated explosion'));
+      expect(ex.message, isNot(contains('some unrelated explosion')));
+      expect(ex.message, 'Det gick inte att slutföra. Försök igen.');
     });
 
     // BUT-2243: the server's per-user AI cost ceiling arrives as

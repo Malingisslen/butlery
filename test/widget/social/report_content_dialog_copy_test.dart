@@ -134,7 +134,7 @@ void main() {
     );
     expect(
       find.textContaining(
-        '— den version du ser nu är den vi dömer efter.',
+        '– den version du ser nu är den vi dömer efter.',
         findRichText: true,
       ),
       findsOneWidget,

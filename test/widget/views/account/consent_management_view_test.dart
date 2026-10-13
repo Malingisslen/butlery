@@ -126,7 +126,7 @@ void main() {
       'names none from the renewal dialog', (tester) async {
     ButleryTopBar bar() => tester.widget(find.byType(ButleryTopBar));
     await pump(tester, backTo: sv.settingsPrivacyAreaTitle);
-    expect(bar().backTo, 'Integritet & data');
+    expect(bar().backTo, 'Integritet och data');
 
     await pump(tester);
     expect(bar().backTo, isNull);

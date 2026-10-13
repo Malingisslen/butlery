@@ -86,14 +86,14 @@ void main() {
     await tester.longPress(find.text('Första'));
     await tester.pumpAndSettle();
 
-    expect(find.text('1 markerade'), findsOneWidget);
+    expect(find.text('1 markerad'), findsOneWidget);
     expect(find.byTooltip('Stäng'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Stäng'));
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Stäng'), findsNothing);
-    expect(find.text('1 markerade'), findsNothing);
+    expect(find.text('1 markerad'), findsNothing);
   });
 
   testWidgets('dismiss hides the row at once and deletes nothing yet', (

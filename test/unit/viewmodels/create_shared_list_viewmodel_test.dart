@@ -415,7 +415,8 @@ void main() {
       final listId = await viewModel.createSharedList();
 
       expect(listId, isNull);
-      expect(viewModel.error, contains('Fel vid skapande av delad lista'));
+      expect(viewModel.error, contains('Den delade listan kunde inte skapas'));
+      expect(viewModel.error, isNot(contains('Network error')));
       expect(viewModel.isCreating, isFalse);
     });
 

@@ -125,7 +125,7 @@ void main() {
         await pumpBar(tester);
 
         expect(tester.takeException(), isNull);
-        expect(find.text('1 valda'), findsOneWidget);
+        expect(find.text('1 vald'), findsOneWidget);
         // Below 360 dp share moves into the kebab ("högst tre").
         expect(
           find.byKey(const ValueKey('mina-recept-bulk-share')),

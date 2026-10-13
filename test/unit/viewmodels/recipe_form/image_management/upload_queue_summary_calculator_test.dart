@@ -513,7 +513,7 @@ void main() {
         1.0,
       );
       expect(text, contains('4'));
-      expect(text.toLowerCase(), contains('framgångsrikt'));
+      expect(text.toLowerCase(), contains('uppladdade'));
     });
 
     /// BUT-1102 fix: all-cancelled queue surfaces a dedicated message
