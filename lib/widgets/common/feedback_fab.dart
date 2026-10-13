@@ -15,7 +15,9 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/feedback_form_dialog.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Global key used by the MaterialApp builder to wrap content in a
 /// RepaintBoundary so the FAB can capture screenshots.
@@ -147,29 +149,35 @@ class _FeedbackFABState extends State<FeedbackFAB> {
             container: true,
             label: context.l10n.feedbackSendLabel,
             button: true,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _onTap,
-              // The button sits beside the Navigator, above every page's
-              // Material, so without its own the "!" inherits the framework's
-              // fallback text style and its yellow double underline.
+            // The button sits beside the Navigator, above every page's
+            // Material, so it brings its own: without one the "!" inherits
+            // the framework's fallback text style and its yellow double
+            // underline. Skarmar v12 etapp 9 #fbknapp: paper with a hairline
+            // edge, so the square still reads where it meets the page
+            // colour.
+            child: DecoratedBox(
+              decoration: BoxDecoration(boxShadow: AppShadows.card),
               child: Material(
-                type: MaterialType.transparency,
-                child: Container(
-                  width: AppDimensions.minTouchTarget,
-                  height: AppDimensions.minTouchTarget,
-                  // Skarmar v12 etapp 9 #fbknapp: paper with a hairline edge,
-                  // so the square still reads where it meets the page colour.
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                    border: Border.all(color: cs.outlineVariant),
-                    boxShadow: AppShadows.card,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '!',
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        color: cs.onSurface,
+                color: cs.surface,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: cs.outlineVariant),
+                ),
+                child: ButleryControlFocus(
+                  child: PressFill(
+                    surface: PressSurface.base,
+                    child: InkWell(
+                      onTap: _onTap,
+                      child: SizedBox(
+                        width: AppDimensions.minTouchTarget,
+                        height: AppDimensions.minTouchTarget,
+                        child: Center(
+                          child: Text(
+                            '!',
+                            style: AppTextStyles.headlineSmall.copyWith(
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

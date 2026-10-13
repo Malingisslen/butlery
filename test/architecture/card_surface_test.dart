@@ -42,7 +42,6 @@ void main() {
   test('content cards draw no shadow of their own', () {
     final offenders = <String>[];
     for (final file in _dartFiles('lib/widgets/common/content_cards')) {
-      if (_rel(file).endsWith('/image_preview_card.dart')) continue;
       final code = file.readAsStringSync();
       if (code.contains('boxShadow') || code.contains('AppShadows')) {
         offenders.add(_rel(file));

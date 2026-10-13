@@ -1337,7 +1337,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **User story:** As a user, I want recipe images to load fast and smoothly so that browsing feels responsive and doesn't blow my data/memory.
 - **Expected behavior:** Blur-up progressive loading, DPR-aware cache sizing, fade-in (respecting reduce-motion), stable cache keys. Memory cache capped at 100MB, LRU eviction under pressure with hit/miss stats.
 - **Edge cases:** Local vs network handled separately; Storage has no URL transforms so pre-generated thumbnails used; broken images → error widget.
-- **Test coverage:** Partial — `image_factory_test.dart`, `image_preview_card_test.dart`, format util tests; no dedicated OptimizedImageLoader test.
+- **Test coverage:** Partial — `image_factory_test.dart`, format util tests; no dedicated OptimizedImageLoader test.
 
 #### ENG-15: Intelligent predictive cache / prefetch
 - **Entry:** Fully background; no user-visible entry.

@@ -21,7 +21,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
-enum _Variant { hero, inkPrimary, outline }
+enum _Variant { hero, inkPrimary, secondary, outline }
 
 Widget _button(BuildContext context, _Variant v) {
   switch (v) {
@@ -42,6 +42,15 @@ Widget _button(BuildContext context, _Variant v) {
       );
     case _Variant.inkPrimary:
       return ActionButtons.primaryButton(
+        context,
+        label: 'Spara recept',
+        loadingText: 'Sparar …',
+        isLoading: true,
+        isExpanded: true,
+        onPressed: () {},
+      );
+    case _Variant.secondary:
+      return ActionButtons.secondaryButton(
         context,
         label: 'Spara recept',
         loadingText: 'Sparar …',
@@ -147,7 +156,7 @@ void main() {
           final track = tester
               .widget<ColoredBox>(find.byKey(ButtonPlateLine.trackKey))
               .color;
-          if (v == _Variant.outline) {
+          if (v == _Variant.outline || v == _Variant.secondary) {
             // On paper the ladder allows only 0.02 and 0.04 (tokens.json
             // opacityLadder), so an unfilled button's track is token
             // progressTrack: #E6EAD9 light, rgba(245,244,237,0.18) dark.

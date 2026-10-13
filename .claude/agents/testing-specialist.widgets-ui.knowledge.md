@@ -180,10 +180,7 @@ the wrong belief and has been corrected in place):**
   `expect(takeException(), isNull)` is ALSO satisfied by a tile that rendered nothing, so co-assert the
   content under test is present — **and that co-assert must reach the DIMENSION the geometry depends
   on, not the container type** (`find.byType(<Row>)` is satisfied by a one-item row; assert the CHILD
-  COUNT). A ladder that SKIPS cases per fixture is honest only if the skipped ones are MEASURED;
-  register them as NAMED `skip:` (the runner prints the name every run), never a `continue`. Two
-  residuals survive: the co-assert closes only "the ADDED content vanished", and a named skip goes
-  stale GREEN the day the residual is fixed (BUT-1895/1911). A state-matrix host pins only
+  COUNT). A state-matrix host pins only
   the sections its fixture RENDERS: an `if (vm.x)` section's wrapper is revertible-green (BUT-2192).
   **A Row→Wrap overflow fix also changes WIDTH**: a Wrap sizes to its content, so under a
   start-aligned Column the caller's coloured band shrinks. Mount the caller's real parent chain
@@ -197,6 +194,9 @@ the wrong belief and has been corrected in place):**
   tests — but a group NAMED "the week fits" then asserts something nothing measures. Read
   `ScrollableState.position.maxScrollExtent` before writing "fits" (a `> 0` IS the finding), and
   strike the claim rather than re-scope it (BUT-1971).
+- **A "hit region is at least 48 dp" assertion hosted in `Center`/`Align`/`Scaffold` body measures the VIEWPORT**: a
+  `Center` inside the widget expands to the loose max (probe: 800x600), so `>= 48` holds with the minimum deleted.
+  Host it in `UnconstrainedBox` (real 48x48; a replica without the min 14x14) and assert both axes.
 - **`labeledTapTargetGuideline` only asks that each TAP node has a label** — a row split into a
   labelled tap node and a tapless `selected` node passes it. Pin "one control": one TAP node whose
   label contains the name, then `flagsCollection` and `tester.semantics.tap`; once picked, a

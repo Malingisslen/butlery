@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
-import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Available emoji reactions for comments.
 /// Maps internal key to display emoji.
@@ -67,7 +67,7 @@ String emojiSemanticsLabel(BuildContext context, String key) {
   };
 }
 
-class _EmojiButton extends StatefulWidget {
+class _EmojiButton extends StatelessWidget {
   final String emojiKey;
   final String emoji;
   final VoidCallback onTap;
@@ -79,39 +79,28 @@ class _EmojiButton extends StatefulWidget {
   });
 
   @override
-  State<_EmojiButton> createState() => _EmojiButtonState();
-}
-
-class _EmojiButtonState extends State<_EmojiButton> {
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: Semantics(
-        button: true,
-        label: emojiSemanticsLabel(context, widget.emojiKey),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: AnimationUtils.getDuration(
-              context,
-              AppMotion.micro,
-            ),
-            padding: AppDimensions.paddingAll8,
-            decoration: BoxDecoration(
-              color: _isHovered
-                  ? Theme.of(context).colorScheme.surface
-                  : Colors.transparent,
+    return Semantics(
+      button: true,
+      label: emojiSemanticsLabel(context, emojiKey),
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: onTap,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            ),
-            child: ExcludeSemantics(
-              child: Text(
-                widget.emoji,
-                style: const TextStyle(
-                  fontSize: AppDimensions.emojiGlyphPicker,
+              child: Padding(
+                padding: AppDimensions.paddingAll8,
+                child: ExcludeSemantics(
+                  child: Text(
+                    emoji,
+                    style: const TextStyle(
+                      fontSize: AppDimensions.emojiGlyphPicker,
+                    ),
+                  ),
                 ),
               ),
             ),

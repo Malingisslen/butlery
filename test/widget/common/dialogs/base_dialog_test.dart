@@ -756,6 +756,50 @@ void main() {
     );
   });
 
+  group('Back and barrier while the action works', () {
+    testWidgets('BaseDialog stays open until the action ends, then pops', (
+      tester,
+    ) async {
+      final gate = Completer<void>();
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<String>(
+        context: ctx,
+        builder: (_) => _TestBaseDialog(title: 't', gate: gate),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Stäng'));
+      await tester.pump();
+
+      // A plate line keeps animating, so the exit transition is stepped past
+      // rather than settled.
+      await tester.binding.handlePopRoute();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(_TestBaseDialog), findsOneWidget);
+      await tester.tapAt(const Offset(2, 2));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(_TestBaseDialog), findsOneWidget);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(_TestBaseDialog), findsNothing);
+    });
+
+    testWidgets('an idle BaseDialog still pops on back', (tester) async {
+      await tester.pumpWidget(_wrap(_trigger(() {})));
+      final ctx = tester.element(find.byType(ElevatedButton));
+      showDialog<String>(
+        context: ctx,
+        builder: (_) => const _TestBaseDialog(title: 't'),
+      );
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(_TestBaseDialog), findsNothing);
+    });
+  });
+
   group('Avbryt while the action works', () {
     TextButton cancelButton(WidgetTester tester, String label) =>
         tester.widget<TextButton>(

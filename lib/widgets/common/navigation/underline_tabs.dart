@@ -5,7 +5,10 @@
 // list is shown; the page-level tabs are the TabBar the theme draws.
 library;
 
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'dart:ui' show SemanticsRole;
+
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
@@ -30,62 +33,74 @@ class UnderlineTabs<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+    // A tab list, so a screen reader announces the tabs as a group rather
+    // than as loose buttons.
+    return Semantics(
+      role: SemanticsRole.tabBar,
+      container: true,
+      explicitChildNodes: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+        ),
+        child: Row(
+          children: [
+            for (final value in values)
+              Flexible(child: _tab(context, cs, value)),
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          for (final value in values)
-            Flexible(
-              child: Semantics(
-                label: labelOf(value),
-                button: true,
-                selected: value == selected,
-                child: PressFill(
-                  surface: PressSurface.base,
-                  child: InkWell(
-                    onTap: () => onChanged(value),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: AppDimensions.minTouchTarget,
-                      ),
-                      child: Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.space12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: value == selected
-                                  ? cs.onSurface
-                                  : Colors.transparent,
-                              width: _bar,
-                            ),
-                          ),
-                        ),
-                        child: ExcludeSemantics(
-                          child: Text(
-                            labelOf(value),
-                            style:
-                                (value == selected
-                                        ? AppTextStyles.labelLarge
-                                        : AppTextStyles.labelMedium)
-                                    .copyWith(
-                                      color: value == selected
-                                          ? cs.onSurface
-                                          : cs.onSurfaceVariant,
-                                    ),
-                          ),
-                        ),
-                      ),
+    );
+  }
+
+  Widget _tab(BuildContext context, ColorScheme cs, T value) {
+    final isSelected = value == selected;
+    return Semantics(
+      container: true,
+      role: SemanticsRole.tab,
+      button: true,
+      label: labelOf(value),
+      selected: isSelected,
+      child: ButleryControlFocus(
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: () => onChanged(value),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
+              ),
+              child: Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space12,
+                ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isSelected ? cs.onSurface : Colors.transparent,
+                      width: _bar,
                     ),
+                  ),
+                ),
+                child: ExcludeSemantics(
+                  child: Text(
+                    labelOf(value),
+                    style:
+                        (isSelected
+                                ? AppTextStyles.labelLarge
+                                : AppTextStyles.labelMedium)
+                            .copyWith(
+                              color: isSelected
+                                  ? cs.onSurface
+                                  : cs.onSurfaceVariant,
+                            ),
                   ),
                 ),
               ),
             ),
-        ],
+          ),
+        ),
       ),
     );
   }

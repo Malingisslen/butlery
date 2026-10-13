@@ -5,6 +5,8 @@
 /// widget, so the shape is decided in one place.
 library;
 
+import 'dart:ui' show SemanticsRole;
+
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
@@ -35,6 +37,17 @@ class ButlerySegmentSwitch<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // One choice among a few: a screen reader announces the group, so each
+    // half is read as one of its options.
+    return Semantics(
+      role: SemanticsRole.radioGroup,
+      container: true,
+      explicitChildNodes: true,
+      child: _switch(),
+    );
+  }
+
+  Widget _switch() {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Large text: chips that wrap, rather than a segment breaking a word

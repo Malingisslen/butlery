@@ -4,11 +4,14 @@
 // Material defaults — do NOT wrap those.
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Wraps a tappable child so the hit region is at least
-/// [AppDimensions.minTouchTarget] in both axes, regardless of child size.
-/// Announces as a button via [Semantics].
+/// 48 dp in both axes, regardless of child size.
+/// Announces as a button via [Semantics], takes keyboard focus with the
+/// canonical ring, activates on Enter and Space, and shows press and hover
+/// like every other control.
 class TappableWrapper extends StatelessWidget {
   const TappableWrapper({
     required this.onTap,
@@ -16,6 +19,7 @@ class TappableWrapper extends StatelessWidget {
     required this.semanticLabel,
     this.onLongPress,
     this.enabled = true,
+    this.selected,
     super.key,
   });
 
@@ -34,6 +38,9 @@ class TappableWrapper extends StatelessWidget {
   /// Whether taps are active. Disabled targets still claim the 48dp area.
   final bool enabled;
 
+  /// Set when the target is one choice among several, such as a star.
+  final bool? selected;
+
   @override
   Widget build(BuildContext context) {
     final VoidCallback? effectiveOnTap = enabled ? onTap : null;
@@ -42,17 +49,19 @@ class TappableWrapper extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       button: true,
+      selected: selected,
       enabled: enabled && effectiveOnTap != null,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: AppDimensions.minTouchTarget,
-          minHeight: AppDimensions.minTouchTarget,
-        ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: effectiveOnTap,
-          onLongPress: effectiveOnLongPress,
-          child: Center(child: child),
+      child: ButleryControlFocus(
+        child: Material(
+          type: MaterialType.transparency,
+          child: PressFill(
+            surface: PressSurface.base,
+            child: InkWell(
+              onTap: effectiveOnTap,
+              onLongPress: effectiveOnLongPress,
+              child: Center(child: ExcludeSemantics(child: child)),
+            ),
+          ),
         ),
       ),
     );

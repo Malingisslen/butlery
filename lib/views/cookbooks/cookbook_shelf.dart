@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -181,9 +182,8 @@ Future<void> showMakeCookbookFlow(
   BuildContext context,
   CookbookViewModel vm,
 ) async {
-  final tag = await showModalBottomSheet<PersonalTag>(
+  final tag = await showButlerySheet<PersonalTag>(
     context: context,
-    isScrollControlled: true,
     builder: (sheetContext) => ChangeNotifierProvider<CookbookViewModel>.value(
       value: vm,
       child: const _TagChooser(),

@@ -161,32 +161,32 @@ void main() {
       expect(positioned.bottom, AppDimensions.feedbackFabBottomOffset);
     });
 
-    testWidgets('container is square at minTouchTarget size', (tester) async {
+    testWidgets('the tap surface is square at minTouchTarget size', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      final container = tester.widget<Container>(
+      final size = tester.getSize(
         find.descendant(
           of: find.byType(FeedbackFAB),
-          matching: find.byType(Container),
+          matching: find.byType(InkWell),
         ),
       );
-      expect(container.constraints?.maxWidth, AppDimensions.minTouchTarget);
-      expect(container.constraints?.maxHeight, AppDimensions.minTouchTarget);
+      expect(size, const Size.square(AppDimensions.minTouchTarget));
     });
 
-    testWidgets('uses opaque hit-test on the GestureDetector', (tester) async {
+    testWidgets('the tap surface has a handler', (tester) async {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      final detector = tester.widget<GestureDetector>(
+      final ink = tester.widget<InkWell>(
         find.descendant(
           of: find.byType(FeedbackFAB),
-          matching: find.byType(GestureDetector),
+          matching: find.byType(InkWell),
         ),
       );
-      expect(detector.behavior, HitTestBehavior.opaque);
-      expect(detector.onTap, isNotNull);
+      expect(ink.onTap, isNotNull);
     });
 
     testWidgets('"!" glyph color is text.primary (onSurface)', (tester) async {

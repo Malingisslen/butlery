@@ -77,8 +77,14 @@ class ActionButtons {
     final filled =
         style != ActionButtonStyle.outlined &&
         style != ActionButtonStyle.outlinedOnInk;
+    // The secondary button rests on the raised surface behind an outline, so
+    // its busy line takes the text colour, not the filled button's.
+    final onFill = filled && style != ActionButtonStyle.secondary;
     final ButtonStyle? variant = switch (style) {
-      ActionButtonStyle.primary || ActionButtonStyle.secondary => null,
+      ActionButtonStyle.primary => null,
+      ActionButtonStyle.secondary => ComponentThemes.secondaryButtonStyle(
+        theme.colorScheme,
+      ),
       ActionButtonStyle.outlined => null,
       ActionButtonStyle.onInk => ComponentThemes.onInkButtonStyle(
         theme.colorScheme,
@@ -95,7 +101,7 @@ class ActionButtons {
             filled
                 ? theme.elevatedButtonTheme.style
                 : theme.outlinedButtonTheme.style,
-            onFill: filled,
+            onFill: onFill,
           )
         : own;
     final Widget button = filled

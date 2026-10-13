@@ -97,7 +97,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = '${context.l10n.errorCouldNotLoad('menyer')}: $e';
+          _error = context.l10n.errorLoadingRetryOrGoBack;
         });
       }
     }

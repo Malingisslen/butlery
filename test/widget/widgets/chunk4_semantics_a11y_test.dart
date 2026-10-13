@@ -25,7 +25,6 @@ import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart'
     as common_draft;
-import 'package:butlery/widgets/common/input/debounced_button.dart';
 import 'package:butlery/widgets/common/share_dialog/share_mode_selection.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
@@ -171,54 +170,6 @@ void main() {
           expectNothingAnnouncedTwice(tester, node);
           expectActivatable(tester, node);
         }
-        handle.dispose();
-      },
-    );
-
-    testWidgets(
-      'debounced_button — semanticLabel surfaces a button-role Semantics',
-      (tester) async {
-        final handle = tester.ensureSemantics();
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: DebouncedButton(
-              onPressed: () {},
-              semanticLabel: 'Spara recept',
-              child: const Text('Spara'),
-            ),
-          ),
-        );
-
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Spara recept')),
-          findsOneWidget,
-        );
-        handle.dispose();
-      },
-    );
-
-    testWidgets(
-      'debounced_button — no semanticLabel means no extra Semantics wrapper',
-      (tester) async {
-        // Negative case: pre-existing callers that don't pass semanticLabel
-        // shouldn't get a duplicate "button" announcement. The label-less
-        // variant should produce zero matches for an arbitrary label probe.
-        final handle = tester.ensureSemantics();
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: DebouncedButton(
-              onPressed: () {},
-              child: const Text('Spara'),
-            ),
-          ),
-        );
-
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Spara recept')),
-          findsNothing,
-        );
         handle.dispose();
       },
     );

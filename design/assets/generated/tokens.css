@@ -2,7 +2,7 @@
   GENERERAD FIL — ändra källan, inte den här.
   system 2.1 · tokens 1.13
   generator tools/gen-css.mjs v1.3
-  källfingeravtryck sha256:3e5c7b961239e2b05c419b465f9796208d12b694eb534d758543d978cd53022e (4 indatafiler, generatorns källa inräknad)
+  källfingeravtryck sha256:110e09febd1844eb8388ba11dc8964786274378a510f8adc6c31406d7ae7168d (4 indatafiler, generatorns källa inräknad)
   genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 */
 
@@ -137,6 +137,8 @@
   --butlery-type-caption-weight: 400;
   --butlery-type-card-title-size: 15px;
   --butlery-type-card-title-weight: 600;
+  --butlery-type-chip-size: 12px;
+  --butlery-type-chip-weight: 600;
   --butlery-type-cooking-step-size: 19px;
   --butlery-type-cooking-step-weight: 600;
   --butlery-type-display-compact-size: 26px;
@@ -189,7 +191,7 @@
   --butlery-overlay-paper-wash: rgba(245,244,237,0.40);
   --butlery-progress-indicator: #CE7C1E;
   --butlery-progress-track: rgba(245,244,237,0.18);
-  --butlery-scrim: rgba(23,37,29,0.60);
+  --butlery-scrim: rgba(0,0,0,0.60);
   --butlery-surface-base: #17251D;
   --butlery-surface-disabled: #4A5C50;
   --butlery-surface-ink: #24382C;

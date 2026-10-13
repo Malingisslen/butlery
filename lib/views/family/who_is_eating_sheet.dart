@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:provider/provider.dart';
@@ -166,10 +167,8 @@ Future<WhoAteResult?> _showRosterPicker(
     return const WhoAteResult.skipped();
   }
 
-  final result = await showModalBottomSheet<WhoAteResult>(
+  final result = await showButlerySheet<WhoAteResult>(
     context: context,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    isScrollControlled: true,
     builder: (_) => ChangeNotifierProvider<WhoIsEatingViewModel>.value(
       value: vm,
       child: _WhoIsEatingSheet(config: config),
@@ -212,17 +211,6 @@ class _WhoIsEatingSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: AppDimensions.paddingOnlyBottom12,
-                decoration: BoxDecoration(
-                  color: cs.outlineVariant,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                ),
-              ),
-            ),
             Text(
               config.title,
               style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),

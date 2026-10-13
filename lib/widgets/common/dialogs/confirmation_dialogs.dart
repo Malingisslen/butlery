@@ -61,6 +61,7 @@ class ConfirmationDialogs {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
+            scrollable: true,
             title: Text(title, style: AppTextStyles.headlineSmall),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -166,6 +167,7 @@ class ConfirmationDialogs {
     return await showDialog<String?>(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: Text(title, style: AppTextStyles.titleLarge),
         content: Column(
           mainAxisSize: MainAxisSize.min,

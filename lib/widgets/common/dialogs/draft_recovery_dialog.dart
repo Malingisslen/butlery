@@ -45,6 +45,7 @@ class DraftRecoveryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       icon: ButleryIcon(
         ButleryIcons.history,
         color: Theme.of(context).colorScheme.onSurface,

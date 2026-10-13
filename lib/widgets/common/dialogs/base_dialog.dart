@@ -55,51 +55,56 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return AlertDialog(
-      icon: widget.titleIcon != null
-          ? ButleryIcon(
-              widget.titleIcon!,
-              color: widget.isDangerous ? cs.error : cs.onSurface,
-              size: AppDimensions.iconSizeXxl,
-            )
-          : null,
-      title: Text(widget.title),
-      // Scrollable because the content is caller-supplied and some of it is
-      // long by law rather than by choice: BUT-1693's Art. 9 consent copy has
-      // to state what is shared, who sees it, what it costs and how to undo it,
-      // and a bare Column silently overflowed it by 198px on a phone. Short
-      // dialogs are unaffected — AlertDialog still sizes to its content. Note
-      // it makes the incoming height constraint UNBOUNDED, so a future
-      // `customContent` must not hand it an Expanded, a SizedBox.expand or a
-      // non-shrinkWrap ListView.
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.subtitle != null) ...[
-              Text(widget.subtitle!, style: AppTextStyles.bodyMedium),
-              const SizedBox(height: AppDimensions.space8),
+    // Back, Escape and the barrier do not close it mid-action, as Cancel
+    // does not.
+    return PopScope(
+      canPop: !_isLoading,
+      child: AlertDialog(
+        icon: widget.titleIcon != null
+            ? ButleryIcon(
+                widget.titleIcon!,
+                color: widget.isDangerous ? cs.error : cs.onSurface,
+                size: AppDimensions.iconSizeXxl,
+              )
+            : null,
+        title: Text(widget.title),
+        // Scrollable because the content is caller-supplied and some of it is
+        // long by law rather than by choice: BUT-1693's Art. 9 consent copy has
+        // to state what is shared, who sees it, what it costs and how to undo it,
+        // and a bare Column silently overflowed it by 198px on a phone. Short
+        // dialogs are unaffected — AlertDialog still sizes to its content. Note
+        // it makes the incoming height constraint UNBOUNDED, so a future
+        // `customContent` must not hand it an Expanded, a SizedBox.expand or a
+        // non-shrinkWrap ListView.
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.subtitle != null) ...[
+                Text(widget.subtitle!, style: AppTextStyles.bodyMedium),
+                const SizedBox(height: AppDimensions.space8),
+              ],
+              widget.buildContent(context),
+              if (widget.buildAdditionalContent(context) != null) ...[
+                const SizedBox(height: AppDimensions.space8),
+                widget.buildAdditionalContent(context)!,
+              ],
+              if (_error != null) ...[
+                const SizedBox(height: AppDimensions.space8),
+                _buildErrorDisplay(),
+              ],
             ],
-            widget.buildContent(context),
-            if (widget.buildAdditionalContent(context) != null) ...[
-              const SizedBox(height: AppDimensions.space8),
-              widget.buildAdditionalContent(context)!,
-            ],
-            if (_error != null) ...[
-              const SizedBox(height: AppDimensions.space8),
-              _buildErrorDisplay(),
-            ],
-          ],
+          ),
         ),
+        actions: [
+          DialogCancelButton(
+            label: widget.secondaryActionText,
+            enabled: !_isLoading,
+          ),
+          _buildPrimaryButton(),
+        ],
       ),
-      actions: [
-        DialogCancelButton(
-          label: widget.secondaryActionText,
-          enabled: !_isLoading,
-        ),
-        _buildPrimaryButton(),
-      ],
     );
   }
 

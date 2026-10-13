@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,9 +21,8 @@ Future<void> showAddRecipesSheet(
   required CookbookViewModel vm,
   required PersonalTag tag,
 }) async {
-  final added = await showModalBottomSheet<int>(
+  final added = await showButlerySheet<int>(
     context: context,
-    isScrollControlled: true,
     builder: (_) => ChangeNotifierProvider<CookbookViewModel>.value(
       value: vm,
       child: CookbookRecipePickerSheet(tag: tag),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -116,42 +117,64 @@ class PortionScalerUI {
       builder: (context, child) {
         return Transform.scale(
           scale: scaleAnimation.value,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Minus button
-              _buildControlButton(
-                context,
-                icon: ButleryIcons.minus,
-                onPressed: currentPortions > minPortions
-                    ? () => onUpdatePortions(currentPortions - 1)
-                    : null,
-              ),
-
-              // Current portions
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space12,
+          // One adjustable value: the number is its value, and a swipe up or
+          // down steps it as the two buttons do.
+          child: Semantics(
+            container: true,
+            explicitChildNodes: true,
+            label: context.l10n.scalerPortionsLabel,
+            value: '$currentPortions',
+            increasedValue: currentPortions < maxPortions
+                ? '${currentPortions + 1}'
+                : null,
+            decreasedValue: currentPortions > minPortions
+                ? '${currentPortions - 1}'
+                : null,
+            onIncrease: currentPortions < maxPortions
+                ? () => onUpdatePortions(currentPortions + 1)
+                : null,
+            onDecrease: currentPortions > minPortions
+                ? () => onUpdatePortions(currentPortions - 1)
+                : null,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Minus button
+                _buildControlButton(
+                  context,
+                  icon: ButleryIcons.minus,
+                  onPressed: currentPortions > minPortions
+                      ? () => onUpdatePortions(currentPortions - 1)
+                      : null,
                 ),
-                child: Text(
-                  '$currentPortions',
-                  style: AppTextStyles.titleLarge.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+
+                // Current portions
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.space12,
                   ),
-                  textAlign: TextAlign.center,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      '$currentPortions',
+                      style: AppTextStyles.titleLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-              ),
 
-              // Plus button
-              _buildControlButton(
-                context,
-                icon: ButleryIcons.plus,
-                onPressed: currentPortions < maxPortions
-                    ? () => onUpdatePortions(currentPortions + 1)
-                    : null,
-              ),
-            ],
+                // Plus button
+                _buildControlButton(
+                  context,
+                  icon: ButleryIcons.plus,
+                  onPressed: currentPortions < maxPortions
+                      ? () => onUpdatePortions(currentPortions + 1)
+                      : null,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -172,8 +195,7 @@ class PortionScalerUI {
       label: label,
       button: true,
       enabled: onPressed != null,
-      child: Material(
-        color: Colors.transparent,
+      child: ButleryControlFocus(
         child: Material(
           type: MaterialType.transparency,
           child: PressFill(
@@ -274,38 +296,47 @@ class PortionScalerUI {
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onToggleUnitConversion,
-              icon: ButleryIcon(
-                convertToSwedish
-                    ? ButleryIcons.circleCheck
-                    : ButleryIcons.globe,
-                size: AppDimensions.iconSizeS,
-              ),
-              label: Text(
-                convertToSwedish
-                    ? context.l10n.scalerUsingSwedishUnits
-                    : context.l10n.scalerConvertAmericanUnits,
-                style: AppTextStyles.labelMedium,
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.onSurface
-                    : Theme.of(context).colorScheme.onSurface,
-                // Selected is the raised surface with a 1.5 px text.primary
-                // border (B83-1).
-                side: BorderSide(
-                  color: convertToSwedish
-                      ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.outline,
-                  width: convertToSwedish ? 1.5 : 1,
+            // One name for the control and a state that changes, rather than
+            // a label that changes with the state.
+            child: Semantics(
+              toggled: convertToSwedish,
+              label: context.l10n.scalerConvertAmericanUnits,
+              button: true,
+              excludeSemantics: true,
+              onTap: onToggleUnitConversion,
+              child: OutlinedButton.icon(
+                onPressed: onToggleUnitConversion,
+                icon: ButleryIcon(
+                  convertToSwedish
+                      ? ButleryIcons.circleCheck
+                      : ButleryIcons.globe,
+                  size: AppDimensions.iconSizeS,
                 ),
-                backgroundColor: convertToSwedish
-                    ? Theme.of(context).colorScheme.surfaceContainerHighest
-                    : null,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.space4,
+                label: Text(
+                  convertToSwedish
+                      ? context.l10n.scalerUsingSwedishUnits
+                      : context.l10n.scalerConvertAmericanUnits,
+                  style: AppTextStyles.labelMedium,
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: convertToSwedish
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurface,
+                  // Selected is the raised surface with a 1.5 px text.primary
+                  // border (B83-1).
+                  side: BorderSide(
+                    color: convertToSwedish
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.outline,
+                    width: convertToSwedish ? 1.5 : 1,
+                  ),
+                  backgroundColor: convertToSwedish
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
+                      : null,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.space4,
+                    vertical: AppDimensions.space4,
+                  ),
                 ),
               ),
             ),
