@@ -17,20 +17,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/decision_guard_support.dart';
 
-// Own-text strings in app_sv.arb that carry an emoji today. B-44 allows emoji
-// only as a reaction; the list only shrinks.
-const _emojiInOwnText = <String>[
-  'shareShoppingListTitle',
-  'shareMessageRecipeWithTitle',
-  'shareMessageRecipeDefault',
-  'shareMessageMenuWithTitle',
-  'shareMessageMenuDefault',
-  'shareMessageShoppingListWithTitle',
-  'shareMessageShoppingListDefault',
-  'shareWeekMenuTitleEmoji',
-  'shareSummaryLabel',
-];
-
 void main() {
   final tokens = guardJson('design/tokens.json');
   final semantic = tokens['semantic'] as Map<String, dynamic>;
@@ -250,17 +236,30 @@ void main() {
 
   test('B-44 emoji finns bara som reaktion, aldrig i Butlerys egen text', () {
     final emoji = RegExp(
-      '[\u{1F300}-\u{1FAFF}☀-➿\u{1F000}-\u{1F2FF}]',
+      '[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u2600-\u27BF\u2B50\u23F1\uFE0F]',
       unicode: true,
     );
-    final found = [
-      for (final e in arb.entries)
-        if (!e.key.startsWith('@') &&
-            e.value is String &&
-            emoji.hasMatch(e.value as String))
-          e.key,
-    ];
-    expect(found, _emojiInOwnText);
+    // share_service legitimately draws the plain symbols ★ ☑ ☐ (U+2605, U+2610,
+    // U+2611), so its scan drops the dingbat block the ARB scan keeps.
+    final pictograph = RegExp(
+      '[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u2B50\u23F1\uFE0F]',
+      unicode: true,
+    );
+    for (final file in ['app_sv.arb', 'app_en.arb']) {
+      final found = [
+        for (final e in guardJson('lib/l10n/$file').entries)
+          if (!e.key.startsWith('@') &&
+              e.value is String &&
+              emoji.hasMatch(e.value as String))
+            e.key,
+      ];
+      expect(found, isEmpty, reason: 'B-44: $file');
+    }
+    expect(
+      pictograph.hasMatch(guardSource('lib/services/share_service.dart')),
+      isFalse,
+      reason: 'B-44: delningstexten byggs i share_service',
+    );
   });
 
   test(

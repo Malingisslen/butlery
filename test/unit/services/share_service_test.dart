@@ -122,7 +122,7 @@ void main() {
         expect(formatted, contains('4 portioner'));
         expect(formatted, contains('45 minuter'));
         // Rating is shown as full stars (4.5 rounds to 5)
-        expect(formatted, contains('⭐⭐⭐⭐⭐'));
+        expect(formatted, contains('★★★★★'));
         expect(formatted, contains('Klassiska svenska köttbullar'));
       });
 
@@ -208,16 +208,16 @@ void main() {
     });
 
     group('Recipe Formatting - Compact Format', () {
-      test('should format recipe with emojis', () {
+      test('should format recipe without emojis', () {
         // Act
         final formatted = shareService.formatRecipeCompact(testRecipe);
 
         // Assert
-        expect(formatted, contains('🍽 Köttbullar med potatismos'));
-        expect(formatted, contains('🍴 4 port'));
-        expect(formatted, contains('⏱ 45 min'));
+        expect(formatted, contains('Köttbullar med potatismos'));
+        expect(formatted, contains('4 port'));
+        expect(formatted, contains('45 min'));
         // Rating is shown as full stars (4.5 rounds to 5)
-        expect(formatted, contains('⭐⭐⭐⭐⭐'));
+        expect(formatted, contains('★★★★★'));
       });
 
       test('should format ingredients inline', () {
@@ -276,7 +276,7 @@ void main() {
         // Assert
         expect(formatted, contains('**Portioner:** 4'));
         expect(formatted, contains('**Tid:** 45 minuter'));
-        expect(formatted, contains('**Betyg:** ⭐⭐⭐⭐⭐'));
+        expect(formatted, contains('**Betyg:** ★★★★★'));
       });
 
       test('should format ingredients as markdown list', () {
@@ -445,7 +445,7 @@ void main() {
         final formatted = shareService.formatShoppingList(testShoppingItems);
 
         // Assert
-        expect(formatted, contains('🛒 INKÖPSLISTA'));
+        expect(formatted, contains('INKÖPSLISTA'));
         expect(formatted, contains('==========='));
         expect(formatted, contains('【KÖTT】'));
         expect(formatted, contains('【MEJERI】'));
@@ -478,7 +478,7 @@ void main() {
         final formatted = shareService.formatShoppingList([]);
 
         // Assert
-        expect(formatted, contains('🛒 INKÖPSLISTA'));
+        expect(formatted, contains('INKÖPSLISTA'));
         // Empty list just shows header
         expect(formatted, contains('==========='));
       });
@@ -689,7 +689,7 @@ void main() {
         await shareService.copyToClipboard(shoppingText);
 
         // Assert - Method completed without error
-        expect(shoppingText, contains('🛒'));
+        expect(shoppingText, contains('INKÖPSLISTA'));
       });
 
       test('should handle clipboard errors gracefully', () async {
@@ -753,7 +753,7 @@ void main() {
         expect(markdown, contains('Ägg från höns på Österlen'));
       });
 
-      test('should use Swedish cultural emojis appropriately', () {
+      test('should not add emoji to a midsummer recipe', () {
         // Arrange
         final midsummerRecipe = RecipeFactory.build(
           title: 'Midsommarbuffé',
@@ -764,14 +764,13 @@ void main() {
         // Act
         final formatted = shareService.formatRecipeCompact(midsummerRecipe);
 
-        // Assert - Should include appropriate emojis
+        // Assert - B-44: no emoji in Butlery's own text
         expect(
-          formatted,
-          anyOf(
-            contains('🍽️'), // Meal emoji
-            contains('🥘'), // Food emoji
-            contains('🍴'), // Utensils emoji
-          ),
+          RegExp(
+            '[\u{1F300}-\u{1FAFF}\u2B50\u23F1\uFE0F]',
+            unicode: true,
+          ).hasMatch(formatted),
+          isFalse,
         );
       });
     });
@@ -790,10 +789,7 @@ void main() {
 
         // Assert
         expect(socialFormat.length, lessThan(1000)); // Compact format
-        expect(
-          socialFormat,
-          contains('🍴'),
-        ); // Contains emojis for visual appeal
+        expect(socialFormat, contains('port'));
         // Note: Current implementation doesn't add hashtags to tags
       });
 

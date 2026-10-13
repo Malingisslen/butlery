@@ -3013,7 +3013,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareMenuTitle => 'Dela meny';
 
   @override
-  String get shareShoppingListTitle => '🛒 INKÖPSLISTA';
+  String get shareShoppingListTitle => 'INKÖPSLISTA';
 
   @override
   String get shareCreateAndShare => 'Skapa & Dela';
@@ -11862,30 +11862,30 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shareMessageRecipeWithTitle(String title) {
-    return 'Ta gärna en titt på det här receptet: ”$title”. 👩‍🍳';
+    return 'Ta gärna en titt på det här receptet: ”$title”.';
   }
 
   @override
   String get shareMessageRecipeDefault =>
-      'Jag hittade ett recept jag ville dela med dig. 👩‍🍳';
+      'Jag hittade ett recept jag ville dela med dig.';
 
   @override
   String shareMessageMenuWithTitle(String title) {
-    return 'Här är min veckomeny: ”$title” 📋';
+    return 'Här är min veckomeny: ”$title”';
   }
 
   @override
   String get shareMessageMenuDefault =>
-      'Här är min veckomeny, kanske till inspiration. 📋';
+      'Här är min veckomeny, kanske till inspiration.';
 
   @override
   String shareMessageShoppingListWithTitle(String title) {
-    return 'Vill du hjälpa mig med inköpslistan: ”$title”? 🛒';
+    return 'Vill du hjälpa mig med inköpslistan: ”$title”?';
   }
 
   @override
   String get shareMessageShoppingListDefault =>
-      'Vill du hjälpa mig med inköpen denna vecka? 🛒';
+      'Vill du hjälpa mig med inköpen denna vecka?';
 
   @override
   String get textImportSuggestionIngredients =>
@@ -13119,10 +13119,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareWeekMenuTitle => 'Veckomeny';
 
   @override
-  String get shareWeekMenuTitleEmoji => '🍽 VECKOMENY';
+  String get shareWeekMenuTitleEmoji => 'VECKOMENY';
 
   @override
-  String get shareSummaryLabel => '📊 Sammanfattning:';
+  String get shareSummaryLabel => 'Sammanfattning:';
 
   @override
   String shareSummaryRecipesInCategories(int recipeCount, int categoryCount) {

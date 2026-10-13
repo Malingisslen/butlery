@@ -2126,7 +2126,7 @@
   },
   "shareRecipeTitle": "Dela recept",
   "shareMenuTitle": "Dela meny",
-  "shareShoppingListTitle": "🛒 INKÖPSLISTA",
+  "shareShoppingListTitle": "INKÖPSLISTA",
   "shareCreateAndShare": "Skapa & Dela",
   "shareRecipeWithFriends": "Dela recept med vänner",
   "shareMenuWithFriends": "Dela veckomeny med vänner",
@@ -7998,7 +7998,7 @@
       }
     }
   },
-  "shareMessageRecipeWithTitle": "Ta gärna en titt på det här receptet: ”{title}”. 👩‍🍳",
+  "shareMessageRecipeWithTitle": "Ta gärna en titt på det här receptet: ”{title}”.",
   "@shareMessageRecipeWithTitle": {
     "placeholders": {
       "title": {
@@ -8006,8 +8006,8 @@
       }
     }
   },
-  "shareMessageRecipeDefault": "Jag hittade ett recept jag ville dela med dig. 👩‍🍳",
-  "shareMessageMenuWithTitle": "Här är min veckomeny: ”{title}” 📋",
+  "shareMessageRecipeDefault": "Jag hittade ett recept jag ville dela med dig.",
+  "shareMessageMenuWithTitle": "Här är min veckomeny: ”{title}”",
   "@shareMessageMenuWithTitle": {
     "placeholders": {
       "title": {
@@ -8015,8 +8015,8 @@
       }
     }
   },
-  "shareMessageMenuDefault": "Här är min veckomeny, kanske till inspiration. 📋",
-  "shareMessageShoppingListWithTitle": "Vill du hjälpa mig med inköpslistan: ”{title}”? 🛒",
+  "shareMessageMenuDefault": "Här är min veckomeny, kanske till inspiration.",
+  "shareMessageShoppingListWithTitle": "Vill du hjälpa mig med inköpslistan: ”{title}”?",
   "@shareMessageShoppingListWithTitle": {
     "placeholders": {
       "title": {
@@ -8024,7 +8024,7 @@
       }
     }
   },
-  "shareMessageShoppingListDefault": "Vill du hjälpa mig med inköpen denna vecka? 🛒",
+  "shareMessageShoppingListDefault": "Vill du hjälpa mig med inköpen denna vecka?",
   "textImportSuggestionIngredients": "Inkludera ingredienslista för bättre tolkning",
   "textImportSuggestionInstructions": "Inkludera tillagningsinstruktioner eller steg",
   "textImportSuggestionTime": "Inkludera tillagningstid om tillgänglig",
@@ -9105,8 +9105,8 @@
   "shareInstructionsLabelCompact": "Instruktioner:",
   "shareShoppingListTitleSimple": "Inköpslista",
   "shareWeekMenuTitle": "Veckomeny",
-  "shareWeekMenuTitleEmoji": "🍽 VECKOMENY",
-  "shareSummaryLabel": "📊 Sammanfattning:",
+  "shareWeekMenuTitleEmoji": "VECKOMENY",
+  "shareSummaryLabel": "Sammanfattning:",
   "shareSummaryRecipesInCategories": "{recipeCount} recept i {categoryCount} kategorier",
   "@shareSummaryRecipesInCategories": {
     "placeholders": {
