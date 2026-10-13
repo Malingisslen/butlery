@@ -1,8 +1,8 @@
 // lib/views/social/create_shared_shopping_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -17,7 +17,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -102,33 +101,14 @@ class _CreateSharedShoppingListViewState
                 Navigator.of(context).pop();
               }
             },
-            child: Scaffold(
-              appBar: _buildAppBar(context, viewModel),
-              body: SafeArea(
-                child: ButleryPageBody(
-                  width: PageWidth.text,
-                  child: _buildBody(context, viewModel),
-                ),
-              ),
+            child: ButleryPage.undersida(
+              title: context.l10n.shoppingNewSharedListTitle,
+              body: _buildBody(context, viewModel),
               bottomNavigationBar: _buildBottomBar(context, viewModel),
             ),
           );
         },
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context,
-    CreateSharedListViewModel viewModel,
-  ) {
-    // A subpage with a back arrow, as drawn (Skarmar v12 del 3 'Ny delad
-    // inköpslista'; Komponentark v1 §01 pattern 2). The arrow goes through
-    // Navigator.maybePop, so the same PopScope guard applies to it as to the
-    // system-back gesture.
-    return ButleryTopBar.undersida(
-      title: context.l10n.shoppingNewSharedListTitle,
-      onBack: () => Navigator.of(context).maybePop(),
     );
   }
 

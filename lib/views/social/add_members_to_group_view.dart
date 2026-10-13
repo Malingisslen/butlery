@@ -15,12 +15,11 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -87,45 +86,28 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         builder: (context, viewModel, child) {
           // No tab bar: the invite button holds the bottom slot while friends
           // are picked (B-54).
-          return Scaffold(
-            appBar: _buildAppBar(context, viewModel),
-            body: SafeArea(
-              child: ButleryPageBody(
-                width: PageWidth.text,
-                child: _buildBody(context, viewModel),
-              ),
-            ),
+          return ButleryPage.undersida(
+            title: viewModel.group == null
+                ? context.l10n.groupAddMembers
+                : context.l10n.groupAddToGroup(viewModel.group!.name),
+            backTo: viewModel.group?.name,
+            actions: [
+              if (viewModel.hasSelectedFriends)
+                TextButton(
+                  onPressed: viewModel.selectAllVisible,
+                  child: Text(context.l10n.commonSelectAll),
+                ),
+              if (viewModel.hasSelectedFriends)
+                TextButton(
+                  onPressed: viewModel.clearAllSelections,
+                  child: Text(context.l10n.commonClear),
+                ),
+            ],
+            body: _buildBody(context, viewModel),
             bottomNavigationBar: _buildBottomBar(viewModel),
           );
         },
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context,
-    AddMembersToGroupViewModel viewModel,
-  ) {
-    // A subpage of the group (Skarmar v12 del 3 'Lägg till medlemmar';
-    // Komponentark v1 §01 pattern 2), with the group's name as the line
-    // under the title.
-    return ButleryTopBar.undersida(
-      title: viewModel.group == null
-          ? context.l10n.groupAddMembers
-          : context.l10n.groupAddToGroup(viewModel.group!.name),
-      backTo: viewModel.group?.name,
-      actions: [
-        if (viewModel.hasSelectedFriends)
-          TextButton(
-            onPressed: viewModel.selectAllVisible,
-            child: Text(context.l10n.commonSelectAll),
-          ),
-        if (viewModel.hasSelectedFriends)
-          TextButton(
-            onPressed: viewModel.clearAllSelections,
-            child: Text(context.l10n.commonClear),
-          ),
-      ],
     );
   }
 
