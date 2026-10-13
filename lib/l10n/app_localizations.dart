@@ -4900,7 +4900,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareShoppingListTitle.
   ///
   /// In sv, this message translates to:
-  /// **'🛒 INKÖPSLISTA'**
+  /// **'INKÖPSLISTA'**
   String get shareShoppingListTitle;
 
   /// No description provided for @shareCreateAndShare.
@@ -19678,37 +19678,37 @@ abstract class AppLocalizations {
   /// No description provided for @shareMessageRecipeWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ta gärna en titt på det här receptet: ”{title}”. 👩‍🍳'**
+  /// **'Ta gärna en titt på det här receptet: ”{title}”.'**
   String shareMessageRecipeWithTitle(String title);
 
   /// No description provided for @shareMessageRecipeDefault.
   ///
   /// In sv, this message translates to:
-  /// **'Jag hittade ett recept jag ville dela med dig. 👩‍🍳'**
+  /// **'Jag hittade ett recept jag ville dela med dig.'**
   String get shareMessageRecipeDefault;
 
   /// No description provided for @shareMessageMenuWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Här är min veckomeny: ”{title}” 📋'**
+  /// **'Här är min veckomeny: ”{title}”'**
   String shareMessageMenuWithTitle(String title);
 
   /// No description provided for @shareMessageMenuDefault.
   ///
   /// In sv, this message translates to:
-  /// **'Här är min veckomeny, kanske till inspiration. 📋'**
+  /// **'Här är min veckomeny, kanske till inspiration.'**
   String get shareMessageMenuDefault;
 
   /// No description provided for @shareMessageShoppingListWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du hjälpa mig med inköpslistan: ”{title}”? 🛒'**
+  /// **'Vill du hjälpa mig med inköpslistan: ”{title}”?'**
   String shareMessageShoppingListWithTitle(String title);
 
   /// No description provided for @shareMessageShoppingListDefault.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du hjälpa mig med inköpen denna vecka? 🛒'**
+  /// **'Vill du hjälpa mig med inköpen denna vecka?'**
   String get shareMessageShoppingListDefault;
 
   /// No description provided for @textImportSuggestionIngredients.
@@ -21542,13 +21542,13 @@ abstract class AppLocalizations {
   /// No description provided for @shareWeekMenuTitleEmoji.
   ///
   /// In sv, this message translates to:
-  /// **'🍽 VECKOMENY'**
+  /// **'VECKOMENY'**
   String get shareWeekMenuTitleEmoji;
 
   /// No description provided for @shareSummaryLabel.
   ///
   /// In sv, this message translates to:
-  /// **'📊 Sammanfattning:'**
+  /// **'Sammanfattning:'**
   String get shareSummaryLabel;
 
   /// No description provided for @shareSummaryRecipesInCategories.

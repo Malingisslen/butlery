@@ -3010,7 +3010,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareMenuTitle => 'Share menu';
 
   @override
-  String get shareShoppingListTitle => '🛒 SHOPPING LIST';
+  String get shareShoppingListTitle => 'SHOPPING LIST';
 
   @override
   String get shareCreateAndShare => 'Create & Share';
@@ -11787,30 +11787,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shareMessageRecipeWithTitle(String title) {
-    return 'Do take a look at this recipe: \"$title\". 👩‍🍳';
+    return 'Do take a look at this recipe: \"$title\".';
   }
 
   @override
   String get shareMessageRecipeDefault =>
-      'I found a recipe I wanted to share with you. 👩‍🍳';
+      'I found a recipe I wanted to share with you.';
 
   @override
   String shareMessageMenuWithTitle(String title) {
-    return 'Here\'s my weekly menu: \"$title\" 📋';
+    return 'Here\'s my weekly menu: \"$title\"';
   }
 
   @override
   String get shareMessageMenuDefault =>
-      'Here\'s my weekly menu, perhaps for inspiration. 📋';
+      'Here\'s my weekly menu, perhaps for inspiration.';
 
   @override
   String shareMessageShoppingListWithTitle(String title) {
-    return 'Want to help me with the shopping list: \"$title\"? 🛒';
+    return 'Want to help me with the shopping list: \"$title\"?';
   }
 
   @override
   String get shareMessageShoppingListDefault =>
-      'Want to help me with shopping this week? 🛒';
+      'Want to help me with shopping this week?';
 
   @override
   String get textImportSuggestionIngredients =>
@@ -13014,10 +13014,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareWeekMenuTitle => 'Week menu';
 
   @override
-  String get shareWeekMenuTitleEmoji => '🍽 WEEK MENU';
+  String get shareWeekMenuTitleEmoji => 'WEEK MENU';
 
   @override
-  String get shareSummaryLabel => '📊 Summary:';
+  String get shareSummaryLabel => 'Summary:';
 
   @override
   String shareSummaryRecipesInCategories(int recipeCount, int categoryCount) {
