@@ -69,28 +69,6 @@ class SocialCollaborativeComponents {
     );
   }
 
-  /// Build collaborative app bar widget
-  /// App bar component with collaborative features
-  static Widget collaborativeAppBar({
-    required BuildContext context,
-    required String contentId,
-    Recipe? recipe,
-    bool showParticipants = true,
-    bool showStatus = true,
-    int maxParticipants = 3,
-    VoidCallback? onTap,
-  }) {
-    return SocialFacade.collaborativeAppBar(
-      context: context,
-      contentId: contentId,
-      recipe: recipe,
-      showParticipants: showParticipants,
-      showStatus: showStatus,
-      maxParticipants: maxParticipants,
-      onTap: onTap,
-    );
-  }
-
   /// Build smart collaborative banner
   /// Banner that automatically detects and displays collaboration state
   static Widget smartCollaborativeBanner({

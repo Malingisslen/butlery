@@ -15,13 +15,13 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
-import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
 import 'package:butlery/views/social/group_detail/group_share_actions.dart';
 import 'package:butlery/views/social/group_detail/group_share_section.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/helpers/group_detail_bar.dart';
 
 class _Permissions extends Fake implements PermissionService {
   _Permissions({required this.uid, this.admin = false});
@@ -97,7 +97,7 @@ void main() {
         wrapInScaffold: false,
         child: Builder(
           builder: (context) => Scaffold(
-            appBar: GroupDetailAppBar.build(
+            appBar: buildGroupDetailBar(
               context,
               group: _group(),
               onMenuAction: onAction,

@@ -5,7 +5,6 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Import all split modules
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
@@ -17,48 +16,6 @@ import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
 
 /// Facade for layout components. Delegates to specialized layout modules.
 class LayoutComponents {
-  /// Creates a layout with bottom navigation for non-tab views
-  /// (e.g., photo import, friends list) that want bottom nav visible.
-  ///
-  /// The 4 main tab views (recipes, menu, shopping, add) are now managed
-  /// by the shell (LayoutScaffolds.mainMenu) with IndexedStack — they
-  /// should use Scaffold directly, not this method.
-  static Widget mainMenu({
-    required Widget body,
-    int? currentIndex,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
-    PreferredSizeWidget? appBar,
-  }) {
-    return LayoutScaffolds.simpleLayout(
-      body: body,
-      title: title,
-      actions: actions,
-      appBar: appBar,
-      floatingActionButton: floatingActionButton,
-      showBottomNav: true,
-      bottomNavIndex: currentIndex,
-    );
-  }
-
-  /// Creates a simplified layout for detail views without bottom navigation.
-  static Widget simpleLayout({
-    required Widget body,
-    String? title,
-    List<Widget>? actions,
-    PreferredSizeWidget? appBar,
-    Widget? floatingActionButton,
-  }) {
-    return LayoutScaffolds.simpleLayout(
-      body: body,
-      title: title,
-      actions: actions,
-      appBar: appBar,
-      floatingActionButton: floatingActionButton,
-    );
-  }
-
   /// Offline banner; [pendingCount] and [onTap] as on OfflineIndicator.
   ///
   /// P4-U19: "Offline är en banner … och den är en kontroll: den leder till

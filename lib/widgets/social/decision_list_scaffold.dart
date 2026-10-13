@@ -5,9 +5,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// The page shell shared by "Mina rapporter" and "Beslut om mitt innehåll":
 /// loading, error and empty states, otherwise one section of rows.
@@ -43,10 +42,9 @@ class DecisionListScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScaffold(
+    return ButleryPage.undersida(
       title: title,
       backTo: backTo,
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: _body(context),
     );
   }

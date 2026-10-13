@@ -56,6 +56,7 @@ import '../helpers/view_test_helpers.dart';
 // collaborators, so we pump the real view for those and the real app-bar
 // facade for the permission gate.
 import 'package:butlery/views/social/group_detail_view.dart';
+import '../../infrastructure/helpers/group_detail_bar.dart';
 
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
 // behaviour regression — not a copy tweak — is what fails the assertion.
@@ -296,7 +297,7 @@ Future<void> _pumpGatedAppBar(
     viewApp(
       home: Builder(
         builder: (context) => Scaffold(
-          appBar: GroupDetailAppBar.build(
+          appBar: buildGroupDetailBar(
             context,
             group: group,
             onMenuAction: (_) {},

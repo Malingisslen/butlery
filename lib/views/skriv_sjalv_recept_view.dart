@@ -3,13 +3,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -379,386 +378,382 @@ class _SkrivSjalvReceptViewContentState
           }
         }
       },
-      child: Scaffold(
+      child: ButleryPage.undersida(
         // "Skriv själv" is a subpage under Lägg till recept: back arrow and
         // title in 14/700 (Komponentark v1:71-78; Skarmar v12 del 2 'Skriv
         // själv').
         // `isEditing` (a stored recipe is loaded), not `isEditMode`, which is
         // the edit permission and is true for a new recipe too.
-        appBar: ButleryTopBar.undersida(
-          title: viewModel.isEditing
-              ? context.l10n.recipeEdit
-              : context.l10n.recipeWriteNew,
-          backTo: viewModel.isEditing ? null : context.l10n.addRecipeTitle,
-          actions: [
-            IconButton(
-              key: const ValueKey('skriv-sjalv-save-check'),
-              icon: const ButleryIcon(ButleryIcons.check),
-              tooltip: context.l10n.recipeSave,
-              onPressed: saveBlocked || _isSaving || viewModel.isSaving
-                  ? null
-                  : _saveRecipe,
-            ),
-            DraftSaveIndicator(
-              isSaving: viewModel.isAutoSaving,
-              hasRecentSave: viewModel.hasRecentAutoSave,
-              hasFailed: viewModel.hasAutoSaveFailed,
-              failurePeriod: viewModel.autoSaveFailurePeriod,
-            ),
-          ],
-        ),
+        title: viewModel.isEditing
+            ? context.l10n.recipeEdit
+            : context.l10n.recipeWriteNew,
+        backTo: viewModel.isEditing ? null : context.l10n.addRecipeTitle,
+        showTabBar: false,
+        width: PageWidth.wide,
+        actions: [
+          IconButton(
+            key: const ValueKey('skriv-sjalv-save-check'),
+            icon: const ButleryIcon(ButleryIcons.check),
+            tooltip: context.l10n.recipeSave,
+            onPressed: saveBlocked || _isSaving || viewModel.isSaving
+                ? null
+                : _saveRecipe,
+          ),
+          DraftSaveIndicator(
+            isSaving: viewModel.isAutoSaving,
+            hasRecentSave: viewModel.hasRecentAutoSave,
+            hasFailed: viewModel.hasAutoSaveFailed,
+            failurePeriod: viewModel.autoSaveFailurePeriod,
+          ),
+        ],
         body: Stack(
           children: [
-            // ✅ RESPONSIVE: Center and constrain form on large screens
-            ButleryPageBody(
-              width: PageWidth.wide,
-              child: Padding(
-                padding: AppDimensions.responsiveContentPadding(context),
-                child: KeyboardSubmittableForm(
-                  formKey: _formKey,
-                  onSubmit: () {
-                    if (_isSaving ||
-                        viewModel.isSaving ||
-                        !viewModel.isValid ||
-                        viewModel.pendingParseConfirmations > 0) {
-                      return;
-                    }
-                    _saveRecipe();
-                  },
-                  // BUT-701: scope keyboard tab-order to this form so Tab
-                  // walks the fields in visual order. No visual change.
-                  child: FocusTraversalGroup(
-                    child: ListView(
-                      children: [
-                        // Parse quality warning for imported recipes
-                        if (viewModel.needsReview && _showQualityWarning)
-                          _buildQualityWarningBanner(context, viewModel),
-                        // Meal type - Custom layout to fix text cutoff
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              context.l10n.recipeMealType,
-                              style: AppTextStyles.bodySmall.copyWith(
+            Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: KeyboardSubmittableForm(
+                formKey: _formKey,
+                onSubmit: () {
+                  if (_isSaving ||
+                      viewModel.isSaving ||
+                      !viewModel.isValid ||
+                      viewModel.pendingParseConfirmations > 0) {
+                    return;
+                  }
+                  _saveRecipe();
+                },
+                // BUT-701: scope keyboard tab-order to this form so Tab
+                // walks the fields in visual order. No visual change.
+                child: FocusTraversalGroup(
+                  child: ListView(
+                    children: [
+                      // Parse quality warning for imported recipes
+                      if (viewModel.needsReview && _showQualityWarning)
+                        _buildQualityWarningBanner(context, viewModel),
+                      // Meal type - Custom layout to fix text cutoff
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.l10n.recipeMealType,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 4.0,
+                          ), // Minimal gap between label and dropdown
+                          // BUT-1845: items and initialValue must come from
+                          // ONE read of the stored value — the dropdown's
+                          // constructor assert re-checks the match on every
+                          // build.
+                          PressFill(
+                            surface: PressSurface.base,
+                            child: DropdownButtonFormField<String>(
+                              icon: const ButleryIcon(
+                                ButleryIcons.chevronDown,
+                              ),
+                              iconEnabledColor: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              iconDisabledColor: AppModeColors.textDisabled(
+                                Theme.of(context).brightness,
+                              ),
+                              initialValue: mealTypeOptions.selected,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.space16,
+                                  vertical: AppDimensions.space12,
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                              style: AppTextStyles.bodyMedium.copyWith(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurfaceVariant,
+                                ).colorScheme.onSurface,
                               ),
+                              items: mealTypeOptions.values
+                                  .map(
+                                    (mt) => DropdownMenuItem(
+                                      value: mt,
+                                      child: Text(mt),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  viewModel.setMealType(value);
+                                }
+                              },
                             ),
-                            const SizedBox(
-                              height: 4.0,
-                            ), // Minimal gap between label and dropdown
-                            // BUT-1845: items and initialValue must come from
-                            // ONE read of the stored value — the dropdown's
-                            // constructor assert re-checks the match on every
-                            // build.
-                            PressFill(
-                              surface: PressSurface.base,
-                              child: DropdownButtonFormField<String>(
-                                icon: const ButleryIcon(
-                                  ButleryIcons.chevronDown,
-                                ),
-                                iconEnabledColor: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                                iconDisabledColor: AppModeColors.textDisabled(
-                                  Theme.of(context).brightness,
-                                ),
-                                initialValue: mealTypeOptions.selected,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.space16,
-                                    vertical: AppDimensions.space12,
-                                  ),
-                                  border: OutlineInputBorder(),
-                                ),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                                items: mealTypeOptions.values
-                                    .map(
-                                      (mt) => DropdownMenuItem(
-                                        value: mt,
-                                        child: Text(mt),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    viewModel.setMealType(value);
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
 
-                        // Bildhantering med UniversalImageManager
-                        UniversalImageManager.recipeEdit(
-                          imageUrls: viewModel.imageUrls,
-                          onRemoveImage: viewModel.removeImageAt,
-                          onSetPrimary: (index) {
+                      // Bildhantering med UniversalImageManager
+                      UniversalImageManager.recipeEdit(
+                        imageUrls: viewModel.imageUrls,
+                        onRemoveImage: viewModel.removeImageAt,
+                        onSetPrimary: (index) {
+                          AppLogger.debug(
+                            '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}',
+                          );
+                          if (index < viewModel.imageUrls.length) {
+                            final imageUrl = viewModel.imageUrls[index];
                             AppLogger.debug(
-                              '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}',
+                              '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl',
                             );
-                            if (index < viewModel.imageUrls.length) {
-                              final imageUrl = viewModel.imageUrls[index];
-                              AppLogger.debug(
-                                '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl',
-                              );
-                              viewModel.setPrimaryImage(imageUrl);
-                            } else {
-                              AppLogger.warning(
-                                '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})',
-                              );
-                            }
-                          },
-                          userId:
-                              ServiceLocator.get<PermissionService>()
-                                  .currentUserId ??
-                              '',
-                          onPickImage: () => _pickImage(viewModel),
-                          maxImages: 5,
-                          isLoading: viewModel
-                              .isUploadingImage, // Add loading indicator
-                          // Enhanced Upload Progress Parameters
-                          uploadStatuses: viewModel.imageUploadStatuses,
-                          onRetryUpload: viewModel.retryImageUpload,
-                          onCancelUpload: (pathOrUrl) async {
-                            // BUT-932: wrap remove with undo SnackBar. The
-                            // VM defers Storage deletion until save, so undo
-                            // restores the image without re-uploading.
-                            await viewModel.cancelImageUpload(pathOrUrl);
-                            if (!context.mounted) return;
-                            if (!viewModel.hasPendingImageDeletion) return;
-                            SnackBarUtils.showUndo(
-                              context,
-                              context.l10n.imageRemovedUndoMessage,
-                              onUndo: viewModel.restoreLastImageDeletion,
+                            viewModel.setPrimaryImage(imageUrl);
+                          } else {
+                            AppLogger.warning(
+                              '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})',
                             );
-                          },
-                          uploadQueueStatus: viewModel.uploadQueueStatusText,
-                          // Bulk Upload Management Parameters
-                          uploadManagementSummary:
-                              viewModel.uploadManagementSummary,
-                          onRetryAllFailed: viewModel.retryAllFailedUploads,
-                          onCancelAllActive: viewModel.cancelAllActiveUploads,
-                          onClearAllFailed: viewModel.clearAllFailedUploads,
-                        ),
-                        RecipeImagePermissionNotice(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.space32),
+                          }
+                        },
+                        userId:
+                            ServiceLocator.get<PermissionService>()
+                                .currentUserId ??
+                            '',
+                        onPickImage: () => _pickImage(viewModel),
+                        maxImages: 5,
+                        isLoading:
+                            viewModel.isUploadingImage, // Add loading indicator
+                        // Enhanced Upload Progress Parameters
+                        uploadStatuses: viewModel.imageUploadStatuses,
+                        onRetryUpload: viewModel.retryImageUpload,
+                        onCancelUpload: (pathOrUrl) async {
+                          // BUT-932: wrap remove with undo SnackBar. The
+                          // VM defers Storage deletion until save, so undo
+                          // restores the image without re-uploading.
+                          await viewModel.cancelImageUpload(pathOrUrl);
+                          if (!context.mounted) return;
+                          if (!viewModel.hasPendingImageDeletion) return;
+                          SnackBarUtils.showUndo(
+                            context,
+                            context.l10n.imageRemovedUndoMessage,
+                            onUndo: viewModel.restoreLastImageDeletion,
+                          );
+                        },
+                        uploadQueueStatus: viewModel.uploadQueueStatusText,
+                        // Bulk Upload Management Parameters
+                        uploadManagementSummary:
+                            viewModel.uploadManagementSummary,
+                        onRetryAllFailed: viewModel.retryAllFailedUploads,
+                        onCancelAllActive: viewModel.cancelAllActiveUploads,
+                        onClearAllFailed: viewModel.clearAllFailedUploads,
+                      ),
+                      RecipeImagePermissionNotice(viewModel: viewModel),
+                      const SizedBox(height: AppDimensions.space32),
 
-                        // Titel
-                        StyledInput(
-                          controller: _titleController,
-                          label: context.l10n.recipeTitle,
-                          textInputAction: TextInputAction.next,
-                          onChanged: viewModel.setTitle,
-                          showWarning: viewModel.fieldsNeedingImprovement
-                              .contains('title'),
-                          validator: FormValidators.combine([
-                            FormValidators.required(context.l10n.recipeTitle),
-                            FormValidators.minLength(
-                              3,
-                              context.l10n.recipeTitle,
-                            ),
-                            FormValidators.maxLength(
-                              100,
-                              context.l10n.recipeTitle,
-                            ),
-                            // BUT-517: block profanity at validator level
-                            // (BEFORE the API call).
-                            FormValidators.contentFilter(
-                              context.l10n.recipeTitle,
-                            ),
-                          ]),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Beskrivning
-                        StyledInput(
-                          controller: _descriptionController,
-                          label: context.l10n.recipeDescriptionOptional,
-                          maxLines: 2,
-                          minLines: 2,
-                          textInputAction: TextInputAction.next,
-                          onChanged: viewModel.setDescription,
-                          validator: FormValidators.combine([
-                            FormValidators.maxLength(
-                              500,
-                              context.l10n.recipeDescription,
-                            ),
-                            // BUT-517
-                            FormValidators.contentFilter(
-                              context.l10n.recipeDescription,
-                            ),
-                          ]),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Portioner och tid
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: StyledInput(
-                                controller: _portionsController,
-                                label: context.l10n.recipePortions,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.next,
-                                onChanged: (value) => viewModel.setPortions(
-                                  int.tryParse(value),
-                                ),
-                                showWarning: viewModel.fieldsNeedingImprovement
-                                    .contains('portions'),
-                                validator: FormValidators.portions(),
-                              ),
-                            ),
-                            const SizedBox(width: AppDimensions.space12),
-                            Expanded(
-                              child: StyledInput(
-                                controller: _timeMinutesController,
-                                label: context.l10n.recipeTimeMinutes,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.next,
-                                onChanged: (value) => viewModel.setTimeMinutes(
-                                  int.tryParse(value),
-                                ),
-                                showWarning: viewModel.fieldsNeedingImprovement
-                                    .contains('totalTime'),
-                                validator: FormValidators.cookingTime(),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Explains the empty list and the greyed-out save
-                        // button; gone as soon as one ingredient exists.
-                        if (widget.importedWithoutIngredients &&
-                            !viewModel.ingredients.any(
-                              (i) => i.trim().isNotEmpty,
-                            )) ...[
-                          InlineWarning(
-                            key: const ValueKey('importNoIngredientsNotice'),
-                            icon: ButleryIcons.info,
-                            color: context.modeColors.info,
-                            text: context.l10n.recipeImportNoIngredientsNotice,
+                      // Titel
+                      StyledInput(
+                        controller: _titleController,
+                        label: context.l10n.recipeTitle,
+                        textInputAction: TextInputAction.next,
+                        onChanged: viewModel.setTitle,
+                        showWarning: viewModel.fieldsNeedingImprovement
+                            .contains('title'),
+                        validator: FormValidators.combine([
+                          FormValidators.required(context.l10n.recipeTitle),
+                          FormValidators.minLength(
+                            3,
+                            context.l10n.recipeTitle,
                           ),
-                          const SizedBox(height: AppDimensions.space8),
-                        ],
+                          FormValidators.maxLength(
+                            100,
+                            context.l10n.recipeTitle,
+                          ),
+                          // BUT-517: block profanity at validator level
+                          // (BEFORE the API call).
+                          FormValidators.contentFilter(
+                            context.l10n.recipeTitle,
+                          ),
+                        ]),
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
 
-                        // Ingredienser — sectioned editor (PR #211)
-                        SectionedIngredientListBuilder(
-                          label: context.l10n.recipeIngredient,
-                          rows: viewModel.state.ingredientSectionState.rows,
-                          lineControllers: viewModel.ingredientControllers,
-                          headingControllerFor: viewModel
-                              .state
-                              .ingredientSectionState
-                              .headingController,
-                          onLineChanged: viewModel.updateIngredient,
-                          onAddLine: viewModel.addIngredient,
-                          onLastLineFilled:
-                              viewModel.ensureTrailingIngredientLine,
-                          onRemoveLine: viewModel.removeIngredient,
-                          onReorder: viewModel.moveIngredientRow,
-                          onAddHeading: viewModel.addIngredientHeading,
-                          onRemoveHeading: viewModel.removeIngredientHeading,
-                          onMoveLineToSection:
-                              viewModel.moveIngredientLineToSection,
-                          canAddHeading: viewModel
-                              .state
-                              .ingredientSectionState
-                              .canAddHeading,
-                        ),
+                      // Beskrivning
+                      StyledInput(
+                        controller: _descriptionController,
+                        label: context.l10n.recipeDescriptionOptional,
+                        maxLines: 2,
+                        minLines: 2,
+                        textInputAction: TextInputAction.next,
+                        onChanged: viewModel.setDescription,
+                        validator: FormValidators.combine([
+                          FormValidators.maxLength(
+                            500,
+                            context.l10n.recipeDescription,
+                          ),
+                          // BUT-517
+                          FormValidators.contentFilter(
+                            context.l10n.recipeDescription,
+                          ),
+                        ]),
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
 
-                        // BUT-925: per-ingredient confidence review, shown
-                        // only for fresh imports that still have a cached
-                        // ParsedRecipe (30-min TTL in ParsedRecipeCache).
-                        if (viewModel.parsedIngredients != null &&
-                            viewModel.parsedIngredients!.isNotEmpty) ...[
-                          const SizedBox(height: AppDimensions.space8),
-                          ParseConfidenceReview(
-                            ingredients: viewModel.parsedIngredients!,
-                            isConfirmed: viewModel.isParseRowConfirmed,
-                            onConfirm: viewModel.confirmParseRow,
+                      // Portioner och tid
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: StyledInput(
+                              controller: _portionsController,
+                              label: context.l10n.recipePortions,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              onChanged: (value) => viewModel.setPortions(
+                                int.tryParse(value),
+                              ),
+                              showWarning: viewModel.fieldsNeedingImprovement
+                                  .contains('portions'),
+                              validator: FormValidators.portions(),
+                            ),
+                          ),
+                          const SizedBox(width: AppDimensions.space12),
+                          Expanded(
+                            child: StyledInput(
+                              controller: _timeMinutesController,
+                              label: context.l10n.recipeTimeMinutes,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              onChanged: (value) => viewModel.setTimeMinutes(
+                                int.tryParse(value),
+                              ),
+                              showWarning: viewModel.fieldsNeedingImprovement
+                                  .contains('totalTime'),
+                              validator: FormValidators.cookingTime(),
+                            ),
                           ),
                         ],
-                        const SizedBox(height: AppDimensions.space32),
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
 
-                        // Instruktioner
-                        _buildDynamicList(
-                          heading: context.l10n.recipeMethodHeading,
-                          label: context.l10n.recipeInstruction,
-                          controllers: viewModel.instructionControllers,
-                          onUpdate: viewModel.updateInstruction,
-                          onAdd: viewModel.addInstruction,
-                          onRemove: viewModel.removeInstruction,
-                          onReorder: viewModel.reorderInstruction,
-                          viewModel: viewModel,
+                      // Explains the empty list and the greyed-out save
+                      // button; gone as soon as one ingredient exists.
+                      if (widget.importedWithoutIngredients &&
+                          !viewModel.ingredients.any(
+                            (i) => i.trim().isNotEmpty,
+                          )) ...[
+                        InlineWarning(
+                          key: const ValueKey('importNoIngredientsNotice'),
+                          icon: ButleryIcons.info,
+                          color: context.modeColors.info,
+                          text: context.l10n.recipeImportNoIngredientsNotice,
                         ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Personal tags selector
-                        PersonalTagSelector(
-                          selectedTagIds: viewModel.tags
-                              .where((t) => t.isNotEmpty)
-                              .toList(),
-                          onChanged: viewModel.setPersonalTagNames,
-                          title: context.l10n.recipePersonalTags,
-                          showManageButton: true,
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Betyg
-                        StyledInput(
-                          controller: _ratingController,
-                          label: context.l10n.recipeRating,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: const [
-                            SwedishDecimalInputFormatter(),
-                          ],
-                          textInputAction: TextInputAction.next,
-                          // BUT-1910: `double.tryParse` returns null on a
-                          // comma, so "8,5" set no rating at all and said
-                          // nothing. The validator was never the problem —
-                          // `FormValidators.rating()` does its own
-                          // comma-aware parse, so the field looked valid
-                          // while the value was silently dropped.
-                          onChanged: (value) =>
-                              viewModel.setRating(parseSwedishDecimal(value)),
-                          validator: FormValidators.rating(),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
-
-                        // Source URL field
-                        StyledInput(
-                          controller: _sourceUrlController,
-                          label: context.l10n.recipeSourceUrl,
-                          hint: context.l10n.recipeSourceUrlHint,
-                          helperText:
-                              viewModel.sourceUrl ==
-                                  context.l10n.recipeSharedFromApp
-                              ? context.l10n.recipeImportedFromShare
-                              : context.l10n.recipeSourceUrlHelper,
-                          prefixIcon: const ButleryIcon(
-                            ButleryIcons.link,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                          keyboardType: TextInputType.url,
-                          onChanged: viewModel.setSourceUrl,
-                          validator: FormValidators.recipeSourceUrl(),
-                        ),
-                        const SizedBox(height: AppDimensions.space32),
+                        const SizedBox(height: AppDimensions.space8),
                       ],
-                    ),
+
+                      // Ingredienser — sectioned editor (PR #211)
+                      SectionedIngredientListBuilder(
+                        label: context.l10n.recipeIngredient,
+                        rows: viewModel.state.ingredientSectionState.rows,
+                        lineControllers: viewModel.ingredientControllers,
+                        headingControllerFor: viewModel
+                            .state
+                            .ingredientSectionState
+                            .headingController,
+                        onLineChanged: viewModel.updateIngredient,
+                        onAddLine: viewModel.addIngredient,
+                        onLastLineFilled:
+                            viewModel.ensureTrailingIngredientLine,
+                        onRemoveLine: viewModel.removeIngredient,
+                        onReorder: viewModel.moveIngredientRow,
+                        onAddHeading: viewModel.addIngredientHeading,
+                        onRemoveHeading: viewModel.removeIngredientHeading,
+                        onMoveLineToSection:
+                            viewModel.moveIngredientLineToSection,
+                        canAddHeading: viewModel
+                            .state
+                            .ingredientSectionState
+                            .canAddHeading,
+                      ),
+
+                      // BUT-925: per-ingredient confidence review, shown
+                      // only for fresh imports that still have a cached
+                      // ParsedRecipe (30-min TTL in ParsedRecipeCache).
+                      if (viewModel.parsedIngredients != null &&
+                          viewModel.parsedIngredients!.isNotEmpty) ...[
+                        const SizedBox(height: AppDimensions.space8),
+                        ParseConfidenceReview(
+                          ingredients: viewModel.parsedIngredients!,
+                          isConfirmed: viewModel.isParseRowConfirmed,
+                          onConfirm: viewModel.confirmParseRow,
+                        ),
+                      ],
+                      const SizedBox(height: AppDimensions.space32),
+
+                      // Instruktioner
+                      _buildDynamicList(
+                        heading: context.l10n.recipeMethodHeading,
+                        label: context.l10n.recipeInstruction,
+                        controllers: viewModel.instructionControllers,
+                        onUpdate: viewModel.updateInstruction,
+                        onAdd: viewModel.addInstruction,
+                        onRemove: viewModel.removeInstruction,
+                        onReorder: viewModel.reorderInstruction,
+                        viewModel: viewModel,
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
+
+                      // Personal tags selector
+                      PersonalTagSelector(
+                        selectedTagIds: viewModel.tags
+                            .where((t) => t.isNotEmpty)
+                            .toList(),
+                        onChanged: viewModel.setPersonalTagNames,
+                        title: context.l10n.recipePersonalTags,
+                        showManageButton: true,
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
+
+                      // Betyg
+                      StyledInput(
+                        controller: _ratingController,
+                        label: context.l10n.recipeRating,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: const [
+                          SwedishDecimalInputFormatter(),
+                        ],
+                        textInputAction: TextInputAction.next,
+                        // BUT-1910: `double.tryParse` returns null on a
+                        // comma, so "8,5" set no rating at all and said
+                        // nothing. The validator was never the problem —
+                        // `FormValidators.rating()` does its own
+                        // comma-aware parse, so the field looked valid
+                        // while the value was silently dropped.
+                        onChanged: (value) =>
+                            viewModel.setRating(parseSwedishDecimal(value)),
+                        validator: FormValidators.rating(),
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
+
+                      // Source URL field
+                      StyledInput(
+                        controller: _sourceUrlController,
+                        label: context.l10n.recipeSourceUrl,
+                        hint: context.l10n.recipeSourceUrlHint,
+                        helperText:
+                            viewModel.sourceUrl ==
+                                context.l10n.recipeSharedFromApp
+                            ? context.l10n.recipeImportedFromShare
+                            : context.l10n.recipeSourceUrlHelper,
+                        prefixIcon: const ButleryIcon(
+                          ButleryIcons.link,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                        keyboardType: TextInputType.url,
+                        onChanged: viewModel.setSourceUrl,
+                        validator: FormValidators.recipeSourceUrl(),
+                      ),
+                      const SizedBox(height: AppDimensions.space32),
+                    ],
                   ),
                 ),
               ),

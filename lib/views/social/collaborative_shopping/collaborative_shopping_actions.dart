@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,7 +22,6 @@ import 'package:butlery/widgets/styled/labeled_field.dart';
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
 /// - Add item input section
-/// - App bar with menu actions
 /// - Action handlers and business logic coordination
 /// - User interaction management
 /// ❌ DOES NOT CONTAIN: Items display, header display, state management
@@ -46,17 +44,10 @@ class CollaborativeShoppingActions extends BaseActionHandler
     required this.onShare,
   });
 
-  PreferredSizeWidget buildAppBar(BuildContext context) {
-    // A subpage titled with the list's name (Skarmar v12 del 2 'Delad
-    // inköpslista'; Komponentark v1 §01 pattern 2).
-    return ButleryTopBar.undersida(
-      title: viewModel.listTitle,
-      actions: [
-        _buildShareAction(context),
-        _buildMenuActions(context),
-      ],
-    );
-  }
+  List<Widget> buildBarActions(BuildContext context) => [
+    _buildShareAction(context),
+    _buildMenuActions(context),
+  ];
 
   Widget _buildShareAction(BuildContext context) {
     return IconButton(

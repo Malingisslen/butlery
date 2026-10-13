@@ -1,4 +1,4 @@
-/// Selection-mode AppBar extracted from `mina_recept_view.dart` per
+/// Selection-mode actions extracted from `mina_recept_view.dart` per
 /// BUT-441. Active when the user is in bulk-selection mode; provides
 /// close, select-all, and bulk-delete actions. Bulk-delete confirmation
 /// + undo SnackBar live here (`SnackBarUtils.showUndoDeferred`).
@@ -37,32 +37,6 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
-
-/// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
-/// so the parent Scaffold can drop it straight in.
-///
-/// The same root bar as the list, with other content: "Toppfältet byter
-/// innehåll, inte höjd. I flervalsläget ersätter räknaren titeln och
-/// *Avbryt* ersätter tillbakapilen" (produktregler.md:873; Skarmar v12 etapp
-/// 9 #flervalingang). [secondaryLine] is the list's own count line, kept so
-/// the bar keeps its height. The counter is `{n} valda` in tabular figures
-/// (produktregler.md:876).
-PreferredSizeWidget buildMinaReceptSelectionAppBar(
-  BuildContext context,
-  RecipeListViewModel viewModel, {
-  String? secondaryLine,
-}) {
-  return ButleryTopBar.rot(
-    title: context.l10n.bulkSelectedCount(viewModel.selectedCount),
-    titleStyle: const TextStyle(
-      fontFeatures: [FontFeature.tabularFigures()],
-    ),
-    secondaryLine: secondaryLine,
-    secondaryLineIsLive: false,
-    leading: buildMinaReceptSelectionCancel(context, viewModel),
-    actions: buildMinaReceptSelectionActions(context, viewModel),
-  );
-}
 
 /// "Avbryt", which leaves selection mode (produktregler.md:873). Shared by
 /// the selection bar and Hem's library header row (Q6-16 = B).

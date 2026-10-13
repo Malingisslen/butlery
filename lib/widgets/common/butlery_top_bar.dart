@@ -131,7 +131,7 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Om undersidan ritar bakåtpilen när rutten går att poppa. Falskt ger en
   /// undersida utan pil, för en vy som själv säger att den inte har någon
-  /// väg tillbaka (BaseScaffold.showBackButton). [onBack] ger alltid en pil.
+  /// väg tillbaka. [onBack] ger alltid en pil.
   final bool implyBack;
 
   /// Saffransstrecket med den tunna linjen efter, tätt under titeln (Malin

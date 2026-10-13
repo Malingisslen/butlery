@@ -26,7 +26,6 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -48,7 +47,7 @@ import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
@@ -165,71 +164,73 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           }
         }
       },
-      child: Scaffold(
-        appBar: _buildAppBar(context, widget.recipe),
-        bottomNavigationBar: _buildBottomBar(context, viewModel),
-        body: Stack(
-          children: [
-            // ✅ RESPONSIVE: Center and constrain content on large screens
-            ButleryPageBody(
-              width: PageWidth.wide,
-              child: Column(
-                children: [
-                  LayoutComponents.offlineIndicator(),
-                  _buildSmartBanners(context, widget.recipe),
-                  // BUT-1162: surface silent collaborative-edit conflict
-                  // resolutions on this recipe (drop-in; collapses when idle).
-                  ConflictBanner(filterDocId: widget.recipe.id),
-                  Expanded(
-                    child: Padding(
-                      padding: AppDimensions.responsiveContentPadding(
-                        context,
+      child: _buildPage(context, viewModel),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, RecipeFormViewModel viewModel) {
+    final bar = _barParts(context, widget.recipe);
+    return ButleryPage.undersida(
+      title: bar.title,
+      leading: bar.leading,
+      actions: bar.actions,
+      showTabBar: false,
+      width: PageWidth.wide,
+      bottomNavigationBar: _buildBottomBar(context, viewModel),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              _buildSmartBanners(context, widget.recipe),
+              // BUT-1162: surface silent collaborative-edit conflict
+              // resolutions on this recipe (drop-in; collapses when idle).
+              ConflictBanner(filterDocId: widget.recipe.id),
+              Expanded(
+                child: Padding(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: KeyboardSubmittableForm(
+                    formKey: _formKey,
+                    onSubmit: () {
+                      if (viewModel.isSaving || !viewModel.isValid) {
+                        return;
+                      }
+                      _saveRecipe(context);
+                    },
+                    // BUT-701: scope keyboard tab-order to this form so
+                    // Tab walks the fields in visual order. No visual
+                    // change.
+                    child: FocusTraversalGroup(
+                      child: ListView(
+                        children: _buildFormFields(context, viewModel),
                       ),
-                      child: KeyboardSubmittableForm(
-                        formKey: _formKey,
-                        onSubmit: () {
-                          if (viewModel.isSaving || !viewModel.isValid) {
-                            return;
-                          }
-                          _saveRecipe(context);
-                        },
-                        // BUT-701: scope keyboard tab-order to this form so
-                        // Tab walks the fields in visual order. No visual
-                        // change.
-                        child: FocusTraversalGroup(
-                          child: ListView(
-                            children: _buildFormFields(context, viewModel),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // ✅ RESPONSIVE: Loading overlay also constrained
-            if (viewModel.isSaving)
-              // An opaque surface, never a veil (tokens.json:40-53).
-              ColoredBox(
-                color: Theme.of(context).colorScheme.surface,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: Breakpoints.pageMaxWidth(
-                        context,
-                        PageWidth.compact,
-                      ),
-                    ),
-                    child: StateWidget.loading(
-                      message: viewModel.suggestsChange
-                          ? context.l10n.recipeSuggestionSending
-                          : context.l10n.recipeUpdating,
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+          if (viewModel.isSaving)
+            // An opaque surface, never a veil.
+            ColoredBox(
+              color: Theme.of(context).colorScheme.surface,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Breakpoints.pageMaxWidth(
+                      context,
+                      PageWidth.compact,
+                    ),
+                  ),
+                  child: StateWidget.loading(
+                    message: viewModel.suggestsChange
+                        ? context.l10n.recipeSuggestionSending
+                        : context.l10n.recipeUpdating,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -239,7 +240,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   /// bar is light, with the title in 14/700 and the draft state to the
   /// right. Closing goes through the same unsaved-changes guard as the
   /// system back gesture (PopScope above).
-  PreferredSizeWidget _buildAppBar(BuildContext context, Recipe recipe) {
+  ({String title, Widget leading, List<Widget> actions}) _barParts(
+    BuildContext context,
+    Recipe recipe,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final isCollaborative = context.select<CollaborativeStatusViewModel, bool>(
       (vm) =>
@@ -263,7 +267,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     final suggests = context.select<RecipeFormViewModel, bool>(
       (vm) => vm.suggestsChange,
     );
-    return ButleryTopBar.undersida(
+    return (
       title: suggests
           ? context.l10n.recipeSuggestChange
           : context.l10n.recipeEdit,

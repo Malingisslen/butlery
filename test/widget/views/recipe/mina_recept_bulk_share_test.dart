@@ -15,7 +15,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
-import 'package:butlery/views/mina_recept/selection_app_bar.dart';
+import '../../../infrastructure/helpers/mina_recept_selection_bar.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';

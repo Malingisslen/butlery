@@ -21,9 +21,9 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import '../../../infrastructure/helpers/group_detail_bar.dart';
 
 /// Minimal `PermissionService` stub. Overrides only the surface
 /// `_buildPopupMenu` and `GroupMemberCard.build` actually read. Treats the
@@ -114,7 +114,7 @@ void main() {
         await tester.pumpWidget(
           _wrap(
             appBuilder: (ctx) => Scaffold(
-              appBar: GroupDetailAppBar.build(
+              appBar: buildGroupDetailBar(
                 ctx,
                 group: group,
                 onMenuAction: (_) {},
@@ -154,7 +154,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           appBuilder: (ctx) => Scaffold(
-            appBar: GroupDetailAppBar.build(
+            appBar: buildGroupDetailBar(
               ctx,
               group: group,
               onMenuAction: (_) {},

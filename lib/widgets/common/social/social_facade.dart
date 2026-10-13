@@ -97,24 +97,6 @@ class SocialFacade {
     viewModel: viewModel,
   );
 
-  static Widget collaborativeAppBar({
-    required BuildContext context,
-    required String contentId,
-    Recipe? recipe,
-    bool showParticipants = true,
-    bool showStatus = true,
-    int maxParticipants = 3,
-    VoidCallback? onTap,
-  }) => SocialCollaborativeApi.collaborativeAppBar(
-    context: context,
-    contentId: contentId,
-    recipe: recipe,
-    showParticipants: showParticipants,
-    showStatus: showStatus,
-    maxParticipants: maxParticipants,
-    onTap: onTap,
-  );
-
   static Widget smartCollaborativeBanner({
     required BuildContext context,
     required String contentId,

@@ -1,7 +1,6 @@
 // lib/views/social/group_detail/group_detail_app_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -14,27 +13,8 @@ import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// A subpage under Vänner & grupper whose only action is the ⋯ sheet.
+/// The ⋯ sheet of a group's page, the one action in its bar.
 class GroupDetailAppBar {
-  static PreferredSizeWidget build(
-    BuildContext context, {
-    required FriendCategory group,
-    bool isResolvingLeave = false,
-    required Function(String action) onMenuAction,
-  }) {
-    return ButleryTopBar.undersida(
-      title: group.name,
-      backTo: context.l10n.socialFriendsAndGroups,
-      actions: actions(
-        context,
-        group: group,
-        isResolvingLeave: isResolvingLeave,
-        onMenuAction: onMenuAction,
-      ),
-    );
-  }
-
-  /// The bar's one action, ⋯, for a page that draws its own bar.
   static List<Widget> actions(
     BuildContext context, {
     required FriendCategory group,
