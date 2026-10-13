@@ -8,7 +8,6 @@ import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/views/archive_import/archive_filter_sheet.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -18,7 +17,7 @@ import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -88,66 +87,60 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<ArchiveImportViewModel>();
 
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.importArchiveTitle,
-        actions: [
-          if (viewModel.hasSelection)
-            Center(
-              child: UnifiedBadge.status(
-                label: context.l10n.importSelectedCount(
-                  viewModel.selectedCount,
-                ),
+    return ButleryPage.undersida(
+      title: context.l10n.importArchiveTitle,
+      width: PageWidth.wide,
+      actions: [
+        if (viewModel.hasSelection)
+          Center(
+            child: UnifiedBadge.status(
+              label: context.l10n.importSelectedCount(
+                viewModel.selectedCount,
               ),
             ),
-          if (viewModel.hasError)
-            IconButton(
-              icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
-              onPressed: () {
-                SnackBarUtils.showFailure(context, what: viewModel.error!);
-                viewModel.clearError();
-              },
-              tooltip: context.l10n.importShowError,
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.wide,
-          child: Stack(
+          ),
+        if (viewModel.hasError)
+          IconButton(
+            icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
+            onPressed: () {
+              SnackBarUtils.showFailure(context, what: viewModel.error!);
+              viewModel.clearError();
+            },
+            tooltip: context.l10n.importShowError,
+          ),
+      ],
+      body: Stack(
+        children: [
+          Column(
             children: [
-              Column(
-                children: [
-                  Padding(
-                    padding: AppDimensions.responsiveContentPadding(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ButlerySearchBox(
-                          hintText: context.l10n.importSearchArchive,
-                          onChanged: viewModel.updateSearch,
-                        ),
-                        const SizedBox(height: AppDimensions.space12),
-                        _buildFilterPills(context, viewModel),
-                        const SizedBox(height: AppDimensions.space8),
-                        _buildHeadingRow(context, viewModel),
-                      ],
+              Padding(
+                padding: AppDimensions.responsiveContentPadding(context),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ButlerySearchBox(
+                      hintText: context.l10n.importSearchArchive,
+                      onChanged: viewModel.updateSearch,
                     ),
-                  ),
-                  Expanded(child: _buildRecipeList(context, viewModel)),
-                  BottomActionContainer(
-                    child: _buildImportButton(context, viewModel),
-                  ),
-                ],
-              ),
-              if (viewModel.isImporting)
-                UtilityComponents.loadingOverlay(
-                  isLoading: true,
-                  loadingMessage: context.l10n.importImportingRecipesProgress,
+                    const SizedBox(height: AppDimensions.space12),
+                    _buildFilterPills(context, viewModel),
+                    const SizedBox(height: AppDimensions.space8),
+                    _buildHeadingRow(context, viewModel),
+                  ],
                 ),
+              ),
+              Expanded(child: _buildRecipeList(context, viewModel)),
+              BottomActionContainer(
+                child: _buildImportButton(context, viewModel),
+              ),
             ],
           ),
-        ),
+          if (viewModel.isImporting)
+            UtilityComponents.loadingOverlay(
+              isLoading: true,
+              loadingMessage: context.l10n.importImportingRecipesProgress,
+            ),
+        ],
       ),
     );
   }
