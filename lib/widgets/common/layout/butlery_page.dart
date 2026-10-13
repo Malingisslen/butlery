@@ -21,7 +21,10 @@ class ButleryPage extends StatelessWidget {
     required this.title,
     required this.body,
     this.secondaryLine,
+    this.secondaryLineIsLive = true,
     this.actions = const [],
+    this.leading,
+    this.trailing,
     this.width = PageWidth.text,
     this.floatingActionButton,
     this.bottomNavigationBar,
@@ -43,7 +46,10 @@ class ButleryPage extends StatelessWidget {
     required this.body,
     this.backTo,
     this.secondaryLine,
+    this.secondaryLineIsLive = true,
     this.actions = const [],
+    this.leading,
+    this.trailing,
     this.width = PageWidth.text,
     this.floatingActionButton,
     this.bottomNavigationBar,
@@ -61,7 +67,17 @@ class ButleryPage extends StatelessWidget {
 
   final String? backTo;
   final String? secondaryLine;
+
+  /// False for a secondary line that does not change while the page is open,
+  /// so a screen reader does not announce it again.
+  final bool secondaryLineIsLive;
   final List<Widget> actions;
+
+  /// Replaces the back arrow, as the close button of a selection mode does.
+  final Widget? leading;
+
+  /// Last in the bar, after [actions].
+  final Widget? trailing;
   final PageWidth width;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
@@ -78,13 +94,19 @@ class ButleryPage extends StatelessWidget {
       ButleryTopBarPattern.rot => ButleryTopBar.rot(
         title: title,
         secondaryLine: secondaryLine,
+        secondaryLineIsLive: secondaryLineIsLive,
         actions: actions,
+        leading: leading,
+        trailing: trailing,
       ),
       ButleryTopBarPattern.undersida => ButleryTopBar.undersida(
         title: title,
         backTo: backTo,
         secondaryLine: secondaryLine,
+        secondaryLineIsLive: secondaryLineIsLive,
         actions: actions,
+        leading: leading,
+        trailing: trailing,
         accentRule: ruleUnderBar,
       ),
     };
