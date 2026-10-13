@@ -654,7 +654,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Entry:** `/veckomeny` "Generera inköpslista" FAB → `/inkopslista`.
 - **User story:** As a planner, I want one tap to turn my week's recipes into a single aggregated shopping list so that I don't transcribe ingredients by hand.
 - **Expected behavior:** Aggregates all resolvable menu ingredients (deterministic, zero LLM) into one list per ISO week. Regenerating updates the marked list in place; bought-status survives for matching lines. Pantry staples excluded with a surfaced count.
-- **Edge cases:** Empty plan → `nothingToGenerate`; unresolved (deleted) recipes skipped; double-tap → `alreadyRunning`; null = real failure.
+- **Edge cases:** Empty plan → `nothingToGenerate`; unresolved (deleted) recipes skipped; null = real failure.
 - **Test coverage:** Verified — `menu_shopping_list_generator_test.dart`, `menu_shopping_aggregator_test.dart`, `menu_to_shopping_journey_test.dart`. *(Manual additions don't survive regeneration.)*
 
 #### MENU-07: Real-time collaborative menu editing
