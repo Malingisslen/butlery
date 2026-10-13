@@ -15,7 +15,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
@@ -25,6 +24,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
 
 /// Admin-only screen listing open moderation reports and exposing the
@@ -65,10 +65,9 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.moderatorReviewTitle,
-      ),
+    return ButleryPage.undersida(
+      title: context.l10n.moderatorReviewTitle,
+      width: PageWidth.wide,
       body: StreamBuilder<bool>(
         stream: _reportService.watchIsAdmin(),
         builder: (context, snapshot) {

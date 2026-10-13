@@ -3,10 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/bold_names_text.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
@@ -28,7 +27,6 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 import 'package:butlery/views/social/menu_preview/menu_preview_dishes.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -44,47 +42,36 @@ class MenuPreviewView extends StatelessWidget {
     // Configure Swedish for timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
 
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      // The subpage bar as drawn (Skarmar v12 del 3 #menyforhands: back
-      // arrow and "Delad meny" on ink; Komponentark v1 §01 pattern 2). The
-      // menu's own name stands in the header below.
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.menuPreviewTitle,
-        actions: [
-          IconButton(
-            onPressed: () => _shareMenu(context),
-            icon: const ButleryIcon(ButleryIcons.share2),
-            tooltip: context.l10n.menuShareMenu,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    // BUT-1162: surface silent collaborative-edit conflict
-                    // resolutions on this shared menu (drop-in; idle-collapses).
-                    SliverToBoxAdapter(
-                      child: ConflictBanner(
-                        filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
-                      ),
-                    ),
-                    _buildMenuHeader(context),
-                    MenuPreviewDishes(sharedMenu: sharedMenu),
-                    _buildImportNote(context),
-                  ],
-                ),
-              ),
-              _buildActionButtons(context),
-            ],
-          ),
+    // The menu's own name stands in the header below the bar.
+    return ButleryPage.undersida(
+      title: context.l10n.menuPreviewTitle,
+      actions: [
+        IconButton(
+          onPressed: () => _shareMenu(context),
+          icon: const ButleryIcon(ButleryIcons.share2),
+          tooltip: context.l10n.menuShareMenu,
         ),
+      ],
+      body: Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                // BUT-1162: surface silent collaborative-edit conflict
+                // resolutions on this shared menu (drop-in; idle-collapses).
+                SliverToBoxAdapter(
+                  child: ConflictBanner(
+                    filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
+                  ),
+                ),
+                _buildMenuHeader(context),
+                MenuPreviewDishes(sharedMenu: sharedMenu),
+                _buildImportNote(context),
+              ],
+            ),
+          ),
+          _buildActionButtons(context),
+        ],
       ),
     );
   }

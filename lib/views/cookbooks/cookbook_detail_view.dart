@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/cookbooks/cookbook_recipe_sheets.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -22,7 +22,6 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/stat_row.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// One cookbook opened (BUT-1325): its key figures, description, and its
 /// recipes in the book's order, each with the book's own note.
@@ -102,10 +101,8 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
     _closeIfGone(tag);
     final cookbook = tag?.cookbook;
     if (tag == null || cookbook == null) {
-      return Scaffold(
-        appBar: ButleryTopBar.undersida(
-          title: context.l10n.libraryTabCookbooks,
-        ),
+      return ButleryPage.undersida(
+        title: context.l10n.libraryTabCookbooks,
         body: const SizedBox.shrink(),
       );
     }
@@ -114,17 +111,14 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
     final recipes = vm.recipesIn(tag);
     final padding = AppDimensions.responsiveContentPadding(context);
 
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: ButleryTopBar.undersida(
-        title: tag.name,
-        actions: [
-          TextButton(
-            onPressed: () => showCookbookEditSheet(context, vm: vm, tag: tag),
-            child: Text(l10n.cookbookEdit),
-          ),
-        ],
-      ),
+    return ButleryPage.undersida(
+      title: tag.name,
+      actions: [
+        TextButton(
+          onPressed: () => showCookbookEditSheet(context, vm: vm, tag: tag),
+          child: Text(l10n.cookbookEdit),
+        ),
+      ],
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),

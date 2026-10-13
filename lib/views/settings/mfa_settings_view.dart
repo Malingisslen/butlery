@@ -2,14 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -22,7 +21,6 @@ import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 ///
@@ -260,33 +258,27 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.mfaTitle,
-        backTo: context.l10n.settingsAccountAreaTitle,
-      ),
+    return ButleryPage.undersida(
+      title: context.l10n.mfaTitle,
+      backTo: context.l10n.settingsAccountAreaTitle,
       body: _isLoading && !_isEnrolling
           ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
-          : ButleryPageBody(
-              width: PageWidth.text,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.space16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoCard(),
-                    const SizedBox(height: AppDimensions.space24),
-                    if (_hasMfa)
-                      _buildEnrolledSection()
-                    else
-                      _buildEnrollSection(),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: AppDimensions.space16),
-                      MfaErrorBanner(message: _errorMessage!),
-                    ],
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(AppDimensions.space16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoCard(),
+                  const SizedBox(height: AppDimensions.space24),
+                  if (_hasMfa)
+                    _buildEnrolledSection()
+                  else
+                    _buildEnrollSection(),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: AppDimensions.space16),
+                    MfaErrorBanner(message: _errorMessage!),
                   ],
-                ),
+                ],
               ),
             ),
     );

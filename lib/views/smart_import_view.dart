@@ -19,8 +19,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
@@ -126,112 +125,101 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           );
         }
       },
-      child: Scaffold(
-        // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
-        // on the canonical top bar, left-aligned as drawn (v1:73).
-        appBar: ButleryTopBar.undersida(
-          title: context.l10n.importRecipeTitle,
-        ),
+      child: ButleryPage.undersida(
+        title: context.l10n.importRecipeTitle,
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.translucent,
           // Tapping outside a field closes the keyboard; it is not a control,
           // so a screen reader must not announce the whole page as one.
           excludeFromSemantics: true,
-          child: SafeArea(
-            child: ButleryPageBody(
-              width: PageWidth.text,
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.space16),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: IntrinsicHeight(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Pending import retry banner
-                              if (viewModel.hasPendingImport &&
-                                  viewModel.isOnline)
-                                PendingImportBanner(
-                                  onRetry: viewModel.retryPendingImport,
-                                  onDismiss: viewModel.dismissPendingImport,
-                                ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.space16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Pending import retry banner
+                          if (viewModel.hasPendingImport && viewModel.isOnline)
+                            PendingImportBanner(
+                              onRetry: viewModel.retryPendingImport,
+                              onDismiss: viewModel.dismissPendingImport,
+                            ),
 
-                              // Input section
-                              ImportInputSection(
-                                controller: _inputController,
-                                focusNode: _focusNode,
-                                viewModel: viewModel,
-                                onChanged: viewModel.updateInput,
-                              ),
-
-                              // Platform badge
-                              if (viewModel.detection != null &&
-                                  viewModel.detection!.input.isNotEmpty) ...[
-                                const SizedBox(
-                                  height: AppDimensions.space12,
-                                ),
-                                PlatformBadgeWidget(
-                                  detection: viewModel.detection,
-                                ),
-                              ],
-
-                              // Progress indicator
-                              if (viewModel.isImporting ||
-                                  viewModel.phase == ImportPhase.complete) ...[
-                                const SizedBox(
-                                  height: AppDimensions.space24,
-                                ),
-                                ImportProgressWidget(
-                                  currentStep: viewModel.currentStep,
-                                  message: viewModel.progressMessage,
-                                  isLoading: viewModel.isImporting,
-                                  isVisible: true,
-                                  elapsed: viewModel.isImporting
-                                      ? viewModel.elapsed
-                                      : null,
-                                ),
-                              ],
-
-                              // Error message
-                              if (viewModel.error != null &&
-                                  viewModel.phase == ImportPhase.error) ...[
-                                const SizedBox(
-                                  height: AppDimensions.space16,
-                                ),
-                                ImportErrorMessage(
-                                  message: viewModel.error!,
-                                  preserved: viewModel.failurePreserved,
-                                  routes: viewModel.failureRoutes,
-                                  onRoute: (route) =>
-                                      _openRoute(context, viewModel, route),
-                                ),
-                              ],
-
-                              const Spacer(),
-
-                              // Action buttons
-                              ImportActionSection(
-                                viewModel: viewModel,
-                                onImport: () =>
-                                    _handleImport(context, viewModel),
-                                onManualImport: () =>
-                                    _handleManualImport(context, viewModel),
-                                onPaste: () => _handlePaste(viewModel),
-                              ),
-                            ],
+                          // Input section
+                          ImportInputSection(
+                            controller: _inputController,
+                            focusNode: _focusNode,
+                            viewModel: viewModel,
+                            onChanged: viewModel.updateInput,
                           ),
-                        ),
+
+                          // Platform badge
+                          if (viewModel.detection != null &&
+                              viewModel.detection!.input.isNotEmpty) ...[
+                            const SizedBox(
+                              height: AppDimensions.space12,
+                            ),
+                            PlatformBadgeWidget(
+                              detection: viewModel.detection,
+                            ),
+                          ],
+
+                          // Progress indicator
+                          if (viewModel.isImporting ||
+                              viewModel.phase == ImportPhase.complete) ...[
+                            const SizedBox(
+                              height: AppDimensions.space24,
+                            ),
+                            ImportProgressWidget(
+                              currentStep: viewModel.currentStep,
+                              message: viewModel.progressMessage,
+                              isLoading: viewModel.isImporting,
+                              isVisible: true,
+                              elapsed: viewModel.isImporting
+                                  ? viewModel.elapsed
+                                  : null,
+                            ),
+                          ],
+
+                          // Error message
+                          if (viewModel.error != null &&
+                              viewModel.phase == ImportPhase.error) ...[
+                            const SizedBox(
+                              height: AppDimensions.space16,
+                            ),
+                            ImportErrorMessage(
+                              message: viewModel.error!,
+                              preserved: viewModel.failurePreserved,
+                              routes: viewModel.failureRoutes,
+                              onRoute: (route) =>
+                                  _openRoute(context, viewModel, route),
+                            ),
+                          ],
+
+                          const Spacer(),
+
+                          // Action buttons
+                          ImportActionSection(
+                            viewModel: viewModel,
+                            onImport: () => _handleImport(context, viewModel),
+                            onManualImport: () =>
+                                _handleManualImport(context, viewModel),
+                            onPaste: () => _handlePaste(viewModel),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
