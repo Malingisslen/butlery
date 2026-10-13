@@ -183,14 +183,15 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-          Size(double.infinity, AppDimensions.minTouchTarget),
+          Size(double.infinity, AppDimensions.controlVisualHeight),
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
             horizontal: AppDimensions.space24,
-            vertical: (AppDimensions.space8 + AppDimensions.space4),
+            vertical: AppDimensions.space8,
           ),
         ),
+        tapTargetSize: MaterialTapTargetSize.padded,
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -210,14 +211,15 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-          Size(double.infinity, AppDimensions.minTouchTarget),
+          Size(double.infinity, AppDimensions.controlVisualHeight),
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
             horizontal: AppDimensions.space24,
-            vertical: (AppDimensions.space8 + AppDimensions.space4),
+            vertical: AppDimensions.space8,
           ),
         ),
+        tapTargetSize: MaterialTapTargetSize.padded,
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -245,14 +247,15 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-          Size(double.infinity, AppDimensions.minTouchTarget),
+          Size(double.infinity, AppDimensions.controlVisualHeight),
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
             horizontal: AppDimensions.space24,
-            vertical: (AppDimensions.space8 + AppDimensions.space4),
+            vertical: AppDimensions.space8,
           ),
         ),
+        tapTargetSize: MaterialTapTargetSize.padded,
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -278,14 +281,15 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-          Size(0, AppDimensions.minTouchTarget),
+          Size(0, AppDimensions.controlVisualHeight),
         ),
         padding: const WidgetStatePropertyAll(
           EdgeInsets.symmetric(
             horizontal: AppDimensions.space16,
-            vertical: (AppDimensions.space8 + AppDimensions.space4),
+            vertical: AppDimensions.space8,
           ),
         ),
+        tapTargetSize: MaterialTapTargetSize.padded,
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -404,14 +408,15 @@ class ButtonThemes {
         RoundedRectangleBorder(borderRadius: _controlRadius),
       ),
       minimumSize: const WidgetStatePropertyAll(
-        Size(double.infinity, AppDimensions.minTouchTarget),
+        Size(double.infinity, AppDimensions.controlVisualHeight),
       ),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(
           horizontal: AppDimensions.space24,
-          vertical: (AppDimensions.space8 + AppDimensions.space4),
+          vertical: AppDimensions.space8,
         ),
       ),
+      tapTargetSize: MaterialTapTargetSize.padded,
       textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
     );
   }

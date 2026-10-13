@@ -39,7 +39,7 @@ const variantCeilings = {
   'raw_text_style': 22,
   'raw_toggles': 26,
   'raw_menus': 27,
-  'raw_circle_avatar': 11,
+  'raw_circle_avatar': 0,
   'raw_show_dialog': 90,
   'raw_show_sheet': 5,
   'raw_segmented': 0,

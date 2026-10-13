@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -283,14 +284,14 @@ class StyledInput extends StatelessWidget {
     final effectiveSemanticLabel =
         semanticLabel ?? (label == null ? hint : null);
 
-    final restingBorder = OutlineInputBorder(
+    final restingBorder = ButleryFieldBorder(
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: showWarning ? context.modeColors.warning : cs.outline,
         width: AppDimensions.borderWidthStandard,
       ),
     );
-    final restingErrorBorder = OutlineInputBorder(
+    final restingErrorBorder = ButleryFieldBorder(
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: cs.error,
@@ -337,7 +338,7 @@ class StyledInput extends StatelessWidget {
               horizontal: AppDimensions.space16,
               vertical: (AppDimensions.space8 + AppDimensions.space4),
             ),
-        border: OutlineInputBorder(
+        border: ButleryFieldBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: const BorderSide(),
         ),
@@ -353,7 +354,7 @@ class StyledInput extends StatelessWidget {
         // Disabled: 1 px surface.disabled edge on surface.raised, never
         // opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).
-        disabledBorder: OutlineInputBorder(
+        disabledBorder: ButleryFieldBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           borderSide: BorderSide(
             color: AppModeColors.surfaceDisabled(cs.brightness),

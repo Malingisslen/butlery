@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -72,140 +71,131 @@ class _FileImportViewState extends State<FileImportView> {
   }
 
   Widget _buildScaffold(BuildContext context) {
-    return Scaffold(
-      // A subpage (Komponentark v1:71-78; B-45): the back arrow and the title
-      // on the canonical top bar, left-aligned as drawn (v1:73).
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.importFromFile,
-      ),
-      body: SafeArea(
-        child: ButleryPageBody(
-          width: PageWidth.text,
-          child: Padding(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Instructions
-                TintedNote(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.importFromFileTitle,
-                        style: AppTextStyles.headlineSmall,
+    return ButleryPage.undersida(
+      title: context.l10n.importFromFile,
+      body: Padding(
+        padding: AppDimensions.responsiveContentPadding(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Instructions
+            TintedNote(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.importFromFileTitle,
+                    style: AppTextStyles.headlineSmall,
+                  ),
+                  const SizedBox(height: AppDimensions.space8),
+                  Text(
+                    context.l10n.importFileColumnsRequired,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const SizedBox(height: AppDimensions.space4),
+                  _buildRequirement(context.l10n.importColumnTitle),
+                  _buildRequirement(
+                    context.l10n.importColumnIngredients,
+                  ),
+                  _buildRequirement(
+                    context.l10n.importColumnInstructions,
+                  ),
+                  const SizedBox(height: AppDimensions.space4),
+                  Text(
+                    context.l10n.importFileColumnsOptional,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const SizedBox(height: AppDimensions.space4),
+                  _buildOptional(context.l10n.importColumnCookingTime),
+                  _buildOptional(context.l10n.importColumnServings),
+                  _buildOptional(context.l10n.importColumnCategory),
+                  _buildOptional(context.l10n.importColumnTags),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppDimensions.space32),
+
+            // Import button
+            if (!_vm.isLoading)
+              UtilityComponents.primaryButton(
+                context,
+                label: context.l10n.importSelectFileAndImport,
+                icon: ButleryIcons.download,
+                onPressed: _handleImport,
+              ),
+
+            // Loading indicator
+            if (_vm.isLoading)
+              Column(
+                children: [
+                  // The plate line with its text (B-18): the status says
+                  // what is being read.
+                  PlateLineMessage(
+                    message:
+                        _vm.statusMessage ?? context.l10n.importReadingFile,
+                  ),
+                  if (_vm.importedCount > 0 || _vm.failedCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.space8,
                       ),
-                      const SizedBox(height: AppDimensions.space8),
-                      Text(
-                        context.l10n.importFileColumnsRequired,
-                        style: AppTextStyles.bodyMedium,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_vm.importedCount > 0) ...[
+                            ButleryIcon(
+                              ButleryIcons.circleCheck,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: AppDimensions.space4),
+                            Text(
+                              context.l10n.importSucceededCount(
+                                _vm.importedCount,
+                              ),
+                            ),
+                          ],
+                          if (_vm.importedCount > 0 && _vm.failedCount > 0)
+                            const SizedBox(width: AppDimensions.space12),
+                          if (_vm.failedCount > 0) ...[
+                            ButleryIcon(
+                              ButleryIcons.triangleAlert,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            const SizedBox(width: AppDimensions.space4),
+                            Text(
+                              context.l10n.importFailedCount(
+                                _vm.failedCount,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(height: AppDimensions.space4),
-                      _buildRequirement(context.l10n.importColumnTitle),
-                      _buildRequirement(
-                        context.l10n.importColumnIngredients,
-                      ),
-                      _buildRequirement(
-                        context.l10n.importColumnInstructions,
-                      ),
-                      const SizedBox(height: AppDimensions.space4),
-                      Text(
-                        context.l10n.importFileColumnsOptional,
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      const SizedBox(height: AppDimensions.space4),
-                      _buildOptional(context.l10n.importColumnCookingTime),
-                      _buildOptional(context.l10n.importColumnServings),
-                      _buildOptional(context.l10n.importColumnCategory),
-                      _buildOptional(context.l10n.importColumnTags),
-                    ],
+                    ),
+                ],
+              ),
+
+            // Status message
+            if (!_vm.isLoading && _vm.statusMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: AppDimensions.space12,
+                ),
+                child: TintedNote(
+                  child: Text(
+                    _vm.statusMessage!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: _vm.failedCount > 0
+                          ? Theme.of(context).colorScheme.error
+                          : null,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-
-                const SizedBox(height: AppDimensions.space32),
-
-                // Import button
-                if (!_vm.isLoading)
-                  UtilityComponents.primaryButton(
-                    context,
-                    label: context.l10n.importSelectFileAndImport,
-                    icon: ButleryIcons.download,
-                    onPressed: _handleImport,
-                  ),
-
-                // Loading indicator
-                if (_vm.isLoading)
-                  Column(
-                    children: [
-                      // The plate line with its text (B-18): the status says
-                      // what is being read.
-                      PlateLineMessage(
-                        message:
-                            _vm.statusMessage ?? context.l10n.importReadingFile,
-                      ),
-                      if (_vm.importedCount > 0 || _vm.failedCount > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: AppDimensions.space8,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (_vm.importedCount > 0) ...[
-                                ButleryIcon(
-                                  ButleryIcons.circleCheck,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                                const SizedBox(width: AppDimensions.space4),
-                                Text(
-                                  context.l10n.importSucceededCount(
-                                    _vm.importedCount,
-                                  ),
-                                ),
-                              ],
-                              if (_vm.importedCount > 0 && _vm.failedCount > 0)
-                                const SizedBox(width: AppDimensions.space12),
-                              if (_vm.failedCount > 0) ...[
-                                ButleryIcon(
-                                  ButleryIcons.triangleAlert,
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                                const SizedBox(width: AppDimensions.space4),
-                                Text(
-                                  context.l10n.importFailedCount(
-                                    _vm.failedCount,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-
-                // Status message
-                if (!_vm.isLoading && _vm.statusMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: AppDimensions.space12,
-                    ),
-                    child: TintedNote(
-                      child: Text(
-                        _vm.statusMessage!,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: _vm.failedCount > 0
-                              ? Theme.of(context).colorScheme.error
-                              : null,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -225,7 +215,7 @@ class _FileImportViewState extends State<FileImportView> {
             color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.space4),
-          Text(text, style: AppTextStyles.bodySmall),
+          Expanded(child: Text(text, style: AppTextStyles.bodySmall)),
         ],
       ),
     );
@@ -245,7 +235,7 @@ class _FileImportViewState extends State<FileImportView> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.space4),
-          Text(text, style: AppTextStyles.bodySmall),
+          Expanded(child: Text(text, style: AppTextStyles.bodySmall)),
         ],
       ),
     );

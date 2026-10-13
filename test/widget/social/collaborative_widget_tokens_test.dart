@@ -4,6 +4,7 @@
 // already raised); borders are outlineVariant; on the ink bar the badge takes
 // the ink-raised pair. Each test runs in both modes.
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -346,12 +347,25 @@ void main() {
           final tile = _decorationAbove(tester, find.byType(ButleryIcon).first);
           expect(tile.color, cs.surface, reason: type);
           expect(_textColor(tester, label), color, reason: type);
-          final avatar = tester.widget<CircleAvatar>(
-            find.byType(CircleAvatar),
+          final avatar = tester.widget<AvatarCircle>(
+            find.byType(AvatarCircle),
           );
-          expect(avatar.backgroundColor, cs.surface, reason: type);
+          expect(avatar.tone, AvatarCircleTone.paper, reason: type);
+          expect(_circleColor(tester, avatar), cs.surface, reason: type);
         }
       });
     });
   }
 }
+
+Color? _circleColor(WidgetTester tester, AvatarCircle avatar) => tester
+    .widgetList<Container>(
+      find.descendant(
+        of: find.byWidget(avatar),
+        matching: find.byType(Container),
+      ),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .first
+    .color;

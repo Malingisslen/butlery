@@ -7,7 +7,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -82,12 +82,9 @@ class GroupMemberCard {
               color: isSelected ? cs.onSurface : cs.outline,
               size: AppDimensions.iconSizeL,
             )
-          : UserAvatar(
+          : AvatarCircle(
               imageUrl: member.avatarUrl,
               displayName: member.displayName,
-              explicitSize: 48,
-              round: true,
-              announceName: false,
             ),
       // The row's label already starts with the name; the visible name is
       // left out of the announcement so it is not read twice.

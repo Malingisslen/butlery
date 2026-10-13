@@ -221,9 +221,14 @@ class _PersonalTagFilterChip extends StatelessWidget {
           ),
           avatar: isSelected
               ? null
-              : CircleAvatar(
-                  radius: 6,
-                  backgroundColor: colorScheme.onSurface,
+              : SizedBox.square(
+                  dimension: AppDimensions.space12,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                 ),
           selected: isSelected,
           onSelected: (_) => onSelected(),

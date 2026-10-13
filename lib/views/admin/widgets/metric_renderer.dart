@@ -197,7 +197,11 @@ class _MatrixTable extends StatelessWidget {
                 flex: 3,
               ),
               for (final c in value.colLabels)
-                AdminTableColumn(label: c, alignEnd: true),
+                AdminTableColumn(
+                  label: c,
+                  flex: (c.length / 4).ceil(),
+                  alignEnd: true,
+                ),
             ],
             rows: [
               for (var r = 0; r < value.rowLabels.length; r++)

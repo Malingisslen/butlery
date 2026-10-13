@@ -20,8 +20,9 @@ import 'package:butlery/widgets/common/press_fill.dart';
 class ActionButtons {
   static const ButtonStyle _hugLabel = ButtonStyle(
     minimumSize: WidgetStatePropertyAll(
-      Size(0, AppDimensions.minTouchTarget),
+      Size(0, AppDimensions.controlVisualHeight),
     ),
+    tapTargetSize: MaterialTapTargetSize.padded,
   );
 
   /// The visible label: the busy label while busy, else the button's name.

@@ -8,7 +8,7 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_media_row.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
@@ -54,12 +54,9 @@ class FriendsTab {
                 for (final friend in friends)
                   ButleryMediaRow(
                     key: ValueKey(friend.uid),
-                    leading: UserAvatar(
+                    leading: AvatarCircle(
                       imageUrl: friend.avatarUrl,
                       displayName: friend.displayName,
-                      explicitSize: 48,
-                      round: true,
-                      announceName: false,
                     ),
                     title: friend.displayName,
                     subtitle: friend.bio?.isNotEmpty == true

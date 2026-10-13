@@ -84,6 +84,36 @@ void main() {
       expect(find.text('08:00'), findsOneWidget);
     });
 
+    testWidgets(
+      'a header label too wide for its column stays on one line',
+      (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const AdminTable(
+              columns: [
+                AdminTableColumn(label: 'Domän', flex: 3),
+                AdminTableColumn(label: 'Misslyckade', alignEnd: true),
+                AdminTableColumn(label: 'Borttaget', alignEnd: true),
+              ],
+              rows: [
+                AdminTableRow(cells: ['ica.se', '4', '12']),
+              ],
+            ),
+          ),
+        );
+
+        for (final label in ['MISSLYCKADE', 'BORTTAGET']) {
+          final box = tester.getSize(find.text(label));
+          expect(box.height, lessThan(AppTextStyles.overline.fontSize! * 1.6));
+        }
+      },
+    );
+
     testWidgets('a row with onTap is tappable and one without is not', (
       tester,
     ) async {

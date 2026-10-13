@@ -1,5 +1,6 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -285,12 +286,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               });
             }
           },
-          secondary: CircleAvatar(
-            child: Text(
-              friend.displayName.isNotEmpty
-                  ? friend.displayName[0].toUpperCase()
-                  : '?',
-            ),
+          secondary: AvatarCircle(
+            imageUrl: friend.avatarUrl,
+            displayName: friend.displayName,
           ),
         );
       },
