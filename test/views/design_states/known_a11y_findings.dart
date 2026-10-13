@@ -23,7 +23,6 @@ const Map<String, String> acceptedA11yFindings = {
   'receptdetalj::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptdetalj::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'receptlista-sök::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
-  'receptlista-sök::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckogenerering::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'veckomeny::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
 };
@@ -85,4 +84,4 @@ const int knownA11yFindingsCeiling = 0;
 
 /// The most entries the three accepted lists may hold together. Lower it when
 /// an entry goes; an accepted failure is never added without Malin's decision.
-const int acceptedA11yFindingsCeiling = 13;
+const int acceptedA11yFindingsCeiling = 12;
