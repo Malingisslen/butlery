@@ -14,15 +14,12 @@ import '../../tools/design_migration_census.dart' show stripComments;
 
 const _builtDirectly = {
   'lib/core/router/app_router.dart',
-  'lib/views/admin/moderator_review_view.dart',
   'lib/views/auth/mfa_challenge_view.dart',
-  'lib/views/cookbooks/cookbook_detail_view.dart',
   'lib/views/edit_recipe_view.dart',
   'lib/views/family/family_rating_entry_view.dart',
   'lib/views/ingredient_search/ingredient_search_view.dart',
   'lib/views/messaging/chat_view/chat_view_facade.dart',
   'lib/views/mina_recept/selection_app_bar.dart',
-  'lib/views/more/more_view.dart',
   'lib/views/notifications/notifications_view.dart',
   'lib/views/personal_tags_view.dart',
   'lib/views/photo_import_view.dart',
@@ -31,7 +28,6 @@ const _builtDirectly = {
   'lib/views/realtime/recipe_suggestion_view.dart',
   'lib/views/recipe_detail_view.dart',
   'lib/views/skriv_sjalv_recept_view.dart',
-  'lib/views/smart_import_view.dart',
   'lib/views/social/add_members_to_group_view.dart',
   'lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart',
   'lib/views/social/create_shared_shopping_list_view.dart',
