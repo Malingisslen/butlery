@@ -6,6 +6,7 @@
 // never from `Theme.of(context)`, so a widget that reads the wrong slot cannot
 // agree with itself.
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -174,11 +175,12 @@ void main() {
 
         // The avatar sits on a raised card, so it takes the base surface.
         final avatars = tester
-            .widgetList<CircleAvatar>(find.byType(CircleAvatar))
+            .widgetList<AvatarCircle>(find.byType(AvatarCircle))
             .toList();
         expect(avatars, hasLength(2));
         for (final avatar in avatars) {
-          expect(avatar.backgroundColor, cs.surface);
+          expect(avatar.tone, AvatarCircleTone.paper);
+          expect(_circleColor(tester, avatar), cs.surface);
         }
       });
 
@@ -215,11 +217,12 @@ void main() {
 
         // Owner row, Bob's row and the friend row.
         final avatars = tester
-            .widgetList<CircleAvatar>(find.byType(CircleAvatar))
+            .widgetList<AvatarCircle>(find.byType(AvatarCircle))
             .toList();
         expect(avatars, hasLength(3));
         for (final avatar in avatars) {
-          expect(avatar.backgroundColor, cs.surface);
+          expect(avatar.tone, AvatarCircleTone.paper);
+          expect(_circleColor(tester, avatar), cs.surface);
         }
       });
 
@@ -402,3 +405,15 @@ void main() {
     });
   }
 }
+
+Color? _circleColor(WidgetTester tester, AvatarCircle avatar) => tester
+    .widgetList<Container>(
+      find.descendant(
+        of: find.byWidget(avatar),
+        matching: find.byType(Container),
+      ),
+    )
+    .map((c) => c.decoration)
+    .whereType<BoxDecoration>()
+    .first
+    .color;

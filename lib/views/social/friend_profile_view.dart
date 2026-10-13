@@ -135,12 +135,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
           LayoutComponents.offlineIndicator(),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                margin,
-                AppDimensions.space8,
-                margin,
-                AppDimensions.space32,
-              ),
+              padding: const EdgeInsets.only(bottom: AppDimensions.space32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -162,66 +157,76 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppDimensions.space16),
-                  Row(
-                    children: [
-                      // Opening the chat keeps the name and draws
-                      // the plate line (Komponentark v1:365).
-                      Expanded(
-                        child: HeroButton(
-                          key: const ValueKey('friendProfile.sendMessage'),
-                          label: l10n.socialSendMessage,
-                          busy: _isStartingConversation,
-                          onPressed: _isStartingConversation
-                              ? null
-                              : () => _startConversation(context),
-                          expand: true,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: margin),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: AppDimensions.space16),
+                        Row(
+                          children: [
+                            // Opening the chat keeps the name and draws
+                            // the plate line (Komponentark v1:365).
+                            Expanded(
+                              child: HeroButton(
+                                key: const ValueKey(
+                                  'friendProfile.sendMessage',
+                                ),
+                                label: l10n.socialSendMessage,
+                                busy: _isStartingConversation,
+                                onPressed: _isStartingConversation
+                                    ? null
+                                    : () => _startConversation(context),
+                                expand: true,
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.space8),
+                            Expanded(
+                              child: ActionButtons.outlinedButton(
+                                context,
+                                label: l10n.friendProfileShareRecipe,
+                                onPressed: () => _showRecipeSelection(context),
+                                isExpanded: true,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: AppDimensions.space8),
-                      Expanded(
-                        child: ActionButtons.outlinedButton(
-                          context,
-                          label: l10n.friendProfileShareRecipe,
-                          onPressed: () => _showRecipeSelection(context),
-                          isExpanded: true,
+                        ButleryListSection(
+                          title: l10n.friendProfileBetweenYou,
+                          rows: [
+                            ButleryListRow(
+                              label: l10n.friendProfileSharedWithYouRow(
+                                friend.displayName,
+                              ),
+                              subtitle: l10n.friendProfileSharedWithYouSub,
+                              onTap: _openSharedWithMe,
+                            ),
+                            if (friend.publicRecipeCount > 0)
+                              ButleryListRow(
+                                label: l10n.friendProfilePublicRecipesRow(
+                                  _genitive(friend.displayName),
+                                ),
+                                subtitle: l10n.friendProfilePublicRecipesSub,
+                                value: '${friend.publicRecipeCount}',
+                                onTap: _openPublicRecipes,
+                              ),
+                            ButleryListRow(
+                              label: l10n.friendProfileShareLinkRow(
+                                _genitive(friend.displayName),
+                              ),
+                              subtitle: l10n.friendProfileShareLinkSub,
+                              leading: ButleryIcons.link,
+                              onTap: () => _shareProfile(context),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  ButleryListSection(
-                    title: l10n.friendProfileBetweenYou,
-                    rows: [
-                      ButleryListRow(
-                        label: l10n.friendProfileSharedWithYouRow(
-                          friend.displayName,
+                        ButleryListRow.danger(
+                          label: l10n.friendProfileRemoveFriend,
+                          centered: true,
+                          onTap: () => _showRemoveFriendDialog(context),
                         ),
-                        subtitle: l10n.friendProfileSharedWithYouSub,
-                        onTap: _openSharedWithMe,
-                      ),
-                      if (friend.publicRecipeCount > 0)
-                        ButleryListRow(
-                          label: l10n.friendProfilePublicRecipesRow(
-                            _genitive(friend.displayName),
-                          ),
-                          subtitle: l10n.friendProfilePublicRecipesSub,
-                          value: '${friend.publicRecipeCount}',
-                          onTap: _openPublicRecipes,
-                        ),
-                      ButleryListRow(
-                        label: l10n.friendProfileShareLinkRow(
-                          _genitive(friend.displayName),
-                        ),
-                        subtitle: l10n.friendProfileShareLinkSub,
-                        leading: ButleryIcons.link,
-                        onTap: () => _shareProfile(context),
-                      ),
-                    ],
-                  ),
-                  ButleryListRow.danger(
-                    label: l10n.friendProfileRemoveFriend,
-                    centered: true,
-                    onTap: () => _showRemoveFriendDialog(context),
+                      ],
+                    ),
                   ),
                 ],
               ),

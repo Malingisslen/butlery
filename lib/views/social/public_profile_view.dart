@@ -137,12 +137,7 @@ class _PublicProfileContent extends StatelessWidget {
 
     final margin = ButleryTopBar.sideMargin(context);
     return SingleChildScrollView(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        margin,
-        AppDimensions.space8,
-        margin,
-        AppDimensions.space32,
-      ),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -165,24 +160,36 @@ class _PublicProfileContent extends StatelessWidget {
               ),
             ],
           ),
-          if (profile.cookingSkillLevel != null) ...[
-            const SizedBox(height: AppDimensions.space8),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: _CookingSkillBadge(level: profile.cookingSkillLevel!),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: margin),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (profile.cookingSkillLevel != null) ...[
+                  const SizedBox(height: AppDimensions.space8),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: _CookingSkillBadge(
+                      level: profile.cookingSkillLevel!,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppDimensions.space16),
+                PublicProfileFriendButton(
+                  profile: profile,
+                  isSearchable: vm.isSearchable,
+                  friends: friends,
+                  friendsLoaded: context
+                      .read<UnifiedFriendsService>()
+                      .isInitialized,
+                ),
+                const AccentRule.inline(),
+                _PublicRecipesSection(
+                  recipes: vm.publicRecipes,
+                  hasRecipes: vm.hasPublicRecipes,
+                ),
+              ],
             ),
-          ],
-          const SizedBox(height: AppDimensions.space16),
-          PublicProfileFriendButton(
-            profile: profile,
-            isSearchable: vm.isSearchable,
-            friends: friends,
-            friendsLoaded: context.read<UnifiedFriendsService>().isInitialized,
-          ),
-          const AccentRule.inline(),
-          _PublicRecipesSection(
-            recipes: vm.publicRecipes,
-            hasRecipes: vm.hasPublicRecipes,
           ),
         ],
       ),

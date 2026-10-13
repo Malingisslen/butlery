@@ -1,5 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -446,16 +447,9 @@ class _ConvertToCollaborativeDialogState
                             ),
                           )
                         : null,
-                    secondary: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      child: Text(
-                        friend.displayName.isNotEmpty
-                            ? friend.displayName[0].toUpperCase()
-                            : '?',
-                        style: AppTextStyles.contentLabel.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
+                    secondary: AvatarCircle(
+                      imageUrl: friend.avatarUrl,
+                      displayName: friend.displayName,
                     ),
                     contentPadding: EdgeInsets.zero,
                   );

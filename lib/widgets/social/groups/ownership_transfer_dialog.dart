@@ -1,5 +1,6 @@
 // lib/widgets/social/groups/ownership_transfer_dialog.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -57,13 +58,9 @@ class OwnershipTransferDialog extends StatelessWidget {
           // List of available members
           ...availableMembers.map(
             (member) => ListTile(
-              leading: CircleAvatar(
-                backgroundImage: member.avatarUrl != null
-                    ? NetworkImage(member.avatarUrl!)
-                    : null,
-                child: member.avatarUrl == null
-                    ? Text(member.displayName[0].toUpperCase())
-                    : null,
+              leading: AvatarCircle(
+                imageUrl: member.avatarUrl,
+                displayName: member.displayName,
               ),
               title: Text(member.displayName),
               onTap: () => Navigator.pop(context, member),

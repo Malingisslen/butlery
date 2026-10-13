@@ -1,5 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -45,8 +46,6 @@ class ShoppingMemberManagementDialog extends StatefulWidget {
 
 class _ShoppingMemberManagementDialogState
     extends State<ShoppingMemberManagementDialog> {
-  static const double _avatarRadius = 20;
-
   final _searchController = TextEditingController();
   bool _isLoading = false;
   String? _error;
@@ -523,19 +522,13 @@ class _ShoppingMemberManagementDialogState
     final nameInset =
         (tileTheme.contentPadding?.resolve(Directionality.of(context)).left ??
             AppDimensions.space16) +
-        2 * _avatarRadius +
+        AvatarCircleSize.row.pixels +
         (tileTheme.horizontalTitleGap ?? AppDimensions.space16);
 
     final tile = ListTile(
-      leading: CircleAvatar(
-        radius: _avatarRadius,
-        backgroundColor: cs.surface,
-        child: Text(
-          userName.isNotEmpty ? userName[0].toUpperCase() : '?',
-          style: AppTextStyles.labelLarge.copyWith(
-            color: cs.onSurface,
-          ),
-        ),
+      leading: AvatarCircle(
+        displayName: userName,
+        tone: AvatarCircleTone.paper,
       ),
       title: Text(
         userName,
@@ -657,17 +650,10 @@ class _ShoppingMemberManagementDialogState
     final invited = _pendingInvitees.contains(friend.uid);
 
     return ButleryCheckboxTile(
-      secondary: CircleAvatar(
-        radius: 20,
-        backgroundColor: cs.surface,
-        child: Text(
-          friend.displayName.isNotEmpty
-              ? friend.displayName[0].toUpperCase()
-              : '?',
-          style: AppTextStyles.labelLarge.copyWith(
-            color: cs.onSurface,
-          ),
-        ),
+      secondary: AvatarCircle(
+        imageUrl: friend.avatarUrl,
+        displayName: friend.displayName,
+        tone: AvatarCircleTone.paper,
       ),
       title: Text(
         friend.displayName,

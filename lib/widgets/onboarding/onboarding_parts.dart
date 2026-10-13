@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -370,7 +371,7 @@ String onboardingCountKey(int n) => switch (n) {
 };
 
 /// The edge a field takes on these screens: one hairline, square corners.
-InputBorder onboardingFieldBorder(ColorScheme cs) => OutlineInputBorder(
+InputBorder onboardingFieldBorder(ColorScheme cs) => ButleryFieldBorder(
   borderRadius: BorderRadius.zero,
   borderSide: BorderSide(color: cs.outline),
 );

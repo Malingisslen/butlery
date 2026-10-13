@@ -253,6 +253,15 @@ class AppDimensions {
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
 
+  /// Drawn height of a button and of a text field, as the sketch draws them
+  /// (B-62). The 48 dp touch target (B-03) is kept by padding the hit area,
+  /// not by drawing the control that tall.
+  static const double controlVisualHeight = 40.0;
+  static const double fieldVisualPaddingY = 8.0;
+
+  /// Hit area added above and below a drawn field to reach [minTouchTarget].
+  static const double fieldTapPad = 4.0;
+
   /// Feedback FAB stacks above other bottom-anchored FABs (shopping /
   /// menu / add views) so it stays reachable even when those are present.
   static const double feedbackFabBottomOffset = 208.0;

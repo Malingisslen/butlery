@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -25,7 +26,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -233,14 +233,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     );
   }
 
-  Widget _friendAvatar(UserProfile friend) => FamilyAvatar(
-    name: friend.displayName,
-    initials: friend.displayName.isEmpty
-        ? '?'
-        : friend.displayName.characters.first.toUpperCase(),
-    color: Theme.of(context).colorScheme.primary,
-    size: AppDimensions.avatarSizeLg,
-    round: true,
+  Widget _friendAvatar(UserProfile friend) => AvatarCircle(
+    imageUrl: friend.avatarUrl,
+    displayName: friend.displayName,
   );
 
   Widget _buildFriendTile(
