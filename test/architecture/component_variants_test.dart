@@ -37,7 +37,7 @@ const variantCeilings = {
   'raw_chips': 15,
   'raw_app_bar': 0,
   'raw_text_style': 22,
-  'raw_toggles': 8,
+  'raw_toggles': 6,
   'raw_menus': 27,
   'raw_circle_avatar': 0,
   'raw_show_dialog': 90,
