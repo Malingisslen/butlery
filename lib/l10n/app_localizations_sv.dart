@@ -3996,28 +3996,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String dateWeeksAgo(int weeks) {
-    String _temp0 = intl.Intl.pluralLogic(
-      weeks,
-      locale: localeName,
-      other: '$weeks veckor',
-      one: '1 vecka',
-    );
-    return '$_temp0 sedan';
-  }
-
-  @override
-  String dateMonthsAgo(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '$months månader',
-      one: '1 månad',
-    );
-    return '$_temp0 sedan';
-  }
-
-  @override
   String get friendDecline => 'Avböj';
 
   @override
@@ -5769,7 +5747,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get navigationGoHome => 'Till start';
 
   @override
-  String get navigationSubtitle => 'Din digitala kokbok';
+  String get navigationSubtitle => 'Din receptsamling';
 
   @override
   String get permissionCopy => 'Kopia';

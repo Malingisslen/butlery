@@ -6248,18 +6248,6 @@ abstract class AppLocalizations {
   /// **'{days, plural, =1{1 dag} other{{days} dagar}} sedan'**
   String dateDaysAgo(int days);
 
-  /// No description provided for @dateWeeksAgo.
-  ///
-  /// In sv, this message translates to:
-  /// **'{weeks, plural, =1{1 vecka} other{{weeks} veckor}} sedan'**
-  String dateWeeksAgo(int weeks);
-
-  /// No description provided for @dateMonthsAgo.
-  ///
-  /// In sv, this message translates to:
-  /// **'{months, plural, =1{1 månad} other{{months} månader}} sedan'**
-  String dateMonthsAgo(int months);
-
   /// No description provided for @friendDecline.
   ///
   /// In sv, this message translates to:
@@ -9041,7 +9029,7 @@ abstract class AppLocalizations {
   /// No description provided for @navigationSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Din digitala kokbok'**
+  /// **'Din receptsamling'**
   String get navigationSubtitle;
 
   /// No description provided for @permissionCopy.

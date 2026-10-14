@@ -4038,28 +4038,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dateWeeksAgo(int weeks) {
-    String _temp0 = intl.Intl.pluralLogic(
-      weeks,
-      locale: localeName,
-      other: '$weeks weeks',
-      one: '1 week',
-    );
-    return '$_temp0 ago';
-  }
-
-  @override
-  String dateMonthsAgo(int months) {
-    String _temp0 = intl.Intl.pluralLogic(
-      months,
-      locale: localeName,
-      other: '$months months',
-      one: '1 month',
-    );
-    return '$_temp0 ago';
-  }
-
-  @override
   String get friendDecline => 'Decline';
 
   @override
@@ -5831,7 +5809,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navigationGoHome => 'Go home';
 
   @override
-  String get navigationSubtitle => 'Your digital cookbook';
+  String get navigationSubtitle => 'Your recipe collection';
 
   @override
   String get permissionCopy => 'Copy';

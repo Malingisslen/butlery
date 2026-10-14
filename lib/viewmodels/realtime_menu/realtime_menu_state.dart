@@ -6,6 +6,7 @@ import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
 
 /// Status for realtime menu operations
 enum RealtimeMenuStatus {
@@ -198,7 +199,8 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
 
     final now = clock.now();
     final today = DateTime(now.year, now.month, now.day);
-    final menuDate = DateTime(date.year, date.month, date.day);
+    final localDate = date.toLocal();
+    final menuDate = DateTime(localDate.year, localDate.month, localDate.day);
 
     if (menuDate == today) {
       return l.dateToday;
@@ -206,8 +208,7 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
       final diff = menuDate.difference(today).inDays;
       return diff == 1 ? l.dateTomorrow : l.dateDaysAhead(diff);
     } else {
-      final diff = today.difference(menuDate).inDays;
-      return diff == 1 ? l.dateYesterday : l.dateDaysAgo(diff);
+      return ContentTimeLabels.relativeDayLabel(l, date, now);
     }
   }
 

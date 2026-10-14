@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -18,6 +19,7 @@ import '../../../test_support/semantics_announcement.dart';
 final DateTime _kFixedNow = DateTime(2026, 5, 9, 12, 0, 0);
 
 void main() {
+  setUpAll(() => initializeDateFormatting('sv'));
   setUp(() async {
     await BaseWidgetTest.setupWidget();
   });
@@ -495,6 +497,31 @@ void main() {
             ownerId: testShoppingList.ownerId,
             ownerDisplayName: testShoppingList.ownerDisplayName,
             items: testShoppingList.items,
+            createdAt: clock.now().subtract(const Duration(days: 3)),
+          );
+
+          await tester.pumpWidget(
+            createCardApp(
+              shoppingList: oldList,
+              showMetadata: true,
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.textContaining('3 dagar sedan'), findsOneWidget);
+        });
+      });
+
+      testWidgets('displays the date once a list is older than three days', (
+        WidgetTester tester,
+      ) async {
+        await withClock(Clock.fixed(_kFixedNow), () async {
+          final oldList = UnifiedShoppingList(
+            id: testShoppingList.id,
+            name: testShoppingList.name,
+            ownerId: testShoppingList.ownerId,
+            ownerDisplayName: testShoppingList.ownerDisplayName,
+            items: testShoppingList.items,
             createdAt: clock.now().subtract(const Duration(days: 5)),
           );
 
@@ -506,7 +533,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.textContaining('5 dagar sedan'), findsOneWidget);
+          expect(find.textContaining('4 maj'), findsOneWidget);
         });
       });
     });
