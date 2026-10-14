@@ -26,7 +26,7 @@ void main() {
     ),
     GuestAccountReason.together: (
       'Skapa konto för att göra saker tillsammans',
-      'Vänner, grupper, meddelanden och familj kräver ett konto, så att '
+      'Vänner, grupper, meddelanden och hushåll kräver ett konto, så att '
           'andra ser vem du är. Allt du gjort som gäst följer med.',
     ),
     GuestAccountReason.importLimit: (

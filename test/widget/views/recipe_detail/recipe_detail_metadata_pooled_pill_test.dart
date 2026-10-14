@@ -203,7 +203,7 @@ void main() {
     setFlag(enabled: false);
     await pump(tester);
 
-    for (final text in ['Lagat i dag', 'Betygsätt som familj']) {
+    for (final text in ['Lagat i dag', 'Betygsätt som hushåll']) {
       final nodes = find.bySemanticsLabel(RegExp(text));
       expect(nodes, findsOneWidget, reason: '$text must be one focus stop');
       expect(announcedLines(tester, nodes), [text]);

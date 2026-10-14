@@ -339,7 +339,7 @@ void main() {
     test('is the Swedish refusal, spelled out', () {
       expect(
         weeklyPlanReadFailedMessage,
-        'Kunde inte läsa in veckan — försök igen',
+        'Kunde inte läsa in veckan – försök igen',
       );
     });
 
@@ -353,7 +353,7 @@ void main() {
       );
       expect(
         weeklyPlanReadFailedMessage,
-        isNot('Kunde inte läsa in veckan — försök igen'),
+        isNot('Kunde inte läsa in veckan – försök igen'),
       );
     });
   });

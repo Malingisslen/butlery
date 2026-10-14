@@ -754,7 +754,7 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(viewModel.error, contains('Kunde inte ta bort medlem'));
+        expect(viewModel.error, contains('Kunde inte radera medlem'));
         expect(viewModel.isRemovingMember, false);
       });
 

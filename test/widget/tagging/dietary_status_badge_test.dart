@@ -57,7 +57,7 @@ void main() {
         expect(find.byIcon(ButleryIcons.info), findsOneWidget);
         // Uses neutral "Vegetarisk: okänd" label so it doesn't read like a
         // yes/no question (BUT-399).
-        expect(find.textContaining('okänd'), findsOneWidget);
+        expect(find.textContaining('ej kontrollerat'), findsOneWidget);
         expect(find.textContaining('?'), findsNothing);
       });
     });

@@ -736,7 +736,7 @@ void main() {
               .first,
         );
         expect(lines.where((l) => l.contains('4,2')), [
-          '45 min \u00B7 4 port \u00B7 Familjebetyg 4,2',
+          '45 min \u00B7 4 port \u00B7 Hushållsbetyg 4,2',
         ]);
         expect(lines.where((l) => l.contains('4,5')), isEmpty);
         handle.dispose();

@@ -713,7 +713,7 @@ void main() {
         ),
       );
       expect(find.text('E-post'), findsOneWidget);
-      expect(find.text('din@email.se'), findsOneWidget);
+      expect(find.text('namn@exempel.se'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.mail), findsOneWidget);
     });
 

@@ -186,7 +186,7 @@ void main() {
     expect(find.byKey(PartialOutcome.itemKey('johan')), findsNothing);
 
     // Sara is still selected and selection mode is still on.
-    expect(find.text('1 valda'), findsOneWidget);
+    expect(find.text('1 vald'), findsOneWidget);
     expect(find.text('Ta bort markerade (1)'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('group-members-selection-cancel')),
@@ -522,7 +522,7 @@ void main() {
     await tester.pump();
 
     // Sara is still ticked, so the outcome stays open.
-    expect(find.text('1 valda'), findsOneWidget);
+    expect(find.text('1 vald'), findsOneWidget);
     expect(annaReason, findsNothing);
     final cs = AppTheme.lightTheme.colorScheme;
     final annaShape = tester

@@ -418,7 +418,7 @@ void main() {
       test('should have predefined decline friend action', () {
         // Assert
         expect(NotificationAction.declineFriend.id, equals('decline_friend'));
-        expect(NotificationAction.declineFriend.title, equals('Avvisa'));
+        expect(NotificationAction.declineFriend.title, equals('Avböj'));
       });
 
       test('should have predefined view recipe action', () {

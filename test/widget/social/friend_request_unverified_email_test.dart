@@ -58,11 +58,11 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Skicka nytt mejl'));
+    await tester.tap(find.text('Skicka e-post igen'));
     await tester.pumpAndSettle();
 
     expect(viewModel.resendVerificationCalls, 1);
-    expect(find.text('Nytt bekräftelsemejl skickat'), findsOneWidget);
+    expect(find.text('Ny bekräftelse skickad'), findsOneWidget);
   });
 
   testWidgets('a mail that could not be sent says that instead', (
@@ -70,10 +70,10 @@ void main() {
   ) async {
     viewModel.resendVerificationSucceeds = false;
     await tapSend(tester);
-    await tester.tap(find.text('Skicka nytt mejl'));
+    await tester.tap(find.text('Skicka e-post igen'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Kunde inte skicka bekräftelsemejlet'), findsOneWidget);
+    expect(find.text('Kunde inte skicka bekräftelsen'), findsOneWidget);
   });
 
   testWidgets('any other failure offers no mail', (tester) async {
@@ -81,6 +81,6 @@ void main() {
     await tapSend(tester);
 
     expect(find.text('Kunde inte skicka vänförfrågan'), findsOneWidget);
-    expect(find.text('Skicka nytt mejl'), findsNothing);
+    expect(find.text('Skicka e-post igen'), findsNothing);
   });
 }

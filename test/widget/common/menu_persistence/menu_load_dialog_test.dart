@@ -268,7 +268,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('M1'), findsOneWidget);
-        expect(find.textContaining('Kunde inte ta bort meny'), findsOneWidget);
+        expect(find.textContaining('Kunde inte radera meny'), findsOneWidget);
       });
 
       testWidgets('a delete that fails after the sheet was closed still says '
@@ -312,7 +312,7 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(() => vm.deleteSavedMenu('k1')).called(1);
-        expect(find.textContaining('Kunde inte ta bort meny'), findsOneWidget);
+        expect(find.textContaining('Kunde inte radera meny'), findsOneWidget);
       });
     });
   });

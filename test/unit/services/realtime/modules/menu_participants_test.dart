@@ -657,7 +657,7 @@ void main() {
         // Assert
         // Empty menu shows owner and participant count
         expect(emptyDisplay, contains('Ägare: Test Owner'));
-        expect(collabDisplay, contains('Deltagare: 2st'));
+        expect(collabDisplay, contains('deltagare: 2'));
       });
 
       test('should handle permission update to same permission', () {

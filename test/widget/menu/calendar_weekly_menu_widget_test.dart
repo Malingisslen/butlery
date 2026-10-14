@@ -896,7 +896,7 @@ void main() {
     // ServiceLocator, so both the row and the sheet need a registered household
     // stack. That setup is scoped to this group.
     group('BUT-1982 presence notice is gated on the outcome', () {
-      const notice = 'närvaron uppdaterad — planerade rätter ligger kvar';
+      const notice = 'närvaron uppdaterad – planerade rätter ligger kvar';
       final presenceWeekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
       // The week already has a menu, which is what makes the notice reachable
       // at all. A dish in a lunch or middag cell is what opens the sheet.

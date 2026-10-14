@@ -156,7 +156,7 @@ void main() {
       expect(subtitleOf('Tre kvar'), 'Raderad 15 sep. · 3 dagar kvar');
       expect(
         subtitleOf('Två kvar'),
-        '2 dagar kvar — raderas för gott på onsdag',
+        '2 dagar kvar – raderas för gott på onsdag',
       );
       expect(
         subtitleOf('Sista dagen'),

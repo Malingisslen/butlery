@@ -165,12 +165,12 @@ void main() {
     await confirm(tester);
 
     verify(
-      () => service.createPersonalList('Köttbullar - Ingredienser'),
+      () => service.createPersonalList('Köttbullar – Ingredienser'),
     ).called(1);
     verify(() => service.setActiveList('created-1')).called(1);
     expect(addedItems(), hasLength(3));
     expect(
-      find.text('3 varor tillagda i ”Köttbullar - Ingredienser”'),
+      find.text('3 varor tillagda i ”Köttbullar – Ingredienser”'),
       findsOneWidget,
     );
   });

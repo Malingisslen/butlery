@@ -299,7 +299,7 @@ void main() {
       // Inline error shown, sheet still open.
       expect(find.byKey(const Key('ping-inline-error')), findsOneWidget);
       expect(
-        find.text('Du har skickat för många puttar den senaste timmen'),
+        find.text('Du har skickat för många knuffar den senaste timmen'),
         findsOneWidget,
       );
       expect(find.byKey(const Key('ping-send-button')), findsOneWidget);

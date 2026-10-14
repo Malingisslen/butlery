@@ -663,11 +663,11 @@ void main() {
         ),
         findsOneWidget,
       );
-      // #synkko data-a11y-name "Försök mindre — Bild till Sommarens
+      // #synkko data-a11y-name "Försök mindre – Bild till Sommarens
       // grillmarinad".
       expect(
         find.bySemanticsLabel(
-          'Försök mindre — Bild till Sommarens grillmarinad',
+          'Försök mindre – Bild till Sommarens grillmarinad',
         ),
         findsOneWidget,
       );
