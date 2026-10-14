@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show ValueKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -71,30 +72,36 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  testWidgets('a long press turns the bar into the count with a close button', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const NotificationsView(),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('Stäng'), findsNothing);
+  testWidgets(
+    'a long press turns the bar into the count with an Avbryt button',
+    (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const NotificationsView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('butlery-select-cancel')), findsNothing);
 
-    await tester.longPress(find.text('Första'));
-    await tester.pumpAndSettle();
+      await tester.longPress(find.text('Första'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('1 markerad'), findsOneWidget);
-    expect(find.byTooltip('Stäng'), findsOneWidget);
+      expect(find.text('1 markerad'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('butlery-select-cancel')),
+        findsOneWidget,
+      );
 
-    await tester.tap(find.byTooltip('Stäng'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('butlery-select-cancel')));
+      await tester.pumpAndSettle();
 
-    expect(find.byTooltip('Stäng'), findsNothing);
-    expect(find.text('1 markerad'), findsNothing);
-  });
+      expect(find.byKey(const ValueKey('butlery-select-cancel')), findsNothing);
+      expect(find.text('1 markerad'), findsNothing);
+    },
+  );
 
   testWidgets('dismiss hides the row at once and deletes nothing yet', (
     tester,
