@@ -30,6 +30,9 @@ class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final void Function(Recipe)? onTap;
   final void Function(Recipe)? onLongPress;
+
+  /// Replaces the row chevron (list styles only).
+  final Widget? trailing;
   final bool showImage;
   final bool showMetadata;
   final bool showAllergenBadges;
@@ -59,6 +62,7 @@ class RecipeCard extends StatelessWidget {
     required this.recipe,
     this.onTap,
     this.onLongPress,
+    this.trailing,
     this.showImage = true,
     this.showMetadata = true,
     this.showAllergenBadges = false,
@@ -349,7 +353,9 @@ class RecipeCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (onTap != null) ...[
+            if (trailing != null)
+              trailing!
+            else if (onTap != null) ...[
               const SizedBox(width: AppDimensions.space8),
               const ButleryChevron(),
             ],

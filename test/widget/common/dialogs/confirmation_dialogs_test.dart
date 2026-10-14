@@ -1,9 +1,7 @@
-/// Widget tests for ConfirmationDialogs — the five public static helpers
-/// (standard confirmation, destructive confirmation, loading confirmation,
-/// list selection, text input).
+/// Widget tests for ConfirmationDialogs.
 ///
 /// Each test wires the dialog up via a Builder + button, so we can capture the
-/// `Future<bool|int|String?>` the helper returns and assert it resolves to the
+/// `Future<bool|String?>` the helper returns and assert it resolves to the
 /// expected sentinel after the user taps confirm/cancel.
 library;
 
@@ -24,16 +22,6 @@ Widget _wrap(Widget child) => MaterialApp(
   locale: const Locale('sv'),
   home: Scaffold(body: child),
 );
-
-/// Gives the tester a generous logical surface so dialogs that contain
-/// scroll viewports (showListSelectionDialog) and intrinsic-width-incompatible
-/// children don't fail the AlertDialog intrinsic-dimension dance.
-void _useLargeSurface(WidgetTester tester) {
-  tester.view.devicePixelRatio = 1.0;
-  tester.view.physicalSize = const Size(1200, 1800);
-  addTearDown(tester.view.resetPhysicalSize);
-  addTearDown(tester.view.resetDevicePixelRatio);
-}
 
 /// Builds a trigger button that, when tapped, calls [openDialog] with the
 /// surrounding BuildContext. The returned future is exposed so the test can
@@ -391,181 +379,6 @@ void main() {
 
       expect(result, isFalse);
     });
-  });
-
-  group('showListSelectionDialog', () {
-    // SKIP rationale (applies to every test in this group): the production
-    // helper puts a ListView (a lazy viewport) inside AlertDialog's content
-    // tree. AlertDialog wraps its content in IntrinsicWidth, which forces
-    // intrinsic-dimension queries that RenderShrinkWrappingViewport refuses
-    // to answer. In real use the dialog renders fine because real screen
-    // constraints short-circuit the intrinsic pass, but flutter_test always
-    // walks the intrinsic phase. The fix belongs in the production widget
-    // (e.g. wrap the ListView in a SizedBox.fromSize with a finite width),
-    // which is out of scope for this test file. We instead assert the
-    // helper's surface API (signature + future-of-int? return type) at
-    // compile time below and rely on integration coverage for the runtime
-    // behaviour.
-    test('compile-time API surface (return type stays Future<int?>)', () {
-      // ignore: unnecessary_type_check
-      assert(ConfirmationDialogs.showListSelectionDialog is Function);
-    });
-
-    testWidgets(
-      'renders title, optional message, and one tile per item',
-      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-      skip: true,
-      (tester) async {
-        _useLargeSurface(tester);
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<int?>(
-              openDialog: (ctx) =>
-                  ConfirmationDialogs.showListSelectionDialog<String>(
-                    ctx,
-                    title: 'Välj en',
-                    message: 'Plocka ett alternativ',
-                    items: const ['Alfa', 'Beta', 'Gamma'],
-                    itemBuilder: (s) => s,
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Show'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Välj en'), findsOneWidget);
-        expect(find.text('Plocka ett alternativ'), findsOneWidget);
-        expect(find.text('Alfa'), findsOneWidget);
-        expect(find.text('Beta'), findsOneWidget);
-        expect(find.text('Gamma'), findsOneWidget);
-        expect(find.byType(ListTile), findsNWidgets(3));
-      },
-    );
-
-    testWidgets(
-      'itemBuilder controls the visible text per item',
-      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-      skip: true,
-      (tester) async {
-        _useLargeSurface(tester);
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<int?>(
-              openDialog: (ctx) =>
-                  ConfirmationDialogs.showListSelectionDialog<int>(
-                    ctx,
-                    title: 'Pick',
-                    items: const [1, 2, 3],
-                    itemBuilder: (n) => 'Item #$n',
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Show'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Item #1'), findsOneWidget);
-        expect(find.text('Item #2'), findsOneWidget);
-        expect(find.text('Item #3'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'tapping a tile resolves the future with its index',
-      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-      skip: true,
-      (tester) async {
-        _useLargeSurface(tester);
-        int? result;
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<int?>(
-              openDialog: (ctx) =>
-                  ConfirmationDialogs.showListSelectionDialog<String>(
-                    ctx,
-                    title: 'Pick',
-                    items: const ['Alfa', 'Beta', 'Gamma'],
-                    itemBuilder: (s) => s,
-                  ),
-              onResult: (v) => result = v,
-            ),
-          ),
-        );
-        await tester.tap(find.text('Show'));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Beta'));
-        await tester.pumpAndSettle();
-
-        expect(result, 1);
-      },
-    );
-
-    testWidgets(
-      'cancel button resolves the future with null',
-      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-      skip: true,
-      (tester) async {
-        _useLargeSurface(tester);
-        int? result = -1;
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<int?>(
-              openDialog: (ctx) =>
-                  ConfirmationDialogs.showListSelectionDialog<String>(
-                    ctx,
-                    title: 'Pick',
-                    items: const ['A'],
-                    itemBuilder: (s) => s,
-                    cancelText: 'Avbryt',
-                  ),
-              onResult: (v) => result = v,
-            ),
-          ),
-        );
-        await tester.tap(find.text('Show'));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Avbryt'));
-        await tester.pumpAndSettle();
-
-        expect(result, isNull);
-      },
-    );
-
-    testWidgets(
-      'omitting message hides the message paragraph',
-      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-      skip: true,
-      (tester) async {
-        _useLargeSurface(tester);
-        await tester.pumpWidget(
-          _wrap(
-            _triggerButton<int?>(
-              openDialog: (ctx) =>
-                  ConfirmationDialogs.showListSelectionDialog<String>(
-                    ctx,
-                    title: 'NoMsg',
-                    items: const ['A'],
-                    itemBuilder: (s) => s,
-                  ),
-              onResult: (_) {},
-            ),
-          ),
-        );
-        await tester.tap(find.text('Show'));
-        await tester.pumpAndSettle();
-
-        // Title still there, but no extra paragraph above the list.
-        expect(find.text('NoMsg'), findsOneWidget);
-        // Only the title + the single tile carry visible text widgets in the
-        // dialog content area.
-        expect(find.text('A'), findsOneWidget);
-      },
-    );
   });
 
   group('showTextInputDialog', () {

@@ -65,7 +65,7 @@ class HemEmptyState extends StatelessWidget {
       key: const ValueKey('hem-empty-state'),
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.space24,
-        AppDimensions.space24 - 2,
+        AppDimensions.space24,
         AppDimensions.space24,
         AppDimensions.space24,
       ),
@@ -76,10 +76,10 @@ class HemEmptyState extends StatelessWidget {
           // #CCD1C2 light, rgba(245,244,237,.18) dark; tokens.json:124-127).
           Container(
             padding: const EdgeInsets.fromLTRB(
-              AppDimensions.space16 + 4,
-              AppDimensions.space24 - 2,
-              AppDimensions.space16 + 4,
-              AppDimensions.space24 - 2,
+              AppDimensions.space24,
+              AppDimensions.space24,
+              AppDimensions.space24,
+              AppDimensions.space24,
             ),
             decoration: BoxDecoration(
               border: Border.all(color: cs.outlineVariant),
@@ -119,7 +119,7 @@ class HemEmptyState extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.space16 + 4),
+          const SizedBox(height: AppDimensions.space24),
           Text(
             l10n.hemEmptyShortcuts.toUpperCase(),
             semanticsLabel: l10n.hemEmptyShortcuts,
@@ -136,11 +136,11 @@ class HemEmptyState extends StatelessWidget {
               body: shortcut.body,
               icon: shortcut.icon,
             ),
-          const SizedBox(height: AppDimensions.space16 + 4),
+          const SizedBox(height: AppDimensions.space24),
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space12,
-              vertical: AppDimensions.space8 + AppDimensions.space4,
+              vertical: AppDimensions.space12,
             ),
             decoration: BoxDecoration(
               color: cs.primaryContainer,
@@ -212,7 +212,7 @@ class _ShortcutRow extends StatelessWidget {
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.space8 + 4),
+                const SizedBox(width: AppDimensions.space12),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

@@ -145,7 +145,10 @@ class _IngredientSearchContent extends StatelessWidget {
     if (vm.matchResults.isEmpty) {
       return StateWidget.empty(
         title: l10n.ingredientSearchNoResults,
+        subtitle: l10n.ingredientSearchNoResultsHint,
         icon: ButleryIcons.searchOff,
+        actionLabel: l10n.commonClearAll,
+        onAction: vm.clearIngredients,
       );
     }
 

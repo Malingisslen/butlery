@@ -379,7 +379,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
               child: Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(
                   side,
-                  AppDimensions.space8 + AppDimensions.space4,
+                  AppDimensions.space12,
                   side,
                   AppDimensions.space16,
                 ),

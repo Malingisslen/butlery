@@ -75,7 +75,10 @@ void main() {
     when(() => viewModel.pooledStats).thenReturn(const {});
     // P5-U31: the kebab's "Markera alla" is a toggle that counts the list.
     when(() => viewModel.allSelected).thenReturn(false);
-    when(() => viewModel.recipes).thenReturn([recipe(), recipe(), recipe()]);
+    final stubbed = [recipe(), recipe(), recipe()];
+    when(() => viewModel.recipes).thenReturn(stubbed);
+    when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+    when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
   });
 
   group('selection bar', () {

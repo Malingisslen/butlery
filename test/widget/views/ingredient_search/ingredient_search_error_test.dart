@@ -130,4 +130,45 @@ void main() {
       ),
     ).called(2);
   });
+
+  testWidgets('an empty result says what to try and Rensa alla starts over', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(420, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    when(
+      () => match.matchRecipesWithNormalization(
+        selectedIngredientIds: any(named: 'selectedIngredientIds'),
+        recipes: any(named: 'recipes'),
+      ),
+    ).thenAnswer((_) async => const <IngredientMatchResult>[]);
+
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: const IngredientSearchView(),
+      ),
+    );
+    vm.addIngredient(
+      const IngredientData(
+        id: 'chicken',
+        swedish: 'kyckling',
+        english: 'chicken',
+        group: 'other',
+        properties: {},
+      ),
+    );
+    await vm.performSearch();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text(sv.ingredientSearchNoResults), findsOneWidget);
+    expect(find.text(sv.ingredientSearchNoResultsHint), findsOneWidget);
+
+    await tester.tap(find.text(sv.commonClearAll));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(vm.selectedIngredients, isEmpty);
+    expect(find.text(sv.ingredientSearchNoResults), findsNothing);
+  });
 }

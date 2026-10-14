@@ -9133,6 +9133,7 @@
   "ingredientSearchChip": "By ingredients",
   "ingredientSearchEmpty": "Add ingredients to find recipes",
   "ingredientSearchNoResults": "No recipes match your ingredients",
+  "ingredientSearchNoResultsHint": "Remove an ingredient or try fewer.",
   "ingredientSearchError": "Could not search recipes",
   "ingredientSearchResultCount": "{count, plural, =1{1 recipe matches} other{{count} recipes match}}",
   "@ingredientSearchResultCount": {

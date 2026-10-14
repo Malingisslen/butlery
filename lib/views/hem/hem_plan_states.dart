@@ -63,7 +63,7 @@ class _HemPlanLoadingState extends State<HemPlanLoading> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.space24,
-        AppDimensions.space16 + 2,
+        AppDimensions.space16,
         AppDimensions.space24,
         0,
       ),
@@ -72,7 +72,7 @@ class _HemPlanLoadingState extends State<HemPlanLoading> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Wrap(
-            spacing: AppDimensions.space8 + 2,
+            spacing: AppDimensions.space8,
             runSpacing: AppDimensions.space4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
@@ -140,7 +140,7 @@ class HemPlanError extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.space24,
-        AppDimensions.space16 + 2,
+        AppDimensions.space16,
         AppDimensions.space24,
         0,
       ),

@@ -60,8 +60,6 @@ class MinaReceptDiscoveryShelves extends StatelessWidget {
             return SeasonalHeroHeader(
               month: month,
               matchCount: matches.length,
-              onTap: () =>
-                  queryVm.applySeasonalFilter(ingredients: month.ingredients),
             );
           },
         ),

@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/widgets/import/voice_section_card.dart';
 
 /// "Tala in recept" — guided voice dictation import (voice plan roadmap #2).
@@ -200,64 +201,67 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
       ),
     ];
 
-    return ButleryPage.undersida(
-      title: context.l10n.voiceImportTitle,
-      body: ListView(
-        padding: AppDimensions.responsiveContentPadding(context),
-        children: [
-          Text(
-            context.l10n.voiceImportIntro,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          for (final s in sections)
-            VoiceSectionCard(
-              key: ValueKey('voice-section-${s.section.name}'),
-              index: s.section.index + 1,
-              title: s.title,
-              prompt: s.prompt,
-              state: vm.stateOf(s.section),
-              isDone: vm.isDone(s.section),
-              enabled: !vm.hasActiveCapture && !vm.isImporting,
-              controller: _controllers[s.section]!,
-              multiline: s.multiline,
-              onMicTap: () => _onMicTap(s.section),
-              onChanged: (v) => vm.updateText(s.section, v),
-            ),
-        ],
-      ),
-      bottomNavigationBar: BottomActionContainer(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return UnsavedChangesGuard(
+      isDirty: vm.hasUnsavedContent && !vm.isImporting,
+      child: ButleryPage.undersida(
+        title: context.l10n.voiceImportTitle,
+        body: ListView(
+          padding: AppDimensions.responsiveContentPadding(context),
           children: [
-            Semantics(
-              identifier: 'btn-voice-import-submit',
-              button: true,
-              enabled: vm.canImport,
-              label: context.l10n.voiceImportSubmit,
-              child: ActionButtons.primaryButton(
-                context,
-                label: context.l10n.voiceImportSubmit,
-                onPressed: vm.canImport ? _onImport : null,
-                isLoading: vm.isImporting,
-                loadingText: context.l10n.voiceImportImporting,
-                isExpanded: true,
+            Text(
+              context.l10n.voiceImportIntro,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
               ),
             ),
-            if (!vm.canImport && !vm.isImporting)
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.space8),
-                child: Text(
-                  context.l10n.voiceImportSubmitHint,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
+            for (final s in sections)
+              VoiceSectionCard(
+                key: ValueKey('voice-section-${s.section.name}'),
+                index: s.section.index + 1,
+                title: s.title,
+                prompt: s.prompt,
+                state: vm.stateOf(s.section),
+                isDone: vm.isDone(s.section),
+                enabled: !vm.hasActiveCapture && !vm.isImporting,
+                controller: _controllers[s.section]!,
+                multiline: s.multiline,
+                onMicTap: () => _onMicTap(s.section),
+                onChanged: (v) => vm.updateText(s.section, v),
               ),
           ],
+        ),
+        bottomNavigationBar: BottomActionContainer(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Semantics(
+                identifier: 'btn-voice-import-submit',
+                button: true,
+                enabled: vm.canImport,
+                label: context.l10n.voiceImportSubmit,
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.voiceImportSubmit,
+                  onPressed: vm.canImport ? _onImport : null,
+                  isLoading: vm.isImporting,
+                  loadingText: context.l10n.voiceImportImporting,
+                  isExpanded: true,
+                ),
+              ),
+              if (!vm.canImport && !vm.isImporting)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.space8),
+                  child: Text(
+                    context.l10n.voiceImportSubmitHint,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -338,6 +338,35 @@ void main() {
       );
     });
 
+    // The no-results state keeps the library extras (presence, cooking card,
+    // quick chips) above it, in the scrolling page instead of the pinned header.
+    testWidgets('leading slivers sit between the header and the body', (
+      tester,
+    ) async {
+      const extra = ValueKey('extra');
+      const short = ValueKey('short');
+      await pumpPinned(
+        tester,
+        body: HemLibraryScroll.boxBody(
+          const SizedBox(key: short, height: 100, child: Text('Inga träffar')),
+          leading: const [
+            SliverToBoxAdapter(child: SizedBox(key: extra, height: 60)),
+          ],
+        ),
+      );
+
+      expect(
+        tester.getBottomLeft(find.byKey(pinned)).dy,
+        lessThanOrEqualTo(
+          tester.getTopLeft(find.byKey(extra)).dy,
+        ),
+      );
+      expect(
+        tester.getTopLeft(find.byKey(short)).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(find.byKey(extra)).dy),
+      );
+    });
+
     testWidgets('is painted in the page colour, so recipes do not show '
         'through it', (tester) async {
       late Color pageColour;

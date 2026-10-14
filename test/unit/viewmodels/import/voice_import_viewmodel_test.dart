@@ -7,6 +7,8 @@
 /// the ASSEMBLED canonical text to the voice import path.
 library;
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -150,6 +152,26 @@ void main() {
     });
   });
 
+  group('hasUnsavedContent', () {
+    test('a fresh view model has nothing to lose', () {
+      expect(vm.hasUnsavedContent, isFalse);
+    });
+
+    test('typed text counts, whitespace alone does not', () {
+      vm.updateText(VoiceImportSection.title, '   ');
+      expect(vm.hasUnsavedContent, isFalse);
+
+      vm.updateText(VoiceImportSection.title, 'Pannkakor');
+      expect(vm.hasUnsavedContent, isTrue);
+    });
+
+    test('a running capture counts even with no text yet', () async {
+      await vm.startRecording(VoiceImportSection.steps);
+
+      expect(vm.hasUnsavedContent, isTrue);
+    });
+  });
+
   group('canImport + importRecipe', () {
     test('unlocks only when all three sections have text', () {
       expect(vm.canImport, isFalse);
@@ -193,6 +215,23 @@ void main() {
       expect(sent, contains('tre ägg\ntvå deciliter mjölk'));
       expect(sent, contains('Gör så här:'));
       expect(sent, contains('Vispa.\nStek i smör.'));
+    });
+
+    test('isImporting stays true until the import has answered', () async {
+      final answer = Completer<ImportManagerResult>();
+      when(
+        () => importManager.importVoiceTranscript(any()),
+      ).thenAnswer((_) => answer.future);
+      vm.updateText(VoiceImportSection.title, 'Pannkakor');
+      vm.updateText(VoiceImportSection.ingredients, 'tre ägg');
+      vm.updateText(VoiceImportSection.steps, 'Vispa.');
+
+      final pending = vm.importRecipe();
+      expect(vm.isImporting, isTrue);
+
+      answer.complete(ImportManagerResult.failure('stub'));
+      await pending;
+      expect(vm.isImporting, isFalse);
     });
 
     test('a failed import surfaces errorMessage and re-enables', () async {

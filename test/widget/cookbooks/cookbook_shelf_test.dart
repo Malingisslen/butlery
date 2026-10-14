@@ -138,6 +138,24 @@ void main() {
       expect(find.text(l10n.cookbookShelfEmpty), findsNothing);
       expect(find.text(l10n.cookbookNoTags), findsNothing);
     });
+
+    testWidgets('the retry button on the load error loads the shelf', (
+      tester,
+    ) async {
+      await pumpShelf(tester);
+      tagStream.addError(Exception('offline'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.commonRetry));
+      await tester.pump();
+      tagStream.add([soppor]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.cookbookLoadFailed), findsNothing);
+      expect(find.text('Soppor'), findsWidgets);
+      // start() subscribes once; only retryLoad subscribes again.
+      verify(() => service.watchTags()).called(2);
+    });
   });
 
   group('no cookbooks yet', () {

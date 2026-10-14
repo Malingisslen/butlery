@@ -114,7 +114,10 @@ void main() {
               .build();
       when(() => viewModel.selectedCount).thenReturn(1);
       when(() => viewModel.selectedRecipes).thenReturn(<Recipe>[recipe]);
-      when(() => viewModel.recipes).thenReturn(<Recipe>[recipe, recipe]);
+      final stubbed = <Recipe>[recipe, recipe];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
       when(() => viewModel.allSelected).thenReturn(false);
 
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(

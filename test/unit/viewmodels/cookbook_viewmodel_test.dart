@@ -75,6 +75,45 @@ void main() {
     );
   });
 
+  group('load failure', () {
+    test('a failed read sets loadFailed, retryLoad starts it again', () async {
+      vm.start();
+      tagStream.addError(Exception('boom'));
+      await pumpEventQueue();
+
+      expect(vm.loadFailed, isTrue);
+      expect(vm.error, isNotNull);
+
+      vm.retryLoad();
+      expect(vm.loadFailed, isFalse);
+      expect(vm.error, isNull);
+
+      tagStream.add([
+        cookbookTag(id: 'book', name: 'Bok', cookbook: const CookbookDetails()),
+      ]);
+      await pumpEventQueue();
+      expect(vm.tagsLoaded, isTrue);
+      expect(vm.cookbooks.map((t) => t.id), ['book']);
+    });
+
+    test('a failed write is not a failed load', () async {
+      when(() => service.save(any(), any())).thenAnswer((_) async => false);
+      final tag = cookbookTag(id: 'plain', name: 'Vanlig');
+      await emitTags([tag]);
+
+      await vm.save(tag, const CookbookDetails());
+
+      expect(vm.error, isNotNull);
+      expect(vm.loadFailed, isFalse);
+    });
+
+    test('retryLoad on a disposed view model starts nothing', () {
+      final other = CookbookViewModel(service: service)..dispose();
+      other.retryLoad();
+      verifyNever(() => service.watchTags());
+    });
+  });
+
   group('move', () {
     late PersonalTag tag;
 

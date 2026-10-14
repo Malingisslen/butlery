@@ -123,7 +123,7 @@ List<Widget> buildMinaReceptSelectEntry(
   RecipeListViewModel viewModel, {
   Color? foregroundColor,
 }) {
-  if (!ButlerySelectButton.shownFor(viewModel.recipes.length)) {
+  if (!ButlerySelectButton.shownFor(viewModel.matchingCount)) {
     return const [];
   }
   return [
@@ -206,7 +206,7 @@ class _BulkMoreMenu extends StatelessWidget {
                 allSelected
                     ? menuContext.l10n.commonDeselectAll
                     : menuContext.l10n.selectionSelectAllCount(
-                        viewModel.recipes.length,
+                        viewModel.matchingCount,
                       ),
                 style: const TextStyle(
                   fontFeatures: [FontFeature.tabularFigures()],

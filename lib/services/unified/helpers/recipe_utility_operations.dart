@@ -72,12 +72,11 @@ class RecipeUtilityOperations {
       setLoading(true);
       notifyListeners();
 
-      // Clear local data
-      recipes.clear();
-
-      // Reload from cache
+      // Load first, swap after.
       final cachedRecipes = await cacheModule.initializeCache();
-      recipes.addAll(cachedRecipes);
+      recipes
+        ..clear()
+        ..addAll(cachedRecipes);
 
       // Restart Firebase sync (force: bypasses BUT-382 dedup guard)
       await cacheModule.stopFirebaseSync();

@@ -25,6 +25,28 @@ void main() {
       expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
     });
 
+    testWidgets('stops after three visits', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      for (var i = 0; i < SwipeHintBanner.maxShows; i++) {
+        await tester.pumpWidget(Container());
+        await tester.pumpWidget(app());
+        await tester.pumpAndSettle();
+        expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
+      }
+      await tester.pumpWidget(Container());
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
+    });
+
+    testWidgets('markUsed ends the hint for good', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await SwipeHintBanner.markUsed(SwipeHintBanner.recipeSwipeSeenKey);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(find.byIcon(ButleryIcons.hand), findsNothing);
+    });
+
     testWidgets('does not render once the seen flag is set', (tester) async {
       SharedPreferences.setMockInitialValues({
         SwipeHintBanner.recipeSwipeSeenKey: true,
