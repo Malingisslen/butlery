@@ -303,6 +303,16 @@ void main() {
         );
         expect(yearsMember.memberSinceText, equals('Medlem i 2 år'));
       });
+
+      test(
+        'never shows a negative age when joinedAt is ahead of the clock',
+        () {
+          final ahead = testProfile.copyWith(
+            joinedAt: DateTime.now().add(const Duration(days: 18)),
+          );
+          expect(ahead.memberSinceText, equals('Medlem i 0 dagar'));
+        },
+      );
     });
 
     group('FCM Token Management', () {
