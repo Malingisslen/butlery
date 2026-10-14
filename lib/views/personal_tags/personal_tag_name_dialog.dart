@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -102,7 +103,11 @@ class _PersonalTagNameDialogState extends State<PersonalTagNameDialog> {
             ),
             if (_error != null) ...[
               const SizedBox(height: AppDimensions.space8),
-              FieldErrorLine(_error!),
+              Semantics(
+                container: true,
+                role: SemanticsRole.alert,
+                child: FieldErrorLine(_error!),
+              ),
             ],
           ],
         ),

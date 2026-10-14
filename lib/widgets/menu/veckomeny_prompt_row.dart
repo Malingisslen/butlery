@@ -21,7 +21,7 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 const double _kRoomForClear = 200;
 
 /// Narrower than this and the button goes under the field.
-const double _kRoomForField = 140;
+const double _kRoomForField = 170;
 
 class VeckomenyPromptRow extends StatelessWidget {
   const VeckomenyPromptRow({

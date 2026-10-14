@@ -158,7 +158,7 @@ void main() {
       expect(find.text(_sv.commonClose), findsOneWidget);
     });
 
-    testWidgets('a refused tag name is an alert with Stäng, never OK', (
+    testWidgets('a refused tag name is an alert in the dialog, never OK', (
       tester,
     ) async {
       final vm = _TagDialogVm(validation: _sv.tagAlreadyExists);
@@ -186,7 +186,7 @@ void main() {
 
       expect(find.text(_sv.tagAlreadyExists), findsOneWidget);
       expect(_alertNode(), findsOneWidget);
-      expect(find.text(_sv.commonClose), findsOneWidget);
+      expect(find.text(_sv.commonCancel), findsOneWidget);
       expect(find.text('OK'), findsNothing);
     });
   });
