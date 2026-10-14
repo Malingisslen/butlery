@@ -7,7 +7,7 @@ import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
@@ -182,9 +182,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent> {
                             setState(() => _currentTabIndex = tab),
                       ),
                     ),
-                    IconButton(
-                      icon: const ButleryIcon(ButleryIcons.search),
-                      tooltip: context.l10n.socialFindFriends,
+                    AppIconButton(
+                      icon: ButleryIcons.search,
+                      semanticLabel: context.l10n.socialFindFriends,
                       onPressed: () => _openFindFriends(viewModel),
                     ),
                   ],

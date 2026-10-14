@@ -1,6 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_search_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -33,14 +34,12 @@ class SharedContentSearchBar {
             onChanged: viewModel.performUnifiedSearch,
             onClear: viewModel.clearAllSearch,
             // Filter toggle for showing/hiding imported content
-            trailing: IconButton(
-              icon: ButleryIcon(
-                ButleryIcons.filter,
-                color: viewModel.showImported
-                    ? Theme.of(context).colorScheme.onSurface
-                    : null,
-              ),
-              tooltip: viewModel.showImported
+            trailing: AppIconButton(
+              icon: ButleryIcons.filter,
+              color: viewModel.showImported
+                  ? Theme.of(context).colorScheme.onSurface
+                  : null,
+              semanticLabel: viewModel.showImported
                   ? context.l10n.sharedHideImported
                   : context.l10n.sharedShowImported,
               onPressed: () => viewModel.toggleShowImported(),

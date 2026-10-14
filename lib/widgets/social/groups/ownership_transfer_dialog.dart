@@ -2,7 +2,9 @@
 
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -28,7 +30,7 @@ class OwnershipTransferDialog extends StatelessWidget {
     required FriendCategory group,
     required List<UserProfile> availableMembers,
   }) async {
-    return await showDialog<UserProfile>(
+    return await showButleryDialog<UserProfile>(
       context: context,
       barrierDismissible: false, // Force user to make a choice
       builder: (context) => OwnershipTransferDialog(
@@ -40,8 +42,9 @@ class OwnershipTransferDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.groupTransferOwnership),
+    return ButleryDialog(
+      title: context.l10n.groupTransferOwnership,
+      scrollable: false,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,12 +60,13 @@ class OwnershipTransferDialog extends StatelessWidget {
           const SizedBox(height: AppDimensions.space8),
           // List of available members
           ...availableMembers.map(
-            (member) => ListTile(
+            (member) => ButleryItemRow(
               leading: AvatarCircle(
                 imageUrl: member.avatarUrl,
                 displayName: member.displayName,
               ),
-              title: Text(member.displayName),
+              title: member.displayName,
+              padded: false,
               onTap: () => Navigator.pop(context, member),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -200,7 +201,6 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     FamilyRatingEntryViewModel vm,
     AppLocalizations l10n,
   ) {
-    final cs = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -224,13 +224,9 @@ class _FamilyRatingEntryContent extends StatelessWidget {
             const SizedBox(height: AppDimensions.space8),
             SizedBox(
               width: double.infinity,
-              child: TextButton(
+              child: ButleryTextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size.fromHeight(40),
-                  foregroundColor: cs.onSurfaceVariant,
-                ),
-                child: Text(l10n.whoAteSkip),
+                label: l10n.whoAteSkip,
               ),
             ),
           ],

@@ -5,7 +5,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
@@ -144,7 +145,7 @@ class _UserProfileEditViewContentState
     final viewModel = context.read<UserProfileViewModel>();
 
     AppLogger.debug('🎨 VIEW: Showing loading dialog');
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       // The plate line with what is happening, never a spinner
@@ -240,10 +241,10 @@ class _UserProfileEditViewContentState
         showTabBar: false,
         actions: [
           if (viewModel.hasError)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.refreshCw),
+            AppIconButton(
+              icon: ButleryIcons.refreshCw,
               onPressed: viewModel.clearError,
-              tooltip: context.l10n.commonClearError,
+              semanticLabel: context.l10n.commonClearError,
             ),
         ],
         bottomNavigationBar: ProfileSaveBar(

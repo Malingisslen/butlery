@@ -16,7 +16,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -27,8 +26,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/social/public_profile_friend_button.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
@@ -205,24 +203,17 @@ class _MoreActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<String>(
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        tooltip: context.l10n.bulkMoreActions,
-        onSelected: (_) => ReportContentDialog.show(
-          context: context,
-          contentType: ContentType.profile,
-          contentId: profile.uid,
-          contentOwnerId: profile.uid,
-        ),
-        itemBuilder: (context) => [
-          ButleryMenuItem(
-            value: 'report',
-            child: Text(context.l10n.reportContent),
-          ),
-        ],
+    return ButleryMenu<String>(
+      semanticLabel: context.l10n.bulkMoreActions,
+      onSelected: (_) => ReportContentDialog.show(
+        context: context,
+        contentType: ContentType.profile,
+        contentId: profile.uid,
+        contentOwnerId: profile.uid,
       ),
+      choices: [
+        ButleryMenuChoice(value: 'report', label: context.l10n.reportContent),
+      ],
     );
   }
 }

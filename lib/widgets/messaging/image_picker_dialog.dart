@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -71,14 +72,11 @@ class ImagePickerDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.space32),
 
             // Cancel button
-            OutlinedButton(
+            ActionButtons.outlinedButton(
+              context,
+              label: context.l10n.commonCancel,
+              isExpanded: true,
               onPressed: () => Navigator.pop(context),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.space12,
-                ),
-              ),
-              child: Text(context.l10n.commonCancel),
             ),
           ],
         ),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
@@ -165,35 +168,33 @@ class InvitationDisplays {
     EdgeInsets? padding,
   }) {
     // Simple implementation since SocialFacade doesn't have this method
-    return Card(
-      child: Container(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          children: [
-            targetCard(target: target, onTap: onTap, selected: selected),
-            if (showActions)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  if (onEdit != null)
-                    TextButton(
-                      onPressed: onEdit,
-                      child: Text(context.l10n.commonEdit),
-                    ),
-                  if (onViewMembers != null)
-                    TextButton(
-                      onPressed: onViewMembers,
-                      child: Text(context.l10n.groupViewMembers),
-                    ),
-                  if (onDelete != null)
-                    TextButton(
-                      onPressed: onDelete,
-                      child: Text(context.l10n.commonDelete),
-                    ),
-                ],
-              ),
-          ],
-        ),
+    return StyledCard(
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        children: [
+          targetCard(target: target, onTap: onTap, selected: selected),
+          if (showActions)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (onEdit != null)
+                  ButleryTextButton(
+                    onPressed: onEdit,
+                    label: context.l10n.commonEdit,
+                  ),
+                if (onViewMembers != null)
+                  ButleryTextButton(
+                    onPressed: onViewMembers,
+                    label: context.l10n.groupViewMembers,
+                  ),
+                if (onDelete != null)
+                  ButleryTextButton(
+                    onPressed: onDelete,
+                    label: context.l10n.commonDelete,
+                  ),
+              ],
+            ),
+        ],
       ),
     );
   }
@@ -217,12 +218,9 @@ class InvitationDisplays {
     return Column(
       children: [
         ...displayTargets.map(
-          (target) => ListTile(
-            dense: true,
-            leading: showIcons
-                ? ButleryIcon(_getTargetIcon(target.type))
-                : null,
-            title: Text(target.displayName),
+          (target) => ButleryItemRow(
+            leadingIcon: showIcons ? _getTargetIcon(target.type) : null,
+            title: target.displayName,
             onTap: onTargetTap != null ? () => onTargetTap(target) : null,
           ),
         ),

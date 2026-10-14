@@ -1,6 +1,7 @@
 /// Member picker for blocking someone from inside a group conversation.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -32,7 +33,7 @@ class BlockGroupMemberDialog extends StatefulWidget {
     required List<String> participantIds,
     required FriendsViewModel friendsViewModel,
   }) {
-    return showDialog<UserProfile>(
+    return showButleryDialog<UserProfile>(
       context: context,
       builder: (_) => BlockGroupMemberDialog(
         participantIds: participantIds,
@@ -99,8 +100,9 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.chatBlockGroupMemberTitle),
+    return ButleryDialog(
+      title: context.l10n.chatBlockGroupMemberTitle,
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         child: _buildContent(context),

@@ -1,7 +1,6 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,7 +13,10 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -50,46 +52,25 @@ class CollaborativeShoppingActions extends BaseActionHandler
   ];
 
   Widget _buildShareAction(BuildContext context) {
-    return IconButton(
-      icon: const ButleryIcon(ButleryIcons.share2),
+    return AppIconButton(
+      icon: ButleryIcons.share2,
       onPressed: onShare,
-      tooltip: context.l10n.collaborativeShareList,
+      semanticLabel: context.l10n.collaborativeShareList,
     );
   }
 
   Widget _buildMenuActions(BuildContext context) {
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<String>(
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        onSelected: onMenuAction,
-        tooltip: context.l10n.collaborativeMoreActions,
-        itemBuilder: (context) => [
-          if (viewModel.canEdit)
-            _buildPopupMenuItem(
-              value: 'clear_completed',
-              icon: ButleryIcons.listX,
-              label: context.l10n.collaborativeClearCompleted,
-            ),
-        ],
-      ),
-    );
-  }
-
-  PopupMenuItem<String> _buildPopupMenuItem({
-    required String value,
-    required IconData icon,
-    required String label,
-  }) {
-    return ButleryMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          ButleryIcon(icon),
-          const SizedBox(width: AppDimensions.space8),
-          Text(label),
-        ],
-      ),
+    return ButleryMenu<String>(
+      semanticLabel: context.l10n.collaborativeMoreActions,
+      onSelected: onMenuAction,
+      choices: [
+        if (viewModel.canEdit)
+          ButleryMenuChoice(
+            value: 'clear_completed',
+            icon: ButleryIcons.listX,
+            label: context.l10n.collaborativeClearCompleted,
+          ),
+      ],
     );
   }
 
@@ -254,28 +235,31 @@ class CollaborativeShoppingActions extends BaseActionHandler
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: AppDimensions.space12),
-          ListTile(
-            leading: const ButleryIcon(ButleryIcons.link),
-            title: Text(context.l10n.collaborativeCopyLink),
-            subtitle: Text(context.l10n.collaborativeCopyLinkDescription),
+          ButleryItemRow(
+            padded: false,
+            leadingIcon: ButleryIcons.link,
+            title: context.l10n.collaborativeCopyLink,
+            subtitle: context.l10n.collaborativeCopyLinkDescription,
             onTap: () {
               Navigator.pop(context);
               _copyShareLink(context);
             },
           ),
-          ListTile(
-            leading: const ButleryIcon(ButleryIcons.messageSquare),
-            title: Text(context.l10n.collaborativeSendMessage),
-            subtitle: Text(context.l10n.collaborativeSendMessageDescription),
+          ButleryItemRow(
+            padded: false,
+            leadingIcon: ButleryIcons.messageSquare,
+            title: context.l10n.collaborativeSendMessage,
+            subtitle: context.l10n.collaborativeSendMessageDescription,
             onTap: () {
               Navigator.pop(context);
               _shareViaMessage(context);
             },
           ),
-          ListTile(
-            leading: const ButleryIcon(ButleryIcons.mail),
-            title: Text(context.l10n.collaborativeSendEmail),
-            subtitle: Text(context.l10n.collaborativeSendEmailDescription),
+          ButleryItemRow(
+            padded: false,
+            leadingIcon: ButleryIcons.mail,
+            title: context.l10n.collaborativeSendEmail,
+            subtitle: context.l10n.collaborativeSendEmailDescription,
             onTap: () {
               Navigator.pop(context);
               _shareViaEmail(context);
@@ -284,9 +268,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
           const SizedBox(height: AppDimensions.space12),
           SizedBox(
             width: double.infinity,
-            child: TextButton(
+            child: ButleryTextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.commonCancel),
+              label: context.l10n.commonCancel,
             ),
           ),
         ],

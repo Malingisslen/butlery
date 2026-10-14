@@ -3,6 +3,8 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
@@ -140,9 +142,9 @@ class FeedTab {
               style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            TextButton(
+            ButleryTextButton(
               onPressed: viewModel.loadMore,
-              child: Text(context.l10n.commonRetry),
+              label: context.l10n.commonRetry,
             ),
           ],
         ),
@@ -247,7 +249,7 @@ class FeedTab {
       ),
       child: Row(
         children: [
-          Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+          const Expanded(child: ButleryDivider()),
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
@@ -260,7 +262,7 @@ class FeedTab {
               ),
             ),
           ),
-          Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+          const Expanded(child: ButleryDivider()),
         ],
       ),
     );

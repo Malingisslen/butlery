@@ -4,14 +4,16 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Social group and friend category management components.
 class SocialGroupComponents {
@@ -172,21 +174,14 @@ class SocialGroupComponents {
             ? selectedCategories?.contains(category) ?? false
             : selectedCategory == category;
 
-        return ListTile(
-          title: Text(category.name),
+        return ButleryItemRow(
+          title: category.name,
           subtitle: showMemberCount
-              ? Text(
-                  context.l10n.socialMembersCount(0),
-                ) // FriendCategory doesn't have memberIds
-              : null,
-          leading: const ButleryIcon(ButleryIcons.users),
-          trailing: isSelected
-              ? ButleryIcon(
-                  ButleryIcons.check,
-                  color: context.modeColors.success,
-                )
-              : null,
+              ? context.l10n.socialMembersCount(0)
+              : null, // FriendCategory doesn't have memberIds
+          leadingIcon: ButleryIcons.users,
           selected: isSelected,
+          showCheck: true,
           onTap: () {
             if (allowMultiSelect && onMultiSelectChanged != null) {
               final currentSelection = List<FriendCategory>.from(
@@ -254,23 +249,24 @@ class SocialGroupComponents {
     IconData icon = ButleryIcons.plus,
     bool outlined = false,
   }) {
-    if (outlined) {
-      return OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: ButleryIcon(icon),
-        label: Builder(
-          builder: (context) => Text(text ?? context.l10n.socialAddCategory),
-        ),
-      );
-    } else {
-      return ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: ButleryIcon(icon),
-        label: Builder(
-          builder: (context) => Text(text ?? context.l10n.socialAddCategory),
-        ),
-      );
-    }
+    return Builder(
+      builder: (context) {
+        final label = text ?? context.l10n.socialAddCategory;
+        return outlined
+            ? ActionButtons.outlinedButton(
+                context,
+                onPressed: onPressed,
+                icon: icon,
+                label: label,
+              )
+            : ActionButtons.primaryButton(
+                context,
+                onPressed: onPressed,
+                icon: icon,
+                label: label,
+              );
+      },
+    );
   }
 
   /// Build category management toolbar
@@ -294,18 +290,18 @@ class SocialGroupComponents {
         const Spacer(),
         if (showFilter)
           Builder(
-            builder: (context) => IconButton(
+            builder: (context) => AppIconButton(
               onPressed: onFilterCategories,
-              icon: const ButleryIcon(ButleryIcons.filter),
-              tooltip: context.l10n.socialFilterCategories,
+              icon: ButleryIcons.filter,
+              semanticLabel: context.l10n.socialFilterCategories,
             ),
           ),
         if (showSort)
           Builder(
-            builder: (context) => IconButton(
+            builder: (context) => AppIconButton(
               onPressed: onSortCategories,
-              icon: const ButleryIcon(ButleryIcons.arrowUpDown),
-              tooltip: context.l10n.socialSortCategories,
+              icon: ButleryIcons.arrowUpDown,
+              semanticLabel: context.l10n.socialSortCategories,
             ),
           ),
       ],
@@ -327,37 +323,66 @@ class SocialGroupComponents {
         : 0.0;
     final largestCategory = categories.isNotEmpty ? categories.first : null;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.socialCategoryStatistics,
-              style: AppTextStyles.titleBold,
-            ),
-            const SizedBox(
-              height: (AppDimensions.space8 + AppDimensions.space4),
-            ),
-            Row(
-              children: [
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.socialCategoryStatistics,
+            style: AppTextStyles.titleBold,
+          ),
+          const SizedBox(
+            height: (AppDimensions.space8 + AppDimensions.space4),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: StatItemWidget(
+                  icon: ButleryIcons.grid,
+                  value: totalCategories.toString(),
+                  label: context.l10n.socialCategories,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  valueStyle: AppTextStyles.titleBold,
+                  labelStyle: AppTextStyles.labelSmall,
+                ),
+              ),
+              if (showTotalMembers)
                 Expanded(
                   child: StatItemWidget(
-                    icon: ButleryIcons.grid,
-                    value: totalCategories.toString(),
-                    label: context.l10n.socialCategories,
+                    icon: ButleryIcons.users,
+                    value: totalMembers.toString(),
+                    label: context.l10n.socialTotalMembers,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     valueStyle: AppTextStyles.titleBold,
                     labelStyle: AppTextStyles.labelSmall,
                   ),
                 ),
-                if (showTotalMembers)
+            ],
+          ),
+          if (showAverageSize || showLargestCategory) ...[
+            const SizedBox(
+              height: (AppDimensions.space8 + AppDimensions.space4),
+            ),
+            Row(
+              children: [
+                if (showAverageSize)
                   Expanded(
                     child: StatItemWidget(
-                      icon: ButleryIcons.users,
-                      value: totalMembers.toString(),
-                      label: context.l10n.socialTotalMembers,
+                      icon: ButleryIcons.barChart,
+                      value: averageSize.toStringAsFixed(1),
+                      label: context.l10n.socialAveragePerCategory,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      valueStyle: AppTextStyles.titleBold,
+                      labelStyle: AppTextStyles.labelSmall,
+                    ),
+                  ),
+                if (showLargestCategory && largestCategory != null)
+                  Expanded(
+                    child: StatItemWidget(
+                      icon: ButleryIcons.star,
+                      value: largestCategory.name,
+                      label: context.l10n.socialLargestCategory,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       valueStyle: AppTextStyles.titleBold,
                       labelStyle: AppTextStyles.labelSmall,
@@ -365,39 +390,8 @@ class SocialGroupComponents {
                   ),
               ],
             ),
-            if (showAverageSize || showLargestCategory) ...[
-              const SizedBox(
-                height: (AppDimensions.space8 + AppDimensions.space4),
-              ),
-              Row(
-                children: [
-                  if (showAverageSize)
-                    Expanded(
-                      child: StatItemWidget(
-                        icon: ButleryIcons.barChart,
-                        value: averageSize.toStringAsFixed(1),
-                        label: context.l10n.socialAveragePerCategory,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        valueStyle: AppTextStyles.titleBold,
-                        labelStyle: AppTextStyles.labelSmall,
-                      ),
-                    ),
-                  if (showLargestCategory && largestCategory != null)
-                    Expanded(
-                      child: StatItemWidget(
-                        icon: ButleryIcons.star,
-                        value: largestCategory.name,
-                        label: context.l10n.socialLargestCategory,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        valueStyle: AppTextStyles.titleBold,
-                        labelStyle: AppTextStyles.labelSmall,
-                      ),
-                    ),
-                ],
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
@@ -435,11 +429,10 @@ class SocialGroupComponents {
           ),
           if (onCreateFirst != null) ...[
             const SizedBox(height: AppDimensions.space24),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onCreateFirst,
-              child: Text(
-                createButtonText ?? context.l10n.socialCreateCategory,
-              ),
+              label: createButtonText ?? context.l10n.socialCreateCategory,
             ),
           ],
         ],
