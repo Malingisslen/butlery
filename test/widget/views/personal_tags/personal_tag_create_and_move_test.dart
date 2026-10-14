@@ -126,4 +126,54 @@ void main() {
       findsOneWidget,
     );
   });
+
+  Future<void> moveToGroup(
+    WidgetTester tester,
+    _GroupingViewModel vm,
+    PersonalTagGroup group,
+  ) async {
+    vm.setState(tags: [tag], groups: [group]);
+    await tester.pumpWidget(
+      ChangeNotifierProvider<PersonalTagViewModel>.value(
+        value: vm,
+        child: createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  PersonalTagDialogs.showMoveTagToGroupDialog(context, tag),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(group.name));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  testWidgets('a move into an existing group says it was moved', (
+    tester,
+  ) async {
+    final group = PersonalTagGroup.create(name: 'Middagar');
+    final vm = _GroupingViewModel([true]);
+    await moveToGroup(tester, vm, group);
+
+    expect(vm.moved.single, (tag.id, group.id));
+    expect(find.textContaining(sv.personalTagMoved), findsOneWidget);
+    expect(find.textContaining(sv.personalTagCouldNotMove), findsNothing);
+  });
+
+  testWidgets('a refused move says so instead of claiming it moved', (
+    tester,
+  ) async {
+    final group = PersonalTagGroup.create(name: 'Middagar');
+    final vm = _GroupingViewModel([false]);
+    await moveToGroup(tester, vm, group);
+
+    expect(find.textContaining(sv.personalTagCouldNotMove), findsOneWidget);
+    expect(find.textContaining(sv.personalTagMoved), findsNothing);
+  });
 }

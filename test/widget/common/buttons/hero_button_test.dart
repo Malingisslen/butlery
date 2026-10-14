@@ -96,6 +96,51 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('the busy line is cut to the button corners', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: HeroButton(label: 'Generera', busy: true, onPressed: () {}),
+      ),
+    );
+    await tester.pump();
+
+    final clip = tester.widget<ClipPath>(
+      find.ancestor(
+        of: find.byType(ButtonPlateLine),
+        matching: find.byType(ClipPath),
+      ),
+    );
+    final size = tester.getSize(find.byType(FilledButton));
+    final path = clip.clipper!.getClip(size);
+
+    expect(path.contains(Offset(0.5, size.height - 0.5)), isFalse);
+    expect(path.contains(Offset(size.width - 0.5, size.height - 0.5)), isFalse);
+    expect(path.contains(Offset(size.width / 2, size.height - 0.5)), isTrue);
+  });
+
+  testWidgets('the busy label stays centred in the button', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: SizedBox(
+          width: 320,
+          child: HeroButton(
+            label: 'Generera',
+            busy: true,
+            expand: true,
+            onPressed: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final button = tester.getRect(find.byType(FilledButton));
+    final label = tester.getCenter(find.text('Generera'));
+
+    expect((label.dx - button.center.dx).abs(), lessThan(1));
+    expect((label.dy - button.center.dy).abs(), lessThan(1));
+  });
+
   testWidgets('idle runs its action', (tester) async {
     var taps = 0;
     await tester.pumpWidget(

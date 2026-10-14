@@ -10603,6 +10603,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'The list was updated by someone else';
 
   @override
+  String shoppingListChangedQuantity(
+    String name,
+    String item,
+    String before,
+    String after,
+  ) {
+    return '$name changed $item: $before → $after';
+  }
+
+  @override
+  String shoppingListChangedItem(String name, String before, String after) {
+    return '$name changed $before → $after';
+  }
+
+  @override
+  String shoppingListAddedItem(String name, String item) {
+    return '$name added $item';
+  }
+
+  @override
+  String shoppingListRemovedItem(String name, String item) {
+    return '$name removed $item';
+  }
+
+  @override
+  String shoppingListBoughtItem(String name, String item) {
+    return '$name ticked off $item';
+  }
+
+  @override
+  String shoppingListUnboughtItem(String name, String item) {
+    return '$name unticked $item';
+  }
+
+  @override
+  String shoppingListMoreChanges(String summary, int count) {
+    return '$summary and $count more';
+  }
+
+  @override
   String unknownResourceType(String value) {
     return 'Unknown RealtimeResourceType: $value';
   }

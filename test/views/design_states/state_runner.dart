@@ -111,6 +111,7 @@ Future<List<Violation>> judgeState(WidgetTester tester, StateRun run) async {
           : shoppingConflictRule(
               localItem: host.conflictItems!.local,
               remoteItem: host.conflictItems!.remote,
+              byName: 'Per',
             ),
     _ => const <Violation>[],
   };

@@ -711,6 +711,37 @@ void main() {
         );
       });
 
+      test('says what changed when another user edits a quantity', () async {
+        final first = testShoppingList.items.first;
+
+        mockShoppingService.emitState(
+          ShoppingStateData(
+            lists: [
+              testShoppingList.copyWith(
+                items: [
+                  first.copyWith(amount: first.amount + 1),
+                  ...testShoppingList.items.skip(1),
+                ],
+                lastActivityAt: DateTime(2026, 9, 30, 12),
+                lastActivityByUserId: 'other-user',
+                lastActivityByDisplayName: 'Anna',
+              ),
+            ],
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          viewModel.updatedByNotice,
+          AppLocale.current.shoppingListChangedQuantity(
+            'Anna',
+            first.name,
+            first.quantityText,
+            first.copyWith(amount: first.amount + 1).quantityText,
+          ),
+        );
+      });
+
       test("shows nothing for the signed-in user's own update", () async {
         mockShoppingService.emitState(
           ShoppingStateData(

@@ -256,8 +256,8 @@ final shoppingHosts = <String, StateHost>{
       await tester.pump();
     },
   ),
-  // Produktregler.md:101: union of operations, and the banner "Listan
-  // uppdaterades av namn". Per adds a row while Malin has the list open.
+  // Produktregler: union of operations, and a banner saying what
+  // the other member did. Per adds a row while Malin has the list open.
   'inköpslista::CONFLICT': StateHost(
     conflictItems: (local: 'Röda linser', remote: 'Vetemjöl'),
     build: (ctx) async => _collaborativeView(ctx),

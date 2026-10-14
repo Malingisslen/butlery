@@ -997,4 +997,29 @@ void main() {
         verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
     expect(saved.quantity, 0.5);
   });
+
+  testWidgets('a set expiry date offers a Rensa control that clears it', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_43',
+      ingredientName: 'Yoghurt',
+      quantity: 1,
+      unit: 'st',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+      expiryDate: DateTime(2026, 9, 30),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    final clear = find.byTooltip('Rensa');
+    await tester.ensureVisible(clear);
+    expect(clear, findsOneWidget);
+
+    await tester.tap(clear);
+    await tester.pump();
+
+    expect(find.byTooltip('Rensa'), findsNothing);
+    expect(find.text('Inget utgångsdatum'), findsOneWidget);
+  });
 }

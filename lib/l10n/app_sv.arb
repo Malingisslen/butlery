@@ -6777,6 +6777,99 @@
   "@shoppingListUpdatedByUnknown": {
     "description": "BUT-2187: same notice when the updater's display name is missing."
   },
+  "shoppingListChangedQuantity": "{name} ändrade {item}: {before} → {after}",
+  "@shoppingListChangedQuantity": {
+    "description": "A53: change line on a shared list when a quantity changed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListChangedItem": "{name} ändrade {before} → {after}",
+  "@shoppingListChangedItem": {
+    "description": "A53: change line when an item's name changed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListAddedItem": "{name} lade till {item}",
+  "@shoppingListAddedItem": {
+    "description": "A53: change line when an item was added.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListRemovedItem": "{name} tog bort {item}",
+  "@shoppingListRemovedItem": {
+    "description": "A53: change line when an item was removed.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListBoughtItem": "{name} bockade av {item}",
+  "@shoppingListBoughtItem": {
+    "description": "A53: change line when an item was ticked off.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListUnboughtItem": "{name} bockade ur {item}",
+  "@shoppingListUnboughtItem": {
+    "description": "A53: change line when an item was put back on the list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListMoreChanges": "{summary} och {count} till",
+  "@shoppingListMoreChanges": {
+    "description": "A53: appended when more than one item changed.",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "unknownResourceType": "Okänd RealtimeResourceType: {value}",
   "@unknownResourceType": {
     "placeholders": {

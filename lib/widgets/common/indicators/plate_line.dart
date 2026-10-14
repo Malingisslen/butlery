@@ -365,15 +365,31 @@ abstract final class PlateLineButton {
     final under = own?.backgroundBuilder ?? theme?.backgroundBuilder;
     return (own ?? const ButtonStyle()).copyWith(
       backgroundBuilder: (context, states, child) {
+        // A button's Material does not clip its children by default, so the
+        // line is cut to the button's own corners here.
+        final shape = (own?.shape ?? theme?.shape)?.resolve(states);
+        final line = PositionedDirectional(
+          start: 0,
+          end: 0,
+          bottom: 0,
+          child: ButtonPlateLine(onFill: onFill),
+        );
         final layered = Stack(
+          fit: StackFit.passthrough,
           children: [
             child ?? const SizedBox.shrink(),
-            PositionedDirectional(
-              start: 0,
-              end: 0,
-              bottom: 0,
-              child: ButtonPlateLine(onFill: onFill),
-            ),
+            if (shape == null)
+              line
+            else
+              Positioned.fill(
+                child: ClipPath(
+                  clipper: ShapeBorderClipper(
+                    shape: shape,
+                    textDirection: Directionality.of(context),
+                  ),
+                  child: Stack(children: [line]),
+                ),
+              ),
           ],
         );
         return under == null ? layered : under(context, states, layered);

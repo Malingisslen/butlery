@@ -101,7 +101,7 @@ class VeckomenyPromptRow extends StatelessWidget {
       child: VeckomenyGenerateButton(
         label: buttonLabel,
         busy: isGenerating,
-        busyLabel: l10n.weekMenuPlanningTitle,
+        busyLabel: buttonLabel,
         onGenerate: hasText ? onGenerate : null,
         reasonBelow: false,
         expand: expand,

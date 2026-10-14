@@ -10579,6 +10579,46 @@ class AppLocalizationsSv extends AppLocalizations {
       'Listan uppdaterades av någon annan';
 
   @override
+  String shoppingListChangedQuantity(
+    String name,
+    String item,
+    String before,
+    String after,
+  ) {
+    return '$name ändrade $item: $before → $after';
+  }
+
+  @override
+  String shoppingListChangedItem(String name, String before, String after) {
+    return '$name ändrade $before → $after';
+  }
+
+  @override
+  String shoppingListAddedItem(String name, String item) {
+    return '$name lade till $item';
+  }
+
+  @override
+  String shoppingListRemovedItem(String name, String item) {
+    return '$name tog bort $item';
+  }
+
+  @override
+  String shoppingListBoughtItem(String name, String item) {
+    return '$name bockade av $item';
+  }
+
+  @override
+  String shoppingListUnboughtItem(String name, String item) {
+    return '$name bockade ur $item';
+  }
+
+  @override
+  String shoppingListMoreChanges(String summary, int count) {
+    return '$summary och $count till';
+  }
+
+  @override
   String unknownResourceType(String value) {
     return 'Okänd RealtimeResourceType: $value';
   }

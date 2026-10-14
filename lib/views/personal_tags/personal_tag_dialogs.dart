@@ -300,16 +300,16 @@ abstract final class PersonalTagDialogs {
       return;
     }
 
-    try {
-      final groupId = selectedGroupId.isEmpty ? null : selectedGroupId;
-      await viewModel.moveTagToGroup(tag.id, groupId);
-      if (context.mounted) {
-        SnackBarUtils.showSuccess(context, context.l10n.personalTagMoved);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showUserFriendlyError(context, e);
-      }
+    final groupId = selectedGroupId.isEmpty ? null : selectedGroupId;
+    final moved = await viewModel.moveTagToGroup(tag.id, groupId);
+    if (!context.mounted) return;
+    if (moved) {
+      SnackBarUtils.showSuccess(context, context.l10n.personalTagMoved);
+    } else {
+      SnackBarUtils.showFailure(
+        context,
+        what: viewModel.error ?? context.l10n.personalTagCouldNotMove,
+      );
     }
   }
 

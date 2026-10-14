@@ -25,8 +25,8 @@
 ///   which supersedes PQ-20a) and does not lock the content under it
 ///   (produktregler.md).
 /// - CONFLICT: the own recipe offers both versions (produktregler.md:102);
-///   the shopping list takes the union and says "Listan uppdaterades av
-///   namn" (produktregler.md:101; PQ-20b = A, produktbeslut :220-224).
+///   the shopping list takes the union and the notice says what the
+///   other member did (PQ-20b = A).
 library;
 
 import 'dart:io';
@@ -558,10 +558,11 @@ List<Violation> recipeConflictRule() {
 }
 
 /// CONFLICT on the shopping list: both members' rows stay (union) and a
-/// notice says "Listan uppdaterades av namn" (produktregler.md:101).
+/// notice says what the other member did.
 List<Violation> shoppingConflictRule({
   required String localItem,
   required String remoteItem,
+  required String byName,
 }) {
   final texts = paintedTexts().map((t) => t.text).toList();
   final out = <Violation>[];
@@ -569,11 +570,12 @@ List<Violation> shoppingConflictRule({
       !texts.any((t) => t.contains(remoteItem))) {
     out.add(const Violation('NO_UNION', 'a row from one side is missing'));
   }
-  if (!texts.any((t) => t.startsWith('Listan uppdaterades av'))) {
+  final saysWhat = sv.shoppingListAddedItem(byName, remoteItem);
+  if (!texts.contains(saysWhat)) {
     out.add(
-      const Violation(
+      Violation(
         'NO_UPDATED_BY_NOTICE',
-        'no "Listan uppdaterades av namn" (produktregler.md:101)',
+        'no notice "$saysWhat"',
       ),
     );
   }
