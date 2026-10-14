@@ -12,7 +12,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
-import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -89,39 +90,27 @@ class PhotoPageStrip extends StatelessWidget {
   }
 
   void _showAddPageSource(BuildContext context) {
-    showButlerySheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.camera,
-                  color: Theme.of(sheetContext).colorScheme.onSurface,
-                ),
-                title: Text(sheetContext.l10n.importTakePhoto),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  viewModel.addPageFromCamera();
-                },
-              ),
-              ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.image,
-                  color: Theme.of(sheetContext).colorScheme.onSurface,
-                ),
-                title: Text(sheetContext.l10n.importChooseFromGallery),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  viewModel.addPageFromGallery();
-                },
-              ),
-            ],
-          ),
-        );
-      },
+    showButleryListSheet<void>(
+      context,
+      title: context.l10n.importPhotoAddPage,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          leading: ButleryIcons.camera,
+          label: sheetContext.l10n.importTakePhoto,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            viewModel.addPageFromCamera();
+          },
+        ),
+        ButleryListRow(
+          leading: ButleryIcons.image,
+          label: sheetContext.l10n.importChooseFromGallery,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            viewModel.addPageFromGallery();
+          },
+        ),
+      ],
     );
   }
 }

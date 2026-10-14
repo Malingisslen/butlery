@@ -17,7 +17,7 @@ import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/cookbooks/cookbook_recipe_sheets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
@@ -115,9 +115,9 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
     return ButleryPage.undersida(
       title: tag.name,
       actions: [
-        TextButton(
+        ButleryTextButton(
+          label: l10n.cookbookEdit,
           onPressed: () => showCookbookEditSheet(context, vm: vm, tag: tag),
-          child: Text(l10n.cookbookEdit),
         ),
       ],
       body: Column(
@@ -317,23 +317,23 @@ class _RecipeRow extends StatelessWidget {
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  tooltip: l10n.a11yMoveRecipeUp(recipe.title),
-                  icon: const ButleryIcon(ButleryIcons.arrowUp),
+                AppIconButton(
+                  semanticLabel: l10n.a11yMoveRecipeUp(recipe.title),
+                  icon: ButleryIcons.arrowUp,
                   onPressed: index == 0 ? null : () => onMove(-1),
                 ),
-                IconButton(
-                  tooltip: l10n.a11yMoveRecipeDown(recipe.title),
-                  icon: const ButleryIcon(ButleryIcons.arrowDown),
+                AppIconButton(
+                  semanticLabel: l10n.a11yMoveRecipeDown(recipe.title),
+                  icon: ButleryIcons.arrowDown,
                   onPressed: index == count - 1 ? null : () => onMove(1),
                 ),
               ],
             )
-          : IconButton(
-              tooltip: note == null
+          : AppIconButton(
+              semanticLabel: note == null
                   ? l10n.cookbookWriteNote
                   : l10n.cookbookEditNote,
-              icon: const ButleryIcon(ButleryIcons.pencil),
+              icon: ButleryIcons.pencil,
               onPressed: onEditNote,
             ),
     );

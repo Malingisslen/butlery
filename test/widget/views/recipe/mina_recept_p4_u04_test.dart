@@ -179,10 +179,10 @@ void main() {
 
       final actions = find.descendant(
         of: find.byKey(const ValueKey('butleryTopBar.actions')),
-        matching: find.byType(IconButton),
+        matching: find.byType(Tooltip),
       );
       expect(
-        tester.widgetList<IconButton>(actions).map((b) => b.tooltip).toList(),
+        tester.widgetList<Tooltip>(actions).map((t) => t.message).toList(),
         ['Lägg till i veckomeny', 'Tagga valda', 'Dela valda', 'Fler åtgärder'],
       );
 

@@ -177,6 +177,27 @@ void main() {
           danger,
         );
       });
+
+      testWidgets('Släng is drawn in text.danger', (tester) async {
+        final a = _change('a', needsUser: true);
+        source.set([a]);
+        await pump(tester, mode.value);
+
+        Color? foreground(Key key) {
+          final button = tester.widget<TextButton>(
+            find.descendant(
+              of: find.byKey(key),
+              matching: find.byType(TextButton),
+            ),
+          );
+          return button.style?.foregroundColor?.resolve({});
+        }
+
+        expect(
+          foreground(SyncQueueNeedsYouCard.discardKey(a)),
+          mode.value.colorScheme.error,
+        );
+      });
     });
   }
 

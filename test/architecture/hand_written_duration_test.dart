@@ -12,7 +12,6 @@ const _handWritten = <String, int>{
   'lib/views/auth/email_verification_view.dart': 3,
   'lib/views/auth/post_sign_in_navigation.dart': 2,
   'lib/views/file_import_view.dart': 1,
-  'lib/views/hem/hem_plan_states.dart': 1,
   'lib/views/messaging/chat_view/chat_action_handler.dart': 1,
   'lib/views/mina_recept_view.dart': 2,
   'lib/views/onboarding/onboarding_setup_page.dart': 1,
