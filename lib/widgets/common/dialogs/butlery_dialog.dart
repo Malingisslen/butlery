@@ -10,7 +10,9 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
@@ -40,10 +42,14 @@ class ButleryDialogPrimary extends StatelessWidget {
     required this.onPressed,
     this.danger = false,
     this.busy = false,
+    this.icon,
     super.key,
   });
 
   final String label;
+
+  /// A glyph before the words, such as a history clock on "Fortsätt".
+  final IconData? icon;
 
   /// Null disables the button.
   final VoidCallback? onPressed;
@@ -65,7 +71,16 @@ class ButleryDialogPrimary extends StatelessWidget {
         style: busy
             ? PlateLineButton.busyStyle(own, theme.filledButtonTheme.style)
             : own,
-        child: Text(label),
+        child: icon == null
+            ? Text(label)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ButleryIcon(icon!),
+                  const SizedBox(width: AppDimensions.space8),
+                  Flexible(child: Text(label)),
+                ],
+              ),
       ),
     );
   }
@@ -80,6 +95,7 @@ class ButleryDialog extends StatelessWidget {
     this.message,
     this.content,
     this.scrollable = true,
+    this.titleIcon,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -97,7 +113,9 @@ class ButleryDialog extends StatelessWidget {
     bool danger = false,
     bool busy = false,
     bool primaryEnabled = true,
+    IconData? primaryIcon,
     this.scrollable = true,
+    this.titleIcon,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -113,6 +131,7 @@ class ButleryDialog extends StatelessWidget {
              label: primaryLabel,
              danger: danger,
              busy: busy,
+             icon: primaryIcon,
              onPressed: primaryEnabled
                  ? (onPrimary ?? () => Navigator.of(context).pop(true))
                  : null,
@@ -127,6 +146,7 @@ class ButleryDialog extends StatelessWidget {
     this.content,
     String? closeLabel,
     this.scrollable = true,
+    this.titleIcon,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -142,6 +162,9 @@ class ButleryDialog extends StatelessWidget {
        ];
 
   final String title;
+
+  /// A glyph above the title, as the dialog's mark.
+  final IconData? titleIcon;
   final String? message;
   final Widget? content;
   final List<Widget> actions;
@@ -153,6 +176,7 @@ class ButleryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: scrollable,
+      icon: titleIcon == null ? null : ButleryIcon(titleIcon!),
       title: Text(title),
       content:
           content ??

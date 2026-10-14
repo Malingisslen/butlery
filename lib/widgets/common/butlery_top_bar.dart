@@ -167,6 +167,12 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// inte bär en egen.
   final TextStyle? titleStyle;
 
+  /// The title style of a selection mode, "3 valda": the count in tabular
+  /// figures so it does not jitter as it changes. The selection bar's title style.
+  static const TextStyle selectionCountStyle = TextStyle(
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
   /// Statusfältets stil. Null härleds ur ytans ljushet.
   final SystemUiOverlayStyle? systemOverlayStyle;
 

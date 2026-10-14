@@ -11,24 +11,33 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 class ButleryDivider extends StatelessWidget {
-  const ButleryDivider({this.indent = 0, this.endIndent = 0, super.key})
-    : vertical = false;
+  const ButleryDivider({
+    this.indent = 0,
+    this.endIndent = 0,
+    this.spacing,
+    super.key,
+  }) : vertical = false;
 
   /// A hairline between two controls side by side.
   const ButleryDivider.vertical({super.key})
     : vertical = true,
       indent = 0,
-      endIndent = 0;
+      endIndent = 0,
+      spacing = null;
 
   /// Space before the line, to start it under a row's text and not its icon.
   final double indent;
   final double endIndent;
   final bool vertical;
 
+  /// The height of the space the line sits in, with the line in the middle.
+  /// The theme's divider height when null.
+  final double? spacing;
+
   @override
   Widget build(BuildContext context) {
     if (vertical) return const VerticalDivider();
-    return Divider(indent: indent, endIndent: endIndent);
+    return Divider(height: spacing, indent: indent, endIndent: endIndent);
   }
 }
 

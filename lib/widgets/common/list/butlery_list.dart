@@ -448,7 +448,10 @@ class ButleryListRow extends StatelessWidget {
 /// text.secondary (Komponentark v1:36 "listradschevron är 12 px"). Drawn, not
 /// read: the row it sits in is the control and carries the meaning.
 class ButleryChevron extends StatelessWidget {
-  const ButleryChevron({super.key});
+  const ButleryChevron({this.color, super.key});
+
+  /// Secondary ink when null; a row on a coloured surface names its own.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -456,7 +459,7 @@ class ButleryChevron extends StatelessWidget {
       child: ButleryIcon(
         ButleryIcons.chevronRight,
         size: AppDimensions.iconSizeXs,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        color: color ?? Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
