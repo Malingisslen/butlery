@@ -146,10 +146,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(
-            height: AppDimensions.dividerHeight,
-            child: ButleryDivider(),
-          ),
+          const ButleryDivider(spacing: AppDimensions.dividerHeight),
           // Comparison
           Expanded(
             child: ListView(
@@ -248,10 +245,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(
-            height: AppDimensions.dividerHeight,
-            child: ButleryDivider(),
-          ),
+          const ButleryDivider(spacing: AppDimensions.dividerHeight),
           _ActionButtons(
             onChoice: (c) => Navigator.of(context).pop(_result(c)),
           ),

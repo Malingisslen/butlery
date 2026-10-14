@@ -374,7 +374,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
               ),
             ),
           ),
-        const SizedBox(height: 1, child: ButleryDivider()),
+        const ButleryDivider(spacing: 1),
       ],
     );
   }

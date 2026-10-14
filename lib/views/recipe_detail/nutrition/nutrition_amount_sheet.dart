@@ -10,7 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -205,17 +205,12 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                             spacing: AppDimensions.space4,
                             children: [
                               for (final unit in _line.enterableUnits)
-                                PressFill(
-                                  surface: unit == _unit
-                                      ? PressSurface.ink
-                                      : PressSurface.base,
-                                  child: ChoiceChip(
-                                    key: ValueKey('nutrition-unit-$unit'),
-                                    label: Text(unit),
-                                    selected: unit == _unit,
-                                    onSelected: (_) =>
-                                        setState(() => _unit = unit),
-                                  ),
+                                ButleryChoiceChip(
+                                  key: ValueKey('nutrition-unit-$unit'),
+                                  label: unit,
+                                  selected: unit == _unit,
+                                  onSelected: (_) =>
+                                      setState(() => _unit = unit),
                                 ),
                             ],
                           ),

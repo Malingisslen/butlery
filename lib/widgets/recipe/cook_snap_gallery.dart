@@ -252,6 +252,7 @@ class _SnapThumbnail extends StatelessWidget {
             if (isOwn)
               ButleryItemRow(
                 leadingIcon: ButleryIcons.trash2,
+                danger: true,
                 title: context.l10n.cookSnapDelete,
                 onTap: () {
                   Navigator.pop(context);

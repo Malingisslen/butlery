@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 
 /// Dialog for viewing and managing all recipe tags.
@@ -169,10 +170,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ButleryCloseButton(semanticLabel: context.l10n.commonClose),
                 ],
               ),
-              const SizedBox(
-                height: AppDimensions.space32,
-                child: ButleryDivider(),
-              ),
+              const ButleryDivider(spacing: AppDimensions.space32),
 
               // Tags list
               Flexible(
@@ -268,14 +266,11 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               ),
                             ),
                             const SizedBox(width: AppDimensions.space4),
-                            IconButton.filled(
+                            AppIconButton(
+                              icon: ButleryIcons.plus,
+                              semanticLabel: context.l10n.tagAddTag,
                               onPressed: _addNewTag,
-                              icon: const ButleryIcon(ButleryIcons.plus),
-                              tooltip: context.l10n.tagAddTag,
-                              style: IconButton.styleFrom(
-                                backgroundColor: cs.primary,
-                                foregroundColor: cs.onPrimary,
-                              ),
+                              filled: true,
                             ),
                           ],
                         ),

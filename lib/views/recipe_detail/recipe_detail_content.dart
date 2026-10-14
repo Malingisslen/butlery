@@ -331,7 +331,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
     return Column(
       children: [
-        if (showDivider) const SizedBox(height: 1, child: ButleryDivider()),
+        if (showDivider) const ButleryDivider(spacing: 1),
         Semantics(
           label: context.l10n.a11yShowSubstitutionsFor,
           button: true,
@@ -850,6 +850,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               if (hasOverflow)
                 ButleryTextButton(
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                  dense: true,
                   icon: _isExpanded
                       ? ButleryIcons.chevronUp
                       : ButleryIcons.chevronDown,

@@ -143,7 +143,7 @@ class _RelatedRecipesPickerDialogState
           showStats: true,
           resultCount: filtered.length,
         ),
-        const SizedBox(height: 1, child: ButleryDivider()),
+        const ButleryDivider(spacing: 1),
         Expanded(
           child: filtered.isEmpty
               ? StateWidget.noSearchResults(

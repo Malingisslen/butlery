@@ -67,7 +67,7 @@ class RecipeImagePicker {
                 style: AppTextStyles.titleMedium,
               ),
             ),
-            const SizedBox(height: 1, child: ButleryDivider()),
+            const ButleryDivider(spacing: 1),
             ButleryItemRow(
               leadingIcon: ButleryIcons.camera,
               title: context.l10n.imageTakePhoto,
@@ -85,7 +85,7 @@ class RecipeImagePicker {
                   : context.l10n.imageSelectFromGallery,
               onTap: () => Navigator.pop(context, 'gallery'),
             ),
-            const SizedBox(height: 1, child: ButleryDivider()),
+            const ButleryDivider(spacing: 1),
             ButleryItemRow(
               leadingIcon: ButleryIcons.x,
               title: context.l10n.commonCancel,

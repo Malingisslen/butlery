@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
@@ -48,8 +50,12 @@ class _IngredientSubstitutionSheetState
           ButlerySheetHeader(
             title: widget.ingredientName,
             closeLabel: context.l10n.commonClose,
+            leading: const ButleryIcon(
+              ButleryIcons.swapHorizontal,
+              size: AppDimensions.iconSizeL,
+            ),
           ),
-          const SizedBox(height: 1, child: ButleryDivider()),
+          const ButleryDivider(spacing: 1),
           FutureBuilder<List<IngredientSubstitution>>(
             future: _future,
             builder: (context, snapshot) {

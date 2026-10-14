@@ -26,6 +26,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => ButleryDialog.confirm(
         title: ctx.l10n.cookSnapVisibilityTitle.toLowerCase(),
+        titleIcon: ButleryIcons.eye,
         primaryLabel: ctx.l10n.cookSnapVisibilityConfirm,
         onPrimary: () => Navigator.pop(ctx, selected),
         content: Column(

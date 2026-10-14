@@ -108,6 +108,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 ButleryTextButton(
                   onPressed: _openTagManager,
                   icon: ButleryIcons.settings,
+                  dense: true,
                   label: context.l10n.personalTagManage,
                 ),
             ],

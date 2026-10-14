@@ -68,6 +68,7 @@ Future<UploadChoice?> showUploadChoiceDialog({
           : context.l10n.uploadSaveWithoutPending,
       onPressed: () =>
           Navigator.of(context).pop(UploadChoice.saveWithoutPending),
+      tone: ButleryTextButtonTone.warning,
     ),
   ]);
 

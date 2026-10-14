@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -439,47 +440,30 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildTagSelector() {
-    return LabeledField(
+    return ButleryDropdown<String>(
       label: context.l10n.ruleApplyToTag,
-      child: PressFill(
-        surface: PressSurface.base,
-        child: DropdownButtonFormField<String>(
-          errorBuilder: FieldErrorLine.builder,
-          icon: const ButleryIcon(ButleryIcons.chevronDown),
-          iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          iconDisabledColor: AppModeColors.textDisabled(
-            Theme.of(context).brightness,
+      semanticLabel: context.l10n.ruleApplyToTag,
+      value: _selectedTagId,
+      options: [
+        for (final tag in widget.availableTags)
+          ButleryDropdownOption<String>(
+            value: tag.id,
+            label: tag.name,
+            icon: ButleryIcons.tag,
+            iconColor: Theme.of(context).colorScheme.onSurface,
           ),
-          initialValue: _selectedTagId,
-          items: widget.availableTags.map((tag) {
-            return DropdownMenuItem(
-              value: tag.id,
-              child: Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.tag,
-                    size: AppDimensions.iconSizeS,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  const SizedBox(width: AppDimensions.space8),
-                  Text(tag.name),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: _isSaving
-              ? null
-              : (value) {
-                  setState(() => _selectedTagId = value);
-                },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return context.l10n.ruleSelectTag;
-            }
-            return null;
-          },
-        ),
-      ),
+      ],
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() => _selectedTagId = value);
+            },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return context.l10n.ruleSelectTag;
+        }
+        return null;
+      },
     );
   }
 
@@ -672,41 +656,18 @@ class _ConditionRow extends StatelessWidget {
               // Type dropdown
               Expanded(
                 flex: 2,
-                child: PressFill(
-                  surface: PressSurface.base,
-                  child: DropdownButtonFormField<ConditionType>(
-                    // Without it the button sizes to its widest item and
-                    // overflows the half-row it is given.
-                    isExpanded: true,
-                    icon: const ButleryIcon(ButleryIcons.chevronDown),
-                    iconEnabledColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    iconDisabledColor: AppModeColors.textDisabled(
-                      Theme.of(context).brightness,
-                    ),
-                    initialValue: condition.type,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: AppDimensions.paddingSymmetric12x8,
-                      border: OutlineInputBorder(),
-                    ),
-                    items: ConditionType.values.map((type) {
-                      return DropdownMenuItem(
+                child: ButleryDropdown<ConditionType>(
+                  dense: true,
+                  semanticLabel: context.l10n.ruleConditionsLabel,
+                  value: condition.type,
+                  options: [
+                    for (final type in ConditionType.values)
+                      ButleryDropdownOption<ConditionType>(
                         value: type,
-                        child: Text(
-                          type.label,
-                          style: AppTextStyles.formOption,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: enabled
-                        ? (value) {
-                            if (value != null) onTypeChanged(value);
-                          }
-                        : null,
-                  ),
+                        label: type.label,
+                      ),
+                  ],
+                  onChanged: enabled ? onTypeChanged : null,
                 ),
               ),
               const SizedBox(width: AppDimensions.space8),
@@ -754,37 +715,15 @@ class _ConditionRow extends StatelessWidget {
         ? condition.operator
         : validOperators.first;
 
-    return PressFill(
-      surface: PressSurface.base,
-      child: DropdownButtonFormField<ConditionOperator>(
-        isExpanded: true,
-        icon: const ButleryIcon(ButleryIcons.chevronDown),
-        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        iconDisabledColor: AppModeColors.textDisabled(
-          Theme.of(context).brightness,
-        ),
-        initialValue: currentOperator,
-        decoration: const InputDecoration(
-          isDense: true,
-          contentPadding: AppDimensions.paddingSymmetric12x8,
-          border: OutlineInputBorder(),
-        ),
-        items: validOperators.map((op) {
-          return DropdownMenuItem(
-            value: op,
-            child: Text(
-              op.label,
-              style: AppTextStyles.formOption,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        }).toList(),
-        onChanged: enabled
-            ? (value) {
-                if (value != null) onOperatorChanged(value);
-              }
-            : null,
-      ),
+    return ButleryDropdown<ConditionOperator>(
+      dense: true,
+      semanticLabel: context.l10n.ruleConditionsLabel,
+      value: currentOperator,
+      options: [
+        for (final op in validOperators)
+          ButleryDropdownOption<ConditionOperator>(value: op, label: op.label),
+      ],
+      onChanged: enabled ? onOperatorChanged : null,
     );
   }
 

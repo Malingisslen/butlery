@@ -288,6 +288,7 @@ class TagResultDisplay extends StatelessWidget {
             ButleryTextButton(
               onPressed: onRetagRequested,
               label: context.l10n.commonUpdate,
+              dense: true,
             ),
         ],
       ),

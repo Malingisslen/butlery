@@ -307,6 +307,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         final cs = Theme.of(ctx).colorScheme;
         return ButleryDialog.notice(
           title: ctx.l10n.recipeCommentAudienceTitle,
+          titleIcon: ButleryIcons.eye,
           scrollable: false,
           // No name resolved → disclose the count only (never hide the audience).
           // A collaborative recipe can have many members, so the name list
@@ -445,10 +446,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       itemCount: vm.topLevelComments.length,
-      separatorBuilder: (_, __) => const SizedBox(
-        height: AppDimensions.borderWidthThin,
-        child: ButleryDivider(),
-      ),
+      separatorBuilder: (_, __) =>
+          const ButleryDivider(spacing: AppDimensions.borderWidthThin),
       itemBuilder: (context, index) {
         final comment = vm.topLevelComments[index];
         return AnimatedListItem(

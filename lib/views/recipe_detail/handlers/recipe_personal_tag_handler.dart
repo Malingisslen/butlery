@@ -249,7 +249,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 ],
               ),
             ),
-            const SizedBox(height: 1, child: ButleryDivider()),
+            const ButleryDivider(spacing: 1),
             // Content
             Expanded(
               child: _buildContent(context, scrollController),
@@ -305,9 +305,12 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                   ),
                 ),
                 const Spacer(),
-                ButleryTextButton(
+                TextButton(
                   onPressed: () => setState(() => _selectedTagIds.clear()),
-                  label: context.l10n.commonClear,
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onPrimaryContainer,
+                  ),
+                  child: Text(context.l10n.commonClear),
                 ),
               ],
             ),

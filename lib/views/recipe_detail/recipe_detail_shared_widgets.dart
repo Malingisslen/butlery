@@ -244,7 +244,7 @@ abstract final class RecipeDetailSharedWidgets {
             ),
           ),
           const SizedBox(width: AppDimensions.space12),
-          const Expanded(child: SizedBox(height: 1, child: ButleryDivider())),
+          const Expanded(child: ButleryDivider(spacing: 1)),
         ],
       ),
       if (category.isNotEmpty) ...[

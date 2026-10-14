@@ -63,10 +63,7 @@ void showSourceArtefactSheet({
               const SizedBox(height: AppDimensions.space8),
               _StaleSourceBanner(message: ctx.l10n.recipeSourceStaleBanner),
             ],
-            const SizedBox(
-              height: AppDimensions.space24,
-              child: ButleryDivider(),
-            ),
+            const ButleryDivider(spacing: AppDimensions.space24),
             Expanded(
               child: SingleChildScrollView(
                 controller: scrollController,

@@ -53,7 +53,7 @@ class RecipeShelf extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.space8),
-        const SizedBox(height: 1, child: ButleryDivider()),
+        const ButleryDivider(spacing: 1),
       ],
     );
   }

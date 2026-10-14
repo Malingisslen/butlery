@@ -24,7 +24,6 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
@@ -337,27 +336,12 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                 semanticLabel: context.l10n.commentAttachImage,
                 onPressed: _isBusy ? null : _pickImages,
               ),
-            IconButton(
-              tooltip: context.l10n.commonSend,
+            AppIconButton(
+              icon: ButleryIcons.send,
+              semanticLabel: context.l10n.commonSend,
               onPressed: _canSend ? _onSendPressed : null,
-              // Busy: the plate line in the button's place, never a
-              // spinner (Grafisk manual v6:209).
-              icon: _isBusy
-                  ? SizedBox(
-                      width: AppDimensions.iconSizeM,
-                      child: PlateLine(
-                        semanticLabel: context.l10n.sendingComment,
-                      ),
-                    )
-                  : const ButleryIcon(ButleryIcons.send),
-              style: IconButton.styleFrom(
-                backgroundColor: _canSend
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-                foregroundColor: _canSend
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : null,
-              ),
+              filled: _canSend,
+              busy: _isBusy,
             ),
           ],
         ),
