@@ -8,6 +8,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -18,7 +20,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -125,15 +126,15 @@ class _PortionsContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
+              AppIconButton(
                 // Below 1 goes back to null, each recipe's own portions.
                 onPressed: size == null
                     ? null
                     : () => viewModel.updateHouseholdSize(
                         size <= UserProfile.minHouseholdSize ? null : size - 1,
                       ),
-                icon: const ButleryIcon(ButleryIcons.minus),
-                tooltip: l10n.a11yDecreaseHouseholdSize,
+                icon: ButleryIcons.minus,
+                semanticLabel: l10n.a11yDecreaseHouseholdSize,
               ),
               Expanded(
                 child: Text(
@@ -151,22 +152,22 @@ class _PortionsContent extends StatelessWidget {
                           ),
                 ),
               ),
-              IconButton(
+              AppIconButton(
                 onPressed:
                     (size != null && size >= UserProfile.maxHouseholdSize)
                     ? null
                     : () => viewModel.updateHouseholdSize((size ?? 0) + 1),
-                icon: const ButleryIcon(ButleryIcons.plus),
-                tooltip: l10n.a11yIncreaseHouseholdSize,
+                icon: ButleryIcons.plus,
+                semanticLabel: l10n.a11yIncreaseHouseholdSize,
               ),
             ],
           ),
           if (size != null)
             Align(
               alignment: AlignmentDirectional.center,
-              child: TextButton(
+              child: ButleryTextButton(
                 onPressed: () => viewModel.updateHouseholdSize(null),
-                child: Text(l10n.householdSizeUseRecipeDefault),
+                label: l10n.householdSizeUseRecipeDefault,
               ),
             ),
           const SizedBox(height: AppDimensions.space16),

@@ -15,7 +15,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -116,30 +116,22 @@ class _CreateSharedShoppingListViewState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            LabeledField(
+            StyledInput(
               label: context.l10n.shoppingSharedListNameLabel,
-              child: TextField(
-                controller: _titleController,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  hintText: context.l10n.shoppingSharedListTitleHint,
-                  errorText: viewModel.titleError,
-                ),
-                onChanged: viewModel.updateTitle,
-              ),
+              controller: _titleController,
+              textInputAction: TextInputAction.next,
+              hint: context.l10n.shoppingSharedListTitleHint,
+              errorText: viewModel.titleError,
+              onChanged: viewModel.updateTitle,
             ),
             const SizedBox(height: AppDimensions.space24),
-            LabeledField(
+            StyledInput(
               label: context.l10n.shoppingDescriptionOptional,
-              child: TextField(
-                controller: _descriptionController,
-                minLines: 1,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: context.l10n.shoppingDescriptionHint,
-                ),
-                onChanged: viewModel.updateDescription,
-              ),
+              controller: _descriptionController,
+              minLines: 1,
+              maxLines: 3,
+              hint: context.l10n.shoppingDescriptionHint,
+              onChanged: viewModel.updateDescription,
             ),
             const SizedBox(height: AppDimensions.space24),
             _buildFriendSelection(context, viewModel),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -339,13 +341,10 @@ class SocialBuilderComponents {
             ),
           ),
           if (onAction != null && actionText != null)
-            TextButton.icon(
+            ButleryTextButton(
               onPressed: onAction,
-              icon: ButleryIcon(
-                actionIcon ?? ButleryIcons.arrowRight,
-                size: AppDimensions.iconSizeS,
-              ),
-              label: Text(actionText),
+              icon: actionIcon ?? ButleryIcons.arrowRight,
+              label: actionText,
             ),
         ],
       ),
@@ -420,19 +419,12 @@ class SocialBuilderComponents {
   /// Build social divider
   /// Consistent divider for social content sections
   static Widget socialDivider({
-    double? height,
-    double? thickness,
-    Color? color,
     EdgeInsets? margin,
   }) {
     return Container(
       margin:
           margin ?? const EdgeInsets.symmetric(vertical: AppDimensions.space8),
-      child: Divider(
-        height: height,
-        thickness: thickness,
-        color: color,
-      ),
+      child: const ButleryDivider(),
     );
   }
 

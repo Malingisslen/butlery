@@ -7,9 +7,12 @@ import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
 class SharedContentCard extends StatelessWidget {
@@ -69,7 +72,7 @@ class SharedContentCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final iconColor = _getColorForType(context, item.type);
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Semantics(
         label: '${context.l10n.groupSharedContent}: ${item.title}',
@@ -162,25 +165,20 @@ class SharedContentCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     if (onImport != null) ...[
-                      TextButton.icon(
+                      ButleryTextButton(
+                        label: context.l10n.groupImport,
+                        icon: ButleryIcons.download,
                         onPressed: onImport,
-                        icon: const ButleryIcon(
-                          ButleryIcons.download,
-                          size: AppDimensions.iconSize18,
-                        ),
-                        label: Text(context.l10n.groupImport),
                       ),
                       const SizedBox(width: AppDimensions.space4),
                     ],
                     if (onView != null)
                       Flexible(
-                        child: FilledButton.icon(
+                        child: ActionButtons.primaryButton(
+                          context,
+                          label: context.l10n.groupView,
+                          icon: ButleryIcons.eye,
                           onPressed: onView,
-                          icon: const ButleryIcon(
-                            ButleryIcons.eye,
-                            size: AppDimensions.iconSize18,
-                          ),
-                          label: Text(context.l10n.groupView),
                         ),
                       ),
                   ],

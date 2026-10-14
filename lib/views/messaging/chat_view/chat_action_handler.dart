@@ -34,7 +34,10 @@ import 'package:butlery/widgets/messaging/dialogs/block_group_member_dialog.dart
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -257,10 +260,11 @@ class ChatActionHandler {
       } else {
         // For direct conversations, show simple info dialog
         final l10n = context.l10n;
-        await showDialog(
+        await showButleryDialog<void>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text(l10n.chatConversationInfo),
+          builder: (dialogContext) => ButleryDialog.notice(
+            title: l10n.chatConversationInfo,
+            scrollable: false,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,12 +280,6 @@ class ChatActionHandler {
                 ],
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(l10n.commonClose),
-              ),
-            ],
           ),
         );
       }
@@ -529,7 +527,7 @@ class ChatActionHandler {
     // The dialog owns its controller: disposing it here, right after the
     // pop, broke the dialog's own exit animation, which still builds the
     // field.
-    final edited = await showDialog<String>(
+    final edited = await showButleryDialog<String>(
       context: context,
       builder: (_) => _EditMessageDialog(initial: message.content),
     );
@@ -596,7 +594,7 @@ class ChatActionHandler {
 
     try {
       final l10n = context.l10n;
-      final selectedRecipes = await showDialog<List<String>>(
+      final selectedRecipes = await showButleryDialog<List<String>>(
         context: context,
         builder: (dialogContext) => MenuRecipeSelectionDialog(
           categoryName: l10n.chatYourRecipes,
@@ -630,7 +628,7 @@ class ChatActionHandler {
 
     try {
       // Weekly menus are keyed by ISO week — pick which week to share.
-      final weekStart = await showDialog<DateTime>(
+      final weekStart = await showButleryDialog<DateTime>(
         context: context,
         builder: (_) => const MenuWeekSelectionDialog(),
       );
@@ -674,7 +672,7 @@ class ChatActionHandler {
     AppLogger.info('Sharing shopping list');
 
     try {
-      final list = await showDialog<UnifiedShoppingList>(
+      final list = await showButleryDialog<UnifiedShoppingList>(
         context: context,
         builder: (_) => const ShoppingListSelectionDialog(),
       );
@@ -802,24 +800,20 @@ class _EditMessageDialogState extends State<_EditMessageDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(l10n.chatEditMessage),
-      content: LabeledField(
-        child: TextField(
-          controller: _controller,
-          maxLines: null,
-          maxLength: 5000,
-          decoration: InputDecoration(hintText: l10n.chatWriteYourMessage),
-        ),
+    return ButleryDialog(
+      title: l10n.chatEditMessage,
+      scrollable: false,
+      content: StyledInput(
+        controller: _controller,
+        hint: l10n.chatWriteYourMessage,
+        maxLines: null,
+        maxLength: 5000,
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.commonCancel),
-        ),
-        TextButton(
+        const DialogCancelButton(),
+        ButleryTextButton(
+          label: l10n.commonSave,
           onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: Text(l10n.commonSave),
         ),
       ],
     );

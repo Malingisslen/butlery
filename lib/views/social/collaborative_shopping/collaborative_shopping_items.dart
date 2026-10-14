@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
@@ -227,9 +228,9 @@ class CollaborativeShoppingItems extends StatelessWidget {
             ),
           ),
           if (onClearCompleted != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onClearCompleted,
-              child: Text(context.l10n.shoppingClearBought),
+              label: context.l10n.shoppingClearBought,
             ),
         ],
       ),
@@ -453,17 +454,9 @@ class _CollaborativeItemCard extends StatelessWidget {
       widgets.add(const SizedBox(width: AppDimensions.space4));
     } else if (viewModel.canEdit && !item.bought) {
       widgets.add(
-        TextButton(
-          style: TextButton.styleFrom(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space4,
-            ),
-          ),
+        ButleryTextButton(
           onPressed: () => _handleClaimAction(context, release: false),
-          child: Text(context.l10n.tarJag),
+          label: context.l10n.tarJag,
         ),
       );
     }

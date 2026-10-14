@@ -2,10 +2,9 @@
 
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 /// Consolidated friends list card components
@@ -19,36 +18,17 @@ class GroupCard {
     BuildContext context,
     FriendCategory group,
   ) {
-    return Card(
-      child: ListTile(
+    final description = group.description;
+    return StyledCard(
+      child: ButleryItemRow(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: AvatarCircle(glyph: group.emoji ?? '👥'),
-        title: Text(
-          group.name,
-          style: AppTextStyles.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (group.description?.isNotEmpty == true)
-              Text(
-                group.description!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall,
-              ),
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              group.summary,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-        trailing: const ButleryChevron(),
+        title: group.name,
+        titleMaxLines: 1,
+        subtitle: description?.isNotEmpty == true
+            ? '$description\n${group.summary}'
+            : group.summary,
+        showChevron: true,
       ),
     );
   }

@@ -8,7 +8,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/bold_names_text.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
@@ -42,10 +44,10 @@ class MenuPreviewView extends StatelessWidget {
     return ButleryPage.undersida(
       title: context.l10n.menuPreviewTitle,
       actions: [
-        IconButton(
+        AppIconButton(
           onPressed: () => _shareMenu(context),
-          icon: const ButleryIcon(ButleryIcons.share2),
-          tooltip: context.l10n.menuShareMenu,
+          icon: ButleryIcons.share2,
+          semanticLabel: context.l10n.menuShareMenu,
         ),
       ],
       body: Column(
@@ -119,7 +121,7 @@ class MenuPreviewView extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppDimensions.space12),
-            Divider(height: 1, color: cs.outlineVariant),
+            const ButleryDivider(),
           ],
         ),
       ),
@@ -174,19 +176,10 @@ class MenuPreviewView extends StatelessWidget {
                 busyLabel: context.l10n.commonImporting,
                 expand: true,
               ),
-              TextButton(
+              ButleryTextButton(
                 key: const ValueKey('menuPreview.decline'),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(
-                    AppDimensions.minTouchTarget,
-                    AppDimensions.minTouchTarget,
-                  ),
-                  foregroundColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                ),
                 onPressed: () => _dismissMenu(context, viewModel),
-                child: Text(context.l10n.menuPreviewDecline),
+                label: context.l10n.menuPreviewDecline,
               ),
             ],
           );

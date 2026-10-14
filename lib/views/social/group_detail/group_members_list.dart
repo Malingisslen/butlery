@@ -1,14 +1,13 @@
 // lib/views/social/group_detail/group_members_list.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_opacity.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -331,10 +330,10 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           ),
       ],
       actions: [
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('group-members-partial-done'),
           onPressed: _closePartial,
-          child: Text(l.partialOutcomeDone),
+          label: l.partialOutcomeDone,
         ),
       ],
     );
@@ -385,19 +384,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             ),
           ),
           const Spacer(),
-          TextButton.icon(
+          ButleryTextButton(
             onPressed: count > 0 ? _removeSelected : null,
-            icon: const ButleryIcon(ButleryIcons.userMinus),
-            label: Text(context.l10n.groupRemoveSelectedCount(count)),
-            style: TextButton.styleFrom(
-              foregroundColor: cs.error,
-              // Off at zero with the name readable (produktregler.md:876), in
-              // the disabled role on surface.raised, never a fade
-              // (tokens.json:71-74, :198).
-              disabledForegroundColor: AppModeColors.textDisabled(
-                cs.brightness,
-              ),
-            ),
+            icon: ButleryIcons.userMinus,
+            label: context.l10n.groupRemoveSelectedCount(count),
+            tone: ButleryTextButtonTone.danger,
           ),
         ],
       ),

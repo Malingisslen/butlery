@@ -7,6 +7,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/choice_option.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -50,7 +52,7 @@ class FormSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Divider(height: 1, thickness: 1, color: cs.outlineVariant),
+        const ButleryDivider(),
         const SizedBox(height: AppDimensions.space16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -197,10 +199,10 @@ class FormChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     return PressFill(
       surface: selected ? PressSurface.ink : PressSurface.base,
-      child: FilterChip(
-        label: Text(label),
+      child: ChoiceOption(
+        label: label,
         selected: selected,
-        onSelected: onSelected,
+        onSelected: () => onSelected(!selected),
       ),
     );
   }

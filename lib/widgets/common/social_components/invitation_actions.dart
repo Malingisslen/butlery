@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Invitation action widgets.
@@ -63,29 +66,25 @@ class InvitationActions {
           ),
           const Spacer(),
           if (showSelectAll && onSelectAll != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onSelectAll,
-              child: Text(context.l10n.commonSelectAll),
+              label: context.l10n.commonSelectAll,
             ),
           if (showDeselectAll && onDeselectAll != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onDeselectAll,
-              child: Text(context.l10n.commonDeselectAll),
+              label: context.l10n.commonDeselectAll,
             ),
           if (showInvert && onInvertSelection != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onInvertSelection,
-              child: Text(context.l10n.socialInvertLabel),
+              label: context.l10n.socialInvertLabel,
             ),
           if (showSend && onSendInvitations != null)
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: selectedCount > 0 ? onSendInvitations : null,
-              style: const ButtonStyle(
-                minimumSize: WidgetStatePropertyAll(
-                  Size(0, AppDimensions.minTouchTarget),
-                ),
-              ),
-              child: Text(context.l10n.commonSend),
+              label: context.l10n.commonSend,
             ),
         ],
       ),
@@ -200,33 +199,24 @@ class InvitationActions {
           ),
           const Spacer(),
           if (showRemove && onBulkRemove != null)
-            TextButton.icon(
+            ButleryTextButton(
               onPressed: onBulkRemove,
-              icon: ButleryIcon(
-                ButleryIcons.trash2,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              label: Text(removeText ?? context.l10n.commonDelete),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
-              ),
+              icon: ButleryIcons.trash2,
+              label: removeText ?? context.l10n.commonDelete,
+              tone: ButleryTextButtonTone.danger,
             ),
           if (showExport && onBulkExport != null)
-            TextButton.icon(
+            ButleryTextButton(
               onPressed: onBulkExport,
-              icon: const ButleryIcon(ButleryIcons.download),
-              label: Text(exportText ?? context.l10n.commonExport),
+              icon: ButleryIcons.download,
+              label: exportText ?? context.l10n.commonExport,
             ),
           if (showInvite && onBulkInvite != null)
-            ElevatedButton.icon(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onBulkInvite,
-              style: const ButtonStyle(
-                minimumSize: WidgetStatePropertyAll(
-                  Size(0, AppDimensions.minTouchTarget),
-                ),
-              ),
-              icon: const ButleryIcon(ButleryIcons.send),
-              label: Text(inviteText ?? context.l10n.invitationSendInvitations),
+              icon: ButleryIcons.send,
+              label: inviteText ?? context.l10n.invitationSendInvitations,
             ),
         ],
       ),
@@ -245,10 +235,9 @@ class InvitationActions {
     bool showRemove = true,
     bool showInvite = true,
   }) {
-    return PressFill(
-      surface: PressSurface.raised,
-      child: PopupMenuButton<String>(
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
+    return Builder(
+      builder: (context) => ButleryMenu<String>(
+        semanticLabel: context.l10n.socialMoreOptions,
         onSelected: (action) {
           switch (action) {
             case 'view':
@@ -265,52 +254,31 @@ class InvitationActions {
               break;
           }
         },
-        itemBuilder: (context) => [
+        choices: [
           if (showView && onView != null)
-            PopupMenuItem(
+            ButleryMenuChoice(
               value: 'view',
-              child: ListTile(
-                leading: const ButleryIcon(ButleryIcons.eye),
-                title: Text(context.l10n.invitationView),
-                dense: true,
-              ),
+              label: context.l10n.invitationView,
+              icon: ButleryIcons.eye,
             ),
           if (showEdit && onEdit != null)
-            PopupMenuItem(
+            ButleryMenuChoice(
               value: 'edit',
-              child: ListTile(
-                leading: const ButleryIcon(ButleryIcons.pencil),
-                title: Text(context.l10n.commonEdit),
-                dense: true,
-              ),
+              label: context.l10n.commonEdit,
+              icon: ButleryIcons.pencil,
             ),
           if (showInvite && onInvite != null)
-            PopupMenuItem(
+            ButleryMenuChoice(
               value: 'invite',
-              child: ListTile(
-                leading: const ButleryIcon(ButleryIcons.send),
-                title: Text(context.l10n.invitationSendInvitation),
-                dense: true,
-              ),
+              label: context.l10n.invitationSendInvitation,
+              icon: ButleryIcons.send,
             ),
           if (showRemove && onRemove != null)
-            PopupMenuItem(
+            ButleryMenuChoice(
               value: 'remove',
-              child: Builder(
-                builder: (context) => ListTile(
-                  leading: ButleryIcon(
-                    ButleryIcons.trash2,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  title: Text(
-                    context.l10n.commonDelete,
-                    style: AppTextStyles.bodyMediumError.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  dense: true,
-                ),
-              ),
+              label: context.l10n.commonDelete,
+              icon: ButleryIcons.trash2,
+              danger: true,
             ),
         ],
       ),
