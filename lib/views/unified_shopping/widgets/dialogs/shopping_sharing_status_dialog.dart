@@ -4,11 +4,13 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -33,28 +35,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final permissionService = ServiceLocator.get<PermissionService>();
     final userService = ServiceLocator.get<UserService>();
     final currentUserId = permissionService.currentUser?.uid;
 
-    return AlertDialog(
-      title: Row(
-        children: [
-          ButleryIcon(
-            _getListTypeIcon(),
-            color: _getListTypeColor(cs),
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.space8),
-          Expanded(
-            child: Text(
-              _getDialogTitle(context),
-              style: AppTextStyles.titleLarge,
-            ),
-          ),
-        ],
-      ),
+    return ButleryDialog(
+      title: _getDialogTitle(context),
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         child: SingleChildScrollView(
@@ -83,8 +70,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         if (list.isCollaborative &&
             currentUserId != null &&
             _canManageSharing(currentUserId))
-          ActionButtons.secondaryButton(
-            context,
+          ButleryTextButton(
             label: context.l10n.shoppingManageSharing,
             icon: ButleryIcons.users,
             onPressed: () {
@@ -101,12 +87,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             currentUserId != null &&
             list.ownerId != currentUserId &&
             list.memberPermissions.containsKey(currentUserId))
-          ActionButtons.textButton(
-            context,
+          ButleryTextButton(
             label: context.l10n.shoppingLeaveList,
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
+            tone: ButleryTextButtonTone.danger,
             onPressed: () => ShoppingLeaveListAction.confirmAndLeave(
               context,
               list,
@@ -118,8 +101,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               onConfirmed: () => Navigator.pop(context),
             ),
           ),
-        ActionButtons.primaryButton(
-          context,
+        ButleryDialogPrimary(
           label: context.l10n.commonClose,
           onPressed: () => Navigator.pop(context),
         ),
@@ -130,8 +112,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   Widget _buildListInfoSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Card(
-      color: cs.surfaceContainerHighest,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
@@ -213,8 +194,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       }
     }
 
-    return Card(
-      color: cs.surfaceContainerHighest,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
@@ -262,8 +242,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
     allMembers.addAll(list.memberPermissions);
 
-    return Card(
-      color: cs.surfaceContainerHighest,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
@@ -357,7 +336,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           // användare") would read as a real person's initial.
           AvatarCircle(
             displayName: knownName.orEmpty(),
-            tone: AvatarCircleTone.paper,
           ),
           const SizedBox(width: AppDimensions.space8),
           Expanded(
@@ -397,8 +375,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   Widget _buildActivitySection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Card(
-      color: cs.surfaceContainerHighest,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
@@ -474,28 +451,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     );
   }
 
-  IconData _getListTypeIcon() {
-    switch (list.type) {
-      case ListType.personal:
-        return ButleryIcons.user;
-      case ListType.collaborative:
-        return ButleryIcons.users;
-      case ListType.template:
-        return ButleryIcons.savedTemplate;
-    }
-  }
-
-  Color _getListTypeColor(ColorScheme cs) {
-    switch (list.type) {
-      case ListType.personal:
-        return cs.onSurface;
-      case ListType.collaborative:
-        return cs.onSurface;
-      case ListType.template:
-        return cs.onSurfaceVariant;
-    }
-  }
-
   String _getListTypeLabel(BuildContext context) {
     switch (list.type) {
       case ListType.personal:
@@ -524,7 +479,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       final availableFriends = friendsService.friends;
 
       if (context.mounted) {
-        await showDialog(
+        await showButleryDialog<void>(
           context: context,
           builder: (context) => ShoppingMemberManagementDialog(
             list: list,

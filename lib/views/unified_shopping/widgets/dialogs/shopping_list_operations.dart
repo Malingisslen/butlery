@@ -2,6 +2,8 @@
 
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -13,7 +15,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/no_friends_dialog.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -139,10 +140,10 @@ class ShoppingListOperations {
     final textController = TextEditingController(text: list.name);
     final formKey = GlobalKey<FormState>();
 
-    final result = await showDialog<String>(
+    final result = await showButleryDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.shoppingRenameList),
+      builder: (context) => ButleryDialog(
+        title: context.l10n.shoppingRenameList,
         content: Form(
           key: formKey,
           child: Column(
@@ -179,13 +180,8 @@ class ShoppingListOperations {
           ),
         ),
         actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context),
-          ),
-          ActionButtons.primaryButton(
-            context,
+          const DialogCancelButton(),
+          ButleryDialogPrimary(
             label: context.l10n.commonSave,
             onPressed: () {
               if (formKey.currentState!.validate()) {
@@ -264,7 +260,7 @@ class ShoppingListOperations {
 
       if (!context.mounted) return;
 
-      final result = await showDialog<_ConvertToCollaborativeResult>(
+      final result = await showButleryDialog<_ConvertToCollaborativeResult>(
         context: context,
         builder: (context) => _ConvertToCollaborativeDialog(
           friends: availableFriends,
@@ -399,8 +395,9 @@ class _ConvertToCollaborativeDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.shoppingConvertToCollaborativeTitle),
+    return ButleryDialog(
+      title: context.l10n.shoppingConvertToCollaborativeTitle,
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -467,13 +464,8 @@ class _ConvertToCollaborativeDialogState
         ),
       ),
       actions: [
-        ActionButtons.secondaryButton(
-          context,
-          label: context.l10n.commonCancel,
-          onPressed: () => Navigator.pop(context),
-        ),
-        ActionButtons.primaryButton(
-          context,
+        const DialogCancelButton(),
+        ButleryDialogPrimary(
           label: context.l10n.shoppingConvertToCollaborative,
           onPressed: _selectedIds.isEmpty
               ? null

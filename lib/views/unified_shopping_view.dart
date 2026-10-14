@@ -4,6 +4,9 @@
 // lib/views/unified_shopping_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 
 // ViewModel integration for shopping state management
@@ -409,19 +412,19 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// the answer) ensures it never re-nags across sessions/devices. [itemId] is
   /// the row whose tick opened it, which "Ja" also puts in the pantry.
   Future<void> _maybeShowFirstCheckoffPrompt(String itemId) async {
-    final enable = await showDialog<bool>(
+    final enable = await showButleryDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.pantryAutoAddPromptTitle),
-        content: Text(ctx.l10n.pantryAutoAddPromptBody),
+      builder: (ctx) => ButleryDialog(
+        title: ctx.l10n.pantryAutoAddPromptTitle,
+        message: ctx.l10n.pantryAutoAddPromptBody,
         actions: [
-          TextButton(
+          DialogCancelButton(
+            label: ctx.l10n.pantryAutoAddPromptDecline,
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(ctx.l10n.pantryAutoAddPromptDecline),
           ),
-          FilledButton(
+          ButleryDialogPrimary(
+            label: ctx.l10n.pantryAutoAddPromptEnable,
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(ctx.l10n.pantryAutoAddPromptEnable),
           ),
         ],
       ),
@@ -597,7 +600,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   }
 
   Future<void> _showTemplateBrowser() async {
-    await showDialog(
+    await showButleryDialog<void>(
       context: context,
       builder: (context) => Dialog(
         child: ConstrainedBox(
@@ -609,19 +612,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.space12),
-                child: Row(
-                  children: [
-                    Text(
-                      context.l10n.shoppingTemplates,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const ButleryIcon(ButleryIcons.x),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
+                padding: const EdgeInsets.only(top: AppDimensions.space12),
+                child: ButlerySheetHeader(
+                  title: context.l10n.shoppingTemplates,
+                  closeLabel: context.l10n.commonClose,
                 ),
               ),
               Expanded(

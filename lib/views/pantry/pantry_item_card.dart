@@ -192,7 +192,7 @@ class PantryItemCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   _metaLine(context),
                   style: AppTextStyles.bodySmall.copyWith(

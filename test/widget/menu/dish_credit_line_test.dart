@@ -66,10 +66,10 @@ void main() {
         await _pump(tester, onReport: () {});
 
         final data = tester
-            .getSemantics(find.byTooltip('Anmäl rätten'))
+            .getSemantics(find.byType(IconButton))
             .getSemanticsData();
         expect(data.flagsCollection.isButton, isTrue);
-        expect(data.tooltip, 'Anmäl rätten');
+        expect(data.label, 'Anmäl rätten');
       } finally {
         handle.dispose();
       }

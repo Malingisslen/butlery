@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/shopping_lists_pane.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -131,11 +131,13 @@ class ShoppingListsPane extends StatelessWidget {
                       onTap: () => onPickList(list.id),
                     ),
                   const SizedBox(height: AppDimensions.space8),
-                  OutlinedButton.icon(
+                  ActionButtons.outlinedButton(
+                    context,
                     key: const ValueKey('shopping-pane-new-list'),
+                    label: context.l10n.shoppingNewShoppingList,
+                    icon: ButleryIcons.plus,
+                    isExpanded: true,
                     onPressed: onCreateList,
-                    icon: const ButleryIcon(ButleryIcons.plus),
-                    label: Text(context.l10n.shoppingNewShoppingList),
                   ),
                 ],
               ),

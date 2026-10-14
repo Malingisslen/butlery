@@ -3,6 +3,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -84,13 +86,13 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           title: tag.name,
           backTo: context.l10n.morePersonalTags,
           actions: [
-            TextButton(
+            ButleryTextButton(
+              label: context.l10n.cookbookEdit,
               onPressed: () => showTagEditSheet(
                 context,
                 tag: tag,
                 viewModel: viewModel,
               ),
-              child: Text(context.l10n.cookbookEdit),
             ),
           ],
           body: Column(
@@ -161,9 +163,11 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           onAddRule: () => TagDetailActions.addRule(context, tag),
         ),
         const SizedBox(height: AppDimensions.space16),
-        OutlinedButton(
+        ActionButtons.outlinedButton(
+          context,
+          label: l10n.tagDetailRunRulesAll,
+          isExpanded: true,
           onPressed: () => TagDetailActions.applyRulesToRecipes(context),
-          child: Text(l10n.tagDetailRunRulesAll),
         ),
         const SizedBox(height: AppDimensions.space24),
         TagDetailRecipesSection(

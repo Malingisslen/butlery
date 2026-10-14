@@ -8,6 +8,9 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -32,16 +35,11 @@ Widget _navIcon({
   required VoidCallback? onPressed,
   required String tooltip,
 }) {
-  return IconButton(
-    icon: ButleryIcon(icon),
+  return AppIconButton(
+    icon: icon,
     color: color,
     onPressed: onPressed,
-    tooltip: tooltip,
-    style: IconButton.styleFrom(
-      minimumSize: const Size(_kNavIconWidth, AppDimensions.minTouchTarget),
-      padding: EdgeInsets.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    ),
+    semanticLabel: tooltip,
   );
 }
 
@@ -229,11 +227,10 @@ class SelectionActionBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.x),
+          ButleryCloseButton(
+            semanticLabel: context.l10n.commonCancel,
             color: cs.onPrimaryContainer,
             onPressed: onCancel,
-            tooltip: context.l10n.commonCancel,
           ),
           Expanded(
             child: Text(
@@ -243,13 +240,10 @@ class SelectionActionBar extends StatelessWidget {
               ),
             ),
           ),
-          TextButton.icon(
+          ButleryTextButton(
+            label: context.l10n.weeklyMenuMoveSelectionAction,
+            icon: ButleryIcons.move,
             onPressed: selectedCount > 0 ? onMove : null,
-            icon: const ButleryIcon(ButleryIcons.move),
-            label: Text(context.l10n.weeklyMenuMoveSelectionAction),
-            style: TextButton.styleFrom(
-              foregroundColor: cs.onPrimaryContainer,
-            ),
           ),
         ],
       ),
@@ -347,20 +341,21 @@ class OverflowTray extends StatelessWidget {
               button: true,
               onTap: onPlaceInNextWeek,
               excludeSemantics: true,
-              child: OutlinedButton(
+              child: ActionButtons.outlinedButton(
+                context,
                 key: nextWeekKey,
+                label: l.weeklyMenuOverflowNextWeekAction(nextWeek),
                 onPressed: onPlaceInNextWeek,
-                child: Text(l.weeklyMenuOverflowNextWeekAction(nextWeek)),
               ),
             ),
           // The quieter of the two: a text button after the way on.
           // Interpretation: the drawing (#vmbdelvis) has no discard action;
           // the label is the decided "Släng resten".
           if (onDiscard != null)
-            TextButton(
+            ButleryTextButton(
               key: discardKey,
+              label: l.weeklyMenuOverflowDiscardAction,
               onPressed: onDiscard,
-              child: Text(l.weeklyMenuOverflowDiscardAction),
             ),
         ],
         child: Wrap(

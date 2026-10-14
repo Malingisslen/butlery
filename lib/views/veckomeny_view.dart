@@ -6,6 +6,9 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -28,11 +31,9 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
@@ -51,7 +52,6 @@ import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// The week menu's root-bar overflow actions.
 enum _VeckomenyRootAction { load, save, clear }
@@ -391,20 +391,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Future<bool> _confirmOverwrite() async {
-    final result = await showDialog<bool>(
+    final result = await showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.weeklyMenuOverwriteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(context.l10n.commonContinue),
-          ),
-        ],
+      builder: (context) => ButleryDialog.confirm(
+        title: context.l10n.weeklyMenuOverwriteConfirm,
+        primaryLabel: context.l10n.commonContinue,
       ),
     );
     return result ?? false;
@@ -686,83 +677,69 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // menu, so the title always has room.
     return [
       const GroupMenuEntryButton(),
-      PressFill(
-        surface: PressSurface.base,
-        child: PopupMenuButton<_VeckomenyRootAction>(
-          key: const ValueKey('veckomeny-root-more'),
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          tooltip: context.l10n.rootBarMoreActions,
-          onSelected: (action) {
-            switch (action) {
-              case _VeckomenyRootAction.load:
-                unawaited(
-                  VeckomenyDialogs.showLoadMenuBottomSheet(
-                    context,
-                    viewModel: viewModel,
-                    onTemplateSelected: (prompt) {
-                      _promptController.text = prompt;
-                      setState(() {});
-                    },
-                  ),
-                );
-              case _VeckomenyRootAction.save:
-                unawaited(
-                  VeckomenyDialogs.showSaveMenuDialog(
-                    context,
-                    viewModel: viewModel,
-                    availableFriends: _friendsService.friends,
-                  ),
-                );
-              case _VeckomenyRootAction.clear:
-                _clearMenu();
-            }
-          },
-          itemBuilder: (menuContext) => [
-            // Loading a saved menu would replace the shared one on screen.
-            if (widget.realtimeMenuId == null)
-              _rootItem(
-                _VeckomenyRootAction.load,
-                ButleryIcons.folder,
-                context.l10n.menuLoadSaved,
-              ),
-            if (viewModel.hasMenu)
-              _rootItem(
-                _VeckomenyRootAction.save,
-                ButleryIcons.save,
-                context.l10n.menuSave,
-              ),
-            // A clear would empty the menu for everyone it is shared with.
-            if (viewModel.hasMenu && widget.realtimeMenuId == null)
-              _rootItem(
-                _VeckomenyRootAction.clear,
-                ButleryIcons.x,
-                context.l10n.menuClear,
-              ),
-          ],
-        ),
+      ButleryMenu<_VeckomenyRootAction>(
+        key: const ValueKey('veckomeny-root-more'),
+        semanticLabel: context.l10n.rootBarMoreActions,
+        onSelected: (action) {
+          switch (action) {
+            case _VeckomenyRootAction.load:
+              unawaited(
+                VeckomenyDialogs.showLoadMenuBottomSheet(
+                  context,
+                  viewModel: viewModel,
+                  onTemplateSelected: (prompt) {
+                    _promptController.text = prompt;
+                    setState(() {});
+                  },
+                ),
+              );
+            case _VeckomenyRootAction.save:
+              unawaited(
+                VeckomenyDialogs.showSaveMenuDialog(
+                  context,
+                  viewModel: viewModel,
+                  availableFriends: _friendsService.friends,
+                ),
+              );
+            case _VeckomenyRootAction.clear:
+              _clearMenu();
+          }
+        },
+        choices: [
+          // Loading a saved menu would replace the shared one on screen.
+          if (widget.realtimeMenuId == null)
+            _rootItem(
+              _VeckomenyRootAction.load,
+              ButleryIcons.folder,
+              context.l10n.menuLoadSaved,
+            ),
+          if (viewModel.hasMenu)
+            _rootItem(
+              _VeckomenyRootAction.save,
+              ButleryIcons.save,
+              context.l10n.menuSave,
+            ),
+          // A clear would empty the menu for everyone it is shared with.
+          if (viewModel.hasMenu && widget.realtimeMenuId == null)
+            _rootItem(
+              _VeckomenyRootAction.clear,
+              ButleryIcons.x,
+              context.l10n.menuClear,
+            ),
+        ],
       ),
     ];
   }
 
-  /// One overflow row; icon and text take the menu's foreground (onSurface,
-  /// text.primary in both modes).
-  ButleryMenuItem<_VeckomenyRootAction> _rootItem(
+  ButleryMenuChoice<_VeckomenyRootAction> _rootItem(
     _VeckomenyRootAction value,
     IconData icon,
     String label,
-  ) {
-    return ButleryMenuItem<_VeckomenyRootAction>(
-      key: ValueKey('veckomeny-root-${value.name}'),
-      value: value,
-      child: Row(
-        children: [
-          ButleryIcon(icon, size: AppDimensions.iconSizeM),
-          const SizedBox(width: AppDimensions.space8),
-          Flexible(child: Text(label)),
-        ],
-      ),
-    );
-  }
+  ) => ButleryMenuChoice<_VeckomenyRootAction>(
+    value: value,
+    label: label,
+    icon: icon,
+  );
 
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
     // At large text on a short phone the top of the page took the whole
@@ -1017,16 +994,18 @@ class VeckomenyNoMatch extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space16),
           ],
-          OutlinedButton(
+          ActionButtons.outlinedButton(
+            context,
             key: editPromptKey,
+            label: l.menuNoMatchEditPrompt,
             onPressed: onEditPrompt,
-            child: Text(l.menuNoMatchEditPrompt),
           ),
           const SizedBox(height: AppDimensions.space8),
-          OutlinedButton(
+          ActionButtons.outlinedButton(
+            context,
             key: planYourselfKey,
+            label: l.menuNoMatchPlanYourself,
             onPressed: onPlanYourself,
-            child: Text(l.menuNoMatchPlanYourself),
           ),
         ],
       ),

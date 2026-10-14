@@ -4,6 +4,9 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -84,18 +87,20 @@ class MenuVoteCard extends StatelessWidget {
         if (onPropose != null)
           _ActionRow(
             children: [
-              OutlinedButton(
+              ActionButtons.outlinedButton(
+                context,
+                label: context.l10n.menuVoteProposeOther,
                 onPressed: onPropose,
-                child: Text(context.l10n.menuVoteProposeOther),
               ),
             ],
           ),
         if (_isStarter && total > 0 && !tied && onDecide != null)
           _ActionRow(
             children: [
-              FilledButton(
+              ActionButtons.primaryButton(
+                context,
+                label: context.l10n.menuVoteDecide,
                 onPressed: () => onDecide!(vote.clearWinner!.id),
-                child: Text(context.l10n.menuVoteDecide),
               ),
             ],
           ),
@@ -120,19 +125,21 @@ class MenuVoteCard extends StatelessWidget {
         children: [
           if (onDecide != null)
             for (final leader in vote.leaders)
-              FilledButton(
+              ActionButtons.primaryButton(
+                context,
+                label: context.l10n.menuVoteDecideFor(leader.recipeName),
                 onPressed: () => onDecide!(leader.id),
-                child: Text(context.l10n.menuVoteDecideFor(leader.recipeName)),
               ),
           if (onReopen != null && vote.isExpired)
-            OutlinedButton(
+            ActionButtons.outlinedButton(
+              context,
+              label: context.l10n.menuVoteGiveADay,
               onPressed: onReopen,
-              child: Text(context.l10n.menuVoteGiveADay),
             ),
           if (onRelease != null && vote.isExpired)
-            TextButton(
+            ButleryTextButton(
+              label: context.l10n.menuVoteRelease,
               onPressed: onRelease,
-              child: Text(context.l10n.menuVoteRelease),
             ),
         ],
       ),
@@ -166,19 +173,21 @@ class MenuVoteCard extends StatelessWidget {
           _ActionRow(
             children: [
               if (onDecide != null && leader != null)
-                FilledButton(
+                ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.menuVoteDecideAnyway,
                   onPressed: () => onDecide!(leader.id),
-                  child: Text(context.l10n.menuVoteDecideAnyway),
                 ),
               if (onReopen != null)
-                OutlinedButton(
+                ActionButtons.outlinedButton(
+                  context,
+                  label: context.l10n.menuVoteReopen,
                   onPressed: onReopen,
-                  child: Text(context.l10n.menuVoteReopen),
                 ),
               if (onRelease != null)
-                TextButton(
+                ButleryTextButton(
+                  label: context.l10n.menuVoteRelease,
                   onPressed: onRelease,
-                  child: Text(context.l10n.menuVoteRelease),
                 ),
             ],
           ),
@@ -202,9 +211,9 @@ class MenuVoteCard extends StatelessWidget {
         if (_isStarter && onRelease != null)
           _ActionRow(
             children: [
-              TextButton(
+              ButleryTextButton(
+                label: context.l10n.menuVoteRelease,
                 onPressed: onRelease,
-                child: Text(context.l10n.menuVoteRelease),
               ),
             ],
           ),
@@ -269,7 +278,11 @@ class _CardFrame extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => StyledCard(
+    margin: const EdgeInsets.symmetric(
+      horizontal: AppDimensions.space16,
+      vertical: AppDimensions.space8,
+    ),
     child: Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(

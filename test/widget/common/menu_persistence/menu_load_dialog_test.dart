@@ -5,7 +5,7 @@
 ///   2. While `refreshSavedMenus` is in flight, a spinner is shown.
 ///   3. Empty result list renders the StateWidget.empty branch with the
 ///      localized "Inga sparade menyer" copy.
-///   4. Populated result list renders one ListTile per saved menu and the
+///   4. Populated result list renders one item row per saved menu and the
 ///      onTap callback invokes `viewModel.loadSavedMenu(menu.key)`.
 ///   5. Delete removes the row at once with Ångra and commits afterwards
 ///      (BUT-2145).
@@ -24,6 +24,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -67,7 +69,7 @@ void main() {
 
       // Swedish locale: "Sparade menyer" + "Stäng"
       expect(find.text('Sparade menyer'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
+      expect(find.widgetWithText(ButleryTextButton, 'Stäng'), findsOneWidget);
       // Header and empty state both show the folder glyph (P7-U08).
       expect(find.byIcon(ButleryIcons.folder), findsNWidgets(2));
     });
@@ -156,7 +158,7 @@ void main() {
       expect(find.text('Försök igen'), findsNothing);
     });
 
-    testWidgets('populated list renders one Card+ListTile per saved menu', (
+    testWidgets('populated list renders one item row per saved menu', (
       tester,
     ) async {
       final vm = _FakeMenuViewModel();
@@ -171,7 +173,7 @@ void main() {
 
       expect(find.text('Veckomeny v.45'), findsOneWidget);
       expect(find.text('Helgmiddag'), findsOneWidget);
-      expect(find.byType(ListTile), findsNWidgets(2));
+      expect(find.byType(ButleryItemRow), findsNWidgets(2));
       // Subtitle uses menuSavedEarlier = "Sparad tidigare", one per tile.
       expect(find.text('Sparad tidigare'), findsNWidgets(2));
     });

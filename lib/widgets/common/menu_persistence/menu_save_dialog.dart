@@ -1,13 +1,14 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -61,8 +62,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     if (_shareMessageController.text.isEmpty) {
       _shareMessageController.text = context.l10n.menuShareDefaultMessage;
     }
-    return AlertDialog(
-      title: Text(context.l10n.menuSaveTitle),
+    return ButleryDialog(
+      title: context.l10n.menuSaveTitle,
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         child: SingleChildScrollView(
@@ -92,21 +94,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       ),
       actions: [
         DialogCancelButton(enabled: !_isLoading),
-        // Busy keeps the button's shape and name; the plate line along its
-        // bottom edge shows the work (Komponentark v1:365, :372).
-        BusyButtonSemantics(
+        ButleryDialogPrimary(
+          label: context.l10n.commonSave,
           busy: _isLoading,
-          name: context.l10n.commonSave,
-          child: FilledButton(
-            onPressed: _isLoading ? PlateLineButton.ignore : _saveMenu,
-            style: _isLoading
-                ? PlateLineButton.busyStyle(
-                    null,
-                    Theme.of(context).filledButtonTheme.style,
-                  )
-                : null,
-            child: Text(context.l10n.commonSave),
-          ),
+          onPressed: _saveMenu,
         ),
       ],
     );
@@ -175,22 +166,21 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   }
 
   Widget _buildSocialSharingToggle() {
-    return SwitchListTile(
-      title: Text(context.l10n.menuShareWithFriends),
-      subtitle: Text(context.l10n.menuShareWithFriendsDescription),
-      value: _enableSocialSharing,
-      onChanged: _isLoading
-          ? null
-          : (value) {
-              if (mounted) {
-                setState(() {
-                  _enableSocialSharing = value;
-                  if (!value) {
-                    _selectedFriendIds.clear();
-                  }
-                });
-              }
-            },
+    return ButleryListRow.toggle(
+      label: context.l10n.menuShareWithFriends,
+      subtitle: context.l10n.menuShareWithFriendsDescription,
+      checked: _enableSocialSharing,
+      enabled: !_isLoading,
+      onChanged: (value) {
+        if (mounted) {
+          setState(() {
+            _enableSocialSharing = value;
+            if (!value) {
+              _selectedFriendIds.clear();
+            }
+          });
+        }
+      },
     );
   }
 

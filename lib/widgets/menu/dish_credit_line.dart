@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -86,14 +88,11 @@ class DishCreditLine extends StatelessWidget {
               ),
             ),
             if (report != null)
-              IconButton(
+              AppIconButton(
+                icon: ButleryIcons.flag,
+                color: color,
+                semanticLabel: l10n.menuDishReportTooltip,
                 onPressed: report,
-                tooltip: l10n.menuDishReportTooltip,
-                constraints: const BoxConstraints(
-                  minWidth: AppDimensions.minTouchTarget,
-                  minHeight: AppDimensions.minTouchTarget,
-                ),
-                icon: ButleryIcon(ButleryIcons.flag, color: color),
               ),
           ],
         ),
@@ -102,12 +101,9 @@ class DishCreditLine extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
             ),
-            child: TextButton(
+            child: ButleryTextButton(
+              label: l10n.menuDishNotMine,
               onPressed: notMine,
-              style: TextButton.styleFrom(
-                minimumSize: const Size(0, AppDimensions.minTouchTarget),
-              ),
-              child: Text(l10n.menuDishNotMine),
             ),
           ),
       ],

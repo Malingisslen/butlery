@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -142,7 +143,7 @@ abstract final class TagDetailActions {
   static Future<void> applyRulesToRecipes(BuildContext context) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(

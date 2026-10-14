@@ -1,6 +1,10 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -12,7 +16,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Bottom sheet for loading a saved menu.
 class LoadMenuBottomSheet extends StatefulWidget {
@@ -115,9 +118,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   style: AppTextStyles.headlineSmall,
                 ),
                 const Spacer(),
-                TextButton(
+                ButleryTextButton(
+                  label: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
-                  child: Text(context.l10n.commonClose),
                 ),
               ],
             ),
@@ -179,12 +182,12 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   }
 
   Widget _buildMenuListItem(dynamic menu) {
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
-      child: ListTile(
+      child: ButleryItemRow(
         leading: Container(
           width: AppDimensions.iconSizeXl,
           height: AppDimensions.iconSizeXl,
@@ -197,54 +200,24 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        title: Text(
-          menu.name ?? context.l10n.menuUnnamed,
-          style: AppTextStyles.titleMedium,
-        ),
-        subtitle: Text(
-          context.l10n.menuSavedEarlier,
-          style: AppTextStyles.bodySmall,
-        ),
-        trailing: PressFill(
-          surface: PressSurface.base,
-          child: PopupMenuButton<String>(
-            icon: const ButleryIcon(ButleryIcons.moreVertical),
-            onSelected: (value) => _handleMenuAction(menu, value),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'load',
-                child: Builder(
-                  builder: (context) => Row(
-                    children: [
-                      const ButleryIcon(ButleryIcons.download),
-                      const SizedBox(width: AppDimensions.space8),
-                      Text(context.l10n.menuLoad),
-                    ],
-                  ),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Builder(
-                  builder: (context) => Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.trash2,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(width: AppDimensions.space8),
-                      Text(
-                        context.l10n.commonDelete,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        title: menu.name ?? context.l10n.menuUnnamed,
+        subtitle: context.l10n.menuSavedEarlier,
+        trailing: ButleryMenu<String>(
+          semanticLabel: context.l10n.rootBarMoreActions,
+          onSelected: (value) => _handleMenuAction(menu, value),
+          choices: [
+            ButleryMenuChoice(
+              value: 'load',
+              label: context.l10n.menuLoad,
+              icon: ButleryIcons.download,
+            ),
+            ButleryMenuChoice(
+              value: 'delete',
+              label: context.l10n.commonDelete,
+              icon: ButleryIcons.trash2,
+              danger: true,
+            ),
+          ],
         ),
         onTap: () => _loadMenu(menu),
       ),

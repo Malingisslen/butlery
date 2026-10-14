@@ -6,14 +6,15 @@
 /// re-exposed via thin delegators on [PersonalTagDialogs].
 library;
 
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -35,15 +36,16 @@ abstract final class PersonalTagBulkDialogs {
     // Default the keep-target to the first selected tag.
     String targetId = selectedTags.first.id;
 
-    await showDialog<void>(
+    await showButleryDialog<void>(
       context: context,
       builder: (dialogContext) {
         bool isLoading = false;
         return StatefulBuilder(
           builder: (context, setState) {
             final targetTag = selectedTags.firstWhere((t) => t.id == targetId);
-            return AlertDialog(
-              title: Text(context.l10n.personalTagMergeTitle),
+            return ButleryDialog(
+              title: context.l10n.personalTagMergeTitle,
+              scrollable: false,
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,63 +90,47 @@ abstract final class PersonalTagBulkDialogs {
                 ],
               ),
               actions: [
-                TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => Navigator.pop(dialogContext),
-                  child: Text(context.l10n.commonCancel),
-                ),
-                BusyButtonSemantics(
+                DialogCancelButton(enabled: !isLoading),
+                ButleryDialogPrimary(
+                  label: context.l10n.personalTagMergeConfirm,
                   busy: isLoading,
-                  name: context.l10n.personalTagMergeConfirm,
-                  child: FilledButton(
-                    style: isLoading
-                        ? PlateLineButton.busyStyle(
-                            null,
-                            Theme.of(context).filledButtonTheme.style,
-                          )
-                        : null,
-                    onPressed: isLoading
-                        ? PlateLineButton.ignore
-                        : () async {
-                            setState(() => isLoading = true);
-                            // BUT-1188: the N-into-1 merge loop lives in the VM
-                            // (mergeTagsInto) so it's unit-testable; the success
-                            // metric is tags-merged, not a recipe count (the old
-                            // per-merge sum over-reported recipes carrying two
-                            // merged tags).
-                            final sources = selectedTags
-                                .where((t) => t.id != targetId)
-                                .map((t) => t.id)
-                                .toList();
-                            try {
-                              final merged = await viewModel.mergeTagsInto(
-                                targetId,
-                                sources,
-                              );
-                              await viewModel.loadTagStatistics();
+                  onPressed: () async {
+                    setState(() => isLoading = true);
+                    // BUT-1188: the N-into-1 merge loop lives in the VM
+                    // (mergeTagsInto) so it's unit-testable; the success
+                    // metric is tags-merged, not a recipe count (the old
+                    // per-merge sum over-reported recipes carrying two
+                    // merged tags).
+                    final sources = selectedTags
+                        .where((t) => t.id != targetId)
+                        .map((t) => t.id)
+                        .toList();
+                    try {
+                      final merged = await viewModel.mergeTagsInto(
+                        targetId,
+                        sources,
+                      );
+                      await viewModel.loadTagStatistics();
 
-                              if (!dialogContext.mounted) return;
-                              Navigator.pop(dialogContext);
-                              selection.exitSelection();
+                      if (!dialogContext.mounted) return;
+                      Navigator.pop(dialogContext);
+                      selection.exitSelection();
 
-                              if (!context.mounted) return;
-                              SnackBarUtils.showSuccess(
-                                context,
-                                context.l10n.personalTagMergeSuccessCount(
-                                  merged,
-                                ),
-                              );
-                            } catch (e) {
-                              if (!dialogContext.mounted) return;
-                              Navigator.pop(dialogContext);
+                      if (!context.mounted) return;
+                      SnackBarUtils.showSuccess(
+                        context,
+                        context.l10n.personalTagMergeSuccessCount(
+                          merged,
+                        ),
+                      );
+                    } catch (e) {
+                      if (!dialogContext.mounted) return;
+                      Navigator.pop(dialogContext);
 
-                              if (!context.mounted) return;
-                              SnackBarUtils.showUserFriendlyError(context, e);
-                            }
-                          },
-                    child: Text(context.l10n.personalTagMergeConfirm),
-                  ),
+                      if (!context.mounted) return;
+                      SnackBarUtils.showUserFriendlyError(context, e);
+                    }
+                  },
                 ),
               ],
             );

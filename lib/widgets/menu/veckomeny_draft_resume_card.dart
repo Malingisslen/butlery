@@ -140,6 +140,9 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
 class _DayCell extends StatelessWidget {
   const _DayCell({required this.day, required this.name});
 
+  static const double _cellPaddingV = AppDimensions.space8 - 2;
+  static const double _cellPaddingH = 2;
+
   final int day;
 
   /// Null for a day the draft has nothing for.
@@ -168,8 +171,8 @@ class _DayCell extends StatelessWidget {
     );
     final cell = Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.space8 - 2,
-        horizontal: 2,
+        vertical: _cellPaddingV,
+        horizontal: _cellPaddingH,
       ),
       child: Column(
         children: [

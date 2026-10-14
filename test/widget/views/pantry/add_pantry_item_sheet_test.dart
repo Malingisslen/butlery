@@ -108,6 +108,11 @@ void main() {
     when(() => vm.updateItem(any())).thenAnswer((_) async {});
   });
 
+  String expiryFieldText(WidgetTester tester) => tester
+      .widget<TextField>(fieldLabelled('Utgår', type: TextField))
+      .controller!
+      .text;
+
   Widget buildSheet({PantryItem? existingItem}) {
     return createLocalizedTestApp(
       child: ChangeNotifierProvider<PantryViewModel>.value(
@@ -1020,6 +1025,59 @@ void main() {
     await tester.pump();
 
     expect(find.byTooltip('Rensa'), findsNothing);
-    expect(find.text('Inget utgångsdatum'), findsOneWidget);
+    expect(expiryFieldText(tester), isEmpty);
+  });
+  testWidgets('an existing expiry date is shown formatted in the field', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_44',
+      ingredientName: 'Yoghurt',
+      quantity: 1,
+      unit: 'st',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+      expiryDate: DateTime(2026, 9, 30),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+
+    expect(expiryFieldText(tester), '30 september 2026');
+  });
+
+  testWidgets('a picked expiry date shows in the field and is saved', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSheet());
+    await tester.enterText(
+      fieldLabelled('Ingrediens', type: TextField),
+      'Mjölk',
+    );
+    final expiry = find.text('Inget utgångsdatum');
+    await tester.ensureVisible(expiry);
+    await tester.tap(expiry);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(expiryFieldText(tester), isNotEmpty);
+    expect(find.byTooltip('Rensa'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
+    await tester.pump();
+
+    final saved = verify(
+      () => vm.addItemFromText(
+        any(),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: captureAny(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).captured.single;
+    expect(saved, isA<DateTime>());
   });
 }

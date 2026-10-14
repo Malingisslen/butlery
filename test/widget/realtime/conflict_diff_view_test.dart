@@ -26,6 +26,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
@@ -711,7 +712,7 @@ void main() {
       await tester.pump();
 
       expect(tester.widget<OutlinedButton>(acceptKey).onPressed, isNull);
-      expect(tester.widget<TextButton>(closeKey).onPressed, isNull);
+      expect(tester.widget<ButleryTextButton>(closeKey).onPressed, isNull);
 
       saving.complete();
       await tester.pumpAndSettle();

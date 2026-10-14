@@ -3,6 +3,7 @@
 // The generated menu's content area: summary, hints, errors and the list.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -297,14 +298,9 @@ Widget _buildInlineError(
 
           // Dismiss error button
           const SizedBox(height: AppDimensions.space8),
-          TextButton(
+          ButleryTextButton(
+            label: context.l10n.commonDismiss,
             onPressed: () => viewModel.clearError(),
-            child: Text(
-              context.l10n.commonDismiss,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
           ),
         ],
       ),

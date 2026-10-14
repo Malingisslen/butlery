@@ -9,6 +9,8 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:intl/intl.dart';
@@ -238,21 +240,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     WeeklyMenuPlanViewModel vm,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.weeklyMenuCopyToNextConfirmTitle),
-        content: Text(dialogContext.l10n.weeklyMenuCopyToNextConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(dialogContext.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(dialogContext.l10n.commonContinue),
-          ),
-        ],
+      builder: (dialogContext) => ButleryDialog.confirm(
+        title: dialogContext.l10n.weeklyMenuCopyToNextConfirmTitle,
+        message: dialogContext.l10n.weeklyMenuCopyToNextConfirmBody,
+        primaryLabel: dialogContext.l10n.commonContinue,
       ),
     );
     if (confirmed != true || !context.mounted) return;
@@ -367,23 +360,14 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                     children: [
                       for (final day in DayOfWeek.values)
                         for (final slot in MealSlot.values)
-                          Semantics(
-                            button: true,
-                            label: '${day.displayLabel} ${slot.displayLabel}',
-                            child: ListTile(
-                              dense: true,
-                              leading: ButleryIcon(
-                                slot.isMulti
-                                    ? ButleryIcons.utensils
-                                    : ButleryIcons.utensils,
-                                color: cs.secondary,
-                              ),
-                              title: Text(
-                                '${day.displayLabel} · ${slot.displayLabel}',
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop((day, slot)),
+                          ButleryItemRow(
+                            leading: ButleryIcon(
+                              ButleryIcons.utensils,
+                              color: cs.secondary,
                             ),
+                            title: '${day.displayLabel} · ${slot.displayLabel}',
+                            onTap: () =>
+                                Navigator.of(sheetContext).pop((day, slot)),
                           ),
                     ],
                   ),

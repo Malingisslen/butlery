@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -102,10 +103,7 @@ class PersonalTagRow extends StatelessWidget {
                     ),
                     if (!inSelectionMode) ...[
                       const SizedBox(width: AppDimensions.space8),
-                      ButleryIcon(
-                        ButleryIcons.chevronRight,
-                        color: cs.onSurfaceVariant,
-                      ),
+                      const ButleryChevron(),
                     ],
                   ],
                 ),
@@ -282,14 +280,10 @@ class UnusedTagsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              TextButton(
+              ButleryTextButton(
+                label: l10n.personalTagDeleteAllShort,
+                tone: ButleryTextButtonTone.danger,
                 onPressed: onDeleteAll,
-                child: Text(
-                  l10n.personalTagDeleteAllShort,
-                  style: AppTextStyles.labelMediumBold.copyWith(
-                    color: cs.error,
-                  ),
-                ),
               ),
             ],
           ),
