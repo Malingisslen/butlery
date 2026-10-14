@@ -43,6 +43,13 @@ const variantCeilings = {
   'raw_show_dialog': 90,
   'raw_show_sheet': 5,
   'raw_segmented': 0,
+  'raw_icon_button': 96,
+  'raw_text_button': 162,
+  'raw_filled_button': 41,
+  'raw_outlined_button': 36,
+  'raw_elevated_button': 2,
+  'raw_alert_dialog': 61,
+  'raw_card': 12,
 };
 
 void main() {
