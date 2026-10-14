@@ -526,12 +526,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (librarySwitch != null) ...[
-          librarySwitch,
-          // The tabs' hairline and the library header's ink rule are two
-          // lines; air between them keeps them from reading as a double line.
-          const SizedBox(height: AppDimensions.space12),
-        ],
+        ?librarySwitch,
         // Q6-16 = B: the library's own header row under the Ikväll band,
         // "Dina recept · N" with Välj, the ingredient search and the
         // toggle; in selection mode the counter and Avbryt (B-46 on Hem).
