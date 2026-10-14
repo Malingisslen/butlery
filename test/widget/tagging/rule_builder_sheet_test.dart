@@ -184,6 +184,34 @@ void main() {
       });
 
       testWidgetsNoOverflow(
+        'removing the first of two conditions keeps the second one\'s value',
+        (tester) async {
+          await _showSheet(tester);
+          await tester.tap(find.byIcon(ButleryIcons.plus));
+          await tester.pumpAndSettle();
+
+          final valueFields = find.descendant(
+            of: find.byType(Card),
+            matching: find.byType(TextField),
+          );
+          expect(valueFields, findsNWidgets(2));
+          await tester.enterText(valueFields.at(0), 'kyckling');
+          await tester.enterText(valueFields.at(1), 'ris');
+          await tester.pumpAndSettle();
+
+          await tester.tap(find.byIcon(ButleryIcons.x).first);
+          await tester.pumpAndSettle();
+
+          expect(valueFields, findsOneWidget);
+          expect(
+            tester.widget<TextField>(valueFields).controller!.text,
+            'ris',
+          );
+          expect(find.text('kyckling'), findsNothing);
+        },
+      );
+
+      testWidgetsNoOverflow(
         'last condition delete button is disabled (canDelete: false)',
         (tester) async {
           await _showSheet(tester);

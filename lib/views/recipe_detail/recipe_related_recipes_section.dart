@@ -67,6 +67,17 @@ class _RelatedSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // The thumbnail is an image, a gap and a two-line title; the title grows
+    // with the text size, so the row's height has to as well.
+    final titleStyle = AppTextStyles.labelSmall;
+    final titleLine =
+        MediaQuery.textScalerOf(context).scale(titleStyle.fontSize!) *
+        titleStyle.height!;
+    final rowHeight =
+        _thumbnailSize -
+        AppDimensions.space32 +
+        AppDimensions.space4 +
+        2 * titleLine;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +98,7 @@ class _RelatedSection extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.space4),
         SizedBox(
-          height: _thumbnailSize + AppDimensions.space16,
+          height: rowHeight + AppDimensions.space4,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsetsDirectional.symmetric(

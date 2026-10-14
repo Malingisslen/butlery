@@ -12,7 +12,7 @@ import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 
 void main() {
   group('TagResultDisplay', () {
-    testWidgets('empty allergen/dietary shows tagResultNoAllergens text', (
+    testWidgets('a result that settled nothing says "Ej kontrollerat"', (
       tester,
     ) async {
       final result = TaggingTestHelper.createTagResult(
@@ -26,13 +26,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // When no allergens or dietary statuses have non-unknown values,
-      // the italic "no allergens" text appears (shown as fontStyle.italic Text)
       expect(find.byType(TagResultDisplay), findsOneWidget);
-      final italicText = find.byWidgetPredicate(
-        (w) => w is Text && w.style?.fontStyle == FontStyle.italic,
-      );
-      expect(italicText, findsOneWidget);
+      expect(find.text('Ej kontrollerat'), findsOneWidget);
+      expect(find.text('Inga av dina allergener hittades'), findsNothing);
     });
 
     testWidgets('isDegraded: true shows degraded warning', (tester) async {

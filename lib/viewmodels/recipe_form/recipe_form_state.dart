@@ -23,6 +23,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -335,6 +336,19 @@ class RecipeFormState extends ChangeNotifier {
 
   // CRITICAL FIX: Enhanced validation with consistent state sources and manager validation integration
   bool get isValid => _isFormValidWithConsistentSources();
+
+  /// The first missing piece, for the words beside a disabled Spara. Null
+  /// when nothing the user can fill in is missing.
+  RecipeSaveBlocker? get saveBlocker {
+    if (_title.trim().isEmpty) return RecipeSaveBlocker.title;
+    if (!_ingredientsManager.values.any((i) => i.trim().isNotEmpty)) {
+      return RecipeSaveBlocker.ingredients;
+    }
+    if (!_instructionsManager.values.any((i) => i.trim().isNotEmpty)) {
+      return RecipeSaveBlocker.instructions;
+    }
+    return null;
+  }
 
   /// Comprehensive validation using consistent state sources and manager validators
   bool _isFormValidWithConsistentSources() {

@@ -26,10 +26,6 @@ const _waiting = <String, int>{
   'lib/widgets/image/components/edit_actions_panel.dart': 1,
   // One on surface.raised.
   'lib/widgets/image/components/upload_progress_widgets.dart': 1,
-  // A surface the rule does not cover, for the design session (BUT-2232):
-  // a photo, and a send button
-  // that is paper in dark mode.
-  'lib/widgets/recipe/comment_form_widget.dart': 1,
   'lib/widgets/social/ping_compose_sheet.dart': 1,
   // Never pressed: onTap is null at every caller, or the widget has none.
   'lib/widgets/cooking/substitution_bottom_sheet.dart': 1,
@@ -37,7 +33,6 @@ const _waiting = <String, int>{
       1,
   'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart':
       1,
-  'lib/widgets/recipe/comment_item_widget.dart': 2,
 };
 
 String _call(String code, int open) {
@@ -133,26 +128,6 @@ void main() {
     if (stale.isNotEmpty) {
       fail('Lower these counts in _waiting:\n${stale.join('\n')}');
     }
-  });
-
-  // The surfaces left to the design session keep their old press and hover
-  // (BUT-2232). The destructive image action is pinned by a widget test,
-  // since a condition picks its wrapper.
-  test('the design-session surfaces sit in PressUnchanged', () {
-    const unchanged = <String, int>{
-      'lib/widgets/recipe/comment_form_widget.dart': 1,
-    };
-    final missing = <String>[];
-    for (final e in unchanged.entries) {
-      final code = File(e.key).readAsStringSync().replaceAll(
-        RegExp(r'(?<!:)//[^\n]*'),
-        '',
-      );
-      final all = _inkWell.allMatches(code).length;
-      final bare = inkWellsWithoutFill(code, wrapper: 'PressUnchanged').length;
-      if (all - bare < e.value) missing.add('${e.key}: ${all - bare}');
-    }
-    expect(missing, isEmpty, reason: 'Wrap these in PressUnchanged');
   });
 
   test('the scan reads the wrapper it is given', () {

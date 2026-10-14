@@ -30,6 +30,7 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -505,6 +506,87 @@ void main() {
         );
       },
     );
+
+    void stubPickOne() {
+      final picker = ServiceLocator.get<ImagePickerService>();
+      when(
+        () => picker.pickMultipleImagesWithOutcome(
+          maxImages: any(named: 'maxImages'),
+          rationale: any(named: 'rationale'),
+        ),
+      ).thenAnswer(
+        (_) async => ImagePickOutcome(
+          permission: OsPermissionOutcome.granted,
+          files: [tempImage],
+        ),
+      );
+    }
+
+    testWidgets(
+      'the remove control is a 48dp target that drops the picked image',
+      (tester) async {
+        stubPickOne();
+        await tester.pumpWidget(_wrap(buildWidget('r1')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(ButleryIcons.camera));
+        await tester.pumpAndSettle();
+        expect(find.byType(Image), findsOneWidget);
+
+        // The preview row is a 72dp Stack inside an unclamped Scaffold body,
+        // so this is the control's own size, not the viewport's.
+        final remove = find.ancestor(
+          of: find.byIcon(ButleryIcons.x),
+          matching: find.byType(TappableWrapper),
+        );
+        final size = tester.getSize(remove);
+        expect(size.width, greaterThanOrEqualTo(48));
+        expect(size.height, greaterThanOrEqualTo(48));
+
+        final semantics = tester.ensureSemantics();
+        try {
+          expect(
+            find.bySemanticsLabel(sv.a11yCommentRemoveSelectedImage),
+            findsOneWidget,
+          );
+        } finally {
+          semantics.dispose();
+        }
+
+        await tester.tap(remove);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(Image), findsNothing);
+      },
+    );
+
+    testWidgets('while the image uploads, the remove control does nothing', (
+      tester,
+    ) async {
+      stubPickOne();
+      final upload = Completer<String?>();
+      final storage = ServiceLocator.get<StorageService>();
+      when(
+        () => storage.uploadCommentImage(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer((_) => upload.future);
+
+      await tester.pumpWidget(_wrap(buildWidget('r1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(ButleryIcons.camera));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(ButleryIcons.send));
+      await tester.pump(); // busy: the upload is pending
+
+      await tester.tap(find.byIcon(ButleryIcons.x));
+      await tester.pump();
+      expect(find.byType(Image), findsOneWidget);
+
+      upload.complete('https://example.test/comment_images/x.jpg');
+      await tester.pumpAndSettle();
+    });
 
     testWidgets('upload success: posts with the uploaded URLs', (tester) async {
       final picker = ServiceLocator.get<ImagePickerService>();

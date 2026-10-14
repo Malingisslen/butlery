@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/recipe_form/save_blocked_hint.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -391,14 +392,6 @@ class _SkrivSjalvReceptViewContentState
         showTabBar: false,
         width: PageWidth.wide,
         actions: [
-          IconButton(
-            key: const ValueKey('skriv-sjalv-save-check'),
-            icon: const ButleryIcon(ButleryIcons.check),
-            tooltip: context.l10n.recipeSave,
-            onPressed: saveBlocked || _isSaving || viewModel.isSaving
-                ? null
-                : _saveRecipe,
-          ),
           DraftSaveIndicator(
             isSaving: viewModel.isAutoSaving,
             hasRecentSave: viewModel.hasRecentAutoSave,
@@ -806,6 +799,10 @@ class _SkrivSjalvReceptViewContentState
                     ),
                   ),
                 ),
+              if (!viewModel.isValid &&
+                  pendingConfirmations == 0 &&
+                  viewModel.saveBlocker != null)
+                SaveBlockedHint(blocker: viewModel.saveBlocker!),
               Semantics(
                 identifier: 'btn-save-recipe',
                 child: SizedBox(

@@ -12,6 +12,12 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
 const double _paperRingSize = 40;
 
+/// The icon colour on the hero. Ink on the paper ring, which is paper in both
+/// modes; with no ring the icon stands on the page, so it follows the page
+/// (ink on paper is 1.27:1 against the dark surface).
+Color _heroIconColor(ColorScheme cs, {required bool onPaper}) =>
+    onPaper ? cs.primary : cs.onSurface;
+
 /// An icon button on the media hero: an ink icon in a paper ring, 48 dp
 /// hitbox, the canonical focus ring around the hitbox (Komponentark
 /// v1:81-89 "Ikonknappar i pappersringar"; Grafisk manual v6:381).
@@ -75,7 +81,10 @@ class _RecipeHeroButtonState extends State<RecipeHeroButton> {
                 visible: widget.ringVisible,
                 child: ButleryIcon(
                   widget.icon,
-                  color: cs.primary,
+                  color: _heroIconColor(
+                    cs,
+                    onPaper: widget.ringVisible || _pressed || _hovered,
+                  ),
                   size: AppDimensions.iconSizeM,
                 ),
               ),
@@ -195,7 +204,10 @@ class _RecipeHeroMenuButtonState<T> extends State<RecipeHeroMenuButton<T>> {
                   visible: widget.ringVisible,
                   child: ButleryIcon(
                     widget.icon,
-                    color: cs.primary,
+                    color: _heroIconColor(
+                      cs,
+                      onPaper: widget.ringVisible || _pressed || _hovered,
+                    ),
                     size: AppDimensions.iconSizeM,
                   ),
                 ),

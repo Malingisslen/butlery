@@ -88,11 +88,13 @@ class TagStatusBadge extends StatelessWidget {
             ),
             if (label != null) ...[
               const SizedBox(width: AppDimensions.space4),
-              ExcludeSemantics(
-                child: Text(
-                  label!,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: onColor,
+              Flexible(
+                child: ExcludeSemantics(
+                  child: Text(
+                    label!,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: onColor,
+                    ),
                   ),
                 ),
               ),

@@ -208,10 +208,8 @@ class RecipeCard extends StatelessWidget {
               // honoured in list mode and silently ignored in grid mode, on the same
               // screen.
               //
-              // The unassessed marker SHIPS with the row and is never left behind —
-              // at runtime the two are mutually exclusive, since the marker is what a
-              // card shows INSTEAD of the row when the user asked for allergen
-              // information and there is nothing to say. On a screen of mostly-green
+              // The unassessed marker SHIPS with the row and is never left behind.
+              // On a screen of mostly-green
               // cards a silent card reads as "nothing flagged", and that inference is
               // exactly what the marker exists to block, so moving the row here
               // without it would reopen a fixed bug in a new place.
@@ -537,34 +535,15 @@ class RecipeCard extends StatelessWidget {
       ? const []
       : CompactAllergenRow.badgesFor(recipe.tagResult!, userAllergenPrefs);
 
-  /// Whether to explain a badge-less card rather than leaving it silent.
-  ///
-  /// True only when the user ASKED for allergen information and none can be
-  /// drawn. "Asked" is two separate things, and the second one is easy to miss:
-  ///
-  ///  · `showAllergenBadges` — the badges are switched on at all.
-  ///  · a NON-EMPTY tracked set — an empty set is not "no opinion", it is the
-  ///    user having untracked every allergen, which is the same choice as
-  ///    switching the badges off and deserves the same silence.
-  ///
-  /// Without the second of those this fires on EVERY card, permanently, and
-  /// tells someone who tracks no allergens that fully assessed recipes are
-  /// unassessed. Measured, not reasoned: `badgesFor` does
-  /// `userPrefs ?? _defaultAllergens`, so an EMPTY set checks zero allergens
-  /// and returns `[]` for every recipe — while `ContentCard` still derives
-  /// `showAllergenBadges: true` from it being non-null. And it is reachable
-  /// from onboarding, not just from an unusual settings path: saving
-  /// "vegan, no allergies" persists `{}` with `showOnCards` left on.
-  ///
-  /// The `!_showUntaggedIndicator` conjunct is DORMANT: it depends on
-  /// `showAnalysisStatus`, which nothing in `lib/` sets true, so the untagged
-  /// indicator never speaks today. It is kept because it is the right shape the
-  /// day that flag is wired up — but do not read it as a promise that is
-  /// currently being kept.
+  /// Whether to say "Ej kontrollerat" on the card: the user asked for
+  /// allergen information and at least one allergen they track is unsettled
+  /// (or the recipe was never tagged). Silence there reads as "nothing
+  /// flagged", the one inference the card must not invite. An empty tracked
+  /// set is the user opting out, which [_allergenBadgesRequested] covers.
   bool get _showUnassessedIndicator =>
       _allergenBadgesRequested &&
-      _allergenBadges.isEmpty &&
-      !_showUntaggedIndicator;
+      !_showUntaggedIndicator &&
+      CompactAllergenRow.hasUnchecked(recipe.tagResult, userAllergenPrefs);
 
   /// Did the user actually ask for allergen information on this card?
   ///
@@ -634,7 +613,6 @@ class RecipeCard extends StatelessWidget {
               color: noticeFg,
             ),
             const SizedBox(width: AppDimensions.space4),
-            // Flexible for the reason on the unassessed marker above.
             Flexible(
               child: Text(
                 hasFailed
@@ -651,34 +629,11 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  /// "Allergener ej bedömda" — shown when the card WOULD have carried allergen
-  /// badges and has nothing to say.
+  /// "Ej kontrollerat": the card carries allergen badges for what the tagger
+  /// settled and says in words that something is still unsettled, because
+  /// silence on a list full of green badges reads as "nothing flagged".
   ///
-  /// Malin's call, 2026-08-18, on the Creative Director's condition. The
-  /// problem it solves is an inference, not a missing feature: after UNKNOWN
-  /// badges were filtered out, a silent card meant four different things —
-  /// never analysed, analysis FAILED, analysed but everything uncertain, or
-  /// genuinely nothing to report. On a list where most cards show green FREE
-  /// badges, silence reads as "nothing flagged", i.e. safe. For an app whose
-  /// premise is trustworthy allergen information that is the one inference the
-  /// layout must never invite.
-  ///
-  /// Deliberately ONE neutral chip rather than restoring the per-allergen grey
-  /// badges. Her decision, as recorded: a grey question mark reads as a verdict
-  /// when it is the absence of one — and on a recipe the tagger settled NOTHING
-  /// about, those four badges were not part of the row, they WERE the row (see
-  /// `CompactAllergenRow.badgesFor`). One neutral marker states the absence
-  /// once instead of spelling it four times.
-  ///
-  /// Do NOT write that the grey badges "crowded" or "crowded out" anything.
-  /// That reason is unsupported — they sorted last and could displace nothing —
-  /// and it was already retracted once in `badgesFor`'s own comment. It came
-  /// back here through a paraphrase while this change was being written — so
-  /// the paraphrase is not in the committed diff, and the warning stands on
-  /// the mechanism above rather than on a trace you can go and find.
-  ///
-  /// Neutral, not `warning` — this is an absence of information, not a hazard,
-  /// and colouring it as a hazard would be its own false claim.
+  /// Neutral, not `warning`: this is an absence of information, not a hazard.
   ///
   /// Not shown when the user has turned badges off: silence is then their own
   /// choice and needs no explanation.
@@ -688,7 +643,7 @@ class RecipeCard extends StatelessWidget {
       Theme.of(context).brightness,
     );
     return Semantics(
-      label: context.l10n.recipeAllergensUnassessedA11y,
+      label: context.l10n.allergenUncheckedA11y,
       excludeSemantics: true,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
@@ -717,7 +672,7 @@ class RecipeCard extends StatelessWidget {
             // sizes to its content now, so it can afford the extra lines.
             Flexible(
               child: Text(
-                context.l10n.recipeAllergensUnassessed,
+                context.l10n.allergenUncheckedLabel,
                 style: AppTextStyles.labelSmall.copyWith(color: secondary),
               ),
             ),

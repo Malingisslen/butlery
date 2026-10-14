@@ -1880,18 +1880,6 @@ abstract class AppLocalizations {
   /// **'Ingredienser analyseras'**
   String get recipeAnalyzingA11y;
 
-  /// No description provided for @recipeAllergensUnassessed.
-  ///
-  /// In sv, this message translates to:
-  /// **'Allergener ej bedömda'**
-  String get recipeAllergensUnassessed;
-
-  /// No description provided for @recipeAllergensUnassessedA11y.
-  ///
-  /// In sv, this message translates to:
-  /// **'Allergener är inte bedömda för det här receptet'**
-  String get recipeAllergensUnassessedA11y;
-
   /// No description provided for @recipeSearchHint.
   ///
   /// In sv, this message translates to:
@@ -4007,7 +3995,7 @@ abstract class AppLocalizations {
   /// No description provided for @tagResultNoAllergens.
   ///
   /// In sv, this message translates to:
-  /// **'Inga allergener att visa'**
+  /// **'Inga av dina allergener hittades'**
   String get tagResultNoAllergens;
 
   /// No description provided for @tagResultOutdated.
@@ -31438,6 +31426,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Allergener ej kontrollerade'**
   String get allergenUncheckedA11y;
+
+  /// Allergen line in a shared recipe text. names is a comma-separated list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller allergener: {names}'**
+  String shareAllergensContains(String names);
+
+  /// No description provided for @recipeSaveNeedsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en titel för att kunna spara.'**
+  String get recipeSaveNeedsTitle;
+
+  /// No description provided for @recipeSaveNeedsIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst en ingrediens för att kunna spara.'**
+  String get recipeSaveNeedsIngredient;
+
+  /// No description provided for @recipeSaveNeedsInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst ett steg för att kunna spara.'**
+  String get recipeSaveNeedsInstruction;
 
   /// Replaces the hardcoded text in friends_list_view.dart when social features are disabled.
   ///

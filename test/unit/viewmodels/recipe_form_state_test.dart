@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
@@ -110,6 +111,22 @@ void main() {
         // Assert
         expect(formState.isValid, isFalse);
       });
+
+      test(
+        'saveBlocker names what is missing, in the order a person fills in',
+        () {
+          expect(formState.saveBlocker, RecipeSaveBlocker.title);
+
+          formState.setTitle('Gratäng');
+          expect(formState.saveBlocker, RecipeSaveBlocker.ingredients);
+
+          formState.ingredientsManager.updateValue(0, '1 dl grädde');
+          expect(formState.saveBlocker, RecipeSaveBlocker.instructions);
+
+          formState.instructionsManager.updateValue(0, 'Grädda');
+          expect(formState.saveBlocker, isNull);
+        },
+      );
 
       test('should have correct meal types available', () {
         // Assert

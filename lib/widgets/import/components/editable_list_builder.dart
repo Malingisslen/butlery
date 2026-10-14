@@ -11,7 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// A reusable editable list widget for managing string items.
 /// Used for ingredients and instructions in recipe import.
-class EditableListBuilder extends StatelessWidget {
+class EditableListBuilder extends StatefulWidget {
   final List<String> items;
   final void Function(int, String) onUpdate;
   final void Function(int) onRemove;
@@ -30,29 +30,57 @@ class EditableListBuilder extends StatelessWidget {
   });
 
   @override
+  State<EditableListBuilder> createState() => _EditableListBuilderState();
+}
+
+class _EditableListBuilderState extends State<EditableListBuilder> {
+  // A field keeps its own text, so a row needs an identity that survives its
+  // neighbours being removed; the item text changes on every keystroke and the
+  // index shifts, so neither can be the key.
+  late List<int> _ids = [for (final _ in widget.items) _nextId++];
+  int _nextId = 0;
+
+  @override
+  void didUpdateWidget(EditableListBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    while (_ids.length < widget.items.length) {
+      _ids.add(_nextId++);
+    }
+    if (_ids.length > widget.items.length) {
+      _ids = _ids.sublist(0, widget.items.length);
+    }
+  }
+
+  void _remove(int index) {
+    if (index < _ids.length) _ids.removeAt(index);
+    widget.onRemove(index);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         // Existing items
-        ...items.asMap().entries.map((entry) {
+        ...widget.items.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
 
           return ButleryFieldRow(
+            key: ValueKey('editable-list-row-${_ids[index]}'),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showNumbers) ButleryRowNumber(index + 1),
+              if (widget.showNumbers) ButleryRowNumber(index + 1),
               Expanded(
                 child: ButleryRowField(
                   initialValue: item,
                   textCapitalization: TextCapitalization.sentences,
-                  onChanged: (value) => onUpdate(index, value),
+                  onChanged: (value) => widget.onUpdate(index, value),
                   suffixIcon: IconButton(
                     icon: const ButleryIcon(
                       ButleryIcons.x,
                       size: AppDimensions.iconSize18,
                     ),
-                    onPressed: () => onRemove(index),
+                    onPressed: () => _remove(index),
                     tooltip: context.l10n.commonDelete,
                   ),
                 ),
@@ -64,11 +92,12 @@ class EditableListBuilder extends StatelessWidget {
         // Add new item
         ButleryFieldRow(
           children: [
-            if (showNumbers) const SizedBox(width: ButleryRowNumber.width),
+            if (widget.showNumbers)
+              const SizedBox(width: ButleryRowNumber.width),
             Expanded(
               child: AddItemField(
-                hintText: hintText,
-                onAdd: onAdd,
+                hintText: widget.hintText,
+                onAdd: widget.onAdd,
               ),
             ),
           ],
