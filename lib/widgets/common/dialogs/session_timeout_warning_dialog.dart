@@ -189,6 +189,7 @@ class _SessionTimeoutWarningDialogState
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
+      scrollable: true,
       // The clock is drawn in ink (Skarmar v12 etapp 9 #globsession, stroke
       // #24382c): onSurface in light and dark.
       icon: ButleryIcon(

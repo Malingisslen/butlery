@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:0d50a33beed23a0f9125383abf5d2425274e1062e0e1484ed00f0c7c50aaf861 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:4cf83282b68c85ffb12cea72ead78e11f56f7b1a70ad534e321b52f76feb5775 (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -111,7 +111,7 @@ class AppColorsDark {
   static const Color backgroundTint = Color(0xFF2F4437);
 
   /// semantic.scrim (dark)
-  static const Color overlay = Color(0x9917251D);
+  static const Color overlay = Color(0x99000000);
 
   /// semantic.surface.base (dark)
   static const Color neutralLight = Color(0xFF17251D);

@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -44,12 +45,8 @@ Future<void> showWhatsNewSheet(
   List<WhatsNewRelease> releases,
 ) {
   final navigator = Navigator.of(context);
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
     builder: (sheetContext) => WhatsNewSheet(
       releases: releases,
       onOpenRoute: (route) {

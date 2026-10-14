@@ -8,6 +8,7 @@
 /// state via a private-typed [GlobalKey] — splitting them would break that key.
 library;
 
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -346,9 +347,8 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
 
   Future<void> _showResumeNudge(BuildContext context) async {
     final l10n = context.l10n;
-    await showModalBottomSheet<void>(
+    await showButlerySheet<void>(
       context: context,
-      isDismissible: true,
       builder: (ctx) {
         final cs = Theme.of(ctx).colorScheme;
         return SafeArea(

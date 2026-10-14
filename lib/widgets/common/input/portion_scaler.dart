@@ -1,5 +1,6 @@
 // lib/widgets/common/input/portion_scaler.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -83,6 +84,24 @@ class _PortionScalerState extends State<PortionScaler>
   @override
   void didUpdateWidget(PortionScaler oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // An edited recipe hands down new ingredients; the old amounts and the
+    // unit detection must not survive it.
+    if (!listEquals(
+          widget.originalIngredients,
+          oldWidget.originalIngredients,
+        ) ||
+        !listEquals(
+          widget.structuredIngredients,
+          oldWidget.structuredIngredients,
+        ) ||
+        widget.originalPortions != oldWidget.originalPortions) {
+      setState(() {
+        _hasAmericanUnits = PortionScalerLogic.detectAmericanUnits(
+          widget.originalIngredients,
+        );
+        _scaledIngredients = _scale(_currentPortions);
+      });
+    }
     // BUT-1515: on a cold deep-link the profile is null at init, so the parent
     // seeds initialPortions from recipe.portions; when the profile loads it
     // pushes the household-scaled target down as a NEW initialPortions. Without

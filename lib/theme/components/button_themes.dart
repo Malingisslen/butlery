@@ -150,6 +150,20 @@ WidgetStateProperty<BorderSide?> _outlineWithDisabled(
   });
 }
 
+/// The rest edge of an ink-filled button. Ink is #24382C in both modes, so on
+/// the dark base #17251D the fill alone is 1.27:1 and sits one step from the
+/// disabled grey-green, and a live button reads as a dead one. Dark draws the
+/// outline of a secondary control (paperWash, 3.5:1) round it; light needs
+/// nothing, and a disabled button keeps no edge, so the two stay apart.
+WidgetStateProperty<BorderSide?> _filledRestEdge(ColorScheme cs) =>
+    WidgetStateProperty.resolveWith((states) {
+      if (cs.brightness != Brightness.dark ||
+          states.contains(WidgetState.disabled)) {
+        return null;
+      }
+      return BorderSide(color: _unfilledOutline(cs), width: 1.5);
+    });
+
 WidgetStateProperty<Color?> _withDisabled(Color enabled, Color disabled) {
   return WidgetStateProperty.resolveWith<Color?>((states) {
     if (states.contains(WidgetState.disabled)) return disabled;
@@ -173,6 +187,7 @@ class ButtonThemes {
       style: ButtonStyle(
         backgroundColor: _filledBackground(cs, cs.primary),
         foregroundColor: _filledForeground(cs, cs.onPrimary),
+        side: _filledRestEdge(cs),
         elevation: const WidgetStatePropertyAll(0),
         shadowColor: const WidgetStatePropertyAll(Colors.transparent),
         overlayColor: _noFocusTint,
@@ -203,6 +218,7 @@ class ButtonThemes {
       style: ButtonStyle(
         backgroundColor: _filledBackground(cs, cs.primary),
         foregroundColor: _filledForeground(cs, cs.onPrimary),
+        side: _filledRestEdge(cs),
         overlayColor: _noFocusTint,
         backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
@@ -351,7 +367,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
-      );
+      ).copyWith(side: _filledRestEdge(cs));
 
   /// The hero style: the view's single saffron action, exactly one per view
   /// (Komponentark v1:843-844, "Saffranshierarki — en hero per vy"). Every

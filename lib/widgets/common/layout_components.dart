@@ -1,8 +1,8 @@
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 
 // Import all split modules
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
@@ -57,14 +57,8 @@ class LayoutComponents {
     required MenuViewModel viewModel,
     ValueChanged<String>? onTemplateSelected,
   }) {
-    return showModalBottomSheet<void>(
+    return showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (context) => LoadMenuBottomSheet(
         viewModel: viewModel,
         onTemplateSelected: onTemplateSelected,

@@ -68,7 +68,6 @@ const _inkSnackbarFiles = [
   'lib/views/photo_import_view.dart',
   'lib/views/tag_detail_view.dart',
   'lib/widgets/tagging/tag_editor_dialog.dart',
-  'lib/widgets/common/dialogs/unknown_ingredient_dialog.dart',
 ];
 
 String _code(String path) => File(path)

@@ -60,18 +60,11 @@ class ShoppingTwoPanes extends StatelessWidget {
             child: Scaffold(
               appBar: bar,
               body: detail,
-              // The add button fills the width it is given, so it is
-              // centred with its own margins rather than placed from the end.
+              // The add button sizes itself to the slot and leaves its own
+              // margins, so it is centred rather than placed from the end.
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.centerFloat,
-              floatingActionButton: floatingActionButton == null
-                  ? null
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.space16,
-                      ),
-                      child: floatingActionButton,
-                    ),
+              floatingActionButton: floatingActionButton,
               bottomNavigationBar: bottomBar,
             ),
           ),

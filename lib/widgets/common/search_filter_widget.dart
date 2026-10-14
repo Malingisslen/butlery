@@ -448,8 +448,6 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                       ? () => widget.onHistoryRemove!(query)
                       : null,
                   deleteIconColor: cs.onSurfaceVariant,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
                 ),
               );
             }).toList(),

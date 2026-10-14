@@ -9,6 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 
+/// The ink of a hairline on the page. Ink is #24382C in both modes, which
+/// vanishes on the dark base (1.27:1), so dark takes the outline, as the top
+/// bar's own line does.
+Color ruleInk(ColorScheme cs) =>
+    cs.brightness == Brightness.dark ? cs.outline : cs.primary;
+
 class PageRule extends StatelessWidget {
   const PageRule({super.key}) : _inline = false;
 
@@ -23,7 +29,7 @@ class PageRule extends StatelessWidget {
       padding: _inline ? EdgeInsets.zero : ButleryPageBody.margin(context),
       child: Container(
         height: AppDimensions.borderWidthThick,
-        color: Theme.of(context).colorScheme.primary,
+        color: ruleInk(Theme.of(context).colorScheme),
       ),
     );
   }
@@ -67,7 +73,7 @@ class AccentRule extends StatelessWidget {
             Expanded(
               child: Container(
                 height: AppDimensions.borderWidthStandard,
-                color: cs.primary,
+                color: ruleInk(cs),
               ),
             ),
           ],

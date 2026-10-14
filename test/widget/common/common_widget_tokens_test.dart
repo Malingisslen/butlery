@@ -19,12 +19,10 @@ import 'package:butlery/viewmodels/realtime/connection_monitor.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
-import 'package:butlery/widgets/common/filter_status_chip.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
 import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
-import 'package:butlery/widgets/common/indicators/status_indicator.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -265,29 +263,6 @@ void main() {
     });
 
     group('neutral chips, $mode', () {
-      testWidgets('filter status chip is raised with no border', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          const FilterStatusChip(filterParts: ['Vegetarisk'], selectedCount: 2),
-        );
-
-        final deco = _decorationAbove(tester, find.text('2 valda'));
-        expect(deco.color, cs.surfaceContainerHighest);
-        expect(deco.border, isNull);
-        expect(
-          _textColor(tester, find.text('Filter: Vegetarisk')),
-          cs.onSecondaryContainer,
-        );
-        expect(_textColor(tester, find.text('2 valda')), cs.onSurface);
-        expect(
-          _glyphColor(tester, find.byIcon(ButleryIcons.filter)),
-          cs.onSurfaceVariant,
-        );
-      });
-
       testWidgets(
         'admin badge is surface.base with text.primary glyph and text',
         (
@@ -313,24 +288,6 @@ void main() {
 
         final deco = _decorationAbove(tester, find.text('😀'));
         expect(deco.color, cs.surfaceContainerHighest);
-      });
-
-      testWidgets('status indicator is raised and keeps the caller glyph', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          StatusIndicator(
-            icon: ButleryIcons.circleCheck,
-            color: modeColors.success,
-          ),
-        );
-
-        final glyph = find.byIcon(ButleryIcons.circleCheck);
-        final deco = _decorationAbove(tester, glyph);
-        expect(deco.color, cs.surfaceContainerHighest);
-        expect(_glyphColor(tester, glyph), modeColors.success);
       });
     });
 

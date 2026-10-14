@@ -41,44 +41,56 @@ class StarRatingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final starColor = context.modeColors.starGold;
+    final interactive = onRatingChanged != null;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        final starValue = index + 1;
-        final isFilled = starValue <= rating;
-        final isHalf = !isFilled && starValue - 0.5 <= rating;
+    // One group of five. Read-only, it is a single value; interactive, each
+    // star is a button and the one matching the rating is selected.
+    return Semantics(
+      container: true,
+      explicitChildNodes: interactive,
+      value: interactive ? null : _ratingValue(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(5, (index) {
+          final starValue = index + 1;
+          final isFilled = starValue <= rating;
+          final isHalf = !isFilled && starValue - 0.5 <= rating;
 
-        final icon = ButleryIcon(
-          isFilled
-              ? ButleryIcons.star
-              : isHalf
-              ? ButleryIcons.starHalf
-              : solidEmpty
-              ? ButleryIcons.star
-              : ButleryIcons.starOutline,
-          color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
-          size: size,
-        );
-        final star = slot == null
-            ? icon
-            : SizedBox(
-                width: slot,
-                height: slot,
-                child: Center(child: icon),
-              );
+          final icon = ButleryIcon(
+            isFilled
+                ? ButleryIcons.star
+                : isHalf
+                ? ButleryIcons.starHalf
+                : solidEmpty
+                ? ButleryIcons.star
+                : ButleryIcons.starOutline,
+            color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
+            size: size,
+          );
+          final star = slot == null
+              ? icon
+              : SizedBox(
+                  width: slot,
+                  height: slot,
+                  child: Center(child: icon),
+                );
 
-        if (onRatingChanged == null) return star;
+          if (!interactive) return ExcludeSemantics(child: star);
 
-        final label = semanticsLabel != null
-            ? semanticsLabel!(starValue)
-            : context.l10n.a11yRateStars(starValue);
-        return TappableWrapper(
-          onTap: () => onRatingChanged!(starValue.toDouble()),
-          semanticLabel: label,
-          child: star,
-        );
-      }),
+          final label = semanticsLabel != null
+              ? semanticsLabel!(starValue)
+              : context.l10n.a11yRateStars(starValue);
+          return TappableWrapper(
+            onTap: () => onRatingChanged!(starValue.toDouble()),
+            semanticLabel: label,
+            selected: rating > 0 && starValue == rating.round(),
+            child: star,
+          );
+        }),
+      ),
     );
   }
+
+  String _ratingValue() =>
+      rating % 1 == 0 ? rating.toInt().toString() : rating.toStringAsFixed(1);
 }

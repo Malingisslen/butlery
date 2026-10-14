@@ -7,6 +7,7 @@
 // toggle checkbox-style and a pinned confirm button returns ALL selected
 // (day, slot) targets for the visible week in one go.
 
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -48,10 +49,8 @@ Future<SlotSelection?> showSlotPickerDialog(
   BuildContext context, {
   List<String> recipeTitles = const [],
 }) {
-  return showModalBottomSheet<SlotSelection>(
+  return showButlerySheet<SlotSelection>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => SlotPickerDialog(recipeTitles: recipeTitles),
   );
 }
@@ -60,10 +59,8 @@ Future<SlotSelection?> showSlotPickerDialog(
 /// confirm button returns all selected targets at once. Returns null on
 /// cancel / dismiss / empty selection.
 Future<MultiSlotSelection?> showMultiSlotPickerDialog(BuildContext context) {
-  return showModalBottomSheet<MultiSlotSelection>(
+  return showButlerySheet<MultiSlotSelection>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => const SlotPickerDialog(multiSelect: true),
   );
 }
@@ -219,34 +216,15 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       builder: (sheetContext, scrollController) => LayoutBuilder(
         builder: (context, box) {
           final cs = Theme.of(context).colorScheme;
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppDimensions.radiusCard),
-              ),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: AppDimensions.space12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: cs.onSurfaceVariant,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusKnob,
-                    ),
-                  ),
-                ),
-                _buildHeader(cs),
-                const Divider(height: 1),
-                Expanded(child: _buildBody(scrollController)),
-                if (widget.multiSelect) _buildConfirmBar(),
-                if (_spillStart case final start? when _plan != null)
-                  _buildSpillPanel(start, box.maxHeight),
-              ],
-            ),
+          return Column(
+            children: [
+              _buildHeader(cs),
+              const Divider(height: 1),
+              Expanded(child: _buildBody(scrollController)),
+              if (widget.multiSelect) _buildConfirmBar(),
+              if (_spillStart case final start? when _plan != null)
+                _buildSpillPanel(start, box.maxHeight),
+            ],
           );
         },
       ),

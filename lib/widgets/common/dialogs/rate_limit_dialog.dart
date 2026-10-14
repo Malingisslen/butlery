@@ -53,6 +53,7 @@ class RateLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       icon: ButleryIcon(
         _getIconForLimitType(rateLimitResult.limitType),
         color: context.modeColors.warning,

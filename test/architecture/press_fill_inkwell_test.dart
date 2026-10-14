@@ -12,7 +12,6 @@ final _fab = RegExp(r'(?<![\w.])FloatingActionButton(\.\w+)?\(');
 
 /// InkWells per file that carry no fill of their own.
 const _waiting = <String, int>{
-  'lib/widgets/common/cards/selection_card.dart': 1,
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': 1,
   'lib/widgets/common/friends/category_display_widgets.dart': 2,
   'lib/widgets/common/social_components/invitation_lists.dart': 2,

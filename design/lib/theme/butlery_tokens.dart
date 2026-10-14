@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:43bfd14d19efca0629d5d557b364ffb134b98b4c13aee59b9a439fa4c41b3947 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:14c2f0353ef38af23210aa422afe61116a8356445bc8574071b5f3a13c44b086 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -71,7 +71,7 @@ class ButleryColors {
   static const progressIndicator = Color(0xFFCE7C1E);
   static const progressIndicatorDark = Color(0xFFCE7C1E);
   static const scrim = Color(0x6624382C);
-  static const scrimDark = Color(0x9917251D);
+  static const scrimDark = Color(0x99000000);
   static const textBodyMuted = Color(0xFF37453A);
   static const textBodyMutedDark = Color(0xFFC9D3C4);
   static const textAccentOnRaised = Color(0xFF8A5212);
@@ -199,7 +199,7 @@ class ButleryControls {
   static const double buttonMinHeight = 46;
   static const double buttonMinWidth = 96;
   static const double stepperVisual = 28;
-  static const List<double> avatarScale = <double>[26.0, 32.0, 40.0, 54.0, 72.0];
+  static const List<double> avatarScale = <double>[26.0, 32.0, 40.0, 56.0, 72.0];
   static const double avatarStackRing = 2;
   static const double lineHairline = 1;
   static const double lineOutlinedEdge = 1.5;
@@ -236,6 +236,7 @@ class ButleryType {
   static const TextStyle listItem = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w600);
   static const TextStyle tab = TextStyle(fontFamily: family, fontSize: 13, fontWeight: FontWeight.w600);
   static const TextStyle meta = TextStyle(fontFamily: family, fontSize: 12.5, fontWeight: FontWeight.w600);
+  static const TextStyle chip = TextStyle(fontFamily: family, fontSize: 12, fontWeight: FontWeight.w600);
   static const TextStyle caption = TextStyle(fontFamily: family, fontSize: 12, fontWeight: FontWeight.w400);
   static const TextStyle navLabel = TextStyle(fontFamily: family, fontSize: 11, fontWeight: FontWeight.w700);
   static const TextStyle overline = TextStyle(fontFamily: family, fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 1.5);

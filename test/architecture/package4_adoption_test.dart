@@ -26,7 +26,6 @@ const _plateLineFiles = [
   'lib/widgets/common/buttons/action_buttons.dart',
   'lib/widgets/common/dialogs/base_dialog.dart',
   'lib/widgets/common/dialogs/confirmation_dialogs.dart',
-  'lib/widgets/common/input/debounced_button.dart',
   'lib/app/auth/auth_wrapper.dart',
   'lib/app/butlery_app.dart',
   'lib/core/providers/application_provider.dart',

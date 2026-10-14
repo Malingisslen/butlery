@@ -62,9 +62,9 @@ class _Figures extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     Widget cell(String id, int value, String label) => Expanded(
       child: ColoredBox(
-        // The sheet's paper (BottomSheetThemeData.backgroundColor = surface),
-        // so only the hairlines set the cells apart, as drawn.
-        color: cs.surface,
+        // The sheet's own paper, so only the hairlines set the cells apart,
+        // as drawn.
+        color: Theme.of(context).bottomSheetTheme.backgroundColor ?? cs.surface,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: AppDimensions.space12,

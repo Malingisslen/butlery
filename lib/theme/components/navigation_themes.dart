@@ -101,21 +101,31 @@ class NavigationThemes {
     );
   }
 
+  /// The surface of a layer over the page, a dialog or a sheet. Light stays
+  /// paper; dark steps up to surface.raised, since the dark base is also the
+  /// page and a layer in the same tone has no edge to find.
+  static Color _layerSurface(ColorScheme cs) => cs.brightness == Brightness.dark
+      ? cs.surfaceContainerHighest
+      : cs.surface;
+
   /// Dialog theme
   ///
   /// Corners take the control radius, 8: the drawn dialog box has
   /// border-radius 8px (Komponentark v1:336; tokens.json space.radius.control).
-  /// Background is `cs.surface` (paper in light mode, the dark surface in dark
-  /// mode). Dialogs must NOT hand-override shape/background (BUT-1237): the
-  /// theme is the single source.
+  /// Background is paper in light mode and surface.raised in dark mode.
+  /// Like a sheet, the layer has no shadow: the scrim and a 1 px edge in
+  /// border-control separate it from the page (Komponentark §09). Dialogs
+  /// must NOT hand-override shape/background (BUT-1237): the theme is the
+  /// single source.
   static DialogThemeData dialogTheme(ColorScheme cs) {
     return DialogThemeData(
-      backgroundColor: cs.surface,
+      backgroundColor: _layerSurface(cs),
       barrierColor: cs.scrim,
-      elevation: 8,
-      shadowColor: cs.shadow,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: cs.outline),
+        borderRadius: const BorderRadius.all(
           Radius.circular(AppDimensions.radiusControl),
         ),
       ),
@@ -131,7 +141,7 @@ class NavigationThemes {
   /// Bottom sheet theme
   static BottomSheetThemeData bottomSheetTheme(ColorScheme cs) {
     return BottomSheetThemeData(
-      backgroundColor: cs.surface,
+      backgroundColor: _layerSurface(cs),
       // Komponentark §09: "Noll skugga. Scrim + 1 px kontrastkant." The
       // layer is separated by the scrim and a border-control edge.
       elevation: 0,
@@ -144,7 +154,7 @@ class NavigationThemes {
           top: Radius.circular(AppDimensions.radiusCard),
         ),
       ),
-      modalBackgroundColor: cs.surface,
+      modalBackgroundColor: _layerSurface(cs),
       modalElevation: 0,
       modalBarrierColor: cs.scrim,
       // On a wide screen every sheet keeps one column.

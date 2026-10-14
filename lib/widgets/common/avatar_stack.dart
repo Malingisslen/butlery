@@ -9,6 +9,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/utils/distinct_initials.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 class AvatarStack extends StatelessWidget {
@@ -28,8 +29,27 @@ class AvatarStack extends StatelessWidget {
 
   final int maxShown;
 
-  static const double _size = 28;
+  /// The avatar is the inline step; the paper ring (tokens.json
+  /// controls.avatarStackRing) is drawn outside it, so the outer diameter is
+  /// 30.
+  static const double _ring = 2;
+  static const double _size = 26 + 2 * _ring;
   static const double _overlap = 8;
+
+  /// Initials stay legible on every tone: the theme's own pair when it
+  /// reaches 4.5:1, ink otherwise. Paper on the dark mode's third tone is
+  /// 2.01:1.
+  static Color _legible(ColorScheme cs, Color bg, Color preferred) {
+    double contrast(Color a, Color b) {
+      final la = a.computeLuminance(), lb = b.computeLuminance();
+      return (la > lb ? la + 0.05 : lb + 0.05) /
+          (la > lb ? lb + 0.05 : la + 0.05);
+    }
+
+    return contrast(bg, preferred) >= 4.5
+        ? preferred
+        : AppModeColors.onActionPrimary(cs.brightness);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +71,12 @@ class AvatarStack extends StatelessWidget {
         color: bg,
         shape: BoxShape.circle,
         // The paper ring keeps neighbours apart where they overlap.
-        border: Border.all(color: cs.surface, width: 2),
+        border: Border.all(color: cs.surface, width: _ring),
       ),
-      child: Text(text, style: AppTextStyles.labelSmall.copyWith(color: fg)),
+      child: Text(
+        text,
+        style: AppTextStyles.labelSmall.copyWith(color: _legible(cs, bg, fg)),
+      ),
     );
 
     final discs = <Widget>[

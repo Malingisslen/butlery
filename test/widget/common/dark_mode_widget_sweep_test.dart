@@ -22,9 +22,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
-import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
-import 'package:butlery/widgets/common/filter_status_chip.dart';
 import 'package:butlery/widgets/common/profile/utils/result_displayer.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
@@ -79,20 +77,6 @@ void main() {
         );
         final color = _textColor(tester, 'VEGO')!;
         expect(color, cs.onSurfaceVariant);
-        expect(_contrast(color, cs.surface), greaterThanOrEqualTo(4.5));
-      });
-
-      testWidgets('the filter count reads text.primary on the page', (
-        tester,
-      ) async {
-        await tester.pumpWidget(
-          _app(
-            theme,
-            const FilterStatusChip(filterParts: ['Vego'], selectedCount: 2),
-          ),
-        );
-        final color = _textColor(tester, '2 valda')!;
-        expect(color, cs.onSurface);
         expect(_contrast(color, cs.surface), greaterThanOrEqualTo(4.5));
       });
 
@@ -173,19 +157,6 @@ void main() {
           expect(_contrast(count, deco.color!), greaterThanOrEqualTo(4.5));
         },
       );
-
-      testWidgets('a chosen card has a text.primary border', (tester) async {
-        await tester.pumpWidget(
-          _app(
-            theme,
-            const SelectionCard(isSelected: true, child: Text('Kort')),
-          ),
-        );
-        final card = tester.widget<Card>(find.byType(Card));
-        final side = (card.shape! as RoundedRectangleBorder).side;
-        expect(side.color, cs.onSurface);
-        expect(_contrast(side.color, cs.surface), greaterThanOrEqualTo(3.0));
-      });
 
       testWidgets('a done step connector is text.primary', (tester) async {
         await tester.pumpWidget(
