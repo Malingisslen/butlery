@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 class AccessibilityUtils {
   AccessibilityUtils._();
 
-  /// The one text-scale ceiling for the whole app; raise it only after the
-  /// fixed-height surfaces are gone (T9).
+  /// The app-wide text-scale ceiling set at the MaterialApp root; raise it
+  /// only after the fixed-height surfaces are gone (T9).
   static const double maxTextScale = 1.4;
 
   /// Wraps [child] with a clamped text scaler to prevent small text
@@ -13,7 +13,7 @@ class AccessibilityUtils {
   static Widget clampTextScaling({
     required BuildContext context,
     required Widget child,
-    double maxScaleFactor = maxTextScale,
+    double maxScaleFactor = 1.3,
   }) {
     final mq = MediaQuery.of(context);
     return MediaQuery(
