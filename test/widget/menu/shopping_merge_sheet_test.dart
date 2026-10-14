@@ -278,7 +278,7 @@ void main() {
     (
       'dark',
       AppTheme.darkTheme,
-      const Color(0xFF17251D),
+      const Color(0xFF2F4437),
       const Color(0xFFA9B2A0),
       const Color(0xFFDCA968),
     ),
