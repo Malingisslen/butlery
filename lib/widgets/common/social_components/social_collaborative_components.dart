@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -149,9 +150,9 @@ class SocialCollaborativeComponents {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (onViewAll != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onViewAll,
-              child: Text(context.l10n.socialViewAll),
+              label: context.l10n.socialViewAll,
             ),
         ],
       ),

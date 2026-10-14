@@ -3,9 +3,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -34,15 +38,14 @@ class InvitationStates {
       builder: (context) => Column(
         children: List.generate(
           count,
-          (index) => Card(
-            child: ListTile(
+          (index) => StyledCard(
+            child: ButleryItemRow(
               leading: SizedBox(
                 width: AppDimensions.iconSizeXl,
                 child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
               ),
-              title: ExcludeSemantics(
-                child: Text(context.l10n.loadingGeneric),
-              ),
+              title: context.l10n.loadingGeneric,
+              padded: false,
             ),
           ),
         ),
@@ -102,9 +105,10 @@ class InvitationStates {
           ),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onRetry,
-              child: Text(retryText ?? context.l10n.commonRetry),
+              label: retryText ?? context.l10n.commonRetry,
             ),
           ],
         ],
@@ -158,9 +162,10 @@ class InvitationStates {
           ),
           if (onRequestAccess != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onRequestAccess,
-              child: Text(requestText ?? context.l10n.invitationRequestAccess),
+              label: requestText ?? context.l10n.invitationRequestAccess,
             ),
           ],
         ],
@@ -198,9 +203,10 @@ class InvitationStates {
           ),
           if (showAddButton && onAddTargets != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onAddTargets,
-              child: Text(addButtonText ?? context.l10n.shareAddFriends),
+              label: addButtonText ?? context.l10n.shareAddFriends,
             ),
           ],
         ],
@@ -246,11 +252,9 @@ class InvitationStates {
             ),
           if (showClearButton && onClearSearch != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            TextButton(
+            ButleryTextButton(
               onPressed: onClearSearch,
-              child: Text(
-                clearButtonText ?? context.l10n.invitationClearSearch,
-              ),
+              label: clearButtonText ?? context.l10n.invitationClearSearch,
             ),
           ],
         ],
@@ -323,9 +327,10 @@ class InvitationStates {
           ),
           if (onContinue != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onContinue,
-              child: Text(continueButtonText ?? context.l10n.commonContinue),
+              label: continueButtonText ?? context.l10n.commonContinue,
             ),
           ],
         ],
@@ -365,9 +370,10 @@ class InvitationStates {
           ),
           if (onDone != null) ...[
             const SizedBox(height: AppDimensions.space16),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
               onPressed: onDone,
-              child: Text(doneButtonText ?? context.l10n.invitationDone),
+              label: doneButtonText ?? context.l10n.invitationDone,
             ),
           ],
         ],

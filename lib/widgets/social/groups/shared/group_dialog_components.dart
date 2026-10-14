@@ -5,7 +5,9 @@ import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -223,9 +225,9 @@ class DialogHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          IconButton(
+          ButleryCloseButton(
+            semanticLabel: context.l10n.commonClose,
             onPressed: onClose,
-            icon: const ButleryIcon(ButleryIcons.x),
           ),
         ],
       ),
@@ -267,30 +269,17 @@ class DialogFooter extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(
+          ButleryTextButton(
+            label: secondaryActionText,
             onPressed: isLoading ? null : onSecondaryAction,
-            child: Text(secondaryActionText),
           ),
           const SizedBox(width: AppDimensions.space8),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 200),
-            // Working keeps the name and draws the plate line along the
-            // bottom edge, never a spinner (Komponentark v1:365, :372).
-            child: BusyButtonSemantics(
-              busy: isLoading,
-              name: primaryActionText,
-              child: FilledButton.icon(
-                onPressed: isLoading ? PlateLineButton.ignore : onPrimaryAction,
-                style: isLoading
-                    ? PlateLineButton.busyStyle(
-                        null,
-                        Theme.of(context).filledButtonTheme.style,
-                      )
-                    : null,
-                icon: ButleryIcon(primaryActionIcon),
-                label: Text(primaryActionText),
-              ),
-            ),
+          ActionButtons.primaryButton(
+            context,
+            label: primaryActionText,
+            icon: primaryActionIcon,
+            isLoading: isLoading,
+            onPressed: onPrimaryAction,
           ),
         ],
       ),

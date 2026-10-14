@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/empty_group_delete_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -22,7 +23,7 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
     required BuildContext context,
     required FriendCategory group,
   }) async {
-    return await showDialog<bool>(
+    return await showButleryDialog<bool>(
       context: context,
       builder: (context) => EmptyGroupDeleteDialog(group: group),
     );
@@ -30,8 +31,9 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.groupIsEmpty),
+    return ButleryDialog(
+      title: context.l10n.groupIsEmpty,
+      scrollable: false,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,9 +45,9 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
       ),
       actions: [
         DialogCancelButton(onPressed: () => Navigator.pop(context, false)),
-        TextButton(
+        ButleryDialogPrimary(
+          label: context.l10n.groupDeleteTheGroup,
           onPressed: () => Navigator.pop(context, true),
-          child: Text(context.l10n.groupDeleteTheGroup),
         ),
       ],
     );

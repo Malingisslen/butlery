@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
@@ -62,9 +62,9 @@ class FriendProfileMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PressFill(
       surface: PressSurface.base,
-      child: IconButton(
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        tooltip: context.l10n.socialMoreOptions,
+      child: AppIconButton(
+        icon: ButleryIcons.moreVertical,
+        semanticLabel: context.l10n.socialMoreOptions,
         onPressed: () => _open(context),
       ),
     );

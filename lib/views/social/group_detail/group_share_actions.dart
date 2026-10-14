@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/group_shopping_list_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/menu_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart';
@@ -40,23 +41,12 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
 
     if (suggestions.isEmpty) {
       // Empty state: no recipes to vote on
-      final shouldImport = await showDialog<bool>(
+      final shouldImport = await showButleryDialog<bool>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          title: Text(context.l10n.noRecipesToVote),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(context.l10n.pollCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(context.l10n.importFirstCta),
-            ),
-          ],
+        builder: (dialogContext) => ButleryDialog.confirm(
+          title: context.l10n.noRecipesToVote,
+          cancelLabel: context.l10n.pollCancel,
+          primaryLabel: context.l10n.importFirstCta,
         ),
       );
       if (shouldImport == true && mounted) {
@@ -68,7 +58,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
     if (currentUserId == null || !mounted) return;
 
-    final poll = await showDialog<dynamic>(
+    final poll = await showButleryDialog<dynamic>(
       context: context,
       builder: (dialogContext) => PollCreationDialog(
         creatorId: currentUserId,
@@ -138,7 +128,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
     if (!mounted) return;
 
     // Step 1: Show menu selection dialog
-    final selectedMenu = await showDialog<dynamic>(
+    final selectedMenu = await showButleryDialog<dynamic>(
       context: context,
       builder: (context) => MenuSelectionDialog(
         groupName: group.name,
@@ -177,7 +167,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
     if (!mounted) return;
 
     // Step 1: Show shopping list selection dialog
-    final selectedList = await showDialog<dynamic>(
+    final selectedList = await showButleryDialog<dynamic>(
       context: context,
       builder: (context) => GroupShoppingListSelectionDialog(
         groupName: group.name,
@@ -217,7 +207,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
     FriendCategory group,
     List<UserProfile> members,
   ) async {
-    await showDialog(
+    await showButleryDialog<void>(
       context: context,
       builder: (context) => GroupRecipeSharingDialog(
         group: group,

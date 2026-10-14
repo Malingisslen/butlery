@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -22,7 +24,7 @@ class AddGroupMembersDialog extends StatefulWidget {
     BuildContext context,
     List<UserProfile> availableFriends,
   ) {
-    return showDialog<List<UserProfile>>(
+    return showButleryDialog<List<UserProfile>>(
       context: context,
       builder: (context) =>
           AddGroupMembersDialog(availableFriends: availableFriends),
@@ -67,8 +69,9 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.chatAddMembers),
+    return ButleryDialog(
+      title: context.l10n.chatAddMembers,
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         height: 400,
@@ -116,11 +119,9 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
-        TextButton(
+        const DialogCancelButton(),
+        ButleryDialogPrimary(
+          label: context.l10n.chatAddCount(_selectedIds.length),
           onPressed: _selectedIds.isEmpty
               ? null
               : () {
@@ -129,7 +130,6 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
                       .toList();
                   Navigator.pop(context, selected);
                 },
-          child: Text(context.l10n.chatAddCount(_selectedIds.length)),
         ),
       ],
     );

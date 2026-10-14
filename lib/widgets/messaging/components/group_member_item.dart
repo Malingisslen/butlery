@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/list/butlery_media_row.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 
@@ -41,14 +41,10 @@ class GroupMemberItem extends StatelessWidget {
       titleSuffix: isCurrentUser ? context.l10n.messagingMemberYou : null,
       onTap: onTap,
       trailing: canRemove
-          ? TextButton(
+          ? ButleryTextButton(
+              label: context.l10n.commonRemove,
+              tone: ButleryTextButtonTone.danger,
               onPressed: onRemove,
-              style: ButtonStyle(
-                foregroundColor: WidgetStatePropertyAll(
-                  AppModeColors.textWarning(Theme.of(context).brightness),
-                ),
-              ),
-              child: Text(context.l10n.commonRemove),
             )
           : null,
     );

@@ -11,6 +11,10 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -112,8 +116,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return AlertDialog(
-      title: Text(context.l10n.conversationNew),
+    return ButleryDialog(
+      title: context.l10n.conversationNew,
+      scrollable: false,
       content: SizedBox(
         width: double.maxFinite,
         height: 450,
@@ -123,19 +128,16 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             Container(
               width: double.infinity,
               margin: const EdgeInsets.only(bottom: AppDimensions.space12),
-              child: OutlinedButton.icon(
+              child: ActionButtons.outlinedButton(
+                context,
+                label: context.l10n.conversationCreateGroup,
+                icon: ButleryIcons.usersPlus,
+                isExpanded: true,
                 onPressed: _navigateToGroupCreation,
-                icon: const ButleryIcon(ButleryIcons.usersPlus),
-                label: Text(context.l10n.conversationCreateGroup),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.space12,
-                  ),
-                ),
               ),
             ),
 
-            const Divider(),
+            const ButleryDivider(),
             const SizedBox(height: AppDimensions.space8),
 
             // Or select friend for direct chat
@@ -160,10 +162,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(context.l10n.commonCancel),
-        ),
+        const DialogCancelButton(),
         ActionButtons.primaryButton(
           context,
           label: context.l10n.commonCreate,
@@ -211,13 +210,13 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               ),
             ),
             const SizedBox(height: AppDimensions.space12),
-            TextButton.icon(
+            ButleryTextButton(
+              label: context.l10n.commonRetry,
+              icon: ButleryIcons.refreshCw,
               onPressed: () {
                 setState(() => _hasError = false);
                 _loadFriends();
               },
-              icon: const ButleryIcon(ButleryIcons.refreshCw),
-              label: Text(context.l10n.commonRetry),
             ),
           ],
         ),
