@@ -58,7 +58,10 @@ class _FileImportViewState extends State<FileImportView> {
     // Auto-close once everything imported cleanly.
     if (_vm.allSucceeded) {
       await Future.delayed(const Duration(seconds: 2));
-      if (mounted) Navigator.pop(context);
+      // Not if the user has already moved on to another page.
+      if (mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -73,7 +76,7 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildScaffold(BuildContext context) {
     return ButleryPage.undersida(
       title: context.l10n.importFromFile,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: AppDimensions.responsiveContentPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -71,6 +71,8 @@ Widget _pinnedLibrary({required bool libraryEmpty}) {
   when(() => library.isSelectionMode).thenReturn(false);
   when(() => library.selectedCount).thenReturn(0);
   when(() => library.recipes).thenReturn(recipes);
+  when(() => library.libraryTotal).thenReturn(recipes.length);
+  when(() => library.matchingCount).thenReturn(recipes.length);
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: [

@@ -904,9 +904,24 @@ void main() {
     });
 
     group('Performance Caching', () {
+      test('second read is paged like the first (cache hit)', () {
+        final recipes = List.generate(
+          120,
+          (i) => RecipeFactory.build(id: 'r$i', title: 'Recipe $i'),
+        );
+        mockRecipeService.setRecipeState(recipes: recipes);
+
+        final first = viewModel.recipes;
+        final second = viewModel.recipes;
+
+        expect(first, hasLength(50));
+        expect(second, hasLength(50));
+        expect(viewModel.libraryTotal, 120);
+        expect(viewModel.matchingCount, 120);
+        expect(viewModel.canLoadMore, isTrue);
+      });
+
       test('should cache filtered results', () {
-        // Arrange - use fewer recipes than display limit (50) to avoid
-        // pagination differences between cache miss (paginated) and cache hit
         final recipes = List.generate(
           10,
           (i) => RecipeFactory.build(id: 'r$i', title: 'Recipe $i'),

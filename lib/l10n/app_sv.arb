@@ -9342,6 +9342,7 @@
   "ingredientSearchChip": "Med ingredienser",
   "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
   "ingredientSearchNoResults": "Inga recept matchar dina ingredienser",
+  "ingredientSearchNoResultsHint": "Ta bort en ingrediens eller prova färre.",
   "ingredientSearchError": "Kunde inte söka recept",
   "ingredientSearchResultCount": "{count, plural, =1{1 recept matchar} other{{count} recept matchar}}",
   "@ingredientSearchResultCount": {

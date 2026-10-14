@@ -91,7 +91,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
       children: [
         Expanded(
           child: SectionHeading(
-            l10n.hemLibraryHeading(viewModel.recipes.length),
+            l10n.hemLibraryHeading(viewModel.libraryTotal),
             key: headingKey,
           ),
         ),

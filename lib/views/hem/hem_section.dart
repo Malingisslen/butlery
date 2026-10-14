@@ -327,7 +327,7 @@ class HemTonightCard extends StatelessWidget {
               key: const ValueKey('hem-tonight-title'),
               style: AppTextStyles.headlineSmall.copyWith(color: paper),
             ),
-            const SizedBox(height: AppDimensions.space8 + 2),
+            const SizedBox(height: AppDimensions.space8),
             Wrap(
               spacing: AppDimensions.space8,
               runSpacing: AppDimensions.space8,

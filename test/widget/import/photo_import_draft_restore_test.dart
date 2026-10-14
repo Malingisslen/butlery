@@ -40,8 +40,13 @@ class _FakePhotoImportViewModel extends ChangeNotifier
     this.draft,
     bool hasImage = false,
     bool hasOcrResult = false,
+    this.unread = 0,
+    this.processing = false,
   }) : _hasImage = hasImage,
        _hasOcrResult = hasOcrResult;
+
+  final int unread;
+  final bool processing;
 
   final PhotoImportDraft? draft;
   final bool _hasImage;
@@ -75,7 +80,7 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   bool get hasOcrResult => _hasOcrResult;
 
   @override
-  bool get isProcessing => false;
+  bool get isProcessing => processing;
 
   @override
   bool get hasError => false;
@@ -218,7 +223,7 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   PhotoPermissionNotice? get permissionNotice => null;
 
   @override
-  int get unreadPageCount => 0;
+  int get unreadPageCount => unread;
 
   @override
   bool get canReadPages => false;
@@ -356,5 +361,80 @@ void main() {
 
     expect(find.text(l10n.draftRecovery), findsNothing);
     expect(fakeVm.loadPersistedDraftCalled, isFalse);
+  });
+
+  group('leaving the page', () {
+    Future<AppLocalizations> pumpPushed(WidgetTester tester) async {
+      late AppLocalizations l10n;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) {
+              l10n = context.l10n;
+              return Scaffold(
+                body: TextButton(
+                  onPressed: () => Navigator.push<void>(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PhotoImportView()),
+                  ),
+                  child: const Text('open'),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+      return l10n;
+    }
+
+    Future<void> goBack(WidgetTester tester, {bool settle = false}) async {
+      final dynamic state = tester.state(find.byType(Navigator));
+      state.maybePop();
+      if (settle) {
+        await tester.pumpAndSettle();
+        return;
+      }
+      // A running read draws a looping plate line, which never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('pages still to read ask before leaving', (tester) async {
+      registerFake(
+        _FakePhotoImportViewModel(hasImage: true, unread: 2),
+      );
+      final l10n = await pumpPushed(tester);
+
+      await goBack(tester);
+
+      expect(find.text(l10n.unsavedChangesTitle), findsOneWidget);
+      expect(find.byType(PhotoImportView), findsOneWidget);
+    });
+
+    testWidgets('a running read asks before leaving', (tester) async {
+      registerFake(
+        _FakePhotoImportViewModel(hasImage: true, processing: true),
+      );
+      final l10n = await pumpPushed(tester);
+
+      await goBack(tester);
+
+      expect(find.text(l10n.unsavedChangesTitle), findsOneWidget);
+    });
+
+    testWidgets('nothing waiting leaves without asking', (tester) async {
+      registerFake(_FakePhotoImportViewModel(hasImage: true));
+      final l10n = await pumpPushed(tester);
+
+      await goBack(tester, settle: true);
+
+      expect(find.text(l10n.unsavedChangesTitle), findsNothing);
+      expect(find.byType(PhotoImportView), findsNothing);
+    });
   });
 }

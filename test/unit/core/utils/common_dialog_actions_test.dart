@@ -185,39 +185,6 @@ void main() {
       });
     }
 
-    testWidgets('comment: title and button', (tester) async {
-      await _open(
-        tester,
-        (ctx) => CommonDialogActions.showCommentDeleteConfirmation(
-          context: ctx,
-          commentText: 'Gott!',
-        ),
-      );
-
-      expect(find.byType(DestructiveConfirmationDialog), findsOneWidget);
-      expect(find.text(_sv.commentDeleteConfirmTitle), findsOneWidget);
-      expect(_button(_sv.commentDeleteConfirmAction), findsOneWidget);
-      expect(_richText((t) => t == '”Gott!”'), findsOneWidget);
-    });
-
-    testWidgets('comment: a long comment is cut at 40 characters with "…"', (
-      tester,
-    ) async {
-      final long = List.filled(60, 'x').join();
-      await _open(
-        tester,
-        (ctx) => CommonDialogActions.showCommentDeleteConfirmation(
-          context: ctx,
-          commentText: long,
-        ),
-      );
-
-      expect(
-        _richText((t) => t == '”${long.substring(0, 40)}…”'),
-        findsOneWidget,
-      );
-    });
-
     testWidgets('cook snap: title and button, no quoted name', (tester) async {
       await _open(
         tester,

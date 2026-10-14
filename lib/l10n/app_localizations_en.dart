@@ -14060,6 +14060,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ingredientSearchNoResults => 'No recipes match your ingredients';
 
   @override
+  String get ingredientSearchNoResultsHint =>
+      'Remove an ingredient or try fewer.';
+
+  @override
   String get ingredientSearchError => 'Could not search recipes';
 
   @override

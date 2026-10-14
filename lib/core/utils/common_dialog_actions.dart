@@ -63,22 +63,6 @@ class CommonDialogActions {
     );
   }
 
-  /// A comment, behind an Ångra snackbar.
-  static Future<bool?> showCommentDeleteConfirmation({
-    required BuildContext context,
-    required String commentText,
-  }) {
-    final l10n = context.l10n;
-    return showDeleteConfirmation(
-      context: context,
-      title: l10n.commentDeleteConfirmTitle,
-      itemName: commentText.length > 40
-          ? '${commentText.substring(0, 40)}…'
-          : commentText,
-      confirmText: l10n.commentDeleteConfirmAction,
-    );
-  }
-
   /// A cook-snap photo, behind an Ångra snackbar.
   static Future<bool?> showCookSnapDeleteConfirmation({
     required BuildContext context,

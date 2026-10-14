@@ -9,7 +9,6 @@ import 'package:butlery/views/archive_import/archive_filter_sheet.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/list/check_row.dart';
@@ -72,19 +71,16 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     }
 
     if (context.mounted) {
+      // A failure stays on screen as the error view with "Försök igen".
       if (viewModel.error == null) {
         SnackBarUtils.showSuccess(context, context.l10n.importRecipesImported);
         Navigator.pop(context);
-      } else {
-        SnackBarUtils.showFailure(context, what: viewModel.error!);
-        viewModel.clearError();
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<ArchiveImportViewModel>();
 
     return ButleryPage.undersida(
@@ -98,15 +94,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                 viewModel.selectedCount,
               ),
             ),
-          ),
-        if (viewModel.hasError)
-          IconButton(
-            icon: ButleryIcon(ButleryIcons.triangleAlert, color: cs.error),
-            onPressed: () {
-              SnackBarUtils.showFailure(context, what: viewModel.error!);
-              viewModel.clearError();
-            },
-            tooltip: context.l10n.importShowError,
           ),
       ],
       body: Stack(
@@ -222,6 +209,17 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     ArchiveImportViewModel viewModel,
   ) {
     final recipes = viewModel.filteredRecipes;
+
+    if (viewModel.hasError) {
+      return StateWidget.error(
+        message: viewModel.error!,
+        onAction: () {
+          viewModel.clearError();
+          _handleImport(context, viewModel);
+        },
+        actionLabel: context.l10n.commonRetry,
+      );
+    }
 
     if (recipes.isEmpty) {
       return StateWidget.empty(

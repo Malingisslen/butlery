@@ -8,8 +8,7 @@ import 'package:butlery/widgets/home/seasonal_hero_header.dart';
 
 /// Behaviour verified:
 /// - Header renders localized month title, ingredient subline, and match count.
-/// - Tap propagates through `onTap` callback.
-/// - Semantics wrap the whole widget as a button (for screen readers).
+/// - The banner is information only: nothing on it is pressable.
 void main() {
   const aprilMonth = SeasonalMonth(
     monthIndex: 4,
@@ -18,7 +17,7 @@ void main() {
     vegetableType: VegetableType.asparagus,
   );
 
-  Widget harness({required VoidCallback onTap, int matchCount = 5}) {
+  Widget harness({int matchCount = 5}) {
     return MaterialApp(
       locale: const Locale('sv'),
       supportedLocales: const [Locale('sv'), Locale('en')],
@@ -27,7 +26,6 @@ void main() {
         body: SeasonalHeroHeader(
           month: aprilMonth,
           matchCount: matchCount,
-          onTap: onTap,
         ),
       ),
     );
@@ -36,7 +34,7 @@ void main() {
   testWidgets('renders localized title, ingredients, and recipe count', (
     tester,
   ) async {
-    await tester.pumpWidget(harness(onTap: () {}));
+    await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
     // Swedish locale — "just nu i säsong · april"
@@ -50,31 +48,27 @@ void main() {
     expect(find.text('5 recept'), findsOneWidget);
   });
 
-  testWidgets('tap fires onTap exactly once', (tester) async {
-    var taps = 0;
-    await tester.pumpWidget(harness(onTap: () => taps++));
+  testWidgets('is not pressable', (tester) async {
+    await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(InkWell));
-    await tester.pumpAndSettle();
-
-    expect(taps, 1);
+    expect(find.byType(InkWell), findsNothing);
   });
 
   testWidgets('singular count renders without plural s', (tester) async {
-    await tester.pumpWidget(harness(onTap: () {}, matchCount: 1));
+    await tester.pumpWidget(harness(matchCount: 1));
     await tester.pumpAndSettle();
 
     expect(find.text('1 recept'), findsOneWidget);
   });
 
-  testWidgets('exposes button semantics for screen readers', (tester) async {
-    await tester.pumpWidget(harness(onTap: () {}));
+  testWidgets('is not announced as a button', (tester) async {
+    await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
     expect(
       tester.getSemantics(find.byType(SeasonalHeroHeader)),
-      containsSemantics(isButton: true),
+      isNot(containsSemantics(isButton: true)),
     );
   });
 }

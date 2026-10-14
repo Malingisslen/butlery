@@ -39,6 +39,10 @@ class VoiceImportViewModel extends BaseViewModel {
 
   bool get hasActiveCapture => _activeSection != null;
 
+  /// Something has been dictated or typed that nothing has saved yet.
+  bool get hasUnsavedContent =>
+      hasActiveCapture || _texts.values.any((t) => t.trim().isNotEmpty);
+
   VoiceImportSection? get activeSection => _activeSection;
 
   VoiceSectionState stateOf(VoiceImportSection section) =>
@@ -135,8 +139,9 @@ class VoiceImportViewModel extends BaseViewModel {
   /// the returned result.
   Future<ImportManagerResult?> importRecipe() async {
     if (!canImport) return null;
-    setLoading(true);
+    // setError ends loading too, so it must come first.
     setError(null);
+    setLoading(true);
 
     try {
       final assembled = assembleRecipeText(

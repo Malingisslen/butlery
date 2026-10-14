@@ -82,6 +82,33 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('a failed restore shows the error view; Försök igen runs it '
+      'again', (tester) async {
+    var calls = 0;
+    when(() => personalOps.addMultipleUnifiedRecipes(any())).thenAnswer((
+      _,
+    ) async {
+      calls++;
+      return calls == 1
+          ? RecipeOperationResult.failure('Nätverksfel')
+          : RecipeOperationResult.success('ok');
+    });
+    await pumpView(tester);
+
+    await tester.tap(find.text('Återställ $total recept'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nätverksfel'), findsOneWidget);
+    expect(find.text('Försök igen'), findsOneWidget);
+    expect(find.text(archive.archivedRecipes.first.title), findsNothing);
+
+    await tester.tap(find.text('Försök igen'));
+    await tester.pumpAndSettle();
+
+    expect(calls, 2);
+    expect(find.text('Nätverksfel'), findsNothing);
+  });
+
   testWidgets('with nothing ticked the button restores every listed recipe', (
     tester,
   ) async {

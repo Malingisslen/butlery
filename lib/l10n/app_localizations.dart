@@ -21629,6 +21629,12 @@ abstract class AppLocalizations {
   /// **'Inga recept matchar dina ingredienser'**
   String get ingredientSearchNoResults;
 
+  /// No description provided for @ingredientSearchNoResultsHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort en ingrediens eller prova färre.'**
+  String get ingredientSearchNoResultsHint;
+
   /// No description provided for @ingredientSearchError.
   ///
   /// In sv, this message translates to:

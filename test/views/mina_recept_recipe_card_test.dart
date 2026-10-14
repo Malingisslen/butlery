@@ -15,8 +15,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -24,6 +26,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
@@ -289,6 +292,117 @@ void main() {
         tester.widget<RecipeCard>(find.byType(RecipeCard)).isSelected,
         isFalse,
       );
+    });
+  });
+
+  group('the actions behind the card', () {
+    late List<Recipe> deleted;
+    late List<RouteSettings> pushed;
+
+    Future<void> pumpActions(WidgetTester tester, {bool grid = false}) async {
+      deleted = [];
+      pushed = [];
+      when(() => viewModel.isGridView).thenReturn(grid);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          onGenerateRoute: (settings) {
+            pushed.add(settings);
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const Scaffold(body: Text('route')),
+            );
+          },
+          child: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 360,
+                height: grid ? 300 : null,
+                child: MinaReceptRecipeCard(
+                  viewModel: viewModel,
+                  recipe: assessed(),
+                  allergenPrefs: prefs(showOnCards: true),
+                  onDelete: deleted.add,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final button = find.byKey(const ValueKey('recipe-actions-assessed'));
+
+    testWidgets('Redigera in the sheet opens the editor with the recipe', (
+      tester,
+    ) async {
+      await pumpActions(tester);
+
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Redigera'));
+      await tester.pumpAndSettle();
+
+      expect(pushed.last.name, Routes.editRecipe);
+      expect((pushed.last.arguments as Recipe).id, 'assessed');
+    });
+
+    testWidgets('Ta bort deletes only after the user confirms', (
+      tester,
+    ) async {
+      await pumpActions(tester);
+
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ta bort'));
+      await tester.pumpAndSettle();
+
+      expect(deleted, isEmpty);
+
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+      expect(deleted, isEmpty);
+
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ta bort'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.ancestor(
+          of: find.text(AppLocalizationsSv().recipeDelete),
+          matching: find.bySubtype<FilledButton>(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(deleted.map((r) => r.id), ['assessed']);
+    });
+
+    testWidgets('swiping the card counts as having used the swipe', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      await pumpActions(tester);
+
+      await tester.fling(
+        find.byType(Dismissible),
+        const Offset(-300, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(SwipeHintBanner.recipeSwipeSeenKey), isTrue);
+    });
+
+    testWidgets('the grid card carries one actions button; selecting hides '
+        'it', (tester) async {
+      await pumpActions(tester, grid: true);
+      expect(button, findsOneWidget);
+
+      when(() => viewModel.isSelectionMode).thenReturn(true);
+      await pumpActions(tester, grid: true);
+      expect(button, findsNothing);
     });
   });
 }

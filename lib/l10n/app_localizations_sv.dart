@@ -13989,6 +13989,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Inga recept matchar dina ingredienser';
 
   @override
+  String get ingredientSearchNoResultsHint =>
+      'Ta bort en ingrediens eller prova färre.';
+
+  @override
   String get ingredientSearchError => 'Kunde inte söka recept';
 
   @override

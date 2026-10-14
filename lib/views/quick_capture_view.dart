@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
@@ -67,7 +68,21 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
       title: context.l10n.addSheetQuickSaveTitle,
       showTabBar: false,
       width: PageWidth.compact,
-      body: Padding(
+      bottomNavigationBar: BottomActionContainer(
+        // BUT-403: `btn-quick-save` identifier for browser a11y.
+        child: Semantics(
+          identifier: 'btn-quick-save',
+          // The view's one saffron action (Grafisk manual v6:219). Busy keeps
+          // the name and draws the plate line.
+          child: HeroButton(
+            key: const ValueKey('test-quick-capture-save'),
+            label: context.l10n.quickCaptureSave,
+            busy: vm.isSaving,
+            onPressed: () => _save(vm),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
         padding: AppDimensions.responsiveContentPadding(context),
         child: Form(
           key: _formKey,
@@ -109,20 +124,6 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const Spacer(),
-              // BUT-403: `btn-quick-save` identifier for browser a11y.
-              Semantics(
-                identifier: 'btn-quick-save',
-                // The view's one saffron action (Grafisk manual
-                // v6:219). Busy keeps the name and draws the plate line.
-                child: HeroButton(
-                  key: const ValueKey('test-quick-capture-save'),
-                  label: context.l10n.quickCaptureSave,
-                  busy: vm.isSaving,
-                  onPressed: () => _save(vm),
-                ),
-              ),
-              const SizedBox(height: AppDimensions.space32),
             ],
           ),
         ),

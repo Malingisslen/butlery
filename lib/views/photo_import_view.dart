@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -202,7 +203,16 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: const GuestImportLimitListener(child: _PhotoImportViewContent()),
+      child: ListenableBuilder(
+        listenable: _viewModel,
+        // A finished reading is kept as a draft (BUT-910); only pages not yet
+        // read, or a reading in progress, are lost by going back.
+        builder: (context, child) => UnsavedChangesGuard(
+          isDirty: _viewModel.unreadPageCount > 0 || _viewModel.isProcessing,
+          child: child!,
+        ),
+        child: const GuestImportLimitListener(child: _PhotoImportViewContent()),
+      ),
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:flutter/semantics.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -142,9 +143,11 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                             label: l10n.cookbookStatSort,
                           ),
                           StatRowItem(
-                            value: DateFormat.MMMd(
-                              Localizations.localeOf(context).toString(),
-                            ).format(tag.updatedAt),
+                            value: ContentTimeLabels.dateLabel(
+                              l10n,
+                              tag.updatedAt,
+                              clock.now(),
+                            ),
                             label: l10n.cookbookStatUpdated,
                           ),
                         ],
