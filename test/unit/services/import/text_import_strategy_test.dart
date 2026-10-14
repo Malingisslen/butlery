@@ -84,6 +84,21 @@ void main() {
         expect(bySubstring(structured, 'choklad').section, 'Fyllning');
       });
 
+      test('reads a rating the app wrote as stars, which normalizeText would '
+          'strip', () async {
+        const text =
+            'Kladdkaka\n'
+            'Betyg: ★★★★\n'
+            'Ingredienser:\n'
+            '2 dl socker\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda i 20 min.';
+        final result = await strategy.import(text);
+
+        expect(result.recipe!.rating, 4.0);
+      });
+
       test('never leaks a heading into the flat ingredients list', () async {
         const text =
             'Kladdkaka\n'

@@ -993,9 +993,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get chatNotificationSettingsUpdated => 'Notification settings updated';
-
-  @override
   String get chatCouldNotChangeNotifications =>
       'Couldn\'t change notification settings';
 
@@ -1120,9 +1117,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusConnecting => 'Connecting …';
-
-  @override
-  String get statusSyncing => 'Syncing …';
 
   @override
   String get statusSaving => 'Saving …';
@@ -1784,21 +1778,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonNext => 'Next';
 
   @override
-  String get commonPrevious => 'Previous';
-
-  @override
-  String get commonSkip => 'Skip';
-
-  @override
-  String get commonSkipAll => 'Skip all';
-
-  @override
-  String get commonSaveAndClose => 'Save and close';
-
-  @override
-  String get commonSaveAndNext => 'Save and next';
-
-  @override
   String get commonSaveChanges => 'Save changes';
 
   @override
@@ -1826,9 +1805,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonSettings => 'Settings';
-
-  @override
-  String get settingsHouseholdSizeTitle => 'Household size';
 
   @override
   String get settingsHouseholdSizeHint =>
@@ -1918,9 +1894,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yIncreaseHouseholdSize => 'Increase household size';
 
   @override
-  String get settingsSectionNotifications => 'Notifications';
-
-  @override
   String get settingsLanguageTitle => 'Language';
 
   @override
@@ -1939,9 +1912,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String commonRemoveLabel(String label) {
     return 'Remove $label';
   }
-
-  @override
-  String get personalTagsViewTitle => 'Personal tags';
 
   @override
   String get personalTagCreateTag => 'Create tag';
@@ -2194,9 +2164,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagDetailNotFound => 'Tag could not be found';
 
   @override
-  String get tagDetailEditTitle => 'Edit tag';
-
-  @override
   String get tagDetailNameHint => 'Tag name';
 
   @override
@@ -2333,13 +2300,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagClickToRestore => 'Click to restore';
-
-  @override
-  String get allergenSettingsTitle => 'Allergens & dietary';
-
-  @override
-  String get allergenSettingsHubSubtitle =>
-      'Update your allergens and dietary preferences anytime';
 
   @override
   String get settingsAutoAddPantryTitle => 'Add bought items to pantry';
@@ -2808,27 +2768,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingItems => 'items';
 
   @override
-  String get shoppingPreviewAndEditItems => 'Preview and edit items';
-
-  @override
-  String get shoppingNoItemsSelected => 'No items selected';
-
-  @override
-  String get shoppingAllItemsRemovedFromMenu =>
-      'You have removed all items from the menu';
-
-  @override
-  String get shoppingRemoveItem => 'Remove item';
-
-  @override
-  String get shoppingRemoveAll => 'Remove all';
-
-  @override
-  String shoppingToListWithCount(String name, int count) {
-    return 'To “$name” ($count)';
-  }
-
-  @override
   String get shoppingLists => 'Shopping lists';
 
   @override
@@ -3248,9 +3187,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClearSearch => 'Clear search';
 
   @override
-  String get commonDiscard => 'Discard';
-
-  @override
   String get commonFailed => 'Failed';
 
   @override
@@ -3286,30 +3222,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collaborativeLoadingSharedList => 'Loading shared list …';
-
-  @override
-  String get allergenCrustacean => 'Crustacean';
-
-  @override
-  String get allergenDairy => 'Dairy';
-
-  @override
-  String get allergenEgg => 'Egg';
-
-  @override
-  String get allergenFish => 'Fish';
-
-  @override
-  String get allergenGluten => 'Gluten';
-
-  @override
-  String get allergenPeanut => 'Peanut';
-
-  @override
-  String get allergenSoy => 'Soy';
-
-  @override
-  String get allergenTreeNut => 'Tree nut';
 
   @override
   String get commentCouldNotPost => 'Could not post comment';
@@ -3390,19 +3302,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogClearSelection => 'Clear selection';
 
   @override
-  String get dialogContainsAllergens => 'Contains allergens:';
-
-  @override
-  String dialogCouldNotSave(String error) {
-    return 'We could not save. Try again.';
-  }
-
-  @override
   String get dialogCreateNewListForIngredients =>
       'Create a new list for these ingredients';
-
-  @override
-  String get dialogDietaryProperties => 'Dietary properties:';
 
   @override
   String get dialogEnterListName => 'Enter a name for the list';
@@ -3541,40 +3442,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogShoppingListNameHint => 'E.g. “Pancakes – Ingredients”';
 
   @override
-  String get dialogUnknownIngredientDescription =>
-      'This ingredient is not in the database. You can define its properties for better tagging.';
-
-  @override
-  String dialogUnknownIngredientProgress(int current, int total) {
-    return 'Unknown ingredient $current/$total';
-  }
-
-  @override
   String get dialogUsesSimpleExtraction => 'Uses simpler extraction';
-
-  @override
-  String get dietaryAlcohol => 'Alcohol';
-
-  @override
-  String get dietaryAnimalProduct => 'Animal product';
-
-  @override
-  String get dietaryBeef => 'Beef';
-
-  @override
-  String get dietaryMeat => 'Meat';
-
-  @override
-  String get dietaryPork => 'Pork';
-
-  @override
-  String get dietaryPoultry => 'Poultry';
-
-  @override
-  String get dietarySeafood => 'Seafood';
-
-  @override
-  String get dietarySpicy => 'Spicy';
 
   @override
   String get draftDiscardAll => 'Discard all';
@@ -3618,21 +3486,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupImport => 'Import';
-
-  @override
-  String groupImportingMenuComingSoon(String title) {
-    return 'Importing menu: $title (coming soon)';
-  }
-
-  @override
-  String groupImportingShoppingListComingSoon(String title) {
-    return 'Importing shopping list: $title (coming soon)';
-  }
-
-  @override
-  String groupImportNotImplemented(String title) {
-    return 'Import $title (not yet implemented)';
-  }
 
   @override
   String get groupInvitationNote =>
@@ -3720,11 +3573,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupSharedContent => 'Shared in the group';
 
   @override
-  String groupShoppingListViewComingSoon(String title) {
-    return 'Shopping list view: $title (coming soon)';
-  }
-
-  @override
   String get groupTransferOwnership => 'Transfer group ownership';
 
   @override
@@ -3734,11 +3582,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupView => 'View';
-
-  @override
-  String groupViewNotImplemented(String title) {
-    return 'View $title (not yet implemented)';
-  }
 
   @override
   String get profileExportData => 'Export my data';
@@ -4737,27 +4580,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageTitle => 'Image';
 
   @override
-  String get importColumnCategory => 'Category (category/kategori)';
+  String get importColumnCategory => 'Category';
 
   @override
-  String get importColumnCookingTime => 'Cooking time (cookingtime/tid)';
+  String get importColumnCookingTime => 'Cooking time';
 
   @override
-  String get importColumnIngredients =>
-      'Ingredients (ingredients/ingredienser)';
+  String get importColumnIngredients => 'Ingredients';
 
   @override
-  String get importColumnInstructions =>
-      'Instructions (instructions/instruktioner)';
+  String get importColumnInstructions => 'Instructions';
 
   @override
-  String get importColumnServings => 'Servings (servings/portioner)';
+  String get importColumnServings => 'Servings';
 
   @override
-  String get importColumnTags => 'Tags (tags/taggar)';
+  String get importColumnTags => 'Tags';
 
   @override
-  String get importColumnTitle => 'Title (title/namn)';
+  String get importColumnTitle => 'Title';
 
   @override
   String get importAllAlreadyHeld =>
@@ -4796,14 +4637,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get importFetchText => 'Fetch text';
-
-  @override
   String get importFileColumnsOptional => 'Optional columns:';
 
   @override
   String get importFileColumnsRequired =>
       'Your file should contain columns for:';
+
+  @override
+  String get importFileColumnsEitherLanguage =>
+      'Column headings can be in Swedish or English.';
 
   @override
   String get importFilterAll => 'All';
@@ -4865,9 +4707,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importSelectingFile => 'Selecting file …';
-
-  @override
-  String get importShowError => 'Show error';
 
   @override
   String importSucceededCount(int count) {
@@ -5478,17 +5317,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String importPhotoPagesCombined(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count pages',
-      one: '1 page',
-    );
-    return '$_temp0 combined into one recipe';
-  }
-
-  @override
   String importPhotoPagesMaxReached(int max) {
     String _temp0 = intl.Intl.pluralLogic(
       max,
@@ -5525,18 +5353,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importTakePhoto => 'Take a photo';
-
-  @override
-  String get importUrlBatchAllFailed =>
-      'None of the URLs could be fetched. Check the links and try again.';
-
-  @override
-  String get importMultipleUrlsLabel => 'Recipe URLs';
-
-  @override
-  String importUrlBatchProgress(int success, int total) {
-    return '$success of $total fetched';
-  }
 
   @override
   String get importVideoNoText => 'Video has no text';
@@ -5961,13 +5777,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileThemeSystem => 'System setting';
 
   @override
-  String get profileUnsavedChanges => 'Unsaved changes';
-
-  @override
-  String get profileUnsavedChangesMessage =>
-      'You have unsaved changes. Would you like to save before leaving?';
-
-  @override
   String get profileUploadingAvatar => 'Uploading avatar …';
 
   @override
@@ -6111,9 +5920,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get socialBeFirstToComment =>
       'Be the first to comment on this recipe.';
-
-  @override
-  String get socialCommentPosted => 'Comment posted';
 
   @override
   String get socialComments => 'Comments';
@@ -6747,9 +6553,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeWaitingForOthers => 'Waiting for others …';
 
   @override
-  String get commonDescription => 'Description';
-
-  @override
   String get commonShowMore => 'Show more';
 
   @override
@@ -6780,9 +6583,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupEmoji => 'Emoji';
-
-  @override
-  String get groupGroupName => 'Group name';
 
   @override
   String get groupInvitationCancelled => 'Invitation cancelled';
@@ -6911,9 +6711,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sharedNoRecipesDescription =>
       'Recipes shared with you will appear here';
-
-  @override
-  String get sharedRecipesByFriendButton => 'Recipes shared with me';
 
   @override
   String sharedNoRecipesFromFriend(String name) {
@@ -7577,9 +7374,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authResetEmailFailed => 'Could not send email';
 
   @override
-  String get commonNow => 'now';
-
-  @override
   String get commonJustNow => 'just now';
 
   @override
@@ -7727,9 +7521,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yNavigationLandmark => 'Main navigation';
-
-  @override
-  String get a11yAddFriend => 'Add friend';
 
   @override
   String get a11yTagStatusInfo => 'More information';
@@ -8196,12 +7987,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationSaveError => 'Could not save settings';
-
-  @override
-  String get notificationTitle => 'Notifications';
-
-  @override
-  String get notificationEnableTitle => 'Enable notifications';
 
   @override
   String get notificationQuietHoursTitle => 'Quiet hours';
@@ -11630,10 +11415,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelCollaborativeMenu => 'Collaborative menu';
 
   @override
-  String get errorUrlPrivateAddress =>
-      'The URL points to a private or reserved address and cannot be used';
-
-  @override
   String errorInvalidCategoryName(String name) {
     return 'Invalid category name: $name';
   }
@@ -12705,9 +12486,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The recipe moves to the trash and stays there for 30 days.';
 
   @override
-  String get commentDeleteError => 'Could not delete the comment';
-
-  @override
   String get commentEditHint => 'Edit your comment';
 
   @override
@@ -12767,21 +12545,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pollCloseAction => 'Close poll';
-
-  @override
-  String chatGroupCreatedMessage(String name, String title) {
-    return '$name created the group “$title”';
-  }
-
-  @override
-  String chatParticipantAdded(String name) {
-    return '$name was added to the group';
-  }
-
-  @override
-  String chatParticipantLeft(String name) {
-    return '$name left the group';
-  }
 
   @override
   String get authRequiredError => 'You must be signed in';
@@ -14471,12 +14234,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yLongPressCommentForReactions => 'Comment, long press to react';
 
   @override
-  String get a11yCommentLikeAction => 'Like comment';
-
-  @override
-  String get a11yCommentReplyAction => 'Reply to comment';
-
-  @override
   String a11yEditImageAction(String label) {
     return '$label';
   }
@@ -15116,9 +14873,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yDismissDuplicateNotice => 'Dismiss the notice';
 
   @override
-  String get groupMenuNoDish => 'No dish chosen';
-
-  @override
   String get groupMenuEmptyTitle => 'No dish has been voted in yet';
 
   @override
@@ -15138,11 +14892,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupMenuViewerNotice =>
       'You can see the group\'s menu but not change it.';
-
-  @override
-  String groupMenuWeekRange(int week, String range) {
-    return 'Week $week · $range';
-  }
 
   @override
   String get groupMenuChatAction => 'This week\'s menu';
@@ -15168,21 +14917,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String groupMenuVotedInBy(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'voted in by $count',
-      one: 'voted in by 1',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get groupMenuVotersTitle => 'Voted for this dish';
-
-  @override
-  String get a11yShowVoters => 'Show who voted';
 
   @override
   String get a11yGroupMenuDishDetails => 'Show proposal and votes';
@@ -15192,11 +14927,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupMenuUndoFailed => 'Could not undo the removal.';
-
-  @override
-  String groupMenuWeekShort(int week) {
-    return 'Week $week';
-  }
 
   @override
   String get groupMenuGroupsLoadFailed => 'Could not fetch your groups.';
@@ -17534,9 +17264,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupRemoveMemberFailed => 'The member could not be removed.';
 
   @override
-  String get groupUpdateFailed => 'The group could not be updated.';
-
-  @override
   String get groupLeaveFailed => 'Couldn\'t leave the group.';
 
   @override
@@ -18199,11 +17926,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendProfileShareRecipe => 'Share a recipe';
 
   @override
-  String friendProfilePublicRecipesRow(String owner) {
-    return '$owner public recipes';
-  }
-
-  @override
   String friendProfileSharedWithYouRow(String name) {
     return 'Shared with you by $name';
   }
@@ -18619,9 +18341,6 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get commentDeleteConfirmTitle => 'Delete the comment?';
 
   @override
   String get commentDeleteConfirmAction => 'Delete comment';
@@ -20275,11 +19994,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Visible to everyone, not only you';
 
   @override
-  String friendProfileShareLinkRow(String owner) {
-    return 'Share a link to $owner profile';
-  }
-
-  @override
   String get friendProfileShareLinkSub =>
       'Shows the public page, nothing you have shared';
 
@@ -20685,14 +20399,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get friendsSocialDisabled =>
       'Social features are temporarily switched off.';
-
-  @override
-  String get imagePrimaryBadge => 'Main image';
-
-  @override
-  String shareTagMessage(String contentName) {
-    return 'Take a look at my tag “$contentName”';
-  }
 
   @override
   String chatSharedRecipeLine(String recipeTitle) {

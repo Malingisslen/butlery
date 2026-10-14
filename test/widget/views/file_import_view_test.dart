@@ -57,6 +57,21 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the columns are named in the app language, not with raw '
+      'header aliases', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const FileImportView(),
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.textContaining('Titel'), findsOneWidget);
+    expect(find.textContaining('title/namn'), findsNothing);
+    expect(find.text(sv.importFileColumnsEitherLanguage), findsOneWidget);
+  });
+
   group('closing after a clean import', () {
     Future<void> importOneRecipe(WidgetTester tester) async {
       registerFallbackValue(RecipeFactory.build());

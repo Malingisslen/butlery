@@ -123,12 +123,16 @@ mixin ImportValidationMixin {
 
   double? extractRating(String text) {
     final match = RegExp(
-      r'(\d+(?:\.\d+)?)\s*(?:av\s*5|/5|\*|⭐)',
+      r'(\d+(?:\.\d+)?)\s*(?:av\s*5|/5|\*|⭐|★)',
     ).firstMatch(text);
     if (match != null) {
       final rating = double.tryParse(match.group(1)!);
       return rating != null && rating >= 1.0 && rating <= 5.0 ? rating : null;
     }
-    return null;
+    // ShareService writes a rating as one ★ per star ("★★★★"), no number.
+    // A lone ★ is a bullet or a label as often as a rating, so it needs a
+    // number before it ("1 ★") to count.
+    final run = RegExp(r'(?<!★)★{2,5}(?!★)').firstMatch(text);
+    return run?.group(0)?.length.toDouble();
   }
 }

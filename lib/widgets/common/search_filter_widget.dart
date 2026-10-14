@@ -73,6 +73,9 @@ class SearchFilterWidget extends StatefulWidget {
   final int? resultCount;
   final bool showStats;
 
+  /// False when the caller draws the filter panel itself, in a scrolling list.
+  final bool showFilterPanel;
+
   // Search history (OPTIONAL)
   final List<String>? searchHistory;
   final Function(String)? onHistoryTap;
@@ -130,6 +133,7 @@ class SearchFilterWidget extends StatefulWidget {
     // Results (optional)
     this.resultCount,
     this.showStats = true,
+    this.showFilterPanel = true,
 
     // Search history (optional)
     this.searchHistory,
@@ -335,7 +339,8 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
           _buildSearchHistoryChips(context),
 
         // Filter section with animation (only if filters are provided)
-        if (_hasFilters()) _buildFilterSection(context),
+        if (widget.showFilterPanel && _hasFilters())
+          _buildFilterSection(context),
 
         // Statistics section
         if (widget.showStats) _buildStatsSection(context),

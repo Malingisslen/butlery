@@ -3,7 +3,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -53,18 +52,13 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? _selectedTag;
   RecipeType? _selectedType;
 
-  // BUT-409: seasonal ingredient filter activated by the seasonal hero header.
-  // When non-empty, `filteredRecipes` is narrowed to recipes whose ingredient
-  // list contains ANY of these needles (substring, case-insensitive).
-  List<String>? _seasonalIngredientFilter;
-
   // Performance optimization: Cache filtered results
   List<Recipe>? _cachedFilteredRecipes;
   String _lastSearchQuery = '';
   String? _lastMealType;
   String? _lastTag;
   RecipeType? _lastType;
-  List<String>? _lastSeasonalIngredients;
+
   List<Recipe> get allRecipes => _recipeService.recipes;
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
   List<Recipe> get collaborativeRecipes => _recipeService.collaborativeRecipes;
@@ -80,10 +74,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? get selectedMealType => _selectedMealType;
   String? get selectedTag => _selectedTag;
   RecipeType? get selectedType => _selectedType;
-  List<String>? get seasonalIngredientFilter => _seasonalIngredientFilter;
-  bool get hasSeasonalFilter =>
-      _seasonalIngredientFilter != null &&
-      _seasonalIngredientFilter!.isNotEmpty;
   Recipe? getRecipeById(String id) {
     if (ValidationUtils.isNullOrEmpty(id)) return null;
     return allRecipes.where((r) => r.id == id).firstOrNull;
@@ -180,8 +170,7 @@ class RecipeQueryViewModel extends ChangeNotifier
         _lastSearchQuery == _searchQuery &&
         _lastMealType == _selectedMealType &&
         _lastTag == _selectedTag &&
-        _lastType == _selectedType &&
-        listEquals(_lastSeasonalIngredients, _seasonalIngredientFilter)) {
+        _lastType == _selectedType) {
       return _cachedFilteredRecipes!;
     }
 
@@ -210,24 +199,12 @@ class RecipeQueryViewModel extends ChangeNotifier
       recipes = recipes.where((r) => r.type == _selectedType).toList();
     }
 
-    // Apply seasonal ingredient filter (OR-matching across needles).
-    if (_seasonalIngredientFilter != null &&
-        _seasonalIngredientFilter!.isNotEmpty) {
-      final needles = _seasonalIngredientFilter!;
-      recipes = recipes
-          .where((r) => SeasonalHeroService.recipeMatchesAnyNeedle(r, needles))
-          .toList();
-    }
-
     // Update cache
     _cachedFilteredRecipes = recipes;
     _lastSearchQuery = _searchQuery;
     _lastMealType = _selectedMealType;
     _lastTag = _selectedTag;
     _lastType = _selectedType;
-    _lastSeasonalIngredients = _seasonalIngredientFilter == null
-        ? null
-        : List.unmodifiable(_seasonalIngredientFilter!);
 
     return recipes;
   }
@@ -255,7 +232,6 @@ class RecipeQueryViewModel extends ChangeNotifier
     _selectedMealType = null;
     _selectedTag = null;
     _selectedType = null;
-    _seasonalIngredientFilter = null;
     _invalidateCache();
     notifyListeners();
   }
@@ -266,34 +242,11 @@ class RecipeQueryViewModel extends ChangeNotifier
     clearFilters();
   }
 
-  /// Activate the seasonal ingredient filter. Called from the seasonal hero
-  /// header — filters `filteredRecipes` to recipes whose ingredients match
-  /// any of [ingredients] (substring, case-insensitive). No-op when the
-  /// same filter is already active, so double-taps don't spam listeners.
-  void applySeasonalFilter({required List<String> ingredients}) {
-    final normalized = ingredients
-        .map((e) => e.toLowerCase())
-        .toList(growable: false);
-    if (listEquals(_seasonalIngredientFilter, normalized)) return;
-    _seasonalIngredientFilter = normalized;
-    _invalidateCache();
-    notifyListeners();
-  }
-
-  /// Clear only the seasonal filter, leaving other filters intact.
-  void clearSeasonalFilter() {
-    if (_seasonalIngredientFilter == null) return;
-    _seasonalIngredientFilter = null;
-    _invalidateCache();
-    notifyListeners();
-  }
-
   bool get hasActiveFilters =>
       _searchQuery.isNotEmpty ||
       _selectedMealType != null ||
       _selectedTag != null ||
-      _selectedType != null ||
-      hasSeasonalFilter;
+      _selectedType != null;
   List<Recipe> getEditableRecipes() {
     if (currentUserId == null) return [];
 

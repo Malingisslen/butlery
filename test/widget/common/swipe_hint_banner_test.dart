@@ -16,6 +16,8 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 void main() {
   Widget app() => createLocalizedTestApp(child: const SwipeHintBanner());
 
+  setUp(SwipeHintBanner.startNewRunForTest);
+
   group('SwipeHintBanner (BUT-982)', () {
     testWidgets('renders on first use (no seen flag)', (tester) async {
       SharedPreferences.setMockInitialValues({});
@@ -28,15 +30,34 @@ void main() {
     testWidgets('stops after three visits', (tester) async {
       SharedPreferences.setMockInitialValues({});
       for (var i = 0; i < SwipeHintBanner.maxShows; i++) {
+        SwipeHintBanner.startNewRunForTest();
         await tester.pumpWidget(Container());
         await tester.pumpWidget(app());
         await tester.pumpAndSettle();
         expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
       }
+      SwipeHintBanner.startNewRunForTest();
       await tester.pumpWidget(Container());
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       expect(find.byIcon(ButleryIcons.hand), findsNothing);
+    });
+
+    testWidgets('remounting inside one app run is one visit, not several', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      for (var i = 0; i < SwipeHintBanner.maxShows + 2; i++) {
+        await tester.pumpWidget(Container());
+        await tester.pumpWidget(app());
+        await tester.pumpAndSettle();
+        expect(find.byIcon(ButleryIcons.hand), findsOneWidget);
+      }
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getInt('${SwipeHintBanner.recipeSwipeSeenKey}_shown'),
+        equals(1),
+      );
     });
 
     testWidgets('markUsed ends the hint for good', (tester) async {

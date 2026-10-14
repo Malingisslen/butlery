@@ -51,8 +51,6 @@ class SeasonalHeroService extends BaseService {
         .toList(growable: false);
   }
 
-  /// Shared predicate used by both [matchUserRecipes] and
-  /// `RecipeQueryViewModel.applySeasonalFilter` so the two paths can't drift.
   /// [lowercaseNeedles] must already be lowercased.
   static bool recipeMatchesAnyNeedle(
     Recipe recipe,
