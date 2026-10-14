@@ -37,29 +37,58 @@ class ActivityFeedViewModel extends BaseViewModel {
     );
   }
 
+  bool _isLoadingMore = false;
+  int _listVersion = 0;
+  String? _loadMoreError;
+
+  /// True while the next page is fetched. Separate from `isLoading` so the
+  /// list stays on screen (and keeps its scroll position) meanwhile.
+  bool get isLoadingMore => _isLoadingMore;
+
+  /// Set when the next page could not be fetched; the list keeps what it has.
+  String? get loadMoreError => _loadMoreError;
+
   /// Load the next page of events.
   Future<void> loadMore() async {
-    if (!_hasMore || _events.isEmpty) return;
+    if (!_hasMore || _events.isEmpty || _isLoadingMore) return;
 
-    await executeAsyncVoid(
-      () async {
-        final result = await _service.fetchFeed(
-          limit: _pageSize,
-          before: _events.last.createdAt,
-        );
+    _isLoadingMore = true;
+    _loadMoreError = null;
+    final version = _listVersion;
+    notifyListeners();
+    try {
+      final result = await _service.fetchFeed(
+        limit: _pageSize,
+        before: _events.last.createdAt,
+      );
+      // A refresh that landed meanwhile replaced the list this page continues.
+      if (version == _listVersion) {
         _events.addAll(result);
         _hasMore = result.length >= _pageSize;
-      },
-      errorPrefix: AppLocale.current.activityFeedLoadMoreFailed,
-    );
+      }
+    } catch (_) {
+      _loadMoreError = AppLocale.current.activityFeedLoadMoreFailed;
+    } finally {
+      _isLoadingMore = false;
+      notifyListeners();
+    }
   }
 
-  /// Clear and reload the feed.
+  /// Reload the feed. The current list stays on screen until the new one
+  /// arrives; a failed refresh keeps it and reports the error.
   Future<void> refresh() async {
-    _events = [];
     _hasMore = true;
+    _loadMoreError = null;
+    try {
+      final result = await _service.fetchFeed(limit: _pageSize);
+      _events = result;
+      _listVersion++;
+      _hasMore = result.length >= _pageSize;
+      clearError();
+    } catch (_) {
+      setError(AppLocale.current.activityFeedLoadFailed);
+    }
     notifyListeners();
-    await loadFeed();
   }
 
   /// Set or clear the event type filter (client-side).

@@ -187,7 +187,7 @@ void main() {
     expect(find.text('MELLAN ER'), findsOneWidget);
     expect(find.text('Delat med dig av Anna Svensson'), findsOneWidget);
     expect(
-      find.text('Dela en länk till Anna Svenssons profil'),
+      find.text('Dela en länk till profilen för Anna Svensson'),
       findsOneWidget,
     );
     // Removing the friend is the red line at the foot of the page, not a
@@ -199,7 +199,7 @@ void main() {
     expect(find.text('publika recept'), findsOneWidget);
   });
 
-  testWidgets('the public recipes row shows the count and uses a genitive', (
+  testWidgets('the public recipes row shows the count and names the friend', (
     tester,
   ) async {
     final friend = _friend.copyWith(
@@ -211,22 +211,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Jonas publika recept'), findsOneWidget);
+    expect(find.text('Publika recept från Jonas'), findsOneWidget);
     // The figure sits in the stats and at the end of the row.
     expect(find.text('23'), findsNWidgets(2));
-  });
-
-  testWidgets('a name not ending in s gets an s added in the genitive', (
-    tester,
-  ) async {
-    final friend = _friend.copyWith(displayName: 'Anna', publicRecipeCount: 4);
-    await tester.pumpWidget(
-      createLocalizedTestApp(child: FriendProfileView(friend: friend)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Annas publika recept'), findsOneWidget);
-    expect(find.text('Anna publika recept'), findsNothing);
   });
 
   testWidgets('Skicka meddelande is the saffron primary button', (
@@ -338,7 +325,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Anna Svenssons publika recept'));
+    await tester.tap(find.text('Publika recept från Anna Svensson'));
     await tester.pumpAndSettle();
 
     expect(pushed.map((r) => r.name), [Routes.publicProfile]);

@@ -1,7 +1,7 @@
 // lib/widgets/social/friend_actions.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -18,24 +18,11 @@ class FriendActions {
     UserProfile user,
     FriendsViewModel viewModel,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.blockedUsersUnblockTitle),
-        content: Text(
-          context.l10n.blockedUsersUnblockMessage(user.displayName),
-        ),
-        actions: [
-          DialogCancelButton(onPressed: () => Navigator.pop(ctx, false)),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
-            ),
-            child: Text(context.l10n.blockedUsersUnblock),
-          ),
-        ],
-      ),
+      title: context.l10n.blockedUsersUnblockTitle,
+      message: context.l10n.blockedUsersUnblockMessage(user.displayName),
+      confirmText: context.l10n.blockedUsersUnblock,
     );
 
     if (confirmed == true) {

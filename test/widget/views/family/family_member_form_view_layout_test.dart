@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as prod_di;
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
@@ -85,4 +86,50 @@ void main() {
       reason: 'no empty band between the top bar and the first field',
     );
   });
+
+  testWidgets(
+    'leaving with a typed name asks first; untouched leaves at once',
+    (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FamilyMemberFormView(),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(FamilyMemberFormView), findsNothing, reason: 'clean');
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Siri');
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.unsavedChangesTitle), findsOneWidget);
+      expect(find.byType(FamilyMemberFormView), findsOneWidget);
+
+      await tester.tap(find.text(sv.cancelWithoutSaving));
+      await tester.pumpAndSettle();
+      expect(find.byType(FamilyMemberFormView), findsNothing);
+    },
+  );
 }

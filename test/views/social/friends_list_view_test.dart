@@ -21,6 +21,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +38,6 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -70,8 +70,7 @@ const _friendsEmptyHeadline =
     'Laga tillsammans med vänner'; // friendsEmptyHeadline
 const _friendsEmptyFindByUsername =
     'Hitta vänner med användarnamn'; // friendsEmptyFindByUsername
-const _socialDisabled =
-    'Sociala funktioner är tillfälligt inaktiverade.'; // hardcoded fallback
+const _socialDisabled = 'Sociala funktioner är tillfälligt avstängda.';
 
 class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
 
@@ -570,32 +569,25 @@ void main() {
     );
   });
 
-  // BUT-2183: the error box is a surface.tint.danger notice with no border
-  // (B83-2).
+  // The error is the shared InlineError: a danger outline on the base surface.
   group('FriendsListView — tokens (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('$name: the error box is a surface.tint.danger fill with no '
-          'border', (tester) async {
+      testWidgets('$name: the error is an InlineError with a danger outline', (
+        tester,
+      ) async {
         friendsViewModel.setFriendsState(error: 'Något gick fel');
         when(() => friendsViewModel.error).thenReturn('Något gick fel');
         await pumpView(tester, theme: theme);
 
         final context = tester.element(find.byType(FriendsListView));
-        final message = find.text('Något gick fel');
-        expect(message, findsOneWidget);
-        final box = tester.widget<Container>(
-          find.ancestor(of: message, matching: find.byType(Container)).first,
-        );
-        final decoration = box.decoration! as BoxDecoration;
-        expect(decoration.color, context.modeColors.surfaceTintDanger);
-        expect(decoration.border, isNull);
-        expect(
-          tester.widget<Text>(message).style?.color,
-          Theme.of(context).colorScheme.onErrorContainer,
-        );
+        expect(find.text('Något gick fel'), findsOneWidget);
+        final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+        final shape = box.shape! as RoundedRectangleBorder;
+        expect(shape.side.color, Theme.of(context).colorScheme.error);
+        expect(box.color, Theme.of(context).colorScheme.surface);
       });
     }
   });

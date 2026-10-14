@@ -4,6 +4,7 @@
 // lib/views/social/user_profile_edit/.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -16,7 +17,6 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
@@ -204,33 +204,10 @@ class _UserProfileEditViewContentState
   Future<bool> _handleBackNavigation(UserProfileViewModel viewModel) async {
     if (!viewModel.hasUnsavedChanges) return true;
 
-    final shouldDiscard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.profileUnsavedChanges),
-        content: Text(context.l10n.profileUnsavedChangesMessage),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonDiscard,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonSave,
-            onPressed: () async {
-              Navigator.pop(context, false);
-              await _saveProfile();
-            },
-          ),
-        ],
-      ),
-    );
+    final shouldDiscard =
+        await CommonDialogActions.showUnsavedChangesConfirmation(
+          context: context,
+        );
 
     return shouldDiscard ?? false;
   }
@@ -259,7 +236,6 @@ class _UserProfileEditViewContentState
       child: ButleryPage.undersida(
         title: context.l10n.profileEditProfile,
         backTo: context.l10n.moreTitle,
-        ruleUnderBar: false,
         // A form: the save bar takes the tab bar's place (B-54).
         showTabBar: false,
         actions: [

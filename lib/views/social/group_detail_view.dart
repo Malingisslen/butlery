@@ -353,7 +353,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
       // fetched under the plate line (produktregler.md:163, B-18).
       return ButleryPage.undersida(
         title: context.l10n.socialGroups,
-        ruleUnderBar: false,
         body: StateWidget.loading(message: context.l10n.groupLoadingInfo),
       );
     }
@@ -362,7 +361,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (_viewModel.group == null) {
       return ButleryPage.undersida(
         title: context.l10n.groupNotFound,
-        ruleUnderBar: false,
         body: StateWidget.empty(
           title: context.l10n.groupNotFound,
           subtitle: context.l10n.groupNotFoundDescription,
@@ -380,7 +378,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
     return ButleryPage.undersida(
       title: group.name,
       backTo: context.l10n.socialFriendsAndGroups,
-      ruleUnderBar: false,
       showTabBar: false,
       actions: GroupDetailAppBar.actions(
         context,

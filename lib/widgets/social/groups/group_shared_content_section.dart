@@ -83,17 +83,20 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
+        // Only what can really be opened or imported gets a button: a
+        // button that answers "coming soon" (or worse, "done") is a lie.
         return SharedContentCard(
           item: item,
-          onView: () => _handleViewItem(item),
-          onImport: () => _handleImportItem(item),
+          onView: item.type == 'shopping_list'
+              ? null
+              : () => _handleViewItem(item),
+          onImport: item.type == 'recipe' ? () => _importRecipe(item) : null,
         );
       },
     );
   }
 
   void _handleViewItem(SharedContentItem item) {
-    // Show detailed view dialog based on item type
     switch (item.type) {
       case 'menu':
         _showMenuDetailsDialog(item);
@@ -101,34 +104,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
       case 'recipe':
         _showRecipeDetailsDialog(item);
         break;
-      case 'shopping_list':
-        _showShoppingListDetailsDialog(item);
-        break;
-      default:
-        SnackBarUtils.showInfo(
-          context,
-          context.l10n.groupViewNotImplemented(item.title),
-        );
-    }
-  }
-
-  void _handleImportItem(SharedContentItem item) {
-    // Import functionality based on item type
-    switch (item.type) {
-      case 'menu':
-        _importMenu(item);
-        break;
-      case 'recipe':
-        _importRecipe(item);
-        break;
-      case 'shopping_list':
-        _importShoppingList(item);
-        break;
-      default:
-        SnackBarUtils.showWarning(
-          context,
-          context.l10n.groupImportNotImplemented(item.title),
-        );
     }
   }
 
@@ -198,22 +173,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
     }
   }
 
-  void _showShoppingListDetailsDialog(SharedContentItem item) {
-    // Placeholder for shopping list details
-    SnackBarUtils.showInfo(
-      context,
-      context.l10n.groupShoppingListViewComingSoon(item.title),
-    );
-  }
-
-  Future<void> _importMenu(SharedContentItem item) async {
-    // Placeholder for menu import functionality
-    SnackBarUtils.showSuccess(
-      context,
-      context.l10n.groupImportingMenuComingSoon(item.title),
-    );
-  }
-
   Future<void> _importRecipe(SharedContentItem item) async {
     try {
       final sharedRecipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
@@ -245,14 +204,6 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection> {
         what: context.l10n.errorCouldNotImportRecipes,
       );
     }
-  }
-
-  Future<void> _importShoppingList(SharedContentItem item) async {
-    // Placeholder for shopping list import functionality
-    SnackBarUtils.showSuccess(
-      context,
-      context.l10n.groupImportingShoppingListComingSoon(item.title),
-    );
   }
 
   @override

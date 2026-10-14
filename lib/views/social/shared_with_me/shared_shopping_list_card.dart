@@ -74,7 +74,7 @@ class SharedShoppingListCard {
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       ),
       child: Text(
-        '"$message"',
+        '”$message”',
         style: AppTextStyles.bodySmall.copyWith(
           fontStyle: FontStyle.italic,
         ),
@@ -89,11 +89,12 @@ class SharedShoppingListCard {
   ) {
     showButlerySheet<void>(
       context: context,
-      builder: (context) => DraggableScrollableSheet(
+      builder: (sheetContext) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         maxChildSize: 0.9,
         minChildSize: 0.5,
-        builder: (context, scrollController) => _buildPreviewContent(
+        builder: (sheetContext, scrollController) => _buildPreviewContent(
+          sheetContext,
           context,
           viewModel,
           sharedShoppingList,
@@ -103,8 +104,11 @@ class SharedShoppingListCard {
     );
   }
 
+  /// [pageContext] outlives the sheet: joining shows its result and navigates
+  /// after the sheet has closed, which the sheet's own context cannot.
   static Widget _buildPreviewContent(
     BuildContext context,
+    BuildContext pageContext,
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
     ScrollController scrollController,
@@ -192,12 +196,12 @@ class SharedShoppingListCard {
                   onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                       ? null
                       : () {
+                          Navigator.pop(context);
                           SharedContentActions.joinShoppingList(
-                            context,
+                            pageContext,
                             viewModel,
                             sharedShoppingList,
                           );
-                          Navigator.pop(context);
                         },
                 ),
               ),

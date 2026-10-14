@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
@@ -87,11 +89,18 @@ class _FamilyRatingEntryContent extends StatelessWidget {
   const _FamilyRatingEntryContent({required this.recipeTitle});
 
   Future<void> _save(BuildContext context) async {
+    if (!context.mounted) return;
     final vm = context.read<FamilyRatingEntryViewModel>();
     final ok = await vm.save();
     if (!context.mounted) return;
     if (ok) {
       Navigator.of(context).pop();
+    } else {
+      SnackBarUtils.showErrorWithRetry(
+        context,
+        vm.error ?? context.l10n.familyRatingSaveFailed,
+        onRetry: () => _save(context),
+      );
     }
   }
 
@@ -104,20 +113,31 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     // old saffron text on ink was not readable (tokens.json text roles;
     // saffron is never text on ink).
     final initialLoad = vm.isLoading && vm.present.isEmpty;
-    return ButleryPage.undersida(
-      title: l10n.familyRatingTitle,
-      secondaryLine: recipeTitle,
-      secondaryLineIsLive: false,
-      // Only the INITIAL load replaces the form with a spinner; during save()
-      // the form + (disabled) actions stay put so the screen doesn't flicker.
-      // The actions take the tab bar's place, and nothing stands there while
-      // the spinner shows.
-      body: initialLoad
-          ? StateWidget.loading(message: l10n.loadingFamily)
-          : _body(context, vm, l10n),
-      bottomNavigationBar: initialLoad
-          ? const SizedBox.shrink()
-          : _actions(context, vm, l10n),
+    return PopScope(
+      canPop: !vm.hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard =
+            await CommonDialogActions.showUnsavedChangesConfirmation(
+              context: context,
+            );
+        if (discard == true && context.mounted) Navigator.of(context).pop();
+      },
+      child: ButleryPage.undersida(
+        title: l10n.familyRatingTitle,
+        secondaryLine: recipeTitle,
+        secondaryLineIsLive: false,
+        // Only the INITIAL load replaces the form with a spinner; during save()
+        // the form + (disabled) actions stay put so the screen doesn't flicker.
+        // The actions take the tab bar's place, and nothing stands there while
+        // the spinner shows.
+        body: initialLoad
+            ? StateWidget.loading(message: l10n.loadingFamily)
+            : _body(context, vm, l10n),
+        bottomNavigationBar: initialLoad
+            ? const SizedBox.shrink()
+            : _actions(context, vm, l10n),
+      ),
     );
   }
 

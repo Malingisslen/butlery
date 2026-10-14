@@ -171,6 +171,7 @@ class CalendarDishCell extends StatelessWidget {
     this.selectionMode = false,
     this.selected = false,
     this.dragPayload,
+    this.maxTitleLines,
   });
 
   final String title;
@@ -180,6 +181,9 @@ class CalendarDishCell extends StatelessWidget {
 
   /// Dishes beyond the first in an Övrigt place, written "+N" after the name.
   final int extraCount;
+
+  /// Caps the name with an ellipsis; null lets a long name grow the cell.
+  final int? maxTitleLines;
   final bool selectionMode;
   final bool selected;
   final VoidCallback onTap;
@@ -204,10 +208,14 @@ class CalendarDishCell extends StatelessWidget {
               ],
             ),
             style: style,
+            maxLines: maxTitleLines,
+            overflow: maxTitleLines == null ? null : TextOverflow.ellipsis,
           )
         : Text(
             title,
             style: style,
+            maxLines: maxTitleLines,
+            overflow: maxTitleLines == null ? null : TextOverflow.ellipsis,
           );
     final corner = <Widget>[
       if (marks.placementOrder != null)

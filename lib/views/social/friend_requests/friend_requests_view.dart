@@ -199,7 +199,6 @@ class _FriendRequestsViewContentState
     return ButleryPage.undersida(
       title: context.l10n.socialFriendRequestsTitle,
       backTo: context.l10n.socialFriendsAndGroups,
-      ruleUnderBar: false,
       actions: [
         if (hasRows)
           TextButton(

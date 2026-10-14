@@ -1454,6 +1454,20 @@ void main() {
     });
 
     group('Refresh and State Management', () {
+      test('reloadConversation picks up a mute made elsewhere', () async {
+        expect(viewModel.conversation!.isMuted, isFalse);
+        when(() => mockMessagingService.getConversation(any())).thenAnswer(
+          (_) async => ConversationBuilder.build(
+            id: testConversationId,
+            participantIds: [testUserId, 'user2'],
+          ).copyWith(isMuted: true),
+        );
+
+        await viewModel.reloadConversation();
+
+        expect(viewModel.conversation!.isMuted, isTrue);
+      });
+
       test('should handle refresh', () async {
         // Arrange & Act
         await viewModel.refresh();

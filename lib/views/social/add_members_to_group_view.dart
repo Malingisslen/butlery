@@ -15,6 +15,7 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
@@ -347,39 +348,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (viewModel.invitationError != null) ...[
-            Builder(
-              builder: (context) {
-                final cs = Theme.of(context).colorScheme;
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.space16),
-                  decoration: BoxDecoration(
-                    color: context.modeColors.surfaceTintDanger,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.triangleAlert,
-                        color: cs.onErrorContainer,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                      const SizedBox(width: AppDimensions.space8),
-                      Expanded(
-                        child: Text(
-                          viewModel.invitationError!,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: cs.onErrorContainer,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            InlineError(what: viewModel.invitationError!),
             const SizedBox(height: AppDimensions.space8),
           ],
           // The view's one saffron action, "Bjud in 1 vald" as drawn

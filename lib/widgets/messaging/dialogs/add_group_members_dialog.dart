@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Dialog for selecting friends to add to a group conversation.
 class AddGroupMembersDialog extends StatefulWidget {
@@ -78,33 +80,37 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
             ),
             const SizedBox(height: AppDimensions.space8),
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredFriends.length,
-                itemBuilder: (context, index) {
-                  final friend = _filteredFriends[index];
-                  final isSelected = _selectedIds.contains(friend.uid);
+              child: widget.availableFriends.isEmpty
+                  ? StateWidget.empty(
+                      title: context.l10n.chatAddMembersEmptyTitle,
+                      subtitle: context.l10n.chatAddMembersEmptyBody,
+                      icon: ButleryIcons.users,
+                    )
+                  : ListView.builder(
+                      itemCount: _filteredFriends.length,
+                      itemBuilder: (context, index) {
+                        final friend = _filteredFriends[index];
+                        final isSelected = _selectedIds.contains(friend.uid);
 
-                  return ButleryCheckboxTile(
-                    value: isSelected,
-                    onChanged: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedIds.add(friend.uid);
-                        } else {
-                          _selectedIds.remove(friend.uid);
-                        }
-                      });
-                    },
-                    title: Text(friend.displayName),
-                    secondary: UserDisplayWidgets.avatar(
-                      imageUrl: friend.avatarUrl,
-                      displayName: friend.displayName,
-                      size: ImageSize.small,
-                      announceName: false,
+                        return ButleryCheckboxTile(
+                          value: isSelected,
+                          onChanged: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedIds.add(friend.uid);
+                              } else {
+                                _selectedIds.remove(friend.uid);
+                              }
+                            });
+                          },
+                          title: Text(friend.displayName),
+                          secondary: AvatarCircle(
+                            imageUrl: friend.avatarUrl,
+                            displayName: friend.displayName,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

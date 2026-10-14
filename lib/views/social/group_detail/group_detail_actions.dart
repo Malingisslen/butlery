@@ -11,11 +11,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/views/social/add_members_to_group_view.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -23,20 +19,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// GroupDetailActions - Group action methods
 /// Handles group-related actions like adding/removing members, editing, deleting.
 class GroupDetailActions {
-  /// Add members to group
-  static Future<bool> addMembers(
-    BuildContext context,
-    FriendCategory group,
-  ) async {
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddMembersToGroupView(groupId: group.id),
-      ),
-    );
-    return result ?? false;
-  }
-
   /// Report a member's profile / behavior within a group context.
   ///
   /// BUT-511 (Apple 1.2 / Play UGC): every member surface needs a report
@@ -175,86 +157,6 @@ class GroupDetailActions {
           SnackBarUtils.showFailure(
             context,
             what: context.l10n.groupRemoveMemberFailed,
-          );
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /// Edit group
-  static Future<bool> editGroup(
-    BuildContext context,
-    FriendCategory group,
-  ) async {
-    final nameController = TextEditingController(text: group.name);
-    final descriptionController = TextEditingController(
-      text: group.description,
-    );
-    final emojiController = TextEditingController(text: group.emoji);
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.groupEditGroup),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              StyledInput(
-                controller: nameController,
-                label: context.l10n.groupGroupName,
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              StyledInput(
-                controller: descriptionController,
-                label: context.l10n.commonDescription,
-                maxLines: 3,
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              StyledInput(
-                controller: emojiController,
-                label: context.l10n.groupEmoji,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonSave,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true) {
-      try {
-        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success = await categoriesService.categories.updateCategory(
-          categoryId: group.id,
-          name: nameController.text.trim(),
-          description: descriptionController.text.trim(),
-        );
-
-        if (success && context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.groupUpdated);
-          GroupEventBus.groupUpdated();
-          return true;
-        }
-      } catch (e) {
-        if (context.mounted) {
-          AppLogger.error('Failed to update group', e);
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.groupUpdateFailed,
           );
         }
       }

@@ -16860,5 +16860,45 @@
         "type": "String"
       }
     }
+  },
+  "chatMessageMenuTitle": "Meddelande",
+  "@chatMessageMenuTitle": {
+    "description": "Title of the sheet a long press on a chat message opens."
+  },
+  "chatMessageReply": "Svara",
+  "@chatMessageReply": {
+    "description": "Message menu row: reply to this message."
+  },
+  "chatMessageCopy": "Kopiera",
+  "@chatMessageCopy": {
+    "description": "Message menu row: copy the text."
+  },
+  "chatMuted": "Notiserna från chatten är tystade",
+  "@chatMuted": {
+    "description": "Confirmation after muting a conversation."
+  },
+  "chatUnmuted": "Notiserna från chatten är på igen",
+  "@chatUnmuted": {
+    "description": "Confirmation after unmuting a conversation."
+  },
+  "chatUnmute": "Slå på notiser",
+  "@chatUnmute": {
+    "description": "Chat menu row shown while the conversation is muted."
+  },
+  "chatReactionFailed": "Reaktionen kunde inte sparas.",
+  "@chatReactionFailed": {
+    "description": "Snackbar when toggling a reaction on a chat message fails."
+  },
+  "feedFilterNoMatch": "Inga händelser av det här slaget än",
+  "@feedFilterNoMatch": {
+    "description": "Shown in the activity feed when the chosen filter matches nothing."
+  },
+  "chatAddMembersEmptyTitle": "Inga vänner att lägga till",
+  "@chatAddMembersEmptyTitle": {
+    "description": "Spår C: title when the add-members dialog has no friends to list"
+  },
+  "chatAddMembersEmptyBody": "Alla dina vänner är redan med, eller så har du inga vänner än. Hitta vänner under Vänner.",
+  "@chatAddMembersEmptyBody": {
+    "description": "Spår C: sentence under the empty add-members title"
   }
 }

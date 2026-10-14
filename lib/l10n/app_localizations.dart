@@ -31486,6 +31486,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dela en länk till profilen för {name}'**
   String friendProfileShareLinkRowOf(String name);
+
+  /// Title of the sheet a long press on a chat message opens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelande'**
+  String get chatMessageMenuTitle;
+
+  /// Message menu row: reply to this message.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara'**
+  String get chatMessageReply;
+
+  /// Message menu row: copy the text.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera'**
+  String get chatMessageCopy;
+
+  /// Confirmation after muting a conversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiserna från chatten är tystade'**
+  String get chatMuted;
+
+  /// Confirmation after unmuting a conversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notiserna från chatten är på igen'**
+  String get chatUnmuted;
+
+  /// Chat menu row shown while the conversation is muted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på notiser'**
+  String get chatUnmute;
+
+  /// Snackbar when toggling a reaction on a chat message fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reaktionen kunde inte sparas.'**
+  String get chatReactionFailed;
+
+  /// Shown in the activity feed when the chosen filter matches nothing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga händelser av det här slaget än'**
+  String get feedFilterNoMatch;
+
+  /// Spår C: title when the add-members dialog has no friends to list
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga vänner att lägga till'**
+  String get chatAddMembersEmptyTitle;
+
+  /// Spår C: sentence under the empty add-members title
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla dina vänner är redan med, eller så har du inga vänner än. Hitta vänner under Vänner.'**
+  String get chatAddMembersEmptyBody;
 }
 
 class _AppLocalizationsDelegate

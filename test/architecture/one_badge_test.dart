@@ -12,8 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 const _notYetMoved = <String>{
   // The admin views' filled status pill, shared by spår D1 in #732.
   'lib/widgets/common/indicators/status_pill.dart StatusPill',
-  // An avatar of initials, not a badge.
-  'lib/views/social/collaborative_shopping/collaborative_shopping_items.dart _AssigneeBadge',
   // A neutral info chip with no border, decided in B83-2.
   'lib/widgets/common/indicators/admin_badge.dart AdminBadge',
   // Material's Badge on a navigation glyph.

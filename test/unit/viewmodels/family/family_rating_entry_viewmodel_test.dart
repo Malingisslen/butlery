@@ -234,6 +234,29 @@ void main() {
     expect(vm.hasAnyRating, isTrue);
   });
 
+  test('unsaved changes count from what was loaded, not from zero', () async {
+    final emma = await addDiner('Emma', DinerAgeBand.toddler);
+    await ratingService.rateAsFamily(
+      recipeId: _recipe,
+      householdId: householdId,
+      memberId: emma,
+      memberType: HouseholdMemberType.profile,
+      stars: 3,
+      enteredByUid: _malin,
+    );
+    final vm = FamilyRatingEntryViewModel(
+      recipeId: _recipe,
+      presentMemberIds: [_malin, emma],
+    );
+    await vm.load();
+
+    expect(vm.hasUnsavedChanges, isFalse, reason: 'a pre-filled form is clean');
+    vm.setStars(emma, 4);
+    expect(vm.hasUnsavedChanges, isTrue);
+    vm.setStars(emma, 3);
+    expect(vm.hasUnsavedChanges, isFalse, reason: 'back to what is stored');
+  });
+
   test('the logged-in account holder is flagged as the self-rater', () async {
     final emma = await addDiner('Emma', DinerAgeBand.toddler);
     final vm = FamilyRatingEntryViewModel(

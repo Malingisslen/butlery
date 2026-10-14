@@ -130,6 +130,25 @@ void main() {
     });
   });
 
+  group('CreateSharedListViewModel - unsaved input', () {
+    test('a prefilled title is not input until it is changed', () {
+      viewModel.initialize(defaultTitle: 'Middag');
+      expect(viewModel.hasUserInput, isFalse);
+
+      viewModel.updateTitle('Lunch');
+      expect(viewModel.hasUserInput, isTrue);
+    });
+
+    test('clearing the form forgets the prefilled title', () {
+      viewModel.initialize(defaultTitle: 'Middag');
+      viewModel.clearForm();
+      expect(viewModel.hasUserInput, isFalse);
+
+      viewModel.updateTitle('Middag');
+      expect(viewModel.hasUserInput, isTrue);
+    });
+  });
+
   group('CreateSharedListViewModel - Form Management', () {
     test('should update title', () {
       viewModel.updateTitle('My Shopping List');

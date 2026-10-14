@@ -149,6 +149,7 @@ void main() {
           'lib/views/quick_capture_view.dart',
           'lib/views/settings/appeal_form_view.dart',
           'lib/views/skriv_sjalv_recept_view.dart',
+          'lib/views/social/create_shared_shopping_list_view.dart',
           'lib/views/social/group_detail_view.dart',
           'lib/views/social/public_profile_view.dart',
           'lib/views/social/user_profile_edit_view.dart',

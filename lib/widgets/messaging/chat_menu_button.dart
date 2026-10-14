@@ -82,7 +82,11 @@ class ChatMenuButton extends StatelessWidget {
                 const ButleryIcon(ButleryIcons.bellOff),
                 const SizedBox(width: AppDimensions.space4),
                 Flexible(
-                  child: Text(context.l10n.chatMute),
+                  child: Text(
+                    conversation?.isMuted == true
+                        ? context.l10n.chatUnmute
+                        : context.l10n.chatMute,
+                  ),
                 ),
               ],
             ),
@@ -115,20 +119,24 @@ class ChatMenuButton extends StatelessWidget {
               ],
             ),
           ),
-          const PopupMenuDivider(),
-          ButleryMenuItem(
-            value: 'leave',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ButleryIcon(ButleryIcons.logOut, color: cs.error),
-                const SizedBox(width: AppDimensions.space4),
-                Flexible(
-                  child: Text(context.l10n.chatLeaveConversation),
-                ),
-              ],
+          // Only a chat group can be left; a direct chat has no group to
+          // leave, and deleting it lives in the conversation list.
+          if (conversation?.groupId != null) ...[
+            const PopupMenuDivider(),
+            ButleryMenuItem(
+              value: 'leave',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ButleryIcon(ButleryIcons.logOut, color: cs.error),
+                  const SizedBox(width: AppDimensions.space4),
+                  Flexible(
+                    child: Text(context.l10n.chatLeaveConversation),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

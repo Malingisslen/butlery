@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -72,9 +71,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
     AppLogger.info('_SharedWithMeViewContent.initState() called');
     super.initState();
 
-    // Configure Swedish for timeago
-    timeago.setLocaleMessages('sv', timeago.SvMessages());
-
     // Trigger initial data load after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SharedContentCoordinatorViewModel>().initialize();
@@ -93,7 +89,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
     return ButleryPage.undersida(
       title: context.l10n.profileSharedWithMe,
       backTo: context.l10n.moreTitle,
-      ruleUnderBar: false,
       body: Column(
         children: [
           LayoutComponents.offlineIndicator(),

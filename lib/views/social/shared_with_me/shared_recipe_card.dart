@@ -1,7 +1,7 @@
 // lib/views/social/shared_with_me/shared_recipe_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -23,7 +23,10 @@ class SharedRecipeCard {
     final l10n = context.l10n;
     final recipes = viewModel.recipeViewModel;
     final isRead = recipes.isRecipeViewed(sharedRecipe);
-    final ago = timeago.format(sharedRecipe.sharedAt, locale: 'sv');
+    final ago = ContextualTimeFormatter.standard(
+      sharedRecipe.sharedAt,
+      localeName: Localizations.localeOf(context).toString(),
+    );
 
     return SharedContentRow(
       leading: RecipeThumb(imageUrl: sharedRecipe.recipeImageUrl),

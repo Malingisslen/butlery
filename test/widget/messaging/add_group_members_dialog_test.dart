@@ -86,4 +86,15 @@ void main() {
       );
     },
   );
+
+  testWidgets('with no friends to add the dialog says so', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AddGroupMembersDialog(availableFriends: []),
+      ),
+    );
+
+    expect(find.text('Inga vänner att lägga till'), findsOneWidget);
+    expect(find.byType(ButleryCheckboxTile), findsNothing);
+  });
 }

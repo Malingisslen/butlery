@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -41,6 +42,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   late final MinFamiljViewModel _vm;
   late final TextEditingController _name;
+  late final String _initialSnapshot;
   late String _color;
   late DinerAgeBand _band;
   late bool _guardianConsent;
@@ -94,6 +96,26 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     // Never pre-ticked for a new member; reflects the stored state on edit.
     _guardianConsent = e?.guardianConsent != null;
     _allergenConsent = e?.hasAllergenConsent ?? false;
+    _initialSnapshot = _snapshot();
+  }
+
+  String _snapshot() => [
+    _name.text.trim(),
+    _color,
+    _band.name,
+    _guardianConsent,
+    _allergenConsent,
+    ([..._allergens]..sort()).join(','),
+    ([..._dislikes]..sort()).join(','),
+  ].join('|');
+
+  bool get _dirty => _snapshot() != _initialSnapshot;
+
+  Future<void> _confirmLeave() async {
+    final discard = await CommonDialogActions.showUnsavedChangesConfirmation(
+      context: context,
+    );
+    if (discard == true && mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -155,43 +177,49 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     return ListenableBuilder(
       listenable: _vm,
       builder: (context, _) {
-        return ButleryPage.undersida(
-          // A subpage of Mitt hushåll (Komponentark v1:71-78). A form is a
-          // focus mode, so the tab bar is not drawn (B-54).
-          title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
-          backTo: l10n.familyTitle,
-          showTabBar: false,
-          // Spara and Ta bort stand fixed at the foot, as the sketch draws.
-          bottomNavigationBar: _footer(context),
-          // Top, not Center: a scroll view under loose constraints is only
-          // as tall as a short form, and Center then pushed the form down
-          // and left an empty band under the top bar (BUT-2261).
-          body: SingleChildScrollView(
-            padding: ButleryPageBody.margin(
-              context,
-              top: AppDimensions.space16,
-              bottom: AppDimensions.space16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                StyledInput(
-                  label: l10n.familyNameLabel.toUpperCase(),
-                  hint: l10n.familyNameHint,
-                  controller: _name,
-                ),
-                const SizedBox(height: AppDimensions.space16),
-                _colorPicker(context),
-                const SizedBox(height: AppDimensions.space16),
-                _ageBandPicker(context),
-                const SizedBox(height: AppDimensions.space16),
-                if (_isMinor) _guardianConsentSection(context),
-                _allergenSection(context),
-                _dislikesSection(context),
-                if (_isEdit && widget.existing?.guardianConsent != null)
-                  _consentGivenInfo(context),
-                if (_vm.hasError) _errorBox(context),
-              ],
+        return PopScope(
+          canPop: !_dirty,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _confirmLeave();
+          },
+          child: ButleryPage.undersida(
+            // A subpage of Mitt hushåll (Komponentark v1:71-78). A form is a
+            // focus mode, so the tab bar is not drawn (B-54).
+            title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
+            backTo: l10n.familyTitle,
+            showTabBar: false,
+            // Spara and Ta bort stand fixed at the foot, as the sketch draws.
+            bottomNavigationBar: _footer(context),
+            // Top, not Center: a scroll view under loose constraints is only
+            // as tall as a short form, and Center then pushed the form down
+            // and left an empty band under the top bar (BUT-2261).
+            body: SingleChildScrollView(
+              padding: ButleryPageBody.margin(
+                context,
+                top: AppDimensions.space16,
+                bottom: AppDimensions.space16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  StyledInput(
+                    label: l10n.familyNameLabel.toUpperCase(),
+                    hint: l10n.familyNameHint,
+                    controller: _name,
+                  ),
+                  const SizedBox(height: AppDimensions.space16),
+                  _colorPicker(context),
+                  const SizedBox(height: AppDimensions.space16),
+                  _ageBandPicker(context),
+                  const SizedBox(height: AppDimensions.space16),
+                  if (_isMinor) _guardianConsentSection(context),
+                  _allergenSection(context),
+                  _dislikesSection(context),
+                  if (_isEdit && widget.existing?.guardianConsent != null)
+                    _consentGivenInfo(context),
+                  if (_vm.hasError) _errorBox(context),
+                ],
+              ),
             ),
           ),
         );

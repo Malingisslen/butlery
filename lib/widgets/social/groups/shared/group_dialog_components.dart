@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/shared/group_dialog_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -62,7 +63,7 @@ class EmojiSelector extends StatelessWidget {
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.space4),
-        // Fixed-size emoji grid (44x44 cells) — clamp text-scaling so the
+        // Fixed-size emoji grid (48x48 cells) — clamp text-scaling so the
         // glyph fits inside its cell at 200% system text scale (BUT-547 /
         // WCAG 1.4.4). Without this clamp the emoji clips at large scales.
         // The horizontal scroll keeps the picker accessible regardless.
@@ -91,8 +92,8 @@ class EmojiSelector extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () => onEmojiSelected(emoji),
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: AppDimensions.minTouchTarget,
+                      height: AppDimensions.minTouchTarget,
                       margin: const EdgeInsetsDirectional.only(
                         end: AppDimensions.space4,
                       ),
@@ -138,34 +139,7 @@ class ErrorDisplayWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.space8),
-      decoration: BoxDecoration(
-        color: context.modeColors.surfaceTintDanger,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Row(
-        children: [
-          ButleryIcon(
-            ButleryIcons.triangleAlert,
-            color: cs.onErrorContainer,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.space4),
-          Expanded(
-            child: Text(
-              errorMessage,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onErrorContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => InlineError(what: errorMessage);
 }
 
 /// Reusable warning display widget

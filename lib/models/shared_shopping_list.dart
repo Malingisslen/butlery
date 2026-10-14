@@ -1,7 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -268,8 +268,7 @@ class SharedShoppingList
 
   @override
   String get timeAgoText {
-    timeago.setLocaleMessages('sv', timeago.SvMessages());
-    return timeago.format(sharedAt, locale: 'sv');
+    return ContextualTimeFormatter.standard(sharedAt);
   }
 
   String get sharingContextText =>

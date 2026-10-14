@@ -163,10 +163,21 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         _messageStreamSubscription = _messageStream?.listen(
           (newMessages) {
             if (mounted) {
+              // Read receipts and poll votes re-emit the list; only a new
+              // message moves the view, and only when you were already at the
+              // bottom or wrote it yourself.
+              final wasNearBottom = _isNearBottom();
+              final countBefore = _messages.length;
               setState(() {
                 _updateMessagesIncremental(newMessages);
               });
-              _scrollToBottom();
+              final added = _messages.length > countBefore;
+              final mine =
+                  added &&
+                  _messages.last.isFromCurrentUser(
+                    context.read<ChatViewModel>().currentUserId.orEmpty(),
+                  );
+              if (added && (wasNearBottom || mine)) _scrollToBottom();
             }
           },
           onError: (Object error) {
@@ -193,6 +204,12 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         });
       }
     }
+  }
+
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    final position = _scrollController.position;
+    return position.maxScrollExtent - position.pixels < 120;
   }
 
   void _scrollToBottom() {
@@ -359,7 +376,11 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         context,
         variant: EmptyStateVariant.generic,
         title: context.l10n.chatNoMessages,
-        subtitle: context.l10n.chatSendToStartConversation,
+        // The footer already says you cannot write here; inviting a message
+        // right above it contradicts that.
+        subtitle: context.watch<ChatViewModel>().isFriendshipBlocked
+            ? null
+            : context.l10n.chatSendToStartConversation,
       );
     }
 

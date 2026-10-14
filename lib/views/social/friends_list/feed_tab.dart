@@ -3,16 +3,17 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -41,10 +42,11 @@ class FeedTab {
     final initialsByActor = _initialsByActor(viewModel.events);
     return LoadingStateBuilder<List<ActivityEvent>>(
       isLoading: viewModel.isLoading,
-      error: viewModel.error,
-      data: viewModel.filteredEvents.isEmpty && viewModel.events.isEmpty
-          ? null
-          : viewModel.filteredEvents,
+      // A failed refresh keeps the list; it is shown above the filters.
+      error: viewModel.events.isEmpty ? viewModel.error : null,
+      data: viewModel.events.isEmpty ? null : viewModel.filteredEvents,
+      // A filter that matches nothing is not an empty feed: the chips stay.
+      isDataEmpty: (_) => false,
       loadingMessage: context.l10n.loadingFeed,
       emptyTitle: hasFriends
           ? context.l10n.feedEmpty
@@ -57,56 +59,104 @@ class FeedTab {
       emptyIcon: ButleryIcons.users,
       builder: (context, events) => Column(
         children: [
-          _buildFilterChips(context, viewModel),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async => viewModel.refresh(),
-              child: ListView.separated(
-                padding: const EdgeInsets.all(AppDimensions.space8),
-                itemCount: events.length + (viewModel.hasMore ? 1 : 0),
-                separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppDimensions.space4),
-                itemBuilder: (context, index) {
-                  if (index >= events.length) {
-                    if (!viewModel.isLoading) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (context.mounted) viewModel.loadMore();
-                      });
-                    }
-                    // The next page: the plate line with what is fetched
-                    // (produktregler.md:163, B-18).
-                    return Padding(
-                      padding: const EdgeInsets.all(AppDimensions.space16),
-                      child: Center(
-                        child: PlateLineMessage(
-                          message: context.l10n.loadingMoreActivity,
-                        ),
-                      ),
-                    );
-                  }
-
-                  final event = events[index];
-                  final showDateHeader =
-                      index == 0 ||
-                      !_isSameDay(events[index - 1].createdAt, event.createdAt);
-
-                  return AnimatedListItem(
-                    key: ValueKey(event.id),
-                    index: index,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (showDateHeader)
-                          _buildDateHeader(context, event.createdAt),
-                        _buildActivityCard(context, event, initialsByActor),
-                      ],
-                    ),
-                  );
-                },
+          if (viewModel.error != null)
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.space16),
+              child: InlineError(
+                what: viewModel.error!,
+                actionLabel: context.l10n.commonRetry,
+                onAction: viewModel.refresh,
               ),
             ),
+          _buildFilterChips(context, viewModel),
+          Expanded(
+            child: events.isEmpty
+                ? Center(
+                    child: Text(
+                      context.l10n.feedFilterNoMatch,
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: viewModel.refresh,
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(AppDimensions.space8),
+                      itemCount: events.length + (viewModel.hasMore ? 1 : 0),
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppDimensions.space4),
+                      itemBuilder: (context, index) {
+                        if (index >= events.length) {
+                          return _buildTail(context, viewModel);
+                        }
+
+                        final event = events[index];
+                        final showDateHeader =
+                            index == 0 ||
+                            !_isSameDay(
+                              events[index - 1].createdAt,
+                              event.createdAt,
+                            );
+
+                        return AnimatedListItem(
+                          key: ValueKey(event.id),
+                          index: index,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (showDateHeader)
+                                _buildDateHeader(context, event.createdAt),
+                              _buildActivityCard(
+                                context,
+                                event,
+                                initialsByActor,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// The row after the last event: the next page loading, a retry when it
+  /// failed, or the trigger that starts it.
+  static Widget _buildTail(
+    BuildContext context,
+    ActivityFeedViewModel viewModel,
+  ) {
+    if (viewModel.loadMoreError != null) {
+      return Padding(
+        padding: const EdgeInsets.all(AppDimensions.space16),
+        child: Column(
+          children: [
+            Text(
+              viewModel.loadMoreError!,
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              onPressed: viewModel.loadMore,
+              child: Text(context.l10n.commonRetry),
+            ),
+          ],
+        ),
+      );
+    }
+    if (!viewModel.isLoadingMore) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) viewModel.loadMore();
+      });
+    }
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Center(
+        child: PlateLineMessage(message: context.l10n.loadingMoreActivity),
       ),
     );
   }
@@ -155,7 +205,8 @@ class FeedTab {
   ) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yFeedFilter,
+      label: label,
+      hint: context.l10n.a11yFeedFilter,
       button: true,
       selected: selected,
       child: GestureDetector(
@@ -221,50 +272,26 @@ class FeedTab {
     Map<String, String> initialsByActor,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final borderColor = event.type == ActivityEventType.cooked
-        ? cs.onSurface
-        : cs.secondary;
-
     final actionText = event.type == ActivityEventType.cooked
         ? context.l10n.feedActionCooked
         : context.l10n.feedActionShared;
 
-    final initials =
-        initialsByActor[event.actorDisplayName] ??
-        initialsFor(event.actorDisplayName);
-
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
         border: Border(
-          left: BorderSide(color: borderColor, width: 4),
-          bottom: BorderSide(
-            // Decorative card accent: the mode-aware card-bottom member
-            // (rustLight, #D8B784 light, #DCA968 dark), as on the family
-            // cards. AppColors.rustLight was light only.
-            color: context.modeColors.recipeCardBottomBorder.withValues(
-              alpha: AppOpacity.onPaper40,
-            ),
-            width: 3,
-          ),
+          bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
       ),
-      padding: const EdgeInsets.all(AppDimensions.space16),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar
-          Container(
-            width: 40,
-            height: 40,
-            color: borderColor,
-            alignment: Alignment.center,
-            child: Text(
-              initials,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onPrimary,
-              ),
-            ),
+          // The initials are told apart across every loaded actor, so a
+          // person's circle does not change when a filter is toggled.
+          AvatarCircle(
+            glyph:
+                initialsByActor[event.actorDisplayName] ??
+                initialsFor(event.actorDisplayName),
           ),
           const SizedBox(
             width: AppDimensions.space8 + AppDimensions.space4,
@@ -353,7 +380,7 @@ class FeedTab {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      event.recipeTitle.toLowerCase(),
+                      event.recipeTitle,
                       style: AppTextStyles.bodyBold,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -386,24 +413,11 @@ class FeedTab {
       );
     } else {
       // Recipe not shared — offer to request it from the owner.
-      final confirmed = await showDialog<bool>(
+      final confirmed = await CommonDialogActions.showActionConfirmation(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(ctx.l10n.feedRequestRecipeTitle),
-          content: Text(
-            ctx.l10n.feedRequestRecipeBody(event.actorDisplayName),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(ctx.l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(ctx.l10n.feedRequestRecipeConfirm),
-            ),
-          ],
-        ),
+        title: context.l10n.feedRequestRecipeTitle,
+        message: context.l10n.feedRequestRecipeBody(event.actorDisplayName),
+        confirmText: context.l10n.feedRequestRecipeConfirm,
       );
       if (confirmed != true || !context.mounted) return;
       final ok = await ServiceLocator.get<SocialRecipeService>()
@@ -426,8 +440,6 @@ class FeedTab {
 
   // ---- Helpers ----
 
-  // Over every loaded actor, not just the filtered ones, so a person's
-  // chip does not change when a filter is toggled.
   static Map<String, String> _initialsByActor(List<ActivityEvent> events) {
     final names = {for (final e in events) e.actorDisplayName}.toList();
     final initials = distinctInitials(names);

@@ -113,7 +113,9 @@ class MessageContentBuilder {
       title: recipeTitle,
       subtitle:
           message.content.isNotEmpty &&
-              message.content != 'Delade ett recept: $recipeTitle'
+              message.content != 'Delade ett recept: $recipeTitle' &&
+              message.content !=
+                  context.l10n.chatSharedRecipeLine('$recipeTitle')
           ? message.content
           : null,
     );

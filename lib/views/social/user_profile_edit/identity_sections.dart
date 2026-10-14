@@ -1,10 +1,10 @@
 // The avatar and display-name sections of the profile editor.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -27,8 +27,6 @@ class ProfileAvatarSection extends StatelessWidget {
     required this.onUploadAvatar,
   });
 
-  static const double _avatarSize = 108;
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -50,14 +48,12 @@ class ProfileAvatarSection extends StatelessWidget {
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: viewModel.isUploadingAvatar ? null : onUploadAvatar,
-                    child: UserAvatar(
+                    child: AvatarCircle(
                       imageUrl: viewModel.avatarUrl,
                       displayName: viewModel.displayName.isNotEmpty
                           ? viewModel.displayName
                           : l10n.profileNewUser,
-                      explicitSize: _avatarSize,
-                      round: true,
-                      announceName: false,
+                      size: AvatarCircleSize.header,
                     ),
                   ),
                 ),

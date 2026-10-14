@@ -74,9 +74,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       final success = await friendsService.categories.updateCategory(
         categoryId: widget.group.id,
         name: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty
-            ? null
-            : _descriptionController.text.trim(),
+        // Empty is a value here: null means "leave as it was", so a cleared
+        // description has to travel as an empty string.
+        description: _descriptionController.text.trim(),
         icon: _selectedEmoji,
       );
 

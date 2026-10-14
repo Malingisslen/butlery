@@ -20663,4 +20663,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String friendProfileShareLinkRowOf(String name) {
     return 'Share a link to the profile of $name';
   }
+
+  @override
+  String get chatMessageMenuTitle => 'Message';
+
+  @override
+  String get chatMessageReply => 'Reply';
+
+  @override
+  String get chatMessageCopy => 'Copy';
+
+  @override
+  String get chatMuted => 'Notifications from this chat are muted';
+
+  @override
+  String get chatUnmuted => 'Notifications from this chat are back on';
+
+  @override
+  String get chatUnmute => 'Turn notifications on';
+
+  @override
+  String get chatReactionFailed => 'The reaction could not be saved.';
+
+  @override
+  String get feedFilterNoMatch => 'No activity of this kind yet';
+
+  @override
+  String get chatAddMembersEmptyTitle => 'No friends to add';
+
+  @override
+  String get chatAddMembersEmptyBody =>
+      'All your friends are already in, or you have no friends yet. Find friends under Friends.';
 }

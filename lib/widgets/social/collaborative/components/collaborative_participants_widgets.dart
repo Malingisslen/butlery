@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_participants_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Widgets for displaying collaborative participants
 class CollaborativeParticipantsWidgets {
@@ -90,13 +90,14 @@ class CollaborativeParticipantsWidgets {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Show visible participants - DELEGATE to UserDisplayWidgets
         for (int i = 0; i < visibleParticipants.length; i++) ...[
           if (i > 0) SizedBox(width: gap),
-          UserDisplayWidgets.avatar(
+          AvatarCircle(
             imageUrl: visibleParticipants[i].avatarUrl,
             displayName: visibleParticipants[i].displayName,
-            size: _sizeToImageSize(size),
+            size: size <= AvatarCircleSize.inline.pixels
+                ? AvatarCircleSize.inline
+                : AvatarCircleSize.row,
           ),
         ],
 
@@ -175,13 +176,5 @@ class CollaborativeParticipantsWidgets {
     } catch (_) {
       return [];
     }
-  }
-
-  /// Convert size to ImageSize enum
-  static ImageSize _sizeToImageSize(double size) {
-    if (size <= 24) return ImageSize.small;
-    if (size <= 32) return ImageSize.medium;
-    if (size <= 48) return ImageSize.large;
-    return ImageSize.extraLarge;
   }
 }

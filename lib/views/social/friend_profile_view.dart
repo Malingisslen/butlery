@@ -90,10 +90,6 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     }
   }
 
-  // Swedish genitive: names ending in s, x or z take no extra s.
-  String _genitive(String name) =>
-      RegExp(r'[sxzSXZ]$').hasMatch(name) ? name : '${name}s';
-
   void _openPublicRecipes() => Navigator.pushNamed(
     context,
     Routes.publicProfile,
@@ -203,16 +199,16 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             ),
                             if (friend.publicRecipeCount > 0)
                               ButleryListRow(
-                                label: l10n.friendProfilePublicRecipesRow(
-                                  _genitive(friend.displayName),
+                                label: l10n.friendProfilePublicRecipesRowOf(
+                                  friend.displayName,
                                 ),
                                 subtitle: l10n.friendProfilePublicRecipesSub,
                                 value: '${friend.publicRecipeCount}',
                                 onTap: _openPublicRecipes,
                               ),
                             ButleryListRow(
-                              label: l10n.friendProfileShareLinkRow(
-                                _genitive(friend.displayName),
+                              label: l10n.friendProfileShareLinkRowOf(
+                                friend.displayName,
                               ),
                               subtitle: l10n.friendProfileShareLinkSub,
                               leading: ButleryIcons.link,
