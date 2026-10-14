@@ -35,13 +35,19 @@ class CookbookShelf extends StatelessWidget {
     final vm = context.watch<CookbookViewModel>();
     final l10n = context.l10n;
 
-    if (!vm.tagsLoaded && vm.error == null) {
+    if (!vm.tagsLoaded && !vm.loadFailed) {
       return HemLibraryScroll.boxBody(
         StateWidget.loading(message: l10n.cookbookLoading),
       );
     }
-    if (vm.error != null && vm.cookbooks.isEmpty) {
-      return HemLibraryScroll.boxBody(StateWidget.error(message: vm.error!));
+    if (vm.loadFailed && vm.cookbooks.isEmpty) {
+      return HemLibraryScroll.boxBody(
+        StateWidget.error(
+          message: vm.error ?? l10n.cookbookLoadFailed,
+          onAction: vm.retryLoad,
+          actionLabel: l10n.commonRetry,
+        ),
+      );
     }
 
     final books = vm.cookbooks;

@@ -40,9 +40,10 @@ void main() {
 
   setUp(() {
     viewModel = _MockRecipeListViewModel();
-    when(
-      () => viewModel.recipes,
-    ).thenReturn([_recipe('r1'), _recipe('r2'), _recipe('r3')]);
+    final stubbed = [_recipe('r1'), _recipe('r2'), _recipe('r3')];
+    when(() => viewModel.recipes).thenReturn(stubbed);
+    when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+    when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
     when(() => viewModel.selectedIds).thenReturn(const {});
     when(() => viewModel.selectedCount).thenReturn(0);
     when(() => viewModel.isSelectionMode).thenReturn(false);
@@ -82,6 +83,15 @@ void main() {
   }
 
   Finder row() => find.byKey(MinaReceptLibraryHeader.rowKey);
+
+  testWidgets('the heading counts the whole library, not the loaded page', (
+    tester,
+  ) async {
+    when(() => viewModel.libraryTotal).thenReturn(120);
+    await pump(tester);
+
+    expect(find.text('DINA RECEPT · 120'), findsOneWidget);
+  });
 
   /// Both contents are laid out so the row keeps one height; only one is
   /// shown and reachable.
@@ -173,7 +183,10 @@ void main() {
   }
 
   testWidgets('no Välj under two recipes', (tester) async {
-    when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
+    final stubbed = [_recipe('r1')];
+    when(() => viewModel.recipes).thenReturn(stubbed);
+    when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+    when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
     await pump(tester);
     expect(find.byType(ButlerySelectButton), findsNothing);
     expect(find.text('DINA RECEPT · 1'), findsOneWidget);

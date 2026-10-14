@@ -146,8 +146,8 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: AppDimensions.space8),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space16 - 3,
-        vertical: AppDimensions.space16 - 5,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space12,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: cs.error, width: _edge),
@@ -271,7 +271,7 @@ class SyncQueueRow extends StatelessWidget {
         minHeight: AppDimensions.minTouchTarget,
       ),
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.space8 + 2,
+        vertical: AppDimensions.space8,
       ),
       child: MergeSemantics(
         child: Row(

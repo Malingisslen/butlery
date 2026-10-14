@@ -13,9 +13,10 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 /// cooking step to start a timer, swipe a shopping item to claim it).
 ///
 /// Self-contained: callers drop it in and it owns its own seen-state, so it
-/// adds no persistence logic to the host view. Shown once per device — on
-/// dismiss it sets a SharedPreferences flag (keyed by [seenKey]) and never
-/// renders again. Renders nothing while the flag loads or once it has been seen.
+/// adds no persistence logic to the host view. It stops for good once the
+/// gesture has been used ([markUsed]), once it is dismissed, or after
+/// [maxShows] visits (produktregler § 16.5). Renders nothing while the state
+/// loads.
 ///
 /// Defaults reproduce the original recipe-swipe hint (BUT-982) so existing
 /// `const SwipeHintBanner()` call sites are unchanged; new surfaces pass a
@@ -42,6 +43,17 @@ class SwipeHintBanner extends StatefulWidget {
   /// Drawn on the ink base (cooking mode): a tonal on-ink surface with paper
   /// text, as Skarmar v12 del 1 #lagastaende draws the tip.
   final bool onInk;
+
+  /// Visits after which the hint stays away on its own.
+  static const int maxShows = 3;
+
+  static String _shownKey(String seenKey) => '${seenKey}_shown';
+
+  /// The gesture was used, so the hint has nothing left to teach.
+  static Future<void> markUsed(String seenKey) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(seenKey, true);
+  }
 
   /// Default key for the recipe-list swipe hint (BUT-982).
   static const String recipeSwipeSeenKey = 'butlery_hint_recipe_swipe_seen';
@@ -70,7 +82,11 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
   Future<void> _loadSeen() async {
     final prefs = await SharedPreferences.getInstance();
     final seen = prefs.getBool(widget.seenKey) ?? false;
-    if (mounted) setState(() => _visible = !seen);
+    final shownKey = SwipeHintBanner._shownKey(widget.seenKey);
+    final shown = prefs.getInt(shownKey) ?? 0;
+    final visible = !seen && shown < SwipeHintBanner.maxShows;
+    if (visible) await prefs.setInt(shownKey, shown + 1);
+    if (mounted) setState(() => _visible = visible);
   }
 
   Future<void> _dismiss() async {

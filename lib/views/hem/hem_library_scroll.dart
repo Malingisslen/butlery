@@ -73,8 +73,15 @@ class HemLibraryScroll extends StatelessWidget {
       );
 
   /// A [body] holding one [child] that fills what the pinned header leaves.
-  static Widget boxBody(Widget child, {bool scrolls = false}) => sliverBody(
-    slivers: [SliverFillRemaining(hasScrollBody: scrolls, child: child)],
+  static Widget boxBody(
+    Widget child, {
+    bool scrolls = false,
+    List<Widget> leading = const [],
+  }) => sliverBody(
+    slivers: [
+      ...leading,
+      SliverFillRemaining(hasScrollBody: scrolls, child: child),
+    ],
   );
 
   @override

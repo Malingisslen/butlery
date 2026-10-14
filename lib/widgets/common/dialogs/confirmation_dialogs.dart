@@ -100,56 +100,6 @@ class ConfirmationDialogs {
         false;
   }
 
-  /// 📋 List selection confirmation dialog
-  static Future<int?> showListSelectionDialog<T>(
-    BuildContext context, {
-    required String title,
-    required List<T> items,
-    required String Function(T) itemBuilder,
-    String? message,
-    String? cancelText,
-  }) async {
-    return await showDialog<int?>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title, style: AppTextStyles.titleLarge),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (message != null) ...[
-              Text(message, style: AppTextStyles.bodyLarge),
-              const SizedBox(height: AppDimensions.space32),
-            ],
-            Container(
-              width: double.maxFinite,
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return ListTile(
-                    title: Text(
-                      itemBuilder(item),
-                      style: AppTextStyles.bodyLarge,
-                    ),
-                    onTap: () => Navigator.of(context).pop(index),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          DialogCancelButton(label: cancelText),
-        ],
-      ),
-    );
-  }
-
   /// 📝 Text input confirmation dialog
   static Future<String?> showTextInputDialog(
     BuildContext context, {

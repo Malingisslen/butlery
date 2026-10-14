@@ -253,14 +253,20 @@ void main() {
     }
 
     testWidgets('one recipe gives no Välj', (tester) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
+      final stubbed = [_recipe('r1')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
 
       expect(await entry(tester), isEmpty);
     });
 
     testWidgets('two recipes give "Välj", named "Välj recept", which starts '
         'selection with nothing ticked', (tester) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+      final stubbed = [_recipe('r1'), _recipe('r2')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
       when(() => viewModel.startSelection()).thenReturn(null);
 
       expect(await entry(tester), hasLength(1));
@@ -293,17 +299,34 @@ void main() {
     testWidgets('the Mina recept bar carries "Välj" first from two recipes', (
       tester,
     ) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+      final stubbed = [_recipe('r1'), _recipe('r2')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
 
       final actions = await rootActions(tester);
       expect(actions.first, isA<ButlerySelectButton>());
       expect(actions.first.key, const ValueKey('mina-recept-select-enter'));
     });
 
-    testWidgets('the Mina recept bar has no "Välj" with one recipe', (
+    testWidgets('"Välj" follows the matching recipes, not the loaded page', (
       tester,
     ) async {
       when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
+      when(() => viewModel.matchingCount).thenReturn(120);
+      when(() => viewModel.libraryTotal).thenReturn(120);
+
+      final actions = await rootActions(tester);
+      expect(actions.first, isA<ButlerySelectButton>());
+    });
+
+    testWidgets('the Mina recept bar has no "Välj" with one recipe', (
+      tester,
+    ) async {
+      final stubbed = [_recipe('r1')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
 
       final actions = await rootActions(tester);
       expect(actions.whereType<ButlerySelectButton>(), isEmpty);
@@ -327,10 +350,26 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    testWidgets('"Markera alla" counts every match, not the loaded page', (
+      tester,
+    ) async {
+      when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
+      when(() => viewModel.matchingCount).thenReturn(120);
+      when(() => viewModel.libraryTotal).thenReturn(120);
+      when(() => viewModel.allSelected).thenReturn(false);
+
+      await openKebab(tester);
+
+      expect(find.text('Markera alla 120'), findsOneWidget);
+    });
+
     testWidgets('"Markera alla" counts the list and selects all', (
       tester,
     ) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+      final stubbed = [_recipe('r1'), _recipe('r2')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
       when(() => viewModel.allSelected).thenReturn(false);
       when(() => viewModel.selectAll()).thenReturn(null);
 
@@ -344,7 +383,10 @@ void main() {
     testWidgets('with everything ticked it unticks, and selection stays', (
       tester,
     ) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+      final stubbed = [_recipe('r1'), _recipe('r2')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
       when(() => viewModel.selectedIds).thenReturn(const {'r1', 'r2'});
       when(() => viewModel.selectedCount).thenReturn(2);
       when(() => viewModel.allSelected).thenReturn(true);
@@ -361,7 +403,10 @@ void main() {
     testWidgets('at zero the kebab keeps disabled names readable, no fade', (
       tester,
     ) async {
-      when(() => viewModel.recipes).thenReturn([_recipe('r1'), _recipe('r2')]);
+      final stubbed = [_recipe('r1'), _recipe('r2')];
+      when(() => viewModel.recipes).thenReturn(stubbed);
+      when(() => viewModel.matchingCount).thenReturn(stubbed.length);
+      when(() => viewModel.libraryTotal).thenReturn(stubbed.length);
       when(() => viewModel.allSelected).thenReturn(false);
 
       await openKebab(tester);

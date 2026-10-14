@@ -386,10 +386,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     if (offlineService.isOnline) {
       try {
-        if (mounted) {
-          SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
-        }
-
         final result = await offlineService.syncNow();
         await viewModel.refresh();
 
@@ -503,8 +499,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
-  /// The library under the Hem section: presence, the cooking card, search
-  /// and filters.
+  /// The pinned part of the library under the Hem section: the switch, the
+  /// header row and search.
   Widget _buildLibrary(
     BuildContext context, {
     required RecipeListViewModel viewModel,
@@ -536,10 +532,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             viewModel: viewModel,
             actions: minaReceptRootActions(context, viewModel),
           ),
-        // BUT-407: live online-members presence bar (union across groups).
-        const FamilyPresenceBar(),
-        // BUT-408: live cooking session card for the user's friend groups.
-        _buildCookingSessionCard(),
         // #hemtom draws no search or filters over an empty library.
         if (!viewModel.isSelectionMode && !libraryEmpty) ...[
           SearchFilterWidget(
@@ -582,25 +574,40 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             resultCount: recipeCount,
             showStats: false,
           ),
-          Selector<UserService, Set<String>>(
-            selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
-            builder: (context, trackedAllergens, _) => QuickFilterChips(
-              options: [
-                ...QuickFilterChips.getDefaultRecipeFilters(context),
-                ...QuickFilterChips.getAllergenFilters(trackedAllergens),
-              ],
-              selectedIds: getMinaReceptQuickFilterIds(viewModel),
-              onFilterToggle: (filterId) => handleMinaReceptQuickFilterToggle(
-                context,
-                viewModel,
-                filterId,
-              ),
-              trailing: MinaReceptSortChip(viewModel: viewModel),
-            ),
-          ),
         ],
       ],
     );
+  }
+
+  /// Presence, the cooking card and the quick chips scroll with the cards;
+  /// only the switch, the header row and the search field stay pinned, so the
+  /// pinned part cannot grow past the screen at large text sizes.
+  List<Widget> _libraryExtras(RecipeListViewModel viewModel) {
+    if (viewModel.isSelectionMode) return const [];
+    return [
+      // BUT-407: live online-members presence bar (union across groups).
+      const SliverToBoxAdapter(child: FamilyPresenceBar()),
+      // BUT-408: live cooking session card for the user's friend groups.
+      SliverToBoxAdapter(child: _buildCookingSessionCard()),
+      SliverToBoxAdapter(
+        child: Selector<UserService, Set<String>>(
+          selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
+          builder: (context, trackedAllergens, _) => QuickFilterChips(
+            options: [
+              ...QuickFilterChips.getDefaultRecipeFilters(context),
+              ...QuickFilterChips.getAllergenFilters(trackedAllergens),
+            ],
+            selectedIds: getMinaReceptQuickFilterIds(viewModel),
+            onFilterToggle: (filterId) => handleMinaReceptQuickFilterToggle(
+              context,
+              viewModel,
+              filterId,
+            ),
+            trailing: MinaReceptSortChip(viewModel: viewModel),
+          ),
+        ),
+      ),
+    ];
   }
 
   /// BUT-408: Live "X lagar just nu" card. Combines all the user's friend
@@ -712,7 +719,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     bool isOnline,
     UserAllergenPreferences allergenPrefs,
   ) {
-    if (viewModel.isLoading) {
+    if (viewModel.isLoading && viewModel.recipes.isEmpty) {
       return HemLibraryScroll.boxBody(
         StateWidget.skeletonRecipeList(itemCount: 5),
         scrolls: true,
@@ -742,8 +749,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
 
     if (recipes.isEmpty) {
+      final libraryIsEmpty =
+          viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters;
       return HemLibraryScroll.boxBody(
-        viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
+        leading: libraryIsEmpty ? const [] : _libraryExtras(viewModel),
+        libraryIsEmpty
             ? const HemEmptyState()
             : StateWidget.noSearchResults(
                 onAction: viewModel.searchQuery.isNotEmpty
@@ -773,9 +783,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           }
         }
       },
-      // BUT-2254: everything between the quick chips and the cards scrolls
-      // with the cards. In a Column above an Expanded grid it pushed the
-      // cards off a phone screen, and at 200 % text the grid got no height.
+      // BUT-2254: everything under the search field scrolls with the cards.
+      // In a Column above an Expanded grid it pushed the cards off a phone
+      // screen, and at 200 % text the grid got no height.
       // HEM-HERO / BUT-1028: one primary scrollable with no controller of its
       // own, attached to the PrimaryScrollController of Hem's
       // NestedScrollView, which links it to the Hem header; the offset is
@@ -787,6 +797,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               : 'recipe-list-scrollable',
         ),
         slivers: [
+          ..._libraryExtras(viewModel),
           // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
           // gesture; self-dismisses once per device.
           if (!viewModel.isSelectionMode)

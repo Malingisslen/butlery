@@ -67,7 +67,22 @@ class RecipeListViewModel extends BaseViewModel {
   bool _sortAscending = true;
   static const int _initialPageSize = 50;
   int _displayLimit = _initialPageSize;
-  bool get canLoadMore => _displayLimit < (_cachedFilteredRecipes?.length ?? 0);
+  bool get canLoadMore => _displayLimit < matchingCount;
+
+  /// Everything the library holds, regardless of search, filters and paging.
+  int get libraryTotal => _recipeService.recipes.length;
+
+  /// Recipes matching the current search and filters, before paging.
+  int get matchingCount {
+    _getFilteredAndSortedRecipes();
+    return _cachedFilteredRecipes?.length ?? 0;
+  }
+
+  List<Recipe> get _allMatching {
+    _getFilteredAndSortedRecipes();
+    return _cachedFilteredRecipes ?? const [];
+  }
+
   final Set<String> _activeTimeFilters = {};
 
   /// Active meal type filters for category-based recipe filtering with Swedish localization.
@@ -756,7 +771,8 @@ class RecipeListViewModel extends BaseViewModel {
   void enterSelectionMode(String firstId) =>
       _selectionManager.enterSelectionMode(firstId);
   void toggleSelection(String id) => _selectionManager.toggleSelection(id);
-  void selectAll() => _selectionManager.selectAll(recipes.map((r) => r.id));
+  void selectAll() =>
+      _selectionManager.selectAll(_allMatching.map((r) => r.id));
   void clearSelection() => _selectionManager.clearSelection();
 
   /// "Välj" in the top bar (B-46): selection mode with nothing selected.
@@ -768,8 +784,8 @@ class RecipeListViewModel extends BaseViewModel {
 
   /// Whether every recipe in the list is ticked, for the toggle's label.
   bool get allSelected =>
-      recipes.isNotEmpty &&
-      recipes.every((r) => _selectionManager.selectedIds.contains(r.id));
+      _allMatching.isNotEmpty &&
+      _allMatching.every((r) => _selectionManager.selectedIds.contains(r.id));
 
   // Delete delegation
   void deleteRecipe(String recipeId) => _deleteManager.deleteRecipe(recipeId);
@@ -939,7 +955,7 @@ class RecipeListViewModel extends BaseViewModel {
         ) &&
         _lastFavoritesOnly == _favoritesOnly &&
         _lastPantryOnly == _pantryOnly) {
-      return _cachedFilteredRecipes!;
+      return _cachedFilteredRecipes!.take(_displayLimit).toList();
     }
 
     var filtered = List<Recipe>.from(_recipeService.recipes);

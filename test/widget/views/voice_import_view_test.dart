@@ -12,12 +12,15 @@
 /// VoiceCaptureService seam; permission gateway stubbed granted.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -63,12 +66,18 @@ class _FakeVoiceCapture extends Fake implements VoiceCaptureService {
 class _FakeImportManager extends Fake implements ImportManager {
   String? seenTranscript;
 
+  /// When set, the import waits here, so a test can look at the page while
+  /// the import is running.
+  Completer<ImportManagerResult>? hold;
+
   @override
   Future<ImportManagerResult> importVoiceTranscript(
     String input, {
     Map<String, dynamic>? options,
   }) async {
     seenTranscript = input;
+    final held = hold;
+    if (held != null) return held.future;
     return ImportManagerResult.failure('stub');
   }
 }
@@ -288,5 +297,85 @@ void main() {
       findsOneWidget,
       reason: 'voice failure never clears typed text',
     );
+  });
+
+  group('leaving the page', () {
+    final sv = AppLocalizationsSv();
+
+    Future<void> pumpPushed(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        VoiceImportView(permissionGateway: _GrantedGateway()),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> goBack(WidgetTester tester) async {
+      final dynamic state = tester.state(find.byType(Navigator));
+      state.maybePop();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('typed text asks before leaving', (tester) async {
+      await pumpPushed(tester);
+      await tester.enterText(find.byType(TextField).at(0), 'Pannkakor');
+      await tester.pump();
+
+      await goBack(tester);
+
+      expect(find.text(sv.unsavedChangesTitle), findsOneWidget);
+      expect(find.byType(VoiceImportView), findsOneWidget);
+    });
+
+    testWidgets('an untouched page leaves without asking', (tester) async {
+      await pumpPushed(tester);
+
+      await goBack(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.unsavedChangesTitle), findsNothing);
+      expect(find.byType(VoiceImportView), findsNothing);
+    });
+
+    testWidgets('a running import does not ask', (tester) async {
+      importManager.hold = Completer<ImportManagerResult>();
+      await pumpPushed(tester);
+      await tester.enterText(find.byType(TextField).at(0), 'Pannkakor');
+      await tester.enterText(find.byType(TextField).at(1), 'tre ägg');
+      await tester.enterText(find.byType(TextField).at(2), 'Vispa.');
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Importera receptet'),
+        120,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Importera receptet'));
+      await tester.pump();
+      expect(importManager.seenTranscript, isNotNull, reason: 'import runs');
+
+      await goBack(tester);
+
+      expect(find.text(sv.unsavedChangesTitle), findsNothing);
+    });
   });
 }

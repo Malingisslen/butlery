@@ -18,6 +18,10 @@ import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 /// Renders one recipe card with selection / swipe behavior intact.
@@ -40,6 +44,53 @@ class MinaReceptRecipeCard extends StatelessWidget {
   final UserAllergenPreferences allergenPrefs;
   final void Function(Recipe recipe) onDelete;
   final int? index;
+
+  void _edit(BuildContext context) {
+    Navigator.pushNamed(context, Routes.editRecipe, arguments: recipe);
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await CommonDialogActions.showRecipeDeleteConfirmation(
+      context: context,
+      recipeName: recipe.title,
+    );
+    if (confirmed == true) onDelete(recipe);
+  }
+
+  // The swipe has a visible twin: the same two actions behind a button.
+  Widget _actionsMenu(BuildContext context) {
+    return AppIconButton(
+      key: ValueKey('recipe-actions-${recipe.id}'),
+      icon: ButleryIcons.moreVertical,
+      semanticLabel: context.l10n.bulkMoreActions,
+      onPressed: () => showButlerySheet<void>(
+        context: context,
+        builder: (sheetContext) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ButleryListRow(
+                label: sheetContext.l10n.commonEdit,
+                leading: ButleryIcons.pencil,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _edit(context);
+                },
+              ),
+              ButleryListRow(
+                label: sheetContext.l10n.commonDelete,
+                leading: ButleryIcons.trash2,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _confirmDelete(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +133,9 @@ class MinaReceptRecipeCard extends StatelessWidget {
       onLongPress: viewModel.isSelectionMode
           ? null
           : (_) => viewModel.enterSelectionMode(recipe.id),
+      trailing: viewModel.isSelectionMode || viewModel.isGridView
+          ? null
+          : _actionsMenu(context),
     );
 
     if (viewModel.isSelectionMode) {
@@ -128,48 +182,23 @@ class MinaReceptRecipeCard extends StatelessWidget {
     if (!viewModel.isSelectionMode) {
       card = Semantics(
         customSemanticsActions: {
-          CustomSemanticsAction(
-            label: context.l10n.a11ySwipeEditAction,
-          ): () => Navigator.pushNamed(
-            context,
-            Routes.editRecipe,
-            arguments: recipe,
-          ),
+          CustomSemanticsAction(label: context.l10n.a11ySwipeEditAction): () =>
+              _edit(context),
           CustomSemanticsAction(
             label: context.l10n.a11ySwipeDeleteAction,
-          ): () async {
-            final confirmed =
-                await CommonDialogActions.showRecipeDeleteConfirmation(
-                  context: context,
-                  recipeName: recipe.title,
-                );
-            if (confirmed == true) {
-              onDelete(recipe);
-            }
-          },
+          ): () =>
+              _confirmDelete(context),
         },
         child: Dismissible(
           key: Key('recipe-${recipe.id}'),
           direction: DismissDirection.horizontal,
           confirmDismiss: (direction) async {
             HapticFeedback.mediumImpact();
+            SwipeHintBanner.markUsed(SwipeHintBanner.recipeSwipeSeenKey);
             if (direction == DismissDirection.endToStart) {
-              final confirmed =
-                  await CommonDialogActions.showRecipeDeleteConfirmation(
-                    context: context,
-                    recipeName: recipe.title,
-                  );
-              if (confirmed == true) {
-                onDelete(recipe);
-              }
-              return false;
+              await _confirmDelete(context);
             } else if (direction == DismissDirection.startToEnd) {
-              Navigator.pushNamed(
-                context,
-                Routes.editRecipe,
-                arguments: recipe,
-              );
-              return false;
+              _edit(context);
             }
             return false;
           },
@@ -187,6 +216,24 @@ class MinaReceptRecipeCard extends StatelessWidget {
           ),
           child: card,
         ),
+      );
+    }
+
+    if (viewModel.isGridView && !viewModel.isSelectionMode) {
+      card = Stack(
+        fit: StackFit.passthrough,
+        children: [
+          card,
+          PositionedDirectional(
+            top: AppDimensions.space4,
+            end: AppDimensions.space4,
+            child: Material(
+              color: cs.surface,
+              shape: const CircleBorder(),
+              child: _actionsMenu(context),
+            ),
+          ),
+        ],
       );
     }
 

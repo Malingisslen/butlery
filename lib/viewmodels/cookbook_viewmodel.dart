@@ -30,8 +30,13 @@ class CookbookViewModel extends BaseViewModel {
   List<PersonalTag> _tags = const [];
   bool _started = false;
   bool _tagsLoaded = false;
+  bool _loadFailed = false;
 
   bool get tagsLoaded => _tagsLoaded;
+
+  /// The shelf could not be read. Kept apart from [error] so a failed write
+  /// never replaces the shelf with an error view.
+  bool get loadFailed => _loadFailed;
 
   void start() {
     if (_started) return;
@@ -40,14 +45,28 @@ class CookbookViewModel extends BaseViewModel {
       (tags) {
         _tags = tags;
         _tagsLoaded = true;
+        _loadFailed = false;
         notifyListeners();
       },
       onError: (Object _) {
         _tagsLoaded = true;
+        _loadFailed = true;
         setError(AppLocale.current.cookbookLoadFailed);
       },
     );
     _librarySub = _service.libraryChanges.listen((_) => notifyListeners());
+  }
+
+  void retryLoad() {
+    if (isDisposed) return;
+    _tagSub?.cancel();
+    _librarySub?.cancel();
+    _started = false;
+    _tagsLoaded = false;
+    _loadFailed = false;
+    clearError();
+    notifyListeners();
+    start();
   }
 
   List<PersonalTag> get cookbooks =>
