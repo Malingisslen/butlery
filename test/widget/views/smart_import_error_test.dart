@@ -92,15 +92,17 @@ void main() {
         // which is 1.3:1.
         final dark = theme.brightness == Brightness.dark;
         for (final route in [ImportRoute.pasteText, ImportRoute.manual]) {
-          final button = tester.widget<ButtonStyleButton>(
-            find.descendant(
-              of: find.byKey(ImportErrorMessage.routeKey(route)),
-              matching: find.byWidgetPredicate(
-                (w) => w is ButtonStyleButton,
-              ),
-            ),
+          // The routes take the shared outlined button, so what is drawn
+          // is what the theme gives it.
+          final button = find.descendant(
+            of: find.byKey(ImportErrorMessage.routeKey(route)),
+            matching: find.byWidgetPredicate((w) => w is OutlinedButton),
           );
-          final style = button.style!;
+          // No style of its own: what is drawn is what the theme gives.
+          expect(tester.widget<OutlinedButton>(button).style, isNull);
+          final style = Theme.of(
+            tester.element(button),
+          ).outlinedButtonTheme.style!;
           expect(
             style.foregroundColor?.resolve({}),
             dark ? const Color(0xFFF5F4ED) : const Color(0xFF24382C),

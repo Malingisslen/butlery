@@ -192,6 +192,15 @@ void main() {
     expect(find.text('DINA RECEPT · 1'), findsOneWidget);
   });
 
+  testWidgets('the grid/list action toggles the view mode', (tester) async {
+    when(() => viewModel.toggleViewMode()).thenReturn(null);
+    await pump(tester);
+
+    await tester.tap(find.byIcon(ButleryIcons.grid));
+
+    verify(() => viewModel.toggleViewMode()).called(1);
+  });
+
   testWidgets('Välj enters selection mode', (tester) async {
     when(() => viewModel.startSelection()).thenReturn(null);
     await pump(tester);

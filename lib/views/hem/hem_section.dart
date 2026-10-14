@@ -55,6 +55,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 import 'package:butlery/widgets/guest/guest_hem_intro.dart';
 
 /// The greeting for the hour of [now] (produktregler.md:278): 05–11 "God
@@ -137,8 +138,26 @@ class HemSection extends StatelessWidget {
       case HemPlanStatus.loading:
         return const [HemPlanLoading()];
       case HemPlanStatus.failed:
+        // #hemfel (Skarmar v12 del 4): what happened, then "Försök igen" and
+        // "Visa sparad plan"; the library stays (produktregler.md).
+        // readWeek cannot tell offline from denied, so only what happened is
+        // said (content-style-guide.md, the three-part error).
         return [
-          HemPlanError(onRetry: viewModel.load, onShowSavedPlan: onOpenMenu),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppDimensions.space24,
+              AppDimensions.space16,
+              AppDimensions.space24,
+              0,
+            ),
+            child: ButlerySectionState.error(
+              message: context.l10n.hemPlanErrorWhat,
+              actionLabel: context.l10n.commonRetry,
+              onAction: viewModel.load,
+              secondaryLabel: context.l10n.hemShowSavedPlan,
+              onSecondary: onOpenMenu,
+            ),
+          ),
         ];
       case HemPlanStatus.ready:
         final hero = viewModel.hero;

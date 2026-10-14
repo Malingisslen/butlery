@@ -39,7 +39,6 @@ String _ownArguments(String code, int open) {
 const _namedLinkFiles = [
   'lib/views/auth_view.dart',
   'lib/views/hem/hem_empty_state.dart',
-  'lib/views/hem/hem_plan_states.dart',
   'lib/views/legal/markdown_body.dart',
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart',
   'lib/widgets/common/feedback/inline_error.dart',

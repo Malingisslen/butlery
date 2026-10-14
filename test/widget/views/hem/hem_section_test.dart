@@ -33,6 +33,7 @@ import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
@@ -440,7 +441,7 @@ void main() {
         expect(error.preserved, isNull);
         expect(
           find.descendant(
-            of: find.byKey(HemPlanError.retryKey),
+            of: find.byKey(ButlerySectionState.actionKey),
             matching: find.text('Försök igen'),
           ),
           findsOneWidget,
@@ -449,11 +450,11 @@ void main() {
         // The greeting stands: an error never empties the view.
         expect(find.text('God kväll, Malin'), findsOneWidget);
 
-        await tester.tap(find.byKey(HemPlanError.showSavedPlanKey));
+        await tester.tap(find.byKey(ButlerySectionState.secondaryKey));
         expect(calls.openedMenu, 1);
 
         // Försök igen reads the week again.
-        await tester.tap(find.byKey(HemPlanError.retryKey));
+        await tester.tap(find.byKey(ButlerySectionState.actionKey));
         await tester.pumpAndSettle();
         expect(vm.status, HemPlanStatus.failed);
         vm.dispose();

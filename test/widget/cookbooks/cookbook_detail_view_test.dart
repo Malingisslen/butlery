@@ -101,7 +101,7 @@ void main() {
   }
 
   bool enabled(WidgetTester tester, Finder tooltip) {
-    final button = find.ancestor(
+    final button = find.descendant(
       of: tooltip,
       matching: find.byType(IconButton),
     );
@@ -127,12 +127,14 @@ void main() {
           expect(size.height, greaterThanOrEqualTo(48));
         }
       }
-      final lines = announcedLines(tester, down(titles[1]));
-      expect(lines, contains(l10n.a11yMoveRecipeDown(titles[1])));
-      expect(
-        tester.getSemantics(down(titles[1])).flagsCollection.isButton,
-        isTrue,
+      // The shared icon button names itself on the button node.
+      final moveDown = find.descendant(
+        of: down(titles[1]),
+        matching: find.byType(IconButton),
       );
+      final lines = announcedLines(tester, moveDown);
+      expect(lines, contains(l10n.a11yMoveRecipeDown(titles[1])));
+      expect(tester.getSemantics(moveDown).flagsCollection.isButton, isTrue);
       handle.dispose();
     },
   );

@@ -32,7 +32,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/sync/sync_queue_row.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
@@ -383,15 +383,17 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                   side,
                   AppDimensions.space16,
                 ),
-                child: OutlinedButton.icon(
+                child: ActionButtons.outlinedButton(
+                  context,
                   key: SyncQueueView.syncNowKey,
                   // Offline the queue cannot be sent; the banner above says
                   // why.
                   onPressed: _syncing || !_source.isOnline ? null : _syncNow,
-                  icon: const ButleryIcon(ButleryIcons.refreshCw),
-                  label: Text(
-                    _syncing ? l10n.syncQueueSyncing : l10n.syncQueueSyncNow,
-                  ),
+                  icon: ButleryIcons.refreshCw,
+                  label: _syncing
+                      ? l10n.syncQueueSyncing
+                      : l10n.syncQueueSyncNow,
+                  isExpanded: true,
                 ),
               ),
             ),

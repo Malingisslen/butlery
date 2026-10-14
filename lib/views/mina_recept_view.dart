@@ -45,7 +45,6 @@ import 'package:butlery/views/mina_recept/library_switch.dart';
 import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart'
     show LayoutScaffolds;
@@ -67,7 +66,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 
 // Widget components for modern UI architecture
-import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_sized_grid.dart';
 import 'package:butlery/widgets/common/responsive/sliver_responsive_list_grid.dart';
@@ -735,7 +734,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // (produktregler.md:297). With recipes already fetched, the library stays
     // and the error is a box above it; only a view with nothing to show gets
     // the full-view error.
-    if (MinaReceptSectionError.emptiesView(
+    if (minaReceptErrorEmptiesView(
       hasError: viewModel.hasError,
       hasRecipes: recipes.isNotEmpty,
     )) {
@@ -809,7 +808,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: AppDimensions.responsiveContentPadding(context),
-                child: MinaReceptSectionError(
+                child: minaReceptSectionError(
+                  context,
                   onRetry: () {
                     viewModel.clearError();
                     viewModel.refresh();
@@ -891,33 +891,28 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 }
 
-/// P5-U05 (hem ERROR): the error box of the recipe section on the start
-/// view. The three parts of produktregler.md:298 (content-style-guide.md:
-/// 87-97): what happened, what was kept, and Försök igen.
-class MinaReceptSectionError extends StatelessWidget {
-  const MinaReceptSectionError({required this.onRetry, super.key});
+/// Whether an error takes the whole view. "Fel i en sektion tömmer aldrig
+/// hela vyn" (produktregler.md): only a view with nothing fetched to
+/// show gets the full-view error; with recipes the library stays and the
+/// section error box sits above it.
+@visibleForTesting
+bool minaReceptErrorEmptiesView({
+  required bool hasError,
+  required bool hasRecipes,
+}) => hasError && !hasRecipes;
 
-  /// Clears the error and fetches again.
-  final VoidCallback onRetry;
-
-  /// Whether an error takes the whole view. "Fel i en sektion tömmer aldrig
-  /// hela vyn" (produktregler.md:297): only a view with nothing fetched to
-  /// show gets the full-view error; with recipes the library stays and this
-  /// box sits above it.
-  static bool emptiesView({required bool hasError, required bool hasRecipes}) =>
-      hasError && !hasRecipes;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return InlineError(
-      what: l10n.minaReceptRefreshFailed,
-      preserved: l10n.minaReceptRefreshPreserved,
-      actionLabel: l10n.commonRetry,
-      onAction: onRetry,
-    );
-  }
-}
+/// P5-U05 (hem ERROR): the recipe section's error box: what happened, what
+/// was kept, and Försök igen (content-style-guide.md).
+@visibleForTesting
+Widget minaReceptSectionError(
+  BuildContext context, {
+  required VoidCallback onRetry,
+}) => ButlerySectionState.error(
+  message: context.l10n.minaReceptRefreshFailed,
+  preserved: context.l10n.minaReceptRefreshPreserved,
+  actionLabel: context.l10n.commonRetry,
+  onAction: onRetry,
+);
 
 /// The library header row's actions outside selection mode (Q6-16 = B:
 /// they were the top bar's, and Hem has none).
@@ -943,16 +938,14 @@ List<Widget> minaReceptRootActions(
     // BUT-977: surface the pantry-match IngredientSearchView power
     // feature (previously only reachable via Cmd+K). Distinct
     // kitchen icon so it doesn't read as the in-list text filter.
-    IconButton(
-      icon: const ButleryIcon(ButleryIcons.refrigerator),
-      tooltip: context.l10n.ingredientSearchTitle,
+    AppIconButton(
+      icon: ButleryIcons.refrigerator,
+      semanticLabel: context.l10n.ingredientSearchTitle,
       onPressed: () => Navigator.of(context).pushNamed(Routes.ingredientSearch),
     ),
-    IconButton(
-      icon: ButleryIcon(
-        viewModel.isGridView ? ButleryIcons.list : ButleryIcons.grid,
-      ),
-      tooltip: viewModel.isGridView
+    AppIconButton(
+      icon: viewModel.isGridView ? ButleryIcons.list : ButleryIcons.grid,
+      semanticLabel: viewModel.isGridView
           ? context.l10n.viewModeList
           : context.l10n.viewModeGrid,
       onPressed: viewModel.toggleViewMode,
