@@ -61,6 +61,7 @@ void main() {
     when(() => viewModel.selectedCount).thenReturn(4);
     when(() => viewModel.isSelectionMode).thenReturn(true);
     when(() => viewModel.allSelected).thenReturn(false);
+    when(() => viewModel.matchingCount).thenReturn(0);
     when(() => viewModel.recipes).thenReturn(recipes);
     when(() => viewModel.selectedRecipes).thenReturn(recipes);
 
