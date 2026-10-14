@@ -1,6 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -9,11 +10,9 @@ import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -137,29 +136,15 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
-    final shouldDismiss = await showDialog<bool>(
+    final shouldDismiss = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.sharedHideRecipe),
-        content: Text(
-          context.l10n.sharedHideRecipeConfirm(
-            sharedRecipe.recipeTitle,
-            sharedRecipe.sharedByDisplayName,
-          ),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonHide,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+      title: context.l10n.sharedHideRecipe,
+      message: context.l10n.sharedHideRecipeConfirm(
+        sharedRecipe.recipeTitle,
+        sharedRecipe.sharedByDisplayName,
       ),
+      confirmText: context.l10n.commonHide,
+      icon: ButleryIcons.eyeOff,
     );
 
     if (shouldDismiss == true) {
@@ -191,29 +176,15 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
-    final shouldDismiss = await showDialog<bool>(
+    final shouldDismiss = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.sharedHideMenu),
-        content: Text(
-          context.l10n.sharedHideMenuConfirm(
-            sharedMenu.menuTitle,
-            sharedMenu.sharedByDisplayName,
-          ),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonHide,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+      title: context.l10n.sharedHideMenu,
+      message: context.l10n.sharedHideMenuConfirm(
+        sharedMenu.menuTitle,
+        sharedMenu.sharedByDisplayName,
       ),
+      confirmText: context.l10n.commonHide,
+      icon: ButleryIcons.eyeOff,
     );
 
     if (shouldDismiss == true) {
@@ -327,29 +298,15 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) async {
-    final shouldDismiss = await showDialog<bool>(
+    final shouldDismiss = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.sharedHideShoppingList),
-        content: Text(
-          context.l10n.sharedHideShoppingListConfirm(
-            sharedShoppingList.listName,
-            sharedShoppingList.sharedByDisplayName,
-          ),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonHide,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+      title: context.l10n.sharedHideShoppingList,
+      message: context.l10n.sharedHideShoppingListConfirm(
+        sharedShoppingList.listName,
+        sharedShoppingList.sharedByDisplayName,
       ),
+      confirmText: context.l10n.commonHide,
+      icon: ButleryIcons.eyeOff,
     );
 
     if (shouldDismiss == true) {

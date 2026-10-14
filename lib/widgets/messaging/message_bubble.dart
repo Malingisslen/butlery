@@ -1,8 +1,8 @@
 // lib/widgets/messaging/message_bubble.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -17,7 +17,6 @@ import 'package:butlery/widgets/messaging/components/message_status_widget.dart'
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
-import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Message bubble component for chat messages.
@@ -65,14 +64,10 @@ class MessageBubble extends StatefulWidget {
   State<MessageBubble> createState() => _MessageBubbleState();
 }
 
-class _MessageBubbleState extends State<MessageBubble>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _swipeController;
-  late Animation<Offset> _swipeAnimation;
+class _MessageBubbleState extends State<MessageBubble> {
   double _dragExtent = 0;
   static const double _swipeThreshold = 80.0;
   static const double _maxSwipe = 120.0;
-  bool _reduceMotion = false;
   bool _showReactionPicker = false;
 
   /// BUT-1904. Local, and it lives HERE rather than in
@@ -80,42 +75,6 @@ class _MessageBubbleState extends State<MessageBubble>
   /// should stay one; this `State` survives the rebuild, since the row is
   /// keyed on the message id.
   bool _dismissRequested = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _swipeController = AnimationController(
-      vsync: this,
-      duration: AppMotion.micro,
-    );
-    _swipeAnimation =
-        Tween<Offset>(
-          begin: Offset.zero,
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: _swipeController,
-            curve: Curves.easeOut,
-          ),
-        );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reduceMotion = !AnimationUtils.shouldAnimate(context);
-    if (_reduceMotion) {
-      _swipeController.duration = Duration.zero;
-    } else {
-      _swipeController.duration = AppMotion.micro;
-    }
-  }
-
-  @override
-  void dispose() {
-    _swipeController.dispose();
-    super.dispose();
-  }
 
   bool get _isFromCurrentUser =>
       widget.message.isFromCurrentUser(widget.currentUserId);
@@ -132,9 +91,8 @@ class _MessageBubbleState extends State<MessageBubble>
     // comes from the ARB, never from the document — a client-stamped row can
     // still be carrying its own, and that is exactly what must not surface.
     //
-    // The long-press menu is dead for every message type today for an
-    // unrelated reason, so the notice carries its own dismiss control instead
-    // of borrowing one. It goes through the per-MESSAGE delete, which is why it
+    // The notice carries its own dismiss control instead of borrowing the
+    // message menu. It goes through the per-MESSAGE delete, which is why it
     // works the same in a group as in a direct message; what else can remove
     // the row depends on the conversation and is recorded in ADR-0009.
     //
@@ -179,16 +137,22 @@ class _MessageBubbleState extends State<MessageBubble>
       child: Semantics(
         label: context.l10n.a11yMessageSwipeToReply,
         container: true,
+        customSemanticsActions: widget.onReply == null
+            ? null
+            : {
+                CustomSemanticsAction(label: context.l10n.chatMessageReply):
+                    widget.onReply!,
+              },
         child: GestureDetector(
           onHorizontalDragUpdate: widget.onReply != null
               ? _handleDragUpdate
               : null,
           onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
-          child: AnimatedBuilder(
-            animation: _swipeAnimation,
-            builder: (context, child) {
+          onHorizontalDragCancel: () => setState(() => _dragExtent = 0),
+          child: Builder(
+            builder: (context) {
               return Transform.translate(
-                offset: _swipeAnimation.value,
+                offset: Offset(_dragExtent / 2, 0),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.space12,
@@ -259,44 +223,23 @@ class _MessageBubbleState extends State<MessageBubble>
   void _handleDragUpdate(DragUpdateDetails details) {
     if (widget.onReply == null) return;
 
+    // Accumulate: a slow drag arrives as many small deltas, so the distance
+    // is the running sum, not the last frame's delta.
+    final delta = details.primaryDelta ?? 0;
     setState(() {
-      // For received messages (left side), swipe right (positive delta)
-      // For sent messages (right side), swipe left (negative delta)
-      final delta = details.primaryDelta ?? 0;
-
-      if (_isFromCurrentUser) {
-        // Sent messages: swipe left
-        _dragExtent = (delta < 0) ? delta.clamp(-_maxSwipe, 0) : 0;
-      } else {
-        // Received messages: swipe right
-        _dragExtent = (delta > 0) ? delta.clamp(0, _maxSwipe) : 0;
-      }
+      _dragExtent = _isFromCurrentUser
+          ? (_dragExtent + delta).clamp(-_maxSwipe, 0)
+          : (_dragExtent + delta).clamp(0, _maxSwipe);
     });
-
-    // Update animation
-    _swipeAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(_dragExtent / 10, 0), // Reduced movement for better feel
-    ).animate(_swipeController);
   }
 
   void _handleDragEnd(DragEndDetails details) {
     if (widget.onReply == null) return;
 
-    // Trigger reply if threshold was met
     if (_dragExtent.abs() >= _swipeThreshold) {
       widget.onReply?.call();
     }
-
-    // Reset animation
-    setState(() {
-      _dragExtent = 0;
-    });
-    _swipeAnimation = Tween<Offset>(
-      begin: _swipeAnimation.value,
-      end: Offset.zero,
-    ).animate(_swipeController);
-    _swipeController.forward(from: 0);
+    setState(() => _dragExtent = 0);
   }
 
   Widget _buildSystemMessage(BuildContext context) {

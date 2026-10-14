@@ -7,6 +7,7 @@
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -295,23 +296,22 @@ void main() {
     });
 
     group('group widgets, $mode', () {
-      testWidgets('error box is the danger tint with onErrorContainer text '
-          'and glyph and no border', (tester) async {
+      testWidgets('error is the shared InlineError with a danger outline', (
+        tester,
+      ) async {
         await _pump(
           tester,
           theme,
           const ErrorDisplayWidget(errorMessage: 'Något gick fel'),
         );
-        final decoration = _decorationAbove(
-          tester,
-          find.text('Något gick fel'),
-        );
-        expect(decoration.color, modeColors.surfaceTintDanger);
-        expect(decoration.border, isNull);
-        expect(_textColor(tester, 'Något gick fel'), cs.onErrorContainer);
+        final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+        final shape = box.shape! as RoundedRectangleBorder;
+        expect(shape.side.color, cs.error);
+        expect(box.color, cs.surface);
+        expect(_textColor(tester, 'Något gick fel'), cs.onSurface);
         expect(
           tester.widget<ButleryIcon>(find.byType(ButleryIcon)).color,
-          cs.onErrorContainer,
+          cs.error,
         );
       });
 

@@ -12,6 +12,7 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/friend_category.dart';
@@ -21,11 +22,9 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 import '../../helpers/user_profile_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -234,11 +233,11 @@ void main() {
     handle.dispose();
   });
 
-  // B83-2: a failed send is a notice box, a tint fill with no border, and its
-  // glyph and text carry the kind (BUT-2183).
+  // A failed send is the shared InlineError.
   for (final mode in Brightness.values) {
-    testWidgets('${mode.name}: the failed-send notice is a surface.tint.danger '
-        'fill with no border', (tester) async {
+    testWidgets('${mode.name}: the failed-send notice is an InlineError', (
+      tester,
+    ) async {
       when(
         () => invitations.sendGroupInvitations(
           userIds: any(named: 'userIds'),
@@ -255,22 +254,11 @@ void main() {
       await tester.pump();
 
       final context = tester.element(find.byType(AddMembersToGroupView));
-      final message = find
-          .descendant(
-            of: find.byType(BottomActionContainer),
-            matching: find.byType(Text),
-          )
-          .first;
-      final box = tester.widget<Container>(
-        find.ancestor(of: message, matching: find.byType(Container)).first,
-      );
-      final decoration = box.decoration! as BoxDecoration;
-      expect(decoration.color, context.modeColors.surfaceTintDanger);
-      expect(decoration.border, isNull);
-      expect(
-        tester.widget<Text>(message).style?.color,
-        Theme.of(context).colorScheme.onErrorContainer,
-      );
+      expect(find.byKey(InlineError.boxKey), findsOneWidget);
+      final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+      final shape = box.shape! as RoundedRectangleBorder;
+      expect(shape.side.color, Theme.of(context).colorScheme.error);
+      expect(box.color, Theme.of(context).colorScheme.surface);
     });
   }
 }

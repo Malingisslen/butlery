@@ -187,6 +187,15 @@ class ChatViewModel extends ChangeNotifier
     _loadMessages();
   }
 
+  /// Re-reads the conversation after a change made elsewhere (mute), so the
+  /// menu shows the state the next tap will act on.
+  Future<void> reloadConversation() async {
+    final fresh = await _messagingService.getConversation(conversationId);
+    if (_isDisposed || fresh == null) return;
+    _conversation = fresh;
+    notifyListeners();
+  }
+
   Future<void> _loadConversation() async {
     if (_isDisposed) return;
 

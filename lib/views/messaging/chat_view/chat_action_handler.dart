@@ -23,6 +23,9 @@ import 'package:butlery/widgets/common/dialogs/share_selection/shopping_list_sel
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
 import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
+import 'package:butlery/views/messaging/chat_view/chat_message_menu.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
+import 'package:butlery/core/errors/chat_group_error_mapper.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
@@ -89,6 +92,9 @@ class ChatActionHandler {
         break;
       case 'copy':
         await _copyMessage(message);
+        break;
+      case 'menu':
+        await _showMessageMenu(message);
         break;
       case 'report':
         ReportContentDialog.show(
@@ -284,15 +290,66 @@ class ChatActionHandler {
     }
   }
 
+  Future<void> _showMessageMenu(Message message) async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    final choice = await showChatMessageMenu(
+      context,
+      message: message,
+      isOwn: userId != null && message.isFromCurrentUser(userId),
+    );
+    if (choice == null || !context.mounted) return;
+    final reaction = choice.reaction;
+    if (reaction != null) {
+      await _toggleReaction(message, reaction);
+      return;
+    }
+    switch (choice.action!) {
+      case ChatMessageAction.reply:
+        await handleMessageAction(message, 'reply');
+      case ChatMessageAction.copy:
+        await handleMessageAction(message, 'copy');
+      case ChatMessageAction.edit:
+        await handleMessageAction(message, 'edit');
+      case ChatMessageAction.delete:
+        await handleMessageAction(message, 'delete');
+      case ChatMessageAction.report:
+        await handleMessageAction(message, 'report');
+    }
+  }
+
+  Future<void> _toggleReaction(Message message, String emoji) async {
+    try {
+      await _messagingService.toggleReaction(
+        messageId: message.id,
+        conversationId: conversationId,
+        emoji: emoji,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to toggle reaction', e);
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatReactionFailed);
+    }
+  }
+
   Future<void> _toggleMute() async {
     AppLogger.info('Toggling conversation mute');
-
     try {
-      // In production, this would toggle mute status through the messaging repository
-      // For now, just show a message that notifications are toggled
-      _showInfoSnackBar(context.l10n.chatNotificationSettingsUpdated);
+      final conversation = await _messagingService.getConversation(
+        conversationId,
+      );
+      final wasMuted = conversation?.isMuted ?? false;
+      if (wasMuted) {
+        await _messagingService.unmuteConversation(conversationId);
+      } else {
+        await _messagingService.muteConversation(conversationId);
+      }
+      if (!context.mounted) return;
+      _showInfoSnackBar(
+        wasMuted ? context.l10n.chatUnmuted : context.l10n.chatMuted,
+      );
     } catch (e) {
       AppLogger.error('Failed to toggle mute', e);
+      if (!context.mounted) return;
       _showErrorSnackBar(context.l10n.chatCouldNotChangeNotifications);
     }
   }
@@ -330,6 +387,11 @@ class ChatActionHandler {
 
     try {
       final l10n = context.l10n;
+      final conversation = await _messagingService.getConversation(
+        conversationId,
+      );
+      final groupId = conversation?.groupId;
+      if (groupId == null || !context.mounted) return;
       final confirmed =
           await DestructiveConfirmationDialog.show(
             context,
@@ -339,17 +401,26 @@ class ChatActionHandler {
             primaryActionIcon: ButleryIcons.logOut,
           ) ??
           false;
+      if (!confirmed) return;
 
-      if (confirmed) {
-        // In production, this would remove the user from the conversation
-        // For now, just navigate back
-        AppLogger.info(
-          'Leaving conversation: ${conversationId.maskedConversationId}',
+      try {
+        await ServiceLocator.get<ChatGroupRepository>().removeMember(
+          groupId: groupId,
         );
-        if (context.mounted) {
-          Navigator.of(context).pop();
-        }
+      } catch (e) {
+        AppLogger.error('Failed to leave group', e);
+        if (!context.mounted) return;
+        _showErrorSnackBar(
+          ChatGroupErrorMapper.map(
+            e,
+            genericFallback: l10n.chatCouldNotLeaveConversation,
+          ),
+        );
+        return;
       }
+      if (!context.mounted) return;
+      _showSuccessSnackBar(l10n.messagingLeftGroup);
+      Navigator.of(context).pop();
     } catch (e) {
       AppLogger.error('Failed to leave conversation', e);
       if (!context.mounted) return;

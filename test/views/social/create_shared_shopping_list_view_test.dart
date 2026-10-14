@@ -25,6 +25,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,6 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -485,8 +485,7 @@ void main() {
     });
   });
 
-  // B83-2: a refused create is a surface.tint.danger box with no border
-  // (BUT-2183).
+  // A refused create is the shared InlineError.
   group('CreateSharedShoppingListView — notice box (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
@@ -495,7 +494,7 @@ void main() {
       // A refused create (the service answers null) shows the error box. The
       // dark run carries the text assertion: in light, the old static error
       // colour and onErrorContainer are the same value.
-      testWidgets('$name: a refused create shows a surface.tint.danger box', (
+      testWidgets('$name: a refused create shows an InlineError', (
         tester,
       ) async {
         when(
@@ -522,18 +521,15 @@ void main() {
         final context = tester.element(
           find.byType(CreateSharedShoppingListView),
         );
-        final message = find.text(AppLocalizations.of(context).errorUnknown);
-        expect(message, findsOneWidget);
-        final box = tester.widget<Container>(
-          find.ancestor(of: message, matching: find.byType(Container)).first,
-        );
-        final decoration = box.decoration! as BoxDecoration;
-        expect(decoration.color, context.modeColors.surfaceTintDanger);
-        expect(decoration.border, isNull);
         expect(
-          tester.widget<Text>(message).style?.color,
-          Theme.of(context).colorScheme.onErrorContainer,
+          find.text(AppLocalizations.of(context).errorUnknown),
+          findsOneWidget,
         );
+        expect(find.byKey(InlineError.boxKey), findsOneWidget);
+        final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+        final shape = box.shape! as RoundedRectangleBorder;
+        expect(shape.side.color, Theme.of(context).colorScheme.error);
+        expect(box.color, Theme.of(context).colorScheme.surface);
       });
     }
   });

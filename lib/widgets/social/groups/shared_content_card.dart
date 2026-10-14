@@ -9,7 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
 class SharedContentCard extends StatelessWidget {
@@ -69,14 +69,11 @@ class SharedContentCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final iconColor = _getColorForType(context, item.type);
 
-    // Configure Swedish locale for timeago
-    timeago.setLocaleMessages('sv', timeago.SvMessages());
-
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Semantics(
         label: '${context.l10n.groupSharedContent}: ${item.title}',
-        button: true,
+        button: onView != null,
         child: InkWell(
           onTap: onView,
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -148,7 +145,10 @@ class SharedContentCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      timeago.format(item.sharedAt, locale: 'sv'),
+                      ContextualTimeFormatter.standard(
+                        item.sharedAt,
+                        localeName: Localizations.localeOf(context).toString(),
+                      ),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: cs.onSurfaceVariant,
                       ),

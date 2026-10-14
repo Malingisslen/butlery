@@ -29,6 +29,7 @@ class CreateSharedListViewModel extends BaseViewModel {
 
   // UI state — `isCreating` is operation-specific; `error`/loading come from BaseViewModel.
   bool _isCreating = false;
+  String _prefilledTitle = '';
 
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
@@ -48,6 +49,13 @@ class CreateSharedListViewModel extends BaseViewModel {
   bool get isCreating => _isCreating;
   bool get isTitleValid => _title.trim().isNotEmpty;
   bool get hasFriendsSelected => _selectedFriendIds.isNotEmpty;
+
+  /// True once the person has typed or picked something; a title we filled in
+  /// ourselves does not count, or an untouched form would ask to be saved.
+  bool get hasUserInput =>
+      _title.trim() != _prefilledTitle.trim() ||
+      _description.trim().isNotEmpty ||
+      hasFriendsSelected;
   bool get canCreate => isTitleValid && hasFriendsSelected && !_isCreating;
 
   String? get titleError {
@@ -91,6 +99,7 @@ class CreateSharedListViewModel extends BaseViewModel {
   }) {
     _menu = menu;
     if (defaultTitle != null && defaultTitle.isNotEmpty) {
+      _prefilledTitle = defaultTitle;
       _title = defaultTitle;
       notifyListeners();
     }
@@ -140,6 +149,7 @@ class CreateSharedListViewModel extends BaseViewModel {
   }
 
   void clearForm() {
+    _prefilledTitle = '';
     _title = '';
     _description = '';
     _selectedFriendIds.clear();

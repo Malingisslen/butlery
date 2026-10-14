@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -43,7 +43,6 @@ class _SharedRecipesByFriendViewState extends State<SharedRecipesByFriendView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<SharedContentCoordinatorViewModel>();
-    timeago.setLocaleMessages('sv', timeago.SvMessages());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _viewModel.initialize();
     });
@@ -83,18 +82,17 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
     return ButleryPage.undersida(
       title: context.l10n.sharedFromHeading(friendDisplayName),
       backTo: friendDisplayName,
-      ruleUnderBar: true,
       secondaryLine: recipes.isEmpty
           ? null
           : context.l10n.sharedFromSummary(
               recipes.length,
-              timeago.format(
+              ContextualTimeFormatter.standard(
                 recipes
                     .map((r) => r.sharedAt)
                     .reduce(
                       (a, b) => a.isAfter(b) ? a : b,
                     ),
-                locale: 'sv',
+                localeName: Localizations.localeOf(context).toString(),
               ),
             ),
       body: Column(

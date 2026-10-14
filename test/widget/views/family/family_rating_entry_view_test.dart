@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/diner_profile.dart';
+import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
@@ -39,6 +40,23 @@ class _MockSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {}
 
 const _malin = 'user-malin';
+
+class _FailingRatings extends FamilyRatingService {
+  int calls = 0;
+
+  @override
+  Future<FamilyRating?> rateAsFamily({
+    required String recipeId,
+    required String householdId,
+    required String memberId,
+    required HouseholdMemberType memberType,
+    required int stars,
+    required String enteredByUid,
+  }) async {
+    calls++;
+    return null;
+  }
+}
 
 void main() {
   final sv = AppLocalizationsSv();
@@ -175,5 +193,71 @@ void main() {
       find.textContaining(sv.familyRatingNoteSkip, findRichText: true),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a failed save says so with a retry, and keeps the screen', (
+    tester,
+  ) async {
+    final failing = _FailingRatings();
+    TestServiceLocator.registerSingleton<FamilyRatingService>(failing);
+    await pumpView(tester);
+
+    await tester.tap(
+      find.bySemanticsLabel(sv.a11yRateStarsForMember('Farfar', 4)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(sv.familyRatingSave));
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.commonRetry), findsOneWidget);
+    expect(find.byType(FamilyRatingEntryView), findsOneWidget);
+    final before = failing.calls;
+
+    await tester.tap(find.text(sv.commonRetry));
+    await tester.pumpAndSettle();
+    expect(failing.calls, greaterThan(before), reason: 'retry saves again');
+  });
+
+  testWidgets('leaving after a changed star asks first', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const FamilyRatingEntryView(
+                    recipeId: 'recipe-1',
+                    recipeTitle: 'Pannkakor',
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(FamilyRatingEntryView), findsNothing, reason: 'clean');
+
+    await tester.tap(find.text('open'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.bySemanticsLabel(sv.a11yRateStarsForMember('Farfar', 4)),
+    );
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.unsavedChangesTitle), findsOneWidget);
+    expect(find.byType(FamilyRatingEntryView), findsOneWidget);
   });
 }

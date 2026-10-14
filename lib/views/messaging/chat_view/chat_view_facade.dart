@@ -118,7 +118,10 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
             actions: [
               ChatMenuButton(
                 conversation: conversation,
-                onMenuAction: _actionHandler.handleMenuAction,
+                onMenuAction: (action) async {
+                  await _actionHandler.handleMenuAction(action);
+                  if (action == 'mute') await _viewModel.reloadConversation();
+                },
               ),
             ],
             body: Column(

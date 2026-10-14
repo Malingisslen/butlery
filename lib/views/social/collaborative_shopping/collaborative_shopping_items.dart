@@ -8,6 +8,7 @@
 // All Firestore work routes through the ViewModel.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
@@ -444,9 +445,9 @@ class _CollaborativeItemCard extends StatelessWidget {
     }
     if (item.assignedToUserId != null) {
       widgets.add(
-        _AssigneeBadge(
-          initials: _assigneeInitials(),
-          isSelf: item.assignedToUserId == viewModel.currentUserId,
+        AvatarCircle(
+          glyph: _assigneeInitials(),
+          size: AvatarCircleSize.inline,
         ),
       );
       widgets.add(const SizedBox(width: AppDimensions.space4));
@@ -500,35 +501,5 @@ class _CollaborativeItemCard extends StatelessWidget {
     final name = result.conflictingDisplayName.orEmpty();
     // Informs, never Ångra (produktregler.md § 8.6).
     SnackBarUtils.showInfo(context, context.l10n.nagonAnnanTogDen(name));
-  }
-}
-
-class _AssigneeBadge extends StatelessWidget {
-  final String initials;
-  final bool isSelf;
-
-  const _AssigneeBadge({required this.initials, required this.isSelf});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final bg = isSelf ? cs.primary : cs.secondary;
-    final fg = isSelf ? cs.onPrimary : cs.onSecondary;
-    return Container(
-      width: 28,
-      height: 28,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.zero,
-      ),
-      child: Text(
-        initials,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: fg,
-        ),
-      ),
-    );
   }
 }

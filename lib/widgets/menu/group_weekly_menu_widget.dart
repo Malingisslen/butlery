@@ -228,6 +228,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
     return CalendarDishCell(
       title: entries.first.recipeTitle,
       extraCount: entries.length - 1,
+      maxTitleLines: 2,
       marks: const CalendarCellMarks(),
       semanticsLabel: l10n.a11yGroupMenuDishDetails,
       onTap: () => showGroupDishSheet(

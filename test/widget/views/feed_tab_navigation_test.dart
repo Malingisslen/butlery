@@ -19,9 +19,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -106,6 +108,8 @@ void main() {
     when(() => feedVm.filteredEvents).thenReturn([sharedEvent]);
     when(() => feedVm.hasMore).thenReturn(false);
     when(() => feedVm.filter).thenReturn(null);
+    when(() => feedVm.isLoadingMore).thenReturn(false);
+    when(() => feedVm.loadMoreError).thenReturn(null);
     when(() => feedVm.addListener(any())).thenReturn(null);
     when(() => feedVm.removeListener(any())).thenReturn(null);
 
@@ -169,6 +173,65 @@ void main() {
     });
   });
 
+  group('FeedTab next page', () {
+    testWidgets('a failed page shows a retry and does not fetch again alone', (
+      tester,
+    ) async {
+      when(() => feedVm.hasMore).thenReturn(true);
+      when(
+        () => feedVm.loadMoreError,
+      ).thenReturn('Fler händelser kunde inte hämtas.');
+      when(() => feedVm.loadMore()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      verifyNever(() => feedVm.loadMore());
+      final retry = find.text('Försök igen');
+      await tester.scrollUntilVisible(retry, 200);
+      await tester.tap(retry);
+      await tester.pump();
+
+      verify(() => feedVm.loadMore()).called(1);
+    });
+  });
+
+  group('FeedTab refresh failure with events on screen', () {
+    testWidgets('the list stays and the error shows above it with a retry', (
+      tester,
+    ) async {
+      when(() => feedVm.error).thenReturn('Flödet kunde inte uppdateras.');
+      when(() => feedVm.refresh()).thenAnswer((_) async {});
+
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.byType(InlineError), findsOneWidget);
+      expect(find.text('Flödet kunde inte uppdateras.'), findsOneWidget);
+      expect(find.text(AppLocalizationsSv().feedFilterAll), findsOneWidget);
+    });
+  });
+
+  group('FeedTab filter with no match', () {
+    testWidgets('the chips stay so the filter can be changed back', (
+      tester,
+    ) async {
+      when(() => feedVm.filteredEvents).thenReturn(const []);
+      when(() => feedVm.filter).thenReturn(ActivityEventType.shared);
+
+      await tester.pumpWidget(buildApp());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      final sv = AppLocalizationsSv();
+      expect(find.text(sv.feedFilterNoMatch), findsOneWidget);
+      expect(find.text(sv.feedFilterAll), findsOneWidget);
+      expect(find.text(sv.feedFilterCooked), findsOneWidget);
+    });
+  });
+
   group('FeedTab actor initials under a filter', () {
     testWidgets('a filtered-out namesake still counts as a collision', (
       tester,
@@ -213,7 +276,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
 
         // Tap the recipe preview row.
-        final recipeTile = find.text(_recipeTitle.toLowerCase());
+        final recipeTile = find.text(_recipeTitle);
         expect(
           recipeTile,
           findsOneWidget,
@@ -283,7 +346,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
 
-        final recipeTile = find.text(_recipeTitle.toLowerCase());
+        final recipeTile = find.text(_recipeTitle);
         expect(
           recipeTile,
           findsOneWidget,
@@ -339,7 +402,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
 
-        final recipeTile = find.text(_recipeTitle.toLowerCase());
+        final recipeTile = find.text(_recipeTitle);
         expect(recipeTile, findsOneWidget);
         await tester.tap(recipeTile);
         await tester.pumpAndSettle();

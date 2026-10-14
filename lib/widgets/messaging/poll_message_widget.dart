@@ -137,12 +137,22 @@ class PollMessageWidget extends StatelessWidget {
             Semantics(
               button: true,
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: onClose,
-                child: Text(
-                  context.l10n.pollCloseAction,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
-                    decoration: TextDecoration.underline,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: AppDimensions.minTouchTarget,
+                  ),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: 1,
+                    child: Text(
+                      context.l10n.pollCloseAction,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -175,6 +185,10 @@ class PollMessageWidget extends StatelessWidget {
         child: GestureDetector(
           onTap: poll.isActive ? () => onVote?.call(option.id) : null,
           child: Container(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
+            ),
+            alignment: AlignmentDirectional.centerStart,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
               vertical: AppDimensions.space4 + 2,

@@ -20519,6 +20519,37 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get chatMessageMenuTitle => 'Meddelande';
+
+  @override
+  String get chatMessageReply => 'Svara';
+
+  @override
+  String get chatMessageCopy => 'Kopiera';
+
+  @override
+  String get chatMuted => 'Notiserna från chatten är tystade';
+
+  @override
+  String get chatUnmuted => 'Notiserna från chatten är på igen';
+
+  @override
+  String get chatUnmute => 'Slå på notiser';
+
+  @override
+  String get chatReactionFailed => 'Reaktionen kunde inte sparas.';
+
+  @override
+  String get feedFilterNoMatch => 'Inga händelser av det här slaget än';
+
+  @override
+  String get chatAddMembersEmptyTitle => 'Inga vänner att lägga till';
+
+  @override
+  String get chatAddMembersEmptyBody =>
+      'Alla dina vänner är redan med, eller så har du inga vänner än. Hitta vänner under Vänner.';
+
+  @override
   String get mfaStatusLoadFailed =>
       'Vi kunde inte läsa om tvåstegsverifiering är på. Försök igen.';
 

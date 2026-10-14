@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
@@ -45,6 +46,7 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
   String? _currentUid;
   List<HouseholdRosterMember> _present = const [];
   final Map<String, int> _stars = <String, int>{};
+  Map<String, int> _loadedStars = <String, int>{};
 
   List<HouseholdRosterMember> get present => _present;
 
@@ -54,6 +56,8 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
   /// Whether [memberId] is the logged-in account holder (their row is a real
   /// self-rating; everyone else's is entered on their behalf).
   bool isHolder(String memberId) => memberId == _currentUid;
+
+  bool get hasUnsavedChanges => !mapEquals(_stars, _loadedStars);
 
   /// True when at least one row carries a 1–5 verdict (gates the save button).
   bool get hasAnyRating => _stars.values.any((s) => s >= 1 && s <= 5);
@@ -85,6 +89,7 @@ class FamilyRatingEntryViewModel extends BaseViewModel {
       for (final r in existing) {
         if (r.hasValidStars) _stars[r.memberId] = r.stars;
       }
+      _loadedStars = Map<String, int>.of(_stars);
     }, errorPrefix: AppLocale.current.familyRatingEntryLoadFailed);
   }
 

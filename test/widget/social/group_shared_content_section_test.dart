@@ -141,4 +141,55 @@ void main() {
     expect(recipesCount, findsOneWidget);
     expect(find.text(sv.groupSharedRecipesLabel(1)), findsWidgets);
   });
+
+  SharedContentItem item(String type) => SharedContentItem(
+    id: '$type-1',
+    title: 'Delat $type',
+    type: type,
+    sharedByUserId: 'anna',
+    sharedByDisplayName: 'Anna',
+    sharedAt: DateTime(2026, 1, 1),
+    data: const {},
+  );
+
+  // A15: the import button answered "coming soon" or even "done" for menus
+  // and lists, so only a recipe offers it.
+  testWidgets('only a shared recipe offers Importera', (tester) async {
+    final service = _Service(
+      recipesByGroup: {
+        group.id: [item('recipe')],
+      },
+    );
+    await pump(tester, service);
+    await tester.tap(find.text(sv.groupSharedRecipesLabel(1)));
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.groupImport), findsOneWidget);
+  });
+
+  testWidgets('a shared menu offers no Importera', (tester) async {
+    final service = _MenuService();
+    await pump(tester, service);
+    await tester.tap(find.text(sv.groupSharedMenusLabel(1)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delat menu'), findsOneWidget);
+    expect(find.text(sv.groupImport), findsNothing);
+  });
+}
+
+class _MenuService extends _Service {
+  @override
+  Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) =>
+      Stream.value([
+        SharedContentItem(
+          id: 'menu-1',
+          title: 'Delat menu',
+          type: 'menu',
+          sharedByUserId: 'anna',
+          sharedByDisplayName: 'Anna',
+          sharedAt: DateTime(2026, 1, 1),
+          data: const {},
+        ),
+      ]);
 }

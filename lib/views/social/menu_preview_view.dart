@@ -2,6 +2,8 @@
 // Preview of shared menus with all recipes
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/bold_names_text.dart';
@@ -10,14 +12,11 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -39,9 +38,6 @@ class MenuPreviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Configure Swedish for timeago
-    timeago.setLocaleMessages('sv', timeago.SvMessages());
-
     // The menu's own name stands in the header below the bar.
     return ButleryPage.undersida(
       title: context.l10n.menuPreviewTitle,
@@ -93,10 +89,8 @@ class MenuPreviewView extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SocialAvatarComponents.avatar(
-                  announceName: false,
+                AvatarCircle(
                   displayName: sharedMenu.sharedByDisplayName,
-                  size: ImageSize.small,
                 ),
                 const SizedBox(width: AppDimensions.space12),
                 Expanded(
@@ -117,7 +111,7 @@ class MenuPreviewView extends StatelessWidget {
             if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
               const SizedBox(height: AppDimensions.space12),
               Text(
-                '"${sharedMenu.shareMessage}"',
+                '”${sharedMenu.shareMessage}”',
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontStyle: FontStyle.italic,
                   color: cs.onSurfaceVariant,
@@ -244,29 +238,15 @@ class MenuPreviewView extends StatelessWidget {
     SharedContentCoordinatorViewModel viewModel,
   ) async {
     // Show confirmation dialog
-    final shouldDismiss = await showDialog<bool>(
+    final shouldDismiss = await CommonDialogActions.showActionConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.menuHideMenu),
-        content: Text(
-          context.l10n.menuHideConfirm(
-            sharedMenu.menuTitle,
-            sharedMenu.sharedByDisplayName,
-          ),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonHide,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+      title: context.l10n.menuHideMenu,
+      message: context.l10n.menuHideConfirm(
+        sharedMenu.menuTitle,
+        sharedMenu.sharedByDisplayName,
       ),
+      confirmText: context.l10n.commonHide,
+      icon: ButleryIcons.eyeOff,
     );
 
     if (shouldDismiss == true) {

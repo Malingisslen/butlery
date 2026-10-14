@@ -242,6 +242,29 @@ void main() {
         verifyNever(() => mockParentService.addCategoryInternal(any()));
       });
 
+      test(
+        'a cleared description is saved as empty, not left as it was',
+        () async {
+          final result = await operations.updateCategory(
+            categoryId: 'category_1',
+            name: 'Updated Name',
+            description: '',
+            icon: '🌟',
+          );
+
+          expect(result, isTrue);
+          final saved =
+              verify(
+                    () => mockParentService.updateCategoryInternal(
+                      'category_1',
+                      captureAny(),
+                    ),
+                  ).captured.single
+                  as FriendCategory;
+          expect(saved.description, '');
+        },
+      );
+
       test('should update category successfully', () async {
         // Act
         final result = await operations.updateCategory(

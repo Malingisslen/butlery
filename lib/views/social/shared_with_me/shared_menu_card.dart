@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
@@ -67,7 +67,10 @@ class SharedMenuCard {
         sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
     final fromAgo = l10n.sharedFromNameAgo(
       sharedMenu.sharedByDisplayName,
-      timeago.format(sharedMenu.sharedAt, locale: 'sv'),
+      ContextualTimeFormatter.standard(
+        sharedMenu.sharedAt,
+        localeName: Localizations.localeOf(context).toString(),
+      ),
     );
 
     return SharedContentRow(

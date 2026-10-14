@@ -120,7 +120,7 @@ class _PublicProfileContent extends StatelessWidget {
 
     if (vm.hasError) {
       return StateWidget.error(
-        message: vm.error!,
+        message: context.l10n.errorUnknown,
         actionLabel: context.l10n.commonRetry,
         onAction: vm.loadProfile,
       );

@@ -94,8 +94,8 @@ class ReplyBanner extends StatelessWidget {
             iconSize: 20,
             color: cs.onSurfaceVariant,
             constraints: const BoxConstraints(
-              minWidth: 32,
-              minHeight: 32,
+              minWidth: AppDimensions.minTouchTarget,
+              minHeight: AppDimensions.minTouchTarget,
             ),
             padding: EdgeInsets.zero,
             tooltip: context.l10n.messagingCancelReply,

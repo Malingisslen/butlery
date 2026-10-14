@@ -1,6 +1,7 @@
 // lib/views/social/friends_list/group_invitation_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -34,22 +35,7 @@ class GroupInvitationCard {
           children: [
             Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      invitation.groupEmoji,
-                      style: AppTextStyles.headlineMedium,
-                    ),
-                  ),
-                ),
+                AvatarCircle(glyph: invitation.groupEmoji),
                 const SizedBox(
                   width: (AppDimensions.space8 + AppDimensions.space4),
                 ),

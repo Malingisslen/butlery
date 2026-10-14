@@ -1,16 +1,15 @@
 // lib/views/social/friend_requests/friend_request_builders.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 
 // Theme
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
@@ -28,30 +27,12 @@ class FriendRequestsHeaderBuilder {
   ) {
     if (!viewModel.hasError) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.space12),
-      margin: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: context.modeColors.surfaceTintDanger,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Row(
-        children: [
-          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
-          const SizedBox(width: AppDimensions.space4),
-          Expanded(
-            child: Text(
-              viewModel.error!,
-              style: TextStyle(color: cs.onErrorContainer),
-            ),
-          ),
-          TextButton(
-            onPressed: viewModel.clearError,
-            child: Text(context.l10n.commonClose),
-          ),
-        ],
+      child: InlineError(
+        what: viewModel.error!,
+        actionLabel: context.l10n.commonClose,
+        onAction: viewModel.clearError,
       ),
     );
   }

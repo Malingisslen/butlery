@@ -1,6 +1,7 @@
 // lib/views/social/create_shared_shopping_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,6 @@ import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -84,11 +84,7 @@ class _CreateSharedShoppingListViewState
           // BUT-727: guard accidental dismiss after typing a title/description
           // or selecting friends. Skip the prompt while the create call is in
           // flight — we don't want to interrupt that.
-          final isDirty =
-              !viewModel.isCreating &&
-              (viewModel.title.trim().isNotEmpty ||
-                  viewModel.description.trim().isNotEmpty ||
-                  viewModel.hasFriendsSelected);
+          final isDirty = !viewModel.isCreating && viewModel.hasUserInput;
           return PopScope(
             canPop: !isDirty,
             onPopInvokedWithResult: (didPop, result) async {
@@ -103,6 +99,7 @@ class _CreateSharedShoppingListViewState
             },
             child: ButleryPage.undersida(
               title: context.l10n.shoppingNewSharedListTitle,
+              showTabBar: false,
               body: _buildBody(context, viewModel),
               bottomNavigationBar: _buildBottomBar(context, viewModel),
             ),
@@ -150,22 +147,7 @@ class _CreateSharedShoppingListViewState
             _buildPermission(context, viewModel),
             if (viewModel.hasError) ...[
               const SizedBox(height: AppDimensions.space24),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.space16),
-                decoration: BoxDecoration(
-                  color: context.modeColors.surfaceTintDanger,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
-                child: Text(
-                  viewModel.error!,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
+              InlineError(what: viewModel.error!),
             ],
           ],
         ),
