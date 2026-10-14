@@ -1086,7 +1086,7 @@ class MenuViewModel extends BaseViewModel {
   /// Reloads complete saved menus list including local and imported menus
   /// with sorting and organization for UI display and menu management operations.
   Future<void> refreshSavedMenus() async {
-    await _loadAllMenus();
+    await _loadAllMenus(rethrowErrors: true);
   }
 
   /// Handles reactive updates from recipe service changes with automatic UI synchronization.
@@ -1107,10 +1107,14 @@ class MenuViewModel extends BaseViewModel {
   /// - Imported menus retrieval from MenuSocialManager
   /// - Intelligent sorting with ownership priority and date organization
   /// - State management update with organized menu list
-  Future<void> _loadAllMenus() async {
+  Future<void> _loadAllMenus({bool rethrowErrors = false}) async {
     try {
-      final localMenus = await _storage.loadUserMenus();
-      final importedMenus = await _socialManager.loadImportedMenus();
+      final localMenus = await _storage.loadUserMenus(
+        rethrowErrors: rethrowErrors,
+      );
+      final importedMenus = await _socialManager.loadImportedMenus(
+        rethrowErrors: rethrowErrors,
+      );
 
       // Combine and sort menus
       final allMenus = <SavedMenuInfo>[...localMenus, ...importedMenus];
@@ -1130,6 +1134,7 @@ class MenuViewModel extends BaseViewModel {
       );
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av menyer: $e');
+      if (rethrowErrors) rethrow;
     }
   }
 

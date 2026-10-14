@@ -211,12 +211,14 @@ class PantryItemCard extends StatelessWidget {
     );
   }
 
-  void _removeWithUndo(
+  Future<void> _removeWithUndo(
     PantryViewModel viewModel, {
     required UndoSnackBar undo,
     required String message,
-  }) {
-    viewModel.removeItem(item.id);
+  }) async {
+    await viewModel.removeItem(item.id);
+    // A failed delete leaves the row in place; Ångra would restore a copy.
+    if (viewModel.hasError) return;
     undo.show(message, onUndo: () => viewModel.restoreItem(item));
   }
 
@@ -263,8 +265,7 @@ class _ExpiryBadge extends StatelessWidget {
   }
 
   String _freshLabel(BuildContext context, DateTime date) {
-    // Numeric date keeps the label locale-agnostic without pulling in
-    // intl's DateFormat; the surrounding label is localized.
-    return '${context.l10n.pantryExpiryLabel} ${date.day}/${date.month}';
+    final day = DateFormat.MMMMd(context.l10n.localeName).format(date);
+    return '${context.l10n.pantryExpiryLabel} $day';
   }
 }

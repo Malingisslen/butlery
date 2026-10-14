@@ -92,7 +92,9 @@ class MenuSocialManager {
   }
 
   /// Load imported menus from social operations
-  Future<List<SavedMenuInfo>> loadImportedMenus() async {
+  Future<List<SavedMenuInfo>> loadImportedMenus({
+    bool rethrowErrors = false,
+  }) async {
     try {
       final importedMenusData = await _socialMenuOps.getMenusSharedWithMe();
       final menuInfos = <SavedMenuInfo>[];
@@ -129,6 +131,7 @@ class MenuSocialManager {
       return menuInfos;
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av importerade menyer: $e');
+      if (rethrowErrors) rethrow;
       return [];
     }
   }

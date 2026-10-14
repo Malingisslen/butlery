@@ -60,6 +60,19 @@ void main() {
   }
 
   group('VeckomenyPromptRow', () {
+    testWidgets('the prompt field takes one to three lines', (
+      tester,
+    ) async {
+      controller.text =
+          'Vegetariskt hela veckan, max 30 minuter per middag, '
+          'inga svamp- eller fiskrätter och gärna något med ugn';
+      await pump(tester);
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.maxLines, 3);
+      expect(editable.minLines, 1);
+    });
+
     testWidgets('with room, the button sits beside the field and starts '
         'generation', (tester) async {
       var generated = 0;

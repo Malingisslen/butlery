@@ -14,18 +14,15 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/list/section_band.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
+import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class PantryView extends StatefulWidget {
@@ -120,18 +117,25 @@ class _PantryViewContent extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _PantryBulkBar(
+            child: SelectionBulkBar(
               count: selection.selectedCount,
+              label: context.l10n.bulkSelectedCount(selection.selectedCount),
               onClose: selection.clearSelection,
               onDelete: () => _deleteSelected(context, viewModel, selection),
             ),
           )
         else
           Positioned(
-            right: AppDimensions.space24,
+            right: AppDimensions.layoutMarginOf(context),
             bottom: AppDimensions.space24,
-            child: _PantryFab(
-              onPressed: () => _showAddSheet(context, viewModel),
+            // Its own node: merged upward the label would land on the whole
+            // tab's node and a screen reader could not reach the button.
+            child: Semantics(
+              container: true,
+              child: SaffronSquareButton(
+                semanticLabel: context.l10n.a11yPantryAddItem,
+                onPressed: () => _showAddSheet(context, viewModel),
+              ),
             ),
           ),
       ],
@@ -254,10 +258,10 @@ class _PantrySectionState extends State<_PantrySection> {
     // Skarmar v12 etapp 2 #skafferivyn: a group is a band with its rows
     // under it, hairlines between them, never a card.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimensions.space24,
+      padding: EdgeInsets.fromLTRB(
+        AppDimensions.layoutMarginOf(context),
         0,
-        AppDimensions.space24,
+        AppDimensions.layoutMarginOf(context),
         AppDimensions.space16,
       ),
       child: Column(
@@ -277,115 +281,6 @@ class _PantrySectionState extends State<_PantrySection> {
             for (final item in widget.items)
               PantryItemCard(key: ValueKey(item.id), item: item),
         ],
-      ),
-    );
-  }
-}
-
-class _PantryFab extends StatelessWidget {
-  const _PantryFab({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    // An ink square in light (#skafferivyn); ink on the dark page would not
-    // show, so dark turns it to paper with an ink plus.
-    return Material(
-      color: cs.onSurface,
-      elevation: 4,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      // Its own node: without `container` the label merged into the pantry
-      // tab's node, and a screen reader could not reach the button
-      // (BUT-2261).
-      child: Semantics(
-        container: true,
-        label: context.l10n.a11yPantryAddItem,
-        button: true,
-        child: PressFill(
-          surface: PressSurface.ink,
-          child: InkWell(
-            onTap: onPressed,
-            child: SizedBox(
-              width: 56,
-              height: 56,
-              child: ButleryIcon(
-                ButleryIcons.plus,
-                color: cs.surface,
-                size: AppDimensions.iconSizeL,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// BUT-948: contextual bulk-action bar shown at the bottom while items are
-/// selected. Pantry has no app-bar of its own (it's a sub-tab), so the bulk
-/// actions live here instead of in a selection app-bar.
-///
-/// P5-U31: the counter is "{n} valda" (produktregler.md:876). The delete
-/// action is off at zero with its name readable (P5-U32).
-class _PantryBulkBar extends StatelessWidget {
-  const _PantryBulkBar({
-    required this.count,
-    required this.onClose,
-    required this.onDelete,
-  });
-
-  final int count;
-  final VoidCallback onClose;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: cs.primaryContainer,
-      elevation: 8,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space8,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const ButleryIcon(ButleryIcons.x),
-                tooltip: context.l10n.commonCancel,
-                color: cs.onPrimaryContainer,
-                onPressed: onClose,
-              ),
-              Expanded(
-                child: Text(
-                  context.l10n.bulkSelectedCount(count),
-                  style: AppTextStyles.titleSmall.copyWith(
-                    color: cs.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              TextButton.icon(
-                onPressed: count == 0 ? null : onDelete,
-                style: TextButton.styleFrom(
-                  foregroundColor: cs.onPrimaryContainer,
-                  // The disabled role on surface.raised, never the 38 % fade
-                  // styleFrom would give (tokens.json:71-74, :198):
-                  // text.disabled.onRaised, #788477 light, #93A48D dark.
-                  disabledForegroundColor: AppModeColors.textDisabled(
-                    cs.brightness,
-                  ),
-                ),
-                icon: const ButleryIcon(ButleryIcons.trash2),
-                label: Text(context.l10n.commonDelete),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

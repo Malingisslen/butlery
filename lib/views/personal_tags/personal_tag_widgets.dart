@@ -76,8 +76,8 @@ class PersonalTagRow extends StatelessWidget {
                     if (inSelectionMode)
                       ButleryIcon(
                         isSelected
-                            ? ButleryIcons.checkSquare
-                            : ButleryIcons.square,
+                            ? ButleryIcons.circleCheck
+                            : ButleryIcons.circle,
                       )
                     else
                       _TagDot(color: _dotColor(cs, tag.id)),

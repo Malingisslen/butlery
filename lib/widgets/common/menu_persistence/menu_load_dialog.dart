@@ -34,6 +34,7 @@ class LoadMenuBottomSheet extends StatefulWidget {
 class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   List<dynamic> _savedMenus = [];
   bool _isLoading = false;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     if (mounted) {
       setState(() {
         _isLoading = true;
+        _loadFailed = false;
       });
     }
 
@@ -61,6 +63,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _loadFailed = true;
         });
       }
     }
@@ -129,11 +132,24 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                       message: context.l10n.menuLoadingSaved,
                     ),
                   )
+                : _loadFailed
+                ? _buildErrorState()
                 : _savedMenus.isEmpty
                 ? _buildEmptyState()
                 : _buildMenuList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.space32),
+      child: StateWidget.error(
+        message: context.l10n.menuListLoadFailed,
+        actionLabel: context.l10n.commonRetry,
+        onAction: _loadSavedMenus,
       ),
     );
   }

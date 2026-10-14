@@ -9,7 +9,6 @@ library;
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,12 +26,13 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
+import 'package:butlery/views/personal_tags/personal_tag_name_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+
+enum _TagsBarAction { sort, applyRules }
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
 abstract final class PersonalTagDialogs {
@@ -48,6 +48,36 @@ abstract final class PersonalTagDialogs {
     BuildContext context,
     List<PersonalTag> selectedTags,
   ) => PersonalTagBulkDialogs.showBulkDeleteDialog(context, selectedTags);
+
+  /// The bar's "more" sheet: sorting and applying the rules to every recipe.
+  static Future<void> showMoreActions(
+    BuildContext context, {
+    required Future<void> Function() onSort,
+  }) async {
+    final action = await showButleryListSheet<_TagsBarAction>(
+      context,
+      title: context.l10n.rootBarMoreActions,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: context.l10n.commonSort,
+          leading: ButleryIcons.arrowUpDown,
+          onTap: () => Navigator.pop(sheetContext, _TagsBarAction.sort),
+        ),
+        ButleryListRow(
+          label: context.l10n.personalTagApplyRulesToAll,
+          leading: ButleryIcons.refreshCw,
+          onTap: () => Navigator.pop(sheetContext, _TagsBarAction.applyRules),
+        ),
+      ],
+    );
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case _TagsBarAction.applyRules:
+        showRetagDialog(context);
+      case _TagsBarAction.sort:
+        await onSort();
+    }
+  }
 
   /// Shows the retag-all-recipes progress dialog.
   static void showRetagDialog(BuildContext context) {
@@ -182,188 +212,53 @@ abstract final class PersonalTagDialogs {
 
   /// Shows a dialog to create a new tag.
   static Future<void> showCreateTagDialog(BuildContext context) async {
+    final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    String tagName = '';
-
-    await showDialog<void>(
+    final created = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagCreateTag),
-            content: LabeledField(
-              label: context.l10n.personalTagNameLabel,
-              child: TextField(
-                style: fieldTextStyle(context, enabled: !isLoading),
-                onChanged: (v) => tagName = v,
-                enabled: !isLoading,
-                decoration: InputDecoration(
-                  hintText: context.l10n.personalTagNameHint,
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonCreate,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          final name = tagName.trim();
-                          if (name.isEmpty) return;
-
-                          final validationError = viewModel.validateTagName(
-                            name,
-                          );
-                          if (validationError != null) {
-                            if (context.mounted) {
-                              SnackBarUtils.showFailure(
-                                context,
-                                what: validationError,
-                              );
-                            }
-                            return;
-                          }
-
-                          setState(() => isLoading = true);
-
-                          final exists = await viewModel.tagNameExists(name);
-                          if (exists) {
-                            setState(() => isLoading = false);
-                            if (context.mounted) {
-                              SnackBarUtils.showFailure(
-                                context,
-                                what: context.l10n.tagAlreadyExists,
-                              );
-                            }
-                            return;
-                          }
-
-                          final success = await viewModel.createTag(name: name);
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          if (success) {
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagCreated,
-                            );
-                          } else {
-                            SnackBarUtils.showFailure(
-                              context,
-                              what:
-                                  viewModel.error ??
-                                  context.l10n.personalTagCouldNotCreate,
-                            );
-                          }
-                        },
-                  child: Text(context.l10n.commonCreate),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      barrierDismissible: false,
+      builder: (_) => PersonalTagNameDialog(
+        title: l10n.personalTagCreateTag,
+        fieldLabel: l10n.personalTagNameLabel,
+        hint: l10n.personalTagNameHint,
+        confirmLabel: l10n.commonCreate,
+        emptyMessage: l10n.validationTagNameRequired,
+        submit: (name) async {
+          final invalid = viewModel.validateTagName(name);
+          if (invalid != null) return invalid;
+          if (await viewModel.tagNameExists(name)) {
+            return l10n.tagAlreadyExists;
+          }
+          if (await viewModel.createTag(name: name)) return null;
+          return viewModel.error ?? l10n.personalTagCouldNotCreate;
+        },
+      ),
     );
+    if (created == null || !context.mounted) return;
+    SnackBarUtils.showSuccess(context, l10n.personalTagCreated);
   }
 
   /// Shows a dialog to create a new group.
   static Future<void> showCreateGroupDialog(BuildContext context) async {
+    final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    String groupName = '';
-
-    await showDialog<void>(
+    final created = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagCreateGroup),
-            content: LabeledField(
-              label: context.l10n.personalTagGroupNameLabel,
-              child: TextField(
-                style: fieldTextStyle(context, enabled: !isLoading),
-                onChanged: (v) => groupName = v,
-                enabled: !isLoading,
-                decoration: InputDecoration(
-                  hintText: context.l10n.personalTagGroupNameHint,
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonCreate,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          final name = groupName.trim();
-                          if (name.isEmpty) return;
-
-                          setState(() => isLoading = true);
-                          final success = await viewModel.createGroup(
-                            name: name,
-                          );
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.pop(dialogContext);
-
-                          if (!context.mounted) return;
-                          if (success) {
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagGroupCreated,
-                            );
-                          } else {
-                            SnackBarUtils.showFailure(
-                              context,
-                              what:
-                                  viewModel.error ??
-                                  context.l10n.personalTagCouldNotCreateGroup,
-                            );
-                          }
-                        },
-                  child: Text(context.l10n.commonCreate),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      barrierDismissible: false,
+      builder: (_) => PersonalTagNameDialog(
+        title: l10n.personalTagCreateGroup,
+        fieldLabel: l10n.personalTagGroupNameLabel,
+        hint: l10n.personalTagGroupNameHint,
+        confirmLabel: l10n.commonCreate,
+        emptyMessage: l10n.validationGroupNameRequired,
+        submit: (name) async {
+          if (await viewModel.createGroup(name: name)) return null;
+          return viewModel.error ?? l10n.personalTagCouldNotCreateGroup;
+        },
+      ),
     );
+    if (created == null || !context.mounted) return;
+    SnackBarUtils.showSuccess(context, l10n.personalTagGroupCreated);
   }
 
   /// Shows a dialog to move a tag to a different group.
@@ -436,92 +331,38 @@ abstract final class PersonalTagDialogs {
     BuildContext context,
     PersonalTag tag,
   ) async {
+    final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    String groupName = '';
-
-    await showDialog<void>(
+    final created = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagCreateNewGroup),
-            content: LabeledField(
-              label: context.l10n.personalTagGroupNameLabel,
-              child: TextField(
-                style: fieldTextStyle(context, enabled: !isLoading),
-                onChanged: (v) => groupName = v,
-                enabled: !isLoading,
-                decoration: InputDecoration(
-                  hintText: context.l10n.personalTagGroupNameHint,
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonCreate,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          final name = groupName.trim();
-                          if (name.isEmpty) return;
-
-                          setState(() => isLoading = true);
-                          try {
-                            final success = await viewModel.createGroup(
-                              name: name,
-                            );
-                            if (success) {
-                              final newGroup = viewModel.groups.lastOrNull;
-                              if (newGroup != null) {
-                                await viewModel.moveTagToGroup(
-                                  tag.id,
-                                  newGroup.id,
-                                );
-                              }
-                            }
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            if (success) {
-                              SnackBarUtils.showSuccess(
-                                context,
-                                context.l10n.personalTagGroupCreatedAndTagMoved,
-                              );
-                            }
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonCreate),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      barrierDismissible: false,
+      builder: (_) => PersonalTagNameDialog(
+        title: l10n.personalTagCreateNewGroup,
+        fieldLabel: l10n.personalTagGroupNameLabel,
+        hint: l10n.personalTagGroupNameHint,
+        confirmLabel: l10n.commonCreate,
+        emptyMessage: l10n.validationGroupNameRequired,
+        submit: (name) async {
+          // A retry after a failed move must not create the group again.
+          var group = viewModel.groups.where((g) => g.name == name).lastOrNull;
+          if (group == null) {
+            if (!await viewModel.createGroup(name: name)) {
+              return viewModel.error ?? l10n.personalTagCouldNotCreateGroup;
+            }
+            group = viewModel.groups.where((g) => g.name == name).lastOrNull;
+          }
+          if (group == null ||
+              !await viewModel.moveTagToGroup(tag.id, group.id)) {
+            return viewModel.error ?? l10n.personalTagCouldNotMove;
+          }
+          return null;
+        },
+      ),
+    );
+    if (created == null || !context.mounted) return;
+    SnackBarUtils.showSuccess(
+      context,
+      l10n.personalTagGroupCreatedAndTagMoved,
     );
   }
 
@@ -529,78 +370,27 @@ abstract final class PersonalTagDialogs {
     BuildContext context,
     PersonalTagGroup group,
   ) async {
+    final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    String groupName = group.name;
-
-    await showDialog<void>(
+    final renamed = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagRenameGroup),
-            content: LabeledField(
-              label: context.l10n.personalTagGroupNameLabel,
-              child: TextFormField(
-                style: fieldTextStyle(context, enabled: !isLoading),
-                initialValue: group.name,
-                onChanged: (v) => groupName = v,
-                enabled: !isLoading,
-                autofocus: true,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonSave,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          final name = groupName.trim();
-                          if (name.isEmpty) return;
-
-                          setState(() => isLoading = true);
-                          try {
-                            final updated = group.copyWith(name: name);
-                            await viewModel.updateGroup(updated);
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagGroupUpdated,
-                            );
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonSave),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      barrierDismissible: false,
+      builder: (_) => PersonalTagNameDialog(
+        title: l10n.personalTagRenameGroup,
+        fieldLabel: l10n.personalTagGroupNameLabel,
+        initialName: group.name,
+        confirmLabel: l10n.commonSave,
+        emptyMessage: l10n.validationGroupNameRequired,
+        submit: (name) async {
+          if (await viewModel.updateGroup(group.copyWith(name: name))) {
+            return null;
+          }
+          return viewModel.error ?? l10n.errorCouldNotUpdateGroup;
+        },
+      ),
     );
+    if (renamed == null || !context.mounted) return;
+    SnackBarUtils.showSuccess(context, l10n.personalTagGroupUpdated);
   }
 
   static Future<void> _showDeleteGroupDialog(

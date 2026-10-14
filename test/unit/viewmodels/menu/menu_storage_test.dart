@@ -22,6 +22,8 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 
+class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -197,6 +199,27 @@ void main() {
     test('should return empty list when no menus exist', () async {
       final userMenus = await menuStorage.loadUserMenus();
       expect(userMenus, isEmpty);
+    });
+
+    group('when Firestore fails', () {
+      late MenuStorage failing;
+
+      setUp(() {
+        final repo = _MockFirestoreRepository();
+        when(() => repo.collection(any())).thenThrow(StateError('down'));
+        failing = MenuStorage(firestoreRepository: repo);
+      });
+
+      test('loadUserMenus returns an empty list by default', () async {
+        expect(await failing.loadUserMenus(), isEmpty);
+      });
+
+      test('loadUserMenus rethrows when the caller asks to hear about it', () {
+        expect(
+          failing.loadUserMenus(rethrowErrors: true),
+          throwsA(isA<StateError>()),
+        );
+      });
     });
   });
 

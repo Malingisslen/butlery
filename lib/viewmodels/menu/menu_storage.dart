@@ -148,7 +148,9 @@ class MenuStorage {
   }
 
   /// Load all menus owned by the current user from Firestore
-  Future<List<SavedMenuInfo>> loadUserMenus() async {
+  Future<List<SavedMenuInfo>> loadUserMenus({
+    bool rethrowErrors = false,
+  }) async {
     try {
       final permissionService = ServiceLocator.get<PermissionService>();
       final userId = permissionService.currentUserId;
@@ -191,6 +193,7 @@ class MenuStorage {
       return menuInfos;
     } catch (e) {
       AppLogger.error('❌ Failed to load menus from Firestore: $e');
+      if (rethrowErrors) rethrow;
       return [];
     }
   }

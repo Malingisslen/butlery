@@ -30,7 +30,7 @@ class PantryService extends BaseService {
   Future<PantryItem> addFromIngredient(
     String userId,
     IngredientData ingredient, {
-    double quantity = 1,
+    double? quantity = 1,
     String? unit,
     PantryLocation? location,
     DateTime? expiryDate,
@@ -65,7 +65,7 @@ class PantryService extends BaseService {
   Future<PantryItem> addFromText(
     String userId,
     String rawText, {
-    double quantity = 1,
+    double? quantity = 1,
     String? unit,
     PantryLocation? location,
     DateTime? expiryDate,
@@ -355,7 +355,7 @@ class PantryService extends BaseService {
   PantryItem _buildItem({
     String? ingredientId,
     required String name,
-    required double quantity,
+    required double? quantity,
     String? unit,
     String? typicalStorage,
     PantryLocation? location,

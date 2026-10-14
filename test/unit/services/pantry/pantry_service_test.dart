@@ -284,6 +284,78 @@ void main() {
                 as PantryItem;
         expect(captured.ingredientId, isNull);
         expect(captured.ingredientName, 'XYZABC123');
+        expect(captured.quantity, 1);
+      },
+    );
+
+    test('an explicit null quantity is stored as no quantity, not 1', () async {
+      when(
+        () => mockIngredientRepository.searchIngredients(
+          'XYZABC123',
+          limit: 1,
+        ),
+      ).thenAnswer((_) async => const []);
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+
+      await service.addFromText(userId, 'XYZABC123', quantity: null);
+
+      final captured =
+          verify(
+                () => mockPantryRepository.add(userId, captureAny()),
+              ).captured.single
+              as PantryItem;
+      expect(captured.quantity, isNull);
+    });
+  });
+
+  group('PantryService.addFromIngredient', () {
+    final salt = _ingredient(id: 'salt', swedish: 'Salt');
+
+    setUp(() {
+      when(
+        () => mockPantryRepository.add(userId, any()),
+      ).thenAnswer((_) async => 'new-item-id');
+    });
+
+    Future<PantryItem> addedWith(Future<PantryItem> Function() act) async {
+      await act();
+      return verify(
+            () => mockPantryRepository.add(userId, captureAny()),
+          ).captured.single
+          as PantryItem;
+    }
+
+    test('an explicit null quantity is stored as no quantity, not 1', () async {
+      final captured = await addedWith(
+        () => service.addFromIngredient(userId, salt, quantity: null),
+      );
+      expect(captured.quantity, isNull);
+    });
+
+    test('a typed quantity is stored as typed', () async {
+      final captured = await addedWith(
+        () => service.addFromIngredient(userId, salt, quantity: 6),
+      );
+      expect(captured.quantity, 6);
+    });
+
+    test('an omitted quantity defaults to 1', () async {
+      final captured = await addedWith(
+        () => service.addFromIngredient(userId, salt),
+      );
+      expect(captured.quantity, 1);
+    });
+
+    test(
+      'a zero quantity is refused before it reaches the repository',
+      () async {
+        await expectLater(
+          service.addFromIngredient(userId, salt, quantity: 0),
+          throwsStateError,
+        );
+        verifyNever(() => mockPantryRepository.add(any(), any()));
       },
     );
   });

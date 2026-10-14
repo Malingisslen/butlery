@@ -20709,4 +20709,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentLoadFailed => 'We couldn\'t read your consents. Try again.';
+
+  @override
+  String get menuListLoadFailed => 'We could not load your saved menus.';
+
+  @override
+  String get shoppingBulkRemoveFailed =>
+      'We could not remove all the selected items.';
+
+  @override
+  String get shoppingBulkRemoveFailedKept =>
+      'Your selection is kept, so you can try again.';
+
+  @override
+  String get personalTagCouldNotMove => 'We could not move the tag.';
 }

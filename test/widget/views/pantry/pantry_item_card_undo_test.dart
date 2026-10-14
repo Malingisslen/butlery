@@ -41,9 +41,13 @@ void main() {
     addedAt: DateTime(2026, 1, 1),
   );
 
-  Future<_MockPantryViewModel> pumpAndSwipe(WidgetTester tester) async {
+  Future<_MockPantryViewModel> pumpAndSwipe(
+    WidgetTester tester, {
+    bool failing = false,
+  }) async {
     final mockVm = _MockPantryViewModel();
     when(() => mockVm.removeItem(any())).thenAnswer((_) async {});
+    when(() => mockVm.hasError).thenReturn(failing);
     when(() => mockVm.restoreItem(item)).thenAnswer((_) async {});
 
     await tester.pumpWidget(
@@ -78,6 +82,12 @@ void main() {
           'action is friction without protection (ui-conventions.md).',
     );
     verify(() => mockVm.removeItem('p_1')).called(1);
+  });
+
+  testWidgets('a failed delete offers no Ångra', (tester) async {
+    await pumpAndSwipe(tester, failing: true);
+
+    expect(find.text('Ångra'), findsNothing);
   });
 
   testWidgets('undo snackbar appears after dismissal and restores the item', (
