@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:flutter/semantics.dart';
 
 import 'package:butlery/core/exceptions/repository_exception.dart';
@@ -28,7 +29,6 @@ import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Form widget for posting new comments or replies on recipes.
 /// Handles both top-level comments and threaded replies with visual feedback.
@@ -414,14 +414,16 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               Positioned(
                 top: 0,
                 right: 0,
-                child: Semantics(
-                  label: context.l10n.a11yCommentRemoveSelectedImage,
-                  button: true,
-                  child: PressUnchanged(
-                    child: InkWell(
-                      onTap: _isBusy ? null : () => _removeImageAt(index),
-                      child: ColoredBox(
-                        color: cs.scrim.withValues(alpha: AppOpacity.onInk60),
+                child: SizedBox.square(
+                  dimension: AppDimensions.minTouchTarget,
+                  child: TappableWrapper(
+                    semanticLabel: context.l10n.a11yCommentRemoveSelectedImage,
+                    enabled: !_isBusy,
+                    onTap: () => _removeImageAt(index),
+                    child: ColoredBox(
+                      color: cs.scrim.withValues(alpha: AppOpacity.onInk60),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.space4),
                         child: ButleryIcon(
                           ButleryIcons.x,
                           size: AppDimensions.iconSizeS,

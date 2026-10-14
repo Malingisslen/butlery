@@ -11,7 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
-import 'package:butlery/widgets/social/report_reason_labels.dart';
+import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -64,10 +64,10 @@ class _AppealCard extends StatelessWidget {
     final type = appeal.contentType;
     final reason = appeal.reason;
     final meta = [
-      if (type != null) type.wireName.toUpperCase(),
+      if (type != null) moderatorContentTypeLabel(l10n, type).toUpperCase(),
       if (appeal.contentId != null) appeal.contentId!,
       if (reason != null)
-        '${l10n.moderatorReasonLabel}: ${reportReasonDisplay(l10n, reason)}',
+        '${l10n.moderatorReasonLabel}: ${moderatorReasonLabel(l10n, reason)}',
     ].join(' · ');
     final decidedAt = appeal.decidedAt;
     final createdAt = appeal.createdAt;

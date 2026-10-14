@@ -1,6 +1,5 @@
 // lib/views/recipe_detail/recipe_detail_actions.dart
 
-import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -183,7 +182,10 @@ class RecipeDetailActions {
 
   /// Edit recipe
   Future<void> editRecipe(BuildContext context) async {
-    await RecipeManagementHandler.editRecipe(context);
+    await RecipeManagementHandler.editRecipe(
+      context,
+      onRecipeUpdated: initializeScaling,
+    );
   }
 
   /// Show social sharing dialog
@@ -301,24 +303,6 @@ class RecipeDetailActions {
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showFailure(context, what: context.l10n.errorInvalidLink);
-    }
-  }
-
-  /// Format comment time for display
-  String formatCommentTime(DateTime timestamp) {
-    final now = clock.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'nu';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return '${timestamp.day}/${timestamp.month}';
     }
   }
 

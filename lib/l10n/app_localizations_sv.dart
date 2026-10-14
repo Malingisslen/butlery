@@ -1180,13 +1180,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeAnalyzingA11y => 'Ingredienser analyseras';
 
   @override
-  String get recipeAllergensUnassessed => 'Allergener ej bedömda';
-
-  @override
-  String get recipeAllergensUnassessedA11y =>
-      'Allergener är inte bedömda för det här receptet';
-
-  @override
   String get recipeSearchHint => 'Sök bland recepten …';
 
   @override
@@ -2528,7 +2521,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get tagResultNoAllergens => 'Inga allergener att visa';
+  String get tagResultNoAllergens => 'Inga av dina allergener hittades';
 
   @override
   String get tagResultOutdated => 'Taggarna kan uppdateras';
@@ -20476,6 +20469,22 @@ class AppLocalizationsSv extends AppLocalizations {
   String get allergenUncheckedA11y => 'Allergener ej kontrollerade';
 
   @override
+  String shareAllergensContains(String names) {
+    return 'Innehåller allergener: $names';
+  }
+
+  @override
+  String get recipeSaveNeedsTitle => 'Skriv en titel för att kunna spara.';
+
+  @override
+  String get recipeSaveNeedsIngredient =>
+      'Lägg till minst en ingrediens för att kunna spara.';
+
+  @override
+  String get recipeSaveNeedsInstruction =>
+      'Lägg till minst ett steg för att kunna spara.';
+
+  @override
   String get friendsSocialDisabled =>
       'Sociala funktioner är tillfälligt avstängda.';
 
@@ -20539,4 +20548,12 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get chatAddMembersEmptyBody =>
       'Alla dina vänner är redan med, eller så har du inga vänner än. Hitta vänner under Vänner.';
+
+  @override
+  String get mfaStatusLoadFailed =>
+      'Vi kunde inte läsa om tvåstegsverifiering är på. Försök igen.';
+
+  @override
+  String get consentLoadFailed =>
+      'Vi kunde inte läsa dina samtycken. Försök igen.';
 }

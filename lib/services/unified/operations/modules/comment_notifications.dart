@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
 
 /// Focused module for comment notification system
 /// This module handles ONLY comment-related notifications:
@@ -80,12 +81,11 @@ class CommentNotifications {
       operationName:
           'Send reply notification to ${parentComment.authorDisplayName}',
       targetUserIds: [parentComment.authorId],
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.commentReply,
       variables: {
         'replierName': reply.authorDisplayName,
         'recipeName': recipe.title,
         'replyPreview': _truncateComment(reply.text),
-        'originalCommentPreview': _truncateComment(parentComment.text),
       },
       additionalData: {
         'recipeId': recipe.id,
@@ -127,7 +127,7 @@ class CommentNotifications {
       notificationService: notificationService,
       operationName: 'Send mention notifications',
       targetUserIds: targetUserIds,
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.commentMention,
       variables: {
         'mentionerName': comment.authorDisplayName,
         'recipeName': recipe.title,
@@ -161,7 +161,7 @@ class CommentNotifications {
       notificationService: notificationService,
       operationName: 'Send like notification to ${comment.authorDisplayName}',
       targetUserIds: [comment.authorId],
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.commentLike,
       variables: {
         'likerName': likerDisplayName,
         'recipeName': recipe.title,

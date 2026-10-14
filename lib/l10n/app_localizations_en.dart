@@ -1204,13 +1204,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeAnalyzingA11y => 'Ingredients being analysed';
 
   @override
-  String get recipeAllergensUnassessed => 'Allergens not assessed';
-
-  @override
-  String get recipeAllergensUnassessedA11y =>
-      'Allergens have not been assessed for this recipe';
-
-  @override
   String get recipeSearchHint => 'Search recipes …';
 
   @override
@@ -2560,7 +2553,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tagResultNoAllergens => 'No allergens to display';
+  String get tagResultNoAllergens => 'None of your allergens were found';
 
   @override
   String get tagResultOutdated => 'Tags can be updated';
@@ -20631,6 +20624,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allergenUncheckedA11y => 'Allergens not checked';
 
   @override
+  String shareAllergensContains(String names) {
+    return 'Contains allergens: $names';
+  }
+
+  @override
+  String get recipeSaveNeedsTitle => 'Add a title to save.';
+
+  @override
+  String get recipeSaveNeedsIngredient =>
+      'Add at least one ingredient to save.';
+
+  @override
+  String get recipeSaveNeedsInstruction => 'Add at least one step to save.';
+
+  @override
   String get friendsSocialDisabled =>
       'Social features are temporarily switched off.';
 
@@ -20694,4 +20702,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatAddMembersEmptyBody =>
       'All your friends are already in, or you have no friends yet. Find friends under Friends.';
+
+  @override
+  String get mfaStatusLoadFailed =>
+      'We couldn\'t check whether two-step verification is on. Try again.';
+
+  @override
+  String get consentLoadFailed => 'We couldn\'t read your consents. Try again.';
 }

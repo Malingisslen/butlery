@@ -22,12 +22,14 @@ class AdminMetricInfoButton extends StatelessWidget {
     return IconButton(
       icon: const ButleryIcon(ButleryIcons.info),
       iconSize: 18,
-      visualDensity: VisualDensity.compact,
       color: cs.outline,
       tooltip: context.l10n.adminMetricInfo,
       onPressed: () => _show(context),
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
+      constraints: const BoxConstraints(
+        minWidth: AppDimensions.minTouchTarget,
+        minHeight: AppDimensions.minTouchTarget,
+      ),
     );
   }
 

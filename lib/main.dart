@@ -174,11 +174,10 @@ Future<void> main() async {
         runApp(
           ErrorApp(
             kDebugMode
-                ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
+                ? '$e\n\n$stackTrace'
                 // The reason's first line, so a tester's screenshot says what
                 // stopped the start.
-                : 'Application failed to initialize. Please restart.\n\n'
-                      '${e.runtimeType}: ${_firstLine(e)}',
+                : '${e.runtimeType}: ${_firstLine(e)}',
             onRestart: main,
           ),
         );

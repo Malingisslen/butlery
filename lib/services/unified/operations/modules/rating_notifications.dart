@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
 
 /// Focused module for rating notifications
 /// This module handles ONLY rating-related notifications:
@@ -32,14 +33,12 @@ class RatingNotifications {
         notificationService: notificationService,
         operationName: 'Send rating notification to recipe owner',
         targetUserIds: [ownerId],
-        strategy: NotificationStrategy
-            .recipeComment, // Reuse comment strategy for ratings
+        strategy: RecipeActivityStrategies.ratingNotice,
         variables: {
-          'commenterName': raterName,
           'recipeName': recipe.core.title,
-          'commentPreview': review?.isNotEmpty == true && review != null
-              ? (review.length > 50 ? '${review.substring(0, 50)}...' : review)
-              : 'Betygsatte ditt recept $stars',
+          'message': review?.isNotEmpty == true && review != null
+              ? '$raterName: ${_truncateReview(review)}'
+              : '$raterName betygsatte ditt recept $stars',
         },
         additionalData: {
           'recipeId': recipe.id,
@@ -73,11 +72,10 @@ class RatingNotifications {
       notificationService: notificationService,
       operationName: 'Send rating milestone notification: ${milestone['type']}',
       targetUserIds: [ownerId],
-      strategy: NotificationStrategy.recipeComment, // Reuse comment strategy
+      strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
-        'commenterName': 'Butlery',
         'recipeName': recipe.core.title,
-        'commentPreview': milestone['message'] as String,
+        'message': milestone['message'] as String,
       },
       additionalData: {
         'recipeId': recipe.id,
@@ -117,11 +115,10 @@ class RatingNotifications {
       notificationService: notificationService,
       operationName: 'Send $period rating summary notification',
       targetUserIds: [userId],
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
-        'commenterName': 'Butlery',
         'recipeName': topRecipe['recipeName'] as String,
-        'commentPreview': summary,
+        'message': summary,
       },
       additionalData: {
         'action': 'rating_summary',
@@ -148,18 +145,17 @@ class RatingNotifications {
 
     final stars = '★' * rating.round();
     final message = review?.isNotEmpty == true
-        ? 'Fick sin första recension från $raterName: "${_truncateReview(review!)}"'
-        : 'Fick sitt första betyg från $raterName: $stars';
+        ? '$raterName skrev din första recension: ${_truncateReview(review!)}'
+        : '$raterName gav ditt recept dess första betyg: $stars';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
       operationName: 'Send first rating notification',
       targetUserIds: [ownerId],
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
-        'commenterName': 'Butlery',
         'recipeName': recipe.core.title,
-        'commentPreview': 'Grattis! Ditt recept "$message"',
+        'message': message,
       },
       additionalData: {
         'recipeId': recipe.id,
@@ -183,22 +179,22 @@ class RatingNotifications {
     if (totalRatings == 5) {
       return {
         'type': 'first_five_ratings',
-        'message': 'Ditt recept har fått 5 betyg!',
+        'message': 'Ditt recept har fått 5 betyg.',
       };
     } else if (totalRatings == 10) {
       return {
         'type': 'ten_ratings',
-        'message': 'Fantastiskt! Ditt recept har fått 10 betyg!',
+        'message': 'Ditt recept har fått 10 betyg.',
       };
     } else if (totalRatings == 25) {
       return {
         'type': 'twenty_five_ratings',
-        'message': 'Imponerande! Ditt recept har fått 25 betyg!',
+        'message': 'Ditt recept har fått 25 betyg.',
       };
     } else if (totalRatings == 50) {
       return {
         'type': 'fifty_ratings',
-        'message': 'Otroligt! Ditt recept har fått 50 betyg!',
+        'message': 'Ditt recept har fått 50 betyg.',
       };
     }
 
@@ -208,13 +204,13 @@ class RatingNotifications {
         return {
           'type': 'excellent_rating',
           'message':
-              'Enastående! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+              'Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg.',
         };
       } else if (averageRating >= 4.5) {
         return {
           'type': 'great_rating',
           'message':
-              'Fantastiskt! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+              'Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg.',
         };
       }
     }
@@ -321,18 +317,17 @@ class RatingNotifications {
         ratingCount.toDouble();
 
     final message = ratingCount == 2
-        ? 'Ditt recept fick 2 nya betyg!'
-        : 'Ditt recept fick $ratingCount nya betyg! Genomsnitt: ${averageRating.toStringAsFixed(1)} ★';
+        ? 'Ditt recept fick 2 nya betyg.'
+        : 'Ditt recept fick $ratingCount nya betyg. Genomsnitt: ${averageRating.toStringAsFixed(1)} ★';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
       operationName: 'Send batch rating notification for $ratingCount ratings',
       targetUserIds: [userId],
-      strategy: NotificationStrategy.recipeComment,
+      strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
-        'commenterName': 'Butlery',
         'recipeName': recipe.core.title,
-        'commentPreview': message,
+        'message': message,
       },
       additionalData: {
         'recipeId': recipe.id,

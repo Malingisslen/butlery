@@ -33,6 +33,7 @@ class CookSnapGallery extends StatelessWidget {
     required this.onReport,
     required this.currentUserId,
     this.error,
+    this.onRetry,
   });
 
   final List<CookSnap> snaps;
@@ -43,10 +44,20 @@ class CookSnapGallery extends StatelessWidget {
   final void Function(CookSnap snap) onReport;
   final String? currentUserId;
   final String? error;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // Thumbnail, a gap and two label lines (author, time); the labels grow
+    // with the text size, so the row's height has to as well.
+    final labelStyle = AppTextStyles.labelSmall;
+    final labelLine =
+        (MediaQuery.textScalerOf(context).scale(labelStyle.fontSize!) *
+                labelStyle.height!)
+            .ceilToDouble();
+    final galleryHeight =
+        _SnapThumbnail.imageSize + AppDimensions.space4 + 2 * labelLine;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,7 +112,7 @@ class CookSnapGallery extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space24,
             ),
-            child: StateWidget.error(message: error!),
+            child: StateWidget.error(message: error!, onAction: onRetry),
           )
         else if (snaps.isEmpty)
           Padding(
@@ -117,7 +128,7 @@ class CookSnapGallery extends StatelessWidget {
           )
         else
           SizedBox(
-            height: 140,
+            height: galleryHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
@@ -152,6 +163,8 @@ class _SnapThumbnail extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onReport;
 
+  static const double imageSize = 100;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -170,13 +183,13 @@ class _SnapThumbnail extends StatelessWidget {
         ),
         onLongPress: () => _showOptions(context),
         child: SizedBox(
-          width: 100,
+          width: imageSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 100,
-                height: 100,
+                width: imageSize,
+                height: imageSize,
                 child: Stack(
                   children: [
                     Positioned.fill(
@@ -205,7 +218,7 @@ class _SnapThumbnail extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 actorName,
                 style: AppTextStyles.labelSmall.copyWith(

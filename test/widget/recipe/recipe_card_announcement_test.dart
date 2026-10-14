@@ -74,8 +74,8 @@ void main() {
     expect(lines.where((l) => l.contains('85%')), [
       'Matchar 85% av dina ingredienser',
     ]);
-    expect(lines.where((l) => l.contains('bedömda')), [
-      'Allergener är inte bedömda för det här receptet',
+    expect(lines.where((l) => l.contains('kontrollerade')), [
+      'Allergener ej kontrollerade',
     ]);
     expect(lines.where((l) => l.contains('Köttbullar')), ['Köttbullar']);
     expectNothingAnnouncedTwice(tester, card);

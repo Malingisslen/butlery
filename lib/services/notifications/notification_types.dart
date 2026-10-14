@@ -133,8 +133,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Nytt recept delat',
       'title_en': 'Recipe shared with you',
-      'body_sv': '{senderName} delade "{recipeName}" med dig',
-      'body_en': '{senderName} shared "{recipeName}" with you',
+      'body_sv': '{senderName} delade ”{recipeName}” med dig',
+      'body_en': '{senderName} shared “{recipeName}” with you',
     },
   );
 
@@ -148,8 +148,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Nytt matfoto',
       'title_en': 'New cooking photo',
-      'body_sv': '{senderName} lagade "{recipeName}"',
-      'body_en': '{senderName} cooked "{recipeName}"',
+      'body_sv': '{senderName} lagade ”{recipeName}”',
+      'body_en': '{senderName} cooked “{recipeName}”',
     },
   );
 
@@ -161,10 +161,10 @@ class NotificationStrategy {
     batchWindow: Duration(minutes: 5),
     maxBatchSize: 5,
     localization: {
-      'title_sv': 'Nya kommentarer',
-      'title_en': 'New comments',
-      'body_sv': '{count} nya kommentarer på dina recept',
-      'body_en': '{count} new comments on your recipes',
+      'title_sv': 'Ny kommentar',
+      'title_en': 'New comment',
+      'body_sv': '{commenterName} kommenterade {recipeName}: {commentPreview}',
+      'body_en': '{commenterName} commented on {recipeName}: {commentPreview}',
     },
   );
 
@@ -176,8 +176,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Samarbetsinbjudan',
       'title_en': 'Collaboration invite',
-      'body_sv': '{senderName} bjuder in dig att redigera "{resourceName}"',
-      'body_en': '{senderName} invited you to edit "{resourceName}"',
+      'body_sv': '{senderName} bjuder in dig att redigera ”{resourceName}”',
+      'body_en': '{senderName} invited you to edit “{resourceName}”',
     },
   );
 
@@ -260,8 +260,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Samarbete aktiverat',
       'title_en': 'Collaboration enabled',
-      'body_sv': '{enablerName} aktiverade samarbete för "{recipeTitle}"',
-      'body_en': '{enablerName} enabled collaboration for "{recipeTitle}"',
+      'body_sv': '{enablerName} aktiverade samarbete för ”{recipeTitle}”',
+      'body_en': '{enablerName} enabled collaboration for “{recipeTitle}”',
     },
   );
 
@@ -273,8 +273,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Samarbete inaktiverat',
       'title_en': 'Collaboration disabled',
-      'body_sv': '{disablerName} inaktiverade samarbete för "{recipeTitle}"',
-      'body_en': '{disablerName} disabled collaboration for "{recipeTitle}"',
+      'body_sv': '{disablerName} inaktiverade samarbete för ”{recipeTitle}”',
+      'body_en': '{disablerName} disabled collaboration for “{recipeTitle}”',
     },
   );
 
@@ -286,8 +286,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Tillagd i samarbete',
       'title_en': 'Added to collaboration',
-      'body_sv': '{adderName} la till dig i "{recipeTitle}"',
-      'body_en': '{adderName} added you to "{recipeTitle}"',
+      'body_sv': '{adderName} la till dig i ”{recipeTitle}”',
+      'body_en': '{adderName} added you to “{recipeTitle}”',
     },
   );
 
@@ -299,8 +299,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Borttagen från samarbete',
       'title_en': 'Removed from collaboration',
-      'body_sv': '{removerName} tog bort dig från "{recipeTitle}"',
-      'body_en': '{removerName} removed you from "{recipeTitle}"',
+      'body_sv': '{removerName} tog bort dig från ”{recipeTitle}”',
+      'body_en': '{removerName} removed you from “{recipeTitle}”',
     },
   );
 
@@ -351,8 +351,8 @@ class NotificationStrategy {
     localization: {
       'title_sv': 'Tagg delad med dig',
       'title_en': 'Tag shared with you',
-      'body_sv': '{senderName} delade taggen "{tagName}" med dig',
-      'body_en': '{senderName} shared the tag "{tagName}" with you',
+      'body_sv': '{senderName} delade taggen ”{tagName}” med dig',
+      'body_en': '{senderName} shared the tag “{tagName}” with you',
     },
   );
 }

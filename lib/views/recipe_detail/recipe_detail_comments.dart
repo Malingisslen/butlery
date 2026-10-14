@@ -22,7 +22,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -484,6 +483,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       context: context,
       comment: comment,
       replies: replies,
+      repliesFor: vm.getReplies,
       commentBuilder: (c, depth) {
         final isOwn = currentUserId != null && c.authorId == currentUserId;
         return CommentItemWidgets.buildCommentItem(
@@ -512,36 +512,17 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Future<void> _deleteComment(
-    RecipeComment comment,
-    SocialRecipeViewModel vm,
-  ) async {
-    final confirmed = await CommonDialogActions.showCommentDeleteConfirmation(
-      context: context,
-      commentText: comment.text,
-    );
-    if (confirmed != true || !mounted) return;
-
-    // BUT-943: 7-second snackbar undo. Defer the actual service call until
-    // the snackbar closes — undo tap short-circuits, timeout commits the
-    // delete. Comment stays visible during the window (no optimistic
-    // removal), which doubles as a "deleting…" indicator without extra UI.
-    ScaffoldMessenger.of(context).clearSnackBars();
-    var undone = false;
-    final controller = SnackBarUtils.showUndo(
+  /// Own comment: class 1 of BUT-954, so no confirm dialog. The delete is
+  /// committed when the undo snackbar closes, also when the user has left the
+  /// page by then, which is why nothing here waits on `mounted`.
+  void _deleteComment(RecipeComment comment, SocialRecipeViewModel vm) {
+    final recipeId = widget.recipe.id;
+    SnackBarUtils.showUndoDeferred(
       context,
       context.l10n.commentDeletedUndoMessage,
-      onUndo: () => undone = true,
+      onUndo: () {},
+      onCommit: () => vm.deleteComment(recipeId, comment.id),
     );
-    await controller?.closed;
-    if (undone || !mounted) return;
-
-    try {
-      await vm.deleteComment(widget.recipe.id, comment.id);
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage(context.l10n.commentDeleteError, isError: true);
-    }
   }
 
   Future<void> _editComment(

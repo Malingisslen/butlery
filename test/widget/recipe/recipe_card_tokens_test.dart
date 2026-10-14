@@ -183,7 +183,7 @@ void main() {
           ),
         );
         final secondary = AppModeColors.textSecondaryOnRaised(theme.brightness);
-        for (final text in ['Allergener ej bedömda']) {
+        for (final text in ['Ej kontrollerat']) {
           expect(
             decorationAround(tester, find.text(text)).color,
             cs.surfaceContainerHighest,

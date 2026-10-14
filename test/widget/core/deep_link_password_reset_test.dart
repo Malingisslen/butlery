@@ -9,8 +9,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as prod_locator;
 import 'package:butlery/models/auth/password_reset_link.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
+
+import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/factories/mock_factory.dart';
 
 String _resetLink(String code) =>
     'https://${PasswordResetLink.linkDomain}/__/auth/links?link='
@@ -19,12 +26,21 @@ String _resetLink(String code) =>
 void main() {
   late List<RouteSettings> pushed;
 
-  setUp(() {
+  setUp(() async {
+    await TestServiceLocator.initialize();
+    prod_locator.ServiceLocator.initialize(DIContainer());
+    TestServiceLocator.registerMock<AuthRepository>(
+      MockFactory.createAuthRepository(isAuthenticated: false),
+    );
     DeepLinkHandler().reset();
     pushed = [];
   });
 
-  tearDown(() => DeepLinkHandler().reset());
+  tearDown(() async {
+    DeepLinkHandler().reset();
+    await TestServiceLocator.reset();
+    prod_locator.ServiceLocator.reset();
+  });
 
   Future<BuildContext> pumpApp(WidgetTester tester) async {
     await tester.pumpWidget(
@@ -113,8 +129,6 @@ void main() {
   testWidgets('signed out, a reset link opens without the sign-in check', (
     tester,
   ) async {
-    // No AuthRepository is registered, so anything that reaches the
-    // sign-in check fails there and opens nothing.
     final context = await pumpApp(tester);
     await DeepLinkHandler().processDeepLink(_resetLink('abc'), context);
     await tester.pumpAndSettle();
@@ -132,6 +146,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(pushed, isEmpty);
+    expect(DeepLinkHandler().debugInfo['has_pending_link'], isTrue);
   });
 
   group('a link arriving while the app is open', () {

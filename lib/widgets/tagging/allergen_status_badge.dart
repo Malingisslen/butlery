@@ -156,3 +156,31 @@ class AllergenStatusBadge extends StatelessWidget {
     return spaced[0].toUpperCase() + spaced.substring(1);
   }
 }
+
+/// "Ej kontrollerat": the recipe's allergens have not been settled, so the
+/// absence of a badge must not be read as "safe". One badge for the whole
+/// recipe, never one grey mark per allergen.
+class AllergenUncheckedMark extends StatelessWidget {
+  final bool compact;
+
+  const AllergenUncheckedMark({super.key, this.compact = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    if (compact) {
+      return TagStatusBadgeCompact(
+        tone: TagStatusTone.neutral,
+        icon: ButleryIcons.info,
+        semanticLabel: l10n.allergenUncheckedA11y,
+        label: l10n.allergenUncheckedLabel,
+      );
+    }
+    return TagStatusBadge(
+      tone: TagStatusTone.neutral,
+      icon: ButleryIcons.info,
+      semanticLabel: l10n.allergenUncheckedA11y,
+      label: l10n.allergenUncheckedLabel,
+    );
+  }
+}
