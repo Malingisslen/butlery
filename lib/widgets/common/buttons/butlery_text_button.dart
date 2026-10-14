@@ -19,6 +19,13 @@ enum ButleryTextButtonTone {
 
   /// text.danger: the action removes something.
   danger,
+
+  /// text.warning: the action withdraws something that is still pending,
+  /// such as cancelling a sent request.
+  warning,
+
+  /// onErrorContainer: the action sits on an error banner and must read on it.
+  onErrorBanner,
 }
 
 class ButleryTextButton extends StatelessWidget {
@@ -29,6 +36,7 @@ class ButleryTextButton extends StatelessWidget {
     this.tone = ButleryTextButtonTone.standard,
     this.busy = false,
     this.busyLabel,
+    this.semanticLabel,
     super.key,
   });
 
@@ -44,6 +52,11 @@ class ButleryTextButton extends StatelessWidget {
   final bool busy;
   final String? busyLabel;
 
+  /// What a screen reader says when the action needs more than the visible
+  /// words ("Avbryt förfrågan" on a button that reads "Avbryt"). Name the
+  /// action; the visible text is left out of the announcement.
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -51,8 +64,12 @@ class ButleryTextButton extends StatelessWidget {
       ButleryTextButtonTone.standard => null,
       ButleryTextButtonTone.link => context.modeColors.textLink,
       ButleryTextButtonTone.danger => cs.error,
+      ButleryTextButtonTone.warning => AppModeColors.textWarning(
+        cs.brightness,
+      ),
+      ButleryTextButtonTone.onErrorBanner => cs.onErrorContainer,
     };
-    return ActionButtons.textButton(
+    final button = ActionButtons.textButton(
       context,
       label: label,
       onPressed: onPressed,
@@ -62,6 +79,16 @@ class ButleryTextButton extends StatelessWidget {
       style: colour == null
           ? null
           : TextButton.styleFrom(foregroundColor: colour),
+    );
+    final name = semanticLabel;
+    if (name == null || busy) return button;
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: name,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: button,
     );
   }
 }

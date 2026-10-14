@@ -16,6 +16,9 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
+/// The edge a row can carry.
+enum ButleryItemRowEdge { none, selected, error }
+
 class ButleryItemRow extends StatelessWidget {
   const ButleryItemRow({
     required this.title,
@@ -24,6 +27,10 @@ class ButleryItemRow extends StatelessWidget {
     this.leadingIcon,
     this.trailing,
     this.onTap,
+    this.onLongPress,
+    this.subtitleWidget,
+    this.edge = ButleryItemRowEdge.none,
+    this.excludeTitleSemantics = false,
     this.selected = false,
     this.showChevron = false,
     this.showCheck = false,
@@ -34,6 +41,10 @@ class ButleryItemRow extends StatelessWidget {
   }) : assert(
          leading == null || leadingIcon == null,
          'Give a leading widget or a leading glyph, not both.',
+       ),
+       assert(
+         subtitle == null || subtitleWidget == null,
+         'Give a subtitle string or a subtitle widget, not both.',
        );
 
   final String title;
@@ -48,8 +59,23 @@ class ButleryItemRow extends StatelessWidget {
   /// A button or a count at the end, before the chevron or the check.
   final Widget? trailing;
 
-  /// Null makes the row read-only.
+  /// Null makes the row read-only unless [onLongPress] is set.
   final VoidCallback? onTap;
+
+  /// The shortcut into multi-select on a selectable list (BUT-948).
+  final VoidCallback? onLongPress;
+
+  /// A subtitle that is more than one string, such as a failure line in the
+  /// error colour. Replaces [subtitle].
+  final Widget? subtitleWidget;
+
+  /// An edge around the row: the chosen row in a multi-select, or the
+  /// row whose action failed. An error edge replaces the selected one.
+  final ButleryItemRowEdge edge;
+
+  /// Leaves the title out of the announcement when something else on the
+  /// row already carries the name, so it is not read twice.
+  final bool excludeTitleSemantics;
 
   /// The row is the chosen one: surface.selected behind it, the title in bold
   /// ink, read out as selected.
@@ -74,7 +100,7 @@ class ButleryItemRow extends StatelessWidget {
     final titleColour = enabled
         ? cs.onSurface
         : AppModeColors.textDisabled(cs.brightness);
-    final body = ConstrainedBox(
+    final content = ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: AppDimensions.minTouchTarget,
       ),
@@ -98,19 +124,24 @@ class ButleryItemRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    maxLines: titleMaxLines,
-                    overflow: titleMaxLines == null
-                        ? null
-                        : TextOverflow.ellipsis,
-                    style:
-                        (selected
-                                ? AppTextStyles.bodyBold
-                                : AppTextStyles.bodyMedium)
-                            .copyWith(color: titleColour),
+                  ExcludeSemantics(
+                    excluding: excludeTitleSemantics,
+                    child: Text(
+                      title,
+                      maxLines: titleMaxLines,
+                      overflow: titleMaxLines == null
+                          ? null
+                          : TextOverflow.ellipsis,
+                      style:
+                          (selected
+                                  ? AppTextStyles.bodyBold
+                                  : AppTextStyles.bodyMedium)
+                              .copyWith(color: titleColour),
+                    ),
                   ),
-                  if (subtitle != null)
+                  if (subtitleWidget != null)
+                    subtitleWidget!
+                  else if (subtitle != null)
                     Text(
                       subtitle!,
                       style: AppTextStyles.captionBase.copyWith(
@@ -138,7 +169,25 @@ class ButleryItemRow extends StatelessWidget {
       ),
     );
 
-    if (onTap == null) {
+    final edgeColour = switch (edge) {
+      ButleryItemRowEdge.none => null,
+      ButleryItemRowEdge.selected => cs.onSurface,
+      ButleryItemRowEdge.error => cs.error,
+    };
+    final body = edgeColour == null
+        ? content
+        : DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: edgeColour,
+                width: AppDimensions.borderWidthOutlinedEdge,
+              ),
+            ),
+            child: content,
+          );
+
+    if (onTap == null && onLongPress == null) {
       return Semantics(
         container: true,
         selected: selected ? true : null,
@@ -154,7 +203,11 @@ class ButleryItemRow extends StatelessWidget {
         color: selected ? cs.surfaceContainerHighest : Colors.transparent,
         child: PressFill(
           surface: PressSurface.base,
-          child: InkWell(onTap: enabled ? onTap : null, child: body),
+          child: InkWell(
+            onTap: enabled ? onTap : null,
+            onLongPress: enabled ? onLongPress : null,
+            child: body,
+          ),
         ),
       ),
     );
