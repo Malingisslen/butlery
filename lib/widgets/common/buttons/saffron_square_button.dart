@@ -38,6 +38,7 @@ class SaffronSquareButton extends StatelessWidget {
       label: semanticLabel,
       button: true,
       enabled: onPressed != null,
+      onTap: onPressed,
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: AppDimensions.minTouchTarget,

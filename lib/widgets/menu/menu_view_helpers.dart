@@ -1,18 +1,11 @@
 // lib/widgets/menu/menu_view_helpers.dart
 
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Helper utilities for the Veckomeny (weekly menu) view.
 class MenuViewHelpers {
-  /// Meal order for sorting menu sections.
-  static const List<String> mealOrder = [
-    'Frukost',
-    'Lunch',
-    'Middag',
-    'Dessert',
-    'Mellanmal',
-    'Fika',
-  ];
+  static const List<String> mealOrder = MealTypes.all;
 
   /// Sorts menu sections in logical meal order (breakfast -> lunch -> dinner).
   static List<MapEntry<String, List<Recipe>>> getSortedMenuEntries(

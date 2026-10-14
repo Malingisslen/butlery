@@ -797,7 +797,7 @@ void main() {
     ).called(1);
   });
 
-  testWidgets('an untouched amount still saves 1', (tester) async {
+  testWidgets('an untouched amount saves no amount, not 1', (tester) async {
     await tester.pumpWidget(buildSheet());
 
     await tester.enterText(
@@ -812,7 +812,7 @@ void main() {
     verify(
       () => vm.addItemFromText(
         'Ägg',
-        quantity: 1,
+        quantity: null,
         unit: any(named: 'unit'),
         location: any(named: 'location'),
         expiryDate: any(named: 'expiryDate'),
@@ -942,6 +942,28 @@ void main() {
           'an unreadable amount on EDIT means the amount the item already had, '
           'not the add-mode default of 1',
     );
+  });
+
+  testWidgets('saving an item without an amount keeps it without one', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_44',
+      ingredientName: 'Salt',
+      quantity: null,
+      unit: 'st',
+      location: PantryLocation.pantry,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    await tester.ensureVisible(find.text('Spara'));
+    await tester.tap(find.text('Spara'));
+    await tester.pump();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(saved.quantity, isNull);
   });
 
   // The sibling the case above cannot be without. On its own, "saved 250" is

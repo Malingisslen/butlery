@@ -376,6 +376,20 @@ void main() {
       },
     );
 
+    test(
+      'rethrows a failed load when the caller asks to hear about it',
+      () async {
+        when(
+          () => mockSocialMenuOps.getMenusSharedWithMe(),
+        ).thenAnswer((_) => Future<List<Map<String, dynamic>>>.error('down'));
+
+        await expectLater(
+          socialManager.loadImportedMenus(rethrowErrors: true),
+          throwsA('down'),
+        );
+      },
+    );
+
     test('should load full imported menu data for a shared menu', () async {
       final menuStructure = createTestMenu();
       when(

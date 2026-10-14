@@ -293,4 +293,26 @@ void main() {
       expect(find.text('Rösten kunde inte sparas'), findsOneWidget);
     });
   });
+
+  testWidgets('the suggest-alternative button is at least 48 dp each way', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: UnconstrainedBox(
+          child: MenuStartVoteButton(
+            voting: voting,
+            menu: _FakeMenu(canEditMenu: true),
+            recipe: RecipeFactory.build(id: 'r1'),
+            category: 'Middag',
+            slotIndex: 0,
+          ),
+        ),
+      ),
+    );
+
+    final size = tester.getSize(find.byType(MenuStartVoteButton));
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
+  });
 }

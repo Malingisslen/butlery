@@ -97,12 +97,12 @@ void main() {
     await pump(tester, [_tag('a', 'Aktiv')]);
     selection.enterSelection('x');
     await tester.pump();
-    expect(find.byIcon(ButleryIcons.square), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circle), findsOneWidget);
 
     await tester.tap(find.text('Aktiv'));
     await tester.pump();
 
     expect(selection.isSelected('a'), isTrue);
-    expect(find.byIcon(ButleryIcons.checkSquare), findsOneWidget);
+    expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
   });
 }

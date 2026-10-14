@@ -16918,5 +16918,21 @@
   "consentLoadFailed": "Vi kunde inte läsa dina samtycken. Försök igen.",
   "@consentLoadFailed": {
     "description": "Spår F: shown instead of the consent switches when reading the stored consent fails, so nothing can be saved from defaults."
+  },
+  "menuListLoadFailed": "Vi kunde inte hämta dina sparade menyer.",
+  "@menuListLoadFailed": {
+    "description": "Spår D: shown in the saved-menus sheet when loading fails, instead of the empty state."
+  },
+  "shoppingBulkRemoveFailed": "Vi kunde inte ta bort alla markerade varor.",
+  "@shoppingBulkRemoveFailed": {
+    "description": "Spår D: failure, what happened, when removing the selected shopping items fails."
+  },
+  "shoppingBulkRemoveFailedKept": "Markeringen finns kvar, så du kan försöka igen.",
+  "@shoppingBulkRemoveFailedKept": {
+    "description": "Spår D: failure, what is kept."
+  },
+  "personalTagCouldNotMove": "Vi kunde inte flytta taggen.",
+  "@personalTagCouldNotMove": {
+    "description": "Spår D: failure when moving a tag to a group fails."
   }
 }

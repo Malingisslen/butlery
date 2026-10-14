@@ -31570,6 +31570,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vi kunde inte läsa dina samtycken. Försök igen.'**
   String get consentLoadFailed;
+
+  /// Spår D: shown in the saved-menus sheet when loading fails, instead of the empty state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte hämta dina sparade menyer.'**
+  String get menuListLoadFailed;
+
+  /// Spår D: failure, what happened, when removing the selected shopping items fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte ta bort alla markerade varor.'**
+  String get shoppingBulkRemoveFailed;
+
+  /// Spår D: failure, what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markeringen finns kvar, så du kan försöka igen.'**
+  String get shoppingBulkRemoveFailedKept;
+
+  /// Spår D: failure when moving a tag to a group fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte flytta taggen.'**
+  String get personalTagCouldNotMove;
 }
 
 class _AppLocalizationsDelegate

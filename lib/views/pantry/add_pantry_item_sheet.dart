@@ -4,6 +4,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -183,21 +184,11 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     if (name.isEmpty) return;
     if (_saveFailed) setState(() => _saveFailed = false);
 
-    // BUT-1910: the field had a hand-rolled `replaceAll(',', '.')` and no input
-    // formatter, so "1,5,5" was typeable and parsed to nothing — falling back
-    // to 1.0 on an amount the user had plainly written. Measured, because the
-    // ticket claimed more than was true: ",5" and "0,5" both DID read as 0.5
-    // through the old path.
-    //
-    // The fallback now differs by mode, which is what the helper documents: an
-    // unreadable field on ADD means 1, on EDIT it means the amount the item
-    // already had — those are not the same answer, and one `?? 1.0` for both
-    // silently reset a 250 g item to 1.
+    // An empty or unreadable field is never turned into an amount: on edit it
+    // keeps what the item had, otherwise it means "har hemma" without one.
     final existing = widget.existingItem;
     final quantity =
-        parseSwedishDecimal(_quantityController.text) ??
-        existing?.quantity ??
-        1.0;
+        parseSwedishDecimal(_quantityController.text) ?? existing?.quantity;
     final note = _noteController.text.trim().isEmpty
         ? null
         : _noteController.text.trim();
@@ -313,8 +304,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                       ),
                       inputFormatters: const [SwedishDecimalInputFormatter()],
                       // Empty with "1" as a hint, never a prefilled "1": the
-                      // cursor landed after it, so typing 6 gave 16. An empty
-                      // field still saves 1 (BUT-2261).
+                      // cursor landed after it, so typing 6 gave 16 (BUT-2261).
                       decoration: InputDecoration(
                         hintText: _isEditing ? null : '1',
                       ),
@@ -420,6 +410,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                       suffixIcon: _expiryDate != null
                           ? IconButton(
                               icon: const ButleryIcon(ButleryIcons.x),
+                              tooltip: l10n.commonClear,
                               onPressed: () =>
                                   setState(() => _expiryDate = null),
                             )
@@ -428,7 +419,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                     child: Text(
                       _expiryDate == null
                           ? l10n.pantryExpiryNone
-                          : '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}',
+                          : DateFormat.yMMMMd(
+                              l10n.localeName,
+                            ).format(_expiryDate!),
                       style: AppTextStyles.bodyMedium,
                     ),
                   ),

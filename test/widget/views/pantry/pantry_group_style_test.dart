@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -158,17 +159,20 @@ void main() {
     expect(heading.style?.fontSize, AppTextStyles.sectionHeading.fontSize);
   });
 
-  testWidgets('the add button stands out from the dark page', (tester) async {
+  testWidgets('the add button is the saffron square, not the dark page', (
+    tester,
+  ) async {
     final cs = await pumpDark(tester);
 
-    final button = tester.widget<Material>(
+    final fill = tester.widget<Material>(
       find
-          .ancestor(
-            of: find.bySemanticsLabel('Lägg till ny vara'),
+          .descendant(
+            of: find.byType(SaffronSquareButton),
             matching: find.byType(Material),
           )
           .first,
     );
-    expect(button.color, cs.onSurface);
+    expect(fill.color, AppModeColors.actionPrimary(cs.brightness));
+    expect(fill.color, isNot(cs.surface));
   });
 }

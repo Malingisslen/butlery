@@ -53,6 +53,19 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
     }
   }
 
+  // Återställ drops the list's own order, so it has to reach the setting and
+  // not only the rows on screen; the sheet closes because there is nothing
+  // left to arrange.
+  Future<void> _reset() async {
+    await widget.onReset!();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _save() async {
+    await widget.onSave(_order);
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -77,13 +90,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                   ),
                   if (widget.onReset != null)
                     TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _order = List.from(
-                            ShoppingCategory.defaultStoreOrder,
-                          );
-                        });
-                      },
+                      onPressed: _reset,
                       child: Text(context.l10n.shoppingResetOrder),
                     ),
                 ],
@@ -121,10 +128,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () async {
-                    await widget.onSave(_order);
-                    if (context.mounted) Navigator.of(context).pop();
-                  },
+                  onPressed: _save,
                   child: Text(context.l10n.shoppingSaveOrder),
                 ),
               ),

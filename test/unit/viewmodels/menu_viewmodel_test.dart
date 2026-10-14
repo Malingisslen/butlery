@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -436,8 +437,27 @@ void main() {
       });
 
       test('should refresh saved menus', () async {
+        final socialOps =
+            production.ServiceLocator.get<SocialMenuOperations>()
+                as MockSocialMenuOperations;
+        when(
+          () => socialOps.getMenusSharedWithMe(),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+
         await viewModel.refreshSavedMenus();
         expect(viewModel.savedMenus, isA<List<SavedMenuInfo>>());
+      });
+
+      test('refreshSavedMenus reports a failed load instead of an empty '
+          'list', () async {
+        final socialOps =
+            production.ServiceLocator.get<SocialMenuOperations>()
+                as MockSocialMenuOperations;
+        when(
+          () => socialOps.getMenusSharedWithMe(),
+        ).thenAnswer((_) => Future<List<Map<String, dynamic>>>.error('down'));
+
+        await expectLater(viewModel.refreshSavedMenus(), throwsA('down'));
       });
     });
 

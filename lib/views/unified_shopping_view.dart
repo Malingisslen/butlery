@@ -489,7 +489,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
   /// BUT-948: bulk delete the selected items with a single undo snackbar.
   /// Captures the removed items + strings before the await so undo can re-add
-  /// them; no undo is offered if the delete failed (items would still be there).
+  /// them; a failed delete keeps the selection and says so instead of offering undo.
   Future<void> _deleteSelectedShopping(
     ShoppingSelectionManager selection,
   ) async {
@@ -504,10 +504,18 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       removed.length,
     );
 
-    selection.clearSelection();
     final ok = await _viewModel.bulkRemoveItems(ids);
-    if (!mounted || !ok) return;
+    if (!mounted) return;
+    if (!ok) {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.shoppingBulkRemoveFailed,
+        preserved: context.l10n.shoppingBulkRemoveFailedKept,
+      );
+      return;
+    }
 
+    selection.clearSelection();
     SnackBarUtils.showUndo(
       context,
       removedMsg,
@@ -631,7 +639,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                         SnackBarUtils.showUserFriendlyError(
                           this.context,
                           e,
-                          contextAction: 'Create list from template',
+                          contextAction:
+                              this.context.l10n.shoppingCreateFromTemplate,
                         );
                       }
                     }

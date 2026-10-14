@@ -86,6 +86,9 @@ class VeckomenyPromptRow extends StatelessWidget {
               ],
             )
           : null,
+      keyboardType: TextInputType.text,
+      minLines: 1,
+      maxLines: 3,
       textInputAction: TextInputAction.done,
       onChanged: (_) => onChanged(),
     );

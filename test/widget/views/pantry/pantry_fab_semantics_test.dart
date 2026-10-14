@@ -101,8 +101,8 @@ void main() {
     );
     expect(node.label, _sv.a11yPantryAddItem);
     // Merged upward, the label lands on a node the size of the whole tab;
-    // its own node is the 56 px square.
-    expect(node.rect.size, const Size(56, 56));
+    // its own node is the 48 dp square.
+    expect(node.rect.size, const Size(48, 48));
     final data = node.getSemanticsData();
     expect(data.flagsCollection.isButton, isTrue);
     expect(data.hasAction(SemanticsAction.tap), isTrue);

@@ -27,6 +27,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -225,7 +226,7 @@ void main() {
 
       expect(find.text('0 valda'), findsOneWidget);
       expect(
-        find.byKey(const ValueKey('personal-tags-selection-cancel')),
+        find.byKey(const ValueKey('butlery-select-cancel')),
         findsOneWidget,
       );
       expect(tester.getSize(bar).height, before);
@@ -394,7 +395,9 @@ void main() {
       fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
       await pumpView(tester);
 
-      await tester.tap(find.byTooltip('Sortera'));
+      await tester.tap(find.byKey(const ValueKey('personal-tags-more')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sortera'));
       await tester.pumpAndSettle();
 
       expect(find.text('Namn'), findsWidgets);
@@ -415,12 +418,31 @@ void main() {
       // The default order is by use, so the more used tag comes first.
       expect(y('Zucchini'), lessThan(y('Apelsin')));
 
-      await tester.tap(find.byTooltip('Sortera'));
+      await tester.tap(find.byKey(const ValueKey('personal-tags-more')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sortera'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Namn').last);
       await tester.pumpAndSettle();
 
       expect(y('Apelsin'), lessThan(y('Zucchini')));
+    });
+
+    testWidgets('the more sheet offers applying the rules to all recipes', (
+      tester,
+    ) async {
+      fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
+      await pumpView(tester);
+
+      await tester.tap(find.byKey(const ValueKey('personal-tags-more')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tillämpa regler på alla recept'));
+      await tester.pump();
+
+      expect(find.byType(RetagProgressDialog), findsOneWidget);
+      // The dialog runs the retag on open and this harness has no tagging
+      // service, so let it finish with its failure state before teardown.
+      await tester.pumpAndSettle();
     });
   });
 }

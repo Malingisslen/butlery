@@ -111,6 +111,51 @@ void main() {
       expect(find.text('Stäng'), findsNWidgets(2));
     });
 
+    testWidgets('a failed load shows an error with retry, not "Inga sparade"', (
+      tester,
+    ) async {
+      final vm = _FakeMenuViewModel();
+      when(() => vm.refreshSavedMenus()).thenThrow(Exception('offline'));
+      when(() => vm.savedMenus).thenReturn(<SavedMenuInfo>[]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Inga sparade menyer'), findsNothing);
+      expect(
+        find.text('Vi kunde inte hämta dina sparade menyer.'),
+        findsOneWidget,
+      );
+      expect(find.text('Försök igen'), findsOneWidget);
+    });
+
+    testWidgets('Försök igen loads again and shows the menus when it works', (
+      tester,
+    ) async {
+      final vm = _FakeMenuViewModel();
+      var calls = 0;
+      when(() => vm.refreshSavedMenus()).thenAnswer((_) {
+        calls++;
+        return calls == 1
+            ? Future<void>.error(Exception('offline'))
+            : Future<void>.value();
+      });
+      when(
+        () => vm.savedMenus,
+      ).thenReturn([_menu(key: 'a', name: 'Veckomeny v.45')]);
+
+      await tester.pumpWidget(_wrap(LoadMenuBottomSheet(viewModel: vm)));
+      await tester.pumpAndSettle();
+      expect(find.text('Veckomeny v.45'), findsNothing);
+
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+
+      expect(calls, 2);
+      expect(find.text('Veckomeny v.45'), findsOneWidget);
+      expect(find.text('Försök igen'), findsNothing);
+    });
+
     testWidgets('populated list renders one Card+ListTile per saved menu', (
       tester,
     ) async {

@@ -20556,4 +20556,18 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get consentLoadFailed =>
       'Vi kunde inte läsa dina samtycken. Försök igen.';
+
+  @override
+  String get menuListLoadFailed => 'Vi kunde inte hämta dina sparade menyer.';
+
+  @override
+  String get shoppingBulkRemoveFailed =>
+      'Vi kunde inte ta bort alla markerade varor.';
+
+  @override
+  String get shoppingBulkRemoveFailedKept =>
+      'Markeringen finns kvar, så du kan försöka igen.';
+
+  @override
+  String get personalTagCouldNotMove => 'Vi kunde inte flytta taggen.';
 }

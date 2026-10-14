@@ -150,12 +150,17 @@ class MenuStartVoteButton extends StatelessWidget {
                         }
                       }
                     : null,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.space4),
-                  child: ButleryIcon(
-                    ButleryIcons.vote,
-                    size: AppDimensions.iconSizeS,
-                    color: enabled ? cs.onSurface : cs.onSurfaceVariant,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: AppDimensions.minTouchTarget,
+                    minHeight: AppDimensions.minTouchTarget,
+                  ),
+                  child: Center(
+                    child: ButleryIcon(
+                      ButleryIcons.vote,
+                      size: AppDimensions.iconSizeS,
+                      color: enabled ? cs.onSurface : cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),

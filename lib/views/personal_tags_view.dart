@@ -214,14 +214,13 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 .startSelection,
           ),
         IconButton(
-          icon: const ButleryIcon(ButleryIcons.refreshCw),
-          tooltip: context.l10n.personalTagApplyRulesToAll,
-          onPressed: () => PersonalTagDialogs.showRetagDialog(context),
-        ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.arrowUpDown),
-          tooltip: context.l10n.commonSort,
-          onPressed: () => _pickSortOrder(context),
+          key: const ValueKey('personal-tags-more'),
+          icon: const ButleryIcon(ButleryIcons.moreVertical),
+          tooltip: context.l10n.rootBarMoreActions,
+          onPressed: () => PersonalTagDialogs.showMoreActions(
+            context,
+            onSort: () => _pickSortOrder(context),
+          ),
         ),
         IconButton(
           key: const ValueKey('personal-tags-create'),
@@ -250,11 +249,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     // 17.1 :870, :873; Skarmar v12 etapp 9 #flervalingang, "Flerval — slå
     // samman taggar").
     return (
-      leading: TextButton(
-        key: const ValueKey('personal-tags-selection-cancel'),
-        onPressed: selection.exitSelection,
-        child: Text(context.l10n.commonCancel),
-      ),
+      leading: ButleryCancelSelectionButton(onPressed: selection.exitSelection),
       // "{n} valda" in tabular figures (produktregler.md:876).
       title: context.l10n.bulkSelectedCount(count),
       titleStyle: const TextStyle(

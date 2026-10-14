@@ -71,7 +71,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
 
   Future<void> addItemFromIngredient(
     IngredientData ingredient, {
-    double quantity = 1,
+    double? quantity = 1,
     String? unit,
     PantryLocation? location,
     DateTime? expiryDate,
@@ -99,7 +99,7 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
 
   Future<void> addItemFromText(
     String rawText, {
-    double quantity = 1,
+    double? quantity = 1,
     String? unit,
     PantryLocation? location,
     DateTime? expiryDate,

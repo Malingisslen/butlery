@@ -1,5 +1,8 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
+import 'dart:math' as math;
+
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
@@ -229,6 +232,7 @@ class _ShoppingMemberManagementDialogState
             _declaredBase.memberPermissions,
           )..remove(userId),
         );
+        if (!mounted) return;
         setState(() {
           _localPermissions.remove(userId);
           _localMemberIds.remove(userId);
@@ -364,26 +368,11 @@ class _ShoppingMemberManagementDialogState
       ),
       content: SizedBox(
         width: double.maxFinite,
-        height: 500,
+        height: math.min(500, MediaQuery.sizeOf(context).height * 0.6),
         child: Column(
           children: [
             if (_error != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.space12),
-                decoration: BoxDecoration(
-                  color: context.modeColors.surfaceTintDanger,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
-                child: Text(
-                  _error!,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onErrorContainer,
-                  ),
-                ),
-              ),
+              InlineError(what: _error!),
               const SizedBox(height: AppDimensions.space8),
             ],
             Text(

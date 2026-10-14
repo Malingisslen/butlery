@@ -172,7 +172,7 @@ void main() {
     // Still in selection mode with exactly the two left selected.
     expect(find.text('2 valda'), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('personal-tags-selection-cancel')),
+      find.byKey(const ValueKey('butlery-select-cancel')),
       findsOneWidget,
     );
     expect(find.byType(SnackBar), findsNothing);
