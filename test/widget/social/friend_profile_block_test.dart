@@ -216,6 +216,19 @@ void main() {
     expect(find.text('23'), findsNWidgets(2));
   });
 
+  testWidgets('a friend without a trailing s is named with från, no genitive', (
+    tester,
+  ) async {
+    final friend = _friend.copyWith(displayName: 'Anna', publicRecipeCount: 4);
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: friend)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Publika recept från Anna'), findsOneWidget);
+    expect(find.text('Annas publika recept'), findsNothing);
+  });
+
   testWidgets('Skicka meddelande is the saffron primary button', (
     tester,
   ) async {

@@ -254,6 +254,7 @@ void main() {
       await tester.pump();
 
       final context = tester.element(find.byType(AddMembersToGroupView));
+      expect(find.byKey(InlineError.boxKey), findsOneWidget);
       final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
       final shape = box.shape! as RoundedRectangleBorder;
       expect(shape.side.color, Theme.of(context).colorScheme.error);

@@ -584,6 +584,7 @@ void main() {
 
         final context = tester.element(find.byType(FriendsListView));
         expect(find.text('Något gick fel'), findsOneWidget);
+        expect(find.byKey(InlineError.boxKey), findsOneWidget);
         final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
         final shape = box.shape! as RoundedRectangleBorder;
         expect(shape.side.color, Theme.of(context).colorScheme.error);
