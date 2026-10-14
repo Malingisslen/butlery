@@ -8,6 +8,7 @@
 
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -25,11 +26,11 @@ import 'package:butlery/services/unified/operations/list_invitation_operations.d
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../helpers/user_profile_factory.dart';
@@ -90,10 +91,6 @@ Widget _app(Widget child, Brightness brightness) => MaterialApp(
 ColorScheme _scheme(Brightness b) => b == Brightness.dark
     ? AppColors.darkColorScheme
     : AppColors.lightColorScheme;
-
-Color _dangerTint(Brightness b) => b == Brightness.dark
-    ? AppColorsDark.surfaceTintDanger
-    : AppColors.surfaceTintDanger;
 
 UnifiedShoppingList _sharedList() => UnifiedShoppingList(
   id: 'list-1',
@@ -325,7 +322,7 @@ void main() {
         );
       });
 
-      testWidgets('a refused change is a tinted notice with its own text', (
+      testWidgets('a refused change is the shared error box, with its text', (
         tester,
       ) async {
         tester.view.physicalSize = const Size(1000, 1800);
@@ -355,17 +352,21 @@ void main() {
 
         final noticeText = find.text('Kunde inte ta bort medlem');
         expect(noticeText, findsOneWidget);
-        expect(
-          tester.widget<Text>(noticeText).style?.color,
-          cs.onErrorContainer,
-        );
+        expect(tester.widget<Text>(noticeText).style?.color, cs.onSurface);
 
-        final box = tester.widget<Container>(
-          find.ancestor(of: noticeText, matching: find.byType(Container)).first,
+        final box = tester.widget<Material>(find.byKey(InlineError.boxKey));
+        final shape = box.shape! as RoundedRectangleBorder;
+        expect(box.color, cs.surface);
+        expect(shape.side.color, cs.error);
+        expect(
+          find.ancestor(
+            of: noticeText,
+            matching: find.byWidgetPredicate(
+              (w) => w is Semantics && w.properties.role == SemanticsRole.alert,
+            ),
+          ),
+          findsOneWidget,
         );
-        final decoration = box.decoration! as BoxDecoration;
-        expect(decoration.color, _dangerTint(brightness));
-        expect(decoration.border, isNull);
       });
 
       testWidgets('a ticked-off item keeps its note and menu at full colour', (
