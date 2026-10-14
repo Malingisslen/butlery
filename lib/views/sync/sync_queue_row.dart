@@ -20,6 +20,7 @@ import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
@@ -203,11 +204,11 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
                   label: l10n.syncQueueDiscardA11y(what),
                   excludeSemantics: true,
                   button: true,
-                  child: TextButton(
+                  child: ButleryTextButton(
                     key: discardKey(change),
-                    style: TextButton.styleFrom(foregroundColor: cs.error),
+                    tone: ButleryTextButtonTone.danger,
+                    label: l10n.syncQueueDiscard,
                     onPressed: busy ? null : onDiscard,
-                    child: Text(l10n.syncQueueDiscard),
                   ),
                 ),
             ],

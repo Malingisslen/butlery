@@ -52,6 +52,15 @@ class StyledInput extends StatelessWidget {
   /// Amber warning border for fields that may need review (e.g. low-confidence AI parse).
   final bool showWarning;
 
+  /// words for names and titles, sentences for free text.
+  final TextCapitalization textCapitalization;
+
+  /// Off for codes and handles, where a suggestion would rewrite the value.
+  final bool autocorrect;
+
+  /// The keyboard's action key (done, search, send).
+  final ValueChanged<String>? onSubmitted;
+
   const StyledInput({
     super.key,
     this.label,
@@ -80,6 +89,9 @@ class StyledInput extends StatelessWidget {
     this.autofillHints,
     this.semanticLabel,
     this.showWarning = false,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect = true,
+    this.onSubmitted,
   });
 
   /// Standard text input
@@ -98,6 +110,9 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.autofillHints,
     this.semanticLabel,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect = true,
+    this.onSubmitted,
   }) : onTap = null,
        enabled = true,
        readOnly = false,
@@ -140,7 +155,10 @@ class StyledInput extends StatelessWidget {
        prefixIcon = const ButleryIcon(ButleryIcons.lock),
        contentPadding = null,
        autofillHints = const [AutofillHints.password],
-       showWarning = false;
+       showWarning = false,
+       textCapitalization = TextCapitalization.none,
+       autocorrect = true,
+       onSubmitted = null;
 
   /// Email input with validation
   const StyledInput.email({
@@ -170,7 +188,10 @@ class StyledInput extends StatelessWidget {
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.email],
-       showWarning = false;
+       showWarning = false,
+       textCapitalization = TextCapitalization.none,
+       autocorrect = true,
+       onSubmitted = null;
 
   /// Phone number input
   const StyledInput.phone({
@@ -200,7 +221,10 @@ class StyledInput extends StatelessWidget {
        suffixIcon = null,
        contentPadding = null,
        autofillHints = const [AutofillHints.telephoneNumber],
-       showWarning = false;
+       showWarning = false,
+       textCapitalization = TextCapitalization.none,
+       autocorrect = true,
+       onSubmitted = null;
 
   /// Multi-line text input
   const StyledInput.multiline({
@@ -230,7 +254,10 @@ class StyledInput extends StatelessWidget {
        suffixIcon = null,
        contentPadding = null,
        autofillHints = null,
-       showWarning = false;
+       showWarning = false,
+       textCapitalization = TextCapitalization.none,
+       autocorrect = true,
+       onSubmitted = null;
 
   /// Number input
   const StyledInput.number({
@@ -260,7 +287,10 @@ class StyledInput extends StatelessWidget {
        suffixIcon = null,
        contentPadding = null,
        autofillHints = null,
-       showWarning = false;
+       showWarning = false,
+       textCapitalization = TextCapitalization.none,
+       autocorrect = true,
+       onSubmitted = null;
 
   Widget? _suffix() {
     final valid = validText;
@@ -302,6 +332,9 @@ class StyledInput extends StatelessWidget {
     final textField = TextFormField(
       controller: controller,
       onChanged: onChanged,
+      onFieldSubmitted: onSubmitted,
+      textCapitalization: textCapitalization,
+      autocorrect: autocorrect,
       onTap: onTap,
       enabled: enabled,
       readOnly: readOnly,

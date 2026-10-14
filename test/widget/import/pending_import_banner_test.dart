@@ -21,4 +21,24 @@ void main() {
     await tester.tap(find.text('Försök igen'));
     expect(retried, isTrue);
   });
+
+  testWidgets('Släng dismisses the pending import without retrying it', (
+    tester,
+  ) async {
+    var retried = 0;
+    var dismissed = 0;
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: PendingImportBanner(
+          onRetry: () => retried++,
+          onDismiss: () => dismissed++,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Släng'));
+
+    expect(dismissed, 1);
+    expect(retried, 0);
+  });
 }

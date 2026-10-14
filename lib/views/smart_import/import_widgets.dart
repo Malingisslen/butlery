@@ -3,17 +3,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -48,20 +46,15 @@ class PendingImportBanner extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
+              ButleryTextButton(
+                label: context.l10n.importPendingDismiss,
                 onPressed: onDismiss,
-                child: Text(context.l10n.importPendingDismiss),
               ),
               const SizedBox(width: AppDimensions.space8),
-              FilledButton(
-                // The theme's full-width minimum is infinite inside a Row.
-                style: const ButtonStyle(
-                  minimumSize: WidgetStatePropertyAll(
-                    Size(0, AppDimensions.minTouchTarget),
-                  ),
-                ),
+              ActionButtons.primaryButton(
+                context,
+                label: context.l10n.importPendingRetry,
                 onPressed: onRetry,
-                child: Text(context.l10n.importPendingRetry),
               ),
             ],
           ),
@@ -88,38 +81,25 @@ class ImportInputSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return LabeledField(
-      child: TextField(
-        style: fieldTextStyle(context, enabled: !viewModel.isImporting),
-        controller: controller,
-        focusNode: focusNode,
-        onChanged: onChanged,
-        enabled: !viewModel.isImporting,
-        maxLines: 5,
-        minLines: 3,
-        decoration: InputDecoration(
-          hintText: context.l10n.importPasteLinkOrText,
-          // The hint is text.secondary itself, never faded.
-          hintStyle: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          contentPadding: const EdgeInsets.all(AppDimensions.space16),
-          suffixIcon: controller.text.isNotEmpty
-              ? IconButton(
-                  icon: const ButleryIcon(ButleryIcons.x),
-                  onPressed: () {
-                    controller.clear();
-                    viewModel.clearInput();
-                  },
-                  tooltip: context.l10n.commonClear,
-                )
-              : null,
-        ),
-        textCapitalization: TextCapitalization.none,
-        keyboardType: TextInputType.multiline,
-      ),
+    return StyledInput(
+      controller: controller,
+      focusNode: focusNode,
+      onChanged: onChanged,
+      enabled: !viewModel.isImporting,
+      maxLines: 5,
+      minLines: 3,
+      hint: context.l10n.importPasteLinkOrText,
+      keyboardType: TextInputType.multiline,
+      suffixIcon: controller.text.isNotEmpty
+          ? AppIconButton(
+              icon: ButleryIcons.x,
+              semanticLabel: context.l10n.commonClear,
+              onPressed: () {
+                controller.clear();
+                viewModel.clearInput();
+              },
+            )
+          : null,
     );
   }
 }
@@ -130,8 +110,7 @@ class ImportInputSection extends StatelessWidget {
 /// drawn error boundary, Komponentark v1:755-758). Under it, "Andra vägar
 /// till samma recept" draws the [routes] the failure carries: a failure is a
 /// fork, not a dead end (produktregler.md:557; Skarmar v12 etapp 4 import
-/// #impinget). The first route is the filled button and the rest are
-/// outlined, full width and 48 dp high, as drawn.
+/// #impinget).
 ///
 /// Colours, both modes, from the theme: the heading is
 /// colorScheme.onSurfaceVariant = text.secondary, #5B6959 light and #A9B2A0
@@ -214,44 +193,20 @@ class _RouteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Skarmar v12 etapp 4 #impinget: min-height 48, radius 8 (radius.control).
-    final style = ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(
-        Size.fromHeight(AppDimensions.minTouchTarget),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
-      ),
-    );
-    final iconWidget = ButleryIcon(icon, size: AppDimensions.iconSize18);
-    final cs = Theme.of(context).colorScheme;
-    final dark = cs.brightness == Brightness.dark;
-    final outlinedStyle = style.copyWith(
-      foregroundColor: WidgetStatePropertyAll(
-        cs.onSurface,
-      ),
-      iconColor: WidgetStatePropertyAll(cs.onSurface),
-      side: WidgetStatePropertyAll(
-        BorderSide(
-          color: dark ? AppModeColors.paperWash(cs.brightness) : cs.onSurface,
-          width: 1.5,
-        ),
-      ),
-    );
     return filled
-        ? FilledButton.icon(
+        ? ActionButtons.primaryButton(
+            context,
             onPressed: onPressed,
-            style: style,
-            icon: iconWidget,
-            label: Text(label),
+            icon: icon,
+            label: label,
+            isExpanded: true,
           )
-        : OutlinedButton.icon(
+        : ActionButtons.outlinedButton(
+            context,
             onPressed: onPressed,
-            style: outlinedStyle,
-            icon: iconWidget,
-            label: Text(label),
+            icon: icon,
+            label: label,
+            isExpanded: true,
           );
   }
 }
@@ -310,11 +265,11 @@ class ImportActionSection extends StatelessWidget {
         const SizedBox(height: AppDimensions.space8),
 
         // Manual import link
-        TextButton(
+        ButleryTextButton(
+          label: context.l10n.importManually,
           onPressed: viewModel.canImport && !viewModel.isImporting
               ? onManualImport
               : null,
-          child: Text(context.l10n.importManually),
         ),
       ],
     );
