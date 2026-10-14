@@ -1,7 +1,9 @@
 // test/unit/viewmodels/realtime_menu_state_test.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_menu_state.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -707,7 +709,7 @@ void main() {
       });
 
       test('should format menu date for past days', () {
-        // Arrange - create menu for 5 days ago
+        // Arrange - create menu for 3 days ago
         final pastMenu = RealtimeMenu(
           id: 'past_menu',
           ownerId: 'user_123',
@@ -717,7 +719,7 @@ void main() {
           lastEditedByDisplayName: 'Test User',
           data: RealtimeMenuData(
             menuTitle: 'Past Menu',
-            createdForDate: DateTime.now().subtract(Duration(days: 5)),
+            createdForDate: DateTime.now().subtract(Duration(days: 3)),
             menuSnapshot: {},
           ),
         );
@@ -725,7 +727,30 @@ void main() {
         menuState.setCurrentMenu(pastMenu);
 
         // Assert
-        expect(menuState.menuDateDisplay, equals('5 dagar sedan'));
+        expect(menuState.menuDateDisplay, equals('3 dagar sedan'));
+      });
+
+      test('shows the date once a menu is more than three days old', () async {
+        await initializeDateFormatting('sv');
+        final pastMenu = RealtimeMenu(
+          id: 'old_menu',
+          ownerId: 'user_123',
+          ownerDisplayName: 'Test User',
+          participants: {'user_123': ResourcePermission.owner},
+          lastEditedBy: 'user_123',
+          lastEditedByDisplayName: 'Test User',
+          data: RealtimeMenuData(
+            menuTitle: 'Old Menu',
+            createdForDate: DateTime(2026, 10, 2),
+            menuSnapshot: {},
+          ),
+        );
+
+        menuState.setCurrentMenu(pastMenu);
+
+        withClock(Clock.fixed(DateTime(2026, 10, 14, 9)), () {
+          expect(menuState.menuDateDisplay, equals('2 oktober'));
+        });
       });
 
       test('should handle menu without date', () {

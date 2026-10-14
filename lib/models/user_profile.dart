@@ -1,5 +1,7 @@
 /// User profile with social networking and notification capabilities.
 
+import 'dart:math' as math;
+
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
@@ -377,14 +379,15 @@ class UserProfile with JsonSerializableMixin {
   /// Time since joined
   String get memberSinceText {
     final now = clock.now();
-    final difference = now.difference(joinedAt);
+    // joinedAt is stamped by the server, so a phone clock behind it yields a negative age.
+    final days = math.max(0, now.difference(joinedAt).inDays);
     final l = AppLocale.current;
-    if (difference.inDays < 30) {
-      return l.memberSinceDays(difference.inDays);
-    } else if (difference.inDays < 365) {
-      return l.memberSinceMonths((difference.inDays / 30).floor());
+    if (days < 30) {
+      return l.memberSinceDays(days);
+    } else if (days < 365) {
+      return l.memberSinceMonths((days / 30).floor());
     } else {
-      return l.memberSinceYears((difference.inDays / 365).floor());
+      return l.memberSinceYears((days / 365).floor());
     }
   }
 

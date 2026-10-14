@@ -6,6 +6,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/content_time_labels.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
 class ShoppingDisplayManager {
@@ -68,6 +69,6 @@ class ShoppingDisplayManager {
       return l.timeMinutesAgo(difference.inMinutes);
     }
     if (difference.inHours < 24) return l.timeHoursAgo(difference.inHours);
-    return l.dateDaysAgo(difference.inDays);
+    return ContentTimeLabels.relativeDayLabel(l, time, now);
   }
 }

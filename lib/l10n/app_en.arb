@@ -2649,22 +2649,6 @@
       }
     }
   },
-  "dateWeeksAgo": "{weeks, plural, =1{1 week} other{{weeks} weeks}} ago",
-  "@dateWeeksAgo": {
-    "placeholders": {
-      "weeks": {
-        "type": "int"
-      }
-    }
-  },
-  "dateMonthsAgo": "{months, plural, =1{1 month} other{{months} months}} ago",
-  "@dateMonthsAgo": {
-    "placeholders": {
-      "months": {
-        "type": "int"
-      }
-    }
-  },
   "friendDecline": "Decline",
   "friendRequestTitle": "Friend request",
   "imageAddCount": "Add ({count})",
@@ -3884,7 +3868,7 @@
   },
   "menuSaveFailed": "Could not save the menu",
   "navigationGoHome": "Go home",
-  "navigationSubtitle": "Your digital cookbook",
+  "navigationSubtitle": "Your recipe collection",
   "permissionCopy": "Copy",
   "permissionNoAccess": "No access",
   "permissionSaveAsNew": "Save as new",

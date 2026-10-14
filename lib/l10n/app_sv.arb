@@ -2655,22 +2655,6 @@
       }
     }
   },
-  "dateWeeksAgo": "{weeks, plural, =1{1 vecka} other{{weeks} veckor}} sedan",
-  "@dateWeeksAgo": {
-    "placeholders": {
-      "weeks": {
-        "type": "int"
-      }
-    }
-  },
-  "dateMonthsAgo": "{months, plural, =1{1 månad} other{{months} månader}} sedan",
-  "@dateMonthsAgo": {
-    "placeholders": {
-      "months": {
-        "type": "int"
-      }
-    }
-  },
   "friendDecline": "Avböj",
   "friendRequestTitle": "Vänförfrågan",
   "imageAddCount": "Lägg till ({count})",
@@ -3891,7 +3875,7 @@
   },
   "menuSaveFailed": "Kunde inte spara menyn",
   "navigationGoHome": "Till start",
-  "navigationSubtitle": "Din digitala kokbok",
+  "navigationSubtitle": "Din receptsamling",
   "permissionCopy": "Kopia",
   "permissionNoAccess": "Ingen åtkomst",
   "permissionSaveAsNew": "Spara som ny",
