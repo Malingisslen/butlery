@@ -113,6 +113,11 @@ class _FileImportViewState extends State<FileImportView> {
                   _buildOptional(context.l10n.importColumnServings),
                   _buildOptional(context.l10n.importColumnCategory),
                   _buildOptional(context.l10n.importColumnTags),
+                  const SizedBox(height: AppDimensions.space8),
+                  Text(
+                    context.l10n.importFileColumnsEitherLanguage,
+                    style: AppTextStyles.bodySmall,
+                  ),
                 ],
               ),
             ),

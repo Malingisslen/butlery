@@ -56,6 +56,10 @@ class FiltersPanelWidget extends StatelessWidget {
   /// Whether the personal tags are still being read.
   final bool personalTagsLoading;
 
+  /// False when a surrounding list already scrolls the panel (Mina recept),
+  /// so the panel takes its full height instead of a second scroll area.
+  final bool scrollsInternally;
+
   const FiltersPanelWidget({
     super.key,
     required this.showFilters,
@@ -79,6 +83,7 @@ class FiltersPanelWidget extends StatelessWidget {
     this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
     this.personalTagsLoading = false,
+    this.scrollsInternally = true,
   });
 
   @override
@@ -96,122 +101,128 @@ class FiltersPanelWidget extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: AppShadows.subtle,
               ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxFilterHeight),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Time filters
+              child: _wrap(
+                maxFilterHeight,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Time filters
+                    FilterChipsWidget(
+                      title: context.l10n.filterCookingTime,
+                      options: RecipeFilters.timeFilters,
+                      activeFilters: activeTimeFilters,
+                      onToggle: onTimeFilterToggle,
+                    ),
+
+                    // Meal type filters
+                    FilterChipsWidget(
+                      title: context.l10n.filterMealType,
+                      options: RecipeFilters.mealTypeFilters(context),
+                      activeFilters: activeMealTypeFilters,
+                      onToggle: onMealTypeFilterToggle,
+                    ),
+
+                    // Rating filters
+                    FilterChipsWidget(
+                      title: context.l10n.filterRating,
+                      options: RecipeFilters.ratingFilters,
+                      activeFilters: activeRatingFilters,
+                      onToggle: onRatingFilterToggle,
+                    ),
+
+                    // Allergen-free filters (all EU-14 + extras)
+                    if (onAllergenFilterToggle != null)
                       FilterChipsWidget(
-                        title: context.l10n.filterCookingTime,
-                        options: RecipeFilters.timeFilters,
-                        activeFilters: activeTimeFilters,
-                        onToggle: onTimeFilterToggle,
+                        title: context.l10n.filterAllergenFree,
+                        options: RecipeFilters.allAllergenFreeFilters(
+                          context,
+                        ),
+                        activeFilters: activeAllergenFilters,
+                        onToggle: onAllergenFilterToggle!,
                       ),
 
-                      // Meal type filters
+                    // Dietary filters
+                    if (onDietaryFilterToggle != null)
                       FilterChipsWidget(
-                        title: context.l10n.filterMealType,
-                        options: RecipeFilters.mealTypeFilters(context),
-                        activeFilters: activeMealTypeFilters,
-                        onToggle: onMealTypeFilterToggle,
+                        title: context.l10n.filterDietary,
+                        options: RecipeFilters.dietaryFilters(context),
+                        activeFilters: activeDietaryFilters,
+                        onToggle: onDietaryFilterToggle!,
                       ),
 
-                      // Rating filters
-                      FilterChipsWidget(
-                        title: context.l10n.filterRating,
-                        options: RecipeFilters.ratingFilters,
-                        activeFilters: activeRatingFilters,
-                        onToggle: onRatingFilterToggle,
-                      ),
-
-                      // Allergen-free filters (all EU-14 + extras)
-                      if (onAllergenFilterToggle != null)
-                        FilterChipsWidget(
-                          title: context.l10n.filterAllergenFree,
-                          options: RecipeFilters.allAllergenFreeFilters(
-                            context,
-                          ),
-                          activeFilters: activeAllergenFilters,
-                          onToggle: onAllergenFilterToggle!,
+                    // BUT-987: contextual deep-link to the allergen/dietary
+                    // preferences screen, so users can edit what the filters
+                    // above (and card display + ranking) key off of.
+                    if (onManageFoodPreferences != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.space8,
                         ),
-
-                      // Dietary filters
-                      if (onDietaryFilterToggle != null)
-                        FilterChipsWidget(
-                          title: context.l10n.filterDietary,
-                          options: RecipeFilters.dietaryFilters(context),
-                          activeFilters: activeDietaryFilters,
-                          onToggle: onDietaryFilterToggle!,
-                        ),
-
-                      // BUT-987: contextual deep-link to the allergen/dietary
-                      // preferences screen, so users can edit what the filters
-                      // above (and card display + ranking) key off of.
-                      if (onManageFoodPreferences != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.space8,
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              onPressed: onManageFoodPreferences,
-                              icon: const ButleryIcon(
-                                ButleryIcons.filter,
-                                size: AppDimensions.iconSizeM,
-                              ),
-                              label: Text(
-                                context.l10n.filterManageFoodPrefs,
-                                style: AppTextStyles.labelLarge,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // Personal tags filters
-                      if (onPersonalTagFilterToggle != null)
-                        PersonalTagFilterChipsWidget(
-                          tags: personalTagIds ?? [],
-                          selectedTagIds: activePersonalTagFilters ?? {},
-                          excludedTagIds: excludedPersonalTagFilters ?? {},
-                          onToggle: onPersonalTagFilterToggle!,
-                          onExcludeToggle: onExcludedPersonalTagFilterToggle,
-                          onManageTags: onManagePersonalTags,
-                          isLoading: personalTagsLoading,
-                        ),
-
-                      // Clear all filters button
-                      if (hasActiveFilters && onClearAllFilters != null) ...[
-                        const SizedBox(height: AppDimensions.space8),
-                        Center(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
                           child: TextButton.icon(
-                            onPressed: onClearAllFilters,
+                            onPressed: onManageFoodPreferences,
                             icon: const ButleryIcon(
-                              ButleryIcons.listX,
+                              ButleryIcons.filter,
                               size: AppDimensions.iconSizeM,
                             ),
                             label: Text(
-                              context.l10n.filterClearAll,
+                              context.l10n.filterManageFoodPrefs,
                               style: AppTextStyles.labelLarge,
-                            ),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(
-                                context,
-                              ).colorScheme.error,
                             ),
                           ),
                         ),
-                      ],
+                      ),
 
+                    // Personal tags filters
+                    if (onPersonalTagFilterToggle != null)
+                      PersonalTagFilterChipsWidget(
+                        tags: personalTagIds ?? [],
+                        selectedTagIds: activePersonalTagFilters ?? {},
+                        excludedTagIds: excludedPersonalTagFilters ?? {},
+                        onToggle: onPersonalTagFilterToggle!,
+                        onExcludeToggle: onExcludedPersonalTagFilterToggle,
+                        onManageTags: onManagePersonalTags,
+                        isLoading: personalTagsLoading,
+                      ),
+
+                    // Clear all filters button
+                    if (hasActiveFilters && onClearAllFilters != null) ...[
                       const SizedBox(height: AppDimensions.space8),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: onClearAllFilters,
+                          icon: const ButleryIcon(
+                            ButleryIcons.listX,
+                            size: AppDimensions.iconSizeM,
+                          ),
+                          label: Text(
+                            context.l10n.filterClearAll,
+                            style: AppTextStyles.labelLarge,
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
+
+                    const SizedBox(height: AppDimensions.space8),
+                  ],
                 ),
               ),
             )
           : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _wrap(double maxHeight, Widget content) {
+    if (!scrollsInternally) return content;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SingleChildScrollView(child: content),
     );
   }
 }

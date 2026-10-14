@@ -47,6 +47,13 @@ class SwipeHintBanner extends StatefulWidget {
   /// Visits after which the hint stays away on its own.
   static const int maxShows = 3;
 
+  /// Hints already counted as a visit in this app run. A banner that remounts
+  /// (selection mode, grid/list switch) is still the same visit.
+  static final Set<String> _countedThisRun = {};
+
+  @visibleForTesting
+  static void startNewRunForTest() => _countedThisRun.clear();
+
   static String _shownKey(String seenKey) => '${seenKey}_shown';
 
   /// The gesture was used, so the hint has nothing left to teach.
@@ -84,8 +91,12 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
     final seen = prefs.getBool(widget.seenKey) ?? false;
     final shownKey = SwipeHintBanner._shownKey(widget.seenKey);
     final shown = prefs.getInt(shownKey) ?? 0;
-    final visible = !seen && shown < SwipeHintBanner.maxShows;
-    if (visible) await prefs.setInt(shownKey, shown + 1);
+    final counted = SwipeHintBanner._countedThisRun.contains(widget.seenKey);
+    final visible = !seen && (counted || shown < SwipeHintBanner.maxShows);
+    if (visible && !counted) {
+      SwipeHintBanner._countedThisRun.add(widget.seenKey);
+      await prefs.setInt(shownKey, shown + 1);
+    }
     if (mounted) setState(() => _visible = visible);
   }
 

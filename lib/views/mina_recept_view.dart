@@ -71,6 +71,7 @@ import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_sized_grid.dart';
 import 'package:butlery/widgets/common/responsive/sliver_responsive_list_grid.dart';
+import 'package:butlery/views/mina_recept/library_filter_panel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
@@ -423,7 +424,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
     final tagViewModel = context.watch<PersonalTagViewModel>();
     final personalTags = tagViewModel.tags;
-    final recipeCount = viewModel.recipes.length;
     // Row 4 of produktregler.md:271: an empty library is Hem's empty state.
     final libraryEmpty =
         !viewModel.isLoading &&
@@ -476,7 +476,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     viewModel: viewModel,
                     personalTags: personalTags,
                     personalTagsLoading: tagViewModel.isLoading,
-                    recipeCount: recipeCount,
                     libraryEmpty: libraryEmpty,
                   ),
                   // Same condition as the switch in _buildLibrary, so the
@@ -506,7 +505,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     required RecipeListViewModel viewModel,
     required List<PersonalTag> personalTags,
     required bool personalTagsLoading,
-    required int recipeCount,
     required bool libraryEmpty,
   }) {
     final showSwitch = !viewModel.isSelectionMode && !libraryEmpty;
@@ -571,8 +569,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             onToggleFilters: () => setState(() => _showFilters = !_showFilters),
             hasActiveFilters: viewModel.hasActiveFilters,
             onClearAllFilters: viewModel.clearAllFilters,
-            resultCount: recipeCount,
+            resultCount: viewModel.matchingCount,
             showStats: false,
+            // Drawn in the list by _libraryExtras, so it scrolls with the cards.
+            showFilterPanel: false,
           ),
         ],
       ],
@@ -585,6 +585,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   List<Widget> _libraryExtras(RecipeListViewModel viewModel) {
     if (viewModel.isSelectionMode) return const [];
     return [
+      SliverToBoxAdapter(
+        child: MinaReceptFilterPanel(viewModel: viewModel, show: _showFilters),
+      ),
       // BUT-407: live online-members presence bar (union across groups).
       const SliverToBoxAdapter(child: FamilyPresenceBar()),
       // BUT-408: live cooking session card for the user's friend groups.

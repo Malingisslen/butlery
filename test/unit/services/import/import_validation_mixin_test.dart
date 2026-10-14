@@ -231,7 +231,6 @@ void main() {
       });
 
       test('should preserve emojis and Swedish characters in text', () {
-        // normalizeText preserves emojis (they may be meaningful in recipes)
         final withEmoji = validator.normalizeText('Recipe 🔥 with emojis');
         expect(withEmoji, contains('Recipe'));
         expect(withEmoji, contains('emojis'));
@@ -373,6 +372,17 @@ void main() {
         // Prod extracts the first number it finds
         final rating = validator.extractRating('3 stjärnor ⭐');
         expect(rating == null || rating == 3.0, isTrue);
+      });
+
+      test('reads the ★ the app writes: a number before it, or one per star', () {
+        expect(validator.extractRating('4 ★'), equals(4.0));
+        expect(validator.extractRating('Betyg: ★★★★'), equals(4.0));
+        expect(validator.extractRating('★★'), equals(2.0));
+        // One bare star is a bullet or a label, not a rating.
+        expect(validator.extractRating('★ Favorit'), isNull);
+        expect(validator.extractRating('1 ★'), equals(1.0));
+        // Six in a row is decoration, not a rating out of five.
+        expect(validator.extractRating('★★★★★★'), isNull);
       });
 
       test('should validate rating range', () {

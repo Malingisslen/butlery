@@ -83,7 +83,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // ingredient/instruction splitters in preprocessText can cut a line
       // apart. The original first line is the real title; the body still
       // parses from `preprocessed`.
-      final result = await _parseTextToRecipe(preprocessed, normalized);
+      final result = await _parseTextToRecipe(
+        preprocessed,
+        normalized,
+        // Raw input: normalizeText strips ★ with the rest of the symbol
+        // block, so a rating written as stars is gone afterwards.
+        rating: extractRating(input),
+      );
 
       if (result == null) {
         return ImportResult.failure(
@@ -443,7 +449,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// [titleSource] is the pre-preprocess text used ONLY for the title, so the
   /// ingredient/instruction splitters can't truncate a compound title.
   Future<({Recipe recipe, List<ParseConfidence>? confidences})?>
-  _parseTextToRecipe(String text, String titleSource) async {
+  _parseTextToRecipe(
+    String text,
+    String titleSource, {
+    double? rating,
+  }) async {
     // Blank lines are dropped from `lines`, but WHERE they were is kept: a
     // line that opens a block after a blank is how a colon-less heading
     // ("Ostsås", "Montering") tells itself apart from a quantity-less
@@ -825,7 +835,6 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // moves on few pages, because most labelled lines were already read
     // correctly — see the class doc for what is genuinely new.
     final timeMinutes = RecipeTimeExtractor.extract(text) ?? _extractTime(text);
-    final rating = extractRating(text);
     final mealType = _guessMealType(text);
 
     final structured = await _structuredIngredients(
