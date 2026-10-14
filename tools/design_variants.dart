@@ -195,6 +195,30 @@ const rawWidgetSpecs = <RawWidgetSpec>[
     'showModalBottomSheet',
   ], 'the shared bottom-sheet helper'),
   RawWidgetSpec('raw_segmented', ['SegmentedButton'], 'ButlerySegmentSwitch'),
+  RawWidgetSpec('raw_icon_button', [
+    'IconButton',
+  ], 'AppIconButton or ButleryCloseButton'),
+  RawWidgetSpec('raw_text_button', [
+    'TextButton',
+    'TextButton.icon',
+  ], 'ButleryTextButton'),
+  RawWidgetSpec('raw_filled_button', [
+    'FilledButton',
+    'FilledButton.icon',
+  ], 'ActionButtons or ButleryDialogPrimary'),
+  RawWidgetSpec('raw_outlined_button', [
+    'OutlinedButton',
+    'OutlinedButton.icon',
+  ], 'ActionButtons.outlinedButton'),
+  RawWidgetSpec('raw_elevated_button', [
+    'ElevatedButton',
+    'ElevatedButton.icon',
+  ], 'ActionButtons'),
+  RawWidgetSpec('raw_alert_dialog', [
+    'AlertDialog',
+    'SimpleDialog',
+  ], 'ButleryDialog'),
+  RawWidgetSpec('raw_card', ['Card'], 'the shared card'),
 ];
 
 const _svArb = 'lib/l10n/app_sv.arb';
