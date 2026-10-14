@@ -273,7 +273,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
 
     if (provider == null) {
       // No provider found - return error widget
-      return _buildErrorWidget(context, 'ApplicationProvider not found');
+      return _buildErrorWidget(context);
     }
 
     if (!provider.isReady) {
@@ -308,7 +308,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorWidget(BuildContext context, String message) {
+  Widget _buildErrorWidget(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -320,12 +320,13 @@ class ApplicationReadyBuilder extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Application Error',
+            'Butlery kunde inte starta',
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            message,
+            'Något stoppade appen medan den startade. Starta om den, så '
+            'försöker vi igen.',
             style: AppTextStyles.bodyLarge,
             textAlign: TextAlign.center,
           ),

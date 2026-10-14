@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -49,24 +50,33 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ButleryPage.undersida(
-      title: l10n.settingsConsents,
-      backTo: widget.backTo,
-      body: Consumer<ConsentViewModel>(
-        builder: (context, viewModel, _) {
-          if (!viewModel.isLoading) _loadedOnce = true;
-          if (viewModel.isLoading && !_loadedOnce) {
-            return StateWidget.loading(message: l10n.loadingConsents);
-          }
-          return ListView(
-            padding: ButleryPageBody.margin(
-              context,
-              bottom: AppDimensions.space24,
-            ),
-            children: _sections(context, viewModel),
-          );
-        },
+    return Consumer<ConsentViewModel>(
+      builder: (context, viewModel, _) => UnsavedChangesGuard(
+        isDirty: viewModel.hasUnsavedChanges && !viewModel.isSaving,
+        child: ButleryPage.undersida(
+          title: l10n.settingsConsents,
+          backTo: widget.backTo,
+          body: _body(context, viewModel),
+        ),
       ),
+    );
+  }
+
+  Widget _body(BuildContext context, ConsentViewModel viewModel) {
+    final l10n = context.l10n;
+    if (!viewModel.isLoading) _loadedOnce = true;
+    if (viewModel.isLoading && !_loadedOnce) {
+      return StateWidget.loading(message: l10n.loadingConsents);
+    }
+    if (viewModel.loadFailed) {
+      return StateWidget.error(
+        message: l10n.consentLoadFailed,
+        onAction: viewModel.loadConsent,
+      );
+    }
+    return ListView(
+      padding: ButleryPageBody.margin(context, bottom: AppDimensions.space24),
+      children: _sections(context, viewModel),
     );
   }
 

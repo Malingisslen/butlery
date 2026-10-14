@@ -20663,4 +20663,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String friendProfileShareLinkRowOf(String name) {
     return 'Share a link to the profile of $name';
   }
+
+  @override
+  String get mfaStatusLoadFailed =>
+      'We couldn\'t check whether two-step verification is on. Try again.';
+
+  @override
+  String get consentLoadFailed => 'We couldn\'t read your consents. Try again.';
 }

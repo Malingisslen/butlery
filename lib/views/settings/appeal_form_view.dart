@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/models/social/decision_detail_args.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
@@ -71,59 +72,64 @@ class _AppealFormViewState extends State<AppealFormView> {
     final owner = widget.args.role == AppealRole.owner;
     return ChangeNotifierProvider<AppealFormViewModel>.value(
       value: _vm,
-      child: ButleryPage.undersida(
-        title: l10n.appealFormTitle,
-        showTabBar: false,
-        body: Consumer<AppealFormViewModel>(
-          builder: (context, vm, _) => ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: ButleryTopBar.sideMargin(context),
-              vertical: AppDimensions.space16,
-            ),
-            children: [
-              TintedNote.labelled(
-                label: l10n.decisionOutcomeLabel,
-                text: decisionHeadline(l10n, widget.args.outcome.decision),
+      child: Consumer<AppealFormViewModel>(
+        builder: (context, vm, _) => UnsavedChangesGuard(
+          isDirty: vm.text.trim().isNotEmpty,
+          child: ButleryPage.undersida(
+            title: l10n.appealFormTitle,
+            showTabBar: false,
+            body: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: ButleryTopBar.sideMargin(context),
+                vertical: AppDimensions.space16,
               ),
-              const SizedBox(height: AppDimensions.space16),
-              Text(l10n.appealFormQuestion, style: AppTextStyles.titleBold),
-              const SizedBox(height: AppDimensions.space4),
-              Text(
-                l10n.appealFormIntro,
-                style: AppTextStyles.bodyMedium.copyWith(color: muted),
-              ),
-              const SizedBox(height: AppDimensions.space12),
-              LabeledField(
-                child: TextField(
-                  controller: _controller,
-                  enabled: !vm.isLoading,
-                  style: fieldTextStyle(context, enabled: !vm.isLoading),
-                  minLines: 5,
-                  maxLines: 10,
-                  maxLength: ModerationAppealsService.maxTextLength,
-                  textCapitalization: TextCapitalization.sentences,
-                  keyboardType: TextInputType.multiline,
-                  onChanged: vm.setText,
-                  decoration: InputDecoration(
-                    hintText: l10n.appealFormHint,
-                    counterText: l10n.appealCounter(
-                      vm.text.length,
-                      ModerationAppealsService.maxTextLength,
+              children: [
+                TintedNote.labelled(
+                  label: l10n.decisionOutcomeLabel,
+                  text: decisionHeadline(l10n, widget.args.outcome.decision),
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                Text(l10n.appealFormQuestion, style: AppTextStyles.titleBold),
+                const SizedBox(height: AppDimensions.space4),
+                Text(
+                  l10n.appealFormIntro,
+                  style: AppTextStyles.bodyMedium.copyWith(color: muted),
+                ),
+                const SizedBox(height: AppDimensions.space12),
+                LabeledField(
+                  child: TextField(
+                    controller: _controller,
+                    enabled: !vm.isLoading,
+                    style: fieldTextStyle(context, enabled: !vm.isLoading),
+                    minLines: 5,
+                    maxLines: 10,
+                    maxLength: ModerationAppealsService.maxTextLength,
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.multiline,
+                    onChanged: vm.setText,
+                    decoration: InputDecoration(
+                      hintText: l10n.appealFormHint,
+                      counterText: l10n.appealCounter(
+                        vm.text.length,
+                        ModerationAppealsService.maxTextLength,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.space8),
-              Text(
-                owner ? l10n.appealFormOnceOwner : l10n.appealFormOnceReporter,
-                style: AppTextStyles.captionBase.copyWith(color: muted),
-              ),
-              const SizedBox(height: AppDimensions.space16),
-              FilledButton(
-                onPressed: vm.canSubmit ? _submit : null,
-                child: Text(l10n.appealSubmit),
-              ),
-            ],
+                const SizedBox(height: AppDimensions.space8),
+                Text(
+                  owner
+                      ? l10n.appealFormOnceOwner
+                      : l10n.appealFormOnceReporter,
+                  style: AppTextStyles.captionBase.copyWith(color: muted),
+                ),
+                const SizedBox(height: AppDimensions.space16),
+                FilledButton(
+                  onPressed: vm.canSubmit ? _submit : null,
+                  child: Text(l10n.appealSubmit),
+                ),
+              ],
+            ),
           ),
         ),
       ),

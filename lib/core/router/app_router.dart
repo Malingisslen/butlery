@@ -193,7 +193,7 @@ class AppRouter {
 
         case Routes.setNewPassword:
           final code = settings.arguments;
-          if (code is! String) return _errorRoute();
+          if (code is! String) return errorRoute();
           return _buildRoute(
             SetNewPasswordView(code: code),
             settings,
@@ -240,7 +240,7 @@ class AppRouter {
           final args = decodeRecipeDetailRouteArgs(settings.arguments);
           final recipe = args.recipe;
           if (recipe == null) {
-            return _errorRoute('Recipe argument missing for detail view');
+            return errorRoute('Recipe argument missing for detail view');
           }
           return _buildRoute(
             RecipeDetailView(
@@ -259,7 +259,7 @@ class AppRouter {
         case Routes.editRecipe:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
-            return _errorRoute('Recipe argument missing for edit view');
+            return errorRoute('Recipe argument missing for edit view');
           }
           return _buildRoute(
             EditRecipeView(recipe: recipe),
@@ -332,7 +332,7 @@ class AppRouter {
                 cookingArgs['copyInsteadOfEdit'] as bool? ?? false;
           }
           if (recipe == null) {
-            return _errorRoute('Recipe argument missing for cooking mode');
+            return errorRoute('Recipe argument missing for cooking mode');
           }
           return _buildRoute(
             CookingModeView(
@@ -568,16 +568,16 @@ class AppRouter {
               RouteAnimationType.fade,
             );
           }
-          return _errorRoute('Unknown route: ${settings.name}');
+          return errorRoute('Unknown route: ${settings.name}');
       }
     } catch (e) {
-      return _errorRoute('Error navigating to ${settings.name}: $e');
+      return errorRoute('Error navigating to ${settings.name}: $e');
     }
   }
 
   /// Handle unknown routes
   static Route<dynamic> handleUnknownRoute(RouteSettings settings) {
-    return _errorRoute('Unknown route: ${settings.name}');
+    return errorRoute('Unknown route: ${settings.name}');
   }
 
   /// A page with several ways in names Back only when its caller passed
@@ -664,7 +664,8 @@ class AppRouter {
   }
 
   /// Create error route with scale animation
-  static Route<dynamic> _errorRoute([String? message]) {
+  @visibleForTesting
+  static Route<dynamic> errorRoute([String? message]) {
     if (message != null) AppLogger.warning(message);
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
@@ -687,7 +688,7 @@ class AppRouter {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppDimensions.space16),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: () =>
                         Navigator.of(context).pushReplacementNamed(Routes.home),
                     child: Text(context.l10n.errorBackToStart),
@@ -697,6 +698,7 @@ class AppRouter {
             ),
           ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (!AnimationUtils.shouldAnimate(context)) return child;
         const begin = 0.0;
         const end = 1.0;
         const curve = AppMotion.curve;

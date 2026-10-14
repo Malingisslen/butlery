@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
@@ -122,90 +123,98 @@ class _AccountEmailViewState extends State<AccountEmailView> {
     );
     final currentEmail = _viewModel.currentEmail;
     final confirmation = _viewModel.emailChangeConfirmation;
-    return MoreAreaScaffold.backTo(
-      l10n.settingsAccountAreaTitle,
-      title: l10n.settingsAccountEmail,
-      sections: [
-        ListenableBuilder(
-          listenable: _viewModel,
-          builder: (context, _) => FocusTraversalGroup(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppDimensions.space16),
-                if (currentEmail != null)
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: l10n.accountSecurityEmailNow),
-                        TextSpan(
-                          text: currentEmail,
-                          style: AppTextStyles.bodyLargeBold,
-                        ),
-                      ],
+    return ListenableBuilder(
+      listenable: _newEmailController,
+      builder: (context, child) => UnsavedChangesGuard(
+        isDirty: !_working && _newEmailController.text.trim().isNotEmpty,
+        child: child!,
+      ),
+      child: MoreAreaScaffold.backTo(
+        l10n.settingsAccountAreaTitle,
+        title: l10n.settingsAccountEmail,
+        sections: [
+          ListenableBuilder(
+            listenable: _viewModel,
+            builder: (context, _) => FocusTraversalGroup(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: AppDimensions.space16),
+                  if (currentEmail != null)
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(text: l10n.accountSecurityEmailNow),
+                          TextSpan(
+                            text: currentEmail,
+                            style: AppTextStyles.bodyLargeBold,
+                          ),
+                        ],
+                      ),
+                      key: const ValueKey('accountEmail.current'),
+                      style: AppTextStyles.bodyLarge,
                     ),
-                    key: const ValueKey('accountEmail.current'),
-                    style: AppTextStyles.bodyLarge,
-                  ),
-                const SizedBox(height: AppDimensions.space12),
-                switch (confirmation) {
-                  EmailChangeConfirmation.password => ButleryPasswordField(
-                    key: const ValueKey('accountEmail.password'),
-                    label: l10n.accountSecurityCurrentPassword,
-                    controller: _passwordController,
-                    onSubmitted: (_) => _newEmailFocus.requestFocus(),
-                  ),
-                  EmailChangeConfirmation.provider => Text(
-                    l10n.accountSecurityEmailProviderReauth(
-                      _viewModel.reauthProviderName.orEmpty(),
+                  const SizedBox(height: AppDimensions.space12),
+                  switch (confirmation) {
+                    EmailChangeConfirmation.password => ButleryPasswordField(
+                      key: const ValueKey('accountEmail.password'),
+                      label: l10n.accountSecurityCurrentPassword,
+                      controller: _passwordController,
+                      onSubmitted: (_) => _newEmailFocus.requestFocus(),
                     ),
-                    key: const ValueKey('accountEmail.providerReauth'),
-                    style: muted,
-                  ),
-                  EmailChangeConfirmation.unavailable => Text(
-                    l10n.accountSecurityEmailCannotConfirmHere,
-                    key: const ValueKey('accountEmail.cannotConfirmHere'),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.error,
+                    EmailChangeConfirmation.provider => Text(
+                      l10n.accountSecurityEmailProviderReauth(
+                        _viewModel.reauthProviderName.orEmpty(),
+                      ),
+                      key: const ValueKey('accountEmail.providerReauth'),
+                      style: muted,
+                    ),
+                    EmailChangeConfirmation.unavailable => Text(
+                      l10n.accountSecurityEmailCannotConfirmHere,
+                      key: const ValueKey('accountEmail.cannotConfirmHere'),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  },
+                  const SizedBox(height: AppDimensions.space16),
+                  LabeledField(
+                    label: l10n.accountSecurityNewEmail,
+                    child: TextField(
+                      key: const ValueKey('accountEmail.newEmail'),
+                      controller: _newEmailController,
+                      focusNode: _newEmailFocus,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _submit(),
                     ),
                   ),
-                },
-                const SizedBox(height: AppDimensions.space16),
-                LabeledField(
-                  label: l10n.accountSecurityNewEmail,
-                  child: TextField(
-                    key: const ValueKey('accountEmail.newEmail'),
-                    controller: _newEmailController,
-                    focusNode: _newEmailFocus,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _submit(),
+                  AccountFormButton(
+                    label: l10n.accountSecurityChangeEmail,
+                    busy: _viewModel.isLoading || _working,
+                    onPressed:
+                        confirmation == EmailChangeConfirmation.unavailable
+                        ? null
+                        : _submit,
                   ),
-                ),
-                AccountFormButton(
-                  label: l10n.accountSecurityChangeEmail,
-                  busy: _viewModel.isLoading || _working,
-                  onPressed: confirmation == EmailChangeConfirmation.unavailable
-                      ? null
-                      : _submit,
-                ),
-                const SizedBox(height: AppDimensions.space16),
-                // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms
-                // only the new address; the old one is told afterwards and
-                // can undo.
-                TintedNote(
-                  child: Text(
-                    l10n.accountSecurityEmailChangeHow,
-                    key: const ValueKey('accountEmail.changeHow'),
-                    style: TintedNote.textStyle(context),
+                  const SizedBox(height: AppDimensions.space16),
+                  // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms
+                  // only the new address; the old one is told afterwards and
+                  // can undo.
+                  TintedNote(
+                    child: Text(
+                      l10n.accountSecurityEmailChangeHow,
+                      key: const ValueKey('accountEmail.changeHow'),
+                      style: TintedNote.textStyle(context),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

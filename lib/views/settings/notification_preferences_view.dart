@@ -188,9 +188,7 @@ class _NotificationPreferencesViewState
                   )
                 : _hasError
                 ? StateWidget.error(
-                    message: context.l10n.errorCouldNotLoad(
-                      'aviseringsinställningar',
-                    ),
+                    message: context.l10n.errorCouldNotLoadNotificationSettings,
                     actionLabel: context.l10n.commonRetry,
                     onAction: _loadPreferences,
                   )

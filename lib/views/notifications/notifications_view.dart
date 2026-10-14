@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
@@ -106,26 +107,28 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     final count = _selectedIds.length;
     // Same bar, other content while choosing: the count replaces the title and
     // the close action replaces the back arrow.
-    return ButleryPage.undersida(
-      title: _selectionMode
-          ? context.l10n.notificationsSelectedCount(count)
-          : context.l10n.notificationsTitle,
-      leading: _selectionMode
-          ? IconButton(
-              icon: const ButleryIcon(ButleryIcons.x),
-              tooltip: context.l10n.commonClose,
-              onPressed: _cancelSelection,
-            )
-          : null,
-      actions: [
-        if (_selectionMode)
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.trash2),
-            tooltip: context.l10n.commonDismiss,
-            onPressed: count > 0 ? () => _dismissSelected(vm) : null,
-          ),
-      ],
-      body: _buildBody(context, vm),
+    return PopScope(
+      canPop: !_selectionMode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _cancelSelection();
+      },
+      child: ButleryPage.undersida(
+        title: _selectionMode
+            ? context.l10n.notificationsSelectedCount(count)
+            : context.l10n.notificationsTitle,
+        leading: _selectionMode
+            ? ButleryCancelSelectionButton(onPressed: _cancelSelection)
+            : null,
+        actions: [
+          if (_selectionMode)
+            IconButton(
+              icon: const ButleryIcon(ButleryIcons.trash2),
+              tooltip: context.l10n.commonDismiss,
+              onPressed: count > 0 ? () => _dismissSelected(vm) : null,
+            ),
+        ],
+        body: _buildBody(context, vm),
+      ),
     );
   }
 
@@ -324,7 +327,7 @@ class _NotificationTile extends StatelessWidget {
               size: AppDimensions.iconSizeM,
             )
           : ButleryIcon(
-              _categoryIcon(entry.category),
+              notificationCategoryIcon(entry.category),
               color: entry.opened ? cs.onSurfaceVariant : cs.onSurface,
               size: AppDimensions.iconSizeM,
             ),
@@ -352,21 +355,25 @@ class _NotificationTile extends StatelessWidget {
       onLongPress: onLongPress,
     );
   }
+}
 
-  static IconData _categoryIcon(String category) {
-    switch (category) {
-      case 'social':
-        return ButleryIcons.users;
-      case 'recipe':
-        return ButleryIcons.utensils;
-      case 'shopping':
-        return ButleryIcons.shoppingCart;
-      case 'menu':
-        return ButleryIcons.calendar;
-      case 'system':
-        return ButleryIcons.info;
-      default:
-        return ButleryIcons.bell;
-    }
+/// The stored categories are the [NotificationCategory] names.
+@visibleForTesting
+IconData notificationCategoryIcon(String category) {
+  switch (category) {
+    case 'friends':
+    case 'social':
+    case 'collaboration':
+      return ButleryIcons.users;
+    case 'recipes':
+      return ButleryIcons.utensils;
+    case 'shopping':
+      return ButleryIcons.shoppingCart;
+    case 'messaging':
+      return ButleryIcons.messageSquare;
+    case 'system':
+      return ButleryIcons.info;
+    default:
+      return ButleryIcons.bell;
   }
 }

@@ -8,6 +8,7 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
+import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
@@ -47,7 +48,7 @@ class FeedbackRow extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${entry.category.name.toUpperCase()} · '
+                  '${feedbackCategoryLabel(context.l10n, entry.category)} · '
                   '${_formatDate(entry.createdAt)}',
                   style: AppTextStyles.bodyMedium,
                   overflow: TextOverflow.ellipsis,
@@ -103,7 +104,7 @@ class FeedbackRow extends StatelessWidget {
     final confirmation = context.l10n.adminCopiedForClaude;
     final failure = context.l10n.adminCopyFailed;
     try {
-      await Clipboard.setData(ClipboardData(text: _buildClaudePrompt(entry)));
+      await Clipboard.setData(ClipboardData(text: buildClaudePrompt(entry)));
     } catch (_) {
       if (!context.mounted) return;
       SnackBarUtils.showFailure(context, what: failure);
@@ -113,7 +114,8 @@ class FeedbackRow extends StatelessWidget {
     SnackBarUtils.showSuccess(context, confirmation);
   }
 
-  static String _buildClaudePrompt(FeedbackEntry entry) {
+  @visibleForTesting
+  static String buildClaudePrompt(FeedbackEntry entry) {
     final trail = entry.recentInteractions.isEmpty
         ? '—'
         : _formatInteractions(entry.recentInteractions);
@@ -121,7 +123,6 @@ class FeedbackRow extends StatelessWidget {
         'Kategori: ${_categoryLabel(entry.category)} · '
         '${_formatDate(entry.createdAt)}\n'
         'Enhet: ${entry.deviceInfo ?? '—'}\n'
-        'E-post: ${entry.email ?? '—'}\n'
         'Användaren skrev: "${entry.description}"\n'
         'Skärmväg innan: $trail\n'
         'Skärmdump: ${entry.screenshotUrl ?? '—'}\n'
@@ -252,9 +253,11 @@ class _StatusControl extends StatelessWidget {
             child: ChoiceChip(
               label: Text(label),
               selected: entry.status == status,
-              onSelected: entry.status == status
-                  ? null
-                  : (_) => _setStatus(context, status),
+              // The chosen chip stays enabled: a disabled one is drawn with
+              // the disabled label colour, 3.0:1 on the ink fill.
+              onSelected: (_) {
+                if (entry.status != status) _setStatus(context, status);
+              },
             ),
           ),
       ],

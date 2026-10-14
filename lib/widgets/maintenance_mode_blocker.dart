@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -45,7 +46,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
       data: MediaQuery.of(context).copyWith(
         textScaler: MediaQuery.textScalerOf(context).clamp(
           minScaleFactor: 1.0,
-          maxScaleFactor: 1.5,
+          maxScaleFactor: AccessibilityUtils.maxTextScale,
         ),
       ),
       child: Scaffold(

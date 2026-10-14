@@ -13,6 +13,8 @@
 // any future refactor (e.g. moving the index into a real ViewModel) can
 // drop the listener and remove the notifier without touching consumers.
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -53,6 +55,9 @@ class AppActions {
       GoToShoppingIntent: CallbackAction<GoToShoppingIntent>(
         onInvoke: (_) => _switchTab(2),
       ),
+      GoToMoreIntent: CallbackAction<GoToMoreIntent>(
+        onInvoke: (_) => _switchTab(3),
+      ),
       SubmitFormIntent: CallbackAction<SubmitFormIntent>(
         onInvoke: (_) => _submitFocusedForm(),
       ),
@@ -82,10 +87,30 @@ class AppActions {
     // Always assign — `ValueNotifier` short-circuits identical values, so
     // listeners only rebuild on real changes.
     mainTabSwitchRequest.value = index;
-    // Pop back to the root if the user is deep in a pushed route, so the
-    // tab switch is actually visible. Safe no-op when already at root.
-    appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+    unawaited(_popToRoot());
     return null;
+  }
+
+  // `maybePop` rather than `popUntil`: popUntil skips every PopScope, so a
+  // form with unsaved input would be dropped without its confirmation.
+  // `maybePop` returns true for a route that vetoed the pop too, so a veto is
+  // read off the route that is still on top.
+  static Future<void> _popToRoot() async {
+    final navigator = appNavigatorKey.currentState;
+    while (navigator != null && navigator.mounted && navigator.canPop()) {
+      final before = _topRoute(navigator);
+      if (!await navigator.maybePop()) return;
+      if (!navigator.mounted || identical(before, _topRoute(navigator))) return;
+    }
+  }
+
+  static Route<dynamic>? _topRoute(NavigatorState navigator) {
+    Route<dynamic>? top;
+    navigator.popUntil((route) {
+      top = route;
+      return true;
+    });
+    return top;
   }
 
   static Object? _submitFocusedForm() {

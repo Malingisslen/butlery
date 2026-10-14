@@ -75,6 +75,26 @@ void main() {
     );
   });
 
+  testWidgets('when the status cannot be read it says so, not "av"', (
+    tester,
+  ) async {
+    when(() => mfa.hasMfaEnabled()).thenThrow(Exception('offline'));
+    when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
+
+    await pump(tester);
+
+    final sv = AppLocalizationsSv();
+    expect(find.text(sv.mfaStatusLoadFailed), findsOneWidget);
+    expect(find.text(sv.mfaOffTitle), findsNothing);
+    expect(find.byType(HeroButton), findsNothing);
+
+    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+    await tester.tap(find.text(sv.commonRetry));
+    await tester.pumpAndSettle();
+    expect(find.text(sv.mfaStatusLoadFailed), findsNothing);
+    expect(find.text(sv.mfaOnTitle), findsOneWidget);
+  });
+
   testWidgets('with two-step verification on, it can still be removed', (
     tester,
   ) async {

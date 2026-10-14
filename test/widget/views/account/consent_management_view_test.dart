@@ -2,6 +2,8 @@
 // mina val" writes one consent record, a failed save shows what is really
 // stored, and "Återkalla allt valfritt" confirms before it revokes.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -153,6 +155,53 @@ void main() {
       tester.widget<Switch>(switchOf(sv.consentPushNotifications)).value,
       isTrue,
     );
+  });
+
+  testWidgets('a failed read shows a retry, not switches that save as off', (
+    tester,
+  ) async {
+    when(service.getUserConsent).thenThrow(Exception('offline'));
+    await pump(tester);
+
+    expect(find.text(sv.consentLoadFailed), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
+    expect(find.text(sv.consentSaveMyChoices), findsNothing);
+
+    when(service.getUserConsent).thenAnswer(
+      (_) async => UserConsent(
+        userId: 'u1',
+        purposes: stored,
+        grantedAt: DateTime(2026, 1, 1),
+        consentVersion: '1.1.0',
+        deviceInfo: 'test',
+      ),
+    );
+    await tester.tap(find.text(sv.commonRetry));
+    await tester.pumpAndSettle();
+    expect(find.byType(Switch), findsNWidgets(5));
+  });
+
+  testWidgets('leaving with a changed switch asks first, an unchanged page '
+      'leaves quietly', (tester) async {
+    await pump(tester);
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+
+    await tester.tap(find.text(sv.consentPushNotifications));
+    await tester.pumpAndSettle();
+    unawaited(navigator.maybePop());
+    await tester.pumpAndSettle();
+    expect(find.text(sv.unsavedChangesTitle), findsOneWidget);
+
+    await tester.tap(find.text(sv.commonCancel));
+    await tester.pumpAndSettle();
+    expect(find.text(sv.unsavedChangesTitle), findsNothing);
+    expect(find.byType(ConsentManagementView), findsOneWidget);
+
+    await tester.tap(find.text(sv.consentPushNotifications));
+    await tester.pumpAndSettle();
+    unawaited(navigator.maybePop());
+    await tester.pumpAndSettle();
+    expect(find.text(sv.unsavedChangesTitle), findsNothing);
   });
 
   testWidgets('a failed save shows the error and the stored state', (

@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/views/settings/mfa_backup_codes_dialog.dart';
 import 'package:butlery/views/settings/mfa_enrollment_forms.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
@@ -41,6 +42,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   bool _isLoading = false;
   bool _hasMfa = false;
+  bool _statusLoadFailed = false;
   bool _isEnrolling = false;
   bool _verifyingCode = false;
   MfaTotpSetup? _setup;
@@ -67,12 +69,15 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Future<void> _loadMfaStatus() async {
     setState(() => _isLoading = true);
 
+    var failed = false;
     try {
       _hasMfa = await _authService.hasMfaEnabled();
       _enrolledFactors = await _authService.getEnrolledFactors();
     } catch (e) {
       AppLogger.error('Failed to load MFA status: $e');
+      failed = true;
     }
+    _statusLoadFailed = failed;
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -258,29 +263,37 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   @override
   Widget build(BuildContext context) {
-    return ButleryPage.undersida(
-      title: context.l10n.mfaTitle,
-      backTo: context.l10n.settingsAccountAreaTitle,
-      body: _isLoading && !_isEnrolling
-          ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.space16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoCard(),
-                  const SizedBox(height: AppDimensions.space24),
-                  if (_hasMfa)
-                    _buildEnrolledSection()
-                  else
-                    _buildEnrollSection(),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: AppDimensions.space16),
-                    MfaErrorBanner(message: _errorMessage!),
+    return UnsavedChangesGuard(
+      isDirty: _isEnrolling && !_verifyingCode,
+      child: ButleryPage.undersida(
+        title: context.l10n.mfaTitle,
+        backTo: context.l10n.settingsAccountAreaTitle,
+        body: _isLoading && !_isEnrolling
+            ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
+            : _statusLoadFailed && !_isEnrolling
+            ? StateWidget.error(
+                message: context.l10n.mfaStatusLoadFailed,
+                onAction: _loadMfaStatus,
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.space16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoCard(),
+                    const SizedBox(height: AppDimensions.space24),
+                    if (_hasMfa)
+                      _buildEnrolledSection()
+                    else
+                      _buildEnrollSection(),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: AppDimensions.space16),
+                      MfaErrorBanner(message: _errorMessage!),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
