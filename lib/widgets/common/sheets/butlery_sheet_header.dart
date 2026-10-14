@@ -17,6 +17,8 @@ class ButlerySheetHeader extends StatelessWidget {
     this.onClose,
     this.subtitle,
     this.trailing,
+    this.leading,
+    this.trailingTopInset = 0,
     super.key,
   });
 
@@ -34,6 +36,13 @@ class ButlerySheetHeader extends StatelessWidget {
   /// An action before the ×, such as a text button.
   final Widget? trailing;
 
+  /// A glyph before the title, as the swap icon on the substitution sheet.
+  final Widget? leading;
+
+  /// Pushes [trailing] and the × down, for a sheet whose first line is taller
+  /// than the buttons.
+  final double trailingTopInset;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -45,6 +54,10 @@ class ButlerySheetHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (leading != null) ...[
+            ExcludeSemantics(child: leading!),
+            const SizedBox(width: AppDimensions.space12),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,9 +81,21 @@ class ButlerySheetHeader extends StatelessWidget {
               ],
             ),
           ),
-          ?trailing,
-          if (closeLabel != null)
-            ButleryCloseButton(semanticLabel: closeLabel!, onPressed: onClose),
+          if (trailing != null || closeLabel != null)
+            Padding(
+              padding: EdgeInsets.only(top: trailingTopInset),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ?trailing,
+                  if (closeLabel != null)
+                    ButleryCloseButton(
+                      semanticLabel: closeLabel!,
+                      onPressed: onClose,
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );

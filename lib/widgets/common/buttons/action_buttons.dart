@@ -10,6 +10,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
+export 'package:butlery/widgets/common/buttons/app_icon_button.dart';
+
 /// ActionButtons - Utility action buttons with a busy state.
 ///
 /// A busy button (`isLoading`) keeps its shape, its colours and its name, or
@@ -293,6 +295,7 @@ class ActionButtons {
     bool isExpanded = false,
     ButtonStyle? style,
     bool enablePressAnimation = true,
+    bool iconAtEnd = false,
   }) {
     final effectiveOnPressed = isLoading ? PlateLineButton.ignore : onPressed;
     final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
@@ -305,7 +308,7 @@ class ActionButtons {
         children: [
           // A busy button shows its words only, as drawn (Komponentark
           // v1:372).
-          if (icon != null && !isLoading)
+          if (icon != null && !isLoading && !iconAtEnd)
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.space4,
@@ -320,6 +323,13 @@ class ActionButtons {
               textAlign: TextAlign.center,
             ),
           ),
+          if (icon != null && !isLoading && iconAtEnd)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: AppDimensions.space4,
+              ),
+              child: ButleryIcon(icon),
+            ),
         ],
       ),
     );
@@ -425,58 +435,3 @@ class FloatingActionButtonWidget extends StatelessWidget {
 /// [onInk] and [outlinedOnInk] are for a button that sits on surface.ink
 /// (the Hem hero band, an ink overlay), where the ink primary would vanish.
 enum ActionButtonStyle { primary, secondary, outlined, onInk, outlinedOnInk }
-
-/// Canonical icon-only button for the Butlery design system.
-///
-/// Enforces WCAG 4.1.2 by requiring [semanticLabel]. Wraps [IconButton] so
-/// Material's 48dp minimum touch target (WCAG 2.5.5) is preserved.
-/// Use this in place of raw [IconButton] for any icon-only action.
-class AppIconButton extends StatelessWidget {
-  const AppIconButton({
-    required this.icon,
-    required this.onPressed,
-    required this.semanticLabel,
-    this.color,
-    this.iconSize,
-    this.padding,
-    super.key,
-  });
-
-  /// The icon to render.
-  final IconData icon;
-
-  /// Called when the button is tapped. Null disables the button.
-  final VoidCallback? onPressed;
-
-  /// Required screen-reader label (also used as tooltip).
-  /// Must be provided from `AppLocalizations` — no hardcoded Swedish.
-  final String semanticLabel;
-
-  /// Icon tint. Defaults to the theme's icon theme color.
-  final Color? color;
-
-  /// Icon glyph size. Defaults to [IconButton]'s Material default (24).
-  final double? iconSize;
-
-  /// Padding inside the button; affects visual size but not the 48dp hit area.
-  final EdgeInsetsGeometry? padding;
-
-  @override
-  Widget build(BuildContext context) {
-    // The name sits inside the button node as its label, as in
-    // FloatingActionButtonWidget; IconButton's own tooltip would name it
-    // through the tooltip field instead.
-    return Tooltip(
-      message: semanticLabel,
-      excludeFromSemantics: true,
-      child: IconButton(
-        icon: Semantics(
-          label: semanticLabel,
-          child: ButleryIcon(icon, color: color, size: iconSize),
-        ),
-        onPressed: onPressed,
-        padding: padding ?? const EdgeInsets.all(AppDimensions.space8),
-      ),
-    );
-  }
-}

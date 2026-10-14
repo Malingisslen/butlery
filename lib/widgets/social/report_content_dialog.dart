@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -13,7 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -61,12 +62,11 @@ class ReportContentDialog {
     required String dishId,
   }) async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.notMyDishTitle),
+      builder: (dialogContext) => ButleryDialog(
+        title: l10n.notMyDishTitle,
         content: Text(l10n.notMyDishBody),
-        scrollable: true,
         actions: [
           DialogCancelButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -156,7 +156,7 @@ class ReportContentDialog {
   static Future<_ReportOutcome?> _showReasonDialog(
     BuildContext context,
     ContentType contentType,
-  ) => showDialog<_ReportOutcome>(
+  ) => showButleryDialog<_ReportOutcome>(
     context: context,
     builder: (_) => _ReportReasonDialog(contentType: contentType),
   );
@@ -195,19 +195,16 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
     final canSubmit =
         _selectedReason != null && (!isOther || descriptionFilled);
 
-    return AlertDialog(
+    return ButleryDialog(
       // "Anmäl det här receptet" for a recipe, as drawn (Skarmar v12
       // etapp 9 #fbanmal:507). Interpretation: the other content types
       // have no drawn title and say "Anmäl innehåll".
-      title: Text(
-        widget.contentType == ContentType.recipe
-            ? l10n.reportDialogTitleRecipe
-            : l10n.reportDialogTitle,
-      ),
+      title: widget.contentType == ContentType.recipe
+          ? l10n.reportDialogTitleRecipe
+          : l10n.reportDialogTitle,
       // Five 48 dp reasons, the free-text field and the note do not fit
       // a short screen or large text, so the content scrolls rather
       // than clipping (tillganglighetshandoff:85, 200 % text).
-      scrollable: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,22 +242,18 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           ),
           if (isOther) ...[
             const SizedBox(height: 8),
-            LabeledField(
-              child: TextField(
-                controller: _descriptionController,
-                autofocus: true,
-                maxLength: 500,
-                maxLines: 3,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  hintText: l10n.reportDescriptionHint,
-                  // "Krävs när du väljer Annat." with the 0 / 500 counter
-                  // beside it, as drawn (#fbanmal:516;
-                  // produktregler.md). Interpretation: the drawn bold
-                  // on "Krävs" is left out; the helper is plain text.
-                  helperText: l10n.reportDescriptionRequiredHelper,
-                ),
-              ),
+            StyledInput(
+              controller: _descriptionController,
+              autofocus: true,
+              maxLength: 500,
+              maxLines: 3,
+              onChanged: (_) => setState(() {}),
+              hint: l10n.reportDescriptionHint,
+              // "Krävs när du väljer Annat." with the 0 / 500 counter
+              // beside it, as drawn (#fbanmal:516;
+              // produktregler.md). Interpretation: the drawn bold
+              // on "Krävs" is left out; the helper is plain text.
+              helperText: l10n.reportDescriptionRequiredHelper,
             ),
           ],
           const SizedBox(height: 12),

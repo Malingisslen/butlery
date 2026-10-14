@@ -9,8 +9,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/butlery_switch.dart';
 
@@ -154,16 +156,12 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
               const SizedBox(height: AppDimensions.space16),
 
               // Question field
-              LabeledField(
+              StyledInput(
                 label: context.l10n.pollQuestionLabel,
-                child: TextField(
-                  controller: _questionController,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.pollQuestionHint,
-                  ),
-                  onChanged: (_) => setState(() {}),
-                  maxLines: 2,
-                ),
+                hint: context.l10n.pollQuestionHint,
+                controller: _questionController,
+                onChanged: (_) => setState(() {}),
+                maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.space16),
 
@@ -191,14 +189,12 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                           ),
                         ),
                         if (_optionControllers.length > 2)
-                          IconButton(
+                          AppIconButton(
+                            icon: ButleryIcons.x,
+                            color: cs.error,
+                            iconSize: AppDimensions.iconSizeM,
+                            semanticLabel: context.l10n.tooltipRemoveOption,
                             onPressed: () => _removeOption(index),
-                            icon: ButleryIcon(
-                              ButleryIcons.x,
-                              color: cs.error,
-                              size: AppDimensions.iconSizeM,
-                            ),
-                            tooltip: context.l10n.tooltipRemoveOption,
                           ),
                       ],
                     ),
@@ -209,18 +205,10 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 if (_optionControllers.length < 4)
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: TextButton.icon(
+                    child: ButleryTextButton(
+                      label: context.l10n.pollAddOption,
+                      icon: ButleryIcons.plus,
                       onPressed: _addOption,
-                      icon: const ButleryIcon(
-                        ButleryIcons.plus,
-                        size: AppDimensions.iconSize18,
-                      ),
-                      label: Text(
-                        context.l10n.pollAddOption,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: cs.onSurface,
-                        ),
-                      ),
                     ),
                   ),
               ],
@@ -255,14 +243,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 spacing: AppDimensions.space8,
                 overflowSpacing: AppDimensions.space8,
                 children: [
-                  TextButton(
+                  ButleryTextButton(
+                    label: context.l10n.pollCancel,
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      context.l10n.pollCancel,
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
                   ),
                   ActionButtons.primaryButton(
                     context,

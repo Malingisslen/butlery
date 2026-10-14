@@ -6,6 +6,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -88,17 +89,9 @@ class ReplyBanner extends StatelessWidget {
           ),
 
           // Cancel button
-          IconButton(
+          ButleryCloseButton(
+            semanticLabel: context.l10n.messagingCancelReply,
             onPressed: onCancelReply,
-            icon: const ButleryIcon(ButleryIcons.x),
-            iconSize: 20,
-            color: cs.onSurfaceVariant,
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.minTouchTarget,
-              minHeight: AppDimensions.minTouchTarget,
-            ),
-            padding: EdgeInsets.zero,
-            tooltip: context.l10n.messagingCancelReply,
           ),
         ],
       ),

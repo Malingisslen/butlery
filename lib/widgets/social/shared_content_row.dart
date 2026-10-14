@@ -10,8 +10,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -19,7 +19,6 @@ import 'package:butlery/widgets/common/recipe_thumb.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/list/butlery_media_row.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 class SharedContentRow extends StatelessWidget {
   const SharedContentRow({
@@ -146,7 +145,7 @@ class SharedKindThumb extends StatelessWidget {
   }
 }
 
-/// The compact outlined "Spara": the shape of the row's one action.
+/// The outlined "Spara": the row's one action.
 class _SaveButton extends StatelessWidget {
   const _SaveButton({required this.label, required this.onPressed});
 
@@ -155,29 +154,10 @@ class _SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return PressFill(
-      surface: PressSurface.base,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(0, AppDimensions.minTouchTarget - 8),
-          ),
-          padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: AppDimensions.space16),
-          ),
-          foregroundColor: WidgetStatePropertyAll(cs.onSurface),
-          side: WidgetStatePropertyAll(BorderSide(color: cs.onSurface)),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            ),
-          ),
-          textStyle: WidgetStatePropertyAll(AppTextStyles.bodyBold),
-        ),
-        child: Text(label),
-      ),
+    return ActionButtons.outlinedButton(
+      context,
+      label: label,
+      onPressed: onPressed,
     );
   }
 }

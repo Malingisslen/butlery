@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/group_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -27,7 +28,7 @@ class GroupDialogs {
     BuildContext context, {
     List<UserProfile>? preSelectedMembers,
   }) async {
-    return await showDialog<FriendCategory?>(
+    return await showButleryDialog<FriendCategory?>(
       context: context,
       barrierDismissible: false,
       builder: (context) => CreateGroupDialog(
@@ -41,7 +42,7 @@ class GroupDialogs {
     BuildContext context, {
     required FriendCategory group,
   }) async {
-    return await showDialog<FriendCategory?>(
+    return await showButleryDialog<FriendCategory?>(
       context: context,
       barrierDismissible: false,
       builder: (context) => EditGroupDialog(group: group),
@@ -79,7 +80,7 @@ class GroupDialogs {
     required FriendCategory group,
     required UserProfile member,
   }) async {
-    final result = await showDialog<bool>(
+    final result = await showButleryDialog<bool>(
       context: context,
       builder: (context) => RemoveMemberDialog(
         group: group,
@@ -120,12 +121,12 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
     initialSelection.map((t) => t.targetId),
   );
 
-  return showDialog<List<InvitationTarget>>(
+  return showButleryDialog<List<InvitationTarget>>(
     context: context,
     builder: (_) => StatefulBuilder(
-      builder: (context, setDialogState) => AlertDialog(
-        title: Text(title),
-        contentPadding: EdgeInsets.zero,
+      builder: (context, setDialogState) => ButleryDialog(
+        title: title,
+        scrollable: false,
         content: SizedBox(
           width: double.maxFinite,
           height: MediaQuery.of(context).size.height * 0.5,
@@ -169,14 +170,14 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
         ),
         actions: [
           const DialogCancelButton(),
-          TextButton(
+          ButleryDialogPrimary(
+            label: context.l10n.commonDone,
             onPressed: () {
               final result = availableTargets
                   .where((t) => selected.contains(t.targetId))
                   .toList();
               Navigator.pop(context, result);
             },
-            child: Text(context.l10n.commonDone),
           ),
         ],
       ),

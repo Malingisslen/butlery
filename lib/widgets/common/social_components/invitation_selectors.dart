@@ -6,7 +6,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/choice_option.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
@@ -198,23 +201,20 @@ class InvitationSelectors {
         spacing: spacing,
         children: availableTypes.map((type) {
           final isSelected = selectedTypes?.contains(type) ?? false;
-          return PressFill(
-            surface: isSelected ? PressSurface.ink : PressSurface.base,
-            child: FilterChip(
-              label: Text(type),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (onTypesChanged != null) {
-                  final newSelection = List<String>.from(selectedTypes ?? []);
-                  if (selected) {
-                    newSelection.add(type);
-                  } else {
-                    newSelection.remove(type);
-                  }
-                  onTypesChanged(newSelection);
+          return ChoiceOption(
+            label: type,
+            selected: isSelected,
+            onSelected: () {
+              if (onTypesChanged != null) {
+                final newSelection = List<String>.from(selectedTypes ?? []);
+                if (isSelected) {
+                  newSelection.remove(type);
+                } else {
+                  newSelection.add(type);
                 }
-              },
-            ),
+                onTypesChanged(newSelection);
+              }
+            },
           );
         }).toList(),
       ),
@@ -286,33 +286,26 @@ class InvitationSelectors {
                     style: AppTextStyles.contentLabel,
                   ),
                   const SizedBox(width: AppDimensions.space8),
-                  PressFill(
-                    surface: PressSurface.base,
-                    child: DropdownButton<String>(
-                      icon: const ButleryIcon(ButleryIcons.chevronDown),
-                      iconEnabledColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
-                      iconDisabledColor: AppModeColors.textDisabled(
-                        Theme.of(context).brightness,
-                      ),
+                  Expanded(
+                    child: ButleryDropdown<String>(
+                      semanticLabel: context.l10n.invitationSortLabel,
                       value: 'name',
-                      items: [
-                        DropdownMenuItem(
+                      options: [
+                        ButleryDropdownOption(
                           value: 'name',
-                          child: Text(context.l10n.invitationSortByName),
+                          label: context.l10n.invitationSortByName,
                         ),
-                        DropdownMenuItem(
+                        ButleryDropdownOption(
                           value: 'type',
-                          child: Text(context.l10n.invitationSortByType),
+                          label: context.l10n.invitationSortByType,
                         ),
-                        DropdownMenuItem(
+                        ButleryDropdownOption(
                           value: 'members',
-                          child: Text(context.l10n.invitationSortByMembers),
+                          label: context.l10n.invitationSortByMembers,
                         ),
                       ],
                       onChanged: (sortBy) {
-                        if (onFilterChanged != null && sortBy != null) {
+                        if (onFilterChanged != null) {
                           final sorted = List<InvitationTarget>.from(
                             filteredTargets,
                           );
@@ -384,9 +377,9 @@ class InvitationSelectors {
               ),
               const Spacer(),
               if (showClearAll && onClearAll != null)
-                TextButton(
+                ButleryTextButton(
                   onPressed: onClearAll,
-                  child: Text(context.l10n.commonClearAll),
+                  label: context.l10n.commonClearAll,
                 ),
             ],
           ),
@@ -483,7 +476,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
         final target = widget.targets[index];
         final isSelected = _selectedTarget == target;
 
-        return ListTile(
+        return ButleryItemRow(
           leading: Container(
             width: 20,
             height: 20,
@@ -509,7 +502,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
                   )
                 : null,
           ),
-          title: Text(target.displayName),
+          title: target.displayName,
           onTap: () => _handleSelection(target),
         );
       },

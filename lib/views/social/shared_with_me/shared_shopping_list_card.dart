@@ -6,13 +6,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/shared_content_row.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
-import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 /// A shared shopping list as a [SharedContentRow]. Opening it shows the list
 /// in a sheet whose last step is joining; the row's own control joins at once.
@@ -153,18 +152,14 @@ class SharedShoppingListCard {
             ),
             itemCount: 1,
             itemBuilder: (context, index) {
-              return ListTile(
-                leading: const ButleryIcon(
-                  ButleryIcons.shoppingCart,
-                  size: AppDimensions.iconSizeM,
+              return ButleryItemRow(
+                padded: false,
+                leadingIcon: ButleryIcons.shoppingCart,
+                title: context.l10n.shoppingItemCountText(
+                  sharedShoppingList.itemCount,
                 ),
-                title: Text(
-                  context.l10n.shoppingItemCountText(
-                    sharedShoppingList.itemCount,
-                  ),
-                ),
-                subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                trailing: const ButleryChevron(),
+                subtitle: context.l10n.sharedTapToSeeAllItems,
+                showChevron: true,
               );
             },
           ),

@@ -2,14 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -30,10 +29,6 @@ class ProfileAvatarSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final accent = ButtonStyle(
-      foregroundColor: WidgetStatePropertyAll(context.modeColors.textAccent),
-      textStyle: WidgetStatePropertyAll(AppTextStyles.bodyBold),
-    );
     return Center(
       child: Column(
         children: [
@@ -67,14 +62,12 @@ class ProfileAvatarSection extends StatelessWidget {
             alignment: WrapAlignment.center,
             spacing: AppDimensions.space16,
             children: [
-              TextButton(
-                style: accent,
+              ButleryTextButton(
                 onPressed: viewModel.isUploadingAvatar ? null : onUploadAvatar,
-                child: Text(l10n.profileChangePhoto),
+                label: l10n.profileChangePhoto,
               ),
               if (viewModel.avatarUrl != null)
-                TextButton(
-                  style: accent,
+                ButleryTextButton(
                   onPressed: viewModel.isUploadingAvatar
                       ? null
                       : () {
@@ -84,7 +77,7 @@ class ProfileAvatarSection extends StatelessWidget {
                             l10n.profileAvatarRemoved,
                           );
                         },
-                  child: Text(l10n.commonRemove),
+                  label: l10n.commonRemove,
                 ),
             ],
           ),

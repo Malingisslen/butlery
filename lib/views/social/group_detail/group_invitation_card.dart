@@ -3,19 +3,17 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/group_invitation.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// GroupInvitationCard - Invitation card component
 /// Displays pending group invitation with cancel action.
@@ -29,24 +27,16 @@ class GroupInvitationCard {
     final name = (inviteeName?.isNotEmpty ?? false) ? inviteeName : null;
     final cs = Theme.of(context).colorScheme;
     return RepaintBoundary(
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        // The theme paints every ListTile raised; these rows sit on paper.
-        tileColor: Colors.transparent,
+      child: ButleryItemRow(
+        padded: false,
         // The row is about who was invited, not who invited them.
         leading: _DashedAvatar(
           initial: name != null ? name.characters.first.toUpperCase() : '?',
         ),
-        title: Text(
-          name ?? context.l10n.groupInvitationSent,
-          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}',
-          style: AppTextStyles.captionBase.copyWith(color: cs.onSurfaceVariant),
-        ),
+        title: name ?? context.l10n.groupInvitationSent,
+        titleMaxLines: 1,
+        subtitle:
+            '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}',
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -56,35 +46,23 @@ class GroupInvitationCard {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            PressFill(
-              surface: PressSurface.base,
-              child: PopupMenuButton<String>(
-                icon: const ButleryIcon(ButleryIcons.moreVertical),
-                onSelected: (value) => _handleAction(
-                  context,
-                  value,
-                  invitation,
-                  name,
-                  onCancelled,
-                ),
-                itemBuilder: (context) => [
-                  ButleryMenuItem(
-                    value: 'cancel_invitation',
-                    child: Row(
-                      children: [
-                        ButleryIcon(ButleryIcons.x, color: cs.error),
-                        const SizedBox(width: AppDimensions.space4),
-                        Text(
-                          context.l10n.groupCancelInvitation,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(color: cs.error),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            ButleryMenu<String>(
+              semanticLabel: context.l10n.socialMoreOptions,
+              onSelected: (value) => _handleAction(
+                context,
+                value,
+                invitation,
+                name,
+                onCancelled,
               ),
+              choices: [
+                ButleryMenuChoice(
+                  value: 'cancel_invitation',
+                  icon: ButleryIcons.x,
+                  label: context.l10n.groupCancelInvitation,
+                  danger: true,
+                ),
+              ],
             ),
           ],
         ),

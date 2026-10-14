@@ -1,6 +1,7 @@
 // lib/views/messaging/create_group_conversation_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -86,9 +87,9 @@ class _CreateGroupConversationViewState
               showTabBar: false,
               actions: [
                 if (viewModel.hasSelectedMembers)
-                  TextButton(
+                  ButleryTextButton(
                     onPressed: viewModel.clearSelection,
-                    child: Text(context.l10n.commonClear),
+                    label: context.l10n.commonClear,
                   ),
               ],
               body: _buildBody(context, viewModel),

@@ -3,6 +3,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Consolidated messaging UI components.
@@ -40,9 +41,9 @@ class ErrorListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return ButleryItemRow(
       leading: ButleryIcon(icon, color: Theme.of(context).colorScheme.error),
-      title: ErrorText(title),
+      title: title,
       onTap: onTap,
     );
   }

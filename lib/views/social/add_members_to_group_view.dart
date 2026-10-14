@@ -15,6 +15,7 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
@@ -94,14 +95,14 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             backTo: viewModel.group?.name,
             actions: [
               if (viewModel.hasSelectedFriends)
-                TextButton(
+                ButleryTextButton(
                   onPressed: viewModel.selectAllVisible,
-                  child: Text(context.l10n.commonSelectAll),
+                  label: context.l10n.commonSelectAll,
                 ),
               if (viewModel.hasSelectedFriends)
-                TextButton(
+                ButleryTextButton(
                   onPressed: viewModel.clearAllSelections,
-                  child: Text(context.l10n.commonClear),
+                  label: context.l10n.commonClear,
                 ),
             ],
             body: _buildBody(context, viewModel),

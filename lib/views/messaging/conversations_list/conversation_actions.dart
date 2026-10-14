@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -58,7 +59,7 @@ Future<void> showNewMessageSheet(BuildContext context) async {
   if (choice == null || !context.mounted) return;
   switch (choice) {
     case _NewMessageChoice.friend:
-      await showDialog<void>(
+      await showButleryDialog<void>(
         context: context,
         builder: (dialogContext) => NewConversationDialog(
           onConversationCreated: (conversationId) {

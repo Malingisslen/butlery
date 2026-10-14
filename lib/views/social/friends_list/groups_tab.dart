@@ -7,6 +7,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -176,13 +177,13 @@ class GroupsTab {
   }
 
   static Widget _buildSeparator(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.space16),
+    return const Padding(
+      padding: EdgeInsets.all(AppDimensions.space16),
       child: Column(
         children: [
-          const SizedBox(height: AppDimensions.space16),
-          Divider(color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: AppDimensions.space8),
+          SizedBox(height: AppDimensions.space16),
+          ButleryDivider(),
+          SizedBox(height: AppDimensions.space8),
         ],
       ),
     );

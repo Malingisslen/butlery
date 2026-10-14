@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
@@ -19,6 +20,16 @@ enum ButleryTextButtonTone {
 
   /// text.danger: the action removes something.
   danger,
+
+  /// text.warning: the action withdraws something that is still pending,
+  /// such as cancelling a sent request.
+  warning,
+
+  /// onErrorContainer: the action sits on an error banner and must read on it.
+  onErrorBanner,
+
+  /// onPrimary: the action sits on the ink band, as "Släng utkastet".
+  onInk,
 }
 
 class ButleryTextButton extends StatelessWidget {
@@ -29,6 +40,9 @@ class ButleryTextButton extends StatelessWidget {
     this.tone = ButleryTextButtonTone.standard,
     this.busy = false,
     this.busyLabel,
+    this.semanticLabel,
+    this.dense = false,
+    this.iconAtEnd = false,
     super.key,
   });
 
@@ -44,6 +58,18 @@ class ButleryTextButton extends StatelessWidget {
   final bool busy;
   final String? busyLabel;
 
+  /// What a screen reader says when the action needs more than the visible
+  /// words ("Avbryt förfrågan" on a button that reads "Avbryt"). Name the
+  /// action; the visible text is left out of the announcement.
+  final String? semanticLabel;
+
+  /// 8 px side padding in place of the theme's, for a button that has to fit
+  /// a bar on a 320 dp phone. The 48 dp target stays.
+  final bool dense;
+
+  /// The icon follows the words, as a link that leads on ("Allergier →").
+  final bool iconAtEnd;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -51,17 +77,40 @@ class ButleryTextButton extends StatelessWidget {
       ButleryTextButtonTone.standard => null,
       ButleryTextButtonTone.link => context.modeColors.textLink,
       ButleryTextButtonTone.danger => cs.error,
+      ButleryTextButtonTone.warning => AppModeColors.textWarning(
+        cs.brightness,
+      ),
+      ButleryTextButtonTone.onErrorBanner => cs.onErrorContainer,
+      ButleryTextButtonTone.onInk => cs.onPrimary,
     };
-    return ActionButtons.textButton(
+    final button = ActionButtons.textButton(
       context,
       label: label,
       onPressed: onPressed,
       icon: icon,
       isLoading: busy,
       loadingText: busyLabel,
-      style: colour == null
+      iconAtEnd: iconAtEnd,
+      style: colour == null && !dense
           ? null
-          : TextButton.styleFrom(foregroundColor: colour),
+          : TextButton.styleFrom(
+              foregroundColor: colour,
+              padding: dense
+                  ? const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.space8,
+                    )
+                  : null,
+            ),
+    );
+    final name = semanticLabel;
+    if (name == null || busy) return button;
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: name,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: button,
     );
   }
 }

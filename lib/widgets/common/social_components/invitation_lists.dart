@@ -6,6 +6,9 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// Invitation target list and grid layouts.
 class InvitationLists {
@@ -62,11 +65,10 @@ class InvitationLists {
       itemCount: targets.length,
       itemBuilder: (context, index) {
         final target = targets[index];
-        return ListTile(
-          title: Text(target.displayName),
-          subtitle: Text(
-            '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
-          ),
+        return ButleryItemRow(
+          title: target.displayName,
+          subtitle:
+              '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -118,15 +120,15 @@ class InvitationLists {
               ),
             ),
             ...typeTargets.map(
-              (target) => ListTile(
-                title: Text(target.displayName),
-                subtitle: Text(
-                  context.l10n.labelMemberCount(target.memberCount ?? 0),
+              (target) => ButleryItemRow(
+                title: target.displayName,
+                subtitle: context.l10n.labelMemberCount(
+                  target.memberCount ?? 0,
                 ),
                 onTap: onTargetTap != null ? () => onTargetTap(target) : null,
               ),
             ),
-            const Divider(),
+            const ButleryDivider(),
           ],
         );
       }).toList(),
@@ -150,11 +152,10 @@ class InvitationLists {
       itemExtent: itemHeight,
       itemBuilder: (context, index) {
         final target = targets[index];
-        return ListTile(
-          title: Text(target.displayName),
-          subtitle: Text(
-            '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
-          ),
+        return ButleryItemRow(
+          title: target.displayName,
+          subtitle:
+              '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -181,35 +182,27 @@ class InvitationLists {
           final target = targets[index];
           return SizedBox(
             width: itemWidth,
-            child: Card(
-              child: Semantics(
-                label: context.l10n.a11yInvitationTargetCard,
-                button: true,
-                enabled: onTargetTap != null,
-                child: InkWell(
-                  onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.space8),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ButleryIcon(
-                          target.type == InvitationTargetType.group
-                              ? ButleryIcons.users
-                              : ButleryIcons.user,
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Text(
-                          target.displayName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
+            child: _targetCard(
+              context,
+              onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+              padding: const EdgeInsets.all(AppDimensions.space8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ButleryIcon(
+                    target.type == InvitationTargetType.group
+                        ? ButleryIcons.users
+                        : ButleryIcons.user,
                   ),
-                ),
+                  const SizedBox(height: AppDimensions.space4),
+                  Text(
+                    target.displayName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
             ),
           );
@@ -240,48 +233,60 @@ class InvitationLists {
       itemCount: targets.length,
       itemBuilder: (context, index) {
         final target = targets[index];
-        return Card(
-          child: Semantics(
-            label: context.l10n.a11yInvitationTargetCard,
-            button: true,
-            enabled: onTargetTap != null,
-            child: InkWell(
-              onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-              child: Padding(
-                padding: const EdgeInsets.all(
-                  (AppDimensions.space8 + AppDimensions.space4),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ButleryIcon(
-                      target.type == InvitationTargetType.group
-                          ? ButleryIcons.users
-                          : ButleryIcons.user,
-                      size: AppDimensions.iconSizeXl,
-                    ),
-                    const SizedBox(height: AppDimensions.space8),
-                    Text(
-                      target.displayName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.contentLabel,
-                    ),
-                    const SizedBox(height: AppDimensions.space4),
-                    Text(
-                      context.l10n.labelMemberCount(target.memberCount ?? 0),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+        return _targetCard(
+          context,
+          onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+          padding: const EdgeInsets.all(
+            (AppDimensions.space8 + AppDimensions.space4),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ButleryIcon(
+                target.type == InvitationTargetType.group
+                    ? ButleryIcons.users
+                    : ButleryIcons.user,
+                size: AppDimensions.iconSizeXl,
+              ),
+              const SizedBox(height: AppDimensions.space8),
+              Text(
+                target.displayName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.contentLabel,
+              ),
+              const SizedBox(height: AppDimensions.space4),
+              Text(
+                context.l10n.labelMemberCount(target.memberCount ?? 0),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  // The label stays on a card with no tap handler too, which StyledCard's own
+  // semanticLabel only gives a tappable card.
+  static Widget _targetCard(
+    BuildContext context, {
+    required VoidCallback? onTap,
+    required EdgeInsetsGeometry padding,
+    required Widget child,
+  }) {
+    return StyledCard(
+      onTap: onTap,
+      padding: padding,
+      child: Semantics(
+        label: context.l10n.a11yInvitationTargetCard,
+        button: true,
+        enabled: onTap != null,
+        child: child,
+      ),
     );
   }
 }

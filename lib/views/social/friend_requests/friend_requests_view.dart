@@ -6,6 +6,7 @@
 // - HeaderBuilder, TabBuilders -> friend_request_builders.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:provider/provider.dart';
 
 // Core
@@ -201,13 +202,11 @@ class _FriendRequestsViewContentState
       backTo: context.l10n.socialFriendsAndGroups,
       actions: [
         if (hasRows)
-          TextButton(
+          ButleryTextButton(
             onPressed: _toggleSelecting,
-            child: Text(
-              _selecting
-                  ? context.l10n.commonDone
-                  : context.l10n.socialRequestsSelect,
-            ),
+            label: _selecting
+                ? context.l10n.commonDone
+                : context.l10n.socialRequestsSelect,
           ),
       ],
       // The bulk actions take the tab bar's place while something is chosen.

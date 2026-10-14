@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -229,7 +230,6 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   Widget _footer(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
         padding: ButleryPageBody.margin(
@@ -249,15 +249,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               onPressed: _canSave ? _save : null,
             ),
             if (_isEdit)
-              TextButton(
+              ButleryTextButton(
                 onPressed: _delete,
-                style: TextButton.styleFrom(
-                  foregroundColor: cs.error,
-                  minimumSize: const Size.fromHeight(
-                    AppDimensions.minTouchTarget,
-                  ),
-                ),
-                child: Text(l10n.familyDeleteMember),
+                label: l10n.familyDeleteMember,
+                tone: ButleryTextButtonTone.danger,
               ),
           ],
         ),
@@ -422,16 +417,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         if (showWithdraw)
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: TextButton(
+            child: ButleryTextButton(
               onPressed: _withdraw,
-              style: TextButton.styleFrom(
-                foregroundColor: cs.error,
-                minimumSize: const Size.fromHeight(
-                  AppDimensions.minTouchTarget,
-                ),
-                alignment: AlignmentDirectional.centerStart,
-              ),
-              child: Text(l10n.familyWithdrawAllergenConsent),
+              label: l10n.familyWithdrawAllergenConsent,
+              tone: ButleryTextButtonTone.danger,
             ),
           ),
       ],
