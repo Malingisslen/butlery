@@ -163,3 +163,23 @@ class ButleryDialog extends StatelessWidget {
     );
   }
 }
+
+/// The dialog that only says what is happening: the plate line with the words,
+/// no buttons. The caller opens it with `barrierDismissible: false` and closes
+/// it when the work ends.
+class ButleryProgressDialog extends StatelessWidget {
+  const ButleryProgressDialog({required this.message, this.value, super.key});
+
+  /// What is being done, such as "Laddar upp bilden …".
+  final String message;
+
+  /// 0–1 when the work can be measured, otherwise null.
+  final double? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: PlateLineMessage(message: message, value: value),
+    );
+  }
+}
