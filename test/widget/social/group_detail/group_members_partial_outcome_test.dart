@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -236,7 +237,7 @@ void main() {
     expect(outcome, findsOneWidget);
 
     // Sara's member row (the outcome box names her too).
-    await tester.tap(find.widgetWithText(ListTile, 'Sara Ek'));
+    await tester.tap(find.widgetWithText(ButleryItemRow, 'Sara Ek'));
     await tester.pump();
 
     expect(outcome, findsNothing);
@@ -324,10 +325,25 @@ void main() {
     expect(find.text('Skickad'), findsOneWidget);
   });
 
-  final saraRowFinder = find.widgetWithText(ListTile, 'Sara Ek');
+  final saraRowFinder = find.widgetWithText(ButleryItemRow, 'Sara Ek');
 
-  Border rowEdge(WidgetTester tester) =>
-      tester.widget<ListTile>(saraRowFinder).shape! as Border;
+  // The row draws its edge as a foreground box over its content.
+  Border? edgeOf(WidgetTester tester, Finder row) {
+    final boxes = tester.widgetList<DecoratedBox>(
+      find.descendant(of: row, matching: find.byType(DecoratedBox)),
+    );
+    for (final box in boxes) {
+      final decoration = box.decoration;
+      if (box.position == DecorationPosition.foreground &&
+          decoration is BoxDecoration &&
+          decoration.border is Border) {
+        return decoration.border! as Border;
+      }
+    }
+    return null;
+  }
+
+  Border rowEdge(WidgetTester tester) => edgeOf(tester, saraRowFinder)!;
 
   testWidgets('the failed row shows its reason under the name and an error '
       'edge instead of the selected border', (tester) async {
@@ -356,7 +372,7 @@ void main() {
     // failed, and keeps no error edge.
     expect(
       find.descendant(
-        of: find.widgetWithText(ListTile, 'Johan Lind'),
+        of: find.widgetWithText(ButleryItemRow, 'Johan Lind'),
         matching: find.text('Ändringen sparades inte'),
       ),
       findsNothing,
@@ -405,7 +421,8 @@ void main() {
       ),
     );
     expect(
-      node.label.replaceAll('\n', ' '),
+      // The merged data is what a screen reader gets for the whole row.
+      node.getSemanticsData().label.replaceAll('\n', ' '),
       'Sara Ek, vald, kunde inte tas bort Ändringen sparades inte',
     );
     handle.dispose();
@@ -513,22 +530,23 @@ void main() {
     await tester.pumpAndSettle();
 
     final annaReason = find.descendant(
-      of: find.widgetWithText(ListTile, 'Anna Berg'),
+      of: find.widgetWithText(ButleryItemRow, 'Anna Berg'),
       matching: find.text('Ändringen sparades inte'),
     );
     expect(annaReason, findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Anna Berg'));
+    await tester.tap(find.widgetWithText(ButleryItemRow, 'Anna Berg'));
     await tester.pump();
 
     // Sara is still ticked, so the outcome stays open.
     expect(find.text('1 vald'), findsOneWidget);
     expect(annaReason, findsNothing);
     final cs = AppTheme.lightTheme.colorScheme;
-    final annaShape = tester
-        .widget<ListTile>(find.widgetWithText(ListTile, 'Anna Berg'))
-        .shape;
-    expect(annaShape is Border && annaShape.top.color == cs.error, isFalse);
+    final annaEdge = edgeOf(
+      tester,
+      find.widgetWithText(ButleryItemRow, 'Anna Berg'),
+    );
+    expect(annaEdge?.top.color == cs.error, isFalse);
     expect(
       find.descendant(
         of: saraRowFinder,

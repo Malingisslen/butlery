@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/list/butlery_radio_row.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
@@ -11,7 +12,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -226,15 +226,9 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
               mainAxisSize: MainAxisSize.min,
               children: ReportReason.offered
                   .map(
-                    // Each reason is a 48 dp row with the canonical focus
-                    // ring around it, never a saffron focus tint
-                    // (Skarmar v12 etapp 9 #fbanmal, "48 px radhöjd";
-                    // Grafisk manual v6:209, :381).
-                    (reason) => ButleryControlFocus(
-                      child: RadioListTile<ReportReason>(
-                        title: Text(reason.label(l10n)!),
-                        value: reason,
-                      ),
+                    (reason) => ButleryRadioRow<ReportReason>(
+                      title: reason.label(l10n)!,
+                      value: reason,
                     ),
                   )
                   .toList(),
