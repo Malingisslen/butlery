@@ -57,6 +57,13 @@ class CookSnapViewModel extends BaseViewModel {
         );
   }
 
+  void retryLoad() {
+    if (isDisposed) return;
+    _subscription?.cancel();
+    clearError();
+    _startWatching();
+  }
+
   Future<bool> addSnap({
     required ImageSource source,
     String? caption,
@@ -93,7 +100,9 @@ class CookSnapViewModel extends BaseViewModel {
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete cook snap: $e');
-      setError(AppLocale.current.cookSnapErrorDelete);
+      // The delete is committed when the undo snackbar closes, which can be
+      // after the page, and this view model, are gone.
+      if (!isDisposed) setError(AppLocale.current.cookSnapErrorDelete);
       return false;
     }
   }

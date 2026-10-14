@@ -1152,6 +1152,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             isUploading: vm.isUploading,
             currentUserId: currentUserId,
             error: vm.error,
+            onRetry: vm.retryLoad,
             onAdd: () => _showAddSnapSheet(context, vm, recipe),
             onDelete: (snapId) => _deleteCookSnapWithUndo(snapId, vm),
             onReport: (snap) => ReportContentDialog.show(
@@ -1245,10 +1246,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     return showCookSnapVisibilityDialog(context, message: message);
   }
 
-  /// BUT-937: confirm-dialog + 7s snackbar undo mirroring the comment
-  /// pattern shipped in BUT-943 (recipe_detail_comments.dart:300-338).
-  /// Snap stays visible during the window (no optimistic removal);
-  /// timeout commits the delete, Undo tap short-circuits it.
+  /// BUT-937: confirm dialog, then a snackbar undo. The snap stays visible
+  /// during the window; the delete is committed when the snackbar closes,
+  /// also after the page is left, and Ångra cancels it.
   Future<void> _deleteCookSnapWithUndo(
     String snapId,
     CookSnapViewModel vm,
@@ -1258,17 +1258,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
     if (confirmed != true || !mounted) return;
 
-    ScaffoldMessenger.of(context).clearSnackBars();
-    var undone = false;
-    final controller = SnackBarUtils.showUndo(
+    SnackBarUtils.showUndoDeferred(
       context,
       context.l10n.cookSnapDeletedUndoMessage,
-      onUndo: () => undone = true,
+      onUndo: () {},
+      onCommit: () => vm.deleteSnap(snapId),
     );
-    await controller?.closed;
-    if (undone || !mounted) return;
-
-    await vm.deleteSnap(snapId);
   }
 
   Future<void> _printRecipe(Recipe recipe) async {

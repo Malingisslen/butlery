@@ -112,8 +112,9 @@ class _SuggestionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // No fill of its own: the sheet is raised above the page in dark mode, and
+    // a page-coloured plate in its foot reads as a darker band.
     return Container(
-      color: cs.surface,
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

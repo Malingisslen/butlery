@@ -20,6 +20,29 @@ import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 /// Derived from DietaryConfig to prevent key drift.
 final _defaultDietaryOrder = DietaryConfig.allKeys;
 
+/// The tracked allergens the tagger has not settled.
+///
+/// A recipe with no tag result has settled none of them. [emptyMeansAll]
+/// mirrors the call sites: the detail view reads a null or empty set as
+/// "every allergen", a card reads an empty set as "tracks nothing".
+bool hasUncheckedAllergens(
+  TagResult? tagResult,
+  Set<String>? prefs, {
+  required Set<String> fallback,
+  required bool emptyMeansAll,
+}) {
+  if (prefs != null && prefs.isEmpty && !emptyMeansAll) return false;
+  if (tagResult == null) return true;
+  final keys = prefs != null && prefs.isNotEmpty
+      ? prefs
+      : emptyMeansAll
+      ? tagResult.allergenStatus.keys.toSet()
+      : fallback;
+  // A result that settled no allergen at all has checked nothing.
+  if (keys.isEmpty) return true;
+  return keys.any((a) => tagResult.getAllergenStatus(a) == TriState.unknown);
+}
+
 /// Displays the full tag result from the tagging system.
 ///
 /// Shows allergen status, dietary status, and coverage information.
@@ -67,6 +90,13 @@ class TagResultDisplay extends StatelessWidget {
     this.isDegraded = false,
   });
 
+  bool get _hasUnchecked => hasUncheckedAllergens(
+    tagResult,
+    userAllergenPrefs,
+    fallback: const {},
+    emptyMeansAll: true,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -86,6 +116,15 @@ class TagResultDisplay extends StatelessWidget {
 
         // All badges inline in a single Wrap
         _buildInlineBadges(context),
+        if (!compact && _hasUnchecked) ...[
+          const SizedBox(height: AppDimensions.space4),
+          Text(
+            context.l10n.allergenUncheckedDetail,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
 
         // Draft ingredient warning
         if (tagResult.hasDraftIngredients) ...[
@@ -114,7 +153,9 @@ class TagResultDisplay extends StatelessWidget {
     final allergens = _getAllergensToShow();
     final diets = _getDietaryToShow();
 
-    if (allergens.isEmpty && diets.isEmpty) {
+    final unchecked = _hasUnchecked;
+
+    if (allergens.isEmpty && diets.isEmpty && !unchecked) {
       return Text(
         context.l10n.tagResultNoAllergens,
         style: AppTextStyles.bodySmall.copyWith(
@@ -128,6 +169,7 @@ class TagResultDisplay extends StatelessWidget {
       spacing: AppDimensions.space4,
       runSpacing: AppDimensions.space4,
       children: [
+        if (unchecked) AllergenUncheckedMark(compact: compact),
         // Allergen badges
         ...allergens.map((allergen) {
           final status = tagResult.getAllergenStatus(allergen);
@@ -501,6 +543,16 @@ class CompactAllergenRow extends StatelessWidget {
     // was rewritten deliberately in the same change.
     return [...containsAllergens, ...freeAllergens];
   }
+
+  /// Whether any allergen this row checks is still unsettled. The row never
+  /// draws those; the caller adds the one "Ej kontrollerat" badge.
+  static bool hasUnchecked(TagResult? tagResult, Set<String>? userPrefs) =>
+      hasUncheckedAllergens(
+        tagResult,
+        userPrefs,
+        fallback: _defaultAllergens,
+        emptyMeansAll: false,
+      );
 
   List<String> _getBadgesToShow() => badgesFor(tagResult, userPrefs);
 

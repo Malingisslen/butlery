@@ -172,8 +172,24 @@ abstract final class RecipeDetailSharedWidgets {
             selector: (_, svc) => svc.allergenPreferences,
             builder: (context, allergenPrefs, _) {
               final tagResult = recipe.tagResult;
-              if (tagResult == null || !allergenPrefs.showOnDetail) {
-                return const SizedBox.shrink();
+              if (!allergenPrefs.showOnDetail) return const SizedBox.shrink();
+              if (tagResult == null) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.space8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AllergenUncheckedMark(),
+                      const SizedBox(height: AppDimensions.space4),
+                      Text(
+                        context.l10n.allergenUncheckedDetail,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
               return Padding(
                 padding: const EdgeInsets.only(top: AppDimensions.space8),

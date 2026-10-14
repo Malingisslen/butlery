@@ -58,6 +58,42 @@ void main() {
     expect(removals, [1]);
   });
 
+  testWidgets(
+    'removing the first row leaves the second item\'s text in the surviving '
+    'field, and editing it reports index 0',
+    (tester) async {
+      final items = ['2 dl grädde', '400 g tomater'];
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: StatefulBuilder(
+            builder: (context, setState) => EditableListBuilder(
+              items: items,
+              onUpdate: (i, v) => updates.add((i, v)),
+              onRemove: (i) => setState(() => items.removeAt(i)),
+              onAdd: added.add,
+              hintText: 'Lägg till ingrediens',
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byTooltip(sv.commonDelete).first);
+      await tester.pump();
+
+      final fields = find.byType(EditableText);
+      expect(fields, findsNWidgets(2)); // surviving row + the add field
+      expect(
+        tester.widget<EditableText>(fields.first).controller.text,
+        '400 g tomater',
+      );
+      expect(find.text('2 dl grädde'), findsNothing);
+
+      await tester.enterText(fields.first, '500 g tomater');
+      expect(updates, [(0, '500 g tomater')]);
+    },
+  );
+
   testWidgets('numbers show only when asked', (tester) async {
     await tester.pumpWidget(build());
     expect(find.text('1.'), findsNothing);

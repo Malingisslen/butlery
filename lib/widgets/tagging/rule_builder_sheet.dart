@@ -36,6 +36,11 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   final _nameController = TextEditingController();
   MatchMode _matchMode = MatchMode.all;
   List<RuleCondition> _conditions = [];
+
+  /// One id per condition, so a card keeps its own text when a row above it
+  /// is removed.
+  List<int> _conditionIds = [];
+  int _nextConditionId = 0;
   bool _isEnabled = true;
 
   bool get _isEditing => widget.existingRule != null;
@@ -48,6 +53,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       _nameController.text = rule.name;
       _matchMode = rule.matchMode;
       _conditions = List.from(rule.conditions);
+      _conditionIds = [for (final _ in _conditions) _nextConditionId++];
       _isEnabled = rule.isEnabled;
     } else {
       _conditions = [
@@ -57,6 +63,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           value: '',
         ),
       ];
+      _conditionIds = [_nextConditionId++];
     }
   }
 
@@ -68,6 +75,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
 
   void _addCondition() {
     setState(() {
+      _conditionIds.add(_nextConditionId++);
       _conditions.add(
         const RuleCondition(
           type: ConditionType.ingredient,
@@ -82,6 +90,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
     if (_conditions.length > 1) {
       setState(() {
         _conditions.removeAt(index);
+        _conditionIds.removeAt(index);
       });
     }
   }
@@ -279,7 +288,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.space8),
           child: RuleConditionCard(
-            key: ValueKey('condition_$index'),
+            key: ValueKey('condition_${_conditionIds[index]}'),
             condition: _conditions[index],
             canDelete: _conditions.length > 1,
             onTypeChanged: (type) => _updateCondition(index, type: type),

@@ -26,6 +26,7 @@ import 'package:butlery/services/upload/upload_models.dart';
 
 // Import focused managers
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
@@ -263,6 +264,7 @@ class RecipeFormViewModel extends BaseViewModel
   bool get hasError => _state.hasError;
   bool get isEditing => _state.isEditing;
   bool get isValid => _state.isValid;
+  RecipeSaveBlocker? get saveBlocker => _state.saveBlocker;
   bool get isAutoSaving => _state.isAutoSaving;
   bool get hasRecentAutoSave => _state.hasRecentAutoSave;
   bool get hasAutoSaveFailed => _state.hasAutoSaveFailed;

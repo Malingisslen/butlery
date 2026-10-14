@@ -886,14 +886,31 @@ void main() {
         expect(find.byType(AllergenStatusBadge), findsWidgets);
         expect(find.byType(CompactDietaryRow), findsOneWidget);
         expect(find.byType(DietaryStatusBadge), findsOneWidget);
-        // The ONLY fixture in any suite where badges are actually drawn AND
-        // the marker is asserted. Without this line the `_allergenBadges.isEmpty`
-        // conjunct is deletable-green: remove it and every fully assessed card
-        // announces "Allergener ej bedömda" beside its own green FREE badges —
-        // a false statement to an allergy user, and the exact mirror of the bug
-        // this round fixed. Nothing else can see that conjunct.
+        // Of the four default allergens only gluten and mjölk are settled, so
+        // the card says in words that the rest are not checked (A1).
+        expect(find.text('Ej kontrollerat'), findsOneWidget);
+      });
+
+      testWidgets('a card whose tracked allergens are all settled is silent', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: taggedRecipe(),
+                style: RecipeCardStyle.detailed,
+                showAllergenBadges: true,
+                userAllergenPrefs: const {'gluten', 'mjölk'},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byType(AllergenStatusBadge), findsWidgets);
         expect(
-          find.text('Allergener ej bedömda'),
+          find.text('Ej kontrollerat'),
           findsNothing,
           reason: 'the marker must never sit beside a verdict it contradicts',
         );
@@ -991,7 +1008,7 @@ void main() {
 
         expect(find.byType(AllergenStatusBadge), findsNothing);
         expect(
-          find.text('Allergener ej bedömda'),
+          find.text('Ej kontrollerat'),
           findsOneWidget,
           reason:
               'the card must say it has nothing to report, rather than '
@@ -1003,7 +1020,7 @@ void main() {
       // conjunct that looks redundant. An EMPTY tracked set is not "no opinion"
       // — it is the user having untracked every allergen, which is the same
       // choice as switching the badges off. Without the guard this fired on
-      // EVERY card forever, announcing "Allergener ej bedömda" over fully
+      // EVERY card forever, announcing "Ej kontrollerat" over fully
       // assessed recipes, because `badgesFor` checks an empty candidate set and
       // returns [] for everything while `ContentCard` still derives the flag
       // true from the set being non-null. Reachable straight from onboarding:
@@ -1014,7 +1031,7 @@ void main() {
         await pumpCard(tester, allergenPrefs: const <String>{});
 
         expect(
-          find.text('Allergener ej bedömda'),
+          find.text('Ej kontrollerat'),
           findsNothing,
           reason:
               'an empty tracked set is a choice, not a gap — and this '
@@ -1059,7 +1076,7 @@ void main() {
           ),
         );
 
-        expect(find.text('Allergener ej bedömda'), findsNothing);
+        expect(find.text('Ej kontrollerat'), findsNothing);
         expect(find.byType(AllergenStatusBadge), findsNothing);
       });
     });

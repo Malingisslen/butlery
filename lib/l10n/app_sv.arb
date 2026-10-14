@@ -871,8 +871,6 @@
   "recipeAnalyzing": "Analyseras …",
   "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
   "recipeAnalyzingA11y": "Ingredienser analyseras",
-  "recipeAllergensUnassessed": "Allergener ej bedömda",
-  "recipeAllergensUnassessedA11y": "Allergener är inte bedömda för det här receptet",
   "recipeSearchHint": "Sök bland recepten …",
   "recipeShowMore": "Visa fler recept",
   "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
@@ -1740,7 +1738,7 @@
       }
     }
   },
-  "tagResultNoAllergens": "Inga allergener att visa",
+  "tagResultNoAllergens": "Inga av dina allergener hittades",
   "tagResultOutdated": "Taggarna kan uppdateras",
   "tagResultCoverage": "Täckning",
   "tagResultUnknownIngredients": "{count, plural, =1{1 okänd ingrediens} other{{count} okända ingredienser}}",
@@ -16809,6 +16807,18 @@
   "@allergenUncheckedA11y": {
     "description": "Screen reader label for allergenUncheckedLabel."
   },
+  "shareAllergensContains": "Innehåller allergener: {names}",
+  "@shareAllergensContains": {
+    "description": "Allergen line in a shared recipe text. names is a comma-separated list.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSaveNeedsTitle": "Skriv en titel för att kunna spara.",
+  "recipeSaveNeedsIngredient": "Lägg till minst en ingrediens för att kunna spara.",
+  "recipeSaveNeedsInstruction": "Lägg till minst ett steg för att kunna spara.",
   "friendsSocialDisabled": "Sociala funktioner är tillfälligt avstängda.",
   "@friendsSocialDisabled": {
     "description": "Replaces the hardcoded text in friends_list_view.dart when social features are disabled."

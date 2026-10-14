@@ -22,6 +22,7 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/recipe_form/save_blocked_hint.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -342,17 +343,22 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         mode == EditMode.edit) {
       // The view's one saffron action (Grafisk manual v6:219; Skarmar v12
       // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
+      final blocker = viewModel.isValid ? null : viewModel.saveBlocker;
       return BottomActionContainer(
-        child: SizedBox(
-          width: double.infinity,
-          child: HeroButton(
-            key: const ValueKey('edit-recipe-save'),
-            label: viewModel.suggestsChange
-                ? context.l10n.recipeSuggestionSend
-                : context.l10n.commonSaveChanges,
-            busy: viewModel.isSaving,
-            onPressed: viewModel.isValid ? () => _saveRecipe(context) : null,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (blocker != null) SaveBlockedHint(blocker: blocker),
+            HeroButton(
+              key: const ValueKey('edit-recipe-save'),
+              label: viewModel.suggestsChange
+                  ? context.l10n.recipeSuggestionSend
+                  : context.l10n.commonSaveChanges,
+              busy: viewModel.isSaving,
+              onPressed: viewModel.isValid ? () => _saveRecipe(context) : null,
+            ),
+          ],
         ),
       );
     }

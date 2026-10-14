@@ -1,7 +1,7 @@
 // lib/widgets/recipe/comment_item_widgets.dart
 
-import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -55,42 +55,61 @@ class CommentItemWidgets {
   }
 
   /// Build comment with threaded replies.
+  ///
+  /// [repliesFor] answers for a reply's own replies, so a reply to a reply is
+  /// shown. Below [maxDepth] the thread stops indenting but keeps going, so a
+  /// deep answer is never dropped.
   static Widget buildCommentWithReplies({
     required BuildContext context,
     required RecipeComment comment,
     required List<RecipeComment> replies,
     required Widget Function(RecipeComment comment, int depth) commentBuilder,
+    List<RecipeComment> Function(String commentId)? repliesFor,
     int depth = 0,
     int maxDepth = 3,
   }) {
     final cs = Theme.of(context).colorScheme;
+    final children = [
+      for (final reply in replies)
+        buildCommentWithReplies(
+          context: context,
+          comment: reply,
+          replies: repliesFor?.call(reply.id) ?? const [],
+          commentBuilder: commentBuilder,
+          repliesFor: repliesFor,
+          depth: depth + 1,
+          maxDepth: maxDepth,
+        ),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Current comment
         commentBuilder(comment, depth),
-        // Replies (recursive, indented, with visual threading)
-        if (replies.isNotEmpty && depth < maxDepth)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.space16,
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: cs.outlineVariant,
-                    width: 2,
+        if (children.isNotEmpty)
+          depth >= maxDepth
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: children,
+                )
+              : Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: AppDimensions.space16,
+                  ),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(
+                          color: cs.outlineVariant,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: children,
+                    ),
                   ),
                 ),
-              ),
-              child: Column(
-                children: replies
-                    .map((reply) => commentBuilder(reply, depth + 1))
-                    .toList(),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -149,23 +168,12 @@ class CommentItemWidgets {
     );
   }
 
-  /// Format comment time for display.
-  static String formatCommentTime(BuildContext context, DateTime timestamp) {
-    final now = clock.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return context.l10n.commonNow;
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return '${timestamp.day}/${timestamp.month}';
-    }
-  }
+  /// Format comment time for display: relative for a week, then the date.
+  static String formatCommentTime(BuildContext context, DateTime timestamp) =>
+      ContextualTimeFormatter.compact(
+        timestamp,
+        localeName: Localizations.localeOf(context).toString(),
+      );
 }
 
 /// Stateful widget for comment item to manage reaction picker overlay.

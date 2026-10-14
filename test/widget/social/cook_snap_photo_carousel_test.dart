@@ -437,4 +437,33 @@ void main() {
       expect(find.text('3 / 3'), findsOneWidget);
     });
   });
+
+  group('CookSnapGallery error state', () {
+    testWidgets('shows the error with a retry action that calls onRetry', (
+      tester,
+    ) async {
+      var retries = 0;
+      await tester.pumpWidget(
+        _wrap(
+          CookSnapGallery(
+            snaps: const [],
+            isLoading: false,
+            isUploading: false,
+            currentUserId: 'user-1',
+            onAdd: () {},
+            onDelete: (_) {},
+            onReport: (_) {},
+            error: 'Kunde inte ladda bilderna',
+            onRetry: () => retries++,
+          ),
+        ),
+      );
+
+      expect(find.text('Kunde inte ladda bilderna'), findsOneWidget);
+      await tester.tap(find.text('Försök igen'));
+      await tester.pump();
+
+      expect(retries, 1);
+    });
+  });
 }

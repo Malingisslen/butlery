@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -33,6 +35,32 @@ class ShareService extends BaseService {
   static String get _portionsLabel => AppLocale.current.sharePortionsUnit;
   static String get _minutesLabel => AppLocale.current.shareMinutesUnit;
   static const String _star = '★';
+
+  /// What a shared text says about allergens: the ones the recipe contains and,
+  /// when any allergen is unsettled, that nobody has checked it. A text with no
+  /// allergen line would read as "nothing to flag" to the person it reaches.
+  String? _allergenLine(Recipe recipe) {
+    final keys = recipe.tagResult?.allergenStatus.keys ?? const <String>[];
+    final contains = [
+      for (final key in keys)
+        if (MenuAllergenTrust.effectiveAllergenStatus(recipe, key) ==
+            TriState.contains)
+          key,
+    ];
+    final unchecked =
+        keys.isEmpty ||
+        keys.any(
+          (key) =>
+              MenuAllergenTrust.effectiveAllergenStatus(recipe, key) ==
+              TriState.unknown,
+        );
+    final lines = [
+      if (contains.isNotEmpty)
+        AppLocale.current.shareAllergensContains(contains.join(', ')),
+      if (unchecked) AppLocale.current.allergenUncheckedDetail,
+    ];
+    return lines.isEmpty ? null : lines.join('\n');
+  }
 
   /// Formats recipe as complete text (title, metadata, description, ingredients, instructions, tags, source).
   String formatRecipeComplete(Recipe recipe) {
@@ -74,6 +102,12 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
+    final allergenLine = _allergenLine(recipe);
+    if (allergenLine != null) {
+      buffer.writeln(allergenLine);
+      buffer.writeln();
+    }
+
     // Instructions
     if (recipe.instructions.isNotEmpty) {
       buffer.writeln(_instructionsTitle);
@@ -87,7 +121,9 @@ class ShareService extends BaseService {
 
     // Tags instead of tips
     if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
-      buffer.writeln('Tags: ${recipe.personalTagIds!.join(", ")}');
+      buffer.writeln(
+        '${AppLocale.current.shareTagsLabel}: ${recipe.personalTagIds!.join(", ")}',
+      );
       buffer.writeln();
     }
 
@@ -138,6 +174,12 @@ class ShareService extends BaseService {
       for (final ingredient in recipe.ingredients) {
         buffer.writeln('• $ingredient');
       }
+      buffer.writeln();
+    }
+
+    final allergenLine = _allergenLine(recipe);
+    if (allergenLine != null) {
+      buffer.writeln(allergenLine);
       buffer.writeln();
     }
 
@@ -208,6 +250,12 @@ class ShareService extends BaseService {
       for (final ingredient in recipe.ingredients) {
         buffer.writeln('- ${esc(ingredient)}');
       }
+      buffer.writeln();
+    }
+
+    final allergenLine = _allergenLine(recipe);
+    if (allergenLine != null) {
+      buffer.writeln(esc(allergenLine));
       buffer.writeln();
     }
 

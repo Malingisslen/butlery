@@ -4,9 +4,14 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 import '../../test_support/base_unit_test.dart';
+import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -154,7 +159,7 @@ void main() {
 
         // Assert
         // Tags format is different in implementation
-        expect(formatted, contains('Tags: svensk, middag, köttbullar'));
+        expect(formatted, contains('Taggar: svensk, middag, köttbullar'));
       });
 
       test('should include source URL', () {
@@ -204,6 +209,59 @@ void main() {
         expect(formatted, contains('1. Gör något'));
         expect(formatted, isNot(contains('portioner')));
         expect(formatted, isNot(contains('minuter')));
+      });
+    });
+
+    group('A6: a shared text says what it knows about allergens', () {
+      TagResult tagResult(Map<String, TriState> allergens) => TagResult(
+        tags: const {},
+        allergenStatus: allergens,
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026, 1, 1),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
+
+      Recipe withTags(Map<String, TriState> allergens) =>
+          (RecipeBuilder()
+                ..id = 'allergen-share'
+                ..title = 'Gratäng'
+                ..withTagResult(tagResult(allergens)))
+              .build();
+
+      test('names the allergens the recipe contains', () {
+        final text = shareService.formatRecipeComplete(
+          withTags({'gluten': TriState.contains, 'mjölk': TriState.free}),
+        );
+
+        expect(text, contains('Innehåller allergener: gluten'));
+        expect(text, isNot(contains('Läs ingredienserna själv')));
+      });
+
+      test('the markdown format carries the allergen line too', () {
+        final text = shareService.formatRecipeMarkdown(
+          withTags({'gluten': TriState.contains, 'mjölk': TriState.unknown}),
+        );
+
+        expect(text, contains('Innehåller allergener: gluten'));
+        expect(text, contains('Läs ingredienserna själv'));
+      });
+
+      test('says nobody has checked when an allergen is unsettled', () {
+        final text = shareService.formatRecipeCompact(
+          withTags({'gluten': TriState.free, 'mjölk': TriState.unknown}),
+        );
+
+        expect(text, contains('Läs ingredienserna själv'));
+      });
+
+      test('a recipe that was never tagged is not silent', () {
+        final text = shareService.formatRecipeComplete(
+          RecipeFactory.build(id: 'untagged', title: 'Ny'),
+        );
+
+        expect(text, contains('Läs ingredienserna själv'));
       });
     });
 

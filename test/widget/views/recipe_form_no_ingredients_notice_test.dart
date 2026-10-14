@@ -1,4 +1,5 @@
 // BUT-2285: an import that found no ingredients explains the empty list.
+// The same harness pins that both recipe editors say why Spara is greyed.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -128,6 +130,93 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(notice, findsNothing);
+    });
+
+    group('save-blocked hint', () {
+      final hint = find.byKey(const ValueKey('recipe-save-blocked-hint'));
+
+      Future<void> pumpEditor(
+        WidgetTester tester, {
+        required Widget child,
+      }) async {
+        tester.view.physicalSize = const Size(900, 6000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: child, wrapInScaffold: false),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      Widget skrivSjalv(List<String> ingredients) => SkrivSjalvReceptView(
+        initialRecipe: RecipeFactory.build(
+          id: 'recipe-hint-new',
+          title: 'Pannkakor',
+          ingredients: ingredients,
+          instructions: const ['Blanda'],
+        ),
+        isTemplate: true,
+      );
+
+      Widget editView(List<String> ingredients) => EditRecipeView(
+        recipe: RecipeFactory.build(
+          id: 'recipe-hint-edit',
+          // The signed-in user's own recipe, so the editor offers the plain
+          // save button rather than suggestion mode.
+          createdBy: 'test-user-123',
+          title: 'Pannkakor',
+          ingredients: ingredients,
+          instructions: const ['Blanda'],
+        ),
+      );
+
+      testWidgets('skriv själv: names the missing ingredient, gone once '
+          'it is added', (tester) async {
+        await pumpEditor(tester, child: skrivSjalv(const []));
+
+        expect(hint, findsOneWidget);
+        expect(
+          tester.widget<Text>(hint).data,
+          'Lägg till minst en ingrediens för att kunna spara.',
+        );
+
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Ingrediens 1'),
+          '6 dl mjölk',
+        );
+        await tester.pumpAndSettle();
+        expect(hint, findsNothing);
+      });
+
+      testWidgets('skriv själv: a valid recipe shows no hint', (tester) async {
+        await pumpEditor(tester, child: skrivSjalv(const ['6 dl mjölk']));
+
+        expect(hint, findsNothing);
+      });
+
+      testWidgets('edit: names the missing ingredient, gone once it is '
+          'added', (tester) async {
+        await pumpEditor(tester, child: editView(const []));
+
+        expect(hint, findsOneWidget);
+        expect(
+          tester.widget<Text>(hint).data,
+          'Lägg till minst en ingrediens för att kunna spara.',
+        );
+
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Ingrediens 1'),
+          '6 dl mjölk',
+        );
+        await tester.pumpAndSettle();
+        expect(hint, findsNothing);
+      });
+
+      testWidgets('edit: a valid recipe shows no hint', (tester) async {
+        await pumpEditor(tester, child: editView(const ['6 dl mjölk']));
+
+        expect(hint, findsNothing);
+      });
     });
   });
 }

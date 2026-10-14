@@ -3,6 +3,8 @@
 // Ingredients and instructions render inline (no tabs) for immediate visibility.
 // BUT-1057: RelatedRecipesSection and UsedInSection added below instructions.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -34,6 +36,8 @@ import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart'
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+
+const double _quantityColumnWidth = 70;
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -316,7 +320,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   }) {
     final cs = Theme.of(context).colorScheme;
     final parsed = IngredientParser.parseIngredient(ingredient);
-    final isAllergen = _isAllergenIngredient(parsed.name);
+    final allergen = _matchedAllergen(parsed.name);
+    final isAllergen = allergen != null;
+    final quantityWidth = math.min(
+      MediaQuery.textScalerOf(context).scale(_quantityColumnWidth),
+      MediaQuery.sizeOf(context).width * 0.4,
+    );
 
     return Column(
       children: [
@@ -347,7 +356,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 70,
+                        width: quantityWidth,
                         child: Text(
                           parsed.unit.isNotEmpty
                               ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
@@ -363,27 +372,41 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       ),
                       const SizedBox(width: AppDimensions.space32),
                       Expanded(
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (isAllergen)
-                              Padding(
-                                padding: const EdgeInsetsDirectional.only(
-                                  end: AppDimensions.space4,
+                            Row(
+                              children: [
+                                if (isAllergen)
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.only(
+                                      end: AppDimensions.space4,
+                                    ),
+                                    child: ButleryIcon(
+                                      ButleryIcons.triangleAlert,
+                                      size: AppDimensions.iconSizeS,
+                                      color: cs.error,
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    parsed.name,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: isAllergen
+                                          ? cs.error
+                                          : cs.onSurface,
+                                    ),
+                                  ),
                                 ),
-                                child: ButleryIcon(
-                                  ButleryIcons.triangleAlert,
-                                  size: AppDimensions.iconSizeS,
+                              ],
+                            ),
+                            if (isAllergen)
+                              Text(
+                                context.l10n.allergenContainsLabel(allergen),
+                                style: AppTextStyles.bodySmall.copyWith(
                                   color: cs.error,
                                 ),
                               ),
-                            Expanded(
-                              child: Text(
-                                parsed.name,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: isAllergen ? cs.error : cs.onSurface,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -556,11 +579,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     );
   }
 
-  /// Checks if an ingredient name matches a known allergen with 'contains' status.
-  bool _isAllergenIngredient(String ingredientName) {
-    if (userAllergenPrefs == null || userAllergenPrefs!.isEmpty) return false;
+  /// The tracked allergen this ingredient name matches, if the recipe is
+  /// known to contain it. The match is on the name, so it is a hint, and the
+  /// row says it in words rather than leaving a bare icon.
+  String? _matchedAllergen(String ingredientName) {
+    if (userAllergenPrefs == null || userAllergenPrefs!.isEmpty) return null;
     final allergenStatus = viewModel.recipe.tagResult?.allergenStatus;
-    if (allergenStatus == null) return false;
+    if (allergenStatus == null) return null;
 
     // Normalize both sides to ASCII for case-insensitive Swedish matching
     final nameNormalized = SwedishCharacterNormalizer.normalize(ingredientName);
@@ -568,9 +593,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       if (entry.value != TriState.contains) continue;
       if (!userAllergenPrefs!.contains(entry.key)) continue;
       final keyNormalized = SwedishCharacterNormalizer.normalize(entry.key);
-      if (nameNormalized.contains(keyNormalized)) return true;
+      if (nameNormalized.contains(keyNormalized)) return entry.key;
     }
-    return false;
+    return null;
   }
 
   /// Formats a quantity for display with sv-SE decimal comma (1.5 → "1,5");

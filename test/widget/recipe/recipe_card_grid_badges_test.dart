@@ -172,7 +172,7 @@ void main() {
       );
 
       expect(find.byType(CompactAllergenRow), findsNothing);
-      expect(find.text('Allergener ej bedömda'), findsOneWidget);
+      expect(find.text('Ej kontrollerat'), findsOneWidget);
     });
 
     testWidgets('the marker carries its screen-reader text in the grid too', (
@@ -200,7 +200,7 @@ void main() {
 
       expect(
         semanticsLabels(tester),
-        contains('Allergener är inte bedömda för det här receptet'),
+        contains('Allergener ej kontrollerade'),
         reason:
             'this string is what a screen reader announces about the marker, '
             'and nothing else in the suite reads it',
@@ -238,7 +238,7 @@ void main() {
       );
 
       expect(find.byType(CompactAllergenRow), findsNothing);
-      expect(find.text('Allergener ej bedömda'), findsNothing);
+      expect(find.text('Ej kontrollerat'), findsNothing);
     });
 
     testWidgets('the compact layout is deliberately unchanged', (tester) async {
@@ -377,7 +377,7 @@ void main() {
             );
 
             expect(
-              find.textContaining('bedömda'),
+              find.text('Ej kontrollerat'),
               findsWidgets,
               reason: 'the premise: this tile must draw the marker at all',
             );

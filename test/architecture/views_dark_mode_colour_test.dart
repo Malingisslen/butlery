@@ -160,9 +160,6 @@ const _inkOnPaperSites = <String, int>{
   // state's X on its paper plate and "Skriv stegen", ink on a paper fill
   // (Skarmar v12 etapp 11 #lgbutan).
   'lib/views/cooking_mode_view.dart': 2,
-  // The hero buttons' glyphs inside _PaperRing (cs.onPrimary, Komponentark
-  // v1:81-89).
-  'lib/views/recipe_detail/recipe_detail_hero_buttons.dart': 2,
 };
 
 void main() {

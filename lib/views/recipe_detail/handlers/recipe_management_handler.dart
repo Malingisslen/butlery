@@ -96,7 +96,14 @@ class RecipeManagementHandler {
   }
 
   /// Navigate to edit recipe view and refresh recipe on return
-  static Future<void> editRecipe(BuildContext context) async {
+  ///
+  /// [onRecipeUpdated] runs with the saved recipe just before the view model
+  /// takes it, so state derived from the recipe (portion scaling) is rebuilt in
+  /// the same frame.
+  static Future<void> editRecipe(
+    BuildContext context, {
+    void Function(Recipe updated)? onRecipeUpdated,
+  }) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -113,6 +120,7 @@ class RecipeManagementHandler {
         final recipeService = ServiceLocator.get<UnifiedRecipeService>();
         final updated = recipeService.getRecipeById(viewModel.recipe.id);
         if (updated != null) {
+          onRecipeUpdated?.call(updated);
           viewModel.updateRecipe(updated);
         }
       }
