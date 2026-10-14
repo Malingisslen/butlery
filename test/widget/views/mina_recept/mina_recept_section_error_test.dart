@@ -2,11 +2,12 @@
 // (produktregler.md:297). The recipe section's error box says what happened,
 // what was kept and offers Försök igen (produktregler.md:298).
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/views/mina_recept_view.dart';
-import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -15,18 +16,18 @@ void main() {
 
   test('an error with fetched recipes keeps the library', () {
     expect(
-      MinaReceptSectionError.emptiesView(hasError: true, hasRecipes: true),
+      minaReceptErrorEmptiesView(hasError: true, hasRecipes: true),
       isFalse,
     );
   });
 
   test('only an error with nothing to show takes the view', () {
     expect(
-      MinaReceptSectionError.emptiesView(hasError: true, hasRecipes: false),
+      minaReceptErrorEmptiesView(hasError: true, hasRecipes: false),
       isTrue,
     );
     expect(
-      MinaReceptSectionError.emptiesView(hasError: false, hasRecipes: false),
+      minaReceptErrorEmptiesView(hasError: false, hasRecipes: false),
       isFalse,
     );
   });
@@ -37,13 +38,16 @@ void main() {
     var retried = 0;
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: MinaReceptSectionError(onRetry: () => retried++),
+        child: Builder(
+          builder: (context) =>
+              minaReceptSectionError(context, onRetry: () => retried++),
+        ),
       ),
     );
 
     expect(find.text(l10n.minaReceptRefreshFailed), findsOneWidget);
     expect(find.text(l10n.minaReceptRefreshPreserved), findsOneWidget);
-    await tester.tap(find.byKey(InlineError.actionKey));
+    await tester.tap(find.byKey(ButlerySectionState.actionKey));
     expect(retried, 1);
   });
 }

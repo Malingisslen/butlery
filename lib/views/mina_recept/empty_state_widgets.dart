@@ -13,6 +13,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -51,19 +53,17 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
+            ButleryTextButton(
+              label: context.l10n.onboardingSkippedBannerAction,
               onPressed: () {
                 viewModel.dismissOnboardingBanner();
                 Navigator.pushNamed(context, Routes.settingsAllergens);
               },
-              child: Text(context.l10n.onboardingSkippedBannerAction),
             ),
             // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
-            IconButton(
+            ButleryCloseButton(
+              semanticLabel: context.l10n.commonClose,
               onPressed: viewModel.dismissOnboardingBanner,
-              icon: const ButleryIcon(ButleryIcons.x),
-              iconSize: AppDimensions.iconSizeM,
-              tooltip: context.l10n.commonClose,
               color: cs.onSurface,
             ),
           ],
@@ -110,19 +110,17 @@ class MinaReceptWelcomeBanner extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
+            ButleryTextButton(
+              label: context.l10n.onboardingWelcomeBannerAction,
               onPressed: () {
                 viewModel.dismissWelcomeBanner();
                 showButleryAddSheet(context);
               },
-              child: Text(context.l10n.onboardingWelcomeBannerAction),
             ),
             // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
-            IconButton(
+            ButleryCloseButton(
+              semanticLabel: context.l10n.commonClose,
               onPressed: viewModel.dismissWelcomeBanner,
-              icon: const ButleryIcon(ButleryIcons.x),
-              iconSize: AppDimensions.iconSizeM,
-              tooltip: context.l10n.commonClose,
               color: cs.onSurface,
             ),
           ],

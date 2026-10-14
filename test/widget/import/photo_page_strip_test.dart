@@ -74,11 +74,18 @@ class _FakeStripViewModel extends ChangeNotifier
     reorderNew = newIndex;
   }
 
-  @override
-  Future<void> addPageFromCamera() async {}
+  int cameraAdds = 0;
+  int galleryAdds = 0;
 
   @override
-  Future<void> addPageFromGallery() async {}
+  Future<void> addPageFromCamera() async {
+    cameraAdds++;
+  }
+
+  @override
+  Future<void> addPageFromGallery() async {
+    galleryAdds++;
+  }
 
   /// Valid 1x1 transparent PNG so Image.memory can decode each thumbnail.
   static final Uint8List _onePixelPng = Uint8List.fromList(const [
@@ -248,6 +255,57 @@ void main() {
       isTrue,
       reason: 'remove buttons must be disabled while processing',
     );
+  });
+
+  // Each source row must reach its own capture path, and a pick closes the sheet.
+  testWidgets('add-page sheet: "Ta ett foto" captures from the camera only', (
+    tester,
+  ) async {
+    final vm = _FakeStripViewModel(pageCount: 1);
+    await pumpStrip(tester, vm);
+
+    await tester.tap(find.byKey(const ValueKey('photo-page-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('Ta ett foto'), findsOneWidget);
+    expect(find.text('Välj från galleri'), findsOneWidget);
+
+    await tester.tap(find.text('Ta ett foto'));
+    await tester.pumpAndSettle();
+
+    expect(vm.cameraAdds, 1);
+    expect(vm.galleryAdds, 0);
+    expect(find.text('Ta ett foto'), findsNothing, reason: 'sheet closes');
+  });
+
+  testWidgets(
+    'add-page sheet: "Välj från galleri" picks from the gallery only',
+    (
+      tester,
+    ) async {
+      final vm = _FakeStripViewModel(pageCount: 1);
+      await pumpStrip(tester, vm);
+
+      await tester.tap(find.byKey(const ValueKey('photo-page-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Välj från galleri'));
+      await tester.pumpAndSettle();
+
+      expect(vm.galleryAdds, 1);
+      expect(vm.cameraAdds, 0);
+      expect(find.text('Välj från galleri'), findsNothing);
+    },
+  );
+
+  testWidgets('the add-page tile opens no sheet while OCR is processing', (
+    tester,
+  ) async {
+    final vm = _FakeStripViewModel(pageCount: 1, isProcessing: true);
+    await pumpStrip(tester, vm);
+
+    await tester.tap(find.byKey(const ValueKey('photo-page-add')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ta ett foto'), findsNothing);
   });
 
   testWidgets('remove buttons are enabled when not processing', (tester) async {

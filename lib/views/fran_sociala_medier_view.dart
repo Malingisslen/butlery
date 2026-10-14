@@ -5,11 +5,13 @@
 import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
@@ -31,7 +33,7 @@ import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {
@@ -296,21 +298,12 @@ class _FranSocialaMedierViewContentState
   /// recipe-likeness heuristic. Returns true if the user chooses to import
   /// anyway, false to back out.
   Future<bool> _confirmNonRecipeImport(BuildContext context) async {
-    final result = await showDialog<bool>(
+    final result = await showButleryDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.importNotRecipeTitle),
-        content: Text(dialogContext.l10n.importNotRecipeBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(dialogContext.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(dialogContext.l10n.importNotRecipeConfirm),
-          ),
-        ],
+      builder: (dialogContext) => ButleryDialog.confirm(
+        title: dialogContext.l10n.importNotRecipeTitle,
+        message: dialogContext.l10n.importNotRecipeBody,
+        primaryLabel: dialogContext.l10n.importNotRecipeConfirm,
       ),
     );
     return result ?? false;
@@ -435,23 +428,16 @@ class _FranSocialaMedierViewContentState
       });
     }
 
-    return LabeledField(
+    return StyledInput(
       label: context.l10n.importLinkOrCaptionLabel,
-      child: TextField(
-        controller: _textController,
-        onChanged: (text) => _onTextChanged(text, viewModel),
-        decoration: InputDecoration(
-          hintText: context.l10n.importPasteRecipeHint,
-          hintMaxLines: 10,
-          counterText: '',
-        ),
-        keyboardType: TextInputType.multiline,
-        minLines: 8,
-        maxLines: 14,
-        maxLength: 10000,
-        textAlignVertical: TextAlignVertical.top,
-        style: AppTextStyles.bodyMedium,
-      ),
+      controller: _textController,
+      onChanged: (text) => _onTextChanged(text, viewModel),
+      hint: context.l10n.importPasteRecipeHint,
+      keyboardType: TextInputType.multiline,
+      minLines: 8,
+      maxLines: 14,
+      // A limit without the counter line under the field.
+      inputFormatters: [LengthLimitingTextInputFormatter(10000)],
     );
   }
 }
