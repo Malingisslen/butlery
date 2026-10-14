@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -165,6 +166,19 @@ void main() {
         find.byKey(const ValueKey('test-shopping-list-add')),
         findsOneWidget,
       );
+      final addRect = tester.getRect(
+        find.byKey(const ValueKey('test-shopping-list-add')),
+      );
+      final paneRect = tester.getRect(
+        find
+            .ancestor(
+              of: find.byKey(const ValueKey('test-shopping-list-add')),
+              matching: find.byType(Scaffold),
+            )
+            .first,
+      );
+      expect(addRect.left - paneRect.left, AppDimensions.space16);
+      expect(paneRect.right - addRect.right, AppDimensions.space16);
       expect(
         find.byKey(const ValueKey('shopping-select-enter')),
         findsOneWidget,
