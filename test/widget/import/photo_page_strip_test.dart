@@ -277,21 +277,24 @@ void main() {
     expect(find.text('Ta ett foto'), findsNothing, reason: 'sheet closes');
   });
 
-  testWidgets('add-page sheet: "Välj från galleri" picks from the gallery only', (
-    tester,
-  ) async {
-    final vm = _FakeStripViewModel(pageCount: 1);
-    await pumpStrip(tester, vm);
+  testWidgets(
+    'add-page sheet: "Välj från galleri" picks from the gallery only',
+    (
+      tester,
+    ) async {
+      final vm = _FakeStripViewModel(pageCount: 1);
+      await pumpStrip(tester, vm);
 
-    await tester.tap(find.byKey(const ValueKey('photo-page-add')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Välj från galleri'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('photo-page-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Välj från galleri'));
+      await tester.pumpAndSettle();
 
-    expect(vm.galleryAdds, 1);
-    expect(vm.cameraAdds, 0);
-    expect(find.text('Välj från galleri'), findsNothing);
-  });
+      expect(vm.galleryAdds, 1);
+      expect(vm.cameraAdds, 0);
+      expect(find.text('Välj från galleri'), findsNothing);
+    },
+  );
 
   testWidgets('the add-page tile opens no sheet while OCR is processing', (
     tester,
