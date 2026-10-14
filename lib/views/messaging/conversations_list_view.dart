@@ -13,7 +13,6 @@ import 'package:butlery/views/messaging/conversations_list/conversation_actions.
 import 'package:butlery/views/messaging/conversations_list/conversation_row.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -55,10 +54,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       title: l10n.messagingTitle,
       backTo: l10n.moreTitle,
       actions: [
-        IconButton(
+        AppIconButton(
           onPressed: () => showNewMessageSheet(context),
-          icon: const ButleryIcon(ButleryIcons.pencil),
-          tooltip: l10n.messagesNewMessage,
+          icon: ButleryIcons.pencil,
+          semanticLabel: l10n.messagesNewMessage,
         ),
       ],
       body: FocusTraversalGroup(

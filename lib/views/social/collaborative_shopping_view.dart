@@ -4,6 +4,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -303,10 +306,11 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.space32),
-            FilledButton.icon(
+            ActionButtons.primaryButton(
+              context,
               onPressed: () => Navigator.pop(context),
-              icon: const ButleryIcon(ButleryIcons.arrowLeft),
-              label: Text(context.l10n.commonBack),
+              icon: ButleryIcons.arrowLeft,
+              label: context.l10n.commonBack,
             ),
           ],
         ),
@@ -405,13 +409,13 @@ class _UnaddedTextNotice extends StatelessWidget {
                 alignment: AlignmentDirectional.centerEnd,
                 child: Wrap(
                   children: [
-                    TextButton(
+                    ButleryTextButton(
                       onPressed: onCopy,
-                      child: Text(l.roleLoweredCopyText),
+                      label: l.roleLoweredCopyText,
                     ),
-                    TextButton(
+                    ButleryTextButton(
                       onPressed: onClose,
-                      child: Text(l.commonClose),
+                      label: l.commonClose,
                     ),
                   ],
                 ),
@@ -480,9 +484,8 @@ class _UpdatedByNotice extends StatelessWidget {
               SizedBox(
                 width: AppDimensions.minTouchTarget,
                 height: AppDimensions.minTouchTarget,
-                child: IconButton(
-                  tooltip: context.l10n.a11yShoppingListUpdatedByDismiss,
-                  icon: const ButleryIcon(ButleryIcons.x),
+                child: ButleryCloseButton(
+                  semanticLabel: context.l10n.a11yShoppingListUpdatedByDismiss,
                   onPressed: onDismiss,
                 ),
               ),

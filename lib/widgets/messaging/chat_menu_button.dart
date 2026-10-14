@@ -2,15 +2,12 @@
 // a conversation. The bar itself is ButleryPage's (top_bar_choice_test).
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 
 /// What the page template's bar shows for a conversation: the name, and the
 /// participant count under it for a group.
@@ -54,91 +51,49 @@ class ChatMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<String>(
-        onSelected: _handleMenuAction,
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        itemBuilder: (context) => [
-          ButleryMenuItem(
-            value: 'info',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const ButleryIcon(ButleryIcons.info),
-                const SizedBox(width: AppDimensions.space4),
-                Flexible(
-                  child: Text(context.l10n.chatConversationInfo),
-                ),
-              ],
-            ),
+    final l10n = context.l10n;
+    final isGroup = conversation?.groupId != null;
+    return ButleryMenu<String>(
+      semanticLabel: l10n.socialMoreOptions,
+      onSelected: _handleMenuAction,
+      choices: [
+        ButleryMenuChoice(
+          value: 'info',
+          label: l10n.chatConversationInfo,
+          icon: ButleryIcons.info,
+        ),
+        ButleryMenuChoice(
+          value: 'mute',
+          label: conversation?.isMuted == true
+              ? l10n.chatUnmute
+              : l10n.chatMute,
+          icon: ButleryIcons.bellOff,
+        ),
+        // The group's weekly menu only exists for a group conversation —
+        // the plan is keyed by the CONVERSATION id (`messaging_service`
+        // writes `groupId: conversation.id`), and a DM has no plan.
+        if (isGroup)
+          ButleryMenuChoice(
+            value: 'weekly_menu',
+            label: l10n.groupMenuChatAction,
+            icon: ButleryIcons.calendar,
           ),
-          ButleryMenuItem(
-            value: 'mute',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const ButleryIcon(ButleryIcons.bellOff),
-                const SizedBox(width: AppDimensions.space4),
-                Flexible(
-                  child: Text(
-                    conversation?.isMuted == true
-                        ? context.l10n.chatUnmute
-                        : context.l10n.chatMute,
-                  ),
-                ),
-              ],
-            ),
+        ButleryMenuChoice(
+          value: 'block',
+          label: l10n.socialBlock,
+          icon: ButleryIcons.block,
+          danger: true,
+        ),
+        // Only a chat group can be left; a direct chat has no group to
+        // leave, and deleting it lives in the conversation list.
+        if (isGroup)
+          ButleryMenuChoice(
+            value: 'leave',
+            label: l10n.chatLeaveConversation,
+            icon: ButleryIcons.logOut,
+            danger: true,
           ),
-          // The group's weekly menu only exists for a group conversation —
-          // the plan is keyed by the CONVERSATION id (`messaging_service`
-          // writes `groupId: conversation.id`), and a DM has no plan.
-          if (conversation?.groupId != null)
-            ButleryMenuItem(
-              value: 'weekly_menu',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ButleryIcon(ButleryIcons.calendar),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(child: Text(context.l10n.groupMenuChatAction)),
-                ],
-              ),
-            ),
-          ButleryMenuItem(
-            value: 'block',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ButleryIcon(ButleryIcons.block, color: cs.error),
-                const SizedBox(width: AppDimensions.space4),
-                Flexible(
-                  child: Text(context.l10n.socialBlock),
-                ),
-              ],
-            ),
-          ),
-          // Only a chat group can be left; a direct chat has no group to
-          // leave, and deleting it lives in the conversation list.
-          if (conversation?.groupId != null) ...[
-            const PopupMenuDivider(),
-            ButleryMenuItem(
-              value: 'leave',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ButleryIcon(ButleryIcons.logOut, color: cs.error),
-                  const SizedBox(width: AppDimensions.space4),
-                  Flexible(
-                    child: Text(context.l10n.chatLeaveConversation),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
+      ],
     );
   }
 }

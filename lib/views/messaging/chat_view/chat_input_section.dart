@@ -6,7 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/widgets/messaging/image_picker_dialog.dart';
@@ -260,7 +261,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   Future<void> _handlePollCreate() async {
     if (widget.currentUserId == null || widget.onPollCreate == null) return;
     try {
-      final poll = await showDialog<Poll>(
+      final poll = await showButleryDialog<Poll>(
         context: context,
         builder: (ctx) => PollCreationDialog(creatorId: widget.currentUserId!),
       );
@@ -341,11 +342,11 @@ class _ChatInputSectionState extends State<ChatInputSection> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
+        AppIconButton(
           onPressed: () => _handleAttachmentTap(type),
-          icon: ButleryIcon(icon),
+          icon: icon,
           color: cs.onSurface,
-          tooltip: label,
+          semanticLabel: label,
         ),
         Text(
           label,
@@ -395,34 +396,32 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     // Image button
-                    IconButton(
+                    AppIconButton(
                       onPressed: _handleImagePick,
-                      icon: const ButleryIcon(ButleryIcons.image),
+                      icon: ButleryIcons.image,
                       color: context.modeColors.success,
-                      tooltip: context.l10n.tooltipAttachImage,
+                      semanticLabel: context.l10n.tooltipAttachImage,
                     ),
 
                     // Poll button
                     if (widget.onPollCreate != null)
-                      IconButton(
+                      AppIconButton(
                         onPressed: _handlePollCreate,
-                        icon: const ButleryIcon(ButleryIcons.vote),
+                        icon: ButleryIcons.vote,
                         color: cs.onSurfaceVariant,
-                        tooltip: context.l10n.tooltipCreatePoll,
+                        semanticLabel: context.l10n.tooltipCreatePoll,
                       ),
 
                     // Attachment button
-                    IconButton(
+                    AppIconButton(
                       onPressed: _toggleAttachments,
-                      icon: ButleryIcon(
-                        _state.showAttachments
-                            ? ButleryIcons.x
-                            : ButleryIcons.paperclip,
-                        color: _state.showAttachments
-                            ? cs.onSurface
-                            : cs.onSurfaceVariant,
-                      ),
-                      tooltip: _state.showAttachments
+                      icon: _state.showAttachments
+                          ? ButleryIcons.x
+                          : ButleryIcons.paperclip,
+                      color: _state.showAttachments
+                          ? cs.onSurface
+                          : cs.onSurfaceVariant,
+                      semanticLabel: _state.showAttachments
                           ? context.l10n.commonClose
                           : context.l10n.tooltipAttachFile,
                     ),
@@ -443,17 +442,15 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         context,
                         AppMotion.micro,
                       ),
-                      child: IconButton(
+                      child: AppIconButton(
                         onPressed: _state.isComposing
                             ? _handleSendMessage
                             : null,
-                        icon: ButleryIcon(
-                          ButleryIcons.send,
-                          color: _state.isComposing
-                              ? cs.onSurface
-                              : cs.onSurfaceVariant,
-                        ),
-                        tooltip: context.l10n.tooltipSendMessage,
+                        icon: ButleryIcons.send,
+                        color: _state.isComposing
+                            ? cs.onSurface
+                            : cs.onSurfaceVariant,
+                        semanticLabel: context.l10n.tooltipSendMessage,
                       ),
                     ),
                   ],

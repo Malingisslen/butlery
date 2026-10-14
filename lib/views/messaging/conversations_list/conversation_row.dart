@@ -2,11 +2,10 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 
@@ -47,17 +46,11 @@ class ConversationRow extends StatelessWidget {
             onArchive: onArchive,
           ),
         ),
-        IconButton(
+        AppIconButton(
           onPressed: onActions,
-          tooltip: context.l10n.messagesMoreOptionsFor(name),
-          constraints: const BoxConstraints(
-            minWidth: AppDimensions.minTouchTarget,
-            minHeight: AppDimensions.minTouchTarget,
-          ),
-          icon: ButleryIcon(
-            ButleryIcons.moreVertical,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          semanticLabel: context.l10n.messagesMoreOptionsFor(name),
+          icon: ButleryIcons.moreVertical,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ],
     );

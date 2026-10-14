@@ -114,13 +114,4 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
 
   @override
   Widget get actionButtonIcon => const ButleryIcon(ButleryIcons.userMinus);
-
-  @override
-  ButtonStyle? actionButtonStyleFor(BuildContext context) {
-    final bc = context.modeColors;
-    return FilledButton.styleFrom(
-      backgroundColor: bc.warning,
-      foregroundColor: bc.onWarning,
-    );
-  }
 }

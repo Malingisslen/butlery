@@ -1,6 +1,9 @@
 // lib/views/messaging/conversation_group_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
@@ -15,7 +18,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
@@ -204,29 +207,23 @@ class _ConversationGroupDetailContentState
   ) async {
     final controller = TextEditingController(text: viewModel.groupTitle);
 
-    final newName = await showDialog<String>(
+    final newName = await showButleryDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.messagingEditGroupName),
-        content: LabeledField(
+      builder: (context) => ButleryDialog(
+        title: context.l10n.messagingEditGroupName,
+        scrollable: false,
+        content: StyledInput(
           label: context.l10n.messagingGroupName,
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: context.l10n.messagingEnterNewGroupName,
-            ),
-            maxLength: 50,
-            autofocus: true,
-          ),
+          hint: context.l10n.messagingEnterNewGroupName,
+          controller: controller,
+          maxLength: 50,
+          autofocus: true,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
+          const DialogCancelButton(),
+          ButleryTextButton(
+            label: context.l10n.commonSave,
             onPressed: () => Navigator.pop(context, controller.text),
-            child: Text(context.l10n.commonSave),
           ),
         ],
       ),

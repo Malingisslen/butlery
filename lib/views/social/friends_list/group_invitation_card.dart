@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// GroupInvitationCard - Group invitation card component
 /// Displays group invitation with accept/reject actions.
@@ -19,15 +20,7 @@ class GroupInvitationCard {
     GroupInvitation invitation,
     UnifiedFriendsService service,
   ) {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
-        ),
-      ),
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(

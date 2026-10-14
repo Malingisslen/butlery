@@ -15,11 +15,11 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 /// "Gå med i hushållet" for a non-owner member of a household-marked [group],
 /// or "Du är med i hushållet" once they have. Hidden for everyone else, and
@@ -139,31 +139,26 @@ class _GroupHouseholdJoinTileState extends State<GroupHouseholdJoinTile> {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.only(top: AppDimensions.space12),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
+      child: ButleryItemRow(
+        padded: false,
         leading: ButleryIcon(
           ButleryIcons.house,
           color: joined ? cs.onSurface : cs.onSurfaceVariant,
           size: AppDimensions.iconSizeL,
         ),
-        title: Text(
-          joined ? l10n.householdJoinedTitle : l10n.householdJoinTitle,
-          style: AppTextStyles.titleMedium,
-        ),
-        subtitle: Text(
-          joined ? l10n.householdJoinedSubtitle : l10n.householdJoinSubtitle,
-          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-        ),
+        title: joined ? l10n.householdJoinedTitle : l10n.householdJoinTitle,
+        subtitle: joined
+            ? l10n.householdJoinedSubtitle
+            : l10n.householdJoinSubtitle,
         trailing: joined
-            ? TextButton(
+            ? ButleryTextButton(
+                label: l10n.householdOpenSettings,
                 onPressed: () =>
                     Navigator.pushNamed(context, Routes.settingsFamily),
-                child: Text(l10n.householdOpenSettings),
               )
-            : ActionButtons.textButton(
-                context,
+            : ButleryTextButton(
                 label: l10n.householdJoinAction,
-                isLoading: _busy,
+                busy: _busy,
                 onPressed: _join,
               ),
       ),
