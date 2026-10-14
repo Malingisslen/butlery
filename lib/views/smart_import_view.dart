@@ -20,11 +20,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -397,31 +397,15 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     BuildContext context,
     ImportNeedsUserHelp helpResult,
   ) async {
-    final theme = Theme.of(context);
-
-    final action = await showDialog<String>(
+    final action = await showButleryDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: ButleryIcon(
-          ButleryIcons.triangleAlert,
-          size: AppDimensions.iconSizeXxl,
-          color: theme.colorScheme.onSurface,
-        ),
-        title: Text(context.l10n.importVideoNoText),
-        content: Text(
-          context.l10n.importVideoNoTextDescription,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop('cancel'),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(dialogContext).pop('photo'),
-            icon: const ButleryIcon(ButleryIcons.camera),
-            label: Text(context.l10n.importPhotoImport),
-          ),
-        ],
+      builder: (dialogContext) => ButleryDialog.confirm(
+        titleIcon: ButleryIcons.triangleAlert,
+        title: context.l10n.importVideoNoText,
+        message: context.l10n.importVideoNoTextDescription,
+        primaryLabel: context.l10n.importPhotoImport,
+        primaryIcon: ButleryIcons.camera,
+        onPrimary: () => Navigator.of(dialogContext).pop('photo'),
       ),
     );
 
