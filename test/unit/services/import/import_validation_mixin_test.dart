@@ -374,16 +374,19 @@ void main() {
         expect(rating == null || rating == 3.0, isTrue);
       });
 
-      test('reads the ★ the app writes: a number before it, or one per star', () {
-        expect(validator.extractRating('4 ★'), equals(4.0));
-        expect(validator.extractRating('Betyg: ★★★★'), equals(4.0));
-        expect(validator.extractRating('★★'), equals(2.0));
-        // One bare star is a bullet or a label, not a rating.
-        expect(validator.extractRating('★ Favorit'), isNull);
-        expect(validator.extractRating('1 ★'), equals(1.0));
-        // Six in a row is decoration, not a rating out of five.
-        expect(validator.extractRating('★★★★★★'), isNull);
-      });
+      test(
+        'reads the ★ the app writes: a number before it, or one per star',
+        () {
+          expect(validator.extractRating('4 ★'), equals(4.0));
+          expect(validator.extractRating('Betyg: ★★★★'), equals(4.0));
+          expect(validator.extractRating('★★'), equals(2.0));
+          // One bare star is a bullet or a label, not a rating.
+          expect(validator.extractRating('★ Favorit'), isNull);
+          expect(validator.extractRating('1 ★'), equals(1.0));
+          // Six in a row is decoration, not a rating out of five.
+          expect(validator.extractRating('★★★★★★'), isNull);
+        },
+      );
 
       test('should validate rating range', () {
         // Prod extracts the first valid number, ignores signs
