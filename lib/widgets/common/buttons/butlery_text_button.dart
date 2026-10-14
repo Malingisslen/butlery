@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
@@ -26,6 +27,9 @@ enum ButleryTextButtonTone {
 
   /// onErrorContainer: the action sits on an error banner and must read on it.
   onErrorBanner,
+
+  /// onPrimary: the action sits on the ink band, as "Släng utkastet".
+  onInk,
 }
 
 class ButleryTextButton extends StatelessWidget {
@@ -37,6 +41,8 @@ class ButleryTextButton extends StatelessWidget {
     this.busy = false,
     this.busyLabel,
     this.semanticLabel,
+    this.dense = false,
+    this.iconAtEnd = false,
     super.key,
   });
 
@@ -57,6 +63,13 @@ class ButleryTextButton extends StatelessWidget {
   /// action; the visible text is left out of the announcement.
   final String? semanticLabel;
 
+  /// 8 px side padding in place of the theme's, for a button that has to fit
+  /// a bar on a 320 dp phone. The 48 dp target stays.
+  final bool dense;
+
+  /// The icon follows the words, as a link that leads on ("Allergier →").
+  final bool iconAtEnd;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -68,6 +81,7 @@ class ButleryTextButton extends StatelessWidget {
         cs.brightness,
       ),
       ButleryTextButtonTone.onErrorBanner => cs.onErrorContainer,
+      ButleryTextButtonTone.onInk => cs.onPrimary,
     };
     final button = ActionButtons.textButton(
       context,
@@ -76,9 +90,17 @@ class ButleryTextButton extends StatelessWidget {
       icon: icon,
       isLoading: busy,
       loadingText: busyLabel,
-      style: colour == null
+      iconAtEnd: iconAtEnd,
+      style: colour == null && !dense
           ? null
-          : TextButton.styleFrom(foregroundColor: colour),
+          : TextButton.styleFrom(
+              foregroundColor: colour,
+              padding: dense
+                  ? const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.space8,
+                    )
+                  : null,
+            ),
     );
     final name = semanticLabel;
     if (name == null || busy) return button;

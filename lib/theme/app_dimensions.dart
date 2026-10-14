@@ -148,6 +148,14 @@ class AppDimensions {
   /// Extra small icon size (12px)
   static const double iconSizeXs = 12.0;
 
+  /// Space under the last row of a long list so the floating action button
+  /// never covers it.
+  static const double fabClearance = 96.0;
+
+  /// A day cell on the draft card: 2 px at the sides, 6 px above and below.
+  static const double dayCellPaddingH = 2.0;
+  static const double dayCellPaddingV = 6.0;
+
   /// Icon size 14px
   static const double iconSize14 = 14.0;
 

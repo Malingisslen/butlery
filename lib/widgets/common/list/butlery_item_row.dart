@@ -31,6 +31,7 @@ class ButleryItemRow extends StatelessWidget {
     this.subtitleWidget,
     this.edge = ButleryItemRowEdge.none,
     this.excludeTitleSemantics = false,
+    this.danger = false,
     this.selected = false,
     this.showChevron = false,
     this.showCheck = false,
@@ -77,6 +78,9 @@ class ButleryItemRow extends StatelessWidget {
   /// row already carries the name, so it is not read twice.
   final bool excludeTitleSemantics;
 
+  /// The row removes something: its glyph and title are drawn in error.
+  final bool danger;
+
   /// The row is the chosen one: surface.selected behind it, the title in bold
   /// ink, read out as selected.
   final bool selected;
@@ -97,9 +101,11 @@ class ButleryItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final titleColour = enabled
-        ? cs.onSurface
-        : AppModeColors.textDisabled(cs.brightness);
+    final titleColour = !enabled
+        ? AppModeColors.textDisabled(cs.brightness)
+        : danger
+        ? cs.error
+        : cs.onSurface;
     final content = ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: AppDimensions.minTouchTarget,
@@ -116,7 +122,10 @@ class ButleryItemRow extends StatelessWidget {
               const SizedBox(width: AppDimensions.space12),
             ] else if (leadingIcon != null) ...[
               ExcludeSemantics(
-                child: ButleryIcon(leadingIcon!, color: cs.onSurfaceVariant),
+                child: ButleryIcon(
+                  leadingIcon!,
+                  color: danger ? cs.error : cs.onSurfaceVariant,
+                ),
               ),
               const SizedBox(width: AppDimensions.space12),
             ],
