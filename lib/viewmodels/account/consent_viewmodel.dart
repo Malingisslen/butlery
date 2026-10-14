@@ -34,6 +34,7 @@ class ConsentViewModel extends ChangeNotifier
   // State
   UserConsent? _currentConsent;
   bool _needsRenewal = false;
+  bool _loadFailed = false;
 
   // Current consent purposes (editable state)
   bool _analytics = false;
@@ -49,6 +50,22 @@ class ConsentViewModel extends ChangeNotifier
   String? get errorMessage =>
       error; // Compatibility alias - StateNotifierMixin provides error
   bool get needsRenewal => _needsRenewal;
+
+  /// True when the last read of the stored consent failed. The switches then
+  /// hold defaults, not the user's choices, so nothing may be saved from them.
+  bool get loadFailed => _loadFailed;
+
+  /// True when a switch differs from the stored consent.
+  bool get hasUnsavedChanges {
+    final stored = _currentConsent?.purposes;
+    if (stored == null) return false;
+    return _analytics != stored.analytics ||
+        _marketing != stored.marketing ||
+        _socialFeatures != stored.socialFeatures ||
+        _pushNotifications != stored.pushNotifications ||
+        _aiProcessing != stored.aiProcessing;
+  }
+
   bool get hasConsent => _currentConsent != null;
 
   // Getters - Consent purposes (required - always true)
@@ -96,10 +113,14 @@ class ConsentViewModel extends ChangeNotifier
           _needsRenewal = true;
         }
 
+        _loadFailed = false;
         app_logger.AppLogger.success('[$_logTag] Consent loaded successfully');
       });
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to load consent', e);
+      // A second call while one is running throws StateError; the first call
+      // still owns the outcome.
+      if (e is! StateError) _loadFailed = true;
       setError(_formatErrorMessage(e));
     }
   }

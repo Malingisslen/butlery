@@ -3,9 +3,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/content_report.dart';
-import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
+import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
 import 'package:butlery/views/admin/moderator_close_sheet.dart';
 import 'package:butlery/views/admin/moderator_evidence_section.dart';
@@ -21,7 +22,6 @@ import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
@@ -200,7 +200,7 @@ class _ReportCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.space8),
           Text(
-            reportReasonDisplay(l10n, report.reason),
+            moderatorReasonLabel(l10n, report.reason),
             style: AppTextStyles.titleMedium,
           ),
           if (report.description != null && report.description!.isNotEmpty)
@@ -280,15 +280,7 @@ class _ReportCard extends StatelessWidget {
   }
 
   String _contentTypeLabel(AppLocalizations l10n) =>
-      switch (report.contentType) {
-        ContentType.recipe => l10n.moderatorContentTypeRecipe,
-        ContentType.comment => l10n.moderatorContentTypeComment,
-        ContentType.message => l10n.moderatorContentTypeMessage,
-        ContentType.profile => l10n.moderatorContentTypeProfile,
-        ContentType.cookSnap => l10n.moderatorContentTypeCookSnap,
-        ContentType.group => l10n.moderatorContentTypeGroup,
-        ContentType.menuDish => l10n.moderatorContentTypeMenuDish,
-      }.toUpperCase();
+      moderatorContentTypeLabel(l10n, report.contentType).toUpperCase();
 
   String _statusLabel(AppLocalizations l10n) => switch (report.status) {
     ReportStatus.newReport => l10n.moderatorStatusNew,

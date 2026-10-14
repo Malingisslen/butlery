@@ -31486,6 +31486,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dela en länk till profilen för {name}'**
   String friendProfileShareLinkRowOf(String name);
+
+  /// Spår F: shown instead of the two-step page when reading the status fails; never claim it is off.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte läsa om tvåstegsverifiering är på. Försök igen.'**
+  String get mfaStatusLoadFailed;
+
+  /// Spår F: shown instead of the consent switches when reading the stored consent fails, so nothing can be saved from defaults.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte läsa dina samtycken. Försök igen.'**
+  String get consentLoadFailed;
 }
 
 class _AppLocalizationsDelegate

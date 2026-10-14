@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/comment_notifications.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -236,13 +237,11 @@ void main() {
         verify(
           () => mockNotificationService.sendBatchableNotification(
             targetUserIds: ['user_456'], // Parent comment author
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.commentReply,
             variables: {
               'replierName': 'Reply User',
               'recipeName': 'Test Recipe',
               'replyPreview': 'I agree with you!',
-              'originalCommentPreview':
-                  'Great recipe! @user_999 you should try this.',
             },
             additionalData: {
               'recipeId': 'recipe_1',
@@ -315,7 +314,7 @@ void main() {
         verify(
           () => mockNotificationService.sendBatchableNotification(
             targetUserIds: mentions,
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.commentMention,
             variables: any(
               named: 'variables',
               that: predicate<Map<String, dynamic>>(

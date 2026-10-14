@@ -33,6 +33,7 @@ import 'package:butlery/core/observers/snackbar_route_observer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/core/router/app_router.dart';
+import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -59,6 +60,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
@@ -66,18 +68,27 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
-/// "Restart App" button calls [onRestart] (wired to `main` in `main.dart`) so
-/// this widget doesn't have to import the entry point.
+/// "Starta om" button calls [onRestart] (wired to `main` in `main.dart`) so
+/// this widget doesn't have to import the entry point. The texts are fixed
+/// Swedish because the localisations are not loaded when this screen shows;
+/// [message] is technical and stays behind "Visa detaljer".
 class ErrorApp extends StatelessWidget {
   final String message;
   final VoidCallback onRestart;
 
   const ErrorApp(this.message, {super.key, required this.onRestart});
 
+  static const String title = 'Butlery kunde inte starta';
+  static const String explanation =
+      'Något stoppade appen medan den startade. '
+      'Starta om den, så försöker vi igen.';
+  static const String restartLabel = 'Starta om';
+  static const String detailsLabel = 'Visa detaljer';
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Butlery - Error',
+      title: 'Butlery',
       theme: AppTheme.lightTheme,
       home: Builder(
         builder: (context) {
@@ -86,7 +97,7 @@ class ErrorApp extends StatelessWidget {
             backgroundColor: cs.surface,
             body: SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.space12),
+                padding: const EdgeInsets.all(AppDimensions.space24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -95,28 +106,40 @@ class ErrorApp extends StatelessWidget {
                       size: AppDimensions.iconSizeXxl,
                       color: cs.error,
                     ),
-                    const SizedBox(height: AppDimensions.space32),
+                    const SizedBox(height: AppDimensions.space24),
                     Text(
-                      'Application Error',
+                      title,
                       style: AppTextStyles.headlineSmall,
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppDimensions.space8),
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 400),
-                      child: SingleChildScrollView(
-                        child: Text(
-                          message,
-                          style: AppTextStyles.captionBase.copyWith(
-                            fontFamily: 'monospace',
-                          ),
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
+                    Text(
+                      explanation,
+                      style: AppTextStyles.bodyMedium,
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppDimensions.space32),
-                    ElevatedButton(
+                    const SizedBox(height: AppDimensions.space24),
+                    FilledButton(
                       onPressed: onRestart,
-                      child: const Text('Restart App'),
+                      child: const Text(restartLabel),
+                    ),
+                    const SizedBox(height: AppDimensions.space16),
+                    ExpansionTile(
+                      title: const Text(detailsLabel),
+                      trailing: const ButleryExpansionChevron(),
+                      children: [
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 400),
+                          child: SingleChildScrollView(
+                            child: SelectableText(
+                              message,
+                              style: AppTextStyles.captionBase.copyWith(
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -709,7 +732,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     final bootstrap = ApplicationBootstrap();
 
     if (!bootstrap.isInitialized) {
-      return _buildLoadingApp('Initializing modular system...');
+      return _buildLoadingApp('Startar Butlery …');
     }
 
     return ApplicationProvider(
@@ -787,7 +810,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           final mq = MediaQuery.of(context);
           final clampedChild = MediaQuery(
             data: mq.copyWith(
-              textScaler: mq.textScaler.clamp(maxScaleFactor: 1.4),
+              textScaler: mq.textScaler.clamp(
+                maxScaleFactor: AccessibilityUtils.maxTextScale,
+              ),
             ),
             child: child,
           );

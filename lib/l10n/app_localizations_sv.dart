@@ -20508,4 +20508,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String friendProfileShareLinkRowOf(String name) {
     return 'Dela en länk till profilen för $name';
   }
+
+  @override
+  String get mfaStatusLoadFailed =>
+      'Vi kunde inte läsa om tvåstegsverifiering är på. Försök igen.';
+
+  @override
+  String get consentLoadFailed =>
+      'Vi kunde inte läsa dina samtycken. Försök igen.';
 }

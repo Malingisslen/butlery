@@ -53,6 +53,11 @@ class GoToShoppingIntent extends Intent {
   const GoToShoppingIntent();
 }
 
+/// Switch the main bottom-nav to the more tab (index 3).
+class GoToMoreIntent extends Intent {
+  const GoToMoreIntent();
+}
+
 /// Trigger form submission. The default top-level handler walks
 /// `Form.maybeOf(focusedContext)` and runs `validate()` + `save()`, which
 /// only works for forms whose state is reflected back via `onSaved`.
@@ -99,7 +104,7 @@ class AppShortcuts {
         control: useCtrl,
       ): const OpenSearchIntent(),
 
-      // Ctrl/Cmd+1 / 2 / 3 switch primary nav tabs.
+      // Ctrl/Cmd+1 / 2 / 3 / 4 switch primary nav tabs.
       SingleActivator(
         LogicalKeyboardKey.digit1,
         meta: useMeta,
@@ -115,6 +120,11 @@ class AppShortcuts {
         meta: useMeta,
         control: useCtrl,
       ): const GoToShoppingIntent(),
+      SingleActivator(
+        LogicalKeyboardKey.digit4,
+        meta: useMeta,
+        control: useCtrl,
+      ): const GoToMoreIntent(),
 
       // Ctrl/Cmd+Enter submits the focused form.
       SingleActivator(

@@ -4,6 +4,8 @@
 /// open eye while the password is hidden, a struck eye while it is shown.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -86,6 +88,33 @@ void main() {
     final hide = find.byTooltip(l10n.tooltipHidePassword);
     expect(hide, findsOneWidget);
     expect(glyphOf(tester, hide), ButleryIcons.eyeOff);
+  });
+
+  testWidgets('leaving with a typed new password asks first', (tester) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AccountPasswordView(),
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+
+    unawaited(navigator.maybePop());
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.unsavedChangesTitle), findsNothing);
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byKey(const ValueKey('accountPassword.new')),
+        matching: find.byType(EditableText),
+      ),
+      'hemligt123',
+    );
+    await tester.pump();
+    unawaited(navigator.maybePop());
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.unsavedChangesTitle), findsOneWidget);
   });
 
   testWidgets('the rule line names the length the form really enforces, and '

@@ -286,7 +286,10 @@ class DeepLinkHandler {
         _handleImportLink(params, context);
       }
     } catch (e) {
-      // Silently handle deep link processing errors
+      AppLogger.warning('Deep link processing failed: $e');
+      if (context.mounted) {
+        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
+      }
     }
   }
 
@@ -363,6 +366,8 @@ class DeepLinkHandler {
           Navigator.of(context).pushNamed(Routes.friends);
         }
       }
+    } else {
+      _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
     }
   }
 
@@ -438,6 +443,8 @@ class DeepLinkHandler {
           context,
         ).pushNamed(Routes.collaborativeShopping, arguments: listId);
       }
+    } else {
+      _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
     }
   }
 
@@ -465,6 +472,8 @@ class DeepLinkHandler {
           context,
         ).pushNamed(Routes.publicProfile, arguments: userId);
       }
+    } else {
+      _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
     }
   }
 

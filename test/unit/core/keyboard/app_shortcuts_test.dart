@@ -30,12 +30,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  _tabSwitchGuardTests();
   group('AppShortcuts.bindings', () {
-    test('contains all 7 documented bindings', () {
+    test('contains all 8 documented bindings', () {
       // Acts as a contract test: if any binding is removed accidentally,
       // a11y reviewers see a failing assertion before merge. Keep this
       // count in sync with the table in the BUT-521 spec.
-      expect(AppShortcuts.bindings.length, 7);
+      expect(AppShortcuts.bindings.length, 8);
     });
 
     test('maps Esc to CloseDialogIntent', () {
@@ -91,6 +92,7 @@ void main() {
                 GoToRecipesIntent: capture<GoToRecipesIntent>(),
                 GoToMenuIntent: capture<GoToMenuIntent>(),
                 GoToShoppingIntent: capture<GoToShoppingIntent>(),
+                GoToMoreIntent: capture<GoToMoreIntent>(),
                 SubmitFormIntent: capture<SubmitFormIntent>(),
               },
               child: const Focus(
@@ -136,6 +138,13 @@ void main() {
       final fired = await pumpAndPress(tester, [LogicalKeyboardKey.digit1]);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       expect(fired, [GoToRecipesIntent]);
+    });
+
+    testWidgets('Ctrl+4 fires GoToMoreIntent', (tester) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      final fired = await pumpAndPress(tester, [LogicalKeyboardKey.digit4]);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(fired, [GoToMoreIntent]);
     });
   });
 
@@ -219,6 +228,47 @@ void main() {
       mainTabSwitchRequest.value = 1;
 
       expect(received, [2, 1]);
+    });
+  });
+}
+
+void _tabSwitchGuardTests() {
+  group('Tab shortcut and unsaved input', () {
+    testWidgets('a dirty form asks once and stays put', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: appNavigatorKey,
+          builder: (context, child) => Shortcuts(
+            shortcuts: AppShortcuts.bindings,
+            child: Actions(
+              actions: AppActions.dispatch(),
+              child: Focus(autofocus: true, child: child!),
+            ),
+          ),
+          home: const Scaffold(body: Text('root')),
+        ),
+      );
+      var asked = 0;
+      appNavigatorKey.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) asked++;
+            },
+            child: const Scaffold(body: Text('form')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+
+      expect(asked, 1);
+      expect(find.text('form'), findsOneWidget);
     });
   });
 }

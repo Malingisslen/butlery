@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import '../../../../../test_support/base_unit_test.dart';
@@ -77,7 +78,7 @@ void main() {
         when(
           () => mockNotificationService.sendImmediateNotification(
             targetUserIds: ['user_123'],
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
             additionalData: any(named: 'additionalData'),
             actions: any(named: 'actions'),
@@ -98,7 +99,7 @@ void main() {
         verify(
           () => mockNotificationService.sendImmediateNotification(
             targetUserIds: ['user_123'],
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
             additionalData: any(named: 'additionalData'),
             actions: any(named: 'actions'),
@@ -121,7 +122,7 @@ void main() {
         ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
-          capturedMessage = variables['commentPreview'];
+          capturedMessage = variables['message'];
         });
 
         // Act
@@ -137,7 +138,7 @@ void main() {
         expect(capturedMessage, contains('★★★★')); // 4 stars
         expect(
           capturedMessage,
-          contains('Betygsatte ditt recept'),
+          contains('betygsatte ditt recept'),
         ); // Swedish message
       });
 
@@ -156,7 +157,7 @@ void main() {
         ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
-          capturedReview = variables['commentPreview'];
+          capturedReview = variables['message'];
         });
 
         final longReview =
@@ -172,7 +173,11 @@ void main() {
         );
 
         // Assert
-        expect(capturedReview, hasLength(53)); // 50 chars + '...'
+        expect(capturedReview, startsWith('Verbose Rater: '));
+        expect(
+          capturedReview,
+          hasLength('Verbose Rater: '.length + 53), // 50 chars + '...'
+        );
         expect(capturedReview, endsWith('...'));
       });
 
@@ -267,7 +272,7 @@ void main() {
         ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
-          preview = variables['commentPreview'];
+          preview = variables['message'];
         });
 
         await RatingNotifications.sendFirstRatingNotification(
@@ -279,9 +284,7 @@ void main() {
 
         expect(
           preview,
-          equals(
-            'Grattis! Ditt recept "Fick sitt första betyg från Star Rater: ★★★★★"',
-          ),
+          equals('Star Rater gav ditt recept dess första betyg: ★★★★★'),
         );
       });
     });
@@ -312,7 +315,7 @@ void main() {
         verify(
           () => mockNotificationService.sendImmediateNotification(
             targetUserIds: ['user_123'],
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
             additionalData: any(named: 'additionalData'),
             actions: any(named: 'actions'),
@@ -460,7 +463,7 @@ void main() {
         verify(
           () => mockNotificationService.sendImmediateNotification(
             targetUserIds: ['user_123'],
-            strategy: NotificationStrategy.recipeComment,
+            strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
             additionalData: any(named: 'additionalData'),
             actions: any(named: 'actions'),

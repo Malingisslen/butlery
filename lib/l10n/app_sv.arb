@@ -16860,5 +16860,13 @@
         "type": "String"
       }
     }
+  },
+  "mfaStatusLoadFailed": "Vi kunde inte läsa om tvåstegsverifiering är på. Försök igen.",
+  "@mfaStatusLoadFailed": {
+    "description": "Spår F: shown instead of the two-step page when reading the status fails; never claim it is off."
+  },
+  "consentLoadFailed": "Vi kunde inte läsa dina samtycken. Försök igen.",
+  "@consentLoadFailed": {
+    "description": "Spår F: shown instead of the consent switches when reading the stored consent fails, so nothing can be saved from defaults."
   }
 }

@@ -91,6 +91,14 @@ class _OnboardingContentState extends State<_OnboardingContent> {
 
     return PopScope(
       canPop: false,
+      // Android's back goes one step back, like the Tillbaka button; the first
+      // step and the setup page have nowhere to go.
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (viewModel.showsSetup || viewModel.isCompleting) return;
+        if (viewModel.isFirstPage) return;
+        _goBack(context, viewModel);
+      },
       child: Scaffold(
         backgroundColor: cs.surface,
         body: SafeArea(
@@ -201,18 +209,18 @@ class _OnboardingContentState extends State<_OnboardingContent> {
           ? null
           : () => _handleNext(context, viewModel),
       busy: viewModel.isCompleting,
-      onBack: viewModel.isFirstPage
-          ? null
-          : () {
-              viewModel.previousPage();
-              _pageController.previousPage(
-                duration: AnimationUtils.getDuration(
-                  context,
-                  const Duration(milliseconds: 300),
-                ),
-                curve: Curves.easeInOut,
-              );
-            },
+      onBack: viewModel.isFirstPage ? null : () => _goBack(context, viewModel),
+    );
+  }
+
+  void _goBack(BuildContext context, OnboardingViewModel viewModel) {
+    viewModel.previousPage();
+    _pageController.previousPage(
+      duration: AnimationUtils.getDuration(
+        context,
+        const Duration(milliseconds: 300),
+      ),
+      curve: Curves.easeInOut,
     );
   }
 

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/legal/legal_document.dart';
 import 'package:butlery/widgets/legal/legal_link_foot.dart';
-import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/views/legal/legal_asset.dart';
 
 class CommunityGuidelinesView extends StatefulWidget {
   const CommunityGuidelinesView({super.key});
@@ -21,10 +20,19 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
   String? _content;
   bool _isLoading = true;
   String? _errorMessage;
+  String? _language;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode;
+    if (language == _language) return;
+    _language = language;
     _loadContent();
   }
 
@@ -36,17 +44,7 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
         _errorMessage = null;
       });
 
-      final lang = PlatformDispatcher.instance.locale.languageCode;
-      final assetPath = 'assets/legal/community_guidelines_$lang.md';
-
-      String content;
-      try {
-        content = await rootBundle.loadString(assetPath);
-      } catch (_) {
-        content = await rootBundle.loadString(
-          'assets/legal/community_guidelines_sv.md',
-        );
-      }
+      final content = await loadLegalAsset('community_guidelines', _language!);
 
       if (mounted) {
         setState(() {

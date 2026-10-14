@@ -136,7 +136,12 @@ class _MetricTabContent extends StatelessWidget {
           ),
         for (final key in otherKeys) ...[
           const SizedBox(height: AppDimensions.space8),
-          MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space12,
+            ),
+            child: MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
+          ),
         ],
       ],
     );
