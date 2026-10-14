@@ -14,6 +14,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -143,7 +146,10 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: AppDimensions.dividerHeight),
+          const SizedBox(
+            height: AppDimensions.dividerHeight,
+            child: ButleryDivider(),
+          ),
           // Comparison
           Expanded(
             child: ListView(
@@ -242,7 +248,10 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: AppDimensions.dividerHeight),
+          const SizedBox(
+            height: AppDimensions.dividerHeight,
+            child: ButleryDivider(),
+          ),
           _ActionButtons(
             onChoice: (c) => Navigator.of(context).pop(_result(c)),
           ),
@@ -418,9 +427,6 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    const shape = RoundedRectangleBorder();
-    const minSize = Size(0, AppDimensions.minTouchTarget);
-
     return SafeArea(
       child: Padding(
         padding: AppDimensions.paddingSymmetric16x8,
@@ -431,33 +437,23 @@ class _ActionButtons extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: FilledButton.icon(
+                  child: ActionButtons.primaryButton(
+                    context,
+                    label: l10n.duplicateMergeBestFields,
+                    icon: ButleryIcons.merge,
+                    isExpanded: true,
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.mergeBestFields),
-                    icon: const ButleryIcon(
-                      ButleryIcons.merge,
-                      size: AppDimensions.iconSize18,
-                    ),
-                    label: Text(l10n.duplicateMergeBestFields),
-                    style: FilledButton.styleFrom(
-                      minimumSize: minSize,
-                      shape: shape,
-                    ),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space8),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    label: l10n.duplicateMergeSaveAsNew,
+                    icon: ButleryIcons.plus,
+                    isExpanded: true,
                     onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
-                    icon: const ButleryIcon(
-                      ButleryIcons.plus,
-                      size: AppDimensions.iconSize18,
-                    ),
-                    label: Text(l10n.duplicateMergeSaveAsNew),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: minSize,
-                      shape: shape,
-                    ),
                   ),
                 ),
               ],
@@ -466,26 +462,18 @@ class _ActionButtons extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: TextButton(
+                  child: ButleryTextButton(
+                    label: l10n.duplicateMergeKeepExisting,
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.keepExisting),
-                    style: TextButton.styleFrom(
-                      minimumSize: minSize,
-                      shape: shape,
-                    ),
-                    child: Text(l10n.duplicateMergeKeepExisting),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space8),
                 Expanded(
-                  child: TextButton(
+                  child: ButleryTextButton(
+                    label: l10n.duplicateMergeReplaceWithNew,
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.replaceWithNew),
-                    style: TextButton.styleFrom(
-                      minimumSize: minSize,
-                      shape: shape,
-                    ),
-                    child: Text(l10n.duplicateMergeReplaceWithNew),
                   ),
                 ),
               ],

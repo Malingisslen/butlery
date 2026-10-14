@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Priority-ordered list of dietary keys used by both TagResultDisplay and CompactDietaryRow.
 /// Derived from DietaryConfig to prevent key drift.
@@ -284,21 +285,9 @@ class TagResultDisplay extends StatelessWidget {
             ),
           ),
           if (onRetagRequested != null)
-            TextButton(
+            ButleryTextButton(
               onPressed: onRetagRequested,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space8,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                context.l10n.commonUpdate,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurface,
-                ),
-              ),
+              label: context.l10n.commonUpdate,
             ),
         ],
       ),

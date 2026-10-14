@@ -18,6 +18,8 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
@@ -210,7 +212,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Divider(color: cs.surfaceContainerHigh),
+        const ButleryDivider(),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.space16,
@@ -329,12 +331,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
     return Column(
       children: [
-        if (showDivider)
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: cs.surfaceContainerHigh,
-          ),
+        if (showDivider) const SizedBox(height: 1, child: ButleryDivider()),
         Semantics(
           label: context.l10n.a11yShowSubstitutionsFor,
           button: true,
@@ -851,26 +848,14 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                 ),
               ),
               if (hasOverflow)
-                TextButton.icon(
+                ButleryTextButton(
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                  icon: ButleryIcon(
-                    _isExpanded
-                        ? ButleryIcons.chevronUp
-                        : ButleryIcons.chevronDown,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  label: Text(
-                    _isExpanded
-                        ? context.l10n.commonHide
-                        : context.l10n.commonShowAllCount(names.length),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: AppDimensions.paddingHorizontal8,
-                    minimumSize: Size.zero,
-                    // BUT-2218: the button stays compact, its tap area is
-                    // padded to 48 dp (tokens.json touchTarget).
-                    tapTargetSize: MaterialTapTargetSize.padded,
-                  ),
+                  icon: _isExpanded
+                      ? ButleryIcons.chevronUp
+                      : ButleryIcons.chevronDown,
+                  label: _isExpanded
+                      ? context.l10n.commonHide
+                      : context.l10n.commonShowAllCount(names.length),
                 ),
             ],
           ),

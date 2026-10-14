@@ -7,6 +7,8 @@ import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -349,16 +351,10 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                     ),
                     excludeSemantics: true,
                     onTap: widget.onConfirm,
-                    child: TextButton(
+                    child: ButleryTextButton(
                       key: const ValueKey('parse-row-confirm'),
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(
-                          AppDimensions.minTouchTarget,
-                          AppDimensions.minTouchTarget,
-                        ),
-                      ),
+                      label: context.l10n.parseConfidenceConfirm,
                       onPressed: widget.onConfirm,
-                      child: Text(context.l10n.parseConfidenceConfirm),
                     ),
                   ),
           ),
@@ -378,7 +374,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
               ),
             ),
           ),
-        const Divider(height: 1, thickness: 1),
+        const SizedBox(height: 1, child: ButleryDivider()),
       ],
     );
   }

@@ -8,7 +8,10 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -131,7 +134,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
 
     if (!context.mounted) return null;
 
-    return showDialog<PersonalTagRule>(
+    return showButleryDialog<PersonalTagRule>(
       context: context,
       builder: (context) => PersonalTagRuleDialog(
         existingRule: existingRule,
@@ -155,7 +158,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
 
     if (!context.mounted) return null;
 
-    return showDialog<PersonalTagRuleResult>(
+    return showButleryDialog<PersonalTagRuleResult>(
       context: context,
       builder: (context) => PersonalTagRuleDialog(
         existingRule: existingRule,
@@ -409,11 +412,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             style: AppTextStyles.titleLarge,
           ),
         ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.x),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.l10n.commonClose,
-        ),
+        ButleryCloseButton(semanticLabel: context.l10n.commonClose),
       ],
     );
   }
@@ -522,13 +521,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
               ),
             ),
             const Spacer(),
-            TextButton.icon(
+            ButleryTextButton(
               onPressed: _isSaving ? null : _addCondition,
-              icon: const ButleryIcon(
-                ButleryIcons.plus,
-                size: AppDimensions.iconSize18,
-              ),
-              label: Text(context.l10n.commonAdd),
+              icon: ButleryIcons.plus,
+              label: context.l10n.commonAdd,
             ),
           ],
         ),
@@ -619,40 +615,20 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     );
   }
 
-  // The theme's filled button asks for an infinite minimum width, which a
-  // Row's unbounded main axis cannot satisfy.
-  static const ButtonStyle _rowButtonStyle = ButtonStyle(
-    minimumSize: WidgetStatePropertyAll(
-      Size(0, AppDimensions.minTouchTarget),
-    ),
-  );
-
   Widget _buildActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    // OverflowBar hands the buttons loose constraints, which the theme's
+    // infinite minimum button width needs; a Row would not.
+    return OverflowBar(
+      alignment: MainAxisAlignment.end,
+      spacing: AppDimensions.space8,
       children: [
         DialogCancelButton(enabled: !_isSaving),
-        const SizedBox(width: AppDimensions.space8),
-        // Busy: the button keeps its name and colours and gets the plate
-        // line along its bottom edge (Komponentark v1:365, :372;
-        // produktregler.md:902), never a spinner (B-18).
-        BusyButtonSemantics(
-          busy: _isSaving,
-          name: _isEditing
+        ButleryDialogPrimary(
+          label: _isEditing
               ? context.l10n.commonSave
               : context.l10n.commonCreate,
-          child: FilledButton(
-            onPressed: _isSaving ? PlateLineButton.ignore : _save,
-            style: _isSaving
-                ? PlateLineButton.busyStyle(
-                    _rowButtonStyle,
-                    Theme.of(context).filledButtonTheme.style,
-                  )
-                : _rowButtonStyle,
-            child: Text(
-              _isEditing ? context.l10n.commonSave : context.l10n.commonCreate,
-            ),
-          ),
+          busy: _isSaving,
+          onPressed: _save,
         ),
       ],
     );
@@ -742,17 +718,10 @@ class _ConditionRow extends StatelessWidget {
               const SizedBox(width: AppDimensions.space8),
               // Delete button
               if (canDelete)
-                IconButton(
-                  icon: const ButleryIcon(
-                    ButleryIcons.x,
-                    size: AppDimensions.iconSizeM,
-                  ),
+                AppIconButton(
+                  icon: ButleryIcons.x,
                   onPressed: enabled ? onDelete : null,
-                  tooltip: context.l10n.ruleRemoveCondition,
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
+                  semanticLabel: context.l10n.ruleRemoveCondition,
                 ),
             ],
           ),

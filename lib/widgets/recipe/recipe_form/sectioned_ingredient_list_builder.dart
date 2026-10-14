@@ -7,7 +7,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/styled/butlery_row_field.dart';
 
 /// The sectioned ingredient editor (PR #211). Renders an ordered list of
@@ -89,14 +91,14 @@ class SectionedIngredientListBuilder extends StatelessWidget {
         const SizedBox(height: AppDimensions.space4),
         Wrap(
           children: [
-            TextButton.icon(
-              icon: const ButleryIcon(ButleryIcons.plus),
-              label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
+            ButleryTextButton(
+              icon: ButleryIcons.plus,
+              label: context.l10n.commonAddWithLabel(label.toLowerCase()),
               onPressed: onAddLine,
             ),
-            TextButton.icon(
-              icon: const ButleryIcon(ButleryIcons.plus),
-              label: Text(context.l10n.recipeAddIngredientHeading),
+            ButleryTextButton(
+              icon: ButleryIcons.plus,
+              label: context.l10n.recipeAddIngredientHeading,
               onPressed: canAddHeading ? onAddHeading : null,
             ),
           ],
@@ -179,8 +181,9 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 button: true,
                 excludeSemantics: true,
                 onTap: () => onRemoveHeading(id),
-                child: IconButton(
-                  icon: const ButleryIcon(ButleryIcons.trash2),
+                child: AppIconButton(
+                  icon: ButleryIcons.trash2,
+                  semanticLabel: context.l10n.a11yRemoveIngredientHeading,
                   onPressed: () => onRemoveHeading(id),
                 ),
               ),
@@ -234,8 +237,11 @@ class SectionedIngredientListBuilder extends StatelessWidget {
             button: true,
             excludeSemantics: true,
             onTap: () => onRemoveLine(lineIndex),
-            child: IconButton(
-              icon: const ButleryIcon(ButleryIcons.trash2),
+            child: AppIconButton(
+              icon: ButleryIcons.trash2,
+              semanticLabel: context.l10n.commonRemoveLabel(
+                context.l10n.recipeIngredient,
+              ),
               onPressed: () => onRemoveLine(lineIndex),
             ),
           ),
@@ -248,28 +254,26 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     int rowIndex,
     List<({String id, String label})> headings,
   ) {
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<String?>(
-        icon: const ButleryIcon(ButleryIcons.move),
-        tooltip: context.l10n.recipeMoveToSection,
-        onSelected: (headingId) => onMoveLineToSection(rowIndex, headingId),
-        itemBuilder: (context) => [
-          PopupMenuItem<String?>(
-            value: null,
-            child: Text(context.l10n.recipeMoveToSectionNone),
+    // PopupMenuButton never reports a null value as a selection, so
+    // "no section" travels as an empty id.
+    return ButleryMenu<String>(
+      icon: ButleryIcons.move,
+      semanticLabel: context.l10n.recipeMoveToSection,
+      onSelected: (headingId) =>
+          onMoveLineToSection(rowIndex, headingId.isEmpty ? null : headingId),
+      choices: [
+        ButleryMenuChoice<String>(
+          value: '',
+          label: context.l10n.recipeMoveToSectionNone,
+        ),
+        for (final h in headings)
+          ButleryMenuChoice<String>(
+            value: h.id,
+            label: h.label.isEmpty
+                ? context.l10n.recipeIngredientHeadingHint
+                : h.label,
           ),
-          for (final h in headings)
-            PopupMenuItem<String?>(
-              value: h.id,
-              child: Text(
-                h.label.isEmpty
-                    ? context.l10n.recipeIngredientHeadingHint
-                    : h.label,
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 

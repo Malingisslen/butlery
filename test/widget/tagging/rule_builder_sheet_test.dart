@@ -111,7 +111,13 @@ void main() {
         await _showSheet(tester);
 
         expect(find.byType(RuleBuilderSheet), findsOneWidget);
-        expect(find.byType(FilledButton), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(RuleBuilderSheet),
+            matching: find.byType(ElevatedButton),
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgetsNoOverflow('starts with 1 default condition', (tester) async {
@@ -125,7 +131,12 @@ void main() {
         (tester) async {
           await _showSheet(tester);
 
-          await tester.tap(find.byType(FilledButton));
+          await tester.tap(
+            find.descendant(
+              of: find.byType(RuleBuilderSheet),
+              matching: find.byType(ElevatedButton),
+            ),
+          );
           await tester.pumpAndSettle();
 
           expect(find.byType(RuleBuilderSheet), findsOneWidget);
@@ -154,7 +165,13 @@ void main() {
       testWidgetsNoOverflow('shows edit title and save button', (tester) async {
         await _showSheet(tester, existingRule: _existingRule);
 
-        expect(find.byType(FilledButton), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(RuleBuilderSheet),
+            matching: find.byType(ElevatedButton),
+          ),
+          findsOneWidget,
+        );
       });
     });
 

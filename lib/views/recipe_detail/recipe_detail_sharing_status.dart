@@ -10,7 +10,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -91,17 +92,11 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               ),
               const Spacer(),
               // Stop sharing with all
-              TextButton.icon(
+              ButleryTextButton(
                 onPressed: () => _confirmStopAll(context),
-                icon: ButleryIcon(
-                  ButleryIcons.x,
-                  size: AppDimensions.iconSizeS,
-                  color: cs.error,
-                ),
-                label: Text(
-                  context.l10n.recipeSharingStopAll,
-                  style: AppTextStyles.captionBase.copyWith(color: cs.error),
-                ),
+                icon: ButleryIcons.x,
+                label: context.l10n.recipeSharingStopAll,
+                tone: ButleryTextButtonTone.danger,
               ),
             ],
           ),
@@ -303,16 +298,10 @@ class _ShareeRow extends StatelessWidget {
           Expanded(
             child: Text(name, style: Theme.of(context).textTheme.bodyMedium),
           ),
-          IconButton(
+          ButleryCloseButton(
             onPressed: onRevoke,
-            icon: ButleryIcon(
-              ButleryIcons.x,
-              size: AppDimensions.iconSizeS,
-              color: cs.error,
-            ),
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            padding: EdgeInsets.zero,
-            tooltip: context.l10n.recipeSharingRevoke,
+            semanticLabel: context.l10n.recipeSharingRevoke,
+            color: Theme.of(context).colorScheme.error,
           ),
         ],
       ),

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -179,10 +180,9 @@ void main() {
             ),
           ),
         );
-        expect(
-          tester.widget<Divider>(find.byType(Divider)).color,
-          cs.outlineVariant,
-        );
+        expect(find.byType(ButleryDivider), findsOneWidget);
+        expect(tester.widget<Divider>(find.byType(Divider)).color, isNull);
+        expect(theme.dividerTheme.color, cs.outlineVariant);
       });
 
       testWidgets(

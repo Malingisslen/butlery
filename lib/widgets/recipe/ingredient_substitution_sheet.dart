@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -40,39 +40,16 @@ class _IngredientSubstitutionSheetState
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.space16),
-            child: Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.swapHorizontal,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeL,
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: Text(
-                    widget.ingredientName,
-                    style: AppTextStyles.titleMedium,
-                  ),
-                ),
-                IconButton(
-                  icon: const ButleryIcon(ButleryIcons.x),
-                  onPressed: () => Navigator.of(context).pop(),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
+          ButlerySheetHeader(
+            title: widget.ingredientName,
+            closeLabel: context.l10n.commonClose,
           ),
-          Divider(height: 1, color: cs.surfaceContainerHigh),
+          const SizedBox(height: 1, child: ButleryDivider()),
           FutureBuilder<List<IngredientSubstitution>>(
             future: _future,
             builder: (context, snapshot) {

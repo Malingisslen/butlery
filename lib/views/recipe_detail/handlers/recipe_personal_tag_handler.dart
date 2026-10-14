@@ -13,6 +13,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -233,19 +236,20 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                       style: AppTextStyles.titleLarge,
                     ),
                   ),
-                  TextButton(
+                  ButleryTextButton(
                     onPressed: _cancel,
-                    child: Text(context.l10n.commonCancel),
+                    label: context.l10n.commonCancel,
                   ),
                   const SizedBox(width: AppDimensions.space8),
-                  FilledButton(
+                  ActionButtons.primaryButton(
+                    context,
                     onPressed: _save,
-                    child: Text(context.l10n.commonSave),
+                    label: context.l10n.commonSave,
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
+            const SizedBox(height: 1, child: ButleryDivider()),
             // Content
             Expanded(
               child: _buildContent(context, scrollController),
@@ -301,12 +305,9 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                   ),
                 ),
                 const Spacer(),
-                TextButton(
+                ButleryTextButton(
                   onPressed: () => setState(() => _selectedTagIds.clear()),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.onPrimaryContainer,
-                  ),
-                  child: Text(context.l10n.commonClear),
+                  label: context.l10n.commonClear,
                 ),
               ],
             ),
@@ -341,13 +342,10 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
         // Manage tags link
         Center(
-          child: TextButton.icon(
+          child: ButleryTextButton(
             onPressed: _navigateToManageTags,
-            icon: const ButleryIcon(
-              ButleryIcons.settings,
-              size: AppDimensions.iconSize18,
-            ),
-            label: Text(context.l10n.taggingManageTags),
+            icon: ButleryIcons.settings,
+            label: context.l10n.taggingManageTags,
           ),
         ),
         const SizedBox(height: AppDimensions.space24),
@@ -384,10 +382,11 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.space24),
-            FilledButton.icon(
+            ActionButtons.primaryButton(
+              context,
               onPressed: _navigateToManageTags,
-              icon: const ButleryIcon(ButleryIcons.plus),
-              label: Text(context.l10n.taggingCreateTag),
+              icon: ButleryIcons.plus,
+              label: context.l10n.taggingCreateTag,
             ),
           ],
         ),

@@ -13,6 +13,7 @@ import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// Renders the "Relaterade recept" block in the recipe detail view.
 ///
@@ -83,7 +84,7 @@ class _RelatedSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Divider + header
-        Divider(color: cs.surfaceContainerHigh),
+        const ButleryDivider(),
         Padding(
           padding: const EdgeInsetsDirectional.only(
             start: AppDimensions.space16,

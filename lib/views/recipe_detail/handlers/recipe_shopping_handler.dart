@@ -7,6 +7,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/utils/text/shopping_list_generator.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_add_to_list_dialog.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -149,7 +150,7 @@ class RecipeShoppingHandler {
 
       // Not dismissible by a stray tap outside: that closed the old list
       // dialog with nothing added and no feedback.
-      final choice = await showDialog<RecipeListChoice>(
+      final choice = await showButleryDialog<RecipeListChoice>(
         context: context,
         barrierDismissible: false,
         builder: (_) => RecipeAddToListDialog(

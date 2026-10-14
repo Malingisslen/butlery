@@ -40,6 +40,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
@@ -272,11 +274,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       title: suggests
           ? context.l10n.recipeSuggestChange
           : context.l10n.recipeEdit,
-      leading: IconButton(
+      leading: ButleryCloseButton(
         key: const ValueKey('edit-recipe-close'),
-        icon: const ButleryIcon(ButleryIcons.x),
-        tooltip: context.l10n.recipeEditorClose,
-        onPressed: () => Navigator.of(context).maybePop(),
+        semanticLabel: context.l10n.recipeEditorClose,
       ),
       actions: [
         DraftSaveIndicator(
@@ -845,14 +845,14 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   /// True keeps the edits as a copy, false discards them. It cannot be
   /// dismissed any other way: the choice is what closes the editor.
   Future<bool?> _showRoleLoweredDialog(BuildContext context) {
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => PopScope(
         canPop: false,
-        child: AlertDialog(
-          title: Text(context.l10n.roleLoweredRecipeTitle),
-          content: Text(context.l10n.roleLoweredRecipeBody),
+        child: ButleryDialog(
+          title: context.l10n.roleLoweredRecipeTitle,
+          message: context.l10n.roleLoweredRecipeBody,
           actions: [
             KeyedSubtree(
               key: const ValueKey('role-lowered-discard'),
@@ -878,11 +878,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
   /// Shows confirmation dialog for unsaved changes
   Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.recipeUnsavedChangesTitle),
-        content: Text(context.l10n.confirmUnsavedChanges),
+      builder: (context) => ButleryDialog(
+        title: context.l10n.recipeUnsavedChangesTitle,
+        message: context.l10n.confirmUnsavedChanges,
         actions: [
           ActionButtons.secondaryButton(
             context,

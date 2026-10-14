@@ -1,10 +1,11 @@
 // lib/widgets/recipe/upload_choice_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 
 /// Dialog for handling pending/failed uploads during recipe save.
 /// Provides user choices when saving a recipe with incomplete uploads:
@@ -57,29 +58,24 @@ Future<UploadChoice?> showUploadChoiceDialog({
       onPressed: () => Navigator.of(context).pop(UploadChoice.cancel),
     ),
     if (hasPendingUploads)
-      TextButton(
+      ButleryTextButton(
+        label: context.l10n.uploadWait,
         onPressed: () => Navigator.of(context).pop(UploadChoice.wait),
-        child: Text(context.l10n.uploadWait),
       ),
-    TextButton(
+    ButleryTextButton(
+      label: hasFailedUploads
+          ? context.l10n.uploadSaveWithoutFailed
+          : context.l10n.uploadSaveWithoutPending,
       onPressed: () =>
           Navigator.of(context).pop(UploadChoice.saveWithoutPending),
-      style: TextButton.styleFrom(
-        foregroundColor: context.modeColors.warning,
-      ),
-      child: Text(
-        hasFailedUploads
-            ? context.l10n.uploadSaveWithoutFailed
-            : context.l10n.uploadSaveWithoutPending,
-      ),
     ),
   ]);
 
-  return showDialog<UploadChoice>(
+  return showButleryDialog<UploadChoice>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(dialogTitle),
-      content: Text(dialogContent),
+    builder: (context) => ButleryDialog(
+      title: dialogTitle,
+      message: dialogContent,
       actions: actions,
     ),
   );

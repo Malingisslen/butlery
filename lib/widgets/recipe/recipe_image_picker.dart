@@ -8,8 +8,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Handles image picker UI and logic for recipe forms.
@@ -66,36 +67,28 @@ class RecipeImagePicker {
                 style: AppTextStyles.titleMedium,
               ),
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: ButleryIcon(
-                ButleryIcons.camera,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              title: Text(context.l10n.imageTakePhoto),
-              subtitle: Text(context.l10n.imageUseCamera),
+            const SizedBox(height: 1, child: ButleryDivider()),
+            ButleryItemRow(
+              leadingIcon: ButleryIcons.camera,
+              title: context.l10n.imageTakePhoto,
+              subtitle: context.l10n.imageUseCamera,
               onTap: () => Navigator.pop(context, 'camera'),
             ),
-            ListTile(
-              leading: ButleryIcon(
-                ButleryIcons.image,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              title: Text(context.l10n.imageFromGallery),
-              subtitle: Text(
-                viewModel.canAddMoreImages
-                    ? context.l10n.imageSelectUpTo(
-                        RecipeFormViewModel.maxImages -
-                            viewModel.imageUrls.length,
-                      )
-                    : context.l10n.imageSelectFromGallery,
-              ),
+            ButleryItemRow(
+              leadingIcon: ButleryIcons.image,
+              title: context.l10n.imageFromGallery,
+              subtitle: viewModel.canAddMoreImages
+                  ? context.l10n.imageSelectUpTo(
+                      RecipeFormViewModel.maxImages -
+                          viewModel.imageUrls.length,
+                    )
+                  : context.l10n.imageSelectFromGallery,
               onTap: () => Navigator.pop(context, 'gallery'),
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.x),
-              title: Text(context.l10n.commonCancel),
+            const SizedBox(height: 1, child: ButleryDivider()),
+            ButleryItemRow(
+              leadingIcon: ButleryIcons.x,
+              title: context.l10n.commonCancel,
               onTap: () => Navigator.pop(context),
             ),
           ],

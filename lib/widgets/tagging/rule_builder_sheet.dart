@@ -11,9 +11,11 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/rule_condition_card.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Bottom sheet that allows creating or editing a [PersonalTagRule].
 ///
@@ -169,7 +171,7 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
         return Column(
           children: [
             _buildHeader(),
-            const Divider(height: 1),
+            const SizedBox(height: 1, child: ButleryDivider()),
             Expanded(
               child: ListView(
                 controller: scrollController,
@@ -209,21 +211,20 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
           ),
           Flexible(
             fit: FlexFit.loose,
-            child: TextButton(
+            child: ButleryTextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.commonCancel),
+              label: context.l10n.commonCancel,
             ),
           ),
           const SizedBox(width: AppDimensions.space8),
           Flexible(
             fit: FlexFit.loose,
-            child: FilledButton(
+            child: ActionButtons.primaryButton(
+              context,
               onPressed: _save,
-              child: Text(
-                _isEditing
-                    ? context.l10n.commonSave
-                    : context.l10n.commonCreate,
-              ),
+              label: _isEditing
+                  ? context.l10n.commonSave
+                  : context.l10n.commonCreate,
             ),
           ),
         ],
@@ -269,13 +270,10 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
         const Spacer(),
         Flexible(
           fit: FlexFit.loose,
-          child: TextButton.icon(
+          child: ButleryTextButton(
             onPressed: _addCondition,
-            icon: const ButleryIcon(
-              ButleryIcons.plus,
-              size: AppDimensions.iconSize18,
-            ),
-            label: Text(context.l10n.commonAdd),
+            icon: ButleryIcons.plus,
+            label: context.l10n.commonAdd,
           ),
         ),
       ],
