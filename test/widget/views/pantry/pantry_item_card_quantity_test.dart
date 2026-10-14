@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +28,11 @@ void main() {
     await BaseWidgetTest.teardownWidget();
   });
 
-  Future<void> pumpCard(WidgetTester tester, {required String unit}) async {
+  Future<void> pumpCard(
+    WidgetTester tester, {
+    String unit = 'st',
+    DateTime? expiryDate,
+  }) async {
     final item = PantryItem(
       id: 'p_1',
       ingredientName: 'Mjölk',
@@ -35,6 +40,7 @@ void main() {
       unit: unit,
       location: PantryLocation.fridge,
       addedAt: DateTime(2026, 1, 1),
+      expiryDate: expiryDate,
     );
     await tester.pumpWidget(
       createLocalizedTestApp(
@@ -66,5 +72,20 @@ void main() {
     await pumpCard(tester, unit: 'l');
 
     expect(find.text('1 l'), findsOneWidget);
+  });
+
+  testWidgets('a date more than three days ahead is named as month and day', (
+    tester,
+  ) async {
+    await withClock(Clock.fixed(DateTime(2026, 9, 1)), () async {
+      await pumpCard(tester, expiryDate: DateTime(2026, 9, 30));
+    });
+
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is Text && w.data?.toLowerCase() == 'utgår 30 september',
+      ),
+      findsOneWidget,
+    );
   });
 }

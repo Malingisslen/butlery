@@ -23,6 +23,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_ma
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ShoppingItemOperationsManager, ClaimOutcome, ClaimResult;
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
+import 'package:butlery/viewmodels/collaborative_shopping/shopping_list_change_summary.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -146,9 +147,18 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
     final name = updated.lastActivityByDisplayName;
     final l = AppLocale.current;
-    _updatedByNotice = (name == null || name.isEmpty)
-        ? l.shoppingListUpdatedByUnknown
-        : l.shoppingListUpdatedByNotice(name);
+    if (name == null || name.isEmpty) {
+      _updatedByNotice = l.shoppingListUpdatedByUnknown;
+      return;
+    }
+    _updatedByNotice =
+        summarizeListChange(
+          previous: previous.items,
+          updated: updated.items,
+          byName: name,
+          l10n: l,
+        ) ??
+        l.shoppingListUpdatedByNotice(name);
   }
 
   /// P6-U05: the last seen answer to [canEdit], so a drop to read-only while

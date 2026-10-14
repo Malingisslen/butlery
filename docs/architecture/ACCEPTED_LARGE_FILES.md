@@ -210,7 +210,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shared_content_search_viewmodel.dart` | 565 | Shared content search VM |
 | `consent_management_view.dart` | 255 | GDPR consent management screen |
 | `tag_detail_view.dart` | 176 | Tag detail/editing screen |
-| `menu_viewmodel.dart` | 1150 | Weekly menu VM |
+| `menu_viewmodel.dart` | 1155 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 684 | Shopping list member management dialog |
 | `photo_import_view.dart` | 561 | Photo import screen |
 | `social_invitation_components.dart` | 513 | Pure facade delegating to focused invitation sub-modules |
@@ -237,7 +237,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shared_content_actions.dart` | 483 | Static action helper with one responsibility: import/dismiss shared content |
 | `upload_progress_widgets.dart` | 490 | Focused static widget for upload progress UI |
 | `family_member_form_view.dart` | 496 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design |
-| `unified_shopping_view.dart` | 815 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
+| `unified_shopping_view.dart` | 824 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
 | `recipe_detail_comments.dart` | 675 | Extracted sub-widget for comments section; single cohesive concern |
 | `veckomeny_view.dart` | 1181 | **candidate**: top-level weekly-menu view pulling many widget builders — split candidates exist |
 | `collection_stats_view.dart` | 185 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |

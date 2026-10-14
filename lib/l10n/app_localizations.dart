@@ -16628,6 +16628,53 @@ abstract class AppLocalizations {
   /// **'Listan uppdaterades av någon annan'**
   String get shoppingListUpdatedByUnknown;
 
+  /// A53: change line on a shared list when a quantity changed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade {item}: {before} → {after}'**
+  String shoppingListChangedQuantity(
+    String name,
+    String item,
+    String before,
+    String after,
+  );
+
+  /// A53: change line when an item's name changed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} ändrade {before} → {after}'**
+  String shoppingListChangedItem(String name, String before, String after);
+
+  /// A53: change line when an item was added.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} lade till {item}'**
+  String shoppingListAddedItem(String name, String item);
+
+  /// A53: change line when an item was removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} tog bort {item}'**
+  String shoppingListRemovedItem(String name, String item);
+
+  /// A53: change line when an item was ticked off.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} bockade av {item}'**
+  String shoppingListBoughtItem(String name, String item);
+
+  /// A53: change line when an item was put back on the list.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} bockade ur {item}'**
+  String shoppingListUnboughtItem(String name, String item);
+
+  /// A53: appended when more than one item changed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{summary} och {count} till'**
+  String shoppingListMoreChanges(String summary, int count);
+
   /// No description provided for @unknownResourceType.
   ///
   /// In sv, this message translates to:

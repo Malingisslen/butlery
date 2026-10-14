@@ -5,12 +5,6 @@
 // Like chunk-2/-3, descendant Text labels merge with the wrapper label, so
 // RegExp prefix matchers are used so the assertion isn't coupled to
 // neighbouring text.
-//
-// `_PantryFab` (pantry_view.dart) and `_modalButton` (layout_scaffolds.dart)
-// are private widgets that only exist inside their parent screens — their
-// production wrap is verified by `flutter analyze` and the chunk-8
-// unwrapped-files audit script. Pumping the full PantryView / main menu
-// here would require a stack of provider mocks for marginal coverage gain.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

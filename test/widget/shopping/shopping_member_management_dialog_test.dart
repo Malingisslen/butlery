@@ -247,6 +247,7 @@ void main() {
     bool permissionChangeSucceeds = false,
     bool ownerSeated = true,
     bool throws = false,
+    double viewHeight = 1800,
     _FakeInvitations? invitations,
     List<String> friendNames = const ['Cecilia'],
   }) async {
@@ -259,10 +260,10 @@ void main() {
       ),
     );
 
-    // The dialog content is a fixed 500px column plus title and actions, and
-    // the permission dropdown opens an overlay menu — the default 800x600 test
-    // surface overflows before a single tap lands.
-    tester.view.physicalSize = const Size(1000, 1800);
+    // The dialog content is a column up to 500px tall plus title and actions,
+    // and the permission dropdown opens an overlay menu — the default 800x600
+    // test surface overflows before a single tap lands.
+    tester.view.physicalSize = Size(1000, viewHeight);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
@@ -742,5 +743,32 @@ void main() {
     // It reaches under the remove button, which a subtitle beside it
     // could not.
     expect(picker.right, greaterThan(remove.left));
+  });
+
+  group('the dialog fits the screen it is on', () {
+    double contentHeight(WidgetTester tester) => tester
+        .widget<SizedBox>(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.byWidgetPredicate(
+              (w) => w is SizedBox && w.width == double.maxFinite,
+            ),
+          ),
+        )
+        .height!;
+
+    testWidgets('a tall screen gets the full 500', (tester) async {
+      await pumpDialog(tester, parkedReason: null);
+
+      expect(contentHeight(tester), 500);
+    });
+
+    testWidgets('a short screen gets 60 percent of its height', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: null, viewHeight: 600);
+
+      expect(contentHeight(tester), 360);
+    });
   });
 }
