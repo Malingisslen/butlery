@@ -13,15 +13,10 @@
 /// the selection bar has (produktregler.md:873, :876, :886-889; Skarmar v12
 /// etapp 9 #flervalingang, #flerbar).
 ///
-/// The drawing (Skarmar v12 del 1 #hemrecept :152-155) heads the library
-/// with a 2 px ink rule over a 12 px label in text.secondary. Built so:
-/// the rule is text.primary (colorScheme.onSurface: #24382C light, #F5F4ED
-/// dark), the label the shared [SectionHeading] (Malin
-/// 2026-10-11: only this label on Hem takes heading style). Interpretation:
-/// the label at this spot is drawn as "Ditt bibliotek" (#hemrecept :153),
-/// and the decision names no label ("bibliotekets rubrikrad"). The row says
-/// "Dina recept · N": Hem's section label as drawn in Skarmar v12 del 4
-/// :729, with the count the removed top bar carried.
+/// The label is the shared
+/// [SectionHeading] (Malin 2026-10-11: only this label on Hem takes heading
+/// style). The row says "Dina recept · N": Hem's section label as drawn in
+/// Skarmar v12 del 4 :729, with the count the removed top bar carried.
 library;
 
 import 'package:flutter/material.dart';
@@ -51,9 +46,6 @@ class MinaReceptLibraryHeader extends StatelessWidget {
   static const rowKey = ValueKey('mina-recept-library-header');
   static const headingKey = ValueKey('mina-recept-library-heading');
   static const counterKey = ValueKey('mina-recept-library-counter');
-
-  /// The drawn rule over the row (#hemrecept: border-top 2px).
-  static const double ruleWidth = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -115,38 +107,31 @@ class MinaReceptLibraryHeader extends StatelessWidget {
         side - AppDimensions.space8,
         0,
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: foreground, width: ruleWidth),
+      child: IconTheme.merge(
+        data: IconThemeData(color: foreground),
+        child: IconButtonTheme(
+          data: IconButtonThemeData(
+            style: IconButton.styleFrom(
+              foregroundColor: foreground,
+              disabledForegroundColor: AppModeColors.textDisabled(
+                cs.brightness,
+              ),
+            ).merge(IconButtonTheme.of(context).style),
           ),
-        ),
-        child: IconTheme.merge(
-          data: IconThemeData(color: foreground),
-          child: IconButtonTheme(
-            data: IconButtonThemeData(
-              style: IconButton.styleFrom(
-                foregroundColor: foreground,
-                disabledForegroundColor: AppModeColors.textDisabled(
-                  cs.brightness,
-                ),
-              ).merge(IconButtonTheme.of(context).style),
+          // One height in both modes, so entering selection does not move
+          // the library (produktregler.md): both contents are laid
+          // out and the row takes the taller one's height, at any text
+          // size. The hidden one takes no pointer, focus or semantics.
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
             ),
-            // One height in both modes, so entering selection does not move
-            // the library (produktregler.md:873): both contents are laid
-            // out and the row takes the taller one's height, at any text
-            // size. The hidden one takes no pointer, focus or semantics.
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppDimensions.minTouchTarget,
-              ),
-              child: Stack(
-                alignment: AlignmentDirectional.centerStart,
-                children: [
-                  _Shown(visible: !selecting, child: libraryRow),
-                  _Shown(visible: selecting, child: selectionRow),
-                ],
-              ),
+            child: Stack(
+              alignment: AlignmentDirectional.centerStart,
+              children: [
+                _Shown(visible: !selecting, child: libraryRow),
+                _Shown(visible: selecting, child: selectionRow),
+              ],
             ),
           ),
         ),

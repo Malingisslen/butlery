@@ -2,7 +2,7 @@
 // top bar. "Välj", the ingredient search and the grid/list toggle stand in
 // the library's header row, "Dina recept · N"; in selection mode the row
 // shows the counter and Avbryt instead, without changing height
-// (produktregler.md:873; B-46 on Hem). Drawn rule and label: Skarmar v12
+// (produktregler.md; B-46 on Hem). Drawn label: Skarmar v12
 // del 1 #hemrecept :152-155.
 
 import 'package:flutter/material.dart';
@@ -158,13 +158,6 @@ void main() {
           .getTopLeft(find.byIcon(ButleryIcons.refrigerator))
           .dx;
       expect(select, lessThan(search));
-      // The drawn 2 px rule in text.primary (tokens.json:54-56).
-      final box = tester.widget<DecoratedBox>(
-        find.descendant(of: row(), matching: find.byType(DecoratedBox)).first,
-      );
-      final border = (box.decoration as BoxDecoration).border! as Border;
-      expect(border.top.width, MinaReceptLibraryHeader.ruleWidth);
-      expect(border.top.color, theme.colorScheme.onSurface);
       // Välj takes text.primary: no bar gives it a colour here.
       final selectText = tester.widget<Text>(
         find.descendant(
