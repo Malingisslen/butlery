@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart'
     show draftTimeLeftLabel;
 
@@ -116,17 +117,11 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
                     onPressed: onRestore,
                   ),
                 ),
-                TextButton(
+                ButleryTextButton(
                   key: const ValueKey('veckomeny-draft-discard'),
+                  label: l.draftDiscard,
+                  tone: ButleryTextButtonTone.onInk,
                   onPressed: restoring ? null : onDiscard,
-                  style: TextButton.styleFrom(
-                    foregroundColor: onInk,
-                    minimumSize: const Size(
-                      AppDimensions.minTouchTarget,
-                      AppDimensions.minTouchTarget,
-                    ),
-                  ),
-                  child: Text(l.draftDiscard),
                 ),
               ],
             ),
@@ -139,9 +134,6 @@ class VeckomenyDraftResumeCard extends StatelessWidget {
 
 class _DayCell extends StatelessWidget {
   const _DayCell({required this.day, required this.name});
-
-  static const double _cellPaddingV = AppDimensions.space8 - 2;
-  static const double _cellPaddingH = 2;
 
   final int day;
 
@@ -171,8 +163,8 @@ class _DayCell extends StatelessWidget {
     );
     final cell = Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: _cellPaddingV,
-        horizontal: _cellPaddingH,
+        vertical: AppDimensions.dayCellPaddingV,
+        horizontal: AppDimensions.dayCellPaddingH,
       ),
       child: Column(
         children: [

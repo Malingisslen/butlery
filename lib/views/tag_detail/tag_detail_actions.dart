@@ -13,7 +13,6 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -146,11 +145,8 @@ abstract final class TagDetailActions {
     showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        // The plate line with its text, never a spinner (produktregler.md
-        // :163, :304; beslutslogg B-18).
-        content: PlateLineMessage(message: context.l10n.tagDetailApplyingRules),
-      ),
+      builder: (dialogContext) =>
+          ButleryProgressDialog(message: context.l10n.tagDetailApplyingRules),
     );
 
     try {

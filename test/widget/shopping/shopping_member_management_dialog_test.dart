@@ -341,6 +341,33 @@ void main() {
       expect(find.text(l10n.shoppingPermissionEdit), findsWidgets);
     });
 
+    testWidgets('a refused change puts the saved role back in the picker', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: staleReason);
+      await changeBobToAdmin(tester);
+
+      final picker = find.byType(DropdownButton<SharedListPermission>);
+      expect(
+        find
+            .descendant(
+              of: picker,
+              matching: find.text(l10n.shoppingPermissionAdmin),
+            )
+            .hitTestable(),
+        findsNothing,
+      );
+      expect(
+        find
+            .descendant(
+              of: picker,
+              matching: find.text(l10n.shoppingPermissionEdit),
+            )
+            .hitTestable(),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('removing a member', (tester) async {
       await pumpDialog(tester, parkedReason: staleReason);
       await removeBob(tester);

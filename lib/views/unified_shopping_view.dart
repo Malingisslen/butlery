@@ -158,7 +158,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           );
 
     final titleStyle = selecting
-        ? const TextStyle(fontFeatures: [FontFeature.tabularFigures()])
+        ? ButleryTopBar.selectionCountStyle
         : null;
     final Widget? leading = selecting
         ? ButleryCancelSelectionButton(

@@ -5,9 +5,7 @@ import 'dart:math' as math;
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -64,6 +62,7 @@ class _ShoppingMemberManagementDialogState
   late final ListInvitationOperations _invitations;
 
   late Map<String, SharedListPermission> _localPermissions;
+  int _roleResets = 0;
   late Set<String> _localMemberIds;
 
   /// BUT-1777: the list copy the rows on screen were computed from — what the
@@ -190,6 +189,9 @@ class _ShoppingMemberManagementDialogState
       if (mounted) {
         setState(() {
           _isLoading = false;
+          // The role picker keeps the pick it was given; a refused change has
+          // to put the saved role back on screen.
+          _roleResets++;
         });
       }
     }
@@ -490,10 +492,7 @@ class _ShoppingMemberManagementDialogState
         AppDimensions.space12;
 
     final tile = ButleryItemRow(
-      leading: AvatarCircle(
-        displayName: userName,
-        tone: AvatarCircleTone.paper,
-      ),
+      leading: AvatarCircle(displayName: userName),
       title: userName,
       subtitle: isOwner ? context.l10n.shoppingPermissionOwner : null,
       trailing: !isOwner
@@ -521,74 +520,39 @@ class _ShoppingMemberManagementDialogState
             start: nameInset,
             end: AppDimensions.space16,
           ),
-          child: PressFill(
-            surface: PressSurface.base,
-            child: DropdownButton<SharedListPermission>(
-              icon: const ButleryIcon(ButleryIcons.chevronDown),
-              iconEnabledColor: Theme.of(
-                context,
-              ).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
+          child: ButleryDropdown<SharedListPermission>(
+            key: ValueKey('member-role-$userId-$_roleResets'),
+            dense: true,
+            semanticLabel: userName,
+            value: permission,
+            onChanged: _isLoading
+                ? null
+                : (newPermission) =>
+                      _updateMemberPermission(userId, newPermission),
+            options: [
+              ButleryDropdownOption(
+                value: SharedListPermission.view,
+                label: context.l10n.shoppingPermissionView,
+                icon: ButleryIcons.eye,
+                iconColor: cs.onSurfaceVariant,
               ),
-              isExpanded: true,
-              value: permission,
-              onChanged: _isLoading
-                  ? null
-                  : (newPermission) {
-                      if (newPermission != null) {
-                        _updateMemberPermission(userId, newPermission);
-                      }
-                    },
-              items: [
-                DropdownMenuItem(
-                  value: SharedListPermission.view,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.eye,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: AppDimensions.space4),
-                      Text(context.l10n.shoppingPermissionView),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.edit,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.pencil,
-                        size: AppDimensions.iconSizeS,
-                        // Saffron falls under 3:1 on the light surfaces, so
-                        // only dark mode keeps it.
-                        color: cs.brightness == Brightness.dark
-                            ? cs.secondary
-                            : cs.onSurface,
-                      ),
-                      const SizedBox(width: AppDimensions.space4),
-                      Text(context.l10n.shoppingPermissionEdit),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: SharedListPermission.admin,
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.crown,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurface,
-                      ),
-                      const SizedBox(width: AppDimensions.space4),
-                      Text(context.l10n.shoppingPermissionAdmin),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ButleryDropdownOption(
+                value: SharedListPermission.edit,
+                label: context.l10n.shoppingPermissionEdit,
+                icon: ButleryIcons.pencil,
+                // Saffron falls under 3:1 on the light surfaces, so only
+                // dark mode keeps it.
+                iconColor: cs.brightness == Brightness.dark
+                    ? cs.secondary
+                    : cs.onSurface,
+              ),
+              ButleryDropdownOption(
+                value: SharedListPermission.admin,
+                label: context.l10n.shoppingPermissionAdmin,
+                icon: ButleryIcons.crown,
+                iconColor: cs.onSurface,
+              ),
+            ],
           ),
         ),
       ],

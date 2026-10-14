@@ -183,7 +183,7 @@ void main() {
         }
       });
 
-      testWidgets('the member dialog avatars sit on paper inside raised rows', (
+      testWidgets('the member rows draw ink avatars, the friend row a paper one', (
         tester,
       ) async {
         tester.view.physicalSize = const Size(1000, 1800);
@@ -219,10 +219,13 @@ void main() {
             .widgetList<AvatarCircle>(find.byType(AvatarCircle))
             .toList();
         expect(avatars, hasLength(3));
-        for (final avatar in avatars) {
-          expect(avatar.tone, AvatarCircleTone.paper);
-          expect(_circleColor(tester, avatar), cs.surface);
+        // The member rows have no fill of their own, so a paper circle would
+        // vanish into the dialog; the friend row is a card.
+        for (final avatar in avatars.take(2)) {
+          expect(avatar.tone, AvatarCircleTone.ink);
         }
+        expect(avatars.last.tone, AvatarCircleTone.paper);
+        expect(_circleColor(tester, avatars.last), cs.surface);
       });
 
       testWidgets(

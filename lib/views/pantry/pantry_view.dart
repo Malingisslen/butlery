@@ -25,9 +25,6 @@ import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
-/// Room under the last row so the add button never covers it.
-const double _fabClearance = 96;
-
 class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
   /// tab, which then owns and disposes them. "Välj" and the selection
@@ -207,7 +204,7 @@ class _PantrySections extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(
         top: AppDimensions.space16,
-        bottom: _fabClearance,
+        bottom: AppDimensions.fabClearance,
       ),
       children: [
         if (expiring.isNotEmpty)

@@ -125,7 +125,6 @@ void main() {
     for (final path in [
       'lib/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart',
       'lib/widgets/common/dialogs/recipe_add_to_list_dialog.dart',
-      'lib/views/personal_tags/personal_tag_bulk_dialogs.dart',
     ]) {
       final code = _code(path);
       expect(

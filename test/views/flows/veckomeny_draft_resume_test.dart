@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/persistence_service.dart';
 
@@ -247,7 +248,7 @@ void main() {
       expect(find.byKey(_card), findsOneWidget);
       expect(await hasDraft(), isTrue);
       expect(
-        tester.widget<TextButton>(find.byKey(_discard)).onPressed,
+        tester.widget<ButleryTextButton>(find.byKey(_discard)).onPressed,
         isNotNull,
         reason: 'the card is out of its busy state and can be tried again',
       );

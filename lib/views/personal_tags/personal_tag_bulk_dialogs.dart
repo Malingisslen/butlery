@@ -7,7 +7,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/list/butlery_radio_row.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -70,17 +70,12 @@ abstract final class PersonalTagBulkDialogs {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Each row carries the focus ring and at least
-                            // 48 dp (ButleryControlFocus; tokens.json
-                            // :155-160, :485-492). The tag is chosen by id.
+                            // The tag is chosen by id.
                             for (final tag in selectedTags)
-                              ButleryControlFocus(
-                                child: RadioListTile<String>(
-                                  key: ValueKey('merge-keep-${tag.id}'),
-                                  value: tag.id,
-                                  title: Text(tag.name),
-                                  contentPadding: EdgeInsets.zero,
-                                ),
+                              ButleryRadioRow<String>(
+                                key: ValueKey('merge-keep-${tag.id}'),
+                                value: tag.id,
+                                title: tag.name,
                               ),
                           ],
                         ),
