@@ -1585,7 +1585,7 @@ class _RecipeActionBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space12,
-          vertical: AppDimensions.space12,
+          vertical: AppDimensions.space8,
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -1595,7 +1595,6 @@ class _RecipeActionBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   first,
-                  const SizedBox(height: AppDimensions.space8),
                   second,
                 ],
               );

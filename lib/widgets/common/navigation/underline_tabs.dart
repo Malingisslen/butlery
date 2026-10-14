@@ -39,16 +39,26 @@ class UnderlineTabs<T> extends StatelessWidget {
       role: SemanticsRole.tabBar,
       container: true,
       explicitChildNodes: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-        ),
-        child: Row(
-          children: [
-            for (final value in values)
-              Flexible(child: _tab(context, cs, value)),
-          ],
-        ),
+      // The hairline sits under the chosen tab's bar rather than beside it,
+      // so the two never read as a pair of stacked lines.
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SizedBox(
+              height: 1,
+              child: ColoredBox(color: cs.outlineVariant),
+            ),
+          ),
+          Row(
+            children: [
+              for (final value in values)
+                Flexible(child: _tab(context, cs, value)),
+            ],
+          ),
+        ],
       ),
     );
   }
