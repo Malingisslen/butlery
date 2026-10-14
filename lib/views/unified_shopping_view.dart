@@ -157,9 +157,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             itemCount,
           );
 
-    final titleStyle = selecting
-        ? ButleryTopBar.selectionCountStyle
-        : null;
+    final titleStyle = selecting ? ButleryTopBar.selectionCountStyle : null;
     final Widget? leading = selecting
         ? ButleryCancelSelectionButton(
             key: const ValueKey('shopping-selection-cancel'),

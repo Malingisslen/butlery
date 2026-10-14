@@ -183,50 +183,53 @@ void main() {
         }
       });
 
-      testWidgets('the member rows draw ink avatars, the friend row a paper one', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(1000, 1800);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-        final UserProfile friend = testUserProfile(
-          uid: 'cecilia',
-          displayName: 'Cecilia',
-        );
+      testWidgets(
+        'the member rows draw ink avatars, the friend row a paper one',
+        (
+          tester,
+        ) async {
+          tester.view.physicalSize = const Size(1000, 1800);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
+          final UserProfile friend = testUserProfile(
+            uid: 'cecilia',
+            displayName: 'Cecilia',
+          );
 
-        await tester.pumpWidget(
-          _app(
-            ShoppingMemberManagementDialog(
-              list: _sharedList(),
-              userDisplayNames: const {
-                _ownerId: 'Malin',
-                'bob': 'Bob',
-                'cecilia': 'Cecilia',
-              },
-              availableFriends: [friend],
-              invitations: _NoInvitations(),
+          await tester.pumpWidget(
+            _app(
+              ShoppingMemberManagementDialog(
+                list: _sharedList(),
+                userDisplayNames: const {
+                  _ownerId: 'Malin',
+                  'bob': 'Bob',
+                  'cecilia': 'Cecilia',
+                },
+                availableFriends: [friend],
+                invitations: _NoInvitations(),
+              ),
+              brightness,
             ),
-            brightness,
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Owner row, Bob's row and the friend row.
-        final avatars = tester
-            .widgetList<AvatarCircle>(find.byType(AvatarCircle))
-            .toList();
-        expect(avatars, hasLength(3));
-        // The member rows have no fill of their own, so a paper circle would
-        // vanish into the dialog; the friend row is a card.
-        for (final avatar in avatars.take(2)) {
-          expect(avatar.tone, AvatarCircleTone.ink);
-        }
-        expect(avatars.last.tone, AvatarCircleTone.paper);
-        expect(_circleColor(tester, avatars.last), cs.surface);
-      });
+          // Owner row, Bob's row and the friend row.
+          final avatars = tester
+              .widgetList<AvatarCircle>(find.byType(AvatarCircle))
+              .toList();
+          expect(avatars, hasLength(3));
+          // The member rows have no fill of their own, so a paper circle would
+          // vanish into the dialog; the friend row is a card.
+          for (final avatar in avatars.take(2)) {
+            expect(avatar.tone, AvatarCircleTone.ink);
+          }
+          expect(avatars.last.tone, AvatarCircleTone.paper);
+          expect(_circleColor(tester, avatars.last), cs.surface);
+        },
+      );
 
       testWidgets(
         'the sharing dialog draws the Redigera role in ink, its glyph '
