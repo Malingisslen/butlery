@@ -444,9 +444,10 @@ void main() {
       }
     }
 
-    ElevatedButton sendButton(WidgetTester tester) => tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, _sv.appealSubmit),
-    );
+    ElevatedButton sendButton(WidgetTester tester) =>
+        tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, _sv.appealSubmit),
+        );
 
     testWidgets('counter counts, and send is enabled from ten characters', (
       tester,
