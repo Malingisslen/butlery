@@ -3,6 +3,7 @@
 // each expose discoverable Semantics labels.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/models/recipe_comment.dart';
@@ -120,8 +121,11 @@ void main() {
         ),
       ),
     );
-    Finder button(String name) => find.byWidgetPredicate(
-      (w) => w is IconButton && w.tooltip == name,
+    Finder button(String name) => find.descendant(
+      of: find.byWidgetPredicate(
+        (w) => w is AppIconButton && w.semanticLabel == name,
+      ),
+      matching: find.byType(IconButton),
     );
 
     await pump(liked: false);
@@ -129,7 +133,7 @@ void main() {
       expect(button(name), findsOneWidget);
       expect(announcedLines(tester, button(name)), [name]);
       expectActivatable(tester, button(name));
-      expect(find.bySemanticsLabel(RegExp('^$name')), findsNothing);
+      expect(find.bySemanticsLabel(RegExp('^$name')), findsOneWidget);
     }
     await tester.tap(button('Svara på kommentar'));
     await tester.tap(button('Gilla kommentar'));
@@ -143,8 +147,11 @@ void main() {
     handle.dispose();
   });
 
-  Finder tooltipButton(String name) => find.byWidgetPredicate(
-    (w) => w is IconButton && w.tooltip == name,
+  Finder tooltipButton(String name) => find.descendant(
+    of: find.byWidgetPredicate(
+      (w) => w is AppIconButton && w.semanticLabel == name,
+    ),
+    matching: find.byType(IconButton),
   );
 
   testWidgets('comment_item_widgets — own comment edit and delete are '

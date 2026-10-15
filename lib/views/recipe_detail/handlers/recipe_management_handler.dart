@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -262,12 +263,15 @@ class RecipeManagementHandler {
     final selectedIds = <String>{};
 
     if (!context.mounted) return;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            title: Text(context.l10n.collaborationEnableTitle),
+          builder: (ctx, setDialogState) => ButleryDialog.confirm(
+            title: context.l10n.collaborationEnableTitle,
+            primaryLabel: context.l10n.commonEnable,
+            primaryEnabled: selectedIds.isNotEmpty,
+            scrollable: false,
             content: SizedBox(
               width: double.maxFinite,
               height: 300,
@@ -289,18 +293,6 @@ class RecipeManagementHandler {
                     .toList(),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(context.l10n.commonCancel),
-              ),
-              TextButton(
-                onPressed: selectedIds.isEmpty
-                    ? null
-                    : () => Navigator.pop(ctx, true),
-                child: Text(context.l10n.commonEnable),
-              ),
-            ],
           ),
         );
       },
@@ -331,21 +323,12 @@ class RecipeManagementHandler {
     BuildContext context,
     Recipe recipe,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.collaborationDeactivateTitle),
-        content: Text(context.l10n.collaborationDeactivateMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.l10n.commonDeactivate),
-          ),
-        ],
+      builder: (ctx) => ButleryDialog.confirm(
+        title: context.l10n.collaborationDeactivateTitle,
+        message: context.l10n.collaborationDeactivateMessage,
+        primaryLabel: context.l10n.commonDeactivate,
       ),
     );
 

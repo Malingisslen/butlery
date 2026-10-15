@@ -26,6 +26,9 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
@@ -301,11 +304,11 @@ class _SkrivSjalvReceptViewContentState
 
   // Show confirmation dialog for unsaved changes
   Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.recipeUnsavedChangesTitle),
-        content: Text(context.l10n.confirmUnsavedChanges),
+      builder: (context) => ButleryDialog(
+        title: context.l10n.recipeUnsavedChangesTitle,
+        message: context.l10n.confirmUnsavedChanges,
         actions: [
           ActionButtons.secondaryButton(
             context,
@@ -892,9 +895,9 @@ class _SkrivSjalvReceptViewContentState
                       ),
                     ),
                     if (controllers.length > 1)
-                      IconButton(
-                        icon: const ButleryIcon(ButleryIcons.trash2),
-                        tooltip: context.l10n.commonRemoveLabel(
+                      AppIconButton(
+                        icon: ButleryIcons.trash2,
+                        semanticLabel: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
                         onPressed: () => onRemove(index),
@@ -925,9 +928,9 @@ class _SkrivSjalvReceptViewContentState
                       ),
                     ),
                     if (controllers.length > 1)
-                      IconButton(
-                        icon: const ButleryIcon(ButleryIcons.trash2),
-                        tooltip: context.l10n.commonRemoveLabel(
+                      AppIconButton(
+                        icon: ButleryIcons.trash2,
+                        semanticLabel: context.l10n.commonRemoveLabel(
                           '$label ${index + 1}',
                         ),
                         onPressed: () => onRemove(index),
@@ -938,9 +941,9 @@ class _SkrivSjalvReceptViewContentState
               ],
             ),
         ],
-        TextButton.icon(
-          icon: const ButleryIcon(ButleryIcons.plus),
-          label: Text(context.l10n.recipeAddItem(label.toLowerCase())),
+        ButleryTextButton(
+          icon: ButleryIcons.plus,
+          label: context.l10n.recipeAddItem(label.toLowerCase()),
           onPressed: onAdd,
         ),
       ],

@@ -1,6 +1,9 @@
 // lib/views/cooking_mode_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -183,23 +186,24 @@ Future<bool> confirmCookingExit(
 ) async {
   if (!vm.needsExitConfirmation) return true;
   final l10n = context.l10n;
-  final leave = await showDialog<bool>(
+  final leave = await showButleryDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.cookingExitConfirmTitle),
-      content: Text(
-        l10n.cookingExitConfirmBody(vm.currentStepIndex + 1, vm.totalSteps),
+    builder: (dialogContext) => ButleryDialog(
+      title: l10n.cookingExitConfirmTitle,
+      message: l10n.cookingExitConfirmBody(
+        vm.currentStepIndex + 1,
+        vm.totalSteps,
       ),
       actions: [
-        TextButton(
+        DialogCancelButton(
           key: const ValueKey('cooking-exit-stay'),
+          label: l10n.cookingExitConfirmStay,
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(l10n.cookingExitConfirmStay),
         ),
-        TextButton(
+        ButleryDialogPrimary(
           key: const ValueKey('cooking-exit-leave'),
+          label: l10n.cookingExitConfirmLeave,
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(l10n.cookingExitConfirmLeave),
         ),
       ],
     ),
@@ -392,7 +396,6 @@ class CookingNoStepsState extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    final sage = AppModeColors.textDisabled(Brightness.dark);
     return Scaffold(
       backgroundColor: _cookingBase(cs),
       body: FocusRingSurface(
@@ -466,42 +469,28 @@ class CookingNoStepsState extends StatelessWidget {
                             spacing: AppDimensions.space8,
                             runSpacing: AppDimensions.space8,
                             children: [
-                              FilledButton(
+                              ActionButtons.actionButton(
+                                context,
                                 key: ValueKey(
                                   copyInsteadOfEdit
                                       ? 'cooking-no-steps-save-copy'
                                       : 'cooking-no-steps-write',
                                 ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: cs.onPrimary,
-                                  foregroundColor: cs.primary,
-                                  minimumSize: const Size(
-                                    AppDimensions.minTouchTarget,
-                                    AppDimensions.minTouchTarget,
-                                  ),
-                                ),
+                                style: ActionButtonStyle.onInk,
                                 onPressed: onWriteSteps,
-                                child: Text(
-                                  copyInsteadOfEdit
-                                      ? l10n.cookingNoStepsSaveCopy
-                                      : l10n.cookingNoStepsWrite,
-                                ),
+                                label: copyInsteadOfEdit
+                                    ? l10n.cookingNoStepsSaveCopy
+                                    : l10n.cookingNoStepsWrite,
                               ),
                               if (hasIngredients)
-                                OutlinedButton(
+                                ActionButtons.actionButton(
+                                  context,
                                   key: const ValueKey(
                                     'cooking-no-steps-shopping',
                                   ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: cs.onPrimary,
-                                    side: BorderSide(color: sage, width: 1.5),
-                                    minimumSize: const Size(
-                                      AppDimensions.minTouchTarget,
-                                      AppDimensions.minTouchTarget,
-                                    ),
-                                  ),
+                                  style: ActionButtonStyle.outlinedOnInk,
                                   onPressed: onToShoppingList,
-                                  child: Text(l10n.cookingNoStepsShopping),
+                                  label: l10n.cookingNoStepsShopping,
                                 ),
                             ],
                           ),
@@ -753,12 +742,10 @@ class _CookingModeContent extends StatelessWidget {
       builder: (context, _) {
         if (!voiceController.ttsAvailable) return const SizedBox.shrink();
         final muted = voiceController.muted;
-        return IconButton(
-          icon: ButleryIcon(
-            muted ? ButleryIcons.volumeOff : ButleryIcons.volume,
-            color: cs.onPrimary,
-          ),
-          tooltip: muted
+        return AppIconButton(
+          icon: muted ? ButleryIcons.volumeOff : ButleryIcons.volume,
+          color: cs.onPrimary,
+          semanticLabel: muted
               ? context.l10n.voiceAssistUnmuteTooltip
               : context.l10n.voiceAssistMuteTooltip,
           onPressed: () => voiceController.muted = !muted,

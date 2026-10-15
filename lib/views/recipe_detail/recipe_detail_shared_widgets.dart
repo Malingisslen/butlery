@@ -21,6 +21,8 @@ import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -242,7 +244,7 @@ abstract final class RecipeDetailSharedWidgets {
             ),
           ),
           const SizedBox(width: AppDimensions.space12),
-          Expanded(child: Divider(height: 1, color: cs.outlineVariant)),
+          const Expanded(child: ButleryDivider(spacing: 1)),
         ],
       ),
       if (category.isNotEmpty) ...[
@@ -315,13 +317,13 @@ abstract final class RecipeDetailSharedWidgets {
           const SizedBox(height: AppDimensions.space8),
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: TextButton(
+            child: ButleryTextButton(
               onPressed: () => Navigator.pushNamed(
                 context,
                 Routes.editRecipe,
                 arguments: recipe,
               ),
-              child: Text(context.l10n.commonEdit),
+              label: context.l10n.commonEdit,
             ),
           ),
         ],

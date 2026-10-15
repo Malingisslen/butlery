@@ -7,8 +7,9 @@ import 'package:butlery/services/nutrition/nutrition_table.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
@@ -84,32 +85,9 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.space16,
-                      end: AppDimensions.space4,
-                      top: AppDimensions.space8,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              l10n.nutritionPickerTitle(widget.line.name),
-                              style: AppTextStyles.titleLarge.copyWith(
-                                color: cs.onSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: l10n.a11yNutritionPickerClose,
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const ButleryIcon(ButleryIcons.x),
-                        ),
-                      ],
-                    ),
+                  ButlerySheetHeader(
+                    title: l10n.nutritionPickerTitle(widget.line.name),
+                    closeLabel: l10n.a11yNutritionPickerClose,
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -150,15 +128,9 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.space16,
                       ),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(
-                            0,
-                            AppDimensions.minTouchTarget,
-                          ),
-                        ),
+                      child: ButleryTextButton(
                         onPressed: _vm.isSaving ? null : () => _choose(null),
-                        child: Text(l10n.nutritionPickerClear),
+                        label: l10n.nutritionPickerClear,
                       ),
                     ),
                   if (query.isNotEmpty)
@@ -184,13 +156,9 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                       itemCount: results.length,
                       itemBuilder: (context, index) {
                         final food = results[index];
-                        return ListTile(
+                        return ButleryItemRow(
                           key: ValueKey('nutrition-food-${food.id}'),
-                          minTileHeight: AppDimensions.minTouchTarget,
-                          title: Text(
-                            food.name,
-                            style: AppTextStyles.bodyMedium,
-                          ),
+                          title: food.name,
                           enabled: !_vm.isSaving,
                           onTap: () => _choose(food.id),
                         );

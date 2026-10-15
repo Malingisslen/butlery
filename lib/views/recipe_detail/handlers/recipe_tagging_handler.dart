@@ -6,10 +6,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -47,25 +46,8 @@ class RecipeTaggingHandler {
       barrierDismissible: false,
       builder: (dialogContext) => PopScope(
         canPop: false,
-        child: AlertDialog(
-          content: Row(
-            children: [
-              // The plate line, not a spinner (Grafisk manual v6:209).
-              SizedBox(
-                width: AppDimensions.iconSizeL,
-                child: PlateLine(
-                  semanticLabel: context.l10n.taggingAnalyzingIngredients,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.space16),
-              Expanded(
-                child: Text(
-                  context.l10n.taggingAnalyzingIngredients,
-                  style: Theme.of(dialogContext).textTheme.bodyMedium,
-                ),
-              ),
-            ],
-          ),
+        child: ButleryProgressDialog(
+          message: context.l10n.taggingAnalyzingIngredients,
         ),
       ),
     );

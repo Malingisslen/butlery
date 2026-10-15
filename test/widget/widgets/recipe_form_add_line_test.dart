@@ -182,6 +182,60 @@ void main() {
       expect(adds, 1);
     });
 
+    for (final reorderable in [true, false]) {
+      testWidgets(
+        'each step has a remove button that removes that step'
+        '${reorderable ? '' : ' (not reorderable)'}',
+        (tester) async {
+          final handle = tester.ensureSemantics();
+          final two = [TextEditingController(), TextEditingController()];
+          addTearDown(() {
+            for (final c in two) {
+              c.dispose();
+            }
+          });
+          final removed = <int>[];
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: DynamicListBuilder(
+                label: 'Instruktion',
+                controllers: two,
+                onUpdate: (_, __) {},
+                onAdd: () {},
+                onLastFilled: () {},
+                onRemove: removed.add,
+                onReorder: reorderable ? (_, __) {} : null,
+              ),
+            ),
+          );
+
+          final remove = find.semantics.byLabel(RegExp('Ta bort Instruktion'));
+          expect(remove, findsNWidgets(2));
+
+          tester.semantics.tap(remove.first);
+          await tester.pump();
+          expect(removed, [0]);
+
+          tester.semantics.tap(remove.last);
+          await tester.pump();
+          expect(removed, [0, 1]);
+          handle.dispose();
+        },
+      );
+    }
+
+    testWidgets('a lone step has no remove button', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(build());
+
+      expect(
+        find.semantics.byLabel(RegExp('Ta bort Instruktion')),
+        findsNothing,
+      );
+      handle.dispose();
+    });
+
     testWidgets('a step keeps its length limit, without a counter', (
       tester,
     ) async {

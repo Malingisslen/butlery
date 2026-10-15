@@ -5,6 +5,9 @@ import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
@@ -137,7 +140,7 @@ class CommentItemWidgets {
             ),
           ),
           // Divider
-          const Divider(),
+          const ButleryDivider(),
           // List of users who liked
           Flexible(
             child: ListView.builder(
@@ -148,17 +151,15 @@ class CommentItemWidgets {
                 final displayName = getDisplayName(userId);
                 final avatarUrl = getAvatarUrl(userId);
 
-                return ListTile(
+                return ButleryItemRow(
                   key: ValueKey(userId),
+                  padded: false,
                   leading: SocialAvatarComponents.avatar(
                     displayName: displayName,
                     imageUrl: avatarUrl,
                     size: ImageSize.small,
                   ),
-                  title: Text(
-                    displayName,
-                    style: AppTextStyles.contentTitle,
-                  ),
+                  title: displayName,
                 );
               },
             ),
@@ -322,66 +323,56 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       ),
                     ),
                     // Reply button
-                    IconButton(
-                      tooltip: context.l10n.a11yReplyToComment,
+                    AppIconButton(
+                      icon: ButleryIcons.reply,
+                      semanticLabel: context.l10n.a11yReplyToComment,
                       onPressed: widget.onReply,
-                      icon: ButleryIcon(
-                        ButleryIcons.reply,
-                        color: cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
+                      color: cs.onSurfaceVariant,
+                      iconSize: AppDimensions.iconSizeM,
                     ),
                     // Like button
-                    IconButton(
-                      tooltip: widget.isLiked
+                    AppIconButton(
+                      icon: widget.isLiked
+                          ? ButleryIcons.favourite
+                          : ButleryIcons.favouriteOutline,
+                      semanticLabel: widget.isLiked
                           ? context.l10n.a11yUnlikeComment
                           : context.l10n.a11yLikeComment,
                       onPressed: widget.onToggleLike,
-                      icon: ButleryIcon(
-                        widget.isLiked
-                            ? ButleryIcons.favourite
-                            : ButleryIcons.favouriteOutline,
-                        // Red is deliberate (BUT-1213): red = social like,
-                        // green (cs.primary) = personal favourite.
-                        color: widget.isLiked ? cs.error : cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
+                      // Red is deliberate (BUT-1213): red = social like,
+                      // green (cs.primary) = personal favourite.
+                      color: widget.isLiked ? cs.error : cs.onSurfaceVariant,
+                      iconSize: AppDimensions.iconSizeM,
                     ),
                     if (widget.isOwnComment && widget.onEdit != null)
-                      IconButton(
-                        tooltip: context.l10n.a11yEditComment,
+                      AppIconButton(
+                        icon: ButleryIcons.pencil,
+                        semanticLabel: context.l10n.a11yEditComment,
                         onPressed: widget.onEdit,
-                        icon: ButleryIcon(
-                          ButleryIcons.pencil,
-                          color: cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+                        color: cs.onSurfaceVariant,
+                        iconSize: AppDimensions.iconSizeM,
                       ),
                     if (widget.isOwnComment && widget.onDelete != null)
-                      IconButton(
-                        tooltip: context.l10n.a11yDeleteComment,
+                      AppIconButton(
+                        icon: ButleryIcons.trash2,
+                        semanticLabel: context.l10n.a11yDeleteComment,
                         onPressed: widget.onDelete,
-                        icon: ButleryIcon(
-                          ButleryIcons.trash2,
-                          color: cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+                        color: cs.onSurfaceVariant,
+                        iconSize: AppDimensions.iconSizeM,
                       ),
                     // Report button — visible for comments by other users
                     if (!widget.isOwnComment)
-                      IconButton(
-                        tooltip: context.l10n.a11yReportComment,
+                      AppIconButton(
+                        icon: ButleryIcons.flag,
+                        semanticLabel: context.l10n.a11yReportComment,
                         onPressed: () => ReportContentDialog.show(
                           context: context,
                           contentType: ContentType.comment,
                           contentId: widget.comment.id,
                           contentOwnerId: widget.comment.authorId,
                         ),
-                        icon: ButleryIcon(
-                          ButleryIcons.flag,
-                          color: cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+                        color: cs.onSurfaceVariant,
+                        iconSize: AppDimensions.iconSizeM,
                       ),
                   ],
                 ),
