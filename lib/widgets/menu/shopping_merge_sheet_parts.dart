@@ -31,8 +31,9 @@ class _Summary extends StatelessWidget {
                 TextSpan(text: text.substring(0, at)),
                 TextSpan(
                   text: items,
-                  style: AppTextStyles.bodySmallBold.copyWith(
+                  style: AppTextStyles.bodyMedium.copyWith(
                     color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 TextSpan(text: text.substring(at + items.length)),
