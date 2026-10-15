@@ -20,12 +20,7 @@ class _Summary extends StatelessWidget {
       merge.rawRowCount,
       items,
     );
-    // 13/400 as drawn in --r04slot-702, which is
-    // text.secondary (tokens.json) = onSurfaceVariant in both modes.
-    final style = AppTextStyles.bodySmall.copyWith(
-      color: cs.onSurfaceVariant,
-      fontWeight: FontWeight.w400,
-    );
+    final style = AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant);
     final at = text.indexOf(items);
     return Text.rich(
       key: ShoppingMergeSheet.summaryKey,
@@ -86,9 +81,8 @@ class _Figures extends StatelessWidget {
                   label,
                   textAlign: TextAlign.center,
                   // text.secondary (--r04slot-702), as the summary line.
-                  style: AppTextStyles.labelMedium.copyWith(
+                  style: AppTextStyles.captionBase.copyWith(
                     color: cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],

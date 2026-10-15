@@ -214,6 +214,11 @@ void main() {
     testWidgets(
       'type + send → pingService.sendPing called with correct args and sheet pops',
       (tester) async {
+        // The modal sheet is capped at 9/16 of the screen, and the default
+        // 600 dp overflowed it by 0.5 px with the shared field.
+        tester.view.physicalSize = const Size(800, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
         final svc = _FakePingService();
 
         // Show the sheet via the helper so we can verify the pop behavior.
@@ -327,7 +332,10 @@ void main() {
 
       // Grab the underlying controller by locating the TextField widget.
       final tf = tester.widget<TextField>(
-        find.byKey(const Key('ping-message-field')),
+        find.descendant(
+          of: find.byKey(const Key('ping-message-field')),
+          matching: find.byType(TextField),
+        ),
       );
       // Flutter's maxLength enforcement clips input to 100 characters.
       expect(tf.controller!.text.length, kPingMaxMessageLength);
