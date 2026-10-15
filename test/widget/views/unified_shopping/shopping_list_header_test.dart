@@ -1,7 +1,6 @@
 // BUT-2201: the shopping list header draws only the list selector and its
 // rename/convert/delete icon buttons.
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
@@ -144,6 +143,14 @@ void main() {
         findRichText: true,
       );
       expect(line, findsOneWidget);
+      expect(
+        find.textContaining(countText, findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(permissionText, findRichText: true),
+        findsOneWidget,
+      );
       expect(
         layoutErrors,
         isEmpty,
