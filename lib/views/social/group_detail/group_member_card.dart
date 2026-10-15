@@ -1,6 +1,7 @@
 // lib/views/social/group_detail/group_member_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -51,27 +52,14 @@ class GroupMemberCard {
     // badge, "Ägare".
     final creatorBadge = _isGroupCreator(member, group) && !ownerBadge;
 
-    final tile = ListTile(
-      contentPadding: EdgeInsets.zero,
-      // The theme paints every ListTile raised; these rows sit on paper.
-      tileColor: Colors.transparent,
+    final tile = ButleryItemRow(
+      padded: false,
       selected: isSelectionMode && isSelected,
-      // Chosen is surface.selected with a real border, never a tint.
-      // surfaceContainerHighest is surface.raised, which carries
-      // surface.selected's values in both modes; the border is
-      // text.primary (onSurface): ink on light, paper on dark.
-      selectedTileColor: cs.surfaceContainerHighest,
-      // The chosen row's title and icons stay text.primary; ListTile would
-      // otherwise paint them colorScheme.primary, which is ink in dark
-      // mode too and vanishes on surface.selected (#2F4437).
-      selectedColor: cs.onSurface,
-      // The failed row's error edge replaces the selected border: the row
-      // is still selected, but the failure is what the user must see.
-      shape: removalFailure != null
-          ? Border.all(color: cs.error, width: 1.5)
+      edge: removalFailure != null
+          ? ButleryItemRowEdge.error
           : isSelectionMode && isSelected
-          ? Border.all(color: cs.onSurface, width: 1.5)
-          : null,
+          ? ButleryItemRowEdge.selected
+          : ButleryItemRowEdge.none,
       onTap: isSelectionMode && selectable ? onSelectionToggle : null,
       // BUT-948: long-press = multi-select (convention).
       onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
@@ -87,16 +75,10 @@ class GroupMemberCard {
             ),
       // The row's label already starts with the name; the visible name is
       // left out of the announcement so it is not read twice.
-      title: ExcludeSemantics(
-        excluding: removalFailure != null,
-        child: Text(
-          member.displayName,
-          style: AppTextStyles.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      subtitle: removalFailure == null
+      title: member.displayName,
+      titleMaxLines: 1,
+      excludeTitleSemantics: removalFailure != null,
+      subtitleWidget: removalFailure == null
           ? null
           : Text(
               removalFailureText(context, removalFailure),
@@ -149,9 +131,11 @@ class GroupMemberCard {
     // The rows sit between hairlines in a ButleryListSection, so no card.
     return removalFailure == null
         ? tile
-        : Semantics(
-            label: context.l10n.a11yMemberRemoveFailed(member.displayName),
-            child: tile,
+        : MergeSemantics(
+            child: Semantics(
+              label: context.l10n.a11yMemberRemoveFailed(member.displayName),
+              child: tile,
+            ),
           );
   }
 

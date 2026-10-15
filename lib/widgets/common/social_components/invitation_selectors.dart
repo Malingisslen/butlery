@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/chips/butlery_removable_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -10,7 +11,6 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Invitation target selection widgets.
@@ -396,20 +396,13 @@ class InvitationSelectors {
               spacing: 8.0,
               runSpacing: 4.0,
               children: selectedTargets.map((target) {
-                return PressFill(
-                  surface: PressSurface.raised,
-                  child: Chip(
-                    label: Text(target.displayName),
-                    deleteIcon: const ButleryIcon(ButleryIcons.x),
-                    onDeleted: onRemoveTarget != null
-                        ? () => onRemoveTarget(target)
-                        : null,
-                    deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
-                      target.displayName,
-                    ),
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
+                return ButleryRemovableChip(
+                  label: target.displayName,
+                  onRemove: onRemoveTarget != null
+                      ? () => onRemoveTarget(target)
+                      : null,
+                  removeLabel: context.l10n.a11yRemoveMember(
+                    target.displayName,
                   ),
                 );
               }).toList(),

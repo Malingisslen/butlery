@@ -13,8 +13,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Dialog for editing an existing group
 /// This dialog provides a focused interface for group editing with:
@@ -155,46 +154,36 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                       const SizedBox(height: AppDimensions.space12),
 
                       // Group name
-                      LabeledField(
+                      StyledInput(
                         label: '${context.l10n.socialGroupName} *',
-                        child: TextFormField(
-                          errorBuilder: FieldErrorLine.builder,
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            prefixIcon: ButleryIcon(ButleryIcons.users),
+                        controller: _nameController,
+                        prefixIcon: const ButleryIcon(ButleryIcons.users),
+                        // BUT-517: chain content-filter onto group-name rules.
+                        validator: FormValidators.combine([
+                          (v) => ValidationUtils.validateGroupName(v),
+                          FormValidators.contentFilter(
+                            context.l10n.socialGroupName,
                           ),
-                          // BUT-517: chain content-filter onto group-name rules.
-                          validator: FormValidators.combine([
-                            (v) => ValidationUtils.validateGroupName(v),
-                            FormValidators.contentFilter(
-                              context.l10n.socialGroupName,
-                            ),
-                          ]),
-                          maxLength: 50,
-                          textCapitalization: TextCapitalization.words,
-                        ),
+                        ]),
+                        maxLength: 50,
+                        textCapitalization: TextCapitalization.words,
                       ),
 
                       const SizedBox(height: AppDimensions.space8),
 
                       // Description (optional)
-                      LabeledField(
+                      StyledInput(
                         label: context.l10n.groupDescriptionLabel,
-                        child: TextFormField(
-                          errorBuilder: FieldErrorLine.builder,
-                          controller: _descriptionController,
-                          decoration: InputDecoration(
-                            hintText: context.l10n.groupDescriptionHint,
-                            prefixIcon: const ButleryIcon(ButleryIcons.file),
-                          ),
-                          // BUT-517
-                          validator: FormValidators.contentFilter(
-                            context.l10n.groupDescriptionLabel,
-                          ),
-                          maxLines: 3,
-                          maxLength: 200,
-                          textCapitalization: TextCapitalization.sentences,
+                        controller: _descriptionController,
+                        hint: context.l10n.groupDescriptionHint,
+                        prefixIcon: const ButleryIcon(ButleryIcons.file),
+                        // BUT-517
+                        validator: FormValidators.contentFilter(
+                          context.l10n.groupDescriptionLabel,
                         ),
+                        maxLines: 3,
+                        maxLength: 200,
+                        textCapitalization: TextCapitalization.sentences,
                       ),
 
                       // Error display

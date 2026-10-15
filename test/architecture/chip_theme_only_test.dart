@@ -10,10 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _notYetMoved = <String, int>{
   // Inmatningsrutor del 3 owns the search and filter fields.
-  'lib/views/social/shared_with_me/shared_content_search_bar.dart': 1,
   'lib/widgets/common/search_filter/personal_tag_filter_chips.dart': 2,
   'lib/widgets/common/search_filter_widget.dart': 1,
-  'lib/widgets/common/social_components/invitation_selectors.dart': 1,
 };
 
 const _overrides = [

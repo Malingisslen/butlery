@@ -12,14 +12,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -128,32 +127,25 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Widget _buildItemInput(BuildContext context) {
-    return LabeledField(
-      child: TextField(
-        style: fieldTextStyle(context, enabled: !viewModel.isAddingItem),
-        controller: newItemController,
-        decoration: InputDecoration(
-          hintText: context.l10n.collaborativeAddItemHint,
-          // Adding: the plate line in the field's end, named for the screen
-          // reader (produktregler.md, B-18).
-          suffixIcon: viewModel.isAddingItem
-              ? Padding(
-                  padding: const EdgeInsets.all(AppDimensions.space4),
-                  child: SizedBox(
-                    width: AppDimensions.iconSizeL,
-                    child: PlateLine(
-                      semanticLabel: context.l10n.loadingGeneric,
-                    ),
-                  ),
-                )
-              : null,
-        ),
-        onSubmitted: (_) => onAddItem(),
-        enabled: !viewModel.isAddingItem,
-        textInputAction: TextInputAction.done,
-        autocorrect: false,
-        textCapitalization: TextCapitalization.sentences,
-      ),
+    return StyledInput(
+      controller: newItemController,
+      hint: context.l10n.collaborativeAddItemHint,
+      // Adding: the plate line in the field's end, named for the screen
+      // reader (produktregler.md, B-18).
+      suffixIcon: viewModel.isAddingItem
+          ? Padding(
+              padding: const EdgeInsets.all(AppDimensions.space4),
+              child: SizedBox(
+                width: AppDimensions.iconSizeL,
+                child: PlateLine(semanticLabel: context.l10n.loadingGeneric),
+              ),
+            )
+          : null,
+      onSubmitted: (_) => onAddItem(),
+      enabled: !viewModel.isAddingItem,
+      textInputAction: TextInputAction.done,
+      autocorrect: false,
+      textCapitalization: TextCapitalization.sentences,
     );
   }
 
