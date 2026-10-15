@@ -146,8 +146,8 @@ const variantSpecs = <VariantSpec>[
   ...rawWidgetSpecs,
 ];
 
-/// Helskanning 2026-10-12: a Flutter widget built in a view or in a widget
-/// outside lib/widgets/common/ is one more place that draws its component
+/// Helskanning 2026-10-12: a Flutter widget built anywhere under lib/ outside
+/// lib/widgets/common/ (views, widgets, app, core, services) is one more place that draws its component
 /// type by hand. Each row counts the calls to [names]; the component that
 /// should replace them is [use].
 class RawWidgetSpec extends VariantSpec {
@@ -167,7 +167,10 @@ const rawWidgetSpecs = <RawWidgetSpec>[
     'InputDecoration',
   ], 'the shared input fields'),
   RawWidgetSpec('raw_list_tile', ['ListTile'], 'ButleryListRow'),
-  RawWidgetSpec('raw_divider', ['Divider'], 'the shared hairline'),
+  RawWidgetSpec('raw_divider', [
+    'Divider',
+    'VerticalDivider',
+  ], 'the shared hairline'),
   RawWidgetSpec('raw_chips', [
     'Chip',
     'ChoiceChip',
@@ -197,14 +200,21 @@ const rawWidgetSpecs = <RawWidgetSpec>[
   RawWidgetSpec('raw_segmented', ['SegmentedButton'], 'ButlerySegmentSwitch'),
   RawWidgetSpec('raw_icon_button', [
     'IconButton',
+    'IconButton.filled',
+    'IconButton.filledTonal',
+    'IconButton.outlined',
+    'IconButton.styleFrom',
   ], 'AppIconButton or ButleryCloseButton'),
   RawWidgetSpec('raw_text_button', [
     'TextButton',
     'TextButton.icon',
+    'TextButton.styleFrom',
   ], 'ButleryTextButton'),
   RawWidgetSpec('raw_filled_button', [
     'FilledButton',
     'FilledButton.icon',
+    'FilledButton.tonal',
+    'FilledButton.tonalIcon',
   ], 'ActionButtons or ButleryDialogPrimary'),
   RawWidgetSpec('raw_outlined_button', [
     'OutlinedButton',
@@ -217,6 +227,7 @@ const rawWidgetSpecs = <RawWidgetSpec>[
   RawWidgetSpec('raw_alert_dialog', [
     'AlertDialog',
     'SimpleDialog',
+    'Dialog',
   ], 'ButleryDialog'),
   RawWidgetSpec('raw_card', ['Card'], 'the shared card'),
 ];
@@ -297,7 +308,8 @@ countVariants(CensusSource src) {
     final uiLayer =
         path.startsWith('lib/views/') || path.startsWith('lib/widgets/');
 
-    if (uiLayer && !path.startsWith('lib/widgets/common/')) {
+    if (!path.startsWith('lib/widgets/common/') &&
+        !path.startsWith('lib/theme/')) {
       for (final r in rawWidgetSpecs) {
         for (final n in r.names) {
           add(r.key, path, callArguments(code, n).length);

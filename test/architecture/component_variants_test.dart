@@ -36,19 +36,19 @@ const variantCeilings = {
   'raw_divider': 0,
   'raw_chips': 0,
   'raw_app_bar': 0,
-  'raw_text_style': 7,
+  'raw_text_style': 8,
   'raw_toggles': 0,
   'raw_menus': 0,
   'raw_circle_avatar': 0,
   'raw_show_dialog': 0,
   'raw_show_sheet': 0,
   'raw_segmented': 0,
-  'raw_icon_button': 1,
-  'raw_text_button': 0,
+  'raw_icon_button': 2,
+  'raw_text_button': 4,
   'raw_filled_button': 0,
   'raw_outlined_button': 0,
-  'raw_elevated_button': 0,
-  'raw_alert_dialog': 0,
+  'raw_elevated_button': 1,
+  'raw_alert_dialog': 8,
   'raw_card': 1,
 };
 
@@ -150,6 +150,34 @@ void main() {
       });
     }
   }
+
+  test('a raw widget outside views and widgets counts as well', () {
+    for (final path in [
+      'lib/app/auth/auth_wrapper.dart',
+      'lib/core/utils/os_permission_helper.dart',
+      'lib/services/image_picker_service.dart',
+    ]) {
+      final source = CensusSource('.').read(path)!;
+      final after = countVariants(
+        CensusSource(
+          '.',
+          overrides: {
+            path:
+                '$source\nfinal _p = IconButton.filled();\n'
+                'final _q = TextButton.styleFrom();\n',
+          },
+        ),
+      );
+      expect(
+        after['raw_icon_button']!.count,
+        counts['raw_icon_button']!.count + 1,
+      );
+      expect(
+        after['raw_text_button']!.count,
+        counts['raw_text_button']!.count + 1,
+      );
+    }
+  });
 
   test('one more forbidden Swedish value raises its count by one', () {
     const arb = 'lib/l10n/app_sv.arb';
