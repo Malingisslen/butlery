@@ -1,7 +1,6 @@
 // lib/views/recipe_detail/recipe_detail_metadata.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -11,6 +10,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/buttons/butlery_status_chip_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
@@ -235,47 +235,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         identifier: 'btn-mark-cooked',
         button: true,
         enabled: !cookedToday,
-        child: OutlinedButton.icon(
+        child: ButleryStatusChipButton(
           key: const ValueKey('test-recipe-detail-mark-cooked'),
           onPressed: cookedToday ? null : () => _markAsCooked(context),
-          icon: const ButleryIcon(
-            // One glyph for both states until design draws the second one
-            // (P7-U08 open question).
-            ButleryIcons.circleCheck,
-            size: AppDimensions.iconSize14,
-          ),
-          label: Text(
-            cookCount > 0
-                ? context.l10n.recipeCookedCount(cookCount)
-                : context.l10n.recipeCookedToday,
-            style: AppTextStyles.labelSmall,
-          ),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: context.modeColors.success,
-            // Disabled is text.disabled on a surface.disabled edge, never a
-            // faded green (tokens.json:40-53, :120-123, :198; enhet-3
-            // recipe_detail_metadata.dart:235-241).
-            disabledForegroundColor: AppModeColors.textDisabled(
-              Theme.of(context).brightness,
-            ),
-            side: BorderSide(
-              color: cookedToday
-                  ? AppModeColors.surfaceDisabled(Theme.of(context).brightness)
-                  : context.modeColors.success,
-              width: 0.5,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space8,
-              vertical: AppDimensions.badgePaddingY,
-            ),
-            minimumSize: Size.zero,
-            // BUT-2194: the chip stays small, its tap area is padded to 48 dp
-            // (tokens.json touchTarget).
-            tapTargetSize: MaterialTapTargetSize.padded,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-          ),
+          icon: ButleryIcons.circleCheck,
+          label: cookCount > 0
+              ? context.l10n.recipeCookedCount(cookCount)
+              : context.l10n.recipeCookedToday,
         ),
       ),
     );
@@ -284,34 +250,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     // rating (the first is the auto-chain after "Lagat idag"). Square outlined
     // button mirroring the cook chip's treatment.
     metadataWidgets.add(
-      OutlinedButton.icon(
+      ButleryStatusChipButton(
         onPressed: () => RecipeManagementHandler.rateAsFamily(context),
-        icon: const ButleryIcon(
-          ButleryIcons.users,
-          size: AppDimensions.iconSize14,
-        ),
-        label: Text(
-          context.l10n.familyRatingManualButton,
-          style: AppTextStyles.labelSmall,
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: context.modeColors.onWarningContainer,
-          side: BorderSide(
-            color: context.modeColors.starGold,
-            width: 0.5,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space8,
-            vertical: AppDimensions.badgePaddingY,
-          ),
-          minimumSize: Size.zero,
-          // BUT-2194: the chip stays small, its tap area is padded to 48 dp
-          // (tokens.json touchTarget).
-          tapTargetSize: MaterialTapTargetSize.padded,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-        ),
+        icon: ButleryIcons.users,
+        label: context.l10n.familyRatingManualButton,
+        tone: ButleryStatusChipTone.gold,
       ),
     );
 

@@ -644,7 +644,10 @@ void main() {
     ) async {
       await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
       final button = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+        find.descendant(
+          of: find.byKey(const ValueKey('test-recipe-detail-add-to-list')),
+          matching: find.byType(FilledButton),
+        ),
       );
       expect(button.style, isNull, reason: 'the theme ink fill');
       final material = tester.widget<Material>(
