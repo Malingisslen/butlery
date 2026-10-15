@@ -216,6 +216,120 @@ void main() {
     expect(find.byTooltip('Flytta till rubrik'), findsWidgets);
   });
 
+  group('"Flytta till rubrik" menu reports (row index, heading id)', () {
+    late TextEditingController deg;
+    late TextEditingController unnamed;
+    late List<(int, String?)> moves;
+
+    const rows = [HeadingRow('h0'), LineRow(), HeadingRow('h1'), LineRow()];
+
+    setUp(() {
+      deg = TextEditingController(text: 'Deg');
+      unnamed = TextEditingController();
+      moves = [];
+    });
+
+    tearDown(() {
+      deg.dispose();
+      unnamed.dispose();
+    });
+
+    Future<void> pump(WidgetTester tester) => tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScrollView: true,
+        child: SectionedIngredientListBuilder(
+          label: 'Ingrediens',
+          rows: rows,
+          lineControllers: [line1, line2],
+          headingControllerFor: (id) => id == 'h0' ? deg : unnamed,
+          onLineChanged: (_, __) {},
+          onAddLine: () {},
+          onLastLineFilled: () {},
+          onRemoveLine: (_) {},
+          onReorder: (_, __) {},
+          onAddHeading: () {},
+          onRemoveHeading: (_) {},
+          onMoveLineToSection: (row, id) => moves.add((row, id)),
+          canAddHeading: true,
+        ),
+      ),
+    );
+
+    // ButleryMenuItem subclasses PopupMenuItem; byType matches exactly.
+    final menuItems = find.byWidgetPredicate((w) => w is PopupMenuItem<String>);
+
+    Future<void> openMenuOfLine(WidgetTester tester, int lineIndex) async {
+      await tester.tap(find.byTooltip('Flytta till rubrik').at(lineIndex));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('"Ingen rubrik" moves that row out of every section', (
+      tester,
+    ) async {
+      await pump(tester);
+
+      await openMenuOfLine(tester, 1);
+      await tester.tap(find.text('Ingen rubrik'));
+      await tester.pumpAndSettle();
+
+      expect(moves, [(3, null)]);
+    });
+
+    testWidgets('a heading entry moves that row under the heading id', (
+      tester,
+    ) async {
+      await pump(tester);
+
+      await openMenuOfLine(tester, 0);
+      await tester.tap(
+        find.descendant(
+          of: menuItems,
+          matching: find.text('Deg'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(moves, [(1, 'h0')]);
+    });
+
+    testWidgets('a heading without a label is offered under the hint text', (
+      tester,
+    ) async {
+      await pump(tester);
+
+      await openMenuOfLine(tester, 1);
+      final entry = find.descendant(
+        of: menuItems,
+        matching: find.text('Rubrik, till exempel Deg'),
+      );
+      expect(entry, findsOneWidget);
+
+      await tester.tap(entry);
+      await tester.pumpAndSettle();
+
+      expect(moves, [(3, 'h1')]);
+    });
+
+    testWidgets('the menu lists "Ingen rubrik" first, then each heading', (
+      tester,
+    ) async {
+      await pump(tester);
+
+      await openMenuOfLine(tester, 0);
+
+      final labels = tester
+          .widgetList<Text>(
+            find.descendant(
+              of: menuItems,
+              matching: find.byType(Text),
+            ),
+          )
+          .map((t) => t.data)
+          .toList();
+      expect(labels, ['Ingen rubrik', 'Deg', 'Rubrik, till exempel Deg']);
+    });
+  });
+
   testWidgets('renders line rows with their text', (tester) async {
     await tester.pumpWidget(
       build(

@@ -8,7 +8,11 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -131,7 +135,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
 
     if (!context.mounted) return null;
 
-    return showDialog<PersonalTagRule>(
+    return showButleryDialog<PersonalTagRule>(
       context: context,
       builder: (context) => PersonalTagRuleDialog(
         existingRule: existingRule,
@@ -155,7 +159,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
 
     if (!context.mounted) return null;
 
-    return showDialog<PersonalTagRuleResult>(
+    return showButleryDialog<PersonalTagRuleResult>(
       context: context,
       builder: (context) => PersonalTagRuleDialog(
         existingRule: existingRule,
@@ -409,11 +413,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             style: AppTextStyles.titleLarge,
           ),
         ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.x),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.l10n.commonClose,
-        ),
+        ButleryCloseButton(semanticLabel: context.l10n.commonClose),
       ],
     );
   }
@@ -440,47 +440,30 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildTagSelector() {
-    return LabeledField(
+    return ButleryDropdown<String>(
       label: context.l10n.ruleApplyToTag,
-      child: PressFill(
-        surface: PressSurface.base,
-        child: DropdownButtonFormField<String>(
-          errorBuilder: FieldErrorLine.builder,
-          icon: const ButleryIcon(ButleryIcons.chevronDown),
-          iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          iconDisabledColor: AppModeColors.textDisabled(
-            Theme.of(context).brightness,
+      semanticLabel: context.l10n.ruleApplyToTag,
+      value: _selectedTagId,
+      options: [
+        for (final tag in widget.availableTags)
+          ButleryDropdownOption<String>(
+            value: tag.id,
+            label: tag.name,
+            icon: ButleryIcons.tag,
+            iconColor: Theme.of(context).colorScheme.onSurface,
           ),
-          initialValue: _selectedTagId,
-          items: widget.availableTags.map((tag) {
-            return DropdownMenuItem(
-              value: tag.id,
-              child: Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.tag,
-                    size: AppDimensions.iconSizeS,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  const SizedBox(width: AppDimensions.space8),
-                  Text(tag.name),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: _isSaving
-              ? null
-              : (value) {
-                  setState(() => _selectedTagId = value);
-                },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return context.l10n.ruleSelectTag;
-            }
-            return null;
-          },
-        ),
-      ),
+      ],
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() => _selectedTagId = value);
+            },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return context.l10n.ruleSelectTag;
+        }
+        return null;
+      },
     );
   }
 
@@ -522,13 +505,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
               ),
             ),
             const Spacer(),
-            TextButton.icon(
+            ButleryTextButton(
               onPressed: _isSaving ? null : _addCondition,
-              icon: const ButleryIcon(
-                ButleryIcons.plus,
-                size: AppDimensions.iconSize18,
-              ),
-              label: Text(context.l10n.commonAdd),
+              icon: ButleryIcons.plus,
+              label: context.l10n.commonAdd,
             ),
           ],
         ),
@@ -619,40 +599,20 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     );
   }
 
-  // The theme's filled button asks for an infinite minimum width, which a
-  // Row's unbounded main axis cannot satisfy.
-  static const ButtonStyle _rowButtonStyle = ButtonStyle(
-    minimumSize: WidgetStatePropertyAll(
-      Size(0, AppDimensions.minTouchTarget),
-    ),
-  );
-
   Widget _buildActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    // OverflowBar hands the buttons loose constraints, which the theme's
+    // infinite minimum button width needs; a Row would not.
+    return OverflowBar(
+      alignment: MainAxisAlignment.end,
+      spacing: AppDimensions.space8,
       children: [
         DialogCancelButton(enabled: !_isSaving),
-        const SizedBox(width: AppDimensions.space8),
-        // Busy: the button keeps its name and colours and gets the plate
-        // line along its bottom edge (Komponentark v1:365, :372;
-        // produktregler.md:902), never a spinner (B-18).
-        BusyButtonSemantics(
-          busy: _isSaving,
-          name: _isEditing
+        ButleryDialogPrimary(
+          label: _isEditing
               ? context.l10n.commonSave
               : context.l10n.commonCreate,
-          child: FilledButton(
-            onPressed: _isSaving ? PlateLineButton.ignore : _save,
-            style: _isSaving
-                ? PlateLineButton.busyStyle(
-                    _rowButtonStyle,
-                    Theme.of(context).filledButtonTheme.style,
-                  )
-                : _rowButtonStyle,
-            child: Text(
-              _isEditing ? context.l10n.commonSave : context.l10n.commonCreate,
-            ),
-          ),
+          busy: _isSaving,
+          onPressed: _save,
         ),
       ],
     );
@@ -696,41 +656,18 @@ class _ConditionRow extends StatelessWidget {
               // Type dropdown
               Expanded(
                 flex: 2,
-                child: PressFill(
-                  surface: PressSurface.base,
-                  child: DropdownButtonFormField<ConditionType>(
-                    // Without it the button sizes to its widest item and
-                    // overflows the half-row it is given.
-                    isExpanded: true,
-                    icon: const ButleryIcon(ButleryIcons.chevronDown),
-                    iconEnabledColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    iconDisabledColor: AppModeColors.textDisabled(
-                      Theme.of(context).brightness,
-                    ),
-                    initialValue: condition.type,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: AppDimensions.paddingSymmetric12x8,
-                      border: OutlineInputBorder(),
-                    ),
-                    items: ConditionType.values.map((type) {
-                      return DropdownMenuItem(
+                child: ButleryDropdown<ConditionType>(
+                  dense: true,
+                  semanticLabel: context.l10n.ruleConditionsLabel,
+                  value: condition.type,
+                  options: [
+                    for (final type in ConditionType.values)
+                      ButleryDropdownOption<ConditionType>(
                         value: type,
-                        child: Text(
-                          type.label,
-                          style: AppTextStyles.formOption,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: enabled
-                        ? (value) {
-                            if (value != null) onTypeChanged(value);
-                          }
-                        : null,
-                  ),
+                        label: type.label,
+                      ),
+                  ],
+                  onChanged: enabled ? onTypeChanged : null,
                 ),
               ),
               const SizedBox(width: AppDimensions.space8),
@@ -742,17 +679,10 @@ class _ConditionRow extends StatelessWidget {
               const SizedBox(width: AppDimensions.space8),
               // Delete button
               if (canDelete)
-                IconButton(
-                  icon: const ButleryIcon(
-                    ButleryIcons.x,
-                    size: AppDimensions.iconSizeM,
-                  ),
+                AppIconButton(
+                  icon: ButleryIcons.x,
                   onPressed: enabled ? onDelete : null,
-                  tooltip: context.l10n.ruleRemoveCondition,
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
+                  semanticLabel: context.l10n.ruleRemoveCondition,
                 ),
             ],
           ),
@@ -785,37 +715,15 @@ class _ConditionRow extends StatelessWidget {
         ? condition.operator
         : validOperators.first;
 
-    return PressFill(
-      surface: PressSurface.base,
-      child: DropdownButtonFormField<ConditionOperator>(
-        isExpanded: true,
-        icon: const ButleryIcon(ButleryIcons.chevronDown),
-        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        iconDisabledColor: AppModeColors.textDisabled(
-          Theme.of(context).brightness,
-        ),
-        initialValue: currentOperator,
-        decoration: const InputDecoration(
-          isDense: true,
-          contentPadding: AppDimensions.paddingSymmetric12x8,
-          border: OutlineInputBorder(),
-        ),
-        items: validOperators.map((op) {
-          return DropdownMenuItem(
-            value: op,
-            child: Text(
-              op.label,
-              style: AppTextStyles.formOption,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        }).toList(),
-        onChanged: enabled
-            ? (value) {
-                if (value != null) onOperatorChanged(value);
-              }
-            : null,
-      ),
+    return ButleryDropdown<ConditionOperator>(
+      dense: true,
+      semanticLabel: context.l10n.ruleConditionsLabel,
+      value: currentOperator,
+      options: [
+        for (final op in validOperators)
+          ButleryDropdownOption<ConditionOperator>(value: op, label: op.label),
+      ],
+      onChanged: enabled ? onOperatorChanged : null,
     );
   }
 

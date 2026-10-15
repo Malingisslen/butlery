@@ -10,7 +10,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -61,7 +63,7 @@ void showSourceArtefactSheet({
               const SizedBox(height: AppDimensions.space8),
               _StaleSourceBanner(message: ctx.l10n.recipeSourceStaleBanner),
             ],
-            const Divider(height: AppDimensions.space24),
+            const ButleryDivider(spacing: AppDimensions.space24),
             Expanded(
               child: SingleChildScrollView(
                 controller: scrollController,
@@ -72,19 +74,15 @@ void showSourceArtefactSheet({
               ),
             ),
             const SizedBox(height: AppDimensions.space8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                icon: const ButleryIcon(
-                  ButleryIcons.refreshCw,
-                  size: AppDimensions.iconSizeM,
-                ),
-                label: Text(ctx.l10n.recipeSourceReextract),
-                onPressed: () async {
-                  Navigator.of(sheetContext).pop();
-                  await onReextract();
-                },
-              ),
+            ActionButtons.outlinedButton(
+              ctx,
+              icon: ButleryIcons.refreshCw,
+              label: ctx.l10n.recipeSourceReextract,
+              isExpanded: true,
+              onPressed: () async {
+                Navigator.of(sheetContext).pop();
+                await onReextract();
+              },
             ),
           ],
         ),

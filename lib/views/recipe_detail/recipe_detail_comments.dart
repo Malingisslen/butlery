@@ -25,6 +25,9 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -298,22 +301,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     if (audience.total <= 0) return;
     final unresolved = audience.total - audience.resolved.length;
 
-    await showDialog<void>(
+    await showButleryDialog<void>(
       context: context,
       builder: (ctx) {
         final cs = Theme.of(ctx).colorScheme;
-        return AlertDialog(
-          title: Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.eye,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppDimensions.space4),
-              Text(ctx.l10n.recipeCommentAudienceTitle),
-            ],
-          ),
+        return ButleryDialog.notice(
+          title: ctx.l10n.recipeCommentAudienceTitle,
+          titleIcon: ButleryIcons.eye,
+          scrollable: false,
           // No name resolved → disclose the count only (never hide the audience).
           // A collaborative recipe can have many members, so the name list
           // scrolls rather than overflowing the dialog.
@@ -364,12 +359,6 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     ],
                   ),
                 ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(ctx.l10n.commonClose),
-            ),
-          ],
         );
       },
     );
@@ -423,9 +412,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.space8),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
             onPressed: () => Navigator.pushNamed(context, Routes.auth),
-            child: Text(context.l10n.authLogIn),
+            label: context.l10n.authLogIn,
+            isExpanded: true,
           ),
         ],
       ),
@@ -433,8 +424,6 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Widget _buildCommentsList(BuildContext context, SocialRecipeViewModel vm) {
-    final cs = Theme.of(context).colorScheme;
-
     if (vm.isLoadingComments) {
       return StateWidget.loading(message: context.l10n.socialLoadingComments);
     }
@@ -457,10 +446,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       itemCount: vm.topLevelComments.length,
-      separatorBuilder: (_, __) => Divider(
-        height: AppDimensions.borderWidthThin,
-        color: cs.outlineVariant,
-      ),
+      separatorBuilder: (_, __) =>
+          const ButleryDivider(spacing: AppDimensions.borderWidthThin),
       itemBuilder: (context, index) {
         final comment = vm.topLevelComments[index];
         return AnimatedListItem(
@@ -530,10 +517,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     SocialRecipeViewModel vm,
   ) async {
     final controller = TextEditingController(text: comment.text);
-    final newText = await showDialog<String>(
+    final newText = await showButleryDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.commentEditHint),
+      builder: (ctx) => ButleryDialog.confirm(
+        title: context.l10n.commentEditHint,
+        primaryLabel: context.l10n.commonSave,
+        onPrimary: () => Navigator.pop(ctx, controller.text.trim()),
         content: LabeledField(
           label: context.l10n.commentLabel,
           child: TextField(
@@ -545,16 +534,6 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(context.l10n.commonSave),
-          ),
-        ],
       ),
     );
     controller.dispose();

@@ -33,11 +33,16 @@ Widget _wrap(Widget child, {ThemeData? theme}) => MaterialApp(
   home: Scaffold(body: child),
 );
 
-CookSnap _snap({required List<String> photoUrls}) => CookSnap(
-  id: 'snap-1',
+CookSnap _snap({
+  required List<String> photoUrls,
+  String id = 'snap-1',
+  String userId = 'user-1',
+  String userDisplayName = 'Kalle',
+}) => CookSnap(
+  id: id,
   recipeId: 'recipe-1',
-  userId: 'user-1',
-  userDisplayName: 'Kalle',
+  userId: userId,
+  userDisplayName: userDisplayName,
   photoUrls: photoUrls,
   createdAt: DateTime(2026, 6, 14),
 );
@@ -356,6 +361,76 @@ void main() {
         findsOneWidget,
         reason: 'the badge must show the album photo count',
       );
+    });
+  });
+
+  group('CookSnapGallery long-press options sheet', () {
+    // Two snaps with different ids so a callback wired to the wrong snap
+    // cannot pass: snap-own belongs to the viewer, snap-other to Lisa.
+    final own = _snap(photoUrls: const ['https://x/a.jpg'], id: 'snap-own');
+    final other = _snap(
+      photoUrls: const ['https://x/b.jpg'],
+      id: 'snap-other',
+      userId: 'user-2',
+      userDisplayName: 'Lisa',
+    );
+
+    late List<String> deleted;
+    late List<CookSnap> reported;
+
+    Future<AppLocalizations> pumpGallery(WidgetTester tester) async {
+      deleted = [];
+      reported = [];
+      await tester.pumpWidget(
+        _wrap(
+          CookSnapGallery(
+            snaps: [own, other],
+            isLoading: false,
+            isUploading: false,
+            onAdd: () {},
+            onDelete: deleted.add,
+            onReport: reported.add,
+            currentUserId: 'user-1',
+          ),
+        ),
+      );
+      await tester.pump();
+      return AppLocalizations.of(tester.element(find.byType(CookSnapGallery)));
+    }
+
+    Future<void> longPressThumbnailOf(WidgetTester tester, String name) async {
+      await tester.longPress(find.text(name));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('own snap: the delete row calls onDelete with that snap id', (
+      tester,
+    ) async {
+      final l10n = await pumpGallery(tester);
+
+      await longPressThumbnailOf(tester, l10n.cookSnapMe);
+      expect(find.text(l10n.cookSnapReport), findsNothing);
+      await tester.tap(find.text(l10n.cookSnapDelete));
+      await tester.pumpAndSettle();
+
+      expect(deleted, ['snap-own']);
+      expect(reported, isEmpty);
+      expect(find.text(l10n.cookSnapDelete), findsNothing, reason: 'closed');
+    });
+
+    testWidgets("someone else's snap: the report row calls onReport with it", (
+      tester,
+    ) async {
+      final l10n = await pumpGallery(tester);
+
+      await longPressThumbnailOf(tester, 'Lisa');
+      expect(find.text(l10n.cookSnapDelete), findsNothing);
+      await tester.tap(find.text(l10n.cookSnapReport));
+      await tester.pumpAndSettle();
+
+      expect(reported.map((s) => s.id), ['snap-other']);
+      expect(deleted, isEmpty);
+      expect(find.text(l10n.cookSnapReport), findsNothing, reason: 'closed');
     });
   });
 

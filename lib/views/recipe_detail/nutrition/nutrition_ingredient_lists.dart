@@ -5,6 +5,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 
 /// Ingredients that could not be counted, each with the reason in words and,
@@ -61,15 +62,9 @@ class NutritionMissingList extends StatelessWidget {
                     button: true,
                     excludeSemantics: true,
                     onTap: () => onPick(line),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(
-                          AppDimensions.minTouchTarget,
-                          AppDimensions.minTouchTarget,
-                        ),
-                      ),
+                    child: ButleryTextButton(
                       onPressed: () => onPick(line),
-                      child: Text(l10n.nutritionPickFood),
+                      label: l10n.nutritionPickFood,
                     ),
                   ),
                 if (line.status == NutritionLineStatus.noAmount &&
@@ -80,15 +75,9 @@ class NutritionMissingList extends StatelessWidget {
                     button: true,
                     excludeSemantics: true,
                     onTap: () => onEnterAmount(line),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(
-                          AppDimensions.minTouchTarget,
-                          AppDimensions.minTouchTarget,
-                        ),
-                      ),
+                    child: ButleryTextButton(
                       onPressed: () => onEnterAmount(line),
-                      child: Text(l10n.nutritionEnterAmount),
+                      label: l10n.nutritionEnterAmount,
                     ),
                   ),
               ],
@@ -202,15 +191,9 @@ class _ChangeButton extends StatelessWidget {
       button: true,
       excludeSemantics: true,
       onTap: onPressed,
-      child: TextButton(
-        style: TextButton.styleFrom(
-          minimumSize: const Size(
-            AppDimensions.minTouchTarget,
-            AppDimensions.minTouchTarget,
-          ),
-        ),
+      child: ButleryTextButton(
         onPressed: onPressed,
-        child: Text(context.l10n.nutritionChange),
+        label: context.l10n.nutritionChange,
       ),
     );
   }

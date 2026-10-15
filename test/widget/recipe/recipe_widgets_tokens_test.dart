@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/chips/butlery_removable_chip.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -14,7 +16,6 @@ import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -179,10 +180,9 @@ void main() {
             ),
           ),
         );
-        expect(
-          tester.widget<Divider>(find.byType(Divider)).color,
-          cs.outlineVariant,
-        );
+        expect(find.byType(ButleryDivider), findsOneWidget);
+        expect(tester.widget<Divider>(find.byType(Divider)).color, isNull);
+        expect(theme.dividerTheme.color, cs.outlineVariant);
       });
 
       testWidgets(
@@ -217,8 +217,9 @@ void main() {
         },
       );
 
-      testWidgets('a related-recipe chip is surface.raised with an '
-          'outlineVariant line', (tester) async {
+      testWidgets('a related-recipe chip is the shared removable chip', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           _app(
             theme,
@@ -230,23 +231,18 @@ void main() {
             ),
           ),
         );
-        final chip = tester.widget<DecoratedBox>(
-          find
-              .ancestor(
-                of: find.text('Tacos'),
-                matching: find.byType(DecoratedBox),
-              )
-              .first,
+        expect(find.byType(ButleryRemovableChip), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(ButleryRemovableChip),
+            matching: find.text('Tacos'),
+          ),
+          findsOneWidget,
         );
-        final decoration = chip.decoration as BoxDecoration;
-        expect(decoration.color, cs.surfaceContainerHighest);
-        expect((decoration.border! as Border).top.color, cs.outlineVariant);
       });
 
-      // BUT-2205: the chip's own fill used to sit above the ink layer, so
-      // the remove × showed no press.
       testWidgets('a pressed remove × on a related-recipe chip shows the '
-          'step on raised', (tester) async {
+          'step, and is named for what it does', (tester) async {
         await tester.pumpWidget(
           _app(
             theme,
@@ -259,12 +255,7 @@ void main() {
           ),
         );
         final remove = find.descendant(
-          of: find
-              .ancestor(
-                of: find.text('Tacos'),
-                matching: find.byType(DecoratedBox),
-              )
-              .first,
+          of: find.byTooltip('Ta bort länk'),
           matching: find.byType(InkWell),
         );
         expect(pressIsCovered(tester, remove), isFalse);
@@ -273,7 +264,7 @@ void main() {
           paintsInkFill(
             tester,
             remove,
-            ModeColors.of(theme.brightness).pressedOnRaised,
+            cs.surfaceContainerHighest,
           ),
           isTrue,
         );

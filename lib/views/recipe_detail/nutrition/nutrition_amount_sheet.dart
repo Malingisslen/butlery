@@ -9,10 +9,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Opens the amount sheet for [line]; completes with true when the
@@ -118,16 +118,14 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
   /// True for this recipe only, false for every recipe, null when dismissed.
   Future<bool?> _askScope(double amount) {
     final l10n = context.l10n;
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          l10n.nutritionAmountScopeTitle(
-            '${_formatAmount(amount)} $_unit',
-            _line.name,
-          ),
+      builder: (dialogContext) => ButleryDialog(
+        title: l10n.nutritionAmountScopeTitle(
+          '${_formatAmount(amount)} $_unit',
+          _line.name,
         ),
-        content: Text(l10n.nutritionAmountScopeBody(_line.name)),
+        message: l10n.nutritionAmountScopeBody(_line.name),
         actions: [
           ActionButtons.primaryButton(
             dialogContext,
@@ -167,32 +165,9 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.space16,
-                      end: AppDimensions.space4,
-                      top: AppDimensions.space8,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: Text(
-                              l10n.nutritionAmountSheetTitle(_line.name),
-                              style: AppTextStyles.titleLarge.copyWith(
-                                color: cs.onSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: l10n.a11yNutritionPickerClose,
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const ButleryIcon(ButleryIcons.x),
-                        ),
-                      ],
-                    ),
+                  ButlerySheetHeader(
+                    title: l10n.nutritionAmountSheetTitle(_line.name),
+                    closeLabel: l10n.a11yNutritionPickerClose,
                   ),
                   Padding(
                     padding: const EdgeInsets.all(AppDimensions.space16),
@@ -230,17 +205,12 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                             spacing: AppDimensions.space4,
                             children: [
                               for (final unit in _line.enterableUnits)
-                                PressFill(
-                                  surface: unit == _unit
-                                      ? PressSurface.ink
-                                      : PressSurface.base,
-                                  child: ChoiceChip(
-                                    key: ValueKey('nutrition-unit-$unit'),
-                                    label: Text(unit),
-                                    selected: unit == _unit,
-                                    onSelected: (_) =>
-                                        setState(() => _unit = unit),
-                                  ),
+                                ButleryChoiceChip(
+                                  key: ValueKey('nutrition-unit-$unit'),
+                                  label: unit,
+                                  selected: unit == _unit,
+                                  onSelected: (_) =>
+                                      setState(() => _unit = unit),
                                 ),
                             ],
                           ),

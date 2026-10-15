@@ -10,10 +10,9 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/chips/butlery_removable_chip.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/related_recipes_picker_dialog.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Edit-form section for managing related-recipe links.
 ///
@@ -66,10 +65,11 @@ class RelatedRecipesEditor extends StatelessWidget {
             spacing: AppDimensions.space4,
             runSpacing: AppDimensions.space4,
             children: relatedRecipes.map((r) {
-              return _RelatedChip(
+              return ButleryRemovableChip(
                 key: ValueKey(r.id),
-                title: r.title,
+                label: r.title,
                 onRemove: () => _handleUnlink(context, r.id),
+                removeLabel: context.l10n.a11yRemoveRelatedRecipe,
               );
             }).toList(),
           ),
@@ -128,77 +128,5 @@ class RelatedRecipesEditor extends StatelessWidget {
         what: context.l10n.recipeRelatedUnlinkError,
       );
     }
-  }
-}
-
-/// Square chip with title + X button for one linked recipe.
-class _RelatedChip extends StatelessWidget {
-  final String title;
-  final VoidCallback onRemove;
-
-  const _RelatedChip({
-    super.key,
-    required this.title,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Semantics(
-      label: context.l10n.a11yRelatedRecipeChip,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.space4,
-                end: AppDimensions.space4,
-                top: AppDimensions.space4,
-                bottom: AppDimensions.space4,
-              ),
-              child: Text(
-                title,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.onSurface,
-                ),
-              ),
-            ),
-            Semantics(
-              label: context.l10n.a11yRemoveRelatedRecipe,
-              button: true,
-              child: Material(
-                type: MaterialType.transparency,
-                child: PressFill(
-                  surface: PressSurface.raised,
-                  child: InkWell(
-                    onTap: onRemove,
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: AppDimensions.space4,
-                        end: AppDimensions.space4,
-                        top: AppDimensions.space4,
-                        bottom: AppDimensions.space4,
-                      ),
-                      child: ButleryIcon(
-                        ButleryIcons.x,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.onSurface,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

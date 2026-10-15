@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -22,26 +21,14 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
   required String message,
 }) {
   var selected = CookSnapVisibility.sameAsRecipe;
-  return showDialog<CookSnapVisibility>(
+  return showButleryDialog<CookSnapVisibility>(
     context: context,
     builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setDialogState) => AlertDialog(
-        title: Row(
-          children: [
-            ButleryIcon(
-              ButleryIcons.eye,
-              size: AppDimensions.iconSizeS,
-              color: Theme.of(ctx).colorScheme.onPrimaryContainer,
-            ),
-            const SizedBox(width: AppDimensions.space4),
-            Expanded(
-              child: Text(
-                ctx.l10n.cookSnapVisibilityTitle.toLowerCase(),
-                style: AppTextStyles.dialogTitle,
-              ),
-            ),
-          ],
-        ),
+      builder: (ctx, setDialogState) => ButleryDialog.confirm(
+        title: ctx.l10n.cookSnapVisibilityTitle.toLowerCase(),
+        titleIcon: ButleryIcons.eye,
+        primaryLabel: ctx.l10n.cookSnapVisibilityConfirm,
+        onPrimary: () => Navigator.pop(ctx, selected),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,14 +54,6 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
             ),
           ],
         ),
-        actions: [
-          const DialogCancelButton(),
-          ActionButtons.primaryButton(
-            ctx,
-            onPressed: () => Navigator.pop(ctx, selected),
-            label: ctx.l10n.cookSnapVisibilityConfirm,
-          ),
-        ],
       ),
     ),
   );

@@ -5,6 +5,8 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/butlery_row_field.dart';
@@ -105,8 +107,9 @@ class DynamicListBuilder extends StatelessWidget {
         ),
         Expanded(child: _buildField(index)),
         if (controllers.length > 1)
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.trash2),
+          AppIconButton(
+            icon: ButleryIcons.trash2,
+            semanticLabel: context.l10n.commonRemoveLabel(label),
             onPressed: () => onRemove(index),
           ),
       ],
@@ -118,8 +121,9 @@ class DynamicListBuilder extends StatelessWidget {
       children: [
         Expanded(child: _buildField(index)),
         if (controllers.length > 1)
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.trash2),
+          AppIconButton(
+            icon: ButleryIcons.trash2,
+            semanticLabel: context.l10n.commonRemoveLabel(label),
             onPressed: () => onRemove(index),
           ),
       ],
@@ -145,9 +149,9 @@ class DynamicListBuilder extends StatelessWidget {
   }
 
   Widget _buildAddButton(BuildContext context) {
-    return TextButton.icon(
-      icon: const ButleryIcon(ButleryIcons.plus),
-      label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
+    return ButleryTextButton(
+      icon: ButleryIcons.plus,
+      label: context.l10n.commonAddWithLabel(label.toLowerCase()),
       onPressed: onAdd,
     );
   }

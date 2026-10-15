@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/views/recipe_detail/recipe_source_artefact_sheet.dart';
@@ -1429,28 +1431,12 @@ class _PaneLeadingButton extends StatelessWidget {
         toggled: expanded,
         child: Align(
           alignment: AlignmentDirectional.centerStart,
-          child: TextButton(
+          child: ButleryTextButton(
             onPressed: () => controller.setExpanded(!expanded),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (expanded)
-                  const Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      end: AppDimensions.space4,
-                    ),
-                    child: ButleryIcon(ButleryIcons.chevronLeft),
-                  ),
-                Flexible(
-                  child: Text(
-                    expanded
-                        ? context.l10n.detailPaneCollapse
-                        : context.l10n.detailPaneExpand,
-                    style: AppTextStyles.buttonText,
-                  ),
-                ),
-              ],
-            ),
+            icon: expanded ? ButleryIcons.chevronLeft : null,
+            label: expanded
+                ? context.l10n.detailPaneCollapse
+                : context.l10n.detailPaneExpand,
           ),
         ),
       ),
@@ -1650,14 +1636,13 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
               ),
             ),
             const SizedBox(width: AppDimensions.space8),
-            TextButton(
+            ButleryTextButton(
               onPressed: () => _onShare(name),
-              child: Text(context.l10n.recipeShareRequestShareAction(name)),
+              label: context.l10n.recipeShareRequestShareAction(name),
             ),
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.x),
+            ButleryCloseButton(
               onPressed: () => setState(() => _dismissed = true),
-              tooltip: context.l10n.commonClose,
+              semanticLabel: context.l10n.commonClose,
             ),
           ],
         ),

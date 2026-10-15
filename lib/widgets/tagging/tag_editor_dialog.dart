@@ -13,6 +13,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 
 /// Dialog for viewing and managing all recipe tags.
 ///
@@ -32,7 +36,7 @@ class TagEditorDialog extends StatefulWidget {
 
   /// Shows the tag editor dialog and returns updated overrides if saved.
   static Future<TagOverrides?> show(BuildContext context, Recipe recipe) {
-    return showDialog<TagOverrides>(
+    return showButleryDialog<TagOverrides>(
       context: context,
       builder: (context) => TagEditorDialog(recipe: recipe),
     );
@@ -163,14 +167,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: const ButleryIcon(ButleryIcons.x),
-                    onPressed: () => Navigator.of(context).pop(),
-                    tooltip: context.l10n.commonClose,
-                  ),
+                  ButleryCloseButton(semanticLabel: context.l10n.commonClose),
                 ],
               ),
-              const Divider(height: AppDimensions.space32),
+              const ButleryDivider(spacing: AppDimensions.space32),
 
               // Tags list
               Flexible(
@@ -266,14 +266,11 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               ),
                             ),
                             const SizedBox(width: AppDimensions.space4),
-                            IconButton.filled(
+                            AppIconButton(
+                              icon: ButleryIcons.plus,
+                              semanticLabel: context.l10n.tagAddTag,
                               onPressed: _addNewTag,
-                              icon: const ButleryIcon(ButleryIcons.plus),
-                              tooltip: context.l10n.tagAddTag,
-                              style: IconButton.styleFrom(
-                                backgroundColor: cs.primary,
-                                foregroundColor: cs.onPrimary,
-                              ),
+                              filled: true,
                             ),
                           ],
                         ),
@@ -284,23 +281,20 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               ),
 
               const SizedBox(height: AppDimensions.space12),
-              const Divider(),
+              const ButleryDivider(),
               const SizedBox(height: AppDimensions.space8),
 
               // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              // OverflowBar hands the buttons loose constraints, which the
+              // theme's infinite minimum button width needs; a Row would not.
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: AppDimensions.space8,
                 children: [
                   const DialogCancelButton(),
-                  const SizedBox(width: AppDimensions.space8),
-                  FilledButton(
+                  ButleryDialogPrimary(
+                    label: context.l10n.commonSave,
                     onPressed: _save,
-                    style: const ButtonStyle(
-                      minimumSize: WidgetStatePropertyAll(
-                        Size(0, AppDimensions.minTouchTarget),
-                      ),
-                    ),
-                    child: Text(context.l10n.commonSave),
                   ),
                 ],
               ),

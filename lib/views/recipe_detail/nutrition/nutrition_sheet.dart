@@ -14,8 +14,8 @@ import 'package:butlery/views/recipe_detail/nutrition/nutrition_food_picker.dart
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_format.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_ingredient_lists.dart';
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -103,39 +103,15 @@ class _NutritionSheetState extends State<NutritionSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Breakpoints.mobileLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.space16,
-                end: AppDimensions.space4,
-                top: AppDimensions.space8,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        l10n.nutritionSheetTitle,
-                        style: AppTextStyles.titleLarge.copyWith(
-                          color: cs.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: l10n.a11yNutritionClose,
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const ButleryIcon(ButleryIcons.x),
-                  ),
-                ],
-              ),
+            ButlerySheetHeader(
+              title: l10n.nutritionSheetTitle,
+              closeLabel: l10n.a11yNutritionClose,
             ),
             Flexible(
               child: ListenableBuilder(
@@ -162,9 +138,9 @@ class _NutritionSheetState extends State<NutritionSheet> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(_vm.error!, textAlign: TextAlign.center),
-                  TextButton(
+                  ButleryTextButton(
                     onPressed: _vm.load,
-                    child: Text(l10n.commonRetry),
+                    label: l10n.commonRetry,
                   ),
                 ],
               )

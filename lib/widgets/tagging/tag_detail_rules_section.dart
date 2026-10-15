@@ -8,7 +8,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/input/butlery_switch.dart';
@@ -16,6 +15,7 @@ import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 class TagDetailRulesSection extends StatelessWidget {
   final PersonalTag tag;
@@ -49,14 +49,10 @@ class TagDetailRulesSection extends StatelessWidget {
           child: Row(
             children: [
               Expanded(child: SectionHeading(l10n.tagDetailRulesHeading)),
-              TextButton(
+              ButleryTextButton(
                 onPressed: onAddRule,
-                child: Text(
-                  l10n.tagDetailNewRule,
-                  style: AppTextStyles.labelMediumBold.copyWith(
-                    color: context.modeColors.textAccent,
-                  ),
-                ),
+                label: l10n.tagDetailNewRule,
+                tone: ButleryTextButtonTone.link,
               ),
             ],
           ),

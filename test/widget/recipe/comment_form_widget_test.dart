@@ -294,8 +294,7 @@ void main() {
       matching: find.byType(IconButton),
     );
     expect(send, findsOneWidget);
-    // IconButton reports its tooltip as the semantics tooltip.
-    expect(tester.getSemantics(send).tooltip, 'Skicka');
+    expect(find.bySemanticsLabel('Skicka'), findsOneWidget);
     semantics.dispose();
   });
 

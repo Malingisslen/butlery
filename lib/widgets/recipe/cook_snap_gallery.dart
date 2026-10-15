@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -88,9 +90,9 @@ class CookSnapGallery extends StatelessWidget {
                   ),
                 )
               else
-                IconButton(
-                  icon: const ButleryIcon(ButleryIcons.camera),
-                  tooltip: context.l10n.cookSnapAddTooltip,
+                AppIconButton(
+                  icon: ButleryIcons.camera,
+                  semanticLabel: context.l10n.cookSnapAddTooltip,
                   onPressed: onAdd,
                   iconSize: AppDimensions.iconSizeM,
                 ),
@@ -248,21 +250,19 @@ class _SnapThumbnail extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isOwn)
-              ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                title: Text(context.l10n.cookSnapDelete),
+              ButleryItemRow(
+                leadingIcon: ButleryIcons.trash2,
+                danger: true,
+                title: context.l10n.cookSnapDelete,
                 onTap: () {
                   Navigator.pop(context);
                   onDelete();
                 },
               )
             else
-              ListTile(
-                leading: const ButleryIcon(ButleryIcons.flag),
-                title: Text(context.l10n.cookSnapReport),
+              ButleryItemRow(
+                leadingIcon: ButleryIcons.flag,
+                title: context.l10n.cookSnapReport,
                 onTap: () {
                   Navigator.pop(context);
                   onReport();

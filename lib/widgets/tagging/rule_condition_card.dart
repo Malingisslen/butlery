@@ -7,12 +7,11 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 
 /// Editable card for a single rule condition with type, operator, and value fields.
 class RuleConditionCard extends StatefulWidget {
@@ -58,131 +57,82 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
   Widget build(BuildContext context) {
     final operators = OperatorRegistry.getValidOperators(widget.condition.type);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: PressFill(
-                    surface: PressSurface.base,
-                    child: DropdownButtonFormField<ConditionType>(
-                      icon: const ButleryIcon(ButleryIcons.chevronDown),
-                      iconEnabledColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
-                      iconDisabledColor: AppModeColors.textDisabled(
-                        Theme.of(context).brightness,
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: ButleryDropdown<ConditionType>(
+                  dense: true,
+                  semanticLabel: context.l10n.ruleConditionsLabel,
+                  value: widget.condition.type,
+                  options: [
+                    for (final type in ConditionType.values)
+                      ButleryDropdownOption<ConditionType>(
+                        value: type,
+                        label: type.label,
                       ),
-                      initialValue: widget.condition.type,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.space12,
-                          vertical: AppDimensions.space8,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ConditionType.values.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(
-                            type.label,
-                            style: AppTextStyles.formOption,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          widget.onTypeChanged(value);
-                          final newOperators =
-                              OperatorRegistry.getValidOperators(
-                                value,
-                              );
-                          if (!newOperators.contains(
-                            widget.condition.operator,
-                          )) {
-                            widget.onOperatorChanged(newOperators.first);
-                          }
-                        }
-                      },
-                    ),
-                  ),
+                  ],
+                  onChanged: (value) {
+                    widget.onTypeChanged(value);
+                    final newOperators = OperatorRegistry.getValidOperators(
+                      value,
+                    );
+                    if (!newOperators.contains(widget.condition.operator)) {
+                      widget.onOperatorChanged(newOperators.first);
+                    }
+                  },
                 ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: PressFill(
-                    surface: PressSurface.base,
-                    child: DropdownButtonFormField<ConditionOperator>(
-                      icon: const ButleryIcon(ButleryIcons.chevronDown),
-                      iconEnabledColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
-                      iconDisabledColor: AppModeColors.textDisabled(
-                        Theme.of(context).brightness,
-                      ),
-                      initialValue:
-                          operators.contains(widget.condition.operator)
-                          ? widget.condition.operator
-                          : operators.first,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.space12,
-                          vertical: AppDimensions.space8,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                      items: operators.map((op) {
-                        return DropdownMenuItem(
-                          value: op,
-                          child: Text(
-                            op.label,
-                            style: AppTextStyles.formOption,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) widget.onOperatorChanged(value);
-                      },
-                    ),
-                  ),
-                ),
-                if (widget.canDelete) ...[
-                  const SizedBox(width: AppDimensions.space8),
-                  IconButton(
-                    icon: const ButleryIcon(
-                      ButleryIcons.x,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                    onPressed: widget.onDelete,
-                    tooltip: context.l10n.ruleRemoveCondition,
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space8),
-            LabeledField(
-              child: TextField(
-                controller: _valueController,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space12,
-                    vertical: AppDimensions.space12,
-                  ),
-                  hintText: _getHintText(widget.condition.type),
-                ),
-                keyboardType: widget.condition.type.isNumeric
-                    ? TextInputType.number
-                    : TextInputType.text,
-                onChanged: widget.onValueChanged,
               ),
+              const SizedBox(width: AppDimensions.space8),
+              Expanded(
+                child: ButleryDropdown<ConditionOperator>(
+                  dense: true,
+                  semanticLabel: context.l10n.ruleConditionsLabel,
+                  value: operators.contains(widget.condition.operator)
+                      ? widget.condition.operator
+                      : operators.first,
+                  options: [
+                    for (final op in operators)
+                      ButleryDropdownOption<ConditionOperator>(
+                        value: op,
+                        label: op.label,
+                      ),
+                  ],
+                  onChanged: widget.onOperatorChanged,
+                ),
+              ),
+              if (widget.canDelete) ...[
+                const SizedBox(width: AppDimensions.space8),
+                AppIconButton(
+                  icon: ButleryIcons.x,
+                  onPressed: widget.onDelete,
+                  semanticLabel: context.l10n.ruleRemoveCondition,
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppDimensions.space8),
+          LabeledField(
+            child: TextField(
+              controller: _valueController,
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space12,
+                ),
+                hintText: _getHintText(widget.condition.type),
+              ),
+              keyboardType: widget.condition.type.isNumeric
+                  ? TextInputType.number
+                  : TextInputType.text,
+              onChanged: widget.onValueChanged,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

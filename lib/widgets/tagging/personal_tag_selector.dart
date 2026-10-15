@@ -18,6 +18,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
 ///
@@ -88,7 +89,6 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Column(
@@ -105,19 +105,11 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                   ),
                 ),
               if (widget.showManageButton)
-                TextButton.icon(
+                ButleryTextButton(
                   onPressed: _openTagManager,
-                  icon: const ButleryIcon(
-                    ButleryIcons.settings,
-                    size: AppDimensions.iconSize18,
-                  ),
-                  label: Text(context.l10n.personalTagManage),
-                  style: TextButton.styleFrom(
-                    foregroundColor: cs.onPrimaryContainer,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.space8,
-                    ),
-                  ),
+                  icon: ButleryIcons.settings,
+                  dense: true,
+                  label: context.l10n.personalTagManage,
                 ),
             ],
           ),
@@ -180,9 +172,9 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               ),
             ),
           ),
-          TextButton(
+          ButleryTextButton(
             onPressed: _openTagManager,
-            child: Text(context.l10n.commonCreate),
+            label: context.l10n.commonCreate,
           ),
         ],
       ),
@@ -214,9 +206,9 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               ),
             ),
           ),
-          TextButton(
+          ButleryTextButton(
             onPressed: _retryLoad,
-            child: Text(context.l10n.commonRetry),
+            label: context.l10n.commonRetry,
           ),
         ],
       ),

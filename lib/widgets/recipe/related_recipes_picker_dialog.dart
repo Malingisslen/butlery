@@ -5,7 +5,9 @@
 // Excludes the current recipe from the selectable list (no self-link).
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -17,7 +19,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
@@ -43,7 +44,7 @@ class RelatedRecipesPickerDialog extends StatefulWidget {
     required String currentRecipeId,
     required Set<String> alreadyLinkedIds,
   }) {
-    return showDialog<List<Recipe>>(
+    return showButleryDialog<List<Recipe>>(
       context: context,
       builder: (_) => RelatedRecipesPickerDialog(
         currentRecipeId: currentRecipeId,
@@ -80,12 +81,9 @@ class _RelatedRecipesPickerDialogState
     return ChangeNotifierProvider.value(
       value: _vm,
       child: Consumer<RecipeListViewModel>(
-        builder: (context, vm, _) => AlertDialog(
-          title: Text(context.l10n.recipeRelatedPickerTitle),
-          contentPadding: EdgeInsets.zero,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
+        builder: (context, vm, _) => ButleryDialog(
+          title: context.l10n.recipeRelatedPickerTitle,
+          scrollable: false,
           content: SizedBox(
             width: double.maxFinite,
             height: MediaQuery.of(context).size.height * 0.6,
@@ -94,8 +92,7 @@ class _RelatedRecipesPickerDialogState
           actions: [
             const DialogCancelButton(),
             if (_selectedIds.isNotEmpty)
-              ActionButtons.primaryButton(
-                context,
+              ButleryDialogPrimary(
                 label: '${context.l10n.commonAdd} (${_selectedIds.length})',
                 onPressed: () => _confirm(context, vm),
               ),
@@ -146,7 +143,7 @@ class _RelatedRecipesPickerDialogState
           showStats: true,
           resultCount: filtered.length,
         ),
-        const Divider(height: 1),
+        const ButleryDivider(spacing: 1),
         Expanded(
           child: filtered.isEmpty
               ? StateWidget.noSearchResults(
@@ -198,20 +195,12 @@ class _RecipePickerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return ListTile(
-      contentPadding: AppDimensions.listItemPadding,
+    return ButleryItemRow(
+      padded: false,
       leading: _buildThumbnail(context),
-      title: Text(
-        recipe.title,
-        style: AppTextStyles.titleMedium,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        recipe.mealType,
-        style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
-      ),
+      title: recipe.title,
+      titleMaxLines: 1,
+      subtitle: recipe.mealType,
       trailing: ButleryCheckbox(
         value: isSelected,
         onChanged: onSelectionChanged,

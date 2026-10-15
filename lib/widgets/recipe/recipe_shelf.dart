@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -23,8 +24,6 @@ class RecipeShelf extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (recipes.isEmpty) return const SizedBox.shrink();
-
-    final cs = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,10 +53,7 @@ class RecipeShelf extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.space8),
-        Divider(
-          height: 1,
-          color: cs.outlineVariant,
-        ),
+        const ButleryDivider(spacing: 1),
       ],
     );
   }
