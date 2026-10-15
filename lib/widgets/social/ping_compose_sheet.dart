@@ -11,13 +11,12 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -314,43 +313,12 @@ class _MessageField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final restingBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
-      borderSide: BorderSide(
-        color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
-      ),
-    );
-    // Focus is the ring outside the input box, shown for keyboard focus
-    // (decision D3); the edge keeps its resting width and colour (Grafisk
-    // manual v6:423; Komponentark v1:657).
-    return ButleryFocusRing(
-      bounds: FocusRingBounds.textFieldBox,
-      child: TextField(
-        key: const Key('ping-message-field'),
-        controller: controller,
-        maxLength: kPingMaxMessageLength,
-        maxLines: 2,
-        style: AppTextStyles.bodyMedium,
-        decoration: InputDecoration(
-          hintText: context.l10n.pingComposeMessageHint,
-          hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
-          filled: true,
-          fillColor: cs.surfaceContainerHighest,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(color: cs.outlineVariant),
-          ),
-          focusedBorder: restingBorder,
-          enabledBorder: restingBorder,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.space16,
-            vertical: AppDimensions.space8,
-          ),
-        ),
-      ),
+    return StyledInput(
+      key: const Key('ping-message-field'),
+      controller: controller,
+      maxLength: kPingMaxMessageLength,
+      maxLines: 2,
+      hint: context.l10n.pingComposeMessageHint,
     );
   }
 }
