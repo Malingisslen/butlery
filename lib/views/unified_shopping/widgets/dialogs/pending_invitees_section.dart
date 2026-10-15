@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social_request.dart';
@@ -98,18 +101,9 @@ class _PendingInviteesSectionState extends State<PendingInviteesSection> {
                 Column(
                   key: ValueKey('pending-invitee-${invitation.id}'),
                   children: [
-                    ListTile(
-                      dense: true,
-                      title: Text(
-                        widget.nameFor(invitation.toUserId),
-                        style: AppTextStyles.contentTitle,
-                      ),
-                      subtitle: Text(
-                        l10n.listInviteNotAnsweredYet,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
+                    ButleryItemRow(
+                      title: widget.nameFor(invitation.toUserId),
+                      subtitle: l10n.listInviteNotAnsweredYet,
                       trailing: Text(
                         l10n.listInviteStatusPending,
                         style: AppTextStyles.labelMedium.copyWith(
@@ -121,11 +115,11 @@ class _PendingInviteesSectionState extends State<PendingInviteesSection> {
                         widget.operations.currentUserId)
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton(
+                        child: ButleryTextButton(
+                          label: l10n.listInviteRevoke,
                           onPressed: _revoking.contains(invitation.id)
                               ? null
                               : () => _revoke(invitation),
-                          child: Text(l10n.listInviteRevoke),
                         ),
                       ),
                   ],
@@ -133,7 +127,7 @@ class _PendingInviteesSectionState extends State<PendingInviteesSection> {
             ],
           ),
         ),
-        const Divider(),
+        const ButleryDivider(),
       ],
     );
   }

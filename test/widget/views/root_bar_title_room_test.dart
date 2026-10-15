@@ -144,15 +144,15 @@ void main() {
       shopping.indexOf('static List<Widget> buildHeaderActions('),
       shopping.indexOf('static Widget buildFloatingActionButton('),
     );
-    expect(RegExp(r'PopupMenuButton<').allMatches(header).length, 1);
+    expect(RegExp(r'ButleryMenu<').allMatches(header).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(header), isFalse);
 
     final week = code('lib/views/veckomeny_view.dart');
     final weekHeader = week.substring(
       week.indexOf('List<Widget> _buildHeaderActions('),
-      week.indexOf('ButleryMenuItem<_VeckomenyRootAction> _rootItem('),
+      week.indexOf('ButleryMenuChoice<_VeckomenyRootAction> _rootItem('),
     );
-    expect(RegExp(r'PopupMenuButton<').allMatches(weekHeader).length, 1);
+    expect(RegExp(r'ButleryMenu<').allMatches(weekHeader).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(weekHeader), isFalse);
     expect(weekHeader.contains('GroupMenuEntryButton()'), isTrue);
   });

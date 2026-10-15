@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -733,7 +734,14 @@ void main() {
             reason: 'the bulk-move target sheet header',
           );
           // 7 days × 3 slots = 21 target rows in the sheet.
-          expect(find.byType(ListTile), findsNWidgets(21));
+          expect(find.byType(ButleryItemRow), findsNWidgets(21));
+
+          // Each row is one tappable node that names itself once, not a
+          // second labelled wrapper beside it.
+          final handle = tester.ensureSemantics();
+          expect(find.bySemanticsLabel(RegExp(' · ')), findsNWidgets(21));
+          expect(find.bySemanticsLabel(RegExp('^mån lunch')), findsNothing);
+          handle.dispose();
 
           // Pick "mån · lunch" — the first tile in the sheet (guaranteed
           // on-screen at the default 800x600 surface) and a unique title.

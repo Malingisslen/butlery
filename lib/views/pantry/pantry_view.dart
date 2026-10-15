@@ -204,7 +204,7 @@ class _PantrySections extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(
         top: AppDimensions.space16,
-        bottom: 96,
+        bottom: AppDimensions.fabClearance,
       ),
       children: [
         if (expiring.isNotEmpty)

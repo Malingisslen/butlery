@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/content_time_labels.dart';
@@ -201,17 +203,17 @@ class _RestoreLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(text),
-      subtitle: Text(ContentTimeLabels.whenLabel(l, at, now)),
+    return ButleryItemRow(
+      padded: false,
+      title: text,
+      subtitle: ContentTimeLabels.whenLabel(l, at, now),
       trailing: Semantics(
         label: l.shoppingRestoreButtonFor(name),
         button: true,
         excludeSemantics: true,
-        child: TextButton(
+        child: ButleryTextButton(
+          label: l.shoppingRestoreButton,
           onPressed: onRestore,
-          child: Text(l.shoppingRestoreButton),
         ),
       ),
     );

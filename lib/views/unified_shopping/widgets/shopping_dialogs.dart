@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/shopping_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -236,7 +237,7 @@ class ShoppingDialogs {
     }
 
     if (context.mounted) {
-      await showDialog(
+      await showButleryDialog<void>(
         context: context,
         builder: (context) => ShoppingShareStatusDialog(
           list: activeList,

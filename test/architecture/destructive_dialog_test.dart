@@ -23,8 +23,6 @@ const _allowed = <String, ({int count, String why})>{
     count: 1,
     why: 'discard-all choice among the drafts',
   ),
-  'lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart':
-      (count: 1, why: 'leave-list choice in the sharing status dialog'),
 };
 
 final _redButton = RegExp(

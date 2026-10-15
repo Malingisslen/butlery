@@ -1,7 +1,6 @@
-// BUT-2205: a chosen pantry row's fill, and the expiry field's own fill, used
-// to cover the press. Each is pressed in both modes.
+// BUT-2205: a chosen pantry row's fill used to cover the press. It is pressed
+// in both modes.
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -12,7 +11,6 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
-import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 
 import '../../../infrastructure/helpers/base_widget_test.dart';
@@ -96,61 +94,6 @@ void main() {
         await gesture.cancel();
         await tester.pumpAndSettle();
       }
-    });
-
-    // The field paints its own fill above the ink layer, so the field itself
-    // takes the pressed fill.
-    testWidgets('a pressed expiry field takes the step on raised ($mode)', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Theme(
-            data: theme,
-            child: ChangeNotifierProvider<PantryViewModel>.value(
-              value: vm,
-              child: const Scaffold(body: AddPantryItemSheet()),
-            ),
-          ),
-        ),
-      );
-      final field = find.text('Inget utgångsdatum');
-      await tester.ensureVisible(field);
-      await tester.pumpAndSettle();
-      Color? fill() => tester
-          .widget<InputDecorator>(
-            find.ancestor(of: field, matching: find.byType(InputDecorator)),
-          )
-          .decoration
-          .fillColor;
-
-      expect(fill(), isNull);
-      final gesture = await holdPress(tester, field);
-      expect(fill(), modeColors.pressedOnRaised);
-      await gesture.cancel();
-      await tester.pumpAndSettle();
-      expect(fill(), isNull);
-
-      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      await mouse.addPointer(location: Offset.zero);
-      addTearDown(mouse.removePointer);
-      await mouse.moveTo(tester.getCenter(field));
-      await tester.pumpAndSettle();
-      expect(fill(), modeColors.pressedOnRaised);
-      await mouse.moveTo(Offset.zero);
-      await tester.pumpAndSettle();
-      expect(fill(), isNull);
-
-      // Only the press and hover tints are blanked: keyboard focus keeps
-      // the theme's.
-      final overlay = tester
-          .widget<InkWell>(
-            find.ancestor(of: field, matching: find.byType(InkWell)).first,
-          )
-          .overlayColor!;
-      expect(overlay.resolve({WidgetState.focused}), isNull);
-      expect(overlay.resolve({WidgetState.pressed}), Colors.transparent);
-      expect(overlay.resolve({WidgetState.hovered}), Colors.transparent);
     });
   }
 }

@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -12,7 +13,6 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -142,14 +142,11 @@ abstract final class TagDetailActions {
   static Future<void> applyRulesToRecipes(BuildContext context) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        // The plate line with its text, never a spinner (produktregler.md
-        // :163, :304; beslutslogg B-18).
-        content: PlateLineMessage(message: context.l10n.tagDetailApplyingRules),
-      ),
+      builder: (dialogContext) =>
+          ButleryProgressDialog(message: context.l10n.tagDetailApplyingRules),
     );
 
     try {

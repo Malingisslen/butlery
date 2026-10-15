@@ -27,6 +27,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_name_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -81,7 +82,7 @@ abstract final class PersonalTagDialogs {
 
   /// Shows the retag-all-recipes progress dialog.
   static void showRetagDialog(BuildContext context) {
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => RetagProgressDialog(
@@ -150,37 +151,24 @@ abstract final class PersonalTagDialogs {
   }) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          enable
-              ? context.l10n.personalTagEnableAllRulesConfirm
-              : context.l10n.personalTagDisableAllRulesConfirm,
-        ),
-        content: Text(
-          enable
-              ? context.l10n.personalTagEnableAllRulesMessage(
-                  tag.rules.length,
-                  tag.name,
-                )
-              : context.l10n.personalTagDisableAllRulesMessage(
-                  tag.rules.length,
-                  tag.name,
-                ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              enable ? context.l10n.commonEnable : context.l10n.commonDisable,
-            ),
-          ),
-        ],
+      builder: (context) => ButleryDialog.confirm(
+        title: enable
+            ? context.l10n.personalTagEnableAllRulesConfirm
+            : context.l10n.personalTagDisableAllRulesConfirm,
+        message: enable
+            ? context.l10n.personalTagEnableAllRulesMessage(
+                tag.rules.length,
+                tag.name,
+              )
+            : context.l10n.personalTagDisableAllRulesMessage(
+                tag.rules.length,
+                tag.name,
+              ),
+        primaryLabel: enable
+            ? context.l10n.commonEnable
+            : context.l10n.commonDisable,
       ),
     );
 
@@ -214,7 +202,7 @@ abstract final class PersonalTagDialogs {
   static Future<void> showCreateTagDialog(BuildContext context) async {
     final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    final created = await showDialog<String>(
+    final created = await showButleryDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => PersonalTagNameDialog(
@@ -242,7 +230,7 @@ abstract final class PersonalTagDialogs {
   static Future<void> showCreateGroupDialog(BuildContext context) async {
     final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    final created = await showDialog<String>(
+    final created = await showButleryDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => PersonalTagNameDialog(
@@ -333,7 +321,7 @@ abstract final class PersonalTagDialogs {
   ) async {
     final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    final created = await showDialog<String>(
+    final created = await showButleryDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => PersonalTagNameDialog(
@@ -372,7 +360,7 @@ abstract final class PersonalTagDialogs {
   ) async {
     final l10n = context.l10n;
     final viewModel = context.read<PersonalTagViewModel>();
-    final renamed = await showDialog<String>(
+    final renamed = await showButleryDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => PersonalTagNameDialog(

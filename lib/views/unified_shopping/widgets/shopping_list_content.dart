@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -260,10 +262,11 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
             ),
-            OutlinedButton(
+            ActionButtons.outlinedButton(
+              context,
               key: const ValueKey('shopping-empty-add-item'),
+              label: context.l10n.shoppingAddItem,
               onPressed: widget.onAddItem,
-              child: Text(context.l10n.shoppingAddItem),
             ),
           ],
         ),
@@ -441,19 +444,11 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             ),
           ),
         ),
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('shopping-clear-bought'),
+          label: context.l10n.shoppingClearBought,
+          tone: ButleryTextButtonTone.link,
           onPressed: widget.onClearCompleted,
-          child: Text(
-            context.l10n.shoppingClearBought,
-            // Nearest role to the facit's 10.5/600: labelMedium is
-            // 12.5/600, the closest surviving weight match (overline is
-            // 10.5/700 — exact size, wrong weight; the facit's weight
-            // matters more for a tappable action than 2px does).
-            style: AppTextStyles.labelMedium.copyWith(
-              color: context.modeColors.textAccent,
-            ),
-          ),
         ),
       ],
     );

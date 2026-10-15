@@ -325,10 +325,10 @@ class _PantryUnavailable extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
+            ButleryTextButton(
               key: ShoppingMergeSheet.pantryRetryKey,
+              label: l.commonRetry,
               onPressed: retrying ? null : onRetry,
-              child: Text(l.commonRetry),
             ),
           ],
         ),

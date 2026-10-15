@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Bottom sheet for picking a category when moving a shopping item.
@@ -34,8 +33,6 @@ class CategoryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -59,7 +56,7 @@ class CategoryPickerSheet extends StatelessWidget {
                   category,
                 );
 
-                return ListTile(
+                return ButleryItemRow(
                   leading: Container(
                     width: 24,
                     height: 24,
@@ -70,15 +67,9 @@ class CategoryPickerSheet extends StatelessWidget {
                       ),
                     ),
                   ),
-                  title: Text(
-                    ShoppingCategory.displayName(category),
-                    style: isSelected
-                        ? AppTextStyles.bodyLargeBold
-                        : AppTextStyles.contentTitle,
-                  ),
-                  trailing: isSelected
-                      ? ButleryIcon(ButleryIcons.check, color: cs.onSurface)
-                      : null,
+                  title: ShoppingCategory.displayName(category),
+                  selected: isSelected,
+                  showCheck: true,
                   onTap: isSelected ? null : () => onCategorySelected(category),
                 );
               },

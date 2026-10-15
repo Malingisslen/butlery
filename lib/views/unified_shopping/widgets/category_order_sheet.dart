@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
@@ -79,21 +82,17 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.space16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      context.l10n.shoppingCategoryOrderTitle,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ),
-                  if (widget.onReset != null)
-                    TextButton(
-                      onPressed: _reset,
-                      child: Text(context.l10n.shoppingResetOrder),
-                    ),
-                ],
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.space8,
+              ),
+              child: ButlerySheetHeader(
+                title: context.l10n.shoppingCategoryOrderTitle,
+                trailing: widget.onReset == null
+                    ? null
+                    : ButleryTextButton(
+                        label: context.l10n.shoppingResetOrder,
+                        onPressed: _reset,
+                      ),
               ),
             ),
             Expanded(
@@ -127,9 +126,11 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
               padding: const EdgeInsets.all(AppDimensions.space16),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.shoppingSaveOrder,
+                  isExpanded: true,
                   onPressed: _save,
-                  child: Text(context.l10n.shoppingSaveOrder),
                 ),
               ),
             ),
@@ -157,7 +158,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(color: cs.outlineVariant),
       ),
-      child: ListTile(
+      child: ButleryItemRow(
         leading: Container(
           width: 24,
           height: 24,
@@ -166,10 +167,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           ),
         ),
-        title: Text(
-          ShoppingCategory.displayName(category),
-          style: AppTextStyles.contentTitle,
-        ),
+        title: ShoppingCategory.displayName(category),
         trailing: ReorderableDragStartListener(
           index: index,
           child: ButleryIcon(

@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -71,14 +72,12 @@ class VeckomenyPromptRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (hasText && showClear)
-                  IconButton(
-                    icon: ButleryIcon(
-                      ButleryIcons.x,
-                      size: AppDimensions.iconSizeM,
-                      color: cs.onSurfaceVariant,
-                    ),
+                  AppIconButton(
+                    icon: ButleryIcons.x,
+                    color: cs.onSurfaceVariant,
+                    iconSize: AppDimensions.iconSizeM,
+                    semanticLabel: l10n.commonClear,
                     onPressed: onClear,
-                    tooltip: l10n.commonClear,
                   ),
                 // Voice prompt (kb-whisper plan): push-to-talk mic — the
                 // transcript lands editable in this same field.

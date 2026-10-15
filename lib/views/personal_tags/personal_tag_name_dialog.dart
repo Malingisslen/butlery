@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
-import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/field_text_style.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// The one-field name dialog behind creating a tag, creating a group and
 /// renaming a group.
@@ -79,27 +78,25 @@ class _PersonalTagNameDialogState extends State<PersonalTagNameDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
+    return ButleryDialog(
+      title: widget.title,
+      scrollable: false,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LabeledField(
+            StyledInput(
               label: widget.fieldLabel,
-              child: TextField(
-                controller: _controller,
-                style: fieldTextStyle(context, enabled: !_busy),
-                enabled: !_busy,
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(hintText: widget.hint),
-                onChanged: (_) {
-                  if (_error != null) setState(() => _error = null);
-                },
-                onSubmitted: (_) => _busy ? null : _confirm(),
-              ),
+              hint: widget.hint,
+              controller: _controller,
+              enabled: !_busy,
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+              onChanged: (_) {
+                if (_error != null) setState(() => _error = null);
+              },
+              onSubmitted: (_) => _busy ? null : _confirm(),
             ),
             if (_error != null) ...[
               const SizedBox(height: AppDimensions.space8),
@@ -113,23 +110,11 @@ class _PersonalTagNameDialogState extends State<PersonalTagNameDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
-        BusyButtonSemantics(
+        DialogCancelButton(enabled: !_busy),
+        ButleryDialogPrimary(
+          label: widget.confirmLabel,
           busy: _busy,
-          name: widget.confirmLabel,
-          child: FilledButton(
-            style: _busy
-                ? PlateLineButton.busyStyle(
-                    null,
-                    Theme.of(context).filledButtonTheme.style,
-                  )
-                : null,
-            onPressed: _busy ? PlateLineButton.ignore : _confirm,
-            child: Text(widget.confirmLabel),
-          ),
+          onPressed: _confirm,
         ),
       ],
     );
