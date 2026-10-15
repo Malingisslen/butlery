@@ -254,7 +254,7 @@ final taskHosts = <String, StateHost>{
       await tester.enterText(fields.at(1), 'malin@example.com');
       await tester.pump();
       final button = find.widgetWithText(
-        FilledButton,
+        ElevatedButton,
         sv.accountSecurityChangeEmail,
       );
       // Bring the button up only to the bottom edge: lifted to the top, it
