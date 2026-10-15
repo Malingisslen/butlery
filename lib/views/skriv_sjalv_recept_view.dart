@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/recipe/recipe_form/save_blocked_hint.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
@@ -43,7 +44,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -425,67 +425,18 @@ class _SkrivSjalvReceptViewContentState
                       // Parse quality warning for imported recipes
                       if (viewModel.needsReview && _showQualityWarning)
                         _buildQualityWarningBanner(context, viewModel),
-                      // Meal type - Custom layout to fix text cutoff
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.recipeMealType,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 4.0,
-                          ), // Minimal gap between label and dropdown
-                          // BUT-1845: items and initialValue must come from
-                          // ONE read of the stored value — the dropdown's
-                          // constructor assert re-checks the match on every
-                          // build.
-                          PressFill(
-                            surface: PressSurface.base,
-                            child: DropdownButtonFormField<String>(
-                              icon: const ButleryIcon(
-                                ButleryIcons.chevronDown,
-                              ),
-                              iconEnabledColor: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                              iconDisabledColor: AppModeColors.textDisabled(
-                                Theme.of(context).brightness,
-                              ),
-                              initialValue: mealTypeOptions.selected,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.space16,
-                                  vertical: AppDimensions.space12,
-                                ),
-                                border: OutlineInputBorder(),
-                              ),
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface,
-                              ),
-                              items: mealTypeOptions.values
-                                  .map(
-                                    (mt) => DropdownMenuItem(
-                                      value: mt,
-                                      child: Text(mt),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  viewModel.setMealType(value);
-                                }
-                              },
-                            ),
-                          ),
+                      // BUT-1845: options and value must come from ONE read of the
+                      // stored value — the dropdown's constructor assert re-checks the
+                      // match on every build.
+                      ButleryDropdown<String>(
+                        label: context.l10n.recipeMealType,
+                        semanticLabel: context.l10n.recipeMealType,
+                        value: mealTypeOptions.selected,
+                        options: [
+                          for (final mt in mealTypeOptions.values)
+                            ButleryDropdownOption<String>(value: mt, label: mt),
                         ],
+                        onChanged: viewModel.setMealType,
                       ),
                       const SizedBox(height: AppDimensions.space32),
 

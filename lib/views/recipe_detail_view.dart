@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/buttons/butlery_ink_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -1483,32 +1484,14 @@ class _RecipeActionBar extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
-    // The ink button. Light: the theme's ink fill (Skarmar v12 del 1
-    // 'Receptdetalj', background:#24382c). Dark: no fill, a 1.5 px paper
-    // outline and paper text (Skarmar v12 del 1 'Receptdetalj — mörkt
-    // läge', border:1.5px solid #f5f4ed), since ink on #17251D does not
-    // read as a button. cs.onSurface is paper #F5F4ED in the dark scheme
-    // (app_colors.dart:334). Q4-02: "Börja laga" on someone else's recipe
-    // is this button too (interpretation: etapp 11 draws that bar in light
-    // only; dark follows the own recipe's ink button).
-    final isDark = cs.brightness == Brightness.dark;
-    final ButtonStyle? inkStyle = isDark
-        ? FilledButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            foregroundColor: cs.onSurface,
-            side: BorderSide(color: cs.onSurface, width: 1.5),
-          )
-        : null;
-
     final startCooking = Semantics(
       identifier: 'btn-start-cooking',
       button: true,
       child: isOthersRecipe
-          ? FilledButton(
+          ? ButleryInkButton(
               key: const ValueKey('test-recipe-detail-start-cooking'),
-              style: inkStyle,
+              label: l10n.recipeStartCookingTooltip,
               onPressed: onStartCooking,
-              child: Text(l10n.recipeStartCookingTooltip),
             )
           : HeroButton(
               key: const ValueKey('test-recipe-detail-start-cooking'),
@@ -1555,11 +1538,10 @@ class _RecipeActionBar extends StatelessWidget {
                 ),
               ),
             )
-          : FilledButton(
+          : ButleryInkButton(
               key: const ValueKey('test-recipe-detail-add-to-list'),
-              style: inkStyle,
+              label: addToShoppingListLabel,
               onPressed: onAddToShoppingList,
-              child: Text(addToShoppingListLabel),
             );
     }
 
