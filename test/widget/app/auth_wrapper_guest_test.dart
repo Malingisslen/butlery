@@ -37,9 +37,12 @@ class _MockProfileVm extends Mock implements ProfileViewModel {}
 class _MockAge extends Mock implements AgeVerificationService {}
 
 class _FakeUser extends Fake implements User {
-  _FakeUser({required this.isAnonymous, this.created});
+  _FakeUser({required this.isAnonymous, this.created, this.noAddress = false});
 
   final DateTime? created;
+
+  // A provider account that came without an address (BUT-916 C2).
+  final bool noAddress;
 
   @override
   final bool isAnonymous;
@@ -48,10 +51,10 @@ class _FakeUser extends Fake implements User {
   String get uid => 'uid-guest';
 
   @override
-  String? get email => isAnonymous ? null : 'alice@example.se';
+  String? get email => isAnonymous || noAddress ? null : 'alice@example.se';
 
   @override
-  bool get emailVerified => false;
+  bool get emailVerified => noAddress;
 
   // Created after the verification gate's cut-off, so only the anonymous
   // exemption can keep this account out of the gate.
@@ -66,9 +69,13 @@ class _FakeAuth extends Fake with ChangeNotifier implements AuthService {
   _FakeAuth(this._user);
 
   final User _user;
+  int signOuts = 0;
 
   @override
   User? get currentUser => _user;
+
+  @override
+  Future<void> signOut() async => signOuts++;
 }
 
 class _FakeUsers extends Fake with ChangeNotifier implements UserService {
@@ -187,10 +194,12 @@ void main() {
   late _FakeUsers users;
   late _FakeGuestStart guestStart;
   late _MockAge age;
+  late _FakeAuth auth;
 
   Future<void> setUpWrapper({
     required bool anonymous,
     DateTime? created,
+    bool noAddress = false,
   }) async {
     SharedPreferences.setMockInitialValues({});
     users = _FakeUsers();
@@ -206,9 +215,12 @@ void main() {
     when(() => deletion.scheduledDeletionAt()).thenAnswer((_) async => null);
     final container = DIContainer();
     await container.reset();
+    auth = _FakeAuth(
+      _FakeUser(isAnonymous: anonymous, created: created, noAddress: noAddress),
+    );
     container.registerModule(
       _Module(
-        auth: _FakeAuth(_FakeUser(isAnonymous: anonymous, created: created)),
+        auth: auth,
         users: users,
         deletion: deletion,
         guestStart: guestStart,
@@ -266,6 +278,45 @@ void main() {
 
       expect(find.text(_sv.emailVerificationTitle), findsOneWidget);
       expect(find.text(_sv.commonRetry), findsNothing);
+    });
+  });
+
+  group('profile load error', () {
+    testWidgets('an account without an address can sign out from the retry '
+        'view', (tester) async {
+      await setUpWrapper(anonymous: false, noAddress: true);
+      users.failed = true;
+
+      await pumpHost(tester);
+      await tester.tap(find.text(_sv.profileLogout));
+      await tester.pump();
+
+      expect(auth.signOuts, 1);
+    });
+
+    testWidgets('control: an account with an address is not offered '
+        'sign-out', (tester) async {
+      await setUpWrapper(
+        anonymous: false,
+        noAddress: false,
+        created: DateTime(2020),
+      );
+      users.failed = true;
+
+      await pumpHost(tester);
+
+      expect(find.text(_sv.commonRetry), findsOneWidget);
+      expect(find.text(_sv.profileLogout), findsNothing);
+    });
+
+    testWidgets('control: a guest is never offered sign-out', (tester) async {
+      await setUpWrapper(anonymous: true);
+      users.failed = true;
+
+      await pumpHost(tester);
+
+      expect(find.text(_sv.commonRetry), findsOneWidget);
+      expect(find.text(_sv.profileLogout), findsNothing);
     });
   });
 
