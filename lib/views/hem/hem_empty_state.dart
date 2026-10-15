@@ -16,6 +16,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -156,16 +157,14 @@ class HemEmptyState extends StatelessWidget {
           ),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
+            child: ButleryTextButton(
               key: allergyLinkKey,
-              style: TextButton.styleFrom(
-                foregroundColor: context.modeColors.textLink,
-              ),
+              tone: ButleryTextButtonTone.link,
               onPressed: () =>
                   Navigator.pushNamed(context, Routes.settingsAllergens),
-              iconAlignment: IconAlignment.end,
-              icon: const ButleryIcon(ButleryIcons.chevronRight),
-              label: Text(l10n.hemEmptyAllergyLink),
+              icon: ButleryIcons.chevronRight,
+              iconAtEnd: true,
+              label: l10n.hemEmptyAllergyLink,
             ),
           ),
         ],

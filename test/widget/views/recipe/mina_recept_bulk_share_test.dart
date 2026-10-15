@@ -58,6 +58,7 @@ void main() {
     when(() => viewModel.pantryMatches).thenReturn(const {});
     when(() => viewModel.pooledStats).thenReturn(const {});
     when(() => viewModel.allSelected).thenReturn(false);
+    when(() => viewModel.matchingCount).thenReturn(0);
     when(() => viewModel.recipes).thenReturn([recipe('r1'), recipe('r2')]);
     when(() => viewModel.selectedRecipes).thenReturn([recipe('r1')]);
   });

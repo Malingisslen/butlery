@@ -70,6 +70,7 @@ Widget _pinnedLibrary({required bool libraryEmpty}) {
   final library = _MockRecipeListViewModel();
   when(() => library.isSelectionMode).thenReturn(false);
   when(() => library.selectedCount).thenReturn(0);
+  when(() => library.allSelected).thenReturn(false);
   when(() => library.recipes).thenReturn(recipes);
   when(() => library.libraryTotal).thenReturn(recipes.length);
   when(() => library.matchingCount).thenReturn(recipes.length);
