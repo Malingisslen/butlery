@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -59,20 +60,24 @@ class FamilyAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = AppTextStyles.bodyBold.copyWith(color: Colors.white);
+    final label = Text(
+      initials ?? initialsFor(name),
+      // A small face keeps its letters inside the circle.
+      style: round && size < 32 ? style.copyWith(fontSize: size * 0.42) : style,
+    );
+    if (round) {
+      return ButleryDisc(
+        size: size,
+        color: color,
+        child: Center(child: label),
+      );
+    }
     return Container(
       width: size,
       height: size,
-      decoration: round
-          ? BoxDecoration(color: color, shape: BoxShape.circle)
-          : BoxDecoration(color: color),
+      decoration: BoxDecoration(color: color),
       alignment: Alignment.center,
-      child: Text(
-        initials ?? initialsFor(name),
-        // A small face keeps its letters inside the circle.
-        style: round && size < 32
-            ? style.copyWith(fontSize: size * 0.42)
-            : style,
-      ),
+      child: label,
     );
   }
 }

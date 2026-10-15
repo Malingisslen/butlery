@@ -26,6 +26,7 @@ import 'package:butlery/services/unified/operations/list_invitation_operations.d
 import 'package:butlery/views/unified_shopping/widgets/dialogs/pending_invitees_section.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Comprehensive member management dialog for collaborative shopping list administration
 class ShoppingMemberManagementDialog extends StatefulWidget {
@@ -363,13 +364,10 @@ class _ShoppingMemberManagementDialogState
             const SizedBox(height: AppDimensions.space8),
             Expanded(
               flex: 2,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: cs.outlineVariant),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
+              child: ButleryOutlinedBox(
+                paintOnly: true,
+                borderColor: cs.outlineVariant,
+                radius: AppDimensions.radiusControl,
                 child: ListView.builder(
                   itemCount: allMembers.length,
                   itemBuilder: (context, index) {
@@ -422,13 +420,10 @@ class _ShoppingMemberManagementDialogState
             const SizedBox(height: AppDimensions.space8),
             Expanded(
               flex: 1,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: cs.outlineVariant),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                ),
+              child: ButleryOutlinedBox(
+                paintOnly: true,
+                borderColor: cs.outlineVariant,
+                radius: AppDimensions.radiusControl,
                 child: _filteredFriends.isEmpty
                     ? Center(
                         child: Text(

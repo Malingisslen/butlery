@@ -10,6 +10,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Bottom sheet for reordering shopping list categories via drag handles.
 class CategoryOrderSheet extends StatefulWidget {
@@ -147,16 +148,14 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
     Color color,
     int index,
   ) {
-    return Container(
+    return ButleryOutlinedBox(
       key: ValueKey(category),
+      color: cs.surfaceContainerHighest,
+      borderColor: cs.outlineVariant,
+      radius: AppDimensions.radiusControl,
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
         vertical: AppDimensions.space4,
-      ),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.outlineVariant),
       ),
       child: ButleryItemRow(
         leading: Container(

@@ -1,5 +1,6 @@
 // lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart
 
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -106,15 +107,11 @@ class CollaborativeConnectionWidgets {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: isOnline
-                ? (onlineColor ?? context.modeColors.success)
-                : (offlineColor ?? cs.error),
-            shape: BoxShape.circle,
-          ),
+        return ButleryDisc(
+          size: size,
+          color: isOnline
+              ? (onlineColor ?? context.modeColors.success)
+              : (offlineColor ?? cs.error),
         );
       },
     );

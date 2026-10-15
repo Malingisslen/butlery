@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/guest/guest_builder.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Hem's "Har någon i hushållet allergier?" card, for a guest who has not yet
 /// opened the allergen settings or closed it.
@@ -68,12 +69,10 @@ class _CardState extends State<_Card> {
     if (!_visible) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        border: Border.all(color: cs.outlineVariant),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      color: cs.surfaceContainerHighest,
+      borderColor: cs.outlineVariant,
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
           start: AppDimensions.space16,

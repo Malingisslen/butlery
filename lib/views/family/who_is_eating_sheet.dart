@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -356,14 +357,10 @@ class _FaceStack extends StatelessWidget {
             for (var i = 0; i < shown.length; i++)
               PositionedDirectional(
                 start: i * step,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 2,
-                    ),
-                  ),
+                child: ButleryDisc(
+                  paintOnly: true,
+                  borderColor: Theme.of(context).colorScheme.surface,
+                  borderWidth: 2,
                   child: FamilyAvatar(
                     name: shown[i].displayName,
                     initials: initials[i],

@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -198,13 +199,11 @@ class _AddPageTile extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          child: Container(
+          child: ButleryOutlinedBox(
             height: height,
             width: width,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(color: color),
-            ),
+            borderColor: color,
+            radius: AppDimensions.radiusControl,
             child: Center(
               child: ButleryIcon(ButleryIcons.plus, color: color),
             ),

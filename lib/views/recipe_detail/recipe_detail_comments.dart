@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -133,12 +134,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
-              child: Container(
+              child: ButleryOutlinedBox(
                 padding: const EdgeInsets.all(AppDimensions.space16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cs.outlineVariant),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-                ),
+                borderColor: cs.outlineVariant,
                 child: Row(
                   children: [
                     ButleryIcon(
@@ -367,12 +365,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   Widget _buildCommentsSection(BuildContext context, SocialRecipeViewModel vm) {
     final cs = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      color: cs.surfaceContainerHighest,
+      radius: AppDimensions.radiusCard,
+      borderColor: cs.outlineVariant,
       child: Column(
         children: [
           // Comment form - uses extracted widget

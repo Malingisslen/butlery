@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/shared/group_dialog_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -71,15 +72,11 @@ class EmojiSelector extends StatelessWidget {
         // The horizontal scroll keeps the picker accessible regardless.
         MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1.3,
-          child: Container(
+          child: ButleryOutlinedBox(
             height: 60,
             padding: const EdgeInsets.all(AppDimensions.space4),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            ),
+            borderColor: Theme.of(context).colorScheme.outline,
+            radius: AppDimensions.radiusControl,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: GroupEmojiConstants.availableEmojis.length,
@@ -93,26 +90,20 @@ class EmojiSelector extends StatelessWidget {
                   selected: isSelected,
                   child: GestureDetector(
                     onTap: () => onEmojiSelected(emoji),
-                    child: Container(
+                    child: ButleryOutlinedBox(
                       width: AppDimensions.minTouchTarget,
                       height: AppDimensions.minTouchTarget,
                       margin: const EdgeInsetsDirectional.only(
                         end: AppDimensions.space4,
                       ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : null,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusControl,
-                        ),
-                        border: isSelected
-                            ? Border.all(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                width: 2,
-                              )
-                            : null,
-                      ),
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : null,
+                      radius: AppDimensions.radiusControl,
+                      borderColor: isSelected
+                          ? Theme.of(context).colorScheme.onSurface
+                          : null,
+                      borderWidth: 2,
                       child: Center(
                         child: Text(
                           emoji,

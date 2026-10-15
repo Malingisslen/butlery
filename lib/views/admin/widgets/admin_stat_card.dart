@@ -4,6 +4,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// A summary stat card used across the admin dashboard tabs: a small label in
 /// capitals over a big value, as the drawn admin panel sets it.
@@ -28,12 +29,9 @@ class AdminStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: BoxDecoration(
-        border: Border.all(color: cs.outlineVariant),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
+      borderColor: cs.outlineVariant,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

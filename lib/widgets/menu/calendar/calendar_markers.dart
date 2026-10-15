@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 const double _kDotSize = 8;
 
@@ -27,12 +28,10 @@ class CalendarNewDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: context.l10n.weeklyMenuNewMark,
-      child: DecoratedBox(
+      child: ButleryDisc(
+        paintOnly: true,
         key: dotKey,
-        decoration: BoxDecoration(
-          color: context.modeColors.success,
-          shape: BoxShape.circle,
-        ),
+        color: context.modeColors.success,
         child: const SizedBox.square(dimension: _kDotSize),
       ),
     );
@@ -164,11 +163,9 @@ class CalendarLegend extends StatelessWidget {
         children: [
           if (showNew)
             entry(
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: context.modeColors.success,
-                  shape: BoxShape.circle,
-                ),
+              ButleryDisc(
+                paintOnly: true,
+                color: context.modeColors.success,
                 child: const SizedBox.square(dimension: _kDotSize),
               ),
               l10n.weeklyMenuLegendNew,

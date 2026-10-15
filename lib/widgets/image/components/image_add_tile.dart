@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// The tile that adds an image to the picker, shown while it has none
 class ImageAddTile extends StatelessWidget {
@@ -24,15 +26,11 @@ class ImageAddTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        border: Border.all(
-          color: cs.outlineVariant,
-          style: BorderStyle.solid,
-        ),
-        color: cs.surfaceContainerHighest,
-      ),
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      color: cs.surfaceContainerHighest,
+      borderColor: cs.outlineVariant,
+      borderRadius: borderRadius,
       child: Material(
         color: Colors.transparent,
         // The scroll view splits the visible texts into their own nodes, so
@@ -93,16 +91,15 @@ class ImageAddTile extends StatelessWidget {
       Builder(
         builder: (context) {
           final cs = Theme.of(context).colorScheme;
-          return Container(
-            padding: const EdgeInsets.all(AppDimensions.space12),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: cs.surface,
-            ),
-            child: ButleryIcon(
-              ButleryIcons.camera,
-              size: AppDimensions.iconSizeXl,
-              color: cs.onSurface,
+          return ButleryDisc(
+            color: cs.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.space12),
+              child: ButleryIcon(
+                ButleryIcons.camera,
+                size: AppDimensions.iconSizeXl,
+                color: cs.onSurface,
+              ),
             ),
           );
         },

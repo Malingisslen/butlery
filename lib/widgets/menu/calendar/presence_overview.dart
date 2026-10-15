@@ -18,6 +18,7 @@ import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 class PresenceOverview extends StatelessWidget {
   final List<HouseholdRosterMember> roster;
@@ -272,14 +273,10 @@ class _AwayFaces extends StatelessWidget {
             for (var i = 0; i < shown.length; i++)
               PositionedDirectional(
                 start: i * step,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 2,
-                    ),
-                  ),
+                child: ButleryDisc(
+                  paintOnly: true,
+                  borderColor: Theme.of(context).colorScheme.surface,
+                  borderWidth: 2,
                   child: FamilyAvatar(
                     name: shown[i].displayName,
                     color: parseAvatarColor(context, shown[i].avatarColor),

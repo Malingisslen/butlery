@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -43,18 +44,13 @@ class PlatformBadgeWidget extends StatelessWidget {
         AppMotion.micro,
       ),
       opacity: isVisible ? 1.0 : 0.0,
-      child: Container(
+      child: ButleryOutlinedBox(
+        color: colorScheme.surfaceContainerHighest,
+        borderColor: colorScheme.outlineVariant,
+        radius: AppDimensions.radiusPill,
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.space12,
           vertical: AppDimensions.space4,
-        ),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-          border: Border.all(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

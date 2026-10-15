@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
@@ -621,13 +622,11 @@ class _ConditionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      color: cs.surface,
+      radius: AppDimensions.radiusControl,
+      borderColor: cs.outlineVariant,
       child: Column(
         children: [
           Row(

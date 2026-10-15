@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// The current step as Skarmar v12 del 1 #lagastaende draws it: a step
 /// header with a progress line, the step text with its time as a saffron pill, and
@@ -53,15 +54,10 @@ class CookingStepCard extends StatelessWidget {
       fontSize: AppTextStyles.titleLarge.fontSize! * fontScale,
     );
 
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      decoration: dark
-          ? BoxDecoration(
-              color: AppModeColors.surfaceRaisedOnInk(),
-              border: Border.all(color: AppModeColors.borderOnInk()),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            )
-          : null,
+      color: dark ? AppModeColors.surfaceRaisedOnInk() : null,
+      borderColor: dark ? AppModeColors.borderOnInk() : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

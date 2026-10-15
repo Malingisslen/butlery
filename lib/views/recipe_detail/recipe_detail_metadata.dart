@@ -22,6 +22,7 @@ import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -360,12 +361,10 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yPooledHouseholdPill,
-      child: Container(
+      child: ButleryOutlinedBox(
         padding: AppDimensions.badgePadding,
-        decoration: BoxDecoration(
-          border: Border.all(color: cs.outlineVariant),
-          borderRadius: BorderRadius.zero,
-        ),
+        borderColor: cs.outlineVariant,
+        borderRadius: BorderRadius.zero,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:
 /// a required guardian consent for a minor (Art. 6) and a *separate, optional*
@@ -280,21 +281,15 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                   onTap: () => setState(() => _color = hex),
                   // The ring stands off the swatch, so the picked one reads
                   // as picked without hiding its colour.
-                  child: Container(
+                  child: ButleryOutlinedBox(
                     width: AppDimensions.minTouchTarget,
                     height: AppDimensions.minTouchTarget,
                     padding: const EdgeInsets.all(AppDimensions.space4),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _color == hex
-                            ? cs.onSurface
-                            : Colors.transparent,
-                        width: AppDimensions.borderWidthThick,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
+                    borderColor: _color == hex
+                        ? cs.onSurface
+                        : Colors.transparent,
+                    borderWidth: AppDimensions.borderWidthThick,
+                    radius: AppDimensions.radiusControl,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: parseAvatarColor(context, hex),

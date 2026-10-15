@@ -25,6 +25,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// View for creating new group conversations: a name, the friends to invite
 /// (at least two) and one saffron "Skapa konversation".
@@ -374,14 +375,12 @@ class _CheckBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       width: 24,
       height: 24,
-      decoration: BoxDecoration(
-        color: checked ? cs.primary : null,
-        borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
-        border: Border.all(color: checked ? cs.primary : cs.outline),
-      ),
+      color: checked ? cs.primary : null,
+      borderColor: checked ? cs.primary : cs.outline,
+      radius: AppDimensions.checkboxRadius,
       child: checked
           ? ButleryIcon(
               ButleryIcons.check,

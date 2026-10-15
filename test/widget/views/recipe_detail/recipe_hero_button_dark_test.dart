@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
@@ -84,10 +85,11 @@ Color _icon(WidgetTester tester) =>
     tester.widget<ButleryIcon>(find.byType(ButleryIcon)).color!;
 
 Color _ring(WidgetTester tester) {
-  final ring = tester.widget<Container>(
-    find.byKey(const ValueKey('recipe-detail-paper-ring')),
-  );
-  return (ring.decoration! as BoxDecoration).color!;
+  return tester
+      .widget<ButleryDisc>(
+        find.byKey(const ValueKey('recipe-detail-paper-ring')),
+      )
+      .color!;
 }
 
 void main() {

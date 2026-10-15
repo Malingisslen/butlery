@@ -12,6 +12,7 @@ import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/shopping/shopping_row.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Static API surface for shopping item tiles.
 ///
@@ -179,13 +180,11 @@ class _PriorityDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 8,
-      height: 8,
-      margin: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
+      child: ButleryDisc(
+        size: 8,
         color: priority >= 4 ? cs.onSurface : cs.onSurfaceVariant,
-        shape: BoxShape.circle,
       ),
     );
   }

@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -202,16 +203,10 @@ class UserAvatarWidgets {
                       borderRadius: BorderRadius.circular(
                         AppDimensions.radiusPill,
                       ),
-                      child: Container(
-                        width: AppDimensions.iconSizeXl,
-                        height: AppDimensions.iconSizeXl,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: cs.onPrimary,
-                            width: AppDimensions.borderWidthThick,
-                          ),
-                        ),
+                      child: ButleryDisc(
+                        size: AppDimensions.iconSizeXl,
+                        borderColor: cs.onPrimary,
+                        borderWidth: AppDimensions.borderWidthThick,
                         child: ButleryIcon(
                           ButleryIcons.pencil,
                           size: AppDimensions.iconSizeM,

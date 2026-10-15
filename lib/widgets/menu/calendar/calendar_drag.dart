@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 const double _kDragFeedbackWidth = 110;
 
@@ -53,14 +54,12 @@ Widget wrapAsDraggable({
   final feedback = Material(
     elevation: 4,
     borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-    child: Container(
-      width: _kDragFeedbackWidth,
+    child: ButleryOutlinedBox(
+      color: cs.surface,
+      borderColor: cs.onSurface,
+      radius: AppDimensions.radiusControl,
       padding: const EdgeInsets.all(AppDimensions.space4),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.onSurface),
-      ),
+      width: _kDragFeedbackWidth,
       child: Text(
         label.toLowerCase(),
         style: AppTextStyles.labelSmall.copyWith(
@@ -127,12 +126,12 @@ Widget wrapAsDropTarget({
     builder: (context, candidate, rejected) {
       if (candidate.isEmpty) return child;
       final cs = Theme.of(context).colorScheme;
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(color: cs.secondary, width: 2),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          color: cs.secondary.withValues(alpha: AppOpacity.onPaper04),
-        ),
+      return ButleryOutlinedBox(
+        paintOnly: true,
+        color: cs.secondary.withValues(alpha: AppOpacity.onPaper04),
+        borderColor: cs.secondary,
+        borderWidth: 2,
+        radius: AppDimensions.radiusControl,
         child: child,
       );
     },

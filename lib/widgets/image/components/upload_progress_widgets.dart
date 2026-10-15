@@ -11,6 +11,7 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Provides upload progress UI components for image editing.
 class UploadProgressWidgets {
@@ -412,13 +413,9 @@ class UploadProgressWidgets {
   /// glyph (B102), one look for every state so the glyph alone says which state
   /// it is.
   static Widget _stateCircle(BuildContext context, IconData icon) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppModeColors.surfacePaperOnPhoto(),
-      ),
+    return ButleryDisc(
+      size: 60,
+      color: AppModeColors.surfacePaperOnPhoto(),
       child: ButleryIcon(
         icon,
         color: Theme.of(context).colorScheme.primary,

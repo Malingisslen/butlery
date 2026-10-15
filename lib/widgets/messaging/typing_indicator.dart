@@ -1,6 +1,7 @@
 // lib/widgets/messaging/typing_indicator.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -120,13 +121,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
         child: Row(
           children: [
             // Avatar placeholder
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
-                shape: BoxShape.circle,
-              ),
+            ButleryDisc(
+              size: 32,
+              color: cs.surfaceContainerHighest,
               child: Center(
                 child: ButleryIcon(
                   ButleryIcons.ellipsis,
@@ -190,13 +187,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
   Widget _buildDot(int index, ColorScheme cs) {
     // Show static dots when reduced motion is enabled
     if (_reduceMotion) {
-      return Container(
-        width: 4,
-        height: 4,
-        decoration: BoxDecoration(
-          color: cs.onSurfaceVariant,
-          shape: BoxShape.circle,
-        ),
+      return ButleryDisc(
+        size: 4,
+        color: cs.onSurfaceVariant,
       );
     }
 
@@ -210,13 +203,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
         );
         final opacity = (Curves.easeInOut.transform(progress) * 0.8 + 0.2);
 
-        return Container(
-          width: 4,
-          height: 4,
-          decoration: BoxDecoration(
-            color: cs.onSurfaceVariant.withValues(alpha: opacity),
-            shape: BoxShape.circle,
-          ),
+        return ButleryDisc(
+          size: 4,
+          color: cs.onSurfaceVariant.withValues(alpha: opacity),
         );
       },
     );

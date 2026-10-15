@@ -16,6 +16,7 @@ import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 class InlineTimerText extends StatelessWidget {
   /// The full instruction line.
@@ -120,17 +121,15 @@ class InlineTimerText extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onTimerTap(match),
-          child: Container(
+          child: ButleryOutlinedBox(
+            color: chipFill ?? cs.surfaceContainerHighest,
+            border: pillChip ? null : Border.all(color: accent),
+            borderRadius: pillChip
+                ? BorderRadius.circular(AppDimensions.radiusPill)
+                : BorderRadius.zero,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
               vertical: AppDimensions.space4,
-            ),
-            decoration: BoxDecoration(
-              border: pillChip ? null : Border.all(color: accent),
-              borderRadius: pillChip
-                  ? BorderRadius.circular(AppDimensions.radiusPill)
-                  : null,
-              color: chipFill ?? cs.surfaceContainerHighest,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

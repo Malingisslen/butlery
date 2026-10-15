@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Set of currently-active quick-filter chip IDs (time / dietary /
 /// favorites / pantry / allergen).
@@ -106,19 +107,15 @@ class MinaReceptSortChip extends StatelessWidget {
           sortAscending: viewModel.sortAscending,
         ),
         child: ButleryControlFocus.box(
-          child: Container(
+          child: ButleryOutlinedBox(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space16,
               vertical: AppDimensions.space8,
             ),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              border: Border.all(
-                color: cs.outlineVariant,
-                width: 1.5,
-              ),
-            ),
+            color: cs.surfaceContainerHighest,
+            borderColor: cs.outlineVariant,
+            borderWidth: 1.5,
+            radius: AppDimensions.radiusPill,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -57,6 +57,7 @@ import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/state/butlery_section_state.dart';
 import 'package:butlery/widgets/guest/guest_hem_intro.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// The greeting for the hour of [now] (produktregler.md:278): 05–11 "God
 /// morgon", 11–17 "Hej", 17–22 "God kväll", 22–05 "God natt".
@@ -318,14 +319,7 @@ class HemTonightCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        color: cs.secondary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    ButleryDisc(size: 7, color: cs.secondary),
                     const SizedBox(width: 7),
                     Expanded(
                       child: Text(

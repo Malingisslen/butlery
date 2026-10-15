@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/image/components/upload_progress_widgets.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 class ImageTileRow extends StatelessWidget {
   const ImageTileRow({
@@ -249,13 +250,11 @@ class _AddTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: radius,
-          child: Container(
+          child: ButleryOutlinedBox(
+            borderColor: cs.outlineVariant,
+            borderRadius: radius,
             width: ImageTileRow._tile,
             height: ImageTileRow._tile,
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              border: Border.all(color: cs.outlineVariant),
-            ),
             child: Center(
               child: isAdding
                   // The plate line, not a spinner (Grafisk manual v6:209).

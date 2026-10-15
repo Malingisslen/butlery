@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_participants_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -31,13 +32,11 @@ class CollaborativeParticipantsWidgets {
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
               2,
-              (index) => Container(
-                width: avatarSize,
-                height: avatarSize,
-                margin: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
-                decoration: BoxDecoration(
+              (index) => Padding(
+                padding: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
+                child: ButleryDisc(
+                  size: avatarSize,
                   color: Theme.of(context).colorScheme.surface,
-                  shape: BoxShape.circle,
                 ),
               ),
             ),
@@ -107,17 +106,10 @@ class CollaborativeParticipantsWidgets {
           Builder(
             builder: (context) {
               final cs = Theme.of(context).colorScheme;
-              return Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: cs.onSurface,
-                    width: 1,
-                  ),
-                ),
+              return ButleryDisc(
+                size: size,
+                color: cs.surface,
+                borderColor: cs.onSurface,
                 child: Center(
                   child: Text(
                     '+$remaining',

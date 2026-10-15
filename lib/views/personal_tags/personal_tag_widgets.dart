@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// One tag as a row that opens the tag's page; in selection mode it toggles.
 class PersonalTagRow extends StatelessWidget {
@@ -155,11 +156,7 @@ class _TagDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExcludeSemantics(
-      child: Container(
-        width: AppDimensions.space12,
-        height: AppDimensions.space12,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      ),
+      child: ButleryDisc(size: AppDimensions.space12, color: color),
     );
   }
 }

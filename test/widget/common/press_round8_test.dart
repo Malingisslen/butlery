@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -99,10 +100,11 @@ void main() {
 
   group('the paper rings on the recipe photo (R8-3 = A)', () {
     Color? ring(WidgetTester tester) {
-      final box = tester.widget<Container>(
-        find.byKey(const ValueKey('recipe-detail-paper-ring')),
-      );
-      return (box.decoration! as BoxDecoration).color;
+      return tester
+          .widget<ButleryDisc>(
+            find.byKey(const ValueKey('recipe-detail-paper-ring')),
+          )
+          .color;
     }
 
     for (final (mode, theme) in [

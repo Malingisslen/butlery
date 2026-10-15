@@ -1,6 +1,7 @@
 // lib/widgets/messaging/conversation_list_item.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -195,13 +196,9 @@ class ConversationListItem extends StatelessWidget {
 
     return Stack(
       children: [
-        Container(
-          width: _avatarSize,
-          height: _avatarSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: cs.surfaceContainerHighest,
-          ),
+        ButleryDisc(
+          size: _avatarSize,
+          color: cs.surfaceContainerHighest,
           child: conversation.isGroup
               ? _buildGroupAvatar(context)
               : _buildDirectConversationAvatar(context),
@@ -212,17 +209,11 @@ class ConversationListItem extends StatelessWidget {
           Positioned(
             bottom: AppDimensions.space4,
             right: AppDimensions.space4,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: context.modeColors.success,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.surface,
-                  width: 2,
-                ),
-              ),
+            child: ButleryDisc(
+              size: 16,
+              color: context.modeColors.success,
+              borderColor: Theme.of(context).colorScheme.surface,
+              borderWidth: 2,
             ),
           ),
       ],
@@ -232,11 +223,9 @@ class ConversationListItem extends StatelessWidget {
   Widget _buildGroupAvatar(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: cs.surfaceContainerHighest,
-      ),
+    return ButleryDisc(
+      paintOnly: true,
+      color: cs.surfaceContainerHighest,
       child: ButleryIcon(
         ButleryIcons.users,
         color: cs.onSurface,
@@ -278,13 +267,9 @@ class ConversationListItem extends StatelessWidget {
   Widget _buildUnreadIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      width: AppDimensions.space8,
-      height: AppDimensions.space8,
-      decoration: BoxDecoration(
-        color: cs.onSurface,
-        shape: BoxShape.circle,
-      ),
+    return ButleryDisc(
+      size: AppDimensions.space8,
+      color: cs.onSurface,
     );
   }
 

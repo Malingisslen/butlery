@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Avatar image widget with support for initials fallback
 class AvatarImageWidget extends StatelessWidget {
@@ -111,22 +112,17 @@ class AvatarImageWidget extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         // Main avatar container
-        Container(
+        SizedBox(
           width: dimensions.width,
           height: dimensions.height,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
+          child: ButleryDisc(
             color: config.backgroundColor ?? cs.surfaceContainerHighest,
-            border: config.borderColor != null
-                ? Border.all(
-                    color: config.borderColor!,
-                    width: config.borderWidth ?? 2.0,
-                  )
-                : null,
-          ),
-          child: ClipRRect(
-            borderRadius: config.effectiveBorderRadius,
-            child: _buildAvatarContent(context),
+            borderColor: config.borderColor,
+            borderWidth: config.borderWidth ?? 2.0,
+            child: ClipRRect(
+              borderRadius: config.effectiveBorderRadius,
+              child: _buildAvatarContent(context),
+            ),
           ),
         ),
 
@@ -142,20 +138,17 @@ class AvatarImageWidget extends StatelessWidget {
           Positioned(
             bottom: -4,
             right: -4,
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.space4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.primary,
-                border: Border.all(
+            child: ButleryDisc(
+              color: cs.primary,
+              borderColor: cs.onPrimary,
+              borderWidth: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.space4),
+                child: ButleryIcon(
+                  ButleryIcons.pencil,
+                  size: AppDimensions.iconSizeS,
                   color: cs.onPrimary,
-                  width: 2,
                 ),
-              ),
-              child: ButleryIcon(
-                ButleryIcons.pencil,
-                size: AppDimensions.iconSizeS,
-                color: cs.onPrimary,
               ),
             ),
           ),
@@ -202,19 +195,18 @@ class AvatarImageWidget extends StatelessWidget {
     final dimensions = config.getDimensions();
     final initials = _getInitials();
 
-    return Container(
+    return SizedBox(
       width: dimensions.width,
       height: dimensions.height,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
+      child: ButleryDisc(
         color: cs.surfaceContainerHighest,
-      ),
-      child: Center(
-        child: UserAvatarWidgets.initialsOrFallback(
-          initials: initials,
-          fontSize: _getFontSize(dimensions.width),
-          color: cs.onSurface,
-          baseStyle: AppTextStyles.headlineMedium,
+        child: Center(
+          child: UserAvatarWidgets.initialsOrFallback(
+            initials: initials,
+            fontSize: _getFontSize(dimensions.width),
+            color: cs.onSurface,
+            baseStyle: AppTextStyles.headlineMedium,
+          ),
         ),
       ),
     );
@@ -304,14 +296,12 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
             builder: (context) {
               final cs = Theme.of(context).colorScheme;
               return Positioned.fill(
-                child: DecoratedBox(
-                  // Uploading: an opaque raised plate with the plate line,
-                  // never a veil or a spinner (tokens.json:40-53; Grafisk
-                  // manual v6:209).
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: cs.surfaceContainerHighest,
-                  ),
+                // Uploading: an opaque raised plate with the plate line, claim-lint:ok moved unchanged with its box
+                // never a veil or a spinner (tokens.json:40-53; Grafisk claim-lint:ok moved unchanged with its box
+                // manual v6:209).
+                child: ButleryDisc(
+                  paintOnly: true,
+                  color: cs.surfaceContainerHighest,
                   child: Center(
                     child: FractionallySizedBox(
                       widthFactor: 0.6,
@@ -340,20 +330,17 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                   button: true,
                   child: GestureDetector(
                     onTap: widget.onImageRemoved,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.space4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: cs.error,
-                        border: Border.all(
+                    child: ButleryDisc(
+                      color: cs.error,
+                      borderColor: cs.surfaceContainerHighest,
+                      borderWidth: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.space4),
+                        child: ButleryIcon(
+                          ButleryIcons.x,
+                          size: AppDimensions.iconSizeS,
                           color: cs.surfaceContainerHighest,
-                          width: 2,
                         ),
-                      ),
-                      child: ButleryIcon(
-                        ButleryIcons.x,
-                        size: AppDimensions.iconSizeS,
-                        color: cs.surfaceContainerHighest,
                       ),
                     ),
                   ),

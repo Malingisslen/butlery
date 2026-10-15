@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -172,23 +173,17 @@ class _StepIndicator extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AnimatedContainer(
+        ButleryAnimatedDisc(
           duration: AnimationUtils.getDuration(
             context,
             AppMotion.micro,
           ),
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isActive
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
-            border: Border.all(
-              color: isActive ? colorScheme.onSurface : colorScheme.outline,
-              width: 2,
-            ),
-          ),
+          size: 36,
+          color: isActive
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerHighest,
+          borderColor: isActive ? colorScheme.onSurface : colorScheme.outline,
+          borderWidth: 2,
           child: Center(
             // The running step shows its number; the plate line under the
             // steps says that it runs (B-18: no spinner, beslutslogg.md:25).

@@ -12,6 +12,8 @@ import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Shared image components and utilities
 class ImageComponents {
@@ -190,21 +192,19 @@ class ImageComponents {
     return Builder(
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        return Container(
+        return ButleryOutlinedBox(
+          color: backgroundColor ?? cs.surface,
+          border: config.borderColor != null
+              ? Border.all(
+                  color: config.borderColor!,
+                  width: config.borderWidth ?? 1.0,
+                )
+              : null,
+          borderRadius: config.effectiveBorderRadius,
           width: dimensions.width == double.infinity ? null : dimensions.width,
           height: dimensions.height == double.infinity
               ? null
               : dimensions.height,
-          decoration: BoxDecoration(
-            color: backgroundColor ?? cs.surface,
-            borderRadius: config.effectiveBorderRadius,
-            border: config.borderColor != null
-                ? Border.all(
-                    color: config.borderColor!,
-                    width: config.borderWidth ?? 1.0,
-                  )
-                : null,
-          ),
           child:
               child ??
               ButleryIcon(
@@ -267,17 +267,13 @@ class ImageComponents {
         return Positioned(
           top: AppDimensions.space8,
           right: AppDimensions.space8,
-          child: Container(
+          child: ButleryOutlinedBox(
+            color: context.modeColors.overlayPaperCard,
+            borderColor: cs.outlineVariant,
+            radius: AppDimensions.radiusControl,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
               vertical: AppDimensions.badgePaddingY,
-            ),
-            decoration: BoxDecoration(
-              color: context.modeColors.overlayPaperCard,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              border: Border.all(
-                color: cs.outlineVariant,
-              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -316,17 +312,12 @@ class ImageComponents {
         return Positioned(
           top: AppDimensions.space16,
           right: AppDimensions.space16,
-          child: Container(
+          child: ButleryOutlinedBox(
+            color: context.modeColors.overlayPaperCard,
+            borderColor: cs.outlineVariant,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
               vertical: AppDimensions.space4,
-            ),
-            decoration: BoxDecoration(
-              color: context.modeColors.overlayPaperCard,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(
-                color: cs.outlineVariant,
-              ),
             ),
             child: Text(
               '${currentIndex + 1}/$totalImages',
@@ -367,24 +358,20 @@ class ImageComponents {
                 button: onDotTap != null,
                 child: GestureDetector(
                   onTap: onDotTap != null ? () => onDotTap(index) : null,
-                  child: Container(
-                    width: AppDimensions.dotSize,
-                    height: AppDimensions.dotSize,
-                    margin: const EdgeInsets.symmetric(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.space4,
                     ),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      // The current dot is ink, the others the solid
-                      // surface.selected plate (tokens.json:116-119), never
-                      // a faded one (tokens.json:40-53).
+                    // The current dot is ink, the others the solid claim-lint:ok moved unchanged with its box
+                    // surface.selected plate (tokens.json:116-119), never claim-lint:ok moved unchanged with its box
+                    // a faded one (tokens.json:40-53). claim-lint:ok moved unchanged with its box
+                    child: ButleryDisc(
+                      size: AppDimensions.dotSize,
                       color: index == currentIndex
                           ? cs.onSurface
                           : cs.surfaceContainerHighest,
-                      border: Border.all(
-                        color: cs.outlineVariant,
-                        width: AppDimensions.strokeWidth05,
-                      ),
+                      borderColor: cs.outlineVariant,
+                      borderWidth: AppDimensions.strokeWidth05,
                     ),
                   ),
                 ),
@@ -415,19 +402,11 @@ class ImageComponents {
         return Positioned(
           bottom: 0,
           right: 0,
-          child: Container(
-            width: indicatorSize,
-            height: indicatorSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isOnline
-                  ? context.modeColors.success
-                  : cs.onSurfaceVariant,
-              border: Border.all(
-                color: cs.surfaceContainerHighest,
-                width: AppDimensions.strokeWidth2,
-              ),
-            ),
+          child: ButleryDisc(
+            size: indicatorSize,
+            color: isOnline ? context.modeColors.success : cs.onSurfaceVariant,
+            borderColor: cs.surfaceContainerHighest,
+            borderWidth: AppDimensions.strokeWidth2,
           ),
         );
       },

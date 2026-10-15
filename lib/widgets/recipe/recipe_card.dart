@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -152,13 +153,11 @@ class RecipeCard extends StatelessWidget {
   BoxDecoration _restDecoration(BuildContext context, {required bool grid}) {
     final cs = Theme.of(context).colorScheme;
     if (isSelected) {
-      return BoxDecoration(
+      return ButleryOutlinedBox.decoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        border: Border.all(
-          color: cs.onSurface,
-          width: AppDimensions.borderWidthOutlinedEdge,
-        ),
+        radius: AppDimensions.radiusCard,
+        borderColor: cs.onSurface,
+        borderWidth: AppDimensions.borderWidthOutlinedEdge,
       );
     }
     if (grid) return StyledCard.decorationOf(context);
@@ -651,13 +650,11 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: context.l10n.allergenUncheckedA11y,
       excludeSemantics: true,
-      child: Container(
+      child: ButleryOutlinedBox(
         padding: AppDimensions.paddingSymmetric4x8,
-        decoration: BoxDecoration(
-          color: _chipFill(cs),
-          border: Border.all(color: cs.outlineVariant),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
+        color: _chipFill(cs),
+        borderColor: cs.outlineVariant,
+        radius: AppDimensions.radiusControl,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

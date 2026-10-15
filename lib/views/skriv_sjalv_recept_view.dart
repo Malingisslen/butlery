@@ -44,6 +44,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -922,16 +923,12 @@ class _SkrivSjalvReceptViewContentState
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.space12),
-      child: Container(
+      child: ButleryOutlinedBox(
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.space12),
-        decoration: BoxDecoration(
-          color: colors.warningContainer,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          border: Border.all(
-            color: colors.warning.withValues(alpha: AppOpacity.onPaper40),
-          ),
-        ),
+        color: colors.warningContainer,
+        borderColor: colors.warning.withValues(alpha: AppOpacity.onPaper40),
+        radius: AppDimensions.radiusControl,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

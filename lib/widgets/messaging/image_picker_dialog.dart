@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -116,18 +117,17 @@ class _SourceOption extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.space16),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppDimensions.space12),
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
-                    child: ButleryIcon(
-                      icon,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      size: AppDimensions.iconSizeL,
+                  ButleryDisc(
+                    color: color,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.space12),
+                      child: ButleryIcon(
+                        icon,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        size: AppDimensions.iconSizeL,
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space12),

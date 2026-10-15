@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Makes [tag] a cookbook, or edits it when it already is one. True when
 /// something was saved.
@@ -395,16 +396,11 @@ class _SwatchRow extends StatelessWidget {
                 child: SizedBox.square(
                   dimension: AppDimensions.minTouchTarget,
                   child: Center(
-                    child: Container(
-                      width: AppDimensions.iconSizeXl,
-                      height: AppDimensions.iconSizeXl,
-                      decoration: BoxDecoration(
-                        color: CookbookCoverPalette.color(context, key),
-                        shape: BoxShape.circle,
-                        border: key == selectedKey
-                            ? Border.all(color: cs.onSurface, width: 3)
-                            : null,
-                      ),
+                    child: ButleryDisc(
+                      size: AppDimensions.iconSizeXl,
+                      color: CookbookCoverPalette.color(context, key),
+                      borderColor: key == selectedKey ? cs.onSurface : null,
+                      borderWidth: 3,
                     ),
                   ),
                 ),
