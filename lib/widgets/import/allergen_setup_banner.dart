@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// BUT-1198: non-blocking import-flow prompt shown when a freshly-imported
 /// recipe contains an allergen the user hasn't configured to track.
@@ -39,16 +40,16 @@ class AllergenSetupBanner {
         ),
         content: Text(l10n.importAllergenSetupBanner),
         actions: [
-          TextButton(
+          ButleryTextButton(
+            label: l10n.commonDismiss,
             onPressed: messenger.hideCurrentMaterialBanner,
-            child: Text(l10n.commonDismiss),
           ),
-          TextButton(
+          ButleryTextButton(
+            label: l10n.importAllergenSetupCta,
             onPressed: () {
               messenger.hideCurrentMaterialBanner();
               navigator.pushNamed(Routes.settingsAllergens);
             },
-            child: Text(l10n.importAllergenSetupCta),
           ),
         ],
       ),

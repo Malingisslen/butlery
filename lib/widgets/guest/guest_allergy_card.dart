@@ -7,9 +7,9 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/guest/guest_allergy_card_store.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/guest/guest_builder.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Hem's "Har någon i hushållet allergier?" card, for a guest who has not yet
 /// opened the allergen settings or closed it.
@@ -114,10 +114,9 @@ class _CardState extends State<_Card> {
                     ),
                   ),
                 ),
-                IconButton(
+                ButleryCloseButton(
                   key: GuestAllergyCard.closeKey,
-                  tooltip: l10n.guestAllergyDismiss,
-                  icon: const ButleryIcon(ButleryIcons.x),
+                  semanticLabel: l10n.guestAllergyDismiss,
                   onPressed: _finish,
                 ),
               ],
@@ -127,14 +126,15 @@ class _CardState extends State<_Card> {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.space16 - AppDimensions.space4,
               ),
-              child: FilledButton(
+              child: ActionButtons.primaryButton(
+                context,
                 key: GuestAllergyCard.actionKey,
+                label: l10n.guestAllergyAction,
                 onPressed: () {
                   final navigator = Navigator.of(context);
                   _finish();
                   navigator.pushNamed(Routes.settingsAllergens);
                 },
-                child: Text(l10n.guestAllergyAction),
               ),
             ),
           ],

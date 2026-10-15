@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 
 /// Header component for import dialogs with icon, title, and close button.
 class ImportDialogHeader extends StatelessWidget {
@@ -61,10 +62,9 @@ class ImportDialogHeader extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.x),
+          ButleryCloseButton(
+            semanticLabel: context.l10n.commonCancel,
             onPressed: onClose,
-            tooltip: context.l10n.commonCancel,
           ),
         ],
       ),

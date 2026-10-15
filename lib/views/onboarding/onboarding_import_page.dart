@@ -17,11 +17,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -77,7 +78,6 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final viewModel = context.watch<SmartImportViewModel>();
-    final border = onboardingFieldBorder(cs);
 
     return SingleChildScrollView(
       child: Column(
@@ -90,29 +90,23 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           const SizedBox(height: AppDimensions.space24),
 
           // Inline URL input
-          LabeledField(
-            child: TextField(
-              controller: _urlController,
-              onChanged: (value) {
-                _fromClipboard = false;
-                viewModel.updateInput(value);
-              },
-              decoration: InputDecoration(
-                hintText: l10n.onboardingImportUrlTitle,
-                prefixIcon: const ButleryIcon(ButleryIcons.link),
-                suffixIcon: IconButton(
-                  icon: const ButleryIcon(ButleryIcons.copy),
-                  tooltip: l10n.commonPaste,
-                  onPressed: () => _pasteFromClipboard(viewModel),
-                ),
-                border: border,
-                enabledBorder: border,
-                focusedBorder: border,
-              ),
-              keyboardType: TextInputType.url,
-              textInputAction: TextInputAction.go,
-              onSubmitted: (_) => _handleImport(viewModel),
+          StyledInput(
+            controller: _urlController,
+            square: true,
+            hint: l10n.onboardingImportUrlTitle,
+            prefixIcon: const ButleryIcon(ButleryIcons.link),
+            suffixIcon: AppIconButton(
+              icon: ButleryIcons.copy,
+              semanticLabel: l10n.commonPaste,
+              onPressed: () => _pasteFromClipboard(viewModel),
             ),
+            onChanged: (value) {
+              _fromClipboard = false;
+              viewModel.updateInput(value);
+            },
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.go,
+            onSubmitted: (_) => _handleImport(viewModel),
           ),
           if (_fromClipboard) ...[
             const SizedBox(height: AppDimensions.space8),
@@ -141,28 +135,17 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           // Importing says what it does and draws the plate line along the
           // button's bottom edge, never a spinner (Komponentark v1:365,
           // :372). The step's one filled action is "Klar" in the nav row.
-          BusyButtonSemantics(
-            busy: viewModel.isImporting,
-            name: l10n.importRecipeTitle,
-            busyLabel: viewModel.progressMessage,
-            child: viewModel.isImporting
-                ? OutlinedButton(
-                    onPressed: PlateLineButton.ignore,
-                    style: PlateLineButton.busyStyle(
-                      _importButtonStyle(context),
-                      Theme.of(context).outlinedButtonTheme.style,
-                      onFill: false,
-                    ),
-                    child: Text(viewModel.progressMessage),
-                  )
-                : OutlinedButton.icon(
-                    onPressed: viewModel.canImport
-                        ? () => _handleImport(viewModel)
-                        : null,
-                    style: _importButtonStyle(context),
-                    icon: const ButleryIcon(ButleryIcons.download),
-                    label: Text(l10n.importRecipeTitle),
-                  ),
+          ActionButtons.outlinedButton(
+            context,
+            label: l10n.importRecipeTitle,
+            loadingText: viewModel.progressMessage,
+            icon: ButleryIcons.download,
+            isLoading: viewModel.isImporting,
+            onPressed: viewModel.canImport
+                ? () => _handleImport(viewModel)
+                : null,
+            isExpanded: true,
+            square: true,
           ),
 
           // Success state
@@ -204,10 +187,10 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             const SizedBox(height: AppDimensions.space4),
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
+              child: ButleryTextButton(
+                label: l10n.commonRetry,
+                icon: ButleryIcons.refreshCw,
                 onPressed: () => _handleImport(viewModel),
-                icon: const ButleryIcon(ButleryIcons.refreshCw),
-                label: Text(l10n.commonRetry),
               ),
             ),
           ],
@@ -235,20 +218,6 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// A square-cornered ink-edged button, the same as Tillbaka below it.
-  ButtonStyle _importButtonStyle(BuildContext context) {
-    final theme = Theme.of(context);
-    return (theme.outlinedButtonTheme.style ?? const ButtonStyle()).copyWith(
-      shape: const WidgetStatePropertyAll(RoundedRectangleBorder()),
-      minimumSize: const WidgetStatePropertyAll(
-        Size(0, AppDimensions.buttonHeight),
-      ),
-      side: WidgetStatePropertyAll(
-        BorderSide(color: theme.colorScheme.onSurface, width: 1.5),
       ),
     );
   }

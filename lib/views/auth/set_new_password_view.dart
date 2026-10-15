@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/styled/field_helper_line.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// "Välj nytt lösenord", opened by the link in the "glömt lösenord" mail
 /// (BUT-2170; flow 06 `återställ → sätt nytt`). The two fields follow the
@@ -157,9 +158,11 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
         // Requesting a link is a signed-out action; someone signed in to
         // another account only leaves.
         if (vm.signedInElsewhere)
-          OutlinedButton(
+          ActionButtons.outlinedButton(
+            context,
+            label: context.l10n.setNewPasswordClose,
             onPressed: () => Navigator.of(context).maybePop(),
-            child: Text(context.l10n.setNewPasswordClose),
+            isExpanded: true,
           )
         else
           HeroButton(

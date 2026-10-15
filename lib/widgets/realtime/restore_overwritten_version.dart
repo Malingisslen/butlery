@@ -36,8 +36,9 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/realtime/overwritten_version_service.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// Holds the signed-in user's restorable versions for one surface, so an
 /// overflow menu can decide synchronously whether to show the row.
@@ -192,33 +193,30 @@ abstract final class RestoreOverwrittenVersion {
   ) {
     final l = context.l10n;
     final now = clock.now();
-    return showDialog<OverwrittenVersion>(
+    return showButleryDialog<OverwrittenVersion>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.overwrittenPickTitle, style: AppTextStyles.titleLarge),
+      builder: (dialogContext) => ButleryDialog(
+        title: l.overwrittenPickTitle,
+        scrollable: false,
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
             children: [
               for (final v in versions)
-                ListTile(
+                ButleryItemRow(
                   key: pickerRowKey(v.id),
-                  title: Text(
-                    l.overwrittenVersionFrom(
-                      ContentTimeLabels.whenLabel(l, v.overwrittenAt, now),
-                    ),
+                  title: l.overwrittenVersionFrom(
+                    ContentTimeLabels.whenLabel(l, v.overwrittenAt, now),
                   ),
-                  subtitle: Text(
-                    v.overwrittenByName.isEmpty
-                        ? l.overwrittenVersionByUnnamed(
-                            ContentTimeLabels.dateLabel(l, v.expiresAt, now),
-                          )
-                        : l.overwrittenVersionBy(
-                            v.overwrittenByName,
-                            ContentTimeLabels.dateLabel(l, v.expiresAt, now),
-                          ),
-                  ),
+                  subtitle: v.overwrittenByName.isEmpty
+                      ? l.overwrittenVersionByUnnamed(
+                          ContentTimeLabels.dateLabel(l, v.expiresAt, now),
+                        )
+                      : l.overwrittenVersionBy(
+                          v.overwrittenByName,
+                          ContentTimeLabels.dateLabel(l, v.expiresAt, now),
+                        ),
                   onTap: () => Navigator.of(dialogContext).pop(v),
                 ),
             ],

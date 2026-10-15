@@ -5,8 +5,8 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// The admin panel's one dark bar: the name, the tabs and who is signed in
 /// (Skarmar v12 del 3 #29). The tabs are a [TabBar] of [ButleryTab]s, so they
@@ -64,9 +64,10 @@ class AdminTopBar extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              IconButton(
-                icon: ButleryIcon(ButleryIcons.logOut, color: cs.onPrimary),
-                tooltip: l10n.adminSignOut,
+              AppIconButton(
+                icon: ButleryIcons.logOut,
+                color: cs.onPrimary,
+                semanticLabel: l10n.adminSignOut,
                 onPressed: onSignOut,
               ),
             ],

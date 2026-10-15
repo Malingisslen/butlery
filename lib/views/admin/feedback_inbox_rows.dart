@@ -15,6 +15,8 @@ import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 
 /// Localized label for a triage status.
 String feedbackStatusLabel(BuildContext context, FeedbackStatus status) {
@@ -83,13 +85,10 @@ class FeedbackRow extends StatelessWidget {
           const SizedBox(height: AppDimensions.space8),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton.icon(
+            child: ButleryTextButton(
+              label: context.l10n.adminCopyForClaude,
+              icon: ButleryIcons.copy,
               onPressed: () => _copyForClaude(context),
-              icon: const ButleryIcon(
-                ButleryIcons.copy,
-                size: AppDimensions.iconSize18,
-              ),
-              label: Text(context.l10n.adminCopyForClaude),
             ),
           ),
           _StatusControl(entry: entry, vm: vm),
@@ -246,19 +245,14 @@ class _StatusControl extends StatelessWidget {
       spacing: AppDimensions.space8,
       children: [
         for (final (label, status) in options)
-          PressFill(
-            surface: entry.status == status
-                ? PressSurface.ink
-                : PressSurface.base,
-            child: ChoiceChip(
-              label: Text(label),
-              selected: entry.status == status,
-              // The chosen chip stays enabled: a disabled one is drawn with
-              // the disabled label colour, 3.0:1 on the ink fill.
-              onSelected: (_) {
-                if (entry.status != status) _setStatus(context, status);
-              },
-            ),
+          ButleryChoiceChip(
+            label: label,
+            selected: entry.status == status,
+            // The chosen chip stays enabled: a disabled one is drawn with
+            // the disabled label colour, 3.0:1 on the ink fill.
+            onSelected: (_) {
+              if (entry.status != status) _setStatus(context, status);
+            },
           ),
       ],
     );

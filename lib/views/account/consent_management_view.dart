@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences.
 /// The switches change the view model's draft; "Spara mina val" writes one
@@ -203,10 +204,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         onPressed: viewModel.isSaving ? null : () => _save(viewModel),
       ),
       Center(
-        child: TextButton(
-          style: TextButton.styleFrom(foregroundColor: cs.error),
+        child: ButleryTextButton(
+          label: l10n.consentRevokeAllOptional,
+          tone: ButleryTextButtonTone.danger,
           onPressed: viewModel.isSaving ? null : () => _revokeAll(viewModel),
-          child: Text(l10n.consentRevokeAllOptional),
         ),
       ),
     ];

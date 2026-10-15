@@ -16,8 +16,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 
 /// One entry of [ShoppingRowMenu].
 class ShoppingRowAction {
@@ -306,31 +306,18 @@ class ShoppingRowMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<int>(
-        icon: ButleryIcon(
-          ButleryIcons.moreVertical,
-          color: cs.onSurfaceVariant,
-          size: AppDimensions.iconSizeM,
-        ),
-        tooltip: context.l10n.a11yShoppingItemMoreOptions(itemName),
-        onSelected: (i) => actions[i].onSelected(),
-        itemBuilder: (context) => [
-          for (final (i, action) in actions.indexed)
-            ButleryMenuItem<int>(
-              value: i,
-              child: Row(
-                children: [
-                  ButleryIcon(action.icon),
-                  const SizedBox(width: AppDimensions.space8),
-                  Flexible(child: Text(action.label)),
-                ],
-              ),
-            ),
-        ],
-      ),
+    return ButleryMenu<int>(
+      iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      semanticLabel: context.l10n.a11yShoppingItemMoreOptions(itemName),
+      onSelected: (i) => actions[i].onSelected(),
+      choices: [
+        for (final (i, action) in actions.indexed)
+          ButleryMenuChoice<int>(
+            value: i,
+            label: action.label,
+            icon: action.icon,
+          ),
+      ],
     );
   }
 }

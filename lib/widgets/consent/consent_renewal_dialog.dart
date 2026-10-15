@@ -21,10 +21,10 @@ import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 class ConsentRenewalDialog extends StatefulWidget {
   const ConsentRenewalDialog({super.key, this.viewModel});
@@ -39,7 +39,7 @@ class ConsentRenewalDialog extends StatefulWidget {
     BuildContext context, {
     ConsentViewModel? viewModel,
   }) {
-    return showDialog<void>(
+    return showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (_) => ConsentRenewalDialog(viewModel: viewModel),
@@ -117,10 +117,9 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
     ).format(acceptedAt);
     final unchanged = ConsentRenewalDialog.purposeCount - changes.length;
 
-    return AlertDialog(
+    return ButleryDialog(
       key: const ValueKey('consentRenewal.changes'),
-      scrollable: true,
-      title: Text(l10n.consentRenewalChangedTitle(changes.length)),
+      title: l10n.consentRenewalChangedTitle(changes.length),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,29 +165,27 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
           ],
         ],
       ),
-      actionsOverflowDirection: VerticalDirection.down,
       actions: [
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('consentRenewal.notNow'),
+          label: l10n.consentRenewalNotNow,
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
-          child: Text(l10n.consentRenewalNotNow),
         ),
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('consentRenewal.chooseMyself'),
+          label: l10n.consentRenewalChooseMyself,
           onPressed: _saving
               ? null
               : () => GdprConsentHandler.handleManageConsent(context),
-          child: Text(l10n.consentRenewalChooseMyself),
         ),
         // A dialog's primary is ink: saffron is the one hero of a view, and
         // the dialog sits above it. Busy keeps the name and draws the plate
         // line.
         KeyedSubtree(
           key: const ValueKey('consentRenewal.accept'),
-          child: ActionButtons.primaryButton(
-            context,
+          child: ButleryDialogPrimary(
             label: l10n.consentRenewalAccept,
-            isLoading: _saving,
+            busy: _saving,
             onPressed: () => _accept(vm),
           ),
         ),
@@ -198,22 +195,19 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
 
   Widget _buildGeneral(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
-      icon: ButleryIcon(
-        ButleryIcons.shield,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-      title: Text(l10n.consentRenewalTitle),
-      content: Text(l10n.consentRenewalDescription),
+    return ButleryDialog(
+      titleIcon: ButleryIcons.shield,
+      title: l10n.consentRenewalTitle,
+      message: l10n.consentRenewalDescription,
       actions: [
-        TextButton(
+        ButleryTextButton(
+          label: l10n.consentRenewalLater,
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.consentRenewalLater),
         ),
-        FilledButton(
+        ButleryDialogPrimary(
+          label: l10n.consentRenewalReview,
           // Handler pops the dialog itself, then pushes ConsentManagementView.
           onPressed: () => GdprConsentHandler.handleManageConsent(context),
-          child: Text(l10n.consentRenewalReview),
         ),
       ],
     );

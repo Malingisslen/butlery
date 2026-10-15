@@ -560,8 +560,9 @@ void main() {
       );
       expect(list.data!.split('\n'), codes);
 
-      final continueButton = find.byKey(
-        const ValueKey('mfa.backupCodes.continue'),
+      final continueButton = find.descendant(
+        of: find.byKey(const ValueKey('mfa.backupCodes.continue')),
+        matching: find.byType(FilledButton),
       );
       expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
 

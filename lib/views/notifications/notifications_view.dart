@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// In-app notification inbox showing notification history.
 class NotificationsView extends StatelessWidget {
@@ -121,9 +124,9 @@ class _NotificationsContentState extends State<_NotificationsContent> {
             : null,
         actions: [
           if (_selectionMode)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.trash2),
-              tooltip: context.l10n.commonDismiss,
+            AppIconButton(
+              icon: ButleryIcons.trash2,
+              semanticLabel: context.l10n.commonDismiss,
               onPressed: count > 0 ? () => _dismissSelected(vm) : null,
             ),
         ],
@@ -197,11 +200,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
                       ? null
                       : () => _enterSelection(entry.id),
                 ),
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
+                const ButleryDivider(spacing: 1),
               ],
             );
           },
@@ -302,24 +301,10 @@ class _NotificationTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     final chosen = isSelectionMode && isSelected;
-    return ListTile(
+    return ButleryItemRow(
       selected: chosen,
-      // A row on the page's paper with a hairline under it, as the sketch
-      // draws it; the theme's raised tile is for cards.
-      tileColor: Colors.transparent,
-      // Chosen is surface.selected with a real border, never a tint
-      // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-      // :108-119). surfaceContainerHighest is surface.raised, which
-      // carries surface.selected's values in both modes; the border is
-      // text.primary (onSurface): ink on light, paper on dark.
-      selectedTileColor: cs.surfaceContainerHighest,
-      // The chosen row's title and icons stay text.primary; ListTile would
-      // otherwise paint them colorScheme.primary, which is ink in dark mode
-      // too and vanishes on surface.selected (#2F4437).
-      selectedColor: cs.onSurface,
-      shape: chosen
-          ? Border.all(color: cs.onSurface, width: 1.5)
-          : const RoundedRectangleBorder(),
+      edge: chosen ? ButleryItemRowEdge.selected : ButleryItemRowEdge.none,
+      emphasised: !entry.opened,
       leading: isSelectionMode
           ? ButleryIcon(
               isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
@@ -331,11 +316,8 @@ class _NotificationTile extends StatelessWidget {
               color: entry.opened ? cs.onSurfaceVariant : cs.onSurface,
               size: AppDimensions.iconSizeM,
             ),
-      title: Text(
-        entry.displayTitle,
-        style: entry.opened ? AppTextStyles.bodyMedium : AppTextStyles.bodyBold,
-      ),
-      subtitle: entry.displayBody.isNotEmpty
+      title: entry.displayTitle,
+      subtitleWidget: entry.displayBody.isNotEmpty
           ? Text(
               entry.displayBody,
               style: AppTextStyles.bodySmall.copyWith(
@@ -347,9 +329,7 @@ class _NotificationTile extends StatelessWidget {
           : null,
       trailing: Text(
         ContextualTimeFormatter.compact(entry.sentAt),
-        style: AppTextStyles.bodySmall.copyWith(
-          color: cs.onSurfaceVariant,
-        ),
+        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
       onTap: onTap,
       onLongPress: onLongPress,

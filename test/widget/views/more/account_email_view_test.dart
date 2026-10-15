@@ -141,7 +141,7 @@ void main() {
 
       await enterEmailChange(tester, 'hemligt', 'ny@example.com');
       final button = find.widgetWithText(
-        FilledButton,
+        ElevatedButton,
         l10n.accountSecurityChangeEmail,
       );
       await tester.ensureVisible(button);
@@ -175,7 +175,7 @@ void main() {
 
     await enterEmailChange(tester, 'fel', 'ny@example.com');
     final button = find.widgetWithText(
-      FilledButton,
+      ElevatedButton,
       l10n.accountSecurityChangeEmail,
     );
     await tester.ensureVisible(button);
@@ -216,8 +216,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('accountEmail.password')), findsNothing);
-      final button = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, l10n.accountSecurityChangeEmail),
+      final button = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, l10n.accountSecurityChangeEmail),
       );
       expect(button.onPressed, isNull);
     });
@@ -243,7 +243,7 @@ void main() {
         'ny@example.com',
       );
       final button = find.widgetWithText(
-        FilledButton,
+        ElevatedButton,
         l10n.accountSecurityChangeEmail,
       );
       await tester.ensureVisible(button);
@@ -278,7 +278,7 @@ void main() {
         'ny@example.com',
       );
       final button = find.widgetWithText(
-        FilledButton,
+        ElevatedButton,
         l10n.accountSecurityChangeEmail,
       );
       await tester.ensureVisible(button);

@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Soft-gate verification screen shown to new users after registration.
 /// Polls for email verification status and auto-navigates when verified.
@@ -260,19 +261,12 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             ),
                           ),
                           const SizedBox(height: AppDimensions.space8),
-                          TextButton(
+                          ButleryTextButton(
+                            label: l.emailVerificationContinue,
                             onPressed: () {
                               _pollTimer?.cancel();
                               widget.onDismiss?.call();
                             },
-                            child: Text(
-                              l.emailVerificationContinue,
-                              // BUT-2196: text.secondary, not the border
-                              // colour (outline), which fails 4.5:1 as text.
-                              style: tt.bodyMedium?.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                            ),
                           ),
                         ],
                       ),

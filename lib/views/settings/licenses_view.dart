@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// OFL 1.1 condition 2 requires the copyright notice and licence to reach the
 /// recipient of the font.
@@ -97,10 +98,11 @@ class _LicensesViewState extends State<LicensesView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.space24),
-              ElevatedButton.icon(
+              ActionButtons.primaryButton(
+                context,
+                label: context.l10n.commonRetry,
+                icon: ButleryIcons.refreshCw,
                 onPressed: _load,
-                icon: const ButleryIcon(ButleryIcons.refreshCw),
-                label: Text(context.l10n.commonRetry),
               ),
             ],
           ),

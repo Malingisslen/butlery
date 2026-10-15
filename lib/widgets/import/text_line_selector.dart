@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -114,7 +116,7 @@ class TextLineSelector extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1),
+          const ButleryDivider(spacing: 1),
         ],
         Expanded(
           child: visibleLines.isEmpty
@@ -171,25 +173,20 @@ class TextLineSelector extends StatelessWidget {
   }
 
   Widget _buildSelectAllHighlightedButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
-      child: OutlinedButton.icon(
+      child: ActionButtons.outlinedButton(
+        context,
+        label: context.l10n.importSelectAllHighlighted(
+          highlightedIndices.length,
+        ),
+        icon: ButleryIcons.checkSquare,
         onPressed: () {
           // Select all highlighted lines
           final newSelection = Set<int>.from(selectedIndices);
           newSelection.addAll(highlightedIndices);
           onSelectionChanged(newSelection);
         },
-        icon: const ButleryIcon(ButleryIcons.checkSquare),
-        label: Text(
-          context.l10n.importSelectAllHighlighted(highlightedIndices.length),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: _getModeColor(context, colorScheme),
-          side: BorderSide(color: _getModeColor(context, colorScheme)),
-        ),
       ),
     );
   }

@@ -33,6 +33,8 @@ import 'package:butlery/views/realtime/conflict_diff_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/realtime/recipe_suggestion_notice.dart';
+import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Listens to the realtime sync service's [conflictStream] and renders the
 /// conflict banner for the most recent event until the user dismisses it.
@@ -272,17 +274,15 @@ class _ConflictBannerState extends State<ConflictBanner> {
                       ],
                     ),
                   ),
-                  TextButton(
+                  ButleryTextButton(
                     onPressed: () => _onViewChange(event),
-                    child: Text(
-                      _isSuggestion(event)
-                          ? context.l10n.recipeSuggestionSeeMine
-                          : context.l10n.commonView,
-                    ),
+                    label: _isSuggestion(event)
+                        ? context.l10n.recipeSuggestionSeeMine
+                        : context.l10n.commonView,
                   ),
-                  IconButton(
-                    tooltip: context.l10n.a11yConflictBannerDismiss,
-                    icon: const ButleryIcon(ButleryIcons.x),
+                  AppIconButton(
+                    semanticLabel: context.l10n.a11yConflictBannerDismiss,
+                    icon: ButleryIcons.x,
                     onPressed: _dismiss,
                   ),
                 ],

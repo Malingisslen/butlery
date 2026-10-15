@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -115,21 +116,19 @@ class DataExportView extends StatelessWidget {
   Widget _buildLoadingState(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space24),
-        // The export button above carries the plate line and the busy
-        // label; this card only says how long it may take.
-        child: Column(
-          children: [
-            Text(
-              context.l10n.dataExportMayTakeSeconds,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.space24),
+      // The export button above carries the plate line and the busy
+      // label; this card only says how long it may take.
+      child: Column(
+        children: [
+          Text(
+            context.l10n.dataExportMayTakeSeconds,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -163,10 +162,10 @@ class DataExportView extends StatelessWidget {
 
     final List<Widget> actions = switch (failure) {
       ExportFailure.network => [
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('dataExport.notNow'),
+          label: l10n.dataExportNotNow,
           onPressed: viewModel.reset,
-          child: Text(l10n.dataExportNotNow),
         ),
         ActionButtons.primaryButton(
           context,
@@ -194,37 +193,34 @@ class DataExportView extends StatelessWidget {
       ],
     };
 
-    return Card(
+    return StyledCard(
       key: ValueKey('dataExport.error.${failure.name}'),
-      color: cs.surfaceContainerHighest,
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.titleBold),
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppTextStyles.titleBold),
+          const SizedBox(height: AppDimensions.space8),
+          Text(body, style: Theme.of(context).textTheme.bodyMedium),
+          if (failure == ExportFailure.network) ...[
             const SizedBox(height: AppDimensions.space8),
-            Text(body, style: Theme.of(context).textTheme.bodyMedium),
-            if (failure == ExportFailure.network) ...[
-              const SizedBox(height: AppDimensions.space8),
-              Text(
-                l10n.dataExportNoPartialFile,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+            Text(
+              l10n.dataExportNoPartialFile,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
               ),
-            ],
-            if (actions.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.space16),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: AppDimensions.space8,
-                runSpacing: AppDimensions.space8,
-                children: actions,
-              ),
-            ],
+            ),
           ],
-        ),
+          if (actions.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.space16),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppDimensions.space8,
+              runSpacing: AppDimensions.space8,
+              children: actions,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -298,10 +294,11 @@ class DataExportView extends StatelessWidget {
                 if (export_helper.canShareFiles) ...[
                   const SizedBox(width: AppDimensions.space12),
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: ActionButtons.outlinedButton(
+                      context,
+                      label: l10n.commonShare,
+                      icon: ButleryIcons.externalLink,
                       onPressed: () => _handleShare(context, viewModel),
-                      icon: const ButleryIcon(ButleryIcons.externalLink),
-                      label: Text(l10n.commonShare),
                     ),
                   ),
                 ],
@@ -335,11 +332,10 @@ class DataExportView extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppDimensions.space8),
-            TextButton.icon(
+            ButleryTextButton(
+              label: l10n.dataExportClear,
+              icon: ButleryIcons.trash2,
               onPressed: () => _handleClear(context, viewModel),
-              icon: const ButleryIcon(ButleryIcons.trash2),
-              label: Text(l10n.dataExportClear),
-              style: TextButton.styleFrom(foregroundColor: cs.onSurfaceVariant),
             ),
           ],
         ),

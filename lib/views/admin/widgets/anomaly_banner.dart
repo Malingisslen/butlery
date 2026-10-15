@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 
 /// A dismissible bar at the top of the admin shell that surfaces the latest
 /// `detectAnomalies` report — metrics whose value is >3σ off their 28-day
@@ -80,10 +81,9 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
                 ],
               ),
             ),
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.x),
+            ButleryCloseButton(
               color: cs.onErrorContainer,
-              tooltip: l10n.adminScreenshotClose,
+              semanticLabel: l10n.adminScreenshotClose,
               onPressed: () =>
                   setState(() => AnomalyBanner._dismissed.add(_report.date)),
             ),

@@ -13,6 +13,7 @@
 // path "Använd en reservkod".
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:butlery/core/constants/support_mail.dart';
@@ -32,7 +33,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/styled/butlery_code_field.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// How the challenge ended.
 enum MfaChallengeResult {
@@ -341,18 +343,16 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       ),
       if (!widget.forReauthentication) ...[
         const SizedBox(height: AppDimensions.space8),
-        TextButton(
+        ButleryTextButton(
           key: const ValueKey('mfaChallenge.useBackup'),
+          label: l10n.mfaBackupCodeUse,
+          tone: ButleryTextButtonTone.link,
           onPressed: _busy
               ? null
               : () => setState(() {
                   _backupMode = true;
                   _error = null;
                 }),
-          child: Text(
-            l10n.mfaBackupCodeUse,
-            style: const TextStyle(decoration: TextDecoration.underline),
-          ),
         ),
       ],
     ];
@@ -387,9 +387,9 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         expand: true,
       ),
       const SizedBox(height: AppDimensions.space8),
-      TextButton(
+      ButleryTextButton(
+        label: l10n.mfaBackupCodeBack,
         onPressed: () => setState(() => _backupMode = false),
-        child: Text(l10n.mfaBackupCodeBack),
       ),
     ];
   }
@@ -453,21 +453,15 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
       const SizedBox(height: AppDimensions.space24),
-      LabeledField(
+      StyledInput(
+        key: const ValueKey('mfaChallenge.backupCode'),
         label: l10n.mfaBackupCodeLabel,
-        child: TextField(
-          key: const ValueKey('mfaChallenge.backupCode'),
-          controller: _backupController,
-          textCapitalization: TextCapitalization.characters,
-          autocorrect: false,
-          enableSuggestions: false,
-          maxLength: 11,
-          decoration: const InputDecoration(
-            hintText: 'ABCDE-FGHJK',
-            counterText: '',
-          ),
-          onSubmitted: (_) => _useBackupCode(),
-        ),
+        hint: 'ABCDE-FGHJK',
+        controller: _backupController,
+        textCapitalization: TextCapitalization.characters,
+        autocorrect: false,
+        inputFormatters: [LengthLimitingTextInputFormatter(11)],
+        onSubmitted: (_) => _useBackupCode(),
       ),
       if (_error != null) ...[
         const SizedBox(height: AppDimensions.space8),
@@ -486,14 +480,14 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         expand: true,
       ),
       const SizedBox(height: AppDimensions.space8),
-      TextButton(
+      ButleryTextButton(
+        label: l10n.mfaBackupCodeBack,
         onPressed: _busy
             ? null
             : () => setState(() {
                 _backupMode = false;
                 _error = null;
               }),
-        child: Text(l10n.mfaBackupCodeBack),
       ),
     ];
   }

@@ -179,7 +179,7 @@ void main() {
       await tester.tap(find.text(_sv.motivationRemovedSpam));
       await tester.pump();
       await tester.tap(
-        find.widgetWithText(FilledButton, _sv.moderatorCloseSheetTitle),
+        find.widgetWithText(ElevatedButton, _sv.moderatorCloseSheetTitle),
       );
       await tester.pumpAndSettle();
 
@@ -242,7 +242,7 @@ void main() {
       await tester.tap(find.text(_sv.motivationRemovedCopyright));
       await tester.pump();
       await tester.tap(
-        find.widgetWithText(FilledButton, _sv.moderatorCloseSheetTitle),
+        find.widgetWithText(ElevatedButton, _sv.moderatorCloseSheetTitle),
       );
       await tester.pumpAndSettle();
 
@@ -264,7 +264,7 @@ void main() {
       expect(find.text(_sv.motivationKeptNoBreach), findsOneWidget);
       expect(find.text(_sv.motivationRemovedSpam), findsNothing);
       await tester.tap(
-        find.widgetWithText(FilledButton, _sv.moderatorCloseSheetTitle),
+        find.widgetWithText(ElevatedButton, _sv.moderatorCloseSheetTitle),
       );
       await tester.pumpAndSettle();
 

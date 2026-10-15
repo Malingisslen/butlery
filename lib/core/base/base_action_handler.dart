@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// Base action handler with executeAction, executeWithConfirmation, navigation helpers, feedback methods, and validation utilities.
 abstract class BaseActionHandler {
@@ -182,16 +182,10 @@ abstract class BaseActionHandler {
   void showLoadingDialog(BuildContext context, String message) {
     if (!context.mounted) return;
 
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
-      // Plate line plus text, never a spinner (produktregler.md:163, B-18).
-      builder: (context) => AlertDialog(
-        content: PlateLineMessage(
-          message: message,
-          textAlign: TextAlign.start,
-        ),
-      ),
+      builder: (context) => ButleryProgressDialog(message: message),
     );
   }
 

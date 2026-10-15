@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 
 /// The receipt on the sign-in screen after a new password was saved from a
 /// reset link (BUT-2170, decision B1). Same card as the session-end notice
@@ -44,9 +45,9 @@ class PasswordResetDoneNotice extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            tooltip: l10n.commonClose,
-            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurfaceVariant),
+          ButleryCloseButton(
+            semanticLabel: l10n.commonClose,
+            color: cs.onSurfaceVariant,
             onPressed: onClose,
           ),
         ],

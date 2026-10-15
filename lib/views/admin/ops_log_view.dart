@@ -7,12 +7,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
 import 'package:butlery/views/admin/ops_event_label.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/admin/admin_table.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Admin-only ops-log tab: recent scheduled-job runs from `system_events`.
 /// Sparse pre-launch — only the cleanup jobs write here yet.
@@ -57,9 +57,9 @@ class _OpsLogContent extends StatelessWidget {
     return AdminTabPage(
       title: context.l10n.adminOpsTitle,
       actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.refreshCw),
-          tooltip: context.l10n.adminRefresh,
+        AppIconButton(
+          icon: ButleryIcons.refreshCw,
+          semanticLabel: context.l10n.adminRefresh,
           onPressed: vm.isLoading ? null : vm.refresh,
         ),
       ],

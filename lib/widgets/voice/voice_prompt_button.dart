@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -11,6 +10,7 @@ import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Push-to-talk microphone for text fields ("Tala in veckomenyn").
 ///
@@ -183,14 +183,14 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
     }
 
     final recording = _state == _VoiceState.recording;
-    return IconButton(
-      visualDensity: widget.compact ? VisualDensity.compact : null,
-      icon: ButleryIcon(
-        recording ? ButleryIcons.stop : ButleryIcons.mic,
-        size: AppDimensions.iconSizeM,
-        color: recording ? cs.error : cs.onSurface,
-      ),
-      tooltip: recording
+    return AppIconButton(
+      icon: recording ? ButleryIcons.stop : ButleryIcons.mic,
+      iconSize: AppDimensions.iconSizeM,
+      color: recording ? cs.error : cs.onSurface,
+      padding: widget.compact
+          ? const EdgeInsets.all(AppDimensions.space4)
+          : null,
+      semanticLabel: recording
           ? context.l10n.voicePromptStop
           : (widget.startTooltip ?? context.l10n.voicePromptStart),
       // STOP must stay tappable even when the surrounding flow disables the

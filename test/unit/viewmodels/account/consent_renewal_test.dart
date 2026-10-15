@@ -272,7 +272,14 @@ void main() {
         'consentRenewal.chooseMyself',
       ]) {
         expect(
-          tester.widget<TextButton>(find.byKey(ValueKey(key))).onPressed,
+          tester
+              .widget<TextButton>(
+                find.descendant(
+                  of: find.byKey(ValueKey(key)),
+                  matching: find.byType(TextButton),
+                ),
+              )
+              .onPressed,
           isNull,
         );
       }

@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input_borders.dart';
 
 /// One choice in a [ButleryMenu].
 class ButleryMenuChoice<T> {
@@ -158,6 +159,7 @@ class ButleryDropdown<T> extends StatelessWidget {
     this.autovalidateMode,
     this.errorText,
     this.dense = false,
+    this.square = false,
     super.key,
   });
 
@@ -181,6 +183,9 @@ class ButleryDropdown<T> extends StatelessWidget {
   /// A tighter box, for a field inside a card or a rule row.
   final bool dense;
 
+  /// Square corners and a hairline edge, as the onboarding screens draw it.
+  final bool square;
+
   /// Names the field for a screen reader, since the chosen value alone does
   /// not.
   final String semanticLabel;
@@ -188,6 +193,9 @@ class ButleryDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final borders = square
+        ? styledInputBorders(context, square: true, showWarning: false)
+        : null;
     final field = PressFill(
       surface: PressSurface.base,
       child: DropdownButtonFormField<T>(
@@ -209,6 +217,12 @@ class ButleryDropdown<T> extends StatelessWidget {
         errorBuilder: FieldErrorLine.builder,
         decoration: InputDecoration(
           isDense: dense,
+          border: borders?.base,
+          enabledBorder: borders?.resting,
+          focusedBorder: borders?.resting,
+          errorBorder: borders?.error,
+          focusedErrorBorder: borders?.error,
+          disabledBorder: borders?.disabled,
           error: errorText == null || validator != null
               ? null
               : FieldErrorLine(errorText!),

@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Image gallery widget for grid display
 class ImageGalleryWidget extends StatefulWidget {
@@ -190,14 +191,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             ),
           ),
           const Spacer(),
-          TextButton(
+          ButleryTextButton(
+            label: context.l10n.commonCancel,
+            tone: ButleryTextButtonTone.onInk,
             onPressed: _exitSelectionMode,
-            child: Text(
-              context.l10n.commonCancel,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onPrimary,
-              ),
-            ),
           ),
         ],
       ),

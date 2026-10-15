@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
+import 'package:butlery/widgets/common/buttons/square_button_style.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -43,6 +44,7 @@ class ActionButtons {
     bool isExpanded = false,
     bool enablePressAnimation = true,
     String? semanticLabel,
+    bool square = false,
   }) {
     final effectiveOnPressed = isLoading ? PlateLineButton.ignore : onPressed;
     final effectiveLabel = _visibleLabel(isLoading, label, loadingText);
@@ -78,11 +80,12 @@ class ActionButtons {
     final theme = Theme.of(context);
     final filled =
         style != ActionButtonStyle.outlined &&
-        style != ActionButtonStyle.outlinedOnInk;
+        style != ActionButtonStyle.outlinedOnInk &&
+        style != ActionButtonStyle.danger;
     // The secondary button rests on the raised surface behind an outline, so
     // its busy line takes the text colour, not the filled button's.
     final onFill = filled && style != ActionButtonStyle.secondary;
-    final ButtonStyle? variant = switch (style) {
+    final ButtonStyle? styled = switch (style) {
       ActionButtonStyle.primary => null,
       ActionButtonStyle.secondary => ComponentThemes.secondaryButtonStyle(
         theme.colorScheme,
@@ -93,7 +96,15 @@ class ActionButtons {
       ),
       ActionButtonStyle.outlinedOnInk =>
         ComponentThemes.outlinedOnInkButtonStyle(theme.colorScheme),
+      ActionButtonStyle.danger => ComponentThemes.deleteButtonStyle(
+        theme.colorScheme,
+      ),
     };
+    final ButtonStyle? variant = square
+        ? (styled ?? const ButtonStyle()).merge(
+            squareButtonStyle(theme, filled: filled),
+          )
+        : styled;
     // The theme's minimum width is infinite so a button fills a column; a
     // button that is not expanded hugs its label instead, up to the cap below.
     final own = isExpanded ? variant : _hugLabel.merge(variant);
@@ -157,6 +168,7 @@ class ActionButtons {
     String? loadingText,
     bool isExpanded = false,
     bool enablePressAnimation = true,
+    bool square = false,
   }) {
     return actionButton(
       context,
@@ -169,6 +181,7 @@ class ActionButtons {
       style: ActionButtonStyle.primary,
       isExpanded: isExpanded,
       enablePressAnimation: enablePressAnimation,
+      square: square,
     );
   }
 
@@ -267,6 +280,7 @@ class ActionButtons {
     bool isExpanded = false,
     bool enablePressAnimation = true,
     String? semanticLabel,
+    bool square = false,
   }) {
     return actionButton(
       context,
@@ -279,7 +293,35 @@ class ActionButtons {
       style: ActionButtonStyle.outlined,
       isExpanded: isExpanded,
       enablePressAnimation: enablePressAnimation,
+      square: square,
       semanticLabel: semanticLabel,
+    );
+  }
+
+  /// The red outlined button of a destructive action that sits in a page
+  /// rather than a dialog (Radera konto, Radera innehåll).
+  static Widget dangerButton(
+    BuildContext context, {
+    Key? key,
+    required String label,
+    VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    String? loadingText,
+    bool isExpanded = false,
+    bool enablePressAnimation = true,
+  }) {
+    return actionButton(
+      context,
+      key: key,
+      label: label,
+      onPressed: onPressed,
+      icon: icon,
+      isLoading: isLoading,
+      loadingText: loadingText,
+      style: ActionButtonStyle.danger,
+      isExpanded: isExpanded,
+      enablePressAnimation: enablePressAnimation,
     );
   }
 
@@ -434,4 +476,13 @@ class FloatingActionButtonWidget extends StatelessWidget {
 /// Button style enumeration
 /// [onInk] and [outlinedOnInk] are for a button that sits on surface.ink
 /// (the Hem hero band, an ink overlay), where the ink primary would vanish.
-enum ActionButtonStyle { primary, secondary, outlined, onInk, outlinedOnInk }
+///
+/// [danger] is the red outlined button of a destructive action.
+enum ActionButtonStyle {
+  primary,
+  secondary,
+  outlined,
+  onInk,
+  outlinedOnInk,
+  danger,
+}

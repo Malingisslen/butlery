@@ -30,6 +30,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/realtime/recipe_suggestion_view.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 class RecipeSuggestionNotice extends StatefulWidget {
   const RecipeSuggestionNotice({
@@ -183,18 +184,16 @@ class _RecipeSuggestionNoticeState extends State<RecipeSuggestionNotice> {
                   ),
                 ),
               ),
-              TextButton(
+              ButleryTextButton(
                 key: RecipeSuggestionNotice.openKey,
                 onPressed: () => RecipeSuggestionView.show(
                   context,
                   rows.first,
                   asOwner: widget.isOwner,
                 ),
-                child: Text(
-                  widget.isOwner
-                      ? l.recipeSuggestionSee
-                      : l.recipeSuggestionSeeMine,
-                ),
+                label: widget.isOwner
+                    ? l.recipeSuggestionSee
+                    : l.recipeSuggestionSeeMine,
               ),
             ],
           ),

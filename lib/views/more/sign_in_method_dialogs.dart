@@ -12,12 +12,14 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/styled/butlery_password_field.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Asks for the new password twice. Null when the dialog is closed.
 Future<String?> showSetPasswordDialog(
   BuildContext context, {
   required String email,
-}) => showDialog<String>(
+}) => showButleryDialog<String>(
   context: context,
   builder: (_) => _SetPasswordDialog(email: email),
 );
@@ -58,8 +60,9 @@ class _SetPasswordDialogState extends State<_SetPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(l10n.signInMethodsSetPassword),
+    return ButleryDialog(
+      title: l10n.signInMethodsSetPassword,
+      scrollable: false,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -86,7 +89,9 @@ class _SetPasswordDialogState extends State<_SetPasswordDialog> {
               const SizedBox(height: AppDimensions.space8),
               Text(
                 _problem!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
           ],
@@ -94,9 +99,9 @@ class _SetPasswordDialogState extends State<_SetPasswordDialog> {
       ),
       actions: [
         const DialogCancelButton(),
-        FilledButton(
+        ButleryDialogPrimary(
+          label: l10n.signInMethodsSetPassword,
           onPressed: _submit,
-          child: Text(l10n.signInMethodsSetPassword),
         ),
       ],
     );

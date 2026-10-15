@@ -10,7 +10,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// The form's one primary button, last on the page. While the view model
 /// works it keeps its name and gets the plate line along its bottom edge,
@@ -34,22 +34,12 @@ class AccountFormButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: AppDimensions.space12),
-      child: BusyButtonSemantics(
-        busy: busy,
-        name: label,
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: busy ? PlateLineButton.ignore : onPressed,
-            style: busy
-                ? PlateLineButton.busyStyle(
-                    null,
-                    Theme.of(context).filledButtonTheme.style,
-                  )
-                : null,
-            child: Text(label),
-          ),
-        ),
+      child: ActionButtons.primaryButton(
+        context,
+        label: label,
+        isLoading: busy,
+        isExpanded: true,
+        onPressed: onPressed,
       ),
     );
   }

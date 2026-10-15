@@ -9,7 +9,6 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/onboarding/onboarding_age_gate_blocked_view.dart';
@@ -20,6 +19,8 @@ import 'package:butlery/views/onboarding/onboarding_setup_page.dart';
 import 'package:butlery/widgets/common/brand/butlery_cloche.dart';
 import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 import 'package:butlery/views/onboarding/onboarding_import_page.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 class OnboardingView extends StatelessWidget {
   /// When non-null, the wizard jumps to this page index on first frame
@@ -171,8 +172,6 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   // The skip link keeps its row on the age gate, so the mark stands at the
   // same height on every step.
   Widget _buildTopBar(BuildContext context, OnboardingViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-
     return SizedBox(
       height: AppDimensions.minTouchTarget,
       child: Align(
@@ -180,16 +179,11 @@ class _OnboardingContentState extends State<_OnboardingContent> {
         // Age-gating is compliance, not an optional step — no skip.
         child: viewModel.isAgeGatePage
             ? null
-            : TextButton(
+            : ButleryTextButton(
+                label: context.l10n.onboardingSkip,
                 onPressed: viewModel.isCompleting
                     ? null
                     : () => _skipOnboarding(context, viewModel),
-                child: Text(
-                  context.l10n.onboardingSkip,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
               ),
       ),
     );
@@ -272,21 +266,12 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   ) async {
     // Confirm first — skipping means no allergen/dietary setup, which has a
     // safety implication, so make the choice deliberate.
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showButleryDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.onboardingSkipConfirmTitle),
-        content: Text(ctx.l10n.onboardingSkipConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(ctx.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(ctx.l10n.onboardingSkip),
-          ),
-        ],
+      builder: (ctx) => ButleryDialog.confirm(
+        title: ctx.l10n.onboardingSkipConfirmTitle,
+        message: ctx.l10n.onboardingSkipConfirmMessage,
+        primaryLabel: ctx.l10n.onboardingSkip,
       ),
     );
     if (confirmed != true || !context.mounted) return;
@@ -321,18 +306,12 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   }
 
   Future<void> _handleAgeRejection(BuildContext context) async {
-    await showDialog<void>(
+    await showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.onboardingAgeRejectedTitle),
-        content: Text(ctx.l10n.onboardingAgeRejectedBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.l10n.commonClose),
-          ),
-        ],
+      builder: (ctx) => ButleryDialog.notice(
+        title: ctx.l10n.onboardingAgeRejectedTitle,
+        message: ctx.l10n.onboardingAgeRejectedBody,
       ),
     );
     // The CF already deleted the Auth account; clear local auth state so the

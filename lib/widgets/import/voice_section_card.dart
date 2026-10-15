@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/voice/voice_mic_button.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// One part of the "Tala in recept" page (Skarmar v12 'Tala in recept'): the
 /// numbered heading, its prompt, then the field with the microphone beside it
@@ -103,23 +102,13 @@ class VoiceSectionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: LabeledField(
-                      child: TextField(
-                        controller: controller,
-                        onChanged: onChanged,
-                        enabled: !recording,
-                        maxLines: multiline ? null : 1,
-                        minLines: multiline ? 3 : 1,
-                        style: fieldTextStyle(
-                          context,
-                          enabled: !recording,
-                          base: AppTextStyles.bodyMedium,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: context.l10n.voiceImportTypeHint,
-                          isDense: true,
-                        ),
-                      ),
+                    child: StyledInput(
+                      hint: context.l10n.voiceImportTypeHint,
+                      controller: controller,
+                      onChanged: onChanged,
+                      enabled: !recording,
+                      maxLines: multiline ? null : 1,
+                      minLines: multiline ? 3 : 1,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space12),

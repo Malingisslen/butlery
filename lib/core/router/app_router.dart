@@ -84,6 +84,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/router/recipe_detail_route_args.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -688,10 +689,11 @@ class AppRouter {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppDimensions.space16),
-                  FilledButton(
+                  ActionButtons.primaryButton(
+                    context,
+                    label: context.l10n.errorBackToStart,
                     onPressed: () =>
                         Navigator.of(context).pushReplacementNamed(Routes.home),
-                    child: Text(context.l10n.errorBackToStart),
                   ),
                 ],
               ),

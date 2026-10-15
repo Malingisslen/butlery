@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/field_helper_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -29,13 +27,18 @@ import 'package:butlery/views/auth/post_sign_in_navigation.dart';
 import 'package:butlery/views/auth/social_sign_in_buttons.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/auth/auth_surface.dart';
 import 'package:butlery/widgets/auth/auth_field_theme.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/views/auth/guest_start_view.dart';
 import 'package:butlery/widgets/auth/guest_entry_button.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -210,9 +213,9 @@ class _AuthViewState extends State<AuthView> {
               ],
             ),
           ),
-          IconButton(
-            tooltip: l10n.commonClose,
-            icon: ButleryIcon(ButleryIcons.x, color: cs.onSurfaceVariant),
+          ButleryCloseButton(
+            semanticLabel: l10n.commonClose,
+            color: cs.onSurfaceVariant,
             onPressed: () => setState(SessionEndNotice.clear),
           ),
         ],
@@ -259,99 +262,70 @@ class _AuthViewState extends State<AuthView> {
 
                 // Name field (registration only)
                 if (!viewModel.isLoginMode) ...[
-                  LabeledField(
+                  StyledInput(
+                    key: const Key('name_field'),
                     label: context.l10n.authYourName,
-                    child: TextFormField(
-                      style: fieldTextStyle(
-                        context,
-                        enabled: !viewModel.isLoading,
-                      ),
-                      key: const Key('name_field'),
-                      controller: _nameController,
-                      focusNode: _nameFocus,
-                      textInputAction: TextInputAction.next,
-                      enabled: !viewModel.isLoading,
-                      decoration: InputDecoration(
-                        hintText: context.l10n.authEnterYourName,
-                      ),
-                      validator: FormValidators.authName(),
-                      errorBuilder: FieldErrorLine.builder,
-                      autofillHints: const [AutofillHints.name],
-                      onFieldSubmitted: (_) {
-                        FocusScope.of(context).requestFocus(_emailFocus);
-                      },
-                    ),
+                    hint: context.l10n.authEnterYourName,
+                    controller: _nameController,
+                    focusNode: _nameFocus,
+                    textInputAction: TextInputAction.next,
+                    enabled: !viewModel.isLoading,
+                    validator: FormValidators.authName(),
+                    autofillHints: const [AutofillHints.name],
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_emailFocus);
+                    },
                   ),
                   const SizedBox(height: AppDimensions.space16),
                 ],
 
                 // Email field
-                LabeledField(
+                StyledInput(
+                  key: const Key('email_field'),
                   label: context.l10n.authEmail,
-                  child: TextFormField(
-                    style: fieldTextStyle(
-                      context,
-                      enabled: !viewModel.isLoading,
-                    ),
-                    key: const Key('email_field'),
-                    controller: _emailController,
-                    focusNode: _emailFocus,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    enabled: !viewModel.isLoading,
-                    decoration: InputDecoration(
-                      hintText: context.l10n.authEmailHint,
-                    ),
-                    validator: FormValidators.authEmail(),
-                    errorBuilder: FieldErrorLine.builder,
-                    autofillHints: const [AutofillHints.email],
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(_passwordFocus);
-                    },
-                  ),
+                  hint: context.l10n.authEmailHint,
+                  controller: _emailController,
+                  focusNode: _emailFocus,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  enabled: !viewModel.isLoading,
+                  validator: FormValidators.authEmail(),
+                  autofillHints: const [AutofillHints.email],
+                  onSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(_passwordFocus);
+                  },
                 ),
                 const SizedBox(height: AppDimensions.space16),
 
                 // Password field
-                LabeledField(
+                StyledInput(
+                  key: const Key('password_field'),
                   label: context.l10n.authPassword,
-                  child: TextFormField(
-                    style: fieldTextStyle(
-                      context,
-                      enabled: !viewModel.isLoading,
-                    ),
-                    key: const Key('password_field'),
-                    controller: _passwordController,
-                    focusNode: _passwordFocus,
-                    obscureText: !viewModel.isPasswordVisible,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _handleSubmit(viewModel),
-                    enabled: !viewModel.isLoading,
-                    decoration: InputDecoration(
-                      hintText: viewModel.isLoginMode
-                          ? context.l10n.authEnterPassword
-                          : context.l10n.authPasswordChoose,
-                      suffixIcon: IconButton(
-                        icon: ButleryIcon(
-                          viewModel.isPasswordVisible
-                              ? ButleryIcons.eyeOff
-                              : ButleryIcons.eye,
-                          size: AppDimensions.iconSizeM,
-                        ),
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : viewModel.togglePasswordVisibility,
-                        tooltip: viewModel.isPasswordVisible
-                            ? context.l10n.a11yHidePassword
-                            : context.l10n.a11yShowPassword,
-                      ),
-                    ),
-                    validator: viewModel.isLoginMode
-                        ? FormValidators.authPassword()
-                        : FormValidators.strongPassword(),
-                    errorBuilder: FieldErrorLine.builder,
-                    autofillHints: const [AutofillHints.password],
+                  hint: viewModel.isLoginMode
+                      ? context.l10n.authEnterPassword
+                      : context.l10n.authPasswordChoose,
+                  controller: _passwordController,
+                  focusNode: _passwordFocus,
+                  obscureText: !viewModel.isPasswordVisible,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _handleSubmit(viewModel),
+                  enabled: !viewModel.isLoading,
+                  suffixIcon: AppIconButton(
+                    icon: viewModel.isPasswordVisible
+                        ? ButleryIcons.eyeOff
+                        : ButleryIcons.eye,
+                    iconSize: AppDimensions.iconSizeM,
+                    semanticLabel: viewModel.isPasswordVisible
+                        ? context.l10n.a11yHidePassword
+                        : context.l10n.a11yShowPassword,
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : viewModel.togglePasswordVisibility,
                   ),
+                  validator: viewModel.isLoginMode
+                      ? FormValidators.authPassword()
+                      : FormValidators.strongPassword(),
+                  autofillHints: const [AutofillHints.password],
                 ),
                 if (!viewModel.isLoginMode)
                   FieldHelperLine(context.l10n.passwordRuleHint),
@@ -361,21 +335,13 @@ class _AuthViewState extends State<AuthView> {
                   const SizedBox(height: AppDimensions.space8),
                   Align(
                     alignment: AlignmentDirectional.centerEnd,
-                    child: TextButton(
+                    child: ButleryTextButton(
+                      label: context.l10n.authForgotPassword,
+                      tone: ButleryTextButtonTone.link,
+                      dense: true,
                       onPressed: viewModel.isLoading
                           ? null
                           : () => _showPasswordResetDialog(context, viewModel),
-                      // BUT-1380: keep the compact padding but drop the
-                      // shrink-wrapped tap target — Flutter's default `padded`
-                      // size restores the 48dp hit area (WCAG 2.5.5 / Material)
-                      // without changing the visible layout.
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                      child: Text(
-                        context.l10n.authForgotPassword,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: context.modeColors.textLink,
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -416,23 +382,7 @@ class _AuthViewState extends State<AuthView> {
                 const SizedBox(height: AppDimensions.space24),
 
                 // "eller" divider
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: cs.outlineVariant)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.space16,
-                      ),
-                      child: Text(
-                        context.l10n.commonOr,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: cs.outlineVariant)),
-                  ],
-                ),
+                ButleryLabelledDivider(label: context.l10n.commonOr),
 
                 const SizedBox(height: AppDimensions.space24),
 
@@ -624,11 +574,11 @@ class _AuthViewState extends State<AuthView> {
     // Capture before async gap (showDialog)
     final l10n = context.l10n;
 
-    final email = await showDialog<String?>(
+    final email = await showButleryDialog<String?>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(context.l10n.authResetPassword),
+        builder: (context, setDialogState) => ButleryDialog(
+          title: context.l10n.authResetPassword,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -637,40 +587,31 @@ class _AuthViewState extends State<AuthView> {
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppDimensions.space32),
-              LabeledField(
+              StyledInput(
+                key: const Key('reset_email_field'),
                 label: context.l10n.authEmail,
-                child: TextField(
-                  key: const Key('reset_email_field'),
-                  autofocus: true,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.authEmailHint,
-                    error: emailError == null
-                        ? null
-                        : FieldErrorLine(emailError!),
-                  ),
-                  onChanged: (value) {
-                    emailValue = value;
-                    if (emailError != null) {
-                      setDialogState(() => emailError = null);
-                    }
-                  },
-                ),
+                hint: context.l10n.authEmailHint,
+                autofocus: true,
+                keyboardType: TextInputType.emailAddress,
+                errorText: emailError,
+                onChanged: (value) {
+                  emailValue = value;
+                  if (emailError != null) {
+                    setDialogState(() => emailError = null);
+                  }
+                },
               ),
             ],
           ),
           actions: [
-            ActionButtons.secondaryButton(
-              context,
-              label: context.l10n.commonCancel,
+            DialogCancelButton(
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
             // A dialog's primary is ink; the saffron hero belongs to the view
             // underneath. Sized to its label in the row.
             KeyedSubtree(
               key: const ValueKey('auth.resetSend'),
-              child: ActionButtons.primaryButton(
-                context,
+              child: ButleryDialogPrimary(
                 label: context.l10n.commonSend,
                 onPressed: () {
                   final trimmed = emailValue.trim();

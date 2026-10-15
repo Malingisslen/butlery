@@ -5,9 +5,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// A guest cannot sign back in, so leaving the guest account erases it at
 /// once, with everything in it (BUT-920). Both ways out, signing out and
@@ -52,17 +51,14 @@ class GuestErasure {
     // showDialog uses the root navigator; the account page can sit in a
     // nested one (the Mer detail pane), which would pop the wrong route.
     final navigator = Navigator.of(context, rootNavigator: true);
-    showDialog<void>(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => PopScope(
         canPop: false,
-        child: Dialog(
+        child: ButleryProgressDialog(
           key: progressKey,
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.space24),
-            child: PlateLineMessage(message: l10n.guestErasing),
-          ),
+          message: l10n.guestErasing,
         ),
       ),
     );

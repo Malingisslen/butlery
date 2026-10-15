@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/layout/page_rule.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
@@ -231,7 +232,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
             children.add(const AccentRule.inline());
             if (widget.afterIntro != null) children.add(widget.afterIntro!);
           } else {
-            children.add(const Divider(height: AppDimensions.space32));
+            children.add(const ButleryDivider(spacing: AppDimensions.space32));
           }
         case _BlockType.h1:
           // The page bar already carries the document's name.
@@ -308,15 +309,14 @@ class _MarkdownBodyState extends State<MarkdownBody> {
 
   Widget _para(
     List<_Token> tokens,
-    TextStyle? style,
+    TextStyle style,
     Color linkColor, {
     double top = 0,
   }) {
-    final base = style ?? const TextStyle();
     return Padding(
       padding: EdgeInsets.only(top: top, bottom: AppDimensions.space4),
       child: Text.rich(
-        TextSpan(children: _spans(tokens, base, linkColor)),
+        TextSpan(children: _spans(tokens, style, linkColor)),
       ),
     );
   }

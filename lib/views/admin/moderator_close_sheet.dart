@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/list/butlery_radio_row.dart';
 
 /// "Stäng och meddela": the moderator picks one ready-made motivation for
 /// [decision]. Resolves to the chosen key, or null when dismissed.
@@ -67,14 +69,10 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
             child: Column(
               children: [
                 for (final m in choices)
-                  RadioListTile<ModerationMotivation>(
+                  ButleryRadioRow<ModerationMotivation>(
                     key: ValueKey('motivation-${m.wireName}'),
                     value: m,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      motivationText(l10n, m),
-                      style: AppTextStyles.bodyMedium,
-                    ),
+                    title: motivationText(l10n, m),
                   ),
               ],
             ),
@@ -104,9 +102,10 @@ class _ModeratorCloseSheetState extends State<ModeratorCloseSheet> {
             ),
           ),
           const SizedBox(height: AppDimensions.space16),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: l10n.moderatorCloseSheetTitle,
             onPressed: () => Navigator.pop(context, _selected),
-            child: Text(l10n.moderatorCloseSheetTitle),
           ),
           const DialogCancelButton(),
         ],

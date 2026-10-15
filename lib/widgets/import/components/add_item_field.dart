@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/butlery_row_field.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Text field for adding new items to a list.
 class AddItemField extends StatefulWidget {
@@ -50,10 +50,11 @@ class _AddItemFieldState extends State<AddItemField> {
       textInputAction: TextInputAction.done,
       textCapitalization: TextCapitalization.sentences,
       onFieldSubmitted: (_) => _add(),
-      suffixIcon: IconButton(
-        icon: ButleryIcon(ButleryIcons.plus, color: cs.onSurface),
+      suffixIcon: AppIconButton(
+        icon: ButleryIcons.plus,
+        color: cs.onSurface,
         onPressed: _add,
-        tooltip: context.l10n.commonAdd,
+        semanticLabel: context.l10n.commonAdd,
       ),
     );
   }

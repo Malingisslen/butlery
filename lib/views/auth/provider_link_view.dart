@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/auth/auth_provider_flows.dart';
@@ -11,11 +10,11 @@ import 'package:butlery/viewmodels/auth/provider_link_viewmodel.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// "Koppla ihop" (BUT-916 mockup screen 3): a Google/Apple sign-in found a
 /// password account at the same verified address. The password is asked for
@@ -147,34 +146,22 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                       ),
                     ),
                   const SizedBox(height: AppDimensions.space24),
-                  LabeledField(
+                  StyledInput(
+                    key: const ValueKey('providerLink.password'),
                     label: l10n.authPassword,
-                    child: TextField(
-                      key: const ValueKey('providerLink.password'),
-                      controller: _password,
-                      obscureText: _obscure,
-                      style: fieldTextStyle(
-                        context,
-                        enabled: !vm.isLoading && link != null,
-                      ),
-                      enabled: !vm.isLoading && link != null,
-                      autofillHints: const [AutofillHints.password],
-                      onSubmitted: (_) => _submit(vm),
-                      decoration: InputDecoration(
-                        error: vm.error == null
-                            ? null
-                            : FieldErrorLine(vm.error!),
-                        suffixIcon: IconButton(
-                          tooltip: _obscure
-                              ? l10n.a11yShowPassword
-                              : l10n.a11yHidePassword,
-                          onPressed: () => setState(() => _obscure = !_obscure),
-                          icon: ButleryIcon(
-                            _obscure ? ButleryIcons.eye : ButleryIcons.eyeOff,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                        ),
-                      ),
+                    controller: _password,
+                    obscureText: _obscure,
+                    enabled: !vm.isLoading && link != null,
+                    autofillHints: const [AutofillHints.password],
+                    onSubmitted: (_) => _submit(vm),
+                    errorText: vm.error,
+                    suffixIcon: AppIconButton(
+                      icon: _obscure ? ButleryIcons.eye : ButleryIcons.eyeOff,
+                      iconSize: AppDimensions.iconSizeM,
+                      semanticLabel: _obscure
+                          ? l10n.a11yShowPassword
+                          : l10n.a11yHidePassword,
+                      onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
                   const SizedBox(height: AppDimensions.space24),
@@ -188,9 +175,9 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                     expand: true,
                   ),
                   const SizedBox(height: AppDimensions.space8),
-                  TextButton(
+                  ButleryTextButton(
+                    label: l10n.authForgotPassword,
                     onPressed: vm.isLoading ? null : () => _forgot(vm),
-                    child: Text(l10n.authForgotPassword),
                   ),
                   DialogCancelButton(
                     key: const ValueKey('providerLink.cancel'),

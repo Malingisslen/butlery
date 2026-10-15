@@ -12,9 +12,10 @@
 /// - [EditableListBuilder] - Editable list component
 library;
 
-import 'package:butlery/widgets/styled/labeled_field.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -30,8 +31,6 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -45,7 +44,7 @@ Future<Recipe?> showAssistedImportDialog({
   ImportSource source = ImportSource.url,
   List<int>? preDetectedIngredientLines,
 }) {
-  return showDialog<Recipe>(
+  return showButleryDialog<Recipe>(
     context: context,
     barrierDismissible: true,
     builder: (context) => AssistedImportDialog(
@@ -240,124 +239,125 @@ class _InstructionSelectionStep extends StatelessWidget {
   }
 }
 
-class _ReviewEditStep extends StatelessWidget {
+class _ReviewEditStep extends StatefulWidget {
   final AssistedImportViewModel viewModel;
 
   const _ReviewEditStep({required this.viewModel});
 
   @override
+  State<_ReviewEditStep> createState() => _ReviewEditStepState();
+}
+
+class _ReviewEditStepState extends State<_ReviewEditStep> {
+  late final TextEditingController _title;
+  late final TextEditingController _description;
+  late final TextEditingController _portions;
+  late final TextEditingController _time;
+
+  AssistedImportViewModel get viewModel => widget.viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _title = TextEditingController(text: viewModel.title);
+    _description = TextEditingController(text: viewModel.description);
+    _portions = TextEditingController(text: viewModel.portions.toString());
+    _time = TextEditingController(text: viewModel.timeMinutes.toString());
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _description.dispose();
+    _portions.dispose();
+    _time.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title
-          LabeledField(
-            label: context.l10n.importRecipeNameRequired,
-            child: TextFormField(
-              initialValue: viewModel.title,
-              decoration: InputDecoration(
-                hintText: context.l10n.importRecipeNameHint,
-              ),
-              onChanged: viewModel.setTitle,
-              textCapitalization: TextCapitalization.sentences,
-            ),
+          StyledInput(
+            label: l10n.importRecipeNameRequired,
+            hint: l10n.importRecipeNameHint,
+            controller: _title,
+            onChanged: viewModel.setTitle,
+            textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: AppDimensions.space16),
-
-          // Description
-          LabeledField(
-            label: context.l10n.recipeDescription,
-            child: TextFormField(
-              initialValue: viewModel.description,
-              decoration: InputDecoration(
-                hintText: context.l10n.importDescriptionHint,
-              ),
-              onChanged: viewModel.setDescription,
-              maxLines: 2,
-              textCapitalization: TextCapitalization.sentences,
-            ),
+          StyledInput(
+            label: l10n.recipeDescription,
+            hint: l10n.importDescriptionHint,
+            controller: _description,
+            onChanged: viewModel.setDescription,
+            minLines: 2,
+            maxLines: 2,
+            textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: AppDimensions.space16),
-
-          // Portions and Time row
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: LabeledField(
-                  label: context.l10n.recipePortions,
-                  child: TextFormField(
-                    initialValue: viewModel.portions.toString(),
-                    decoration: const InputDecoration(suffixText: 'st'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      final parsed = int.tryParse(value);
-                      if (parsed != null) viewModel.setPortions(parsed);
-                    },
-                  ),
+                child: StyledInput(
+                  label: l10n.recipePortions,
+                  controller: _portions,
+                  suffixText: 'st',
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    final parsed = int.tryParse(value);
+                    if (parsed != null) viewModel.setPortions(parsed);
+                  },
                 ),
               ),
               const SizedBox(width: AppDimensions.space16),
               Expanded(
-                child: LabeledField(
-                  label: context.l10n.recipeCookingTime,
-                  child: TextFormField(
-                    initialValue: viewModel.timeMinutes.toString(),
-                    decoration: const InputDecoration(suffixText: 'min'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      final parsed = int.tryParse(value);
-                      if (parsed != null) viewModel.setTimeMinutes(parsed);
-                    },
-                  ),
+                child: StyledInput(
+                  label: l10n.recipeCookingTime,
+                  controller: _time,
+                  suffixText: 'min',
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    final parsed = int.tryParse(value);
+                    if (parsed != null) viewModel.setTimeMinutes(parsed);
+                  },
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppDimensions.space16),
-
-          // Meal type dropdown
-          LabeledField(
-            label: context.l10n.importMealType,
-            child: PressFill(
-              surface: PressSurface.base,
-              child: DropdownButtonFormField<String>(
-                icon: const ButleryIcon(ButleryIcons.chevronDown),
-                iconEnabledColor: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant,
-                iconDisabledColor: AppModeColors.textDisabled(
-                  Theme.of(context).brightness,
-                ),
-                initialValue: viewModel.mealType,
-                items: [
-                  DropdownMenuItem(
-                    value: 'Frukost',
-                    child: Text(context.l10n.importMealBreakfast),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Lunch',
-                    child: Text(context.l10n.importMealLunch),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Middag',
-                    child: Text(context.l10n.importMealDinner),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Mellanmål',
-                    child: Text(context.l10n.importMealSnack),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Dessert',
-                    child: Text(context.l10n.importMealDessert),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) viewModel.setMealType(value);
-                },
+          ButleryDropdown<String>(
+            label: l10n.importMealType,
+            semanticLabel: l10n.importMealType,
+            value: viewModel.mealType,
+            options: [
+              ButleryDropdownOption(
+                value: 'Frukost',
+                label: l10n.importMealBreakfast,
               ),
-            ),
+              ButleryDropdownOption(
+                value: 'Lunch',
+                label: l10n.importMealLunch,
+              ),
+              ButleryDropdownOption(
+                value: 'Middag',
+                label: l10n.importMealDinner,
+              ),
+              ButleryDropdownOption(
+                value: 'Mellanmål',
+                label: l10n.importMealSnack,
+              ),
+              ButleryDropdownOption(
+                value: 'Dessert',
+                label: l10n.importMealDessert,
+              ),
+            ],
+            onChanged: viewModel.setMealType,
           ),
           const SizedBox(height: AppDimensions.space24),
 

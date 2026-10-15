@@ -8,14 +8,13 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// The saffron stub and the ink hairline under the mark, and under the title
@@ -151,71 +150,39 @@ class OnboardingNavButtons extends StatelessWidget {
 
   final Key? nextKey;
 
-  static const _square = WidgetStatePropertyAll<OutlinedBorder>(
-    RoundedRectangleBorder(),
-  );
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    const size = WidgetStatePropertyAll(Size(0, AppDimensions.buttonHeight));
-    final text = WidgetStatePropertyAll(
-      AppTextStyles.labelLarge,
-    );
-
     final back = onBack == null
         ? null
         : Expanded(
-            child: OutlinedButton(
+            child: ActionButtons.outlinedButton(
+              context,
+              label: context.l10n.onboardingBack,
               onPressed: busy ? null : onBack,
-              style: (theme.outlinedButtonTheme.style ?? const ButtonStyle())
-                  .copyWith(
-                    shape: _square,
-                    minimumSize: size,
-                    textStyle: text,
-                    side: WidgetStatePropertyAll(
-                      BorderSide(color: cs.onSurface, width: 1.5),
-                    ),
-                  ),
-              child: Text(context.l10n.onboardingBack),
+              isExpanded: true,
+              square: true,
             ),
           );
 
-    final Widget next;
-    if (busy) {
-      final base = (theme.filledButtonTheme.style ?? const ButtonStyle())
-          .copyWith(shape: _square, minimumSize: size, textStyle: text);
-      next = BusyButtonSemantics(
-        busy: true,
-        name: nextLabel,
-        child: FilledButton(
-          key: nextKey,
-          onPressed: PlateLineButton.ignore,
-          style: PlateLineButton.busyStyle(base, theme.filledButtonTheme.style),
-          child: Text(nextLabel),
-        ),
-      );
-    } else if (onNext == null) {
-      next = OutlinedButton(
-        key: nextKey,
-        onPressed: null,
-        style: (theme.outlinedButtonTheme.style ?? const ButtonStyle())
-            .copyWith(shape: _square, minimumSize: size, textStyle: text),
-        child: Text(nextLabel),
-      );
-    } else {
-      next = FilledButton(
-        key: nextKey,
-        onPressed: onNext,
-        style: (theme.filledButtonTheme.style ?? const ButtonStyle()).copyWith(
-          shape: _square,
-          minimumSize: size,
-          textStyle: text,
-        ),
-        child: Text(nextLabel),
-      );
-    }
+    // Before there is an answer to go on with, Nästa is an empty frame with
+    // muted text: an outlined button with nothing to press.
+    final Widget next = onNext == null && !busy
+        ? ActionButtons.outlinedButton(
+            context,
+            key: nextKey,
+            label: nextLabel,
+            isExpanded: true,
+            square: true,
+          )
+        : ActionButtons.primaryButton(
+            context,
+            key: nextKey,
+            label: nextLabel,
+            onPressed: onNext,
+            isLoading: busy,
+            isExpanded: true,
+            square: true,
+          );
 
     return Row(
       children: [
@@ -369,9 +336,3 @@ String onboardingCountKey(int n) => switch (n) {
   10 => 'ten',
   _ => 'other',
 };
-
-/// The edge a field takes on these screens: one hairline, square corners.
-InputBorder onboardingFieldBorder(ColorScheme cs) => ButleryFieldBorder(
-  borderRadius: BorderRadius.zero,
-  borderSide: BorderSide(color: cs.outline),
-);
