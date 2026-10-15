@@ -123,7 +123,7 @@ class _Figures extends StatelessWidget {
 }
 
 /// "Visa detaljer" / "Dölj detaljer": a 48 dp row between hairlines, the
-/// label 13/600 and the chevron in text.link (#inkopmerge draws the old
+/// label 14/600 and the chevron in text.link (#inkopmerge draws the old
 /// #A15A0A, which text.link replaced, as app_colors.dart records). Open,
 /// the lower hairline is text.primary (#inkopmergeoppen).
 class _DetailsToggle extends StatelessWidget {
@@ -169,7 +169,7 @@ class _DetailsToggle extends StatelessWidget {
                       open
                           ? l.shoppingMergeHideDetails
                           : l.shoppingMergeShowDetails,
-                      style: AppTextStyles.bodySmall.copyWith(color: link),
+                      style: AppTextStyles.labelLarge.copyWith(color: link),
                     ),
                   ),
                   ButleryIcon(
@@ -187,7 +187,7 @@ class _DetailsToggle extends StatelessWidget {
   }
 }
 
-/// One switch as drawn: a checkbox, the title 13/700 in text.primary
+/// One switch as drawn: a checkbox, the title 14/700 in text.primary
 /// and the description 12/400 in text.secondary, at least 48 dp tall.
 class _SwitchRow extends StatelessWidget {
   const _SwitchRow({
@@ -248,7 +248,7 @@ class _SwitchRow extends StatelessWidget {
                           children: [
                             Text(
                               title,
-                              style: AppTextStyles.bodySmallBold.copyWith(
+                              style: AppTextStyles.bodyBold.copyWith(
                                 color: cs.onSurface,
                               ),
                             ),
