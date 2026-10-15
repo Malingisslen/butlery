@@ -4,6 +4,7 @@
 // lib/views/unified_shopping_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -600,47 +601,42 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   Future<void> _showTemplateBrowser() async {
     await showButleryDialog<void>(
       context: context,
-      builder: (context) => Dialog(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: AppDimensions.dialogMaxWidthMedium,
-            maxHeight: 500,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.space12),
-                child: ButlerySheetHeader(
-                  title: context.l10n.shoppingTemplates,
-                  closeLabel: context.l10n.commonClose,
-                ),
+      builder: (context) => ButleryDialogFrame(
+        maxHeight: AppDimensions.dialogMaxHeightMedium,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.space12),
+              child: ButlerySheetHeader(
+                title: context.l10n.shoppingTemplates,
+                closeLabel: context.l10n.commonClose,
               ),
-              Expanded(
-                child: ShoppingTemplateBrowser(
-                  onTemplateSelected: (templateId) async {
-                    final successMsg = context.l10n.shoppingTemplateCreated;
-                    Navigator.pop(context);
-                    try {
-                      await _viewModel.createListFromTemplate(templateId);
-                      if (mounted) {
-                        _showSuccessSnackBar(successMsg);
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        SnackBarUtils.showUserFriendlyError(
-                          this.context,
-                          e,
-                          contextAction:
-                              this.context.l10n.shoppingCreateFromTemplate,
-                        );
-                      }
+            ),
+            Expanded(
+              child: ShoppingTemplateBrowser(
+                onTemplateSelected: (templateId) async {
+                  final successMsg = context.l10n.shoppingTemplateCreated;
+                  Navigator.pop(context);
+                  try {
+                    await _viewModel.createListFromTemplate(templateId);
+                    if (mounted) {
+                      _showSuccessSnackBar(successMsg);
                     }
-                  },
-                ),
+                  } catch (e) {
+                    if (mounted) {
+                      SnackBarUtils.showUserFriendlyError(
+                        this.context,
+                        e,
+                        contextAction:
+                            this.context.l10n.shoppingCreateFromTemplate,
+                      );
+                    }
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

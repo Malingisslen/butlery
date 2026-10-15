@@ -137,6 +137,20 @@ const variantSpecs = <VariantSpec>[
         '(spacingSm for space8, iconSizeAction for iconSizeM …)',
   ),
   VariantSpec(
+    'own_bordered_boxes',
+    'BUT-2391',
+    0,
+    'BoxDecoration with both a border and a corner radius outside '
+        'lib/widgets/common/, each its own card, chip or row box',
+  ),
+  VariantSpec(
+    'own_circle_boxes',
+    'BUT-2391',
+    0,
+    'BoxDecoration with shape: BoxShape.circle outside lib/widgets/common/, '
+        'each its own avatar or dot',
+  ),
+  VariantSpec(
     'forbidden_words_sv',
     'BUT-2372',
     0,
@@ -327,6 +341,18 @@ countVariants(CensusSource src) {
         path,
         RegExp(r'\bComponentThemes\.heroButtonStyle\b').allMatches(code).length,
       );
+    }
+    if (!path.startsWith('lib/widgets/common/') &&
+        !path.startsWith('lib/theme/')) {
+      for (final args in callArguments(code, 'BoxDecoration')) {
+        if (namedArgument(args, 'border') != null &&
+            namedArgument(args, 'borderRadius') != null) {
+          add('own_bordered_boxes', path);
+        }
+        if (namedArgument(args, 'shape') == 'BoxShape.circle') {
+          add('own_circle_boxes', path);
+        }
+      }
     }
     if (uiLayer && !path.startsWith('lib/widgets/common/buttons/')) {
       add(

@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -135,163 +136,147 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     final sortedTags = _effectiveTags.toList()..sort();
     final removedTagsList = _removedTags.toList()..sort();
 
-    return Dialog(
-      backgroundColor: cs.surfaceContainerHighest,
-      // No hand-written shape: the dialog theme's radius 8 (Komponentark
-      // v1:336) applies (BUT-1237).
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.dialogMaxHeightSmall,
-          maxHeight: AppDimensions.dialogMaxHeightMedium,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return ButleryDialogFrame(
+      maxHeight: AppDimensions.dialogMaxHeightMedium,
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              // Header
-              Row(
+              ButleryIcon(
+                ButleryIcons.tag,
+                color: cs.onPrimaryContainer,
+                size: AppDimensions.iconSizeM,
+              ),
+              const SizedBox(width: AppDimensions.space8),
+              Semantics(
+                header: true,
+                child: Text(
+                  context.l10n.tagManageTags,
+                  style: AppTextStyles.titleLarge,
+                ),
+              ),
+              const Spacer(),
+              ButleryCloseButton(semanticLabel: context.l10n.commonClose),
+            ],
+          ),
+          const ButleryDivider(spacing: AppDimensions.space32),
+
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ButleryIcon(
-                    ButleryIcons.tag,
-                    color: cs.onPrimaryContainer,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  const SizedBox(width: AppDimensions.space8),
+                  if (sortedTags.isNotEmpty) ...[
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        context.l10n.tagActiveTags,
+                        style: AppTextStyles.titleSmall,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.space4),
+                    Wrap(
+                      spacing: AppDimensions.space4,
+                      runSpacing: AppDimensions.space4,
+                      children: sortedTags
+                          .map((tag) => _buildTagChip(tag))
+                          .toList(),
+                    ),
+                    const SizedBox(height: AppDimensions.space12),
+                  ],
+
+                  if (removedTagsList.isNotEmpty) ...[
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        context.l10n.tagRemovedTags,
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.space4),
+                    Wrap(
+                      spacing: AppDimensions.space4,
+                      runSpacing: AppDimensions.space4,
+                      children: removedTagsList
+                          .map((tag) => _buildRemovedTagChip(tag))
+                          .toList(),
+                    ),
+                    const SizedBox(height: AppDimensions.space12),
+                  ],
+
                   Semantics(
                     header: true,
                     child: Text(
-                      context.l10n.tagManageTags,
-                      style: AppTextStyles.titleLarge,
+                      context.l10n.tagAddNewTag,
+                      style: AppTextStyles.titleSmall,
                     ),
                   ),
-                  const Spacer(),
-                  ButleryCloseButton(semanticLabel: context.l10n.commonClose),
-                ],
-              ),
-              const ButleryDivider(spacing: AppDimensions.space32),
-
-              // Tags list
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Active tags section
-                      if (sortedTags.isNotEmpty) ...[
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            context.l10n.tagActiveTags,
-                            style: AppTextStyles.titleSmall,
+                  const SizedBox(height: AppDimensions.space4),
+                  Form(
+                    key: _formKey,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: StyledInput(
+                            // The section heading above already stands where a label would,
+                            // so the field takes its name for screen readers only.
+                            semanticLabel: context.l10n.tagAddNewTag,
+                            controller: _newTagController,
+                            hint: context.l10n.tagWriteTagHint,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.space12,
+                              vertical: AppDimensions.space8,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return context.l10n.tagEnterTag;
+                              }
+                              if (value.trim().length < 2) {
+                                return context.l10n.tagMinTwoChars;
+                              }
+                              return null;
+                            },
+                            onSubmitted: (_) => _addNewTag(),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Wrap(
-                          spacing: AppDimensions.space4,
-                          runSpacing: AppDimensions.space4,
-                          children: sortedTags
-                              .map((tag) => _buildTagChip(tag))
-                              .toList(),
+                        const SizedBox(width: AppDimensions.space4),
+                        AppIconButton(
+                          icon: ButleryIcons.plus,
+                          semanticLabel: context.l10n.tagAddTag,
+                          onPressed: _addNewTag,
+                          filled: true,
                         ),
-                        const SizedBox(height: AppDimensions.space12),
                       ],
-
-                      // Removed tags section (can be restored)
-                      if (removedTagsList.isNotEmpty) ...[
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            context.l10n.tagRemovedTags,
-                            style: AppTextStyles.titleSmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Wrap(
-                          spacing: AppDimensions.space4,
-                          runSpacing: AppDimensions.space4,
-                          children: removedTagsList
-                              .map((tag) => _buildRemovedTagChip(tag))
-                              .toList(),
-                        ),
-                        const SizedBox(height: AppDimensions.space12),
-                      ],
-
-                      // Add new tag
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          context.l10n.tagAddNewTag,
-                          style: AppTextStyles.titleSmall,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.space4),
-                      Form(
-                        key: _formKey,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              // The section heading above already stands where a label would,
-                              // so the field takes its name for screen readers only.
-                              child: StyledInput(
-                                semanticLabel: context.l10n.tagAddNewTag,
-                                controller: _newTagController,
-                                hint: context.l10n.tagWriteTagHint,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.space12,
-                                  vertical: AppDimensions.space8,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return context.l10n.tagEnterTag;
-                                  }
-                                  if (value.trim().length < 2) {
-                                    return context.l10n.tagMinTwoChars;
-                                  }
-                                  return null;
-                                },
-                                onSubmitted: (_) => _addNewTag(),
-                              ),
-                            ),
-                            const SizedBox(width: AppDimensions.space4),
-                            AppIconButton(
-                              icon: ButleryIcons.plus,
-                              semanticLabel: context.l10n.tagAddTag,
-                              onPressed: _addNewTag,
-                              filled: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppDimensions.space12),
-              const ButleryDivider(),
-              const SizedBox(height: AppDimensions.space8),
-
-              // Actions
-              // OverflowBar hands the buttons loose constraints, which the
-              // theme's infinite minimum button width needs; a Row would not.
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                spacing: AppDimensions.space8,
-                children: [
-                  const DialogCancelButton(),
-                  ButleryDialogPrimary(
-                    label: context.l10n.commonSave,
-                    onPressed: _save,
+                    ),
                   ),
                 ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.space12),
+          const ButleryDivider(),
+          const SizedBox(height: AppDimensions.space8),
+
+          // OverflowBar hands the buttons loose constraints, which the
+          // theme's infinite minimum button width needs; a Row would not.
+          OverflowBar(
+            alignment: MainAxisAlignment.end,
+            spacing: AppDimensions.space8,
+            children: [
+              const DialogCancelButton(),
+              ButleryDialogPrimary(
+                label: context.l10n.commonSave,
+                onPressed: _save,
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/edit_group_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -114,101 +115,89 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.dialogMaxWidthMedium,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              DialogHeader(
-                title: context.l10n.socialEditGroup,
-                icon: ButleryIcons.pencil,
-                onClose: () => Navigator.of(context).pop(),
-              ),
+    return ButleryDialogFrame(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DialogHeader(
+              title: context.l10n.socialEditGroup,
+              icon: ButleryIcons.pencil,
+              onClose: () => Navigator.of(context).pop(),
+            ),
 
-              // Content — scrollable to prevent overflow when error is shown
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.space12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Emoji selection
-                      EmojiSelector(
-                        selectedEmoji: _selectedEmoji,
-                        onEmojiSelected: (emoji) {
-                          if (mounted) {
-                            setState(() {
-                              _selectedEmoji = emoji;
-                            });
-                          }
-                        },
-                      ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.space12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    EmojiSelector(
+                      selectedEmoji: _selectedEmoji,
+                      onEmojiSelected: (emoji) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedEmoji = emoji;
+                          });
+                        }
+                      },
+                    ),
 
-                      const SizedBox(height: AppDimensions.space12),
+                    const SizedBox(height: AppDimensions.space12),
 
-                      // Group name
-                      StyledInput(
-                        label: '${context.l10n.socialGroupName} *',
-                        controller: _nameController,
-                        prefixIcon: const ButleryIcon(ButleryIcons.users),
-                        // BUT-517: chain content-filter onto group-name rules.
-                        validator: FormValidators.combine([
-                          (v) => ValidationUtils.validateGroupName(v),
-                          FormValidators.contentFilter(
-                            context.l10n.socialGroupName,
-                          ),
-                        ]),
-                        maxLength: 50,
-                        textCapitalization: TextCapitalization.words,
-                      ),
-
-                      const SizedBox(height: AppDimensions.space8),
-
-                      // Description (optional)
-                      StyledInput(
-                        label: context.l10n.groupDescriptionLabel,
-                        controller: _descriptionController,
-                        hint: context.l10n.groupDescriptionHint,
-                        prefixIcon: const ButleryIcon(ButleryIcons.file),
-                        // BUT-517
-                        validator: FormValidators.contentFilter(
-                          context.l10n.groupDescriptionLabel,
+                    StyledInput(
+                      label: '${context.l10n.socialGroupName} *',
+                      controller: _nameController,
+                      prefixIcon: const ButleryIcon(ButleryIcons.users),
+                      // BUT-517: chain content-filter onto group-name rules.
+                      validator: FormValidators.combine([
+                        (v) => ValidationUtils.validateGroupName(v),
+                        FormValidators.contentFilter(
+                          context.l10n.socialGroupName,
                         ),
-                        maxLines: 3,
-                        maxLength: 200,
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
+                      ]),
+                      maxLength: 50,
+                      textCapitalization: TextCapitalization.words,
+                    ),
 
-                      // Error display
-                      if (_error != null) ...[
-                        const SizedBox(height: AppDimensions.space8),
-                        ErrorDisplayWidget(errorMessage: _error!),
-                      ],
+                    const SizedBox(height: AppDimensions.space8),
+
+                    StyledInput(
+                      label: context.l10n.groupDescriptionLabel,
+                      controller: _descriptionController,
+                      hint: context.l10n.groupDescriptionHint,
+                      prefixIcon: const ButleryIcon(ButleryIcons.file),
+                      // BUT-517
+                      validator: FormValidators.contentFilter(
+                        context.l10n.groupDescriptionLabel,
+                      ),
+                      maxLines: 3,
+                      maxLength: 200,
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
+
+                    if (_error != null) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      ErrorDisplayWidget(errorMessage: _error!),
                     ],
-                  ),
+                  ],
                 ),
               ),
+            ),
 
-              // Actions
-              DialogFooter(
-                primaryActionText: _isUpdating
-                    ? context.l10n.statusSaving
-                    : context.l10n.commonSaveChanges,
-                secondaryActionText: context.l10n.commonCancel,
-                onPrimaryAction: _isUpdating ? null : _updateGroup,
-                onSecondaryAction: () => Navigator.of(context).pop(),
-                isLoading: _isUpdating,
-                primaryActionIcon: ButleryIcons.save,
-              ),
-            ],
-          ),
+            DialogFooter(
+              primaryActionText: _isUpdating
+                  ? context.l10n.statusSaving
+                  : context.l10n.commonSaveChanges,
+              secondaryActionText: context.l10n.commonCancel,
+              onPrimaryAction: _isUpdating ? null : _updateGroup,
+              onSecondaryAction: () => Navigator.of(context).pop(),
+              isLoading: _isUpdating,
+              primaryActionIcon: ButleryIcons.save,
+            ),
+          ],
         ),
       ),
     );

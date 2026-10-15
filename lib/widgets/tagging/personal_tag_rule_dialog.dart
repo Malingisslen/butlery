@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
@@ -348,53 +349,46 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.dialogMaxWidthMedium,
-          maxHeight: AppDimensions.dialogMaxHeightLarge,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: AppDimensions.space12),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildNameField(),
-                        const SizedBox(height: AppDimensions.space8),
-                        _buildTagSelector(),
-                        const SizedBox(height: AppDimensions.space8),
-                        _buildMatchModeSelector(),
-                        const SizedBox(height: AppDimensions.space8),
-                        _buildConditionsSection(),
-                        const SizedBox(height: AppDimensions.space8),
-                        _buildEnabledSwitch(),
-                        if (widget.showApplyToExisting) ...[
-                          const SizedBox(height: AppDimensions.space8),
-                          _buildApplyToExistingSection(),
-                        ],
-                        if (_error != null) ...[
-                          const SizedBox(height: AppDimensions.space8),
-                          _buildError(),
-                        ],
-                      ],
-                    ),
-                  ),
+    return ButleryDialogFrame(
+      maxHeight: AppDimensions.dialogMaxHeightLarge,
+      padding: const EdgeInsets.all(AppDimensions.space16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: AppDimensions.space12),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildNameField(),
+                    const SizedBox(height: AppDimensions.space8),
+                    _buildTagSelector(),
+                    const SizedBox(height: AppDimensions.space8),
+                    _buildMatchModeSelector(),
+                    const SizedBox(height: AppDimensions.space8),
+                    _buildConditionsSection(),
+                    const SizedBox(height: AppDimensions.space8),
+                    _buildEnabledSwitch(),
+                    if (widget.showApplyToExisting) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      _buildApplyToExistingSection(),
+                    ],
+                    if (_error != null) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      _buildError(),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: AppDimensions.space12),
-                _buildActions(),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: AppDimensions.space12),
+            _buildActions(),
+          ],
         ),
       ),
     );

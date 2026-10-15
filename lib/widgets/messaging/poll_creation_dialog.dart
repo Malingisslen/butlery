@@ -2,6 +2,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/messaging/poll.dart';
@@ -131,131 +132,119 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Dialog(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(AppDimensions.radiusControl),
-        ),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        // Scrolls when the fields are taller than the space the dialog gets,
-        // such as with the keyboard up.
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.space16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                _isRecipeMode
-                    ? context.l10n.pickRecipesToVote
-                    : context.l10n.pollCreateTitle,
-                style: AppTextStyles.titleMedium,
-              ),
-              const SizedBox(height: AppDimensions.space16),
+    return ButleryDialogFrame(
+      // Scrolls when the fields are taller than the space the dialog gets,
+      // such as with the keyboard up.
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppDimensions.space16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _isRecipeMode
+                  ? context.l10n.pickRecipesToVote
+                  : context.l10n.pollCreateTitle,
+              style: AppTextStyles.titleMedium,
+            ),
+            const SizedBox(height: AppDimensions.space16),
 
-              // Question field
-              StyledInput(
-                label: context.l10n.pollQuestionLabel,
-                hint: context.l10n.pollQuestionHint,
-                controller: _questionController,
-                onChanged: (_) => setState(() {}),
-                maxLines: 2,
-              ),
-              const SizedBox(height: AppDimensions.space16),
+            StyledInput(
+              label: context.l10n.pollQuestionLabel,
+              hint: context.l10n.pollQuestionHint,
+              controller: _questionController,
+              onChanged: (_) => setState(() {}),
+              maxLines: 2,
+            ),
+            const SizedBox(height: AppDimensions.space16),
 
-              if (_isRecipeMode)
-                ..._buildRecipeOptionsList(context)
-              else ...[
-                // Option fields
-                ...List.generate(_optionControllers.length, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: AppDimensions.space8,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: LabeledField(
-                            label: context.l10n.pollOptionLabel(
-                              index + 1,
-                            ),
-                            child: TextField(
-                              controller: _optionControllers[index],
-                              onChanged: (_) => setState(() {}),
-                            ),
+            if (_isRecipeMode)
+              ..._buildRecipeOptionsList(context)
+            else ...[
+              ...List.generate(_optionControllers.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppDimensions.space8,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: LabeledField(
+                          label: context.l10n.pollOptionLabel(
+                            index + 1,
+                          ),
+                          child: TextField(
+                            controller: _optionControllers[index],
+                            onChanged: (_) => setState(() {}),
                           ),
                         ),
-                        if (_optionControllers.length > 2)
-                          AppIconButton(
-                            icon: ButleryIcons.x,
-                            color: cs.error,
-                            iconSize: AppDimensions.iconSizeM,
-                            semanticLabel: context.l10n.tooltipRemoveOption,
-                            onPressed: () => _removeOption(index),
-                          ),
-                      ],
-                    ),
-                  );
-                }),
-
-                // Add option button
-                if (_optionControllers.length < 4)
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: ButleryTextButton(
-                      label: context.l10n.pollAddOption,
-                      icon: ButleryIcons.plus,
-                      onPressed: _addOption,
-                    ),
+                      ),
+                      if (_optionControllers.length > 2)
+                        AppIconButton(
+                          icon: ButleryIcons.x,
+                          color: cs.error,
+                          iconSize: AppDimensions.iconSizeM,
+                          semanticLabel: context.l10n.tooltipRemoveOption,
+                          onPressed: () => _removeOption(index),
+                        ),
+                    ],
                   ),
-              ],
+                );
+              }),
 
-              const SizedBox(height: AppDimensions.space8),
-
-              // Multiple choice toggle
-              Row(
-                children: [
-                  ButlerySwitch(
-                    value: _allowMultiple,
-                    onChanged: (v) => setState(() => _allowMultiple = v),
-                    // The theme's switch: ink track, paper knob when on
-                    // (feedback_themes.dart switchTheme). An ink knob on the
-                    // ink track vanished in both modes.
+              if (_optionControllers.length < 4)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: ButleryTextButton(
+                    label: context.l10n.pollAddOption,
+                    icon: ButleryIcons.plus,
+                    onPressed: _addOption,
                   ),
-                  const SizedBox(width: AppDimensions.space8),
-                  Text(
-                    context.l10n.pollAllowMultiple,
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppDimensions.space16),
-
-              // Action buttons. An OverflowBar stacks them when a narrow
-              // phone cannot fit both on one line.
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                overflowAlignment: OverflowBarAlignment.end,
-                spacing: AppDimensions.space8,
-                overflowSpacing: AppDimensions.space8,
-                children: [
-                  ButleryTextButton(
-                    label: context.l10n.pollCancel,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  ActionButtons.primaryButton(
-                    context,
-                    label: context.l10n.pollCreate,
-                    onPressed: _isValid ? _submit : null,
-                  ),
-                ],
-              ),
+                ),
             ],
-          ),
+
+            const SizedBox(height: AppDimensions.space8),
+
+            Row(
+              children: [
+                // The theme's switch: ink track, paper knob when on
+                // (feedback_themes.dart switchTheme). An ink knob on the
+                // ink track vanished in both modes.
+                ButlerySwitch(
+                  value: _allowMultiple,
+                  onChanged: (v) => setState(() => _allowMultiple = v),
+                ),
+                const SizedBox(width: AppDimensions.space8),
+                Text(
+                  context.l10n.pollAllowMultiple,
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppDimensions.space16),
+
+            // An OverflowBar stacks the buttons when a narrow phone cannot
+            // fit both on one line.
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              overflowAlignment: OverflowBarAlignment.end,
+              spacing: AppDimensions.space8,
+              overflowSpacing: AppDimensions.space8,
+              children: [
+                ButleryTextButton(
+                  label: context.l10n.pollCancel,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.pollCreate,
+                  onPressed: _isValid ? _submit : null,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

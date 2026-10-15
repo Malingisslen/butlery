@@ -39,6 +39,8 @@ import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/brand/start_splash.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 class InitializationWrapper extends StatelessWidget {
@@ -375,18 +377,12 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space24),
-                SizedBox(
-                  width: double.infinity,
-                  height: AppDimensions.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.surfaceContainerHighest,
-                      shape: const RoundedRectangleBorder(),
-                    ),
-                    child: Text(l10n.onboardingResumeCta),
-                  ),
+                ActionButtons.primaryButton(
+                  ctx,
+                  label: l10n.onboardingResumeCta,
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  isExpanded: true,
+                  square: true,
                 ),
               ],
             ),
@@ -432,9 +428,9 @@ class _ProfileLoadErrorView extends StatelessWidget {
             if (onSignOut != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppDimensions.space24),
-                child: TextButton(
+                child: ButleryTextButton(
+                  label: context.l10n.profileLogout,
                   onPressed: onSignOut,
-                  child: Text(context.l10n.profileLogout),
                 ),
               ),
           ],
