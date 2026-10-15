@@ -13,7 +13,7 @@ import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Opens the amount sheet for [line]; completes with true when the
 /// household's amount was saved, false when it was removed, null when the
@@ -174,28 +174,24 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        LabeledField(
+                        StyledInput(
                           label: l10n.nutritionAmountFieldLabel,
-                          child: TextField(
-                            controller: _controller,
-                            autofocus: true,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9.,]'),
-                              ),
-                            ],
-                            onChanged: (_) {
-                              if (_invalid) setState(() => _invalid = false);
-                            },
-                            decoration: InputDecoration(
-                              errorText: _invalid
-                                  ? l10n.nutritionAmountInvalid
-                                  : null,
-                            ),
+                          controller: _controller,
+                          autofocus: true,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
                           ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.,]'),
+                            ),
+                          ],
+                          onChanged: (_) {
+                            if (_invalid) setState(() => _invalid = false);
+                          },
+                          errorText: _invalid
+                              ? l10n.nutritionAmountInvalid
+                              : null,
                         ),
                         const SizedBox(height: AppDimensions.space8),
                         Semantics(

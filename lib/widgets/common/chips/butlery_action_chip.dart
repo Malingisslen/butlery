@@ -7,12 +7,17 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ButleryActionChip extends StatelessWidget {
   const ButleryActionChip({
     required this.label,
     required this.onPressed,
+    this.icon,
+    this.tooltip,
+    this.struckThrough = false,
     super.key,
   });
 
@@ -21,11 +26,30 @@ class ButleryActionChip extends StatelessWidget {
   /// Null disables the chip.
   final VoidCallback? onPressed;
 
+  /// A glyph before the words, such as the undo arrow on a restorable tag.
+  final IconData? icon;
+  final String? tooltip;
+
+  /// The words read as taken away until the chip is pressed.
+  final bool struckThrough;
+
   @override
   Widget build(BuildContext context) {
     return PressFill(
       surface: PressSurface.base,
-      child: ActionChip(label: Text(label), onPressed: onPressed),
+      child: ActionChip(
+        label: Text(
+          label,
+          style: struckThrough
+              ? const TextStyle(decoration: TextDecoration.lineThrough)
+              : null,
+        ),
+        avatar: icon == null
+            ? null
+            : ButleryIcon(icon!, size: AppDimensions.iconSizeS),
+        tooltip: tooltip,
+        onPressed: onPressed,
+      ),
     );
   }
 }

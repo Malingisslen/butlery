@@ -1,7 +1,7 @@
 // lib/views/unified_shopping/widgets/shopping_list_header.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -10,10 +10,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Header section with the list selector and its management buttons.
 ///
@@ -67,44 +65,15 @@ class ShoppingListHeader {
           const Spacer()
         else
           Expanded(
-            child: Container(
-              padding: AppDimensions.paddingSymmetric16x12,
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-                border: Border.all(color: cs.outlineVariant),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: PressFill(
-                  surface: PressSurface.base,
-                  child: DropdownButton<String>(
-                    iconEnabledColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    iconDisabledColor: AppModeColors.textDisabled(
-                      Theme.of(context).brightness,
-                    ),
-                    value: viewModel.activeList?.id,
-                    hint: Text(context.l10n.shoppingSelectList),
-                    isExpanded: true,
-                    // The list's name over its item count grows with the text
-                    // size, so the button takes its content's height.
-                    itemHeight: null,
-                    icon: const ButleryIcon(ButleryIcons.chevronDown),
-                    onChanged: (listId) {
-                      if (listId != null) {
-                        viewModel.setActiveList(listId);
-                      }
-                    },
-                    items: viewModel.lists.map((list) {
-                      return DropdownMenuItem<String>(
-                        value: list.id,
-                        child: _buildListDropdownItem(context, list),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+            child: ButleryDropdown<String>(
+              semanticLabel: context.l10n.shoppingSelectList,
+              hint: context.l10n.shoppingSelectList,
+              value: viewModel.activeList?.id,
+              closedShowsSubtitle: true,
+              options: [
+                for (final list in viewModel.lists) _listOption(context, list),
+              ],
+              onChanged: viewModel.setActiveList,
             ),
           ),
 
@@ -176,12 +145,11 @@ class ShoppingListHeader {
   }
 
   /// Build enhanced dropdown item with sharing status indicators
-  static Widget _buildListDropdownItem(
+  static ButleryDropdownOption<String> _listOption(
     BuildContext context,
     UnifiedShoppingList list,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
 
@@ -242,48 +210,14 @@ class ShoppingListHeader {
         break;
     }
 
-    return Row(
-      children: [
-        ButleryIcon(
-          sharingIcon,
-          size: AppDimensions.iconSizeM,
-          color: sharingColor,
-        ),
-        const SizedBox(width: AppDimensions.space4),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // BUT-2193 (Malin, 2026-10-03): cut at the normal text size.
-              Text(
-                list.name,
-                style: AppTextStyles.contentLabel,
-                maxLines: largeText ? null : 1,
-                overflow: largeText ? null : TextOverflow.ellipsis,
-              ),
-              Wrap(
-                children: [
-                  Text(
-                    context.l10n.shoppingItemCount(list.items.length),
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                  if (permissionText != null) ...[
-                    Text(
-                      ' • $permissionText',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: permissionTextColor ?? sharingColor,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
+    return ButleryDropdownOption<String>(
+      value: list.id,
+      label: list.name,
+      icon: sharingIcon,
+      iconColor: sharingColor,
+      subtitle: context.l10n.shoppingItemCount(list.items.length),
+      subtitleSuffix: permissionText,
+      subtitleSuffixColor: permissionTextColor ?? sharingColor,
     );
   }
 }

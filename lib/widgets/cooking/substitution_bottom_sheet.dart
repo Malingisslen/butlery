@@ -76,7 +76,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space16),
             if (suggestions.isEmpty)
-              _EmptyState(isOffline: isOffline)
+              _NoSuggestionsBody(isOffline: isOffline)
             else
               ...suggestions.map(
                 (s) => Padding(
@@ -190,13 +190,13 @@ class _RatioBadge extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
+class _NoSuggestionsBody extends StatelessWidget {
   /// BUT-1360: offline → explain unavailability rather than the generic
   /// "no suggestions" copy, and hide the future-feature CTA (it can't work
   /// offline either).
   final bool isOffline;
 
-  const _EmptyState({this.isOffline = false});
+  const _NoSuggestionsBody({this.isOffline = false});
 
   @override
   Widget build(BuildContext context) {

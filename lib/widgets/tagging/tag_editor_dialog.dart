@@ -1,8 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -12,7 +11,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
+import 'package:butlery/widgets/common/chips/butlery_removable_chip.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -236,33 +236,24 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             Expanded(
                               // The section heading above already stands where a label would,
                               // so the field takes its name for screen readers only.
-                              child: Semantics(
-                                label: context.l10n.tagAddNewTag,
-                                child: LabeledField(
-                                  child: TextFormField(
-                                    errorBuilder: FieldErrorLine.builder,
-                                    controller: _newTagController,
-                                    decoration: InputDecoration(
-                                      hintText: context.l10n.tagWriteTagHint,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: AppDimensions.space12,
-                                            vertical: AppDimensions.space8,
-                                          ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return context.l10n.tagEnterTag;
-                                      }
-                                      if (value.trim().length < 2) {
-                                        return context.l10n.tagMinTwoChars;
-                                      }
-                                      return null;
-                                    },
-                                    onFieldSubmitted: (_) => _addNewTag(),
-                                  ),
+                              child: StyledInput(
+                                semanticLabel: context.l10n.tagAddNewTag,
+                                controller: _newTagController,
+                                hint: context.l10n.tagWriteTagHint,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.space12,
+                                  vertical: AppDimensions.space8,
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return context.l10n.tagEnterTag;
+                                  }
+                                  if (value.trim().length < 2) {
+                                    return context.l10n.tagMinTwoChars;
+                                  }
+                                  return null;
+                                },
+                                onSubmitted: (_) => _addNewTag(),
                               ),
                             ),
                             const SizedBox(width: AppDimensions.space4),
@@ -309,46 +300,24 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     final isUserAdded = _isUserAdded(tag);
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
-    return PressFill(
-      surface: PressSurface.base,
-      child: InputChip(
-        label: Text(displayName),
-        deleteIcon: const ButleryIcon(
-          ButleryIcons.x,
-          size: AppDimensions.iconSize18,
-        ),
-        onDeleted: () => _removeTag(tag),
-        avatar: isUserAdded
-            ? const ButleryIcon(
-                ButleryIcons.user,
-                size: AppDimensions.iconSizeS,
-              )
-            : null,
-        tooltip: isUserAdded
-            ? context.l10n.tagManuallyAdded
-            : context.l10n.tagAutoGenerated,
-      ),
+    return ButleryRemovableChip(
+      label: displayName,
+      removeLabel: context.l10n.commonRemove,
+      onRemove: () => _removeTag(tag),
+      icon: isUserAdded ? ButleryIcons.user : null,
+      tooltip: isUserAdded
+          ? context.l10n.tagManuallyAdded
+          : context.l10n.tagAutoGenerated,
     );
   }
 
   Widget _buildRemovedTagChip(String tag) {
-    final displayName = TagDisplayUtils.getDisplayName(tag);
-
-    return PressFill(
-      surface: PressSurface.base,
-      child: ActionChip(
-        // A removed tag reads struck through until it is restored.
-        label: Text(
-          displayName,
-          style: const TextStyle(decoration: TextDecoration.lineThrough),
-        ),
-        avatar: const ButleryIcon(
-          ButleryIcons.undo,
-          size: AppDimensions.iconSizeS,
-        ),
-        onPressed: () => _restoreTag(tag),
-        tooltip: context.l10n.tagClickToRestore,
-      ),
+    return ButleryActionChip(
+      label: TagDisplayUtils.getDisplayName(tag),
+      icon: ButleryIcons.undo,
+      struckThrough: true,
+      onPressed: () => _restoreTag(tag),
+      tooltip: context.l10n.tagClickToRestore,
     );
   }
 }

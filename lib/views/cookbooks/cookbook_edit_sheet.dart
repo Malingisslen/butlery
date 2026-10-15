@@ -1,5 +1,6 @@
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -285,13 +286,10 @@ class _CoverKindPicker extends StatelessWidget {
           CookbookCoverKind.recipe,
           CookbookCoverKind.color,
         ])
-          PressFill(
-            surface: kind == selected ? PressSurface.ink : PressSurface.base,
-            child: ChoiceChip(
-              label: Text(label(kind)),
-              selected: kind == selected,
-              onSelected: (_) => onSelected(kind),
-            ),
+          ButleryChoiceChip(
+            label: label(kind),
+            selected: kind == selected,
+            onSelected: (_) => onSelected(kind),
           ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -150,6 +151,47 @@ void main() {
     });
   });
 
+  group('StyledInput initialValue', () {
+    testWidgets('starts with the given text when it has no controller', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        const StyledInput(label: 'Källa', initialValue: 'https://a.se'),
+      );
+      expect(find.text('https://a.se'), findsOneWidget);
+    });
+  });
+
+  group('ButleryTextButton', () {
+    testWidgets('expanded fills the width it is given and fires', (
+      tester,
+    ) async {
+      var pressed = 0;
+      Widget button({required bool expanded}) => Align(
+        alignment: Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: ButleryTextButton(
+            label: 'Hoppa över',
+            expanded: expanded,
+            tone: ButleryTextButtonTone.muted,
+            onPressed: () => pressed++,
+          ),
+        ),
+      );
+
+      await pump(tester, button(expanded: false));
+      final hugging = tester.getSize(find.byType(TextButton)).width;
+      await pump(tester, button(expanded: true));
+
+      expect(tester.getSize(find.byType(TextButton)).width, 300);
+      expect(hugging, lessThan(300));
+      await tester.tap(find.text('Hoppa över'));
+      expect(pressed, 1);
+    });
+  });
+
   group('ButleryDropdown', () {
     testWidgets('square uses a cornerless edge', (tester) async {
       await pump(
@@ -170,6 +212,45 @@ void main() {
         (decoration.enabledBorder! as dynamic).borderRadius,
         BorderRadius.zero,
       );
+    });
+
+    testWidgets('a header cannot be picked and an error option reads red', (
+      tester,
+    ) async {
+      String? picked;
+      await pump(
+        tester,
+        ButleryDropdown<String>(
+          semanticLabel: 'Egenskap',
+          value: 'gamla',
+          options: const [
+            ButleryDropdownOption(
+              value: '#h',
+              label: 'Allergener',
+              header: true,
+            ),
+            ButleryDropdownOption(
+              value: 'gluten',
+              label: 'gluten',
+              indented: true,
+            ),
+            ButleryDropdownOption(value: 'gamla', label: 'gamla', error: true),
+          ],
+          onChanged: (v) => picked = v,
+        ),
+      );
+      final closed = tester.widget<Text>(find.text('gamla'));
+      expect(closed.style?.color, AppTheme.lightTheme.colorScheme.error);
+
+      await tester.tap(find.byType(ButleryDropdown<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Allergener').last);
+      await tester.pumpAndSettle();
+      expect(picked, isNull);
+
+      await tester.tap(find.text('gluten').last);
+      await tester.pumpAndSettle();
+      expect(picked, 'gluten');
     });
   });
 

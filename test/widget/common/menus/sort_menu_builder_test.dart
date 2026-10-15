@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 
 /// Builds a host that opens a PopupMenu seeded with [criteria]/[ascending].
@@ -23,13 +24,14 @@ Widget _menuHost({
     locale: const Locale('sv'),
     home: Scaffold(
       body: Builder(
-        builder: (context) => PopupMenuButton<SortCriteria>(
-          itemBuilder: (ctx) => SortMenuBuilder.buildItems(
-            context: ctx,
+        builder: (context) => ButleryMenu<SortCriteria>(
+          semanticLabel: 'Sortera',
+          choices: SortMenuBuilder.buildChoices(
+            context: context,
             currentSort: currentSort,
             sortAscending: sortAscending,
           ),
-          onSelected: onSelected,
+          onSelected: onSelected ?? (_) {},
           child: const Text('Open'),
         ),
       ),
@@ -38,11 +40,11 @@ Widget _menuHost({
 }
 
 void main() {
-  group('SortMenuBuilder.buildItems', () {
+  group('SortMenuBuilder.buildChoices', () {
     testWidgets('produces exactly 8 entries — one per shipped SortCriteria', (
       tester,
     ) async {
-      late List<PopupMenuItem<SortCriteria>> items;
+      late List<ButleryMenuChoice<SortCriteria>> items;
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -51,7 +53,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) {
-                items = SortMenuBuilder.buildItems(
+                items = SortMenuBuilder.buildChoices(
                   context: context,
                   currentSort: SortCriteria.title,
                   sortAscending: true,
@@ -66,7 +68,7 @@ void main() {
     });
 
     testWidgets('items carry the expected SortCriteria values', (tester) async {
-      late List<PopupMenuItem<SortCriteria>> items;
+      late List<ButleryMenuChoice<SortCriteria>> items;
       await tester.pumpWidget(
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -75,7 +77,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) {
-                items = SortMenuBuilder.buildItems(
+                items = SortMenuBuilder.buildChoices(
                   context: context,
                   currentSort: SortCriteria.title,
                   sortAscending: true,

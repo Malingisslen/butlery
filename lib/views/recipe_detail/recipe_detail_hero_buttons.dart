@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -150,7 +151,7 @@ class _PaperRing extends StatelessWidget {
 class RecipeHeroMenuButton<T> extends StatefulWidget {
   const RecipeHeroMenuButton({
     required this.icon,
-    required this.itemBuilder,
+    required this.choices,
     required this.onSelected,
     required this.tooltip,
     this.ringVisible = true,
@@ -160,7 +161,7 @@ class RecipeHeroMenuButton<T> extends StatefulWidget {
   final bool ringVisible;
   final String tooltip;
   final IconData icon;
-  final List<PopupMenuEntry<T>> Function(BuildContext) itemBuilder;
+  final List<ButleryMenuChoice<T>> choices;
   final void Function(T) onSelected;
 
   @override
@@ -191,29 +192,24 @@ class _RecipeHeroMenuButtonState<T> extends State<RecipeHeroMenuButton<T>> {
           child: MouseRegion(
             onEnter: (_) => setState(() => _hovered = true),
             onExit: (_) => setState(() => _hovered = false),
-            // The menu route captures the themes around the button, so its
-            // rows rest on base and take that surface's press.
-            child: PressFill(
-              surface: PressSurface.base,
-              child: PopupMenuButton<T>(
-                padding: EdgeInsets.zero,
-                tooltip: widget.tooltip,
-                style: ButtonStyle(overlayColor: ownPressOverlay),
-                icon: _PaperRing(
-                  pressed: _pressed || _hovered,
-                  visible: widget.ringVisible,
-                  child: ButleryIcon(
-                    widget.icon,
-                    color: _heroIconColor(
-                      cs,
-                      onPaper: widget.ringVisible || _pressed || _hovered,
-                    ),
-                    size: AppDimensions.iconSizeM,
+            child: ButleryMenu<T>(
+              padding: EdgeInsets.zero,
+              semanticLabel: widget.tooltip,
+              style: ButtonStyle(overlayColor: ownPressOverlay),
+              iconWidget: _PaperRing(
+                pressed: _pressed || _hovered,
+                visible: widget.ringVisible,
+                child: ButleryIcon(
+                  widget.icon,
+                  color: _heroIconColor(
+                    cs,
+                    onPaper: widget.ringVisible || _pressed || _hovered,
                   ),
+                  size: AppDimensions.iconSizeM,
                 ),
-                itemBuilder: widget.itemBuilder,
-                onSelected: widget.onSelected,
               ),
+              choices: widget.choices,
+              onSelected: widget.onSelected,
             ),
           ),
         ),

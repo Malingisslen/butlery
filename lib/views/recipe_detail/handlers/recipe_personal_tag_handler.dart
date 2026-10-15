@@ -27,7 +27,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Handler for personal tag operations from recipe detail view.
@@ -305,12 +305,10 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                   ),
                 ),
                 const Spacer(),
-                TextButton(
+                ButleryTextButton(
                   onPressed: () => setState(() => _selectedTagIds.clear()),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.onPrimaryContainer,
-                  ),
-                  child: Text(context.l10n.commonClear),
+                  tone: ButleryTextButtonTone.onSelectionBanner,
+                  label: context.l10n.commonClear,
                 ),
               ],
             ),
@@ -414,23 +412,18 @@ class _QuickTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return PressFill(
-      surface: isSelected ? PressSurface.ink : PressSurface.base,
-      child: FilterChip(
-        label: Text(tag.name),
-        avatar: isSelected
-            ? null
-            : SizedBox.square(
-                dimension: AppDimensions.space12,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
+    return ButleryFilterChip(
+      label: tag.name,
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      unselectedAvatar: SizedBox.square(
+        dimension: AppDimensions.space12,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: cs.onSurface,
+          ),
+        ),
       ),
     );
   }

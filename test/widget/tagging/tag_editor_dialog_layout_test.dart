@@ -36,10 +36,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final field = find.byType(TextFormField);
-    expect(
-      tester.getSemantics(field).getSemanticsData().label,
-      contains('Lägg till ny tagg'),
-    );
+    // The section heading and the field's own wrapper both carry the words.
+    expect(find.bySemanticsLabel('Lägg till ny tagg'), findsNWidgets(2));
 
     await tester.tap(find.byTooltip('Lägg till tagg'));
     await tester.pumpAndSettle();

@@ -4,6 +4,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -72,7 +73,7 @@ void main() {
       expect(find.byType(OutlinedButton), findsNothing);
 
       // The selector itself still renders.
-      expect(find.byType(DropdownButton<String>), findsOneWidget);
+      expect(find.byType(ButleryDropdown<String>), findsOneWidget);
     },
   );
 
@@ -138,26 +139,21 @@ void main() {
         FlutterError.onError = previousOnError;
       }
 
-      final count = find.text(countText);
-      final permission = find.text(permissionText);
-      expect(count, findsOneWidget);
-      expect(permission, findsOneWidget);
-
-      final metaLine = tester.renderObject(count).parent!;
-      final metaLineId = describeIdentity(metaLine);
+      final line = find.textContaining(
+        '$countText$permissionText',
+        findRichText: true,
+      );
+      expect(line, findsOneWidget);
       expect(
-        layoutErrors.where((e) => e.toString().contains(metaLineId)),
+        layoutErrors,
         isEmpty,
         reason: 'the count + permission line must not overflow',
       );
 
-      final lineBox = metaLine as RenderBox;
-      final lineRect = lineBox.localToGlobal(Offset.zero) & lineBox.size;
-      for (final text in [count, permission]) {
-        final rect = tester.getRect(text);
-        expect(rect.left, greaterThanOrEqualTo(lineRect.left));
-        expect(rect.right, lessThanOrEqualTo(lineRect.right));
-      }
+      final rect = tester.getRect(line);
+      final view = tester.view.physicalSize / tester.view.devicePixelRatio;
+      expect(rect.left, greaterThanOrEqualTo(0));
+      expect(rect.right, lessThanOrEqualTo(view.width));
     },
   );
 

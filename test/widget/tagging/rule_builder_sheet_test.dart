@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/widgets/common/input/butlery_switch.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
@@ -244,32 +245,30 @@ void main() {
       ) async {
         await _showSheet(tester);
 
-        // SwitchListTile may be below the fold — scroll to it
+        // The switch row may be below the fold — scroll to it
         final listView = find.descendant(
           of: find.byType(RuleBuilderSheet),
           matching: find.byType(Scrollable),
         );
         await tester.scrollUntilVisible(
-          find.byType(SwitchListTile),
+          find.byType(ButlerySwitch),
           200,
           scrollable: listView.first,
         );
         await tester.pumpAndSettle();
 
-        final switchTile = find.byType(SwitchListTile);
+        final switchTile = find.byType(ButlerySwitch);
         expect(switchTile, findsOneWidget);
 
         // Verify initial state is enabled
-        final before = tester.widget<SwitchListTile>(switchTile);
+        final before = tester.widget<ButlerySwitch>(switchTile);
         expect(before.value, isTrue);
 
         await tester.tap(switchTile);
         await tester.pumpAndSettle();
 
         // After toggle, switch should be disabled
-        final after = tester.widget<SwitchListTile>(
-          find.byType(SwitchListTile),
-        );
+        final after = tester.widget<ButlerySwitch>(find.byType(ButlerySwitch));
         expect(after.value, isFalse);
       });
     });

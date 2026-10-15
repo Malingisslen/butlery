@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
@@ -137,7 +138,7 @@ Future<void> showCookbookNoteDialog(
   required PersonalTag tag,
   required Recipe recipe,
 }) async {
-  final text = await showDialog<String>(
+  final text = await showButleryDialog<String>(
     context: context,
     builder: (_) => _CookbookNoteDialog(
       title: recipe.title,
@@ -177,8 +178,10 @@ class _CookbookNoteDialogState extends State<_CookbookNoteDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(widget.title),
+    return ButleryDialog.confirm(
+      title: widget.title,
+      primaryLabel: l10n.cookbookSave,
+      onPrimary: () => Navigator.of(context).pop(_controller.text),
       content: StyledInput(
         label: l10n.cookbookNoteLabel,
         helperText: l10n.cookbookNoteHelper,
@@ -188,18 +191,6 @@ class _CookbookNoteDialogState extends State<_CookbookNoteDialog> {
         minLines: 2,
         autofocus: true,
       ),
-      actions: [
-        ActionButtons.textButton(
-          context,
-          label: l10n.commonCancel,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        ActionButtons.primaryButton(
-          context,
-          label: l10n.cookbookSave,
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-        ),
-      ],
     );
   }
 }

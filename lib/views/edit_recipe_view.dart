@@ -67,6 +67,7 @@ import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -599,27 +600,20 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         const SizedBox(height: AppDimensions.space32),
 
         // Source URL field
-        LabeledField(
+        StyledInput(
           label: context.l10n.recipeSourceUrl,
-          child: TextFormField(
-            initialValue: viewModel.sourceUrl.orEmpty(),
-            errorBuilder: FieldErrorLine.builder,
-            decoration: InputDecoration(
-              hintText: context.l10n.recipeSourceUrlHint,
-              helperText:
-                  viewModel.sourceUrl == context.l10n.recipeSharedFromApp
-                  ? context.l10n.recipeImportedFromShare
-                  : context.l10n.recipeSourceUrlHelper,
-              prefixIcon: const ButleryIcon(
-                ButleryIcons.link,
-                size: AppDimensions.iconSizeM,
-              ),
-            ),
-            style: AppTextStyles.bodyMedium,
-            keyboardType: TextInputType.url,
-            onChanged: viewModel.setSourceUrl,
-            validator: FormValidators.recipeSourceUrl(),
+          initialValue: viewModel.sourceUrl.orEmpty(),
+          hint: context.l10n.recipeSourceUrlHint,
+          helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
+              ? context.l10n.recipeImportedFromShare
+              : context.l10n.recipeSourceUrlHelper,
+          prefixIcon: const ButleryIcon(
+            ButleryIcons.link,
+            size: AppDimensions.iconSizeM,
           ),
+          keyboardType: TextInputType.url,
+          onChanged: viewModel.setSourceUrl,
+          validator: FormValidators.recipeSourceUrl(),
         ),
         const SizedBox(height: AppDimensions.space32),
 
