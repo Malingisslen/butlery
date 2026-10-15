@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -222,116 +223,101 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: AppDimensions.dialogMaxWidthMedium,
-          maxHeight: AppDimensions.dialogMaxHeightMedium,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              DialogHeader(
-                title: context.l10n.groupCreateNew,
-                icon: ButleryIcons.usersPlus,
-                onClose: () => Navigator.of(context).pop(),
-              ),
+    return ButleryDialogFrame(
+      maxHeight: AppDimensions.dialogMaxHeightMedium,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DialogHeader(
+              title: context.l10n.groupCreateNew,
+              icon: ButleryIcons.usersPlus,
+              onClose: () => Navigator.of(context).pop(),
+            ),
 
-              // Content - Make scrollable to handle overflow
-              // ✅ FIX: Use Flexible instead of Expanded to avoid layout conflicts
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.space12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Emoji selection
-                      EmojiSelector(
-                        selectedEmoji: _selectedEmoji,
-                        onEmojiSelected: (emoji) {
-                          if (mounted) {
-                            setState(() {
-                              _selectedEmoji = emoji;
-                            });
-                            _saveDraft();
-                          }
-                        },
-                      ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.space12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    EmojiSelector(
+                      selectedEmoji: _selectedEmoji,
+                      onEmojiSelected: (emoji) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedEmoji = emoji;
+                          });
+                          _saveDraft();
+                        }
+                      },
+                    ),
 
-                      const SizedBox(height: AppDimensions.space12),
+                    const SizedBox(height: AppDimensions.space12),
 
-                      // ✅ CONSOLIDATED: Group name using standardized form field
-                      DialogFormFields.buildNameField(
-                        context: context,
-                        controller: _nameController,
-                        labelText: context.l10n.socialGroupName,
-                        hintText: context.l10n.groupNameHint,
-                        prefixIcon: ButleryIcons.users,
-                        maxLength: 50,
-                      ),
+                    DialogFormFields.buildNameField(
+                      context: context,
+                      controller: _nameController,
+                      labelText: context.l10n.socialGroupName,
+                      hintText: context.l10n.groupNameHint,
+                      prefixIcon: ButleryIcons.users,
+                      maxLength: 50,
+                    ),
 
-                      // ✅ CONSOLIDATED: Description using standardized form field
-                      DialogFormFields.buildDescriptionField(
-                        context: context,
-                        controller: _descriptionController,
-                        labelText: context.l10n.groupDescriptionLabel,
-                        hintText: context.l10n.groupDescriptionHint,
-                        maxLength: 200,
-                        maxLines: 3,
-                      ),
+                    DialogFormFields.buildDescriptionField(
+                      context: context,
+                      controller: _descriptionController,
+                      labelText: context.l10n.groupDescriptionLabel,
+                      hintText: context.l10n.groupDescriptionHint,
+                      maxLength: 200,
+                      maxLines: 3,
+                    ),
 
-                      const SizedBox(height: AppDimensions.space12),
+                    const SizedBox(height: AppDimensions.space12),
 
-                      // 🆕 FRIEND SELECTION UI
-                      _buildFriendSelectionSection(),
+                    _buildFriendSelectionSection(),
 
-                      // Selected members info
-                      if (_selectedFriendIds.isNotEmpty) ...[
-                        const SizedBox(height: AppDimensions.space8),
-                        Text(
-                          context.l10n.groupSelectedMembers(
-                            _selectedFriendIds.length,
-                          ),
-                          style: AppTextStyles.titleMedium,
+                    if (_selectedFriendIds.isNotEmpty) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      Text(
+                        context.l10n.groupSelectedMembers(
+                          _selectedFriendIds.length,
                         ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Text(
-                          context.l10n.groupInvitationNote,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
+                        style: AppTextStyles.titleMedium,
+                      ),
+                      const SizedBox(height: AppDimensions.space4),
+                      Text(
+                        context.l10n.groupInvitationNote,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
                         ),
-                      ],
-
-                      // Error display
-                      if (_error != null) ...[
-                        const SizedBox(height: AppDimensions.space8),
-                        ErrorDisplayWidget(errorMessage: _error!),
-                      ],
+                      ),
                     ],
-                  ),
+
+                    if (_error != null) ...[
+                      const SizedBox(height: AppDimensions.space8),
+                      ErrorDisplayWidget(errorMessage: _error!),
+                    ],
+                  ],
                 ),
               ),
+            ),
 
-              // Actions
-              DialogFooter(
-                primaryActionText: _isCreating
-                    ? context.l10n.statusCreating
-                    : context.l10n.socialCreateGroup,
-                secondaryActionText: context.l10n.commonCancel,
-                onPrimaryAction: _isCreating ? null : _createGroup,
-                onSecondaryAction: () => Navigator.of(context).pop(),
-                isLoading: _isCreating,
-                primaryActionIcon: ButleryIcons.usersPlus,
-              ),
-            ],
-          ),
+            DialogFooter(
+              primaryActionText: _isCreating
+                  ? context.l10n.statusCreating
+                  : context.l10n.socialCreateGroup,
+              secondaryActionText: context.l10n.commonCancel,
+              onPrimaryAction: _isCreating ? null : _createGroup,
+              onSecondaryAction: () => Navigator.of(context).pop(),
+              isLoading: _isCreating,
+              primaryActionIcon: ButleryIcons.usersPlus,
+            ),
+          ],
         ),
       ),
     );

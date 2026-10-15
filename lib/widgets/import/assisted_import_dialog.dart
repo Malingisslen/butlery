@@ -13,6 +13,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -116,39 +117,35 @@ class _AssistedImportDialogContent extends StatelessWidget {
         if (didPop) return;
         _handleCancel(context, viewModel);
       },
-      child: Dialog(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: dialogWidth.clamp(300, 700),
-            maxHeight: dialogHeight.clamp(400, 800),
-          ),
-          child: Column(
-            children: [
-              ImportDialogHeader(
-                currentStep: viewModel.currentStep,
-                onClose: () => _handleCancel(context, viewModel),
-              ),
-              StepProgressIndicator(
-                currentStep: viewModel.stepNumber,
-                totalSteps: viewModel.totalSteps,
-              ),
-              if (viewModel.thumbnailUrl != null)
-                _ThumbnailBanner(url: viewModel.thumbnailUrl!),
-              Expanded(
-                child: _buildContent(context, viewModel),
-              ),
-              ImportDialogFooter(
-                validationError: viewModel.validateCurrentStep(),
-                canGoBack: viewModel.canGoBack,
-                canProceed: viewModel.canProceed,
-                currentStep: viewModel.currentStep,
-                onBack: viewModel.previousStep,
-                onCancel: () => _handleCancel(context, viewModel),
-                onNext: viewModel.nextStep,
-                onSave: () => _saveRecipe(context, viewModel),
-              ),
-            ],
-          ),
+      child: ButleryDialogFrame(
+        maxWidth: dialogWidth.clamp(300, 700).toDouble(),
+        maxHeight: dialogHeight.clamp(400, 800).toDouble(),
+        child: Column(
+          children: [
+            ImportDialogHeader(
+              currentStep: viewModel.currentStep,
+              onClose: () => _handleCancel(context, viewModel),
+            ),
+            StepProgressIndicator(
+              currentStep: viewModel.stepNumber,
+              totalSteps: viewModel.totalSteps,
+            ),
+            if (viewModel.thumbnailUrl != null)
+              _ThumbnailBanner(url: viewModel.thumbnailUrl!),
+            Expanded(
+              child: _buildContent(context, viewModel),
+            ),
+            ImportDialogFooter(
+              validationError: viewModel.validateCurrentStep(),
+              canGoBack: viewModel.canGoBack,
+              canProceed: viewModel.canProceed,
+              currentStep: viewModel.currentStep,
+              onBack: viewModel.previousStep,
+              onCancel: () => _handleCancel(context, viewModel),
+              onNext: viewModel.nextStep,
+              onSave: () => _saveRecipe(context, viewModel),
+            ),
+          ],
         ),
       ),
     );

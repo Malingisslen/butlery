@@ -10,6 +10,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -229,7 +230,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: AppDimensions.space16),
-                  Text(_error!, style: TextStyle(color: cs.error)),
+                  Text(
+                    _error!,
+                    style: AppTextStyles.bodyMedium.copyWith(color: cs.error),
+                  ),
                 ],
                 const SizedBox(height: AppDimensions.space24),
                 ActionButtons.primaryButton(
@@ -276,9 +280,9 @@ class _AdminNotAuthorized extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.space24),
-              TextButton(
+              ButleryTextButton(
+                label: context.l10n.adminSignOut,
                 onPressed: onSignOut,
-                child: Text(context.l10n.adminSignOut),
               ),
             ],
           ),

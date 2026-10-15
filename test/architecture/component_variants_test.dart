@@ -23,7 +23,9 @@ const variantCeilings = {
   'chevron_sizes': 5,
   'sheet_shape_overrides': 0,
   'direct_font_weights': 4,
-  'hardcoded_max_width': 11,
+  'hardcoded_max_width': 10,
+  'own_bordered_boxes': 63,
+  'own_circle_boxes': 45,
   'forbidden_words_sv': 0,
   'raw_white_black': 1,
   'photo_viewers': 0,
@@ -36,7 +38,7 @@ const variantCeilings = {
   'raw_divider': 0,
   'raw_chips': 0,
   'raw_app_bar': 0,
-  'raw_text_style': 8,
+  'raw_text_style': 7,
   'raw_toggles': 0,
   'raw_menus': 0,
   'raw_circle_avatar': 0,
@@ -44,11 +46,11 @@ const variantCeilings = {
   'raw_show_sheet': 0,
   'raw_segmented': 0,
   'raw_icon_button': 2,
-  'raw_text_button': 4,
+  'raw_text_button': 2,
   'raw_filled_button': 0,
   'raw_outlined_button': 0,
-  'raw_elevated_button': 1,
-  'raw_alert_dialog': 8,
+  'raw_elevated_button': 0,
+  'raw_alert_dialog': 1,
   'raw_card': 1,
 };
 
@@ -122,6 +124,9 @@ void main() {
         'final _p = ButleryIcon(ButleryIcons.check, size: 13);',
     'spacing_literals': 'final _p = EdgeInsets.all(7);',
     'scale_aliases': 'final _p = AppDimensions.spacingSm;',
+    'own_bordered_boxes':
+        'final _p = BoxDecoration(border: b, borderRadius: r);',
+    'own_circle_boxes': 'final _p = BoxDecoration(shape: BoxShape.circle);',
     for (final r in rawWidgetSpecs) r.key: 'final _p = ${r.names.first}();',
   };
   const probeFile = 'lib/views/quick_capture_view.dart';
