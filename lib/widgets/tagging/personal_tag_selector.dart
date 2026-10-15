@@ -17,7 +17,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
@@ -251,18 +251,13 @@ class _PersonalTagChip extends StatelessWidget {
           : context.l10n.personalTagChipUnselectedA11y(tag.name),
       selected: isSelected,
       button: true,
-      child: PressFill(
-        surface: isSelected ? PressSurface.ink : PressSurface.base,
-        child: FilterChip(
-          label: Text(tag.name),
-          selected: isSelected,
-          onSelected: (_) => onTap(),
-          avatar: isSelected
-              ? null
-              : const ButleryIcon(
-                  ButleryIcons.tag,
-                  size: AppDimensions.iconSize14,
-                ),
+      child: ButleryFilterChip(
+        label: tag.name,
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        unselectedAvatar: const ButleryIcon(
+          ButleryIcons.tag,
+          size: AppDimensions.iconSize14,
         ),
       ),
     );
@@ -310,7 +305,7 @@ class PersonalTagDisplay extends StatelessWidget {
       runSpacing: AppDimensions.space4,
       children: [
         ...displayTags.map((tag) => _MiniTagChip(tag: tag)),
-        if (remainingCount > 0) Chip(label: Text('+$remainingCount')),
+        if (remainingCount > 0) ButleryStaticChip(label: '+$remainingCount'),
       ],
     );
   }
@@ -326,12 +321,12 @@ class _MiniTagChip extends StatelessWidget {
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: context.l10n.personalTagA11yLabel(tag.name),
-      child: Chip(
+      child: ButleryStaticChip(
         avatar: const ButleryIcon(
           ButleryIcons.tag,
           size: AppDimensions.iconSizeXs,
         ),
-        label: Text(tag.name),
+        label: tag.name,
       ),
     );
   }
@@ -342,12 +337,12 @@ class _PlaceholderTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
+    return ButleryStaticChip(
       avatar: const ButleryIcon(
         ButleryIcons.tag,
         size: AppDimensions.iconSizeXs,
       ),
-      label: SkeletonComponents.skeletonBox(
+      labelWidget: SkeletonComponents.skeletonBox(
         width: 48,
         height: 12,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

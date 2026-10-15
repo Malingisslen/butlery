@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -25,9 +23,9 @@ import 'package:butlery/theme/error_text_style.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/field_text_style.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Prefix marking a disabled category-header dropdown item; its value is a
 /// sentinel that is never a real property.
@@ -44,7 +42,7 @@ bool isRetiredProperty(String value) =>
 
 /// One entry in the property dropdown: a category header (disabled), a
 /// selectable property, or the flagged retired stored value. The widget builds
-/// its `DropdownMenuItem`s directly from this list, so a test over it exercises
+/// its dropdown options directly from this list, so a test over it exercises
 /// the REAL dropdown — not a parallel copy.
 typedef PropertyDropdownEntry = ({
   String value,
@@ -419,23 +417,17 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildNameField() {
-    return LabeledField(
+    return StyledInput(
       label: context.l10n.ruleNameLabel,
-      child: TextFormField(
-        errorBuilder: FieldErrorLine.builder,
-        style: fieldTextStyle(context, enabled: !_isSaving),
-        controller: _nameController,
-        decoration: InputDecoration(
-          hintText: context.l10n.ruleNameHint,
-        ),
-        enabled: !_isSaving,
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return context.l10n.ruleNameRequired;
-          }
-          return null;
-        },
-      ),
+      controller: _nameController,
+      hint: context.l10n.ruleNameHint,
+      enabled: !_isSaving,
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return context.l10n.ruleNameRequired;
+        }
+        return null;
+      },
     );
   }
 
@@ -532,21 +524,14 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildEnabledSwitch() {
-    return SwitchListTile(
-      value: _isEnabled,
-      onChanged: _isSaving
-          ? null
-          : (value) {
-              setState(() => _isEnabled = value);
-            },
-      title: Text(context.l10n.ruleEnabledTitle),
-      subtitle: Text(
-        _isEnabled
-            ? context.l10n.ruleEnabledSubtitle
-            : context.l10n.rulePausedSubtitle,
-        style: AppTextStyles.bodySmall,
-      ),
-      contentPadding: EdgeInsets.zero,
+    return ButleryListRow.toggle(
+      label: context.l10n.ruleEnabledTitle,
+      subtitle: _isEnabled
+          ? context.l10n.ruleEnabledSubtitle
+          : context.l10n.rulePausedSubtitle,
+      checked: _isEnabled,
+      enabled: !_isSaving,
+      onChanged: (value) => setState(() => _isEnabled = value),
     );
   }
 
@@ -691,18 +676,12 @@ class _ConditionRow extends StatelessWidget {
           if (condition.type == ConditionType.property)
             _buildPropertyDropdown(context)
           else
-            LabeledField(
-              child: TextFormField(
-                style: fieldTextStyle(context, enabled: enabled),
-                initialValue: condition.value,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: AppDimensions.paddingAll12,
-                  hintText: _getHintText(context),
-                ),
-                enabled: enabled,
-                onChanged: onValueChanged,
-              ),
+            _ConditionValueField(
+              initialValue: condition.value,
+              hint: _getHintText(context),
+              enabled: enabled,
+              numeric: condition.type.isNumeric,
+              onChanged: onValueChanged,
             ),
         ],
       ),
@@ -788,55 +767,75 @@ class _ConditionRow extends StatelessWidget {
     // its unit test on the SAME code path this renders. A retired stored value
     // (e.g. 'wheat', BUT-1498) appears first, flagged — blanking it would hide
     // that the rule matches nothing until a live property is picked.
-    final items = [
-      for (final e in propertyDropdownEntries(storedValue))
-        DropdownMenuItem<String>(
-          enabled: !e.isHeader,
-          value: e.value,
-          child: e.isHeader
-              ? Text(
-                  _categoryLabel(context, e.categoryId!),
-                  style: AppTextStyles.labelMediumBold,
-                )
-              : e.isRetired
-              ? Text(
-                  context.l10n.rulePropertyRetired(e.value),
-                  style: AppTextStyles.formOption.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                )
-              : Padding(
-                  padding: AppDimensions.paddingOnlyStart8,
-                  child: Text(e.value, style: AppTextStyles.formOption),
-                ),
-        ),
-    ];
+    return ButleryDropdown<String>(
+      dense: true,
+      semanticLabel: context.l10n.ruleSelectProperty,
+      hint: context.l10n.ruleSelectProperty,
+      value: dropdownInitialValue(storedValue),
+      options: [
+        for (final e in propertyDropdownEntries(storedValue))
+          ButleryDropdownOption<String>(
+            value: e.value,
+            header: e.isHeader,
+            error: e.isRetired,
+            indented: !e.isHeader && !e.isRetired,
+            label: e.isHeader
+                ? _categoryLabel(context, e.categoryId!)
+                : e.isRetired
+                ? context.l10n.rulePropertyRetired(e.value)
+                : e.value,
+          ),
+      ],
+      onChanged: enabled ? onValueChanged : null,
+    );
+  }
+}
 
-    return PressFill(
-      surface: PressSurface.base,
-      child: DropdownButtonFormField<String>(
-        icon: const ButleryIcon(ButleryIcons.chevronDown),
-        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        iconDisabledColor: AppModeColors.textDisabled(
-          Theme.of(context).brightness,
-        ),
-        initialValue: dropdownInitialValue(storedValue),
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: AppDimensions.paddingAll12,
-          hintText: context.l10n.ruleSelectProperty,
-          border: const OutlineInputBorder(),
-        ),
-        isExpanded: true,
-        items: items,
-        onChanged: enabled
-            ? (value) {
-                if (value != null && !value.startsWith(_kHeaderPrefix)) {
-                  onValueChanged(value);
-                }
-              }
-            : null,
-      ),
+/// The free-text value of a condition. It keeps its own controller, so a
+/// rebuild of the row while the user types does not rewrite the text.
+class _ConditionValueField extends StatefulWidget {
+  const _ConditionValueField({
+    required this.initialValue,
+    required this.hint,
+    required this.enabled,
+    required this.numeric,
+    required this.onChanged,
+  });
+
+  final String initialValue;
+  final String hint;
+  final bool enabled;
+  final bool numeric;
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_ConditionValueField> createState() => _ConditionValueFieldState();
+}
+
+class _ConditionValueFieldState extends State<_ConditionValueField> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StyledInput(
+      controller: _controller,
+      semanticLabel: widget.hint,
+      hint: widget.hint,
+      contentPadding: AppDimensions.paddingAll12,
+      enabled: widget.enabled,
+      // A rating such as 4.5 must stay typeable.
+      keyboardType: widget.numeric
+          ? const TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      onChanged: widget.onChanged,
     );
   }
 }

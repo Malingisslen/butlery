@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/styled/styled_input_borders.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -12,6 +11,8 @@ import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/field_valid_mark.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/theme/field_text_style.dart';
+
+export 'package:butlery/widgets/styled/styled_form_field.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -25,6 +26,9 @@ class StyledInput extends StatelessWidget {
   /// such as "Ledigt". Not shown while [errorText] is set.
   final String? validText;
   final TextEditingController? controller;
+
+  /// The text the field starts with, for a field that has no controller.
+  final String? initialValue;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final bool enabled;
@@ -74,6 +78,7 @@ class StyledInput extends StatelessWidget {
     this.errorText,
     this.validText,
     this.controller,
+    this.initialValue,
     this.onChanged,
     this.onTap,
     this.enabled = true,
@@ -121,7 +126,8 @@ class StyledInput extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autocorrect = true,
     this.onSubmitted,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -154,7 +160,8 @@ class StyledInput extends StatelessWidget {
     this.obscureText = true,
     this.enabled = true,
     this.semanticLabel,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -187,7 +194,8 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -222,7 +230,8 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -261,7 +270,8 @@ class StyledInput extends StatelessWidget {
     this.maxLength,
     this.focusNode,
     this.semanticLabel,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -294,7 +304,8 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : square = false,
+  }) : initialValue = null,
+       square = false,
        suffixText = null,
        counterText = null,
        onTap = null,
@@ -346,6 +357,7 @@ class StyledInput extends StatelessWidget {
 
     final textField = TextFormField(
       controller: controller,
+      initialValue: initialValue,
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
       textCapitalization: textCapitalization,
@@ -423,77 +435,5 @@ class StyledInput extends StatelessWidget {
     }
 
     return field;
-  }
-}
-
-/// Form field wrapper with consistent spacing and error handling
-class StyledFormField extends StatelessWidget {
-  final Widget child;
-  final String? label;
-  final bool isRequired;
-  final String? errorText;
-  final String? helperText;
-
-  const StyledFormField({
-    super.key,
-    required this.child,
-    this.label,
-    this.isRequired = false,
-    this.errorText,
-    this.helperText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Semantics(
-      label: label != null && isRequired
-          ? context.l10n.a11yRequiredFieldSuffix
-          : null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (label != null) ...[
-            Row(
-              children: [
-                Text(
-                  label!,
-                  style: AppTextStyles.labelText,
-                ),
-                if (isRequired)
-                  ExcludeSemantics(
-                    child: Text(
-                      ' *',
-                      style: AppTextStyles.labelText.copyWith(
-                        color: cs.error,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space8),
-          ],
-          child,
-          if (errorText != null) ...[
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              errorText!,
-              style: AppTextStyles.captionText.copyWith(
-                color: cs.error,
-              ),
-            ),
-          ],
-          if (helperText != null && errorText == null) ...[
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              helperText!,
-              style: AppTextStyles.captionText,
-            ),
-          ],
-          const SizedBox(height: AppDimensions.space16),
-        ],
-      ),
-    );
   }
 }

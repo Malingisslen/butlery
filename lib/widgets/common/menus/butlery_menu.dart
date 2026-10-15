@@ -29,6 +29,9 @@ class ButleryMenuChoice<T> {
     this.dividerBefore = false,
     this.tabularFigures = false,
     this.itemKey,
+    this.selected = false,
+    this.trailingIcon,
+    this.iconColor,
   });
 
   final T value;
@@ -48,6 +51,16 @@ class ButleryMenuChoice<T> {
 
   /// Lets a test find the row.
   final Key? itemKey;
+
+  /// The choice now in force: its glyph is drawn in the text colour.
+  final bool selected;
+
+  /// A glyph after the label, as the arrow that gives a sort direction.
+  final IconData? trailingIcon;
+
+  /// The glyph in this colour, when only it should stand out, as the flag of
+  /// a report choice; [danger] colours the words too.
+  final Color? iconColor;
 }
 
 /// A button that opens a menu of [choices] and reports the one picked.
@@ -59,6 +72,9 @@ class ButleryMenu<T> extends StatelessWidget {
     this.icon = ButleryIcons.moreVertical,
     this.iconColor,
     this.child,
+    this.iconWidget,
+    this.padding,
+    this.style,
     super.key,
   });
 
@@ -75,6 +91,12 @@ class ButleryMenu<T> extends StatelessWidget {
   /// "Sortera" pill, or the paper ring on a photo. The menu rows are the same.
   final Widget? child;
 
+  /// Draws the button as this widget in the icon slot, which keeps the icon
+  /// button's name and tap target, as the ring on a photo does.
+  final Widget? iconWidget;
+  final EdgeInsetsGeometry? padding;
+  final ButtonStyle? style;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -82,7 +104,11 @@ class ButleryMenu<T> extends StatelessWidget {
       surface: PressSurface.base,
       child: PopupMenuButton<T>(
         tooltip: semanticLabel,
-        icon: child == null ? ButleryIcon(icon, color: iconColor) : null,
+        padding: padding ?? const EdgeInsets.all(8),
+        style: style,
+        icon:
+            iconWidget ??
+            (child == null ? ButleryIcon(icon, color: iconColor) : null),
         onSelected: onSelected,
         itemBuilder: (context) => [
           for (final c in choices) ...[
@@ -94,7 +120,12 @@ class ButleryMenu<T> extends StatelessWidget {
               child: Row(
                 children: [
                   if (c.icon != null) ...[
-                    ButleryIcon(c.icon!, color: c.danger ? cs.error : null),
+                    ButleryIcon(
+                      c.icon!,
+                      color: c.danger
+                          ? cs.error
+                          : c.iconColor ?? (c.selected ? cs.onSurface : null),
+                    ),
                     const SizedBox(width: AppDimensions.space8),
                   ],
                   Flexible(
@@ -112,6 +143,14 @@ class ButleryMenu<T> extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (c.trailingIcon != null) ...[
+                    const SizedBox(width: AppDimensions.space8),
+                    ButleryIcon(
+                      c.trailingIcon!,
+                      size: AppDimensions.iconSizeM,
+                      color: cs.onSurface,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -131,13 +170,32 @@ class ButleryDropdownOption<T> {
     this.subtitle,
     this.icon,
     this.iconColor,
+    this.header = false,
+    this.error = false,
+    this.indented = false,
+    this.subtitleSuffix,
+    this.subtitleSuffixColor,
   });
 
   final T value;
   final String label;
 
+  /// A heading over the options below it: drawn bold and not pickable.
+  final bool header;
+
+  /// The label in the error colour, for a stored value that no longer exists.
+  final bool error;
+
+  /// Set in under a [header].
+  final bool indented;
+
   /// A second line under the label, as the item count under a list's name.
   final String? subtitle;
+
+  /// Words after the second line, in their own colour, as the permission
+  /// after a list's item count.
+  final String? subtitleSuffix;
+  final Color? subtitleSuffixColor;
 
   /// A glyph before the label, as the eye, pencil or crown of a permission.
   final IconData? icon;
@@ -160,6 +218,7 @@ class ButleryDropdown<T> extends StatelessWidget {
     this.errorText,
     this.dense = false,
     this.square = false,
+    this.closedShowsSubtitle = false,
     super.key,
   });
 
@@ -186,6 +245,10 @@ class ButleryDropdown<T> extends StatelessWidget {
   /// Square corners and a hairline edge, as the onboarding screens draw it.
   final bool square;
 
+  /// The closed field shows the second line too, for a choice that is
+  /// recognised by it, such as a list by its item count.
+  final bool closedShowsSubtitle;
+
   /// Names the field for a screen reader, since the chosen value alone does
   /// not.
   final String semanticLabel;
@@ -203,6 +266,10 @@ class ButleryDropdown<T> extends StatelessWidget {
         key: ValueKey<T?>(value),
         initialValue: value,
         isExpanded: true,
+        // A closed field with a second line needs more than the dense
+        // button height.
+        isDense:
+            !(closedShowsSubtitle && options.any((o) => o.subtitle != null)),
         // Null lets an option with a second line take the height it needs.
         itemHeight: options.any((o) => o.subtitle != null)
             ? null
@@ -229,12 +296,14 @@ class ButleryDropdown<T> extends StatelessWidget {
         ),
         // The closed field shows one line; the second line is for the menu.
         selectedItemBuilder: (context) => [
-          for (final o in options) _OptionRow(option: o, compact: true),
+          for (final o in options)
+            _OptionRow(option: o, compact: !closedShowsSubtitle),
         ],
         items: [
           for (final o in options)
             DropdownMenuItem<T>(
               value: o.value,
+              enabled: !o.header,
               child: _OptionRow(option: o),
             ),
         ],
@@ -264,8 +333,22 @@ class _OptionRow<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final second = compact ? null : option.subtitle;
+    // Cut to one line at the normal text size; the name wraps when the user
+    // has asked for larger text.
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1;
     if (option.icon == null && second == null) {
-      return Text(option.label, overflow: TextOverflow.ellipsis);
+      final text = Text(
+        option.label,
+        overflow: TextOverflow.ellipsis,
+        style: option.header
+            ? AppTextStyles.labelMediumBold
+            : option.error
+            ? AppTextStyles.formOption.copyWith(color: cs.error)
+            : null,
+      );
+      return option.indented
+          ? Padding(padding: AppDimensions.paddingOnlyStart8, child: text)
+          : text;
     }
     return Row(
       children: [
@@ -278,10 +361,27 @@ class _OptionRow<T> extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(option.label, overflow: TextOverflow.ellipsis),
+              Text(
+                option.label,
+                maxLines: largeText ? null : 1,
+                overflow: largeText ? null : TextOverflow.ellipsis,
+              ),
               if (second != null)
-                Text(
-                  second,
+                Text.rich(
+                  TextSpan(
+                    text: second,
+                    children: [
+                      if (option.subtitleSuffix != null)
+                        TextSpan(
+                          text: ' • ${option.subtitleSuffix}',
+                          style: TextStyle(
+                            color:
+                                option.subtitleSuffixColor ??
+                                cs.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                   style: AppTextStyles.captionBase.copyWith(
                     color: cs.onSurfaceVariant,
                   ),

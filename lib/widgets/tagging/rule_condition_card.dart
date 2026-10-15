@@ -8,7 +8,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
@@ -115,22 +115,16 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
             ],
           ),
           const SizedBox(height: AppDimensions.space8),
-          LabeledField(
-            child: TextField(
-              controller: _valueController,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space12,
-                  vertical: AppDimensions.space12,
-                ),
-                hintText: _getHintText(widget.condition.type),
-              ),
-              keyboardType: widget.condition.type.isNumeric
-                  ? TextInputType.number
-                  : TextInputType.text,
-              onChanged: widget.onValueChanged,
-            ),
+          StyledInput(
+            controller: _valueController,
+            semanticLabel: _getHintText(widget.condition.type),
+            hint: _getHintText(widget.condition.type),
+            contentPadding: AppDimensions.paddingAll12,
+            // A rating such as 4.5 must stay typeable.
+            keyboardType: widget.condition.type.isNumeric
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
+            onChanged: widget.onValueChanged,
           ),
         ],
       ),

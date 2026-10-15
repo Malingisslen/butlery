@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/chips/butlery_removable_chip.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
@@ -55,7 +56,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField), 'ugnsrätt');
     await tester.tap(find.byTooltip('Lägg till tagg'));
     await tester.pumpAndSettle();
-    expect(find.byType(InputChip), findsNWidgets(2));
+    expect(find.byType(ButleryRemovableChip), findsNWidgets(2));
   }
 
   testWidgets(

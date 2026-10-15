@@ -2,6 +2,7 @@ import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -112,9 +113,11 @@ class WhatsNewSheet extends StatelessWidget {
               onOpenRoute: onOpenRoute,
             ),
           const SizedBox(height: AppDimensions.space16),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
             onPressed: onClose,
-            child: Text(l10n.whatsNewDone),
+            label: l10n.whatsNewDone,
+            isExpanded: true,
           ),
         ],
       ),

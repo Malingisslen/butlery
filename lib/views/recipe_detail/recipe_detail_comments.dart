@@ -23,7 +23,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -523,16 +523,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         title: context.l10n.commentEditHint,
         primaryLabel: context.l10n.commonSave,
         onPrimary: () => Navigator.pop(ctx, controller.text.trim()),
-        content: LabeledField(
+        content: StyledInput(
           label: context.l10n.commentLabel,
-          child: TextField(
-            controller: controller,
-            autofocus: true,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: context.l10n.commentEditHint,
-            ),
-          ),
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          hint: context.l10n.commentEditHint,
         ),
       ),
     );

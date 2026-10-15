@@ -17,6 +17,8 @@ class ButleryRemovableChip extends StatelessWidget {
     required this.label,
     required this.onRemove,
     required this.removeLabel,
+    this.icon,
+    this.tooltip,
     super.key,
   });
 
@@ -29,12 +31,21 @@ class ButleryRemovableChip extends StatelessWidget {
   /// "Ta bort Anna". Name the action; the chip's own words are not repeated.
   final String removeLabel;
 
+  /// A glyph before the words, such as the person on a tag the user added.
+  final IconData? icon;
+
+  /// What the chip itself is, shown when it is held.
+  final String? tooltip;
+
   @override
   Widget build(BuildContext context) {
-    return PressFill(
+    final chip = PressFill(
       surface: PressSurface.base,
       child: Chip(
         label: Text(label),
+        avatar: icon == null
+            ? null
+            : ButleryIcon(icon!, size: AppDimensions.iconSizeS),
         deleteIcon: const ButleryIcon(
           ButleryIcons.x,
           size: AppDimensions.iconSize18,
@@ -43,5 +54,6 @@ class ButleryRemovableChip extends StatelessWidget {
         deleteButtonTooltipMessage: removeLabel,
       ),
     );
+    return tooltip == null ? chip : Tooltip(message: tooltip, child: chip);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -235,9 +236,9 @@ class _TagChooser extends StatelessWidget {
                   shrinkWrap: true,
                   children: [
                     for (final tag in tags)
-                      ListTile(
-                        leading: const ButleryIcon(ButleryIcons.tag),
-                        title: Text(tag.name),
+                      ButleryItemRow(
+                        leadingIcon: ButleryIcons.tag,
+                        title: tag.name,
                         onTap: () => Navigator.of(context).pop(tag),
                       ),
                   ],

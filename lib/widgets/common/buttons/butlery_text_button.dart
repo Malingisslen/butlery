@@ -30,6 +30,13 @@ enum ButleryTextButtonTone {
 
   /// onPrimary: the action sits on the ink band, as "Släng utkastet".
   onInk,
+
+  /// onSurfaceVariant: a way out that should not compete with the action
+  /// above it, as "Hoppa över".
+  muted,
+
+  /// onPrimaryContainer: the action sits on the selection banner, as "Rensa".
+  onSelectionBanner,
 }
 
 class ButleryTextButton extends StatelessWidget {
@@ -43,6 +50,7 @@ class ButleryTextButton extends StatelessWidget {
     this.semanticLabel,
     this.dense = false,
     this.iconAtEnd = false,
+    this.expanded = false,
     super.key,
   });
 
@@ -70,6 +78,9 @@ class ButleryTextButton extends StatelessWidget {
   /// The icon follows the words, as a link that leads on ("Allergier →").
   final bool iconAtEnd;
 
+  /// Fills the width it is given, as the last choice under a sheet's buttons.
+  final bool expanded;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -82,6 +93,8 @@ class ButleryTextButton extends StatelessWidget {
       ),
       ButleryTextButtonTone.onErrorBanner => cs.onErrorContainer,
       ButleryTextButtonTone.onInk => cs.onPrimary,
+      ButleryTextButtonTone.muted => cs.onSurfaceVariant,
+      ButleryTextButtonTone.onSelectionBanner => cs.onPrimaryContainer,
     };
     final button = ActionButtons.textButton(
       context,
@@ -91,6 +104,7 @@ class ButleryTextButton extends StatelessWidget {
       isLoading: busy,
       loadingText: busyLabel,
       iconAtEnd: iconAtEnd,
+      isExpanded: expanded,
       style: colour == null && !dense
           ? null
           : TextButton.styleFrom(

@@ -4,7 +4,8 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -233,15 +234,11 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   }
 
   Widget _buildNameField() {
-    return LabeledField(
+    return StyledInput(
       label: context.l10n.ruleNameLabel,
-      child: TextField(
-        controller: _nameController,
-        decoration: InputDecoration(
-          hintText: context.l10n.ruleNameHint,
-        ),
-        textCapitalization: TextCapitalization.sentences,
-      ),
+      controller: _nameController,
+      hint: context.l10n.ruleNameHint,
+      textCapitalization: TextCapitalization.sentences,
     );
   }
 
@@ -300,17 +297,13 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
   }
 
   Widget _buildEnabledSwitch() {
-    return SwitchListTile(
-      value: _isEnabled,
+    return ButleryListRow.toggle(
+      label: context.l10n.ruleEnabledTitle,
+      subtitle: _isEnabled
+          ? context.l10n.ruleEnabledNewRecipes
+          : context.l10n.rulePausedSubtitle,
+      checked: _isEnabled,
       onChanged: (value) => setState(() => _isEnabled = value),
-      title: Text(context.l10n.ruleEnabledTitle),
-      subtitle: Text(
-        _isEnabled
-            ? context.l10n.ruleEnabledNewRecipes
-            : context.l10n.rulePausedSubtitle,
-        style: AppTextStyles.bodySmall,
-      ),
-      contentPadding: EdgeInsets.zero,
     );
   }
 }

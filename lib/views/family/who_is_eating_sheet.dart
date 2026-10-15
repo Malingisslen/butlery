@@ -1,5 +1,7 @@
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:provider/provider.dart';
 
@@ -260,8 +262,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                   end: AppDimensions.minTouchTarget + AppDimensions.space8,
                 ),
                 itemCount: vm.roster.length,
-                separatorBuilder: (_, _) =>
-                    Divider(height: 1, color: cs.outlineVariant),
+                separatorBuilder: (_, _) => const ButleryDivider(spacing: 1),
                 itemBuilder: (_, i) {
                   final member = vm.roster[i];
                   final selected = vm.isSelected(member.memberId);
@@ -307,33 +308,21 @@ class _WhoIsEatingSheet extends StatelessWidget {
             ],
             if (config.openRecipeLabel != null) ...[
               const SizedBox(height: AppDimensions.space8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context, const WhoAteResult.openRecipe()),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size.fromHeight(
-                      AppDimensions.minTouchTarget,
-                    ),
-                  ),
-                  child: Text(config.openRecipeLabel!),
-                ),
+              ButleryTextButton(
+                expanded: true,
+                onPressed: () =>
+                    Navigator.pop(context, const WhoAteResult.openRecipe()),
+                label: config.openRecipeLabel!,
               ),
             ],
             if (config.skipLabel != null) ...[
               const SizedBox(height: AppDimensions.space8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context, const WhoAteResult.skipped()),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size.fromHeight(40),
-                    foregroundColor: cs.onSurfaceVariant,
-                  ),
-                  child: Text(config.skipLabel!),
-                ),
+              ButleryTextButton(
+                expanded: true,
+                tone: ButleryTextButtonTone.muted,
+                onPressed: () =>
+                    Navigator.pop(context, const WhoAteResult.skipped()),
+                label: config.skipLabel!,
               ),
             ],
           ],

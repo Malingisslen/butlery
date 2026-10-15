@@ -6,14 +6,14 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// Empty state widget for image picker with add button
-class EmptyImageState extends StatelessWidget {
+/// The tile that adds an image to the picker, shown while it has none
+class ImageAddTile extends StatelessWidget {
   final BorderRadius? borderRadius;
   final VoidCallback? onTap;
   final bool isLoading;
   final int maxImages;
 
-  const EmptyImageState({
+  const ImageAddTile({
     super.key,
     this.borderRadius,
     this.onTap,

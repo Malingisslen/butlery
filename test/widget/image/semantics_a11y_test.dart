@@ -18,7 +18,7 @@ import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
 import 'package:butlery/widgets/image/components/upload_progress_widgets.dart';
 import 'package:butlery/widgets/image/components/edit_actions_panel.dart';
-import 'package:butlery/widgets/image/components/empty_image_state.dart';
+import 'package:butlery/widgets/image/components/image_add_tile.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
@@ -247,13 +247,13 @@ void main() {
       },
     );
 
-    testWidgets('empty_image_state — idle empty state exposes add label', (
+    testWidgets('image_add_tile — idle empty state exposes add label', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: EmptyImageState(
+          child: ImageAddTile(
             onTap: () {},
             isLoading: false,
             maxImages: 5,
@@ -268,12 +268,12 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('empty_image_state — loading state says it once, as a live '
+    testWidgets('image_add_tile — loading state says it once, as a live '
         'region', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: EmptyImageState(onTap: () {}, isLoading: true),
+          child: ImageAddTile(onTap: () {}, isLoading: true),
         ),
       );
 
@@ -406,13 +406,13 @@ void main() {
       testWidgets('empty state: border.subtle, a plain disc and secondary '
           'text', (tester) async {
         await tester.pumpWidget(
-          _themed(theme, const SizedBox(height: 300, child: EmptyImageState())),
+          _themed(theme, const SizedBox(height: 300, child: ImageAddTile())),
         );
 
         final frame = tester
             .widgetList<DecoratedBox>(
               find.descendant(
-                of: find.byType(EmptyImageState),
+                of: find.byType(ImageAddTile),
                 matching: find.byType(DecoratedBox),
               ),
             )

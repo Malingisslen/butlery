@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -162,8 +163,8 @@ void main() {
                 child: RecipeHeroMenuButton<int>(
                   tooltip: 'Fler åtgärder',
                   icon: ButleryIcons.moreVertical,
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 1, child: Text('Redigera')),
+                  choices: const [
+                    ButleryMenuChoice(value: 1, label: 'Redigera'),
                   ],
                   onSelected: (_) {},
                 ),

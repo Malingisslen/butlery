@@ -31,7 +31,7 @@ const _files = [
   'lib/views/skriv_sjalv_recept_view.dart',
   'lib/views/quick_capture_view.dart',
   'lib/widgets/image/avatar_image_widget.dart',
-  'lib/widgets/image/components/empty_image_state.dart',
+  'lib/widgets/image/components/image_add_tile.dart',
   'lib/widgets/image/components/image_grid_widgets.dart',
   'lib/widgets/image/components/upload_progress_widgets.dart',
   'lib/widgets/image/editable_image_widget.dart',

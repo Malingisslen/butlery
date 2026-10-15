@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_motion.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-406: Square, cream-bg widget shown in the bottom sheet triggered by
@@ -330,12 +330,12 @@ class _TimerControls extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
+        AppIconButton(
+          icon: icon,
           iconSize: 32,
           color: color,
           onPressed: onPressed,
-          icon: ButleryIcon(icon),
-          tooltip: label,
+          semanticLabel: label,
         ),
         Text(
           label,

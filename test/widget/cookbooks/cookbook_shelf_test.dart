@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
@@ -172,7 +173,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.cookbookChooseTagTitle), findsOneWidget);
-      expect(find.widgetWithText(ListTile, 'Frukost'), findsOneWidget);
+      expect(find.widgetWithText(ButleryItemRow, 'Frukost'), findsOneWidget);
     });
 
     testWidgets('with no tags at all, sends the user to the tag manager', (
@@ -257,9 +258,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.cookbookChooseTagTitle), findsOneWidget);
-      expect(find.widgetWithText(ListTile, 'Frukost'), findsOneWidget);
-      expect(find.widgetWithText(ListTile, 'Soppor'), findsNothing);
-      expect(find.widgetWithText(ListTile, 'Bakning'), findsNothing);
+      expect(find.widgetWithText(ButleryItemRow, 'Frukost'), findsOneWidget);
+      expect(find.widgetWithText(ButleryItemRow, 'Soppor'), findsNothing);
+      expect(find.widgetWithText(ButleryItemRow, 'Bakning'), findsNothing);
       expect(find.text(l10n.cookbookAllTagsAreCookbooks), findsNothing);
     });
 
@@ -270,7 +271,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.cookbookAllTagsAreCookbooks), findsOneWidget);
-      expect(find.byType(ListTile), findsNothing);
+      expect(find.byType(ButleryItemRow), findsNothing);
     });
 
     testWidgets('choosing a tag opens the cookbook sheet for it', (
@@ -280,7 +281,7 @@ void main() {
 
       await tester.tap(find.byKey(CookbookShelf.addTileKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ListTile, 'Frukost'));
+      await tester.tap(find.widgetWithText(ButleryItemRow, 'Frukost'));
       await tester.pumpAndSettle();
 
       expect(find.byType(CookbookEditSheet), findsOneWidget);
