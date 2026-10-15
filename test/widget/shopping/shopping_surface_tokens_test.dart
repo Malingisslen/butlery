@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -149,7 +150,7 @@ void main() {
         : AppColors.lightColorScheme.onSurface;
 
     group('shopping surfaces in ${brightness.name} mode', () {
-      testWidgets('the sharing dialog cards are raised, the avatars on paper', (
+      testWidgets('the sharing dialog cards are paper, the avatars ink', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -164,64 +165,71 @@ void main() {
         await tester.pumpAndSettle();
 
         // Info, your permission, members, recent activity.
-        final cards = tester.widgetList<Card>(find.byType(Card)).toList();
-        expect(cards, hasLength(4));
-        for (final card in cards) {
-          expect(card.color, cs.surfaceContainerHighest);
-        }
+        expect(find.byType(StyledCard), findsNWidgets(4));
+        expect(
+          Theme.of(
+            tester.element(find.byType(StyledCard).first),
+          ).cardTheme.color,
+          cs.surface,
+        );
 
-        // The avatar sits on a raised card, so it takes the base surface.
+        // The card is paper with a border, so the avatar is the ink circle.
         final avatars = tester
             .widgetList<AvatarCircle>(find.byType(AvatarCircle))
             .toList();
         expect(avatars, hasLength(2));
         for (final avatar in avatars) {
-          expect(avatar.tone, AvatarCircleTone.paper);
-          expect(_circleColor(tester, avatar), cs.surface);
+          expect(avatar.tone, AvatarCircleTone.ink);
         }
       });
 
-      testWidgets('the member dialog avatars sit on paper inside raised rows', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(1000, 1800);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-        final UserProfile friend = testUserProfile(
-          uid: 'cecilia',
-          displayName: 'Cecilia',
-        );
+      testWidgets(
+        'the member rows draw ink avatars, the friend row a paper one',
+        (
+          tester,
+        ) async {
+          tester.view.physicalSize = const Size(1000, 1800);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
+          final UserProfile friend = testUserProfile(
+            uid: 'cecilia',
+            displayName: 'Cecilia',
+          );
 
-        await tester.pumpWidget(
-          _app(
-            ShoppingMemberManagementDialog(
-              list: _sharedList(),
-              userDisplayNames: const {
-                _ownerId: 'Malin',
-                'bob': 'Bob',
-                'cecilia': 'Cecilia',
-              },
-              availableFriends: [friend],
-              invitations: _NoInvitations(),
+          await tester.pumpWidget(
+            _app(
+              ShoppingMemberManagementDialog(
+                list: _sharedList(),
+                userDisplayNames: const {
+                  _ownerId: 'Malin',
+                  'bob': 'Bob',
+                  'cecilia': 'Cecilia',
+                },
+                availableFriends: [friend],
+                invitations: _NoInvitations(),
+              ),
+              brightness,
             ),
-            brightness,
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Owner row, Bob's row and the friend row.
-        final avatars = tester
-            .widgetList<AvatarCircle>(find.byType(AvatarCircle))
-            .toList();
-        expect(avatars, hasLength(3));
-        for (final avatar in avatars) {
-          expect(avatar.tone, AvatarCircleTone.paper);
-          expect(_circleColor(tester, avatar), cs.surface);
-        }
-      });
+          // Owner row, Bob's row and the friend row.
+          final avatars = tester
+              .widgetList<AvatarCircle>(find.byType(AvatarCircle))
+              .toList();
+          expect(avatars, hasLength(3));
+          // The member rows have no fill of their own, so a paper circle would
+          // vanish into the dialog; the friend row is a card.
+          for (final avatar in avatars.take(2)) {
+            expect(avatar.tone, AvatarCircleTone.ink);
+          }
+          expect(avatars.last.tone, AvatarCircleTone.paper);
+          expect(_circleColor(tester, avatars.last), cs.surface);
+        },
+      );
 
       testWidgets(
         'the sharing dialog draws the Redigera role in ink, its glyph '
@@ -248,6 +256,10 @@ void main() {
           );
           expect(
             _contrast(editGlyph, cs.surfaceContainerHighest),
+            greaterThanOrEqualTo(3),
+          );
+          expect(
+            _contrast(editGlyph, cs.surface),
             greaterThanOrEqualTo(3),
           );
         },
@@ -318,6 +330,10 @@ void main() {
         );
         expect(
           _contrast(editGlyph, cs.surfaceContainerHighest),
+          greaterThanOrEqualTo(3),
+        );
+        expect(
+          _contrast(editGlyph, cs.surface),
           greaterThanOrEqualTo(3),
         );
       });

@@ -23,7 +23,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -34,12 +33,13 @@ import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
@@ -50,20 +50,11 @@ Widget buildMinaReceptSelectionCancel(
   BuildContext context,
   RecipeListViewModel viewModel,
 ) {
-  final cs = Theme.of(context).colorScheme;
-  // text.primary on surface.base in both modes (ink #24382C light, paper
-  // #F5F4ED dark; app_colors.dart:295, :331). The theme's text-button
-  // colour is cs.primary, which is ink in the dark scheme too.
-  return TextButton(
+  return ButleryTextButton(
     key: const ValueKey('mina-recept-selection-cancel'),
-    style: TextButton.styleFrom(
-      foregroundColor: cs.onSurface,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space8,
-      ),
-    ),
+    label: context.l10n.commonCancel,
     onPressed: viewModel.clearSelection,
-    child: Text(context.l10n.commonCancel),
+    dense: true,
   );
 }
 
@@ -159,91 +150,61 @@ class _BulkMoreMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
     final hasSelection = viewModel.selectedCount > 0;
-    // Off at zero with the name readable, in the disabled role rather than
-    // the menu's faded default (produktregler.md:876; tokens.json:71-74,
-    // :198): text.disabled.onRaised, #788477 light and #93A48D dark.
-    final disabled = TextStyle(
-      color: AppModeColors.textDisabled(cs.brightness),
-    );
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<_BulkMoreAction>(
-        key: const ValueKey('mina-recept-bulk-more'),
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        tooltip: context.l10n.bulkMoreActions,
-        onSelected: (action) {
-          switch (action) {
-            case _BulkMoreAction.share:
-              _openBulkShareDialog(context, viewModel);
-            case _BulkMoreAction.selectAll:
-              // A toggle that can untick.
-              if (viewModel.allSelected) {
-                viewModel.deselectAll();
-              } else {
-                viewModel.selectAll();
-              }
-            case _BulkMoreAction.export:
-              _openBulkExport(context, viewModel);
-            case _BulkMoreAction.delete:
-              _confirmBulkDelete(context, viewModel);
-          }
-        },
-        itemBuilder: (menuContext) {
-          final allSelected = viewModel.allSelected;
-          return [
-            if (withShare)
-              PopupMenuItem(
-                value: _BulkMoreAction.share,
-                enabled: hasSelection,
-                child: Text(
-                  menuContext.l10n.bulkShare,
-                  style: hasSelection ? null : disabled,
-                ),
-              ),
-            // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
-            // every recipe is ticked it unticks them. Interpretation: the second
-            // label is not drawn, so it takes the app's "Avmarkera alla".
-            PopupMenuItem(
-              key: const ValueKey('mina-recept-bulk-select-all'),
-              value: _BulkMoreAction.selectAll,
-              child: Text(
-                allSelected
-                    ? menuContext.l10n.commonDeselectAll
-                    : menuContext.l10n.selectionSelectAllCount(
-                        viewModel.matchingCount,
-                      ),
-                style: const TextStyle(
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-            // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
-            PopupMenuItem(
-              value: _BulkMoreAction.export,
-              enabled: hasSelection,
-              child: Text(
-                menuContext.l10n.bulkExport,
-                style: hasSelection ? null : disabled,
-              ),
-            ),
-            const PopupMenuDivider(),
-            PopupMenuItem(
-              key: const ValueKey('mina-recept-bulk-delete'),
-              value: _BulkMoreAction.delete,
-              enabled: hasSelection,
-              child: Text(
-                menuContext.l10n.bulkDelete,
-                // text.danger on the menu's surface.base: cs.error is the
-                // generated semantic.text.danger, #9C3B23 light and #DE9078
-                // dark.
-                style: hasSelection ? TextStyle(color: cs.error) : disabled,
-              ),
-            ),
-          ];
-        },
-      ),
+    return ButleryMenu<_BulkMoreAction>(
+      key: const ValueKey('mina-recept-bulk-more'),
+      semanticLabel: l10n.bulkMoreActions,
+      onSelected: (action) {
+        switch (action) {
+          case _BulkMoreAction.share:
+            _openBulkShareDialog(context, viewModel);
+          case _BulkMoreAction.selectAll:
+            // A toggle that can untick.
+            if (viewModel.allSelected) {
+              viewModel.deselectAll();
+            } else {
+              viewModel.selectAll();
+            }
+          case _BulkMoreAction.export:
+            _openBulkExport(context, viewModel);
+          case _BulkMoreAction.delete:
+            _confirmBulkDelete(context, viewModel);
+        }
+      },
+      choices: [
+        if (withShare)
+          ButleryMenuChoice(
+            value: _BulkMoreAction.share,
+            label: l10n.bulkShare,
+            enabled: hasSelection,
+          ),
+        // "Markera alla 24" (Skarmar v12 etapp 9 #flerbar), a toggle: when
+        // every recipe is ticked it unticks them. Interpretation: the second
+        // label is not drawn, so it takes the app's "Avmarkera alla".
+        ButleryMenuChoice(
+          itemKey: const ValueKey('mina-recept-bulk-select-all'),
+          value: _BulkMoreAction.selectAll,
+          label: viewModel.allSelected
+              ? l10n.commonDeselectAll
+              : l10n.selectionSelectAllCount(viewModel.matchingCount),
+          tabularFigures: true,
+        ),
+        // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+        ButleryMenuChoice(
+          value: _BulkMoreAction.export,
+          label: l10n.bulkExport,
+          enabled: hasSelection,
+        ),
+        ButleryMenuChoice(
+          itemKey: const ValueKey('mina-recept-bulk-delete'),
+          value: _BulkMoreAction.delete,
+          label: l10n.bulkDelete,
+          enabled: hasSelection,
+          danger: true,
+          dividerBefore: true,
+        ),
+      ],
     );
   }
 }
@@ -666,12 +627,9 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           runSpacing: AppDimensions.space8,
           children: tags
               .map(
-                (tag) => PressFill(
-                  surface: PressSurface.base,
-                  child: ActionChip(
-                    label: Text(tag.name),
-                    onPressed: () => _selectTag(tag),
-                  ),
+                (tag) => ButleryActionChip(
+                  label: tag.name,
+                  onPressed: () => _selectTag(tag),
                 ),
               )
               .toList(),

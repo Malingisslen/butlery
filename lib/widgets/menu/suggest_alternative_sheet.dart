@@ -4,6 +4,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -155,7 +156,9 @@ class _SheetContentState extends State<_SheetContent> {
                             ),
                             itemBuilder: (context, index) {
                               final recipe = _filtered[index];
-                              return ListTile(
+                              return ButleryItemRow(
+                                padded: false,
+                                titleMaxLines: 1,
                                 onTap: () => Navigator.pop(context, recipe),
                                 leading: recipe.imageUrls.isNotEmpty
                                     ? ClipRRect(
@@ -179,18 +182,8 @@ class _SheetContentState extends State<_SheetContent> {
                                           color: cs.onSurfaceVariant,
                                         ),
                                       ),
-                                title: Text(
-                                  recipe.title,
-                                  style: AppTextStyles.titleSmall,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Text(
-                                  recipe.mealType,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: cs.onSurfaceVariant,
-                                  ),
-                                ),
+                                title: recipe.title,
+                                subtitle: recipe.mealType,
                               );
                             },
                           ),

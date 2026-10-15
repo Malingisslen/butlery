@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/unsaved_changes_guard.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -13,7 +14,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
@@ -135,31 +135,22 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     if (_viewModel.hasImage || _viewModel.hasOcrResult) return;
     final draft = await _viewModel.loadPersistedDraft();
     if (draft == null || !mounted) return;
-    final restore = await showDialog<bool>(
+    final restore = await showButleryDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        // text.primary: cs.primary is ink in both modes and would vanish
-        // on the dark dialog.
-        icon: ButleryIcon(
-          ButleryIcons.history,
-          color: Theme.of(context).colorScheme.onSurface,
-          size: AppDimensions.iconSizeL,
-        ),
-        title: Text(context.l10n.draftRecovery),
-        content: Text(context.l10n.photoDraftRecoverySubtitle),
+      builder: (context) => ButleryDialog(
+        titleIcon: ButleryIcons.history,
+        title: context.l10n.draftRecovery,
+        message: context.l10n.photoDraftRecoverySubtitle,
         actions: [
-          TextButton(
+          DialogCancelButton(
+            label: context.l10n.draftStartFresh,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.draftStartFresh),
           ),
-          FilledButton.icon(
+          ButleryDialogPrimary(
+            label: context.l10n.draftRestore,
+            icon: ButleryIcons.history,
             onPressed: () => Navigator.of(context).pop(true),
-            icon: const ButleryIcon(
-              ButleryIcons.history,
-              size: AppDimensions.iconSizeS,
-            ),
-            label: Text(context.l10n.draftRestore),
           ),
         ],
       ),

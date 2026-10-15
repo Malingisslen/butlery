@@ -1,15 +1,15 @@
 // lib/widgets/menu/veckomeny_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -101,10 +101,10 @@ class VeckomenyDialogs {
     final recipeCount = menuViewModel.totalRecipeCount;
     nameController.text = context.l10n.menuDefaultName(recipeCount);
 
-    final result = await showDialog<String>(
+    final result = await showButleryDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.menuNameYourMenu),
+      builder: (context) => ButleryDialog(
+        title: context.l10n.menuNameYourMenu,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -119,15 +119,9 @@ class VeckomenyDialogs {
           ],
         ),
         actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context),
-          ),
-          ActionButtons.primaryButton(
-            context,
+          const DialogCancelButton(),
+          ButleryDialogPrimary(
             label: context.l10n.commonShare,
-            icon: ButleryIcons.share2,
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
@@ -144,23 +138,12 @@ class VeckomenyDialogs {
 
   /// Shows exit confirmation dialog.
   static Future<void> showExitDialog(BuildContext context) async {
-    final shouldExit = await showDialog<bool>(
+    final shouldExit = await showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.menuExitTitle),
-        content: Text(context.l10n.menuExitMessage),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.menuExitConfirm,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
+      builder: (context) => ButleryDialog.confirm(
+        title: context.l10n.menuExitTitle,
+        message: context.l10n.menuExitMessage,
+        primaryLabel: context.l10n.menuExitConfirm,
       ),
     );
 

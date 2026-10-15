@@ -6,6 +6,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -19,7 +21,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
@@ -213,19 +214,19 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 .read<PersonalTagSelectionManager>()
                 .startSelection,
           ),
-        IconButton(
+        AppIconButton(
           key: const ValueKey('personal-tags-more'),
-          icon: const ButleryIcon(ButleryIcons.moreVertical),
-          tooltip: context.l10n.rootBarMoreActions,
+          icon: ButleryIcons.moreVertical,
+          semanticLabel: context.l10n.rootBarMoreActions,
           onPressed: () => PersonalTagDialogs.showMoreActions(
             context,
             onSort: () => _pickSortOrder(context),
           ),
         ),
-        IconButton(
+        AppIconButton(
           key: const ValueKey('personal-tags-create'),
-          icon: const ButleryIcon(ButleryIcons.plus),
-          tooltip: context.l10n.commonCreate,
+          icon: ButleryIcons.plus,
+          semanticLabel: context.l10n.commonCreate,
           onPressed: () => _showCreateSheet(context),
         ),
       ],
@@ -252,20 +253,18 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       leading: ButleryCancelSelectionButton(onPressed: selection.exitSelection),
       // "{n} valda" in tabular figures (produktregler.md:876).
       title: context.l10n.bulkSelectedCount(count),
-      titleStyle: const TextStyle(
-        fontFeatures: [FontFeature.tabularFigures()],
-      ),
+      titleStyle: ButleryTopBar.selectionCountStyle,
       actions: <Widget>[
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.merge),
-          tooltip: context.l10n.personalTagMergeAction,
+        AppIconButton(
+          icon: ButleryIcons.merge,
+          semanticLabel: context.l10n.personalTagMergeAction,
           onPressed: count >= 2
               ? () => PersonalTagDialogs.showMergeDialog(context, selectedTags)
               : null,
         ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.trash2),
-          tooltip: context.l10n.commonDelete,
+        AppIconButton(
+          icon: ButleryIcons.trash2,
+          semanticLabel: context.l10n.commonDelete,
           onPressed: count >= 1
               ? () => PersonalTagDialogs.showBulkDeleteDialog(
                   context,
@@ -438,16 +437,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         ],
         actions: [
           if (selectedNow.isNotEmpty)
-            TextButton(
+            ButleryTextButton(
               key: const ValueKey('personal-tags-partial-retry'),
+              label: l.commonRetry,
               onPressed: () =>
                   PersonalTagDialogs.showBulkDeleteDialog(context, selectedNow),
-              child: Text(l.commonRetry),
             ),
-          TextButton(
+          ButleryTextButton(
             key: const ValueKey('personal-tags-partial-done'),
+            label: l.partialOutcomeDone,
             onPressed: selection.exitSelection,
-            child: Text(l.partialOutcomeDone),
           ),
         ],
       ),

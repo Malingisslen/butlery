@@ -1,5 +1,6 @@
 // lib/views/social/friend_requests/friend_request_card.dart
 
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
@@ -251,19 +252,12 @@ class FriendRequestCard {
             ),
             // Cancel for pending requests, not while choosing.
             if (request.isPending && !selecting)
-              TextButton(
+              ButleryTextButton(
+                label: context.l10n.commonCancel,
+                semanticLabel: context.l10n.socialCancelRequest,
+                tone: ButleryTextButtonTone.warning,
                 onPressed: () =>
                     _cancelSentRequest(context, request, viewModel),
-                style: ButtonStyle(
-                  foregroundColor: WidgetStatePropertyAll(
-                    AppModeColors.textWarning(Theme.of(context).brightness),
-                  ),
-                ),
-                child: Semantics(
-                  label: context.l10n.socialCancelRequest,
-                  excludeSemantics: true,
-                  child: Text(context.l10n.commonCancel),
-                ),
               ),
           ],
         ),

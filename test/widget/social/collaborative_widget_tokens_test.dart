@@ -67,6 +67,11 @@ BoxDecoration _decorationAbove(WidgetTester tester, Finder of) {
 Color? _textColor(WidgetTester tester, String text) =>
     tester.widget<Text>(find.text(text)).style?.color;
 
+// A shared button paints its text colour through the button style, so the
+// colour that reaches the glyphs is the one the Text inherits.
+Color? _renderedTextColor(WidgetTester tester, String text) =>
+    DefaultTextStyle.of(tester.element(find.text(text))).style.color;
+
 void main() {
   final sv = AppLocalizationsSv();
 
@@ -135,7 +140,10 @@ void main() {
           cs.onErrorContainer,
         );
         expect(_textColor(tester, 'Ingen kontakt'), cs.onErrorContainer);
-        expect(_textColor(tester, sv.commonRetry), cs.onErrorContainer);
+        expect(
+          _renderedTextColor(tester, sv.commonRetry),
+          cs.onErrorContainer,
+        );
       });
 
       testWidgets('edit indicator is the warning tint with textWarning text '

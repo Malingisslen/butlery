@@ -4,13 +4,14 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -62,8 +63,7 @@ Future<OvrigtSheetResult?> showOvrigtSheet(
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: entries.length,
-                  separatorBuilder: (_, _) =>
-                      Divider(height: 1, color: cs.outlineVariant),
+                  separatorBuilder: (_, _) => const ButleryDivider(),
                   itemBuilder: (_, i) => Semantics(
                     button: true,
                     label: sheetContext.l10n.a11yMenuPlanRecipeOpen,
@@ -91,11 +91,7 @@ Future<OvrigtSheetResult?> showOvrigtSheet(
                                         ),
                                   ),
                                 ),
-                                ButleryIcon(
-                                  ButleryIcons.chevronRight,
-                                  size: AppDimensions.iconSizeM,
-                                  color: cs.onSurfaceVariant,
-                                ),
+                                const ButleryChevron(),
                               ],
                             ),
                           ),

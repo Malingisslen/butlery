@@ -8,6 +8,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -25,7 +27,6 @@ import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import 'package:butlery/widgets/common/bold_names_text.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -162,19 +163,17 @@ class _MenuPlacementViewContent extends StatelessWidget {
   /// holds placements in memory until "Klar", so popping otherwise loses them
   /// silently (BUT-954 hard-destructive: unsaved user work, no undo path).
   Future<bool?> _showDiscardDialog(BuildContext context) {
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.recipeUnsavedChangesTitle),
-        content: Text(context.l10n.confirmUnsavedChanges),
+      builder: (context) => ButleryDialog(
+        title: context.l10n.recipeUnsavedChangesTitle,
+        message: context.l10n.confirmUnsavedChanges,
         actions: [
-          ActionButtons.secondaryButton(
-            context,
+          DialogCancelButton(
             label: context.l10n.recipeContinueEditing,
             onPressed: () => Navigator.of(context).pop(false),
           ),
-          ActionButtons.primaryButton(
-            context,
+          ButleryDialogPrimary(
             label: context.l10n.recipeLeaveWithoutSaving,
             onPressed: () => Navigator.of(context).pop(true),
           ),
@@ -252,9 +251,9 @@ class _WeekNavRow extends StatelessWidget {
           // ÄNDRA-redo sessions pin the week the auto layout landed on —
           // navigating would duplicate the menu across two weeks.
           if (vm.canNavigateWeeks)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.chevronLeft),
-              tooltip: context.l10n.slotPickerPreviousWeek,
+            AppIconButton(
+              icon: ButleryIcons.chevronLeft,
+              semanticLabel: context.l10n.slotPickerPreviousWeek,
               onPressed: vm.isLoading ? null : vm.previousWeek,
             )
           else
@@ -282,9 +281,9 @@ class _WeekNavRow extends StatelessWidget {
             ),
           ),
           if (vm.canNavigateWeeks)
-            IconButton(
-              icon: const ButleryIcon(ButleryIcons.chevronRight),
-              tooltip: context.l10n.slotPickerNextWeek,
+            AppIconButton(
+              icon: ButleryIcons.chevronRight,
+              semanticLabel: context.l10n.slotPickerNextWeek,
               onPressed: vm.isLoading ? null : vm.nextWeek,
             ),
         ],

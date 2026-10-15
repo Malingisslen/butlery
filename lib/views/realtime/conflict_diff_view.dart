@@ -38,6 +38,9 @@
 /// in-flight save guard.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -278,7 +281,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
         ),
         const SizedBox(height: AppDimensions.space16),
         for (final field in _diff.changedFields) ...[
-          const Divider(),
+          const ButleryDivider(),
           const SizedBox(height: AppDimensions.space12),
           DiffFieldRow(
             title: conflictFieldLabel(l, field.fieldKey),
@@ -317,16 +320,18 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
                 onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
               ),
               const SizedBox(height: AppDimensions.space8),
-              OutlinedButton(
+              ActionButtons.outlinedButton(
+                context,
                 key: const ValueKey('conflictDiff.acceptTheirs'),
+                label: context.l10n.conflictDiffUseTheirs,
+                isExpanded: true,
                 onPressed: _saving ? null : _acceptTheirs,
-                child: Text(context.l10n.conflictDiffUseTheirs),
               ),
               const SizedBox(height: AppDimensions.space8),
-              TextButton(
+              ButleryTextButton(
                 key: const ValueKey('conflictDiff.closeWithoutOverwrite'),
+                label: context.l10n.conflictDiffCloseWithoutOverwrite,
                 onPressed: _saving ? null : _closeWithoutOverwrite,
-                child: Text(context.l10n.conflictDiffCloseWithoutOverwrite),
               ),
             ],
           ),
@@ -349,21 +354,13 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
           padding: const EdgeInsets.all(AppDimensions.space16),
           child: SizedBox(
             width: double.infinity,
-            child: BusyButtonSemantics(
-              busy: _saving,
-              name: context.l10n.conflictDiffUseTheirs,
-              child: OutlinedButton(
-                key: const ValueKey('conflictDiff.useTheirs'),
-                onPressed: _saving ? PlateLineButton.ignore : _useTheirVersion,
-                style: _saving
-                    ? PlateLineButton.busyStyle(
-                        null,
-                        Theme.of(context).outlinedButtonTheme.style,
-                        onFill: false,
-                      )
-                    : null,
-                child: Text(context.l10n.conflictDiffUseTheirs),
-              ),
+            child: ActionButtons.outlinedButton(
+              context,
+              key: const ValueKey('conflictDiff.useTheirs'),
+              label: context.l10n.conflictDiffUseTheirs,
+              isExpanded: true,
+              isLoading: _saving,
+              onPressed: _useTheirVersion,
             ),
           ),
         ),

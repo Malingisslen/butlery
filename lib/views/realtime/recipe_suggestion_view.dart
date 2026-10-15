@@ -18,6 +18,8 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -219,7 +221,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
           )
         else
           for (final field in diff.changedFields) ...[
-            const Divider(),
+            const ButleryDivider(),
             const SizedBox(height: AppDimensions.space12),
             DiffFieldRow(
               title: conflictFieldLabel(l, field.fieldKey),
@@ -287,23 +289,15 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
                     : () => _decide(_Decision.accept),
               ),
               const SizedBox(height: AppDimensions.space8),
-              BusyButtonSemantics(
-                busy: dismissing,
-                name: l.recipeSuggestionDismiss,
-                child: OutlinedButton(
-                  key: RecipeSuggestionView.dismissKey,
-                  style: dismissing
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).outlinedButtonTheme.style,
-                          onFill: false,
-                        )
-                      : null,
-                  onPressed: _busy != null
-                      ? PlateLineButton.ignore
-                      : () => _decide(_Decision.dismiss),
-                  child: Text(l.recipeSuggestionDismiss),
-                ),
+              ActionButtons.outlinedButton(
+                context,
+                key: RecipeSuggestionView.dismissKey,
+                label: l.recipeSuggestionDismiss,
+                isExpanded: true,
+                isLoading: dismissing,
+                onPressed: _busy != null
+                    ? PlateLineButton.ignore
+                    : () => _decide(_Decision.dismiss),
               ),
             ],
           ),

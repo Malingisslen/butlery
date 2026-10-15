@@ -10,6 +10,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_draft_resume_card.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -272,7 +273,7 @@ void main() {
         onDiscard: () => discarded++,
       );
 
-      final discard = tester.widget<TextButton>(
+      final discard = tester.widget<ButleryTextButton>(
         find.byKey(const ValueKey('veckomeny-draft-discard')),
       );
       expect(discard.onPressed, isNull);

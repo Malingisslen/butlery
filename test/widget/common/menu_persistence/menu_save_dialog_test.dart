@@ -130,7 +130,7 @@ void main() {
 
       // Off by default → friend-selection header absent.
       expect(find.text('Välj vänner att dela med'), findsNothing);
-      expect(find.byType(SwitchListTile), findsOneWidget);
+      expect(find.byType(Switch), findsOneWidget);
 
       await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();

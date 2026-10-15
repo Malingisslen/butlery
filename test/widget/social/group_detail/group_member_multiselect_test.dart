@@ -11,6 +11,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -136,7 +137,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(ListTile));
+      await tester.tap(find.byType(ButleryItemRow));
       await tester.pump();
 
       expect(toggled, 1);
@@ -162,7 +163,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.longPress(find.byType(ListTile));
+      await tester.longPress(find.byType(ButleryItemRow));
       await tester.pump();
 
       expect(entered, 1);
@@ -199,7 +200,7 @@ void main() {
         expect(find.byIcon(ButleryIcons.circleCheck), findsNothing);
 
         // Tapping the tile does nothing (onTap is null for non-removable).
-        await tester.tap(find.byType(ListTile));
+        await tester.tap(find.byType(ButleryItemRow), warnIfMissed: false);
         await tester.pump();
         expect(toggled, 0);
       },
@@ -230,7 +231,7 @@ void main() {
       // No action bar before selecting.
       expect(find.text('Ta bort markerade (1)'), findsNothing);
 
-      await tester.longPress(find.byType(ListTile));
+      await tester.longPress(find.byType(ButleryItemRow));
       await tester.pumpAndSettle();
 
       // Selection mode entered with the member selected → bar shows count.
@@ -257,7 +258,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.longPress(find.byType(ListTile));
+      await tester.longPress(find.byType(ButleryItemRow));
       await tester.pumpAndSettle();
       expect(find.text('Ta bort markerade (1)'), findsOneWidget);
 
@@ -271,7 +272,7 @@ void main() {
       // Bar gone; re-entering selection starts from an empty set (count back
       // to 1, not 2) — proves _selectedIds was cleared, not just hidden.
       expect(find.textContaining('Ta bort markerade'), findsNothing);
-      await tester.longPress(find.byType(ListTile));
+      await tester.longPress(find.byType(ButleryItemRow));
       await tester.pumpAndSettle();
       expect(find.text('Ta bort markerade (1)'), findsOneWidget);
     });
@@ -391,10 +392,10 @@ void main() {
       expect(find.textContaining('valda'), findsNothing);
       expect(enter, findsOneWidget);
 
-      await tester.longPress(find.byType(ListTile).first);
+      await tester.longPress(find.byType(ButleryItemRow).first);
       await tester.pumpAndSettle();
       expect(find.text('1 vald'), findsOneWidget);
-      await tester.tap(find.byType(ListTile).first);
+      await tester.tap(find.byType(ButleryItemRow).first);
       await tester.pumpAndSettle();
       expect(find.textContaining('valda'), findsNothing);
     });

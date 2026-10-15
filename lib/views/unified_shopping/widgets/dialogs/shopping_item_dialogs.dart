@@ -3,11 +3,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/services/shopping/ingredient_categorizer.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -22,7 +23,7 @@ class ShoppingItemDialogs {
     UnifiedShoppingViewModel viewModel,
     Function(String) onError,
   ) async {
-    final result = await showDialog<UnifiedShoppingItem>(
+    final result = await showButleryDialog<UnifiedShoppingItem>(
       context: context,
       builder: (context) => _AddItemDialog(viewModel: viewModel),
     );
@@ -74,7 +75,7 @@ class ShoppingItemDialogs {
     UnifiedShoppingViewModel viewModel,
     Function(String) onError,
   ) async {
-    final result = await showDialog<UnifiedShoppingItem>(
+    final result = await showButleryDialog<UnifiedShoppingItem>(
       context: context,
       builder: (context) => _EditItemDialog(item: item, viewModel: viewModel),
     );
@@ -187,8 +188,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.shoppingAddItem),
+    return ButleryDialog(
+      title: context.l10n.shoppingAddItem,
       content: Form(
         key: _formKey,
         child: Column(
@@ -248,16 +249,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
         ),
       ),
       actions: [
-        ActionButtons.secondaryButton(
-          context,
-          label: context.l10n.commonCancel,
-          onPressed: () => Navigator.pop(context),
-        ),
-        ActionButtons.primaryButton(
-          context,
-          label: context.l10n.commonAdd,
-          onPressed: _onSave,
-        ),
+        const DialogCancelButton(),
+        ButleryDialogPrimary(label: context.l10n.commonAdd, onPressed: _onSave),
       ],
     );
   }
@@ -330,8 +323,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.shoppingEditItem),
+    return ButleryDialog(
+      title: context.l10n.shoppingEditItem,
       content: Form(
         key: _formKey,
         child: Column(
@@ -391,13 +384,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         ),
       ),
       actions: [
-        ActionButtons.secondaryButton(
-          context,
-          label: context.l10n.commonCancel,
-          onPressed: () => Navigator.pop(context),
-        ),
-        ActionButtons.primaryButton(
-          context,
+        const DialogCancelButton(),
+        ButleryDialogPrimary(
           label: context.l10n.commonSave,
           onPressed: _onSave,
         ),

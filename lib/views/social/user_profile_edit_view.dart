@@ -17,7 +17,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
@@ -150,11 +149,8 @@ class _UserProfileEditViewContentState
       barrierDismissible: false,
       // The plate line with what is happening, never a spinner
       // (produktregler.md:163, B-18).
-      builder: (context) => AlertDialog(
-        content: PlateLineMessage(
-          message: context.l10n.profileUploadingAvatar,
-        ),
-      ),
+      builder: (context) =>
+          ButleryProgressDialog(message: context.l10n.profileUploadingAvatar),
     );
 
     AppLogger.debug('🎨 VIEW: Calling viewModel.uploadAvatar()');

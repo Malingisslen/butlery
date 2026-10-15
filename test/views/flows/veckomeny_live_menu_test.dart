@@ -153,8 +153,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('veckomeny-root-save')), findsOneWidget);
-    expect(find.byKey(const ValueKey('veckomeny-root-clear')), findsNothing);
+    expect(find.text('Spara meny'), findsOneWidget);
+    expect(find.text('Rensa meny'), findsNothing);
   });
 
   testWidgets('offers no "load saved menu" in the root bar menu', (
@@ -165,7 +165,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('veckomeny-root-load')), findsNothing);
+    expect(find.text('Ladda sparad meny'), findsNothing);
   });
 
   testWidgets('offers no calendar placement for the live menu', (

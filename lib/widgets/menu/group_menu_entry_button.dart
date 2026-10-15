@@ -11,6 +11,9 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -20,9 +23,7 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/group_weekly_menu_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class GroupMenuEntryButton extends StatelessWidget {
   const GroupMenuEntryButton({super.key});
@@ -31,9 +32,9 @@ class GroupMenuEntryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     // The icon takes the bar's foreground: it sits on the week menu's light
     // root bar (Komponentark v1:62), where paper would not show.
-    return IconButton(
-      icon: const ButleryIcon(ButleryIcons.users),
-      tooltip: context.l10n.groupMenuChatAction,
+    return AppIconButton(
+      icon: ButleryIcons.users,
+      semanticLabel: context.l10n.groupMenuChatAction,
       onPressed: () => unawaited(_open(context)),
     );
   }
@@ -98,29 +99,17 @@ class GroupMenuEntryButton extends StatelessWidget {
     BuildContext context,
     List<Conversation> groups,
   ) {
-    return showButlerySheet<Conversation>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(
-                sheetContext.l10n.groupMenuPickGroupTitle,
-                style: Theme.of(sheetContext).textTheme.titleMedium,
-              ),
-            ),
-            for (final group in groups)
-              ListTile(
-                leading: const ButleryIcon(ButleryIcons.users),
-                title: Text(
-                  group.title ?? sheetContext.l10n.groupMenuUntitledGroup,
-                ),
-                onTap: () => Navigator.of(sheetContext).pop(group),
-              ),
-          ],
-        ),
-      ),
+    return showButleryListSheet<Conversation>(
+      context,
+      title: context.l10n.groupMenuPickGroupTitle,
+      rows: (sheetContext) => [
+        for (final group in groups)
+          ButleryListRow(
+            label: group.title ?? sheetContext.l10n.groupMenuUntitledGroup,
+            leading: ButleryIcons.users,
+            onTap: () => Navigator.of(sheetContext).pop(group),
+          ),
+      ],
     );
   }
 }

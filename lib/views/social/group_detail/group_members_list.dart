@@ -228,13 +228,10 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                   onPressed: _startSelection,
                 ),
               if (_canAddMembers)
-                TextButton(
+                ButleryTextButton(
+                  label: context.l10n.groupInviteLink,
+                  semanticLabel: context.l10n.groupAddMembers,
                   onPressed: widget.onAddMembers,
-                  child: Semantics(
-                    label: context.l10n.groupAddMembers,
-                    excludeSemantics: true,
-                    child: Text(context.l10n.groupInviteLink),
-                  ),
                 ),
             ],
           ],

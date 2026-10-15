@@ -38,7 +38,7 @@ String _ownArguments(String code, int open) {
 /// Files that draw a link without using linkSmall.
 const _namedLinkFiles = [
   'lib/views/auth_view.dart',
-  'lib/views/hem/hem_empty_state.dart',
+  'lib/widgets/common/buttons/butlery_text_button.dart',
   'lib/views/legal/markdown_body.dart',
   'lib/views/recipe_detail/recipe_detail_shared_widgets.dart',
   'lib/widgets/common/feedback/inline_error.dart',

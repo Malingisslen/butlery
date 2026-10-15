@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -73,10 +75,7 @@ class DishCreditLine extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: AppDimensions.space4),
-                            ButleryIcon(
-                              ButleryIcons.chevronRight,
-                              color: color,
-                            ),
+                            ButleryChevron(color: color),
                           ],
                         ),
                       ),
@@ -86,14 +85,11 @@ class DishCreditLine extends StatelessWidget {
               ),
             ),
             if (report != null)
-              IconButton(
+              AppIconButton(
+                icon: ButleryIcons.flag,
+                color: color,
+                semanticLabel: l10n.menuDishReportTooltip,
                 onPressed: report,
-                tooltip: l10n.menuDishReportTooltip,
-                constraints: const BoxConstraints(
-                  minWidth: AppDimensions.minTouchTarget,
-                  minHeight: AppDimensions.minTouchTarget,
-                ),
-                icon: ButleryIcon(ButleryIcons.flag, color: color),
               ),
           ],
         ),
@@ -102,12 +98,9 @@ class DishCreditLine extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
             ),
-            child: TextButton(
+            child: ButleryTextButton(
+              label: l10n.menuDishNotMine,
               onPressed: notMine,
-              style: TextButton.styleFrom(
-                minimumSize: const Size(0, AppDimensions.minTouchTarget),
-              ),
-              child: Text(l10n.menuDishNotMine),
             ),
           ),
       ],

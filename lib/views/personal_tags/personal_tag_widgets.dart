@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -16,6 +17,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
@@ -102,10 +104,7 @@ class PersonalTagRow extends StatelessWidget {
                     ),
                     if (!inSelectionMode) ...[
                       const SizedBox(width: AppDimensions.space8),
-                      ButleryIcon(
-                        ButleryIcons.chevronRight,
-                        color: cs.onSurfaceVariant,
-                      ),
+                      const ButleryChevron(),
                     ],
                   ],
                 ),
@@ -282,14 +281,10 @@ class UnusedTagsSection extends StatelessWidget {
                   ),
                 ),
               ),
-              TextButton(
+              ButleryTextButton(
+                label: l10n.personalTagDeleteAllShort,
+                tone: ButleryTextButtonTone.danger,
                 onPressed: onDeleteAll,
-                child: Text(
-                  l10n.personalTagDeleteAllShort,
-                  style: AppTextStyles.labelMediumBold.copyWith(
-                    color: cs.error,
-                  ),
-                ),
               ),
             ],
           ),
@@ -299,15 +294,12 @@ class UnusedTagsSection extends StatelessWidget {
           runSpacing: AppDimensions.space8,
           children: [
             for (final tag in unusedTags)
-              PressFill(
-                surface: PressSurface.base,
-                child: ActionChip(
-                  key: ValueKey(tag.id),
-                  label: Text(tag.name),
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TagDetailView(tagId: tag.id),
-                    ),
+              ButleryActionChip(
+                key: ValueKey(tag.id),
+                label: tag.name,
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TagDetailView(tagId: tag.id),
                   ),
                 ),
               ),

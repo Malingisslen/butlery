@@ -1,5 +1,6 @@
 // lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart
 
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -83,14 +84,10 @@ class CollaborativeConnectionWidgets {
                 ),
               ),
               if (showRetryButton && onRetry != null)
-                TextButton(
+                ButleryTextButton(
+                  label: context.l10n.commonRetry,
+                  tone: ButleryTextButtonTone.onErrorBanner,
                   onPressed: onRetry,
-                  child: Text(
-                    context.l10n.commonRetry,
-                    style: AppTextStyles.buttonTextStyle.copyWith(
-                      color: cs.onErrorContainer,
-                    ),
-                  ),
                 ),
             ],
           ),

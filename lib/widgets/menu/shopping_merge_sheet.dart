@@ -9,6 +9,8 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -235,12 +237,12 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
             children: [
               Expanded(
                 flex: 2,
-                child: OutlinedButton(
+                child: ActionButtons.outlinedButton(
+                  context,
                   key: ShoppingMergeSheet.cancelKey,
+                  label: l.commonCancel,
+                  isExpanded: true,
                   onPressed: () => Navigator.of(context).pop(),
-                  // A button never cuts its own name (BUT-2193, BUT-2219):
-                  // the label wraps, as HeroButton's does.
-                  child: Text(l.commonCancel, textAlign: TextAlign.center),
                 ),
               ),
               const SizedBox(width: AppDimensions.space8),

@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
@@ -129,14 +130,11 @@ class _DishBlock extends StatelessWidget {
           if (vm.canEdit)
             Align(
               alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
+              child: ButleryTextButton(
                 key: ValueKey('group-menu-remove-${entry.id}'),
+                label: l10n.commonRemove,
+                icon: ButleryIcons.x,
                 onPressed: () => onRemove(entry.id),
-                icon: const ButleryIcon(
-                  ButleryIcons.x,
-                  size: AppDimensions.iconSize18,
-                ),
-                label: Text(l10n.commonRemove),
               ),
             ),
         ],
