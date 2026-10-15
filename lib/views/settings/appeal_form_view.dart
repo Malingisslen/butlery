@@ -10,13 +10,13 @@ import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/viewmodels/settings/appeal_form_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// The in-app appeal: one text, one appeal per decision. Pops with `true`
 /// once the server has accepted it.
@@ -96,25 +96,20 @@ class _AppealFormViewState extends State<AppealFormView> {
                   style: AppTextStyles.bodyMedium.copyWith(color: muted),
                 ),
                 const SizedBox(height: AppDimensions.space12),
-                LabeledField(
-                  child: TextField(
-                    controller: _controller,
-                    enabled: !vm.isLoading,
-                    style: fieldTextStyle(context, enabled: !vm.isLoading),
-                    minLines: 5,
-                    maxLines: 10,
-                    maxLength: ModerationAppealsService.maxTextLength,
-                    textCapitalization: TextCapitalization.sentences,
-                    keyboardType: TextInputType.multiline,
-                    onChanged: vm.setText,
-                    decoration: InputDecoration(
-                      hintText: l10n.appealFormHint,
-                      counterText: l10n.appealCounter(
-                        vm.text.length,
-                        ModerationAppealsService.maxTextLength,
-                      ),
-                    ),
+                StyledInput(
+                  hint: l10n.appealFormHint,
+                  controller: _controller,
+                  enabled: !vm.isLoading,
+                  minLines: 5,
+                  maxLines: 10,
+                  maxLength: ModerationAppealsService.maxTextLength,
+                  counterText: l10n.appealCounter(
+                    vm.text.length,
+                    ModerationAppealsService.maxTextLength,
                   ),
+                  textCapitalization: TextCapitalization.sentences,
+                  keyboardType: TextInputType.multiline,
+                  onChanged: vm.setText,
                 ),
                 const SizedBox(height: AppDimensions.space8),
                 Text(
@@ -124,9 +119,10 @@ class _AppealFormViewState extends State<AppealFormView> {
                   style: AppTextStyles.captionBase.copyWith(color: muted),
                 ),
                 const SizedBox(height: AppDimensions.space16),
-                FilledButton(
+                ActionButtons.primaryButton(
+                  context,
+                  label: l10n.appealSubmit,
                   onPressed: vm.canSubmit ? _submit : null,
-                  child: Text(l10n.appealSubmit),
                 ),
               ],
             ),

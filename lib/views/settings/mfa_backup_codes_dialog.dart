@@ -5,10 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
 /// How long copied backup codes stay on the clipboard. Clipboards are read by
 /// other apps and synced between devices, so the codes are wiped after a
@@ -42,7 +44,7 @@ class MfaBackupCodesDialog extends StatefulWidget {
 
   /// Returns true only when the user acknowledged the codes.
   static Future<bool> show(BuildContext context, List<String> codes) async {
-    final result = await showDialog<bool>(
+    final result = await showButleryDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => MfaBackupCodesDialog(codes: codes),
@@ -61,10 +63,9 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    return AlertDialog(
+    return ButleryDialog(
       key: const ValueKey('mfa.backupCodes'),
-      scrollable: true,
-      title: Text(l10n.mfaBackupCodesTitle),
+      title: l10n.mfaBackupCodesTitle,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,13 +86,13 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
             ),
           ),
           const SizedBox(height: AppDimensions.space8),
-          TextButton.icon(
+          ButleryTextButton(
+            label: l10n.mfaBackupCodesCopy,
+            icon: ButleryIcons.copy,
             onPressed: () {
               copyMfaSecret(widget.codes.join('\n'));
               SnackBarUtils.showInfo(context, l10n.mfaBackupCodesCopied);
             },
-            icon: const ButleryIcon(ButleryIcons.copy),
-            label: Text(l10n.mfaBackupCodesCopy),
           ),
           ButleryCheckboxTile(
             boxFirst: true,
@@ -104,14 +105,11 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
+        DialogCancelButton(onPressed: () => Navigator.pop(context, false)),
+        ButleryDialogPrimary(
           key: const ValueKey('mfa.backupCodes.continue'),
+          label: l10n.mfaBackupCodesContinue,
           onPressed: _saved ? () => Navigator.pop(context, true) : null,
-          child: Text(l10n.mfaBackupCodesContinue),
         ),
       ],
     );

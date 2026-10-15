@@ -24,6 +24,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// One decision: what it was about, what was decided and why, and the appeal
 /// (offer, own text, or the final answer). Reporter and owner share this view.
@@ -308,7 +309,7 @@ class _AppealBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Divider(height: AppDimensions.space32),
+        const ButleryDivider(spacing: AppDimensions.space32),
         Text(l10n.appealPromptTitle, style: AppTextStyles.titleBold),
         if (deadline != null) ...[
           const SizedBox(height: AppDimensions.space4),

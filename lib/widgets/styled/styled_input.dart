@@ -1,11 +1,10 @@
 // lib/widgets/styled/styled_input.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/styled/styled_input_borders.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -58,6 +57,12 @@ class StyledInput extends StatelessWidget {
   /// Off for codes and handles, where a suggestion would rewrite the value.
   final bool autocorrect;
 
+  /// Square corners, as the onboarding screens draw their fields.
+  final bool square;
+
+  /// A unit after the text ("min"), and a counter that replaces the length one.
+  final String? suffixText, counterText;
+
   /// The keyboard's action key (done, search, send).
   final ValueChanged<String>? onSubmitted;
 
@@ -92,6 +97,9 @@ class StyledInput extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autocorrect = true,
     this.onSubmitted,
+    this.square = false,
+    this.suffixText,
+    this.counterText,
   });
 
   /// Standard text input
@@ -113,7 +121,10 @@ class StyledInput extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autocorrect = true,
     this.onSubmitted,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        enabled = true,
        readOnly = false,
        obscureText = false,
@@ -143,7 +154,10 @@ class StyledInput extends StatelessWidget {
     this.obscureText = true,
     this.enabled = true,
     this.semanticLabel,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        readOnly = false,
        autofocus = false,
        maxLines = 1,
@@ -173,7 +187,10 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        enabled = true,
        readOnly = false,
        obscureText = false,
@@ -205,7 +222,10 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        validText = null,
        enabled = true,
        readOnly = false,
@@ -241,7 +261,10 @@ class StyledInput extends StatelessWidget {
     this.maxLength,
     this.focusNode,
     this.semanticLabel,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        validText = null,
        enabled = true,
        readOnly = false,
@@ -271,7 +294,10 @@ class StyledInput extends StatelessWidget {
     this.validator,
     this.focusNode,
     this.semanticLabel,
-  }) : onTap = null,
+  }) : square = false,
+       suffixText = null,
+       counterText = null,
+       onTap = null,
        validText = null,
        enabled = true,
        readOnly = false,
@@ -308,25 +334,14 @@ class StyledInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     // Wrap with Semantics when a semanticLabel is provided but no visible label
     final effectiveSemanticLabel =
         semanticLabel ?? (label == null ? hint : null);
 
-    final restingBorder = ButleryFieldBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      borderSide: BorderSide(
-        color: showWarning ? context.modeColors.warning : cs.outline,
-        width: AppDimensions.borderWidthStandard,
-      ),
-    );
-    final restingErrorBorder = ButleryFieldBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      borderSide: BorderSide(
-        color: cs.error,
-        width: AppDimensions.borderWidthOutlinedEdge,
-      ),
+    final borders = styledInputBorders(
+      context,
+      square: square,
+      showWarning: showWarning,
     );
 
     final textField = TextFormField(
@@ -365,35 +380,28 @@ class StyledInput extends StatelessWidget {
         error: errorText == null ? null : FieldErrorLine(errorText!),
         prefixIcon: prefixIcon,
         suffixIcon: _suffix(),
+        suffixText: suffixText,
+        counterText: counterText,
         contentPadding:
             contentPadding ??
             const EdgeInsets.symmetric(
               horizontal: AppDimensions.space16,
               vertical: (AppDimensions.space8 + AppDimensions.space4),
             ),
-        border: ButleryFieldBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          borderSide: const BorderSide(),
-        ),
-        enabledBorder: restingBorder,
+        border: borders.base,
+        enabledBorder: borders.resting,
         // Focus is the ring outside the box (ButleryFocusRing below); the
         // edge keeps its resting width and colour, focused or not, with or
         // without an error: "fokus är ringen (2 px/3 px offset), kanten
         // byter aldrig tjocklek" (Grafisk manual v6:423; Komponentark
         // v1:657). This replaces BUT-533's 3 px saffron edge.
-        focusedBorder: restingBorder,
-        errorBorder: restingErrorBorder,
-        focusedErrorBorder: restingErrorBorder,
+        focusedBorder: borders.resting,
+        errorBorder: borders.error,
+        focusedErrorBorder: borders.error,
         // Disabled: 1 px surface.disabled edge on surface.raised, never
         // opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).
-        disabledBorder: ButleryFieldBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          borderSide: BorderSide(
-            color: AppModeColors.surfaceDisabled(cs.brightness),
-            width: AppDimensions.borderWidthStandard,
-          ),
-        ),
+        disabledBorder: borders.disabled,
       ),
     );
 

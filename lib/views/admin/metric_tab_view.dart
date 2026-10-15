@@ -11,9 +11,9 @@ import 'package:butlery/viewmodels/admin/metrics_tab_viewmodel.dart';
 import 'package:butlery/views/admin/metrics_csv.dart';
 import 'package:butlery/views/admin/widgets/metric_renderer.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
     if (dart.library.js_interop) 'package:butlery/views/account/data_export_helpers/download_web.dart';
@@ -77,14 +77,14 @@ class _MetricTabContent extends StatelessWidget {
     return AdminTabPage(
       title: title(context.l10n),
       actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.export),
-          tooltip: context.l10n.adminMetricExport,
+        AppIconButton(
+          icon: ButleryIcons.export,
+          semanticLabel: context.l10n.adminMetricExport,
           onPressed: vm.values.isEmpty ? null : () => _export(context, vm),
         ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.refreshCw),
-          tooltip: context.l10n.adminRefresh,
+        AppIconButton(
+          icon: ButleryIcons.refreshCw,
+          semanticLabel: context.l10n.adminRefresh,
           onPressed: vm.isLoading ? null : vm.refresh,
         ),
       ],

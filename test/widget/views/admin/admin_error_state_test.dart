@@ -193,7 +193,7 @@ void main() {
           // The close sheet asks for a motivation first.
           await tester.pumpAndSettle();
           await tester.tap(
-            find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+            find.widgetWithText(ElevatedButton, sv.moderatorCloseSheetTitle),
           );
         }
         await tester.pump();
@@ -245,7 +245,7 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
       await tester.tap(
-        find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+        find.widgetWithText(ElevatedButton, sv.moderatorCloseSheetTitle),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
@@ -257,7 +257,7 @@ void main() {
       expect(motivations, hasLength(2));
       expect(motivations[1], motivations[0]);
       expect(
-        find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+        find.widgetWithText(ElevatedButton, sv.moderatorCloseSheetTitle),
         findsNothing,
       );
     });

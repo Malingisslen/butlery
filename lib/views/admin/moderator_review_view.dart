@@ -13,7 +13,6 @@ import 'package:butlery/views/admin/moderator_evidence_section.dart';
 import 'package:butlery/views/admin/moderator_review_tabs.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -25,6 +24,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:provider/provider.dart';
 
 /// Admin-only screen listing open moderation reports and exposing the
@@ -246,30 +246,31 @@ class _ReportCard extends StatelessWidget {
             children: [
               if (report.status != ReportStatus.closed) ...[
                 Expanded(
-                  child: OutlinedButton(
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    label: l10n.moderatorActionAdvance,
                     onPressed: () => _advance(context, vm),
-                    child: Text(l10n.moderatorActionAdvance),
+                    isExpanded: true,
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space8),
               ],
               Expanded(
-                child: OutlinedButton(
-                  style: ButtonThemes.deleteButtonStyle(cs),
+                child: ActionButtons.dangerButton(
+                  context,
+                  label: vm.isReversibleAction(report)
+                      ? l10n.moderatorActionHide
+                      : report.contentType == ContentType.menuDish
+                      ? l10n.moderatorActionRemoveDish
+                      : l10n.moderatorActionDelete,
                   onPressed: () => _confirmTakeDown(context, vm),
-                  child: Text(
-                    vm.isReversibleAction(report)
-                        ? l10n.moderatorActionHide
-                        : report.contentType == ContentType.menuDish
-                        ? l10n.moderatorActionRemoveDish
-                        : l10n.moderatorActionDelete,
-                  ),
+                  isExpanded: true,
                 ),
               ),
               if (report.status != ReportStatus.closed)
-                IconButton(
-                  icon: const ButleryIcon(ButleryIcons.x),
-                  tooltip: l10n.moderatorCloseTooltip,
+                AppIconButton(
+                  icon: ButleryIcons.x,
+                  semanticLabel: l10n.moderatorCloseTooltip,
                   onPressed: () => _close(context, vm),
                 ),
             ],

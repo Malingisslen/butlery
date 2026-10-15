@@ -6,8 +6,9 @@ import 'package:butlery/models/admin/metrics/explanations.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// A small "i" button that teaches one metric: tapping it opens a dialog with
 /// the metric's what / how / why (from the [explanations] registry). The
@@ -19,17 +20,13 @@ class AdminMetricInfoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return IconButton(
-      icon: const ButleryIcon(ButleryIcons.info),
+    return AppIconButton(
+      icon: ButleryIcons.info,
       iconSize: 18,
       color: cs.outline,
-      tooltip: context.l10n.adminMetricInfo,
+      semanticLabel: context.l10n.adminMetricInfo,
       onPressed: () => _show(context),
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(
-        minWidth: AppDimensions.minTouchTarget,
-        minHeight: AppDimensions.minTouchTarget,
-      ),
     );
   }
 
@@ -38,11 +35,12 @@ class AdminMetricInfoButton extends StatelessWidget {
     final desc = catalog[metricKey];
     final explanation = explanations[metricKey];
     if (desc == null || explanation == null) return;
-    showDialog<void>(
+    showButleryDialog<void>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        shape: const RoundedRectangleBorder(),
-        title: Text(desc.label(l10n)),
+      builder: (dialogCtx) => ButleryDialog.notice(
+        title: desc.label(l10n),
+        closeLabel: l10n.adminScreenshotClose,
+        scrollable: false,
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,13 +61,6 @@ class AdminMetricInfoButton extends StatelessWidget {
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(shape: const RoundedRectangleBorder()),
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(l10n.adminScreenshotClose),
-          ),
-        ],
       ),
     );
   }

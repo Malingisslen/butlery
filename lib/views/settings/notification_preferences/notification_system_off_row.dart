@@ -4,6 +4,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Shown at the top when notifications are off in the phone: a 1.5 px error
 /// outline, a warning glyph and a way to the system settings.
@@ -57,10 +58,10 @@ class NotificationSystemOffRow extends StatelessWidget {
               label: l10n.a11yOpenSystemSettings,
               onTap: onOpenSettings,
               excludeSemantics: true,
-              child: TextButton(
+              child: ButleryTextButton(
                 key: const ValueKey('notification-system-off-open'),
+                label: l10n.permOpenSettings,
                 onPressed: onOpenSettings,
-                child: Text(l10n.permOpenSettings),
               ),
             ),
           ),

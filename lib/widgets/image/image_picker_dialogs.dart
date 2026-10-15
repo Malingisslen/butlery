@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 /// Progress data for upload operations
 class UploadProgress {
@@ -50,28 +51,20 @@ class ImagePickerDialogs {
               style: AppTextStyles.displaySmall,
             ),
             const SizedBox(height: AppDimensions.space24),
-            ListTile(
-              leading: const ButleryIcon(
-                ButleryIcons.camera,
-                size: AppDimensions.iconSizeL,
-              ),
-              title: Text(context.l10n.commonTakePhoto),
-              subtitle: Text(context.l10n.imageUseCameraForNewPhoto),
+            ButleryItemRow(
+              leadingIcon: ButleryIcons.camera,
+              title: context.l10n.commonTakePhoto,
+              subtitle: context.l10n.imageUseCameraForNewPhoto,
               onTap: () {
                 AppLogger.info('📷 Användaren valde kamera');
                 Navigator.pop(context, ImageSource.camera);
               },
             ),
-            const Divider(),
-            ListTile(
-              leading: const ButleryIcon(
-                ButleryIcons.image,
-                size: AppDimensions.iconSizeL,
-              ),
-              title: Text(context.l10n.commonSelectFromGallery),
-              subtitle: Text(
-                context.l10n.imageSelectExistingFromGallery,
-              ),
+            const ButleryDivider(),
+            ButleryItemRow(
+              leadingIcon: ButleryIcons.image,
+              title: context.l10n.commonSelectFromGallery,
+              subtitle: context.l10n.imageSelectExistingFromGallery,
               onTap: () {
                 AppLogger.info('🖼️ Användaren valde galleri');
                 Navigator.pop(context, ImageSource.gallery);
@@ -89,30 +82,18 @@ class ImagePickerDialogs {
     BuildContext context,
     String permission,
   ) async {
-    final result = await showDialog<bool>(
+    final result = await showButleryDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.imagePermissionRequired),
-        content: Text(
-          context.l10n.imagePermissionMessage(permission),
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.commonSettings,
-            onPressed: () async {
-              await openAppSettings();
-              if (context.mounted) {
-                Navigator.pop(context, true);
-              }
-            },
-          ),
-        ],
+      builder: (context) => ButleryDialog.confirm(
+        title: context.l10n.imagePermissionRequired,
+        message: context.l10n.imagePermissionMessage(permission),
+        primaryLabel: context.l10n.commonSettings,
+        onPrimary: () async {
+          await openAppSettings();
+          if (context.mounted) {
+            Navigator.pop(context, true);
+          }
+        },
       ),
     );
 
@@ -132,7 +113,7 @@ class ImagePickerDialogs {
   }) {
     AppLogger.info('📊 Visar upload progress dialog');
 
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => PopScope(
@@ -153,8 +134,9 @@ class ImagePickerDialogs {
               );
             }
 
-            return AlertDialog(
-              title: Text(context.l10n.imageUploadingImages),
+            return ButleryDialog(
+              title: context.l10n.imageUploadingImages,
+              actions: const [],
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/guest/guest_upgrade_launcher.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 enum GuestAccountReason { share, together, importLimit }
 
@@ -77,14 +79,16 @@ class _GuestAccountSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.space24),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: l10n.guestCreateAccount,
             onPressed: onCreateAccount,
-            child: Text(l10n.guestCreateAccount),
+            isExpanded: true,
           ),
           const SizedBox(height: AppDimensions.space4),
-          TextButton(
+          ButleryTextButton(
+            label: l10n.guestNotNow,
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.guestNotNow),
           ),
         ],
       ),

@@ -20,6 +20,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_checkbox_grid.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// Allergens and diets the user wants status for, and where it is shown.
 /// Every change is saved at once.
@@ -138,10 +140,11 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: AppDimensions.space16),
-          child: OutlinedButton.icon(
+          child: ActionButtons.outlinedButton(
+            context,
+            label: l10n.allergenRetagRow,
+            icon: ButleryIcons.refreshCw,
             onPressed: () => _showRetagDialog(context),
-            icon: const ButleryIcon(ButleryIcons.refreshCw),
-            label: Text(l10n.allergenRetagRow),
           ),
         ),
         ButleryListSection(
@@ -163,7 +166,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   void _showRetagDialog(BuildContext context) {
-    showDialog(
+    showButleryDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => RetagProgressDialog(

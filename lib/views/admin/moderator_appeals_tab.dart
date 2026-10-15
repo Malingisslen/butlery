@@ -14,6 +14,8 @@ import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/list/butlery_radio_row.dart';
 
 /// The "Överklaganden" tab: open appeals with the text the person wrote and
 /// a "Svara" button.
@@ -103,9 +105,10 @@ class _AppealCard extends StatelessWidget {
               style: muted,
             ),
           const SizedBox(height: AppDimensions.space8),
-          OutlinedButton(
+          ActionButtons.outlinedButton(
+            context,
+            label: l10n.moderatorAppealAnswerButton,
             onPressed: () => _answer(context),
-            child: Text(l10n.moderatorAppealAnswerButton),
           ),
         ],
       ),
@@ -211,9 +214,10 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
               ),
             ),
           const SizedBox(height: AppDimensions.space16),
-          FilledButton(
+          ActionButtons.primaryButton(
+            context,
+            label: l10n.moderatorAnswerSubmit,
             onPressed: () => Navigator.pop(context, _choice),
-            child: Text(l10n.moderatorAnswerSubmit),
           ),
           const DialogCancelButton(),
         ],
@@ -222,11 +226,10 @@ class _AppealAnswerSheetState extends State<AppealAnswerSheet> {
   }
 
   Widget _option(AppealStatus value, String title, String body) =>
-      RadioListTile<AppealStatus>(
+      ButleryRadioRow<AppealStatus>(
         key: ValueKey('answer-${value.wireName}'),
         value: value,
-        contentPadding: EdgeInsets.zero,
-        title: Text(title, style: AppTextStyles.titleSmall),
-        subtitle: Text(body, style: AppTextStyles.bodySmall),
+        title: title,
+        subtitle: body,
       );
 }

@@ -158,7 +158,7 @@ void main() {
     await tester.enterText(field('accountPassword.new'), 'nyttLosen123');
     await tester.enterText(field('accountPassword.confirm'), confirm);
     final button = find.widgetWithText(
-      FilledButton,
+      ElevatedButton,
       l10n.accountSecurityChangePassword,
     );
     await tester.ensureVisible(button);

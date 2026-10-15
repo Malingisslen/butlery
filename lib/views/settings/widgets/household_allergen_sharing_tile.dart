@@ -27,6 +27,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
@@ -341,11 +342,7 @@ class _HouseholdAllergenSharingTileState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Divider(
-          height: 1,
-          thickness: 1,
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        const ButleryDivider(spacing: 1),
         row,
       ],
     );

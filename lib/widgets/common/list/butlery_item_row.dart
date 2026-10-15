@@ -33,6 +33,7 @@ class ButleryItemRow extends StatelessWidget {
     this.excludeTitleSemantics = false,
     this.danger = false,
     this.selected = false,
+    this.emphasised = false,
     this.showChevron = false,
     this.showCheck = false,
     this.enabled = true,
@@ -84,6 +85,10 @@ class ButleryItemRow extends StatelessWidget {
   /// The row is the chosen one: surface.selected behind it, the title in bold
   /// ink, read out as selected.
   final bool selected;
+
+  /// The title in bold without the row being the chosen one, such as an
+  /// unread notification.
+  final bool emphasised;
 
   /// A chevron: the row leads somewhere.
   final bool showChevron;
@@ -142,7 +147,7 @@ class ButleryItemRow extends StatelessWidget {
                           ? null
                           : TextOverflow.ellipsis,
                       style:
-                          (selected
+                          (selected || emphasised
                                   ? AppTextStyles.bodyBold
                                   : AppTextStyles.bodyMedium)
                               .copyWith(color: titleColour),

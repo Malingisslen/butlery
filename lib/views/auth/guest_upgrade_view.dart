@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/brand/provider_button.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -19,18 +20,17 @@ import 'package:butlery/services/auth/guest_auth_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/auth/auth_surface.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/field_helper_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/views/auth/social_sign_in_buttons.dart';
 import 'package:butlery/widgets/guest/guest_erasure.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 class GuestUpgradeView extends StatefulWidget {
   const GuestUpgradeView({super.key});
@@ -269,10 +269,10 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
                         )
                       : l10n.errorEmailAlreadyInUse,
                 ),
-                TextButton(
+                ButleryTextButton(
                   key: GuestUpgradeView.signInInsteadKey,
+                  label: l10n.guestSignInInstead,
                   onPressed: _busy ? null : _signInInstead,
-                  child: Text(l10n.guestSignInInstead),
                 ),
                 const SizedBox(height: AppDimensions.space16),
               ],
@@ -312,7 +312,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
         const SizedBox(height: AppDimensions.space8 + AppDimensions.space4),
       ],
       const SizedBox(height: AppDimensions.space8),
-      const ProviderOrDivider(),
+      ButleryLabelledDivider(label: context.l10n.commonOr),
       const SizedBox(height: AppDimensions.space24),
     ];
   }
@@ -321,71 +321,53 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
     final l10n = context.l10n;
     final enabled = !_busy && !_linked;
     return [
-      LabeledField(
+      StyledInput(
+        key: GuestUpgradeView.nameKey,
         label: l10n.authYourName,
-        child: TextFormField(
-          key: GuestUpgradeView.nameKey,
-          style: fieldTextStyle(context, enabled: enabled),
-          controller: _nameController,
-          enabled: enabled,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(
-            hintText: l10n.guestUpgradeNameHint,
-          ),
-          errorBuilder: FieldErrorLine.builder,
-          validator: FormValidators.authName(),
-          autofillHints: const [AutofillHints.name],
-        ),
+        hint: l10n.guestUpgradeNameHint,
+        controller: _nameController,
+        enabled: enabled,
+        textInputAction: TextInputAction.next,
+        validator: FormValidators.authName(),
+        autofillHints: const [AutofillHints.name],
       ),
       const SizedBox(height: AppDimensions.space16),
-      LabeledField(
+      StyledInput(
+        key: GuestUpgradeView.emailKey,
         label: l10n.authEmail,
-        child: TextFormField(
-          key: GuestUpgradeView.emailKey,
-          style: fieldTextStyle(context, enabled: enabled),
-          controller: _emailController,
-          enabled: enabled,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          decoration: InputDecoration(hintText: l10n.authEmailHint),
-          errorBuilder: FieldErrorLine.builder,
-          validator: FormValidators.authEmail(),
-          autofillHints: const [AutofillHints.email],
-          onChanged: (_) {
-            if (_emailInUse) setState(() => _emailInUse = false);
-          },
-        ),
+        hint: l10n.authEmailHint,
+        controller: _emailController,
+        enabled: enabled,
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+        validator: FormValidators.authEmail(),
+        autofillHints: const [AutofillHints.email],
+        onChanged: (_) {
+          if (_emailInUse) setState(() => _emailInUse = false);
+        },
       ),
       const SizedBox(height: AppDimensions.space16),
-      LabeledField(
+      StyledInput(
+        key: GuestUpgradeView.passwordKey,
         label: l10n.authPassword,
-        child: TextFormField(
-          key: GuestUpgradeView.passwordKey,
-          style: fieldTextStyle(context, enabled: enabled),
-          controller: _passwordController,
-          enabled: enabled,
-          obscureText: !_passwordVisible,
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _submit(),
-          decoration: InputDecoration(
-            hintText: l10n.authPasswordChoose,
-            suffixIcon: IconButton(
-              icon: ButleryIcon(
-                _passwordVisible ? ButleryIcons.eyeOff : ButleryIcons.eye,
-                size: AppDimensions.iconSizeM,
-              ),
-              onPressed: enabled
-                  ? () => setState(() => _passwordVisible = !_passwordVisible)
-                  : null,
-              tooltip: _passwordVisible
-                  ? l10n.a11yHidePassword
-                  : l10n.a11yShowPassword,
-            ),
-          ),
-          errorBuilder: FieldErrorLine.builder,
-          validator: FormValidators.strongPassword(),
-          autofillHints: const [AutofillHints.newPassword],
+        hint: l10n.authPasswordChoose,
+        controller: _passwordController,
+        enabled: enabled,
+        obscureText: !_passwordVisible,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _submit(),
+        suffixIcon: AppIconButton(
+          icon: _passwordVisible ? ButleryIcons.eyeOff : ButleryIcons.eye,
+          iconSize: AppDimensions.iconSizeM,
+          semanticLabel: _passwordVisible
+              ? l10n.a11yHidePassword
+              : l10n.a11yShowPassword,
+          onPressed: enabled
+              ? () => setState(() => _passwordVisible = !_passwordVisible)
+              : null,
         ),
+        validator: FormValidators.strongPassword(),
+        autofillHints: const [AutofillHints.newPassword],
       ),
       FieldHelperLine(l10n.passwordRuleHint),
     ];

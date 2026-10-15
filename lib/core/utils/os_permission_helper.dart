@@ -12,11 +12,11 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/utils/captured_snackbars.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 /// Injectable wrapper for `permission_handler` static APIs. Lets tests drive
 /// status transitions without touching plugin channels.
@@ -285,7 +285,7 @@ class OsPermissionHelper {
     String? consequence,
     IconData? icon,
   }) {
-    return showDialog<bool>(
+    return showButleryDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (_) => _OsPermissionRationaleDialog(
@@ -453,10 +453,11 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: ComponentThemes.outlinedButtonStyle(cs),
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    label: cancel,
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(cancel, textAlign: TextAlign.center),
+                    isExpanded: true,
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space8),

@@ -1,9 +1,10 @@
 // lib/widgets/shopping/shopping_template_browser.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -12,7 +13,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 /// Displays saved shopping list templates for selection or management.
 /// Follows the same pattern as MenuTemplateBrowser.
@@ -154,18 +154,10 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
             color: cs.surfaceContainerHighest,
             border: Border.all(color: cs.outlineVariant),
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.space12,
-              vertical: AppDimensions.space8,
-            ),
-            leading: ButleryIcon(
-              ButleryIcons.list,
-              color: cs.onSurface,
-              size: AppDimensions.iconSizeM,
-            ),
-            title: Text(name, style: AppTextStyles.titleMedium),
-            subtitle: Column(
+          child: ButleryItemRow(
+            leadingIcon: ButleryIcons.list,
+            title: name,
+            subtitleWidget: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (description.isNotEmpty)
@@ -194,51 +186,28 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                 ),
               ],
             ),
-            trailing: PressFill(
-              surface: PressSurface.base,
-              child: PopupMenuButton<String>(
-                icon: const ButleryIcon(ButleryIcons.moreVertical),
-                onSelected: (action) {
-                  if (action == 'use') {
-                    widget.onTemplateSelected(id);
-                  } else if (action == 'delete') {
-                    _deleteTemplate(id);
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'use',
-                    child: Row(
-                      children: [
-                        ButleryIcon(
-                          ButleryIcons.check,
-                          size: AppDimensions.iconSizeM,
-                          color: cs.onSurface,
-                        ),
-                        const SizedBox(width: AppDimensions.space8),
-                        Text(context.l10n.shoppingTemplateUse),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        ButleryIcon(
-                          ButleryIcons.trash2,
-                          size: AppDimensions.iconSizeM,
-                          color: cs.error,
-                        ),
-                        const SizedBox(width: AppDimensions.space8),
-                        Text(
-                          context.l10n.shoppingTemplateDelete,
-                          style: TextStyle(color: cs.error),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            trailing: ButleryMenu<String>(
+              semanticLabel: context.l10n.a11yShoppingItemMoreOptions(name),
+              onSelected: (action) {
+                if (action == 'use') {
+                  widget.onTemplateSelected(id);
+                } else if (action == 'delete') {
+                  _deleteTemplate(id);
+                }
+              },
+              choices: [
+                ButleryMenuChoice<String>(
+                  value: 'use',
+                  label: context.l10n.shoppingTemplateUse,
+                  icon: ButleryIcons.check,
+                ),
+                ButleryMenuChoice<String>(
+                  value: 'delete',
+                  label: context.l10n.shoppingTemplateDelete,
+                  icon: ButleryIcons.trash2,
+                  danger: true,
+                ),
+              ],
             ),
           ),
         );

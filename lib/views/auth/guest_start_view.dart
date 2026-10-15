@@ -18,21 +18,18 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/field_helper_line.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Says that the server refused the age, when the guest start screen is no
 /// longer there to show it.
 Future<void> showGuestTooYoungDialog(BuildContext context) {
-  return showDialog<void>(
+  return showButleryDialog<void>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(ctx.l10n.onboardingAgeRejectedTitle),
-      content: Text(ctx.l10n.onboardingAgeRejectedBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: Text(ctx.l10n.commonClose),
-        ),
-      ],
+    builder: (ctx) => ButleryDialog.notice(
+      title: ctx.l10n.onboardingAgeRejectedTitle,
+      message: ctx.l10n.onboardingAgeRejectedBody,
     ),
   );
 }
@@ -174,10 +171,10 @@ class _GuestStartViewState extends State<GuestStartView> {
           expand: true,
         ),
         const SizedBox(height: AppDimensions.space8),
-        TextButton(
+        ButleryTextButton(
           key: GuestStartView.backKey,
+          label: l10n.guestStartBackToSignIn,
           onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
-          child: Text(l10n.guestStartBackToSignIn),
         ),
       ],
     );
@@ -214,31 +211,21 @@ class _TooYoungPanel extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppDimensions.spacingXxl),
-        SizedBox(
-          height: AppDimensions.buttonHeight,
-          child: ElevatedButton(
-            onPressed: () => Navigator.of(context).maybePop(),
-            child: Text(l10n.commonBack),
-          ),
+        ActionButtons.primaryButton(
+          context,
+          label: l10n.commonBack,
+          onPressed: () => Navigator.of(context).maybePop(),
+          isExpanded: true,
         ),
         const SizedBox(height: AppDimensions.space16),
-        TextButton(
-          onPressed: () => showDialog<void>(
+        ButleryTextButton(
+          label: l10n.onboardingAgeGateParentOption,
+          onPressed: () => showButleryDialog<void>(
             context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text(ctx.l10n.onboardingAgeGateParentInfoTitle),
-              content: Text(ctx.l10n.onboardingAgeGateParentInfoBody),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(ctx.l10n.commonClose),
-                ),
-              ],
+            builder: (ctx) => ButleryDialog.notice(
+              title: ctx.l10n.onboardingAgeGateParentInfoTitle,
+              message: ctx.l10n.onboardingAgeGateParentInfoBody,
             ),
-          ),
-          child: Text(
-            l10n.onboardingAgeGateParentOption,
-            textAlign: TextAlign.center,
           ),
         ),
       ],

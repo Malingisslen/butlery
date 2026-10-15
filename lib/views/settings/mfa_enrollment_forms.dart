@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/styled/butlery_code_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// The first step of enabling two-step verification: what it means, and
 /// the button that starts it.
@@ -132,11 +133,11 @@ class MfaTotpSetupForm extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton.icon(
+            ButleryTextButton(
               key: const ValueKey('mfa.copyKey'),
+              label: context.l10n.mfaSetupCopyKey,
+              icon: ButleryIcons.copy,
               onPressed: onCopyKey,
-              icon: const ButleryIcon(ButleryIcons.copy),
-              label: Text(context.l10n.mfaSetupCopyKey),
             ),
             const SizedBox(height: AppDimensions.space8),
             Text(context.l10n.mfaSetupCodeIntro),
@@ -207,7 +208,7 @@ class MfaErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: Theme.of(context).colorScheme.onErrorContainer,
               ),
             ),

@@ -6,13 +6,11 @@ import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Footer component for import dialogs with validation and navigation buttons.
 class ImportDialogFooter extends StatelessWidget {
-  static const _fitLabel = ButtonStyle(
-    minimumSize: WidgetStatePropertyAll(Size(0, AppDimensions.minTouchTarget)),
-  );
-
   final String? validationError;
   final bool canGoBack;
   final bool canProceed;
@@ -87,33 +85,31 @@ class ImportDialogFooter extends StatelessWidget {
               // Spacer that is an infinite minimum, so the buttons size to
               // their labels here.
               if (canGoBack)
-                TextButton.icon(
+                ButleryTextButton(
+                  label: context.l10n.commonBack,
+                  icon: ButleryIcons.arrowLeft,
                   onPressed: onBack,
-                  style: _fitLabel,
-                  icon: const ButleryIcon(ButleryIcons.arrowLeft),
-                  label: Text(context.l10n.commonBack),
                 )
               else
-                TextButton(
+                ButleryTextButton(
+                  label: context.l10n.commonCancel,
                   onPressed: onCancel,
-                  style: _fitLabel,
-                  child: Text(context.l10n.commonCancel),
                 ),
               const Spacer(),
               // Next/Save button
               if (currentStep == AssistedImportStep.reviewEdit)
-                FilledButton.icon(
+                ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.importSaveRecipe,
+                  icon: ButleryIcons.save,
                   onPressed: canProceed ? onSave : null,
-                  style: _fitLabel,
-                  icon: const ButleryIcon(ButleryIcons.save),
-                  label: Text(context.l10n.importSaveRecipe),
                 )
               else
-                FilledButton.icon(
+                ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.commonNext,
+                  icon: ButleryIcons.arrowRight,
                   onPressed: canProceed ? onNext : null,
-                  style: _fitLabel,
-                  icon: const ButleryIcon(ButleryIcons.arrowRight),
-                  label: Text(context.l10n.commonNext),
                 ),
             ],
           ),

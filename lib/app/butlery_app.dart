@@ -66,6 +66,8 @@ import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
 /// "Starta om" button calls [onRestart] (wired to `main` in `main.dart`) so
@@ -119,9 +121,10 @@ class ErrorApp extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppDimensions.space24),
-                    FilledButton(
+                    ActionButtons.primaryButton(
+                      context,
+                      label: restartLabel,
                       onPressed: onRestart,
-                      child: const Text(restartLabel),
                     ),
                     const SizedBox(height: AppDimensions.space16),
                     ExpansionTile(
@@ -459,7 +462,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           content: Text(l10n.importClipboardUrlDetected),
           leading: const ButleryIcon(ButleryIcons.link),
           actions: [
-            TextButton(
+            ButleryTextButton(
+              label: l10n.importClipboardUseUrl,
               onPressed: () {
                 messenger.hideCurrentMaterialBanner();
                 if (!mounted) return;
@@ -468,11 +472,10 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   arguments: text,
                 );
               },
-              child: Text(l10n.importClipboardUseUrl),
             ),
-            TextButton(
+            ButleryTextButton(
+              label: l10n.commonClose,
               onPressed: () => messenger.hideCurrentMaterialBanner(),
-              child: Text(l10n.commonClose),
             ),
           ],
         ),

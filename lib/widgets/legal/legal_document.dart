@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/legal/legal_link_foot.dart';
+import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 
 class LegalDocument extends StatefulWidget {
   const LegalDocument({
@@ -93,7 +94,7 @@ class _LegalDocumentState extends State<LegalDocument> {
                       ],
                     ),
             ),
-            const Divider(height: AppDimensions.space32),
+            const ButleryDivider(spacing: AppDimensions.space32),
             LegalLinkFoot(current: widget.current),
           ],
         ),

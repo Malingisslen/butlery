@@ -10,7 +10,8 @@ import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
 /// interaction trail and device info captured at submission, plus a triage
@@ -87,9 +88,10 @@ class _FeedbackInboxContent extends StatelessWidget {
               vertical: AppDimensions.space12,
             ),
             child: Center(
-              child: OutlinedButton(
+              child: ActionButtons.outlinedButton(
+                context,
+                label: context.l10n.adminFeedbackLoadMore,
                 onPressed: vm.loadMore,
-                child: Text(context.l10n.adminFeedbackLoadMore),
               ),
             ),
           );
@@ -161,15 +163,10 @@ class _StatusFilterBar extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.space8,
               ),
-              child: PressFill(
-                surface: vm.statusFilter == status
-                    ? PressSurface.ink
-                    : PressSurface.base,
-                child: ChoiceChip(
-                  label: Text(label),
-                  selected: vm.statusFilter == status,
-                  onSelected: (_) => vm.setStatusFilter(status),
-                ),
+              child: ButleryChoiceChip(
+                label: label,
+                selected: vm.statusFilter == status,
+                onSelected: (_) => vm.setStatusFilter(status),
               ),
             ),
         ],

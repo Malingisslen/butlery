@@ -13,6 +13,7 @@ import 'package:butlery/widgets/shopping/shopping_template_browser.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../views/design_states/state_harness.dart';
+import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 final _sv = AppLocalizationsSv();
 
@@ -52,7 +53,7 @@ void main() {
 
     final row = find.ancestor(
       of: find.text('Fredagsmys'),
-      matching: find.byType(ListTile),
+      matching: find.byType(ButleryItemRow),
     );
     await tester.tap(
       find.descendant(of: row, matching: find.byType(PopupMenuButton<String>)),

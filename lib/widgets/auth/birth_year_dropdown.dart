@@ -3,12 +3,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
-import 'package:butlery/widgets/onboarding/onboarding_parts.dart';
 
 /// The year-only birth year question (GDPR Art 8) of onboarding and the
 /// guest start. Year granularity is sufficient per Swedish DPA guidance and
@@ -42,7 +38,6 @@ class BirthYearDropdown extends StatelessWidget {
     // Dropdown keeps the interaction quick and avoids a scrolling wheel
     // that fails the accessibility contract on wide layouts.
     final label = context.l10n.onboardingAgeGateBirthYearLabel;
-    final cs = Theme.of(context).colorScheme;
     // The label stands above the box as the drawn screens set it, and the
     // field takes its name from a Semantics label so it is read once.
     return Column(
@@ -51,30 +46,17 @@ class BirthYearDropdown extends StatelessWidget {
       children: [
         ExcludeSemantics(child: SectionHeading(label)),
         const SizedBox(height: AppDimensions.space8),
-        Semantics(
-          label: label,
-          child: PressFill(
-            surface: PressSurface.base,
-            child: DropdownButtonFormField<int>(
-              icon: const ButleryIcon(ButleryIcons.chevronDown),
-              iconEnabledColor: cs.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(cs.brightness),
-              key: dropdownKey,
-              initialValue: years.contains(selected) ? selected : null,
-              isExpanded: true,
-              hint: Text(context.l10n.onboardingAgeGateBirthYearHint),
-              decoration: InputDecoration(
-                border: onboardingFieldBorder(cs),
-                enabledBorder: onboardingFieldBorder(cs),
-                focusedBorder: onboardingFieldBorder(cs),
-              ),
-              items: [
-                for (final y in years)
-                  DropdownMenuItem<int>(value: y, child: Text(y.toString())),
-              ],
-              onChanged: onChanged,
-            ),
-          ),
+        ButleryDropdown<int>(
+          key: dropdownKey,
+          square: true,
+          semanticLabel: label,
+          hint: context.l10n.onboardingAgeGateBirthYearHint,
+          value: years.contains(selected) ? selected : null,
+          options: [
+            for (final y in years)
+              ButleryDropdownOption<int>(value: y, label: y.toString()),
+          ],
+          onChanged: onChanged == null ? null : (y) => onChanged!(y),
         ),
       ],
     );

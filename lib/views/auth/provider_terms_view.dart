@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// "Välkommen till Butlery" (BUT-916 mockup screen 2): the name the account
 /// will show, prefilled from Google or Apple, and the terms. AuthWrapper
@@ -202,14 +203,12 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                     expand: true,
                   ),
                   const SizedBox(height: AppDimensions.space8),
-                  TextButton(
+                  ButleryTextButton(
                     key: const ValueKey('providerTerms.decline'),
+                    label: vm.shownAgain
+                        ? l10n.providerTermsCancelAndDelete
+                        : l10n.commonCancel,
                     onPressed: vm.isLoading ? null : vm.decline,
-                    child: Text(
-                      vm.shownAgain
-                          ? l10n.providerTermsCancelAndDelete
-                          : l10n.commonCancel,
-                    ),
                   ),
                 ],
               ),

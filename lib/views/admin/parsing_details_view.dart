@@ -9,12 +9,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/admin/parsing_details_viewmodel.dart';
 import 'package:butlery/views/admin/widgets/metric_drilldown.dart';
 import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/admin/admin_table.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Admin-only parsing-details tab: per-domain correction counts + the field the
 /// parser most often gets wrong there. Complements the import-health tab.
@@ -59,9 +59,9 @@ class _ParsingDetailsContent extends StatelessWidget {
     return AdminTabPage(
       title: context.l10n.adminParsingTitle,
       actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.refreshCw),
-          tooltip: context.l10n.adminRefresh,
+        AppIconButton(
+          icon: ButleryIcons.refreshCw,
+          semanticLabel: context.l10n.adminRefresh,
           onPressed: vm.isLoading ? null : vm.refresh,
         ),
       ],

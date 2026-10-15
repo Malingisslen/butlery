@@ -7,11 +7,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -219,11 +217,12 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                             expand: true,
                           ),
                           const SizedBox(height: AppDimensions.space8),
-                          OutlinedButton.icon(
-                            style: ComponentThemes.deleteButtonStyle(cs),
+                          ActionButtons.dangerButton(
+                            context,
+                            label: l10n.pendingDeletionDeleteNow,
+                            icon: ButleryIcons.trash2,
                             onPressed: _deleteNow,
-                            icon: const ButleryIcon(ButleryIcons.trash2),
-                            label: Text(l10n.pendingDeletionDeleteNow),
+                            isExpanded: true,
                           ),
                           const SizedBox(height: AppDimensions.space8),
                           ActionButtons.textButton(

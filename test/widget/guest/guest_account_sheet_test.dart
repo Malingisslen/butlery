@@ -58,7 +58,9 @@ void main() {
       expect(find.text(entry.value.$1), findsOneWidget);
       expect(find.text(entry.value.$2), findsOneWidget);
       expect(
-        tester.getSize(find.widgetWithText(FilledButton, 'Skapa konto')).height,
+        tester
+            .getSize(find.widgetWithText(ElevatedButton, 'Skapa konto'))
+            .height,
         greaterThanOrEqualTo(48),
       );
 

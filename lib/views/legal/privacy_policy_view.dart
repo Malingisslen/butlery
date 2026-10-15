@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -11,6 +10,7 @@ import 'package:butlery/views/legal/legal_asset.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 /// Displays the complete privacy policy, covering all GDPR
@@ -107,10 +107,10 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     return ButleryPage.undersida(
       title: context.l10n.privacyTitle,
       actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.refreshCw),
+        AppIconButton(
+          icon: ButleryIcons.refreshCw,
+          semanticLabel: context.l10n.privacyReload,
           onPressed: _isLoading ? null : _loadPrivacyPolicy,
-          tooltip: context.l10n.privacyReload,
         ),
       ],
       // The policy ships with the app, so it still opens offline, under the
