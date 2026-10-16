@@ -164,6 +164,10 @@ class RecipeCore with JsonSerializableMixin {
 
   String? sourceUrl;
 
+  /// True for the owner's own copy of a shared recipe. Replaces the
+  /// " (Min kopia)" text that used to be appended to [title].
+  bool isOwnerCopy;
+
   /// Pooled-ratings "Butlery-betyget" hint: the content-derived poolKey for this
   /// dish, computed client-side on save (display/index only — the server stays
   /// authoritative). Lets the card/detail read canonical_recipe_stats/{poolKey}
@@ -372,6 +376,7 @@ class RecipeCore with JsonSerializableMixin {
     this.rating,
     required this.mealType,
     this.sourceUrl,
+    this.isOwnerCopy = false,
     this.ratingPoolKey,
     this.relatedRecipeIds,
     this.sourceArtefact,
@@ -441,6 +446,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    bool? isOwnerCopy,
     Object? ratingPoolKey = _sentinel,
     Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
@@ -521,6 +527,7 @@ class RecipeCore with JsonSerializableMixin {
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
+      isOwnerCopy: isOwnerCopy ?? this.isOwnerCopy,
       ratingPoolKey: ratingPoolKey == _sentinel
           ? this.ratingPoolKey
           : ratingPoolKey as String?,
@@ -656,6 +663,8 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    // Omitted when false so ordinary recipes stay byte-identical.
+    if (isOwnerCopy) 'isOwnerCopy': true,
     'ratingPoolKey': ratingPoolKey,
     'relatedRecipeIds': relatedRecipeIds,
     'sourceArtefact': sourceArtefact?.toJson(),
@@ -709,6 +718,8 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    // Omitted when false so ordinary recipes stay byte-identical.
+    if (isOwnerCopy) 'isOwnerCopy': true,
     'ratingPoolKey': ratingPoolKey,
     'relatedRecipeIds': relatedRecipeIds,
     'sourceArtefact': sourceArtefact?.toJson(),
@@ -747,9 +758,18 @@ class RecipeCore with JsonSerializableMixin {
     'schemaVersion': schemaVersion,
   };
 
+  static const _legacyOwnerCopySuffix = ' (Min kopia)';
+
+  // Titles saved before isOwnerCopy existed carry the suffix as text.
+  static String withoutOwnerCopySuffix(String title) =>
+      title.endsWith(_legacyOwnerCopySuffix)
+      ? title.substring(0, title.length - _legacyOwnerCopySuffix.length)
+      : title;
+
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
     final id = utils.SerializationUtils.safeString(json, 'id');
-    final title = utils.SerializationUtils.safeString(json, 'title');
+    final storedTitle = utils.SerializationUtils.safeString(json, 'title');
+    final title = withoutOwnerCopySuffix(storedTitle);
     final ingredients = List<String>.from(
       (json['ingredients'] as List?).orEmpty(),
     );
@@ -768,7 +788,7 @@ class RecipeCore with JsonSerializableMixin {
     } else {
       final computedChecksum = computeChecksum(
         id: id,
-        title: title,
+        title: storedTitle,
         ingredients: ingredients,
         instructions: instructions,
       );
@@ -813,6 +833,9 @@ class RecipeCore with JsonSerializableMixin {
         ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
+      isOwnerCopy:
+          utils.SerializationUtils.safeBool(json, 'isOwnerCopy') ||
+          title != storedTitle,
       ratingPoolKey: utils.SerializationUtils.safeNullableString(
         json,
         'ratingPoolKey',
@@ -860,7 +883,17 @@ class RecipeCore with JsonSerializableMixin {
         'familyRatingCount',
       ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(json, 'lastRatedAt'),
-      dataChecksum: storedChecksum,
+      // The suffix was part of the stored title; a record that verified
+      // before it was stripped must still verify after.
+      dataChecksum:
+          integrityStatus == DataIntegrityStatus.valid && title != storedTitle
+          ? computeChecksum(
+              id: id,
+              title: title,
+              ingredients: ingredients,
+              instructions: instructions,
+            )
+          : storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
       heirloom: _parseHeirloom(json['heirloom']),
@@ -984,7 +1017,8 @@ class RecipeCore with JsonSerializableMixin {
 
   /// Create from repository data map (removes Firebase dependency)
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
-    final title = utils.SerializationUtils.safeString(data, 'title');
+    final storedTitle = utils.SerializationUtils.safeString(data, 'title');
+    final title = withoutOwnerCopySuffix(storedTitle);
     final ingredients = utils.SerializationUtils.safeStringList(
       data,
       'ingredients',
@@ -1005,7 +1039,7 @@ class RecipeCore with JsonSerializableMixin {
     } else {
       final computedChecksum = computeChecksum(
         id: id,
-        title: title,
+        title: storedTitle,
         ingredients: ingredients,
         instructions: instructions,
       );
@@ -1054,6 +1088,9 @@ class RecipeCore with JsonSerializableMixin {
         ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      isOwnerCopy:
+          utils.SerializationUtils.safeBool(data, 'isOwnerCopy') ||
+          title != storedTitle,
       ratingPoolKey: utils.SerializationUtils.safeNullableString(
         data,
         'ratingPoolKey',
@@ -1118,7 +1155,17 @@ class RecipeCore with JsonSerializableMixin {
         'familyRatingCount',
       ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
-      dataChecksum: storedChecksum,
+      // The suffix was part of the stored title; a record that verified
+      // before it was stripped must still verify after.
+      dataChecksum:
+          integrityStatus == DataIntegrityStatus.valid && title != storedTitle
+          ? computeChecksum(
+              id: id,
+              title: title,
+              ingredients: ingredients,
+              instructions: instructions,
+            )
+          : storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
       heirloom: _parseHeirloom(data['heirloom']),
@@ -1474,6 +1521,7 @@ class Recipe {
   double? get rating => core.rating;
   String get mealType => core.mealType;
   String? get sourceUrl => core.sourceUrl;
+  bool get isOwnerCopy => core.isOwnerCopy;
   List<String> get imageUrls => core.imageUrls;
   DateTime get createdAt => core.createdAt;
   DateTime get updatedAt => core.updatedAt;
@@ -1721,6 +1769,7 @@ class Recipe {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    bool? isOwnerCopy,
     Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
@@ -1762,6 +1811,7 @@ class Recipe {
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
+        isOwnerCopy: isOwnerCopy,
         relatedRecipeIds: relatedRecipeIds,
         sourceArtefact: sourceArtefact,
         imageUrls: imageUrls,

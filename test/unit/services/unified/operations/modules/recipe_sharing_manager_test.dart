@@ -973,6 +973,7 @@ void main() {
             personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
             imageUrls: any(named: 'imageUrls'),
+            isOwnerCopy: any(named: 'isOwnerCopy'),
           ),
         ).thenAnswer((_) async => 'new_personal_id');
 
@@ -998,6 +999,7 @@ void main() {
             personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
             imageUrls: any(named: 'imageUrls'),
+            isOwnerCopy: false,
           ),
         ).called(1);
       });
@@ -1017,6 +1019,7 @@ void main() {
             personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
             imageUrls: any(named: 'imageUrls'),
+            isOwnerCopy: any(named: 'isOwnerCopy'),
           ),
         ).thenAnswer((_) async => 'new_personal_id');
 
@@ -1029,7 +1032,7 @@ void main() {
         expect(newId, equals('new_personal_id'));
         verify(
           () => mockParentService.createPersonalRecipe(
-            title: 'Shared Team Recipe (Min kopia)',
+            title: 'Shared Team Recipe',
             description: any(named: 'description'),
             ingredients: any(named: 'ingredients'),
             instructions: any(named: 'instructions'),
@@ -1040,6 +1043,7 @@ void main() {
             personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
             imageUrls: any(named: 'imageUrls'),
+            isOwnerCopy: true,
           ),
         ).called(1);
       });

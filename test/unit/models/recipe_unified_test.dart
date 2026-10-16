@@ -392,6 +392,51 @@ void main() {
           expect(RecipeCore.fromMap(core.id, legacy).ratingPoolKey, isNull);
         },
       );
+
+      test('isOwnerCopy round-trips and is absent from ordinary recipes', () {
+        final copy = testRecipe.core.copyWith(isOwnerCopy: true);
+        expect(
+          RecipeCore.fromMap(copy.id, copy.toFirestore()).isOwnerCopy,
+          isTrue,
+        );
+        expect(RecipeCore.fromJson(copy.toJson()).isOwnerCopy, isTrue);
+        expect(copy.copyWith().isOwnerCopy, isTrue);
+        expect(copy.copyWith(isOwnerCopy: false).isOwnerCopy, isFalse);
+        // Ordinary recipes stay byte-identical on the wire.
+        expect(
+          testRecipe.core.toFirestore().containsKey('isOwnerCopy'),
+          isFalse,
+        );
+        expect(testRecipe.core.toJson().containsKey('isOwnerCopy'), isFalse);
+      });
+
+      test('a stored " (Min kopia)" title is stripped and flagged', () {
+        final stored = testRecipe.core.copyWith(
+          title: 'Köttbullar (Min kopia)',
+        )..updateChecksum();
+        for (final restored in [
+          RecipeCore.fromMap(stored.id, stored.toFirestore()),
+          RecipeCore.fromJson(stored.toJson()),
+        ]) {
+          expect(restored.title, 'Köttbullar');
+          expect(restored.isOwnerCopy, isTrue);
+          expect(restored.verifyIntegrity(), isTrue);
+          expect(restored.dataIntegrityStatus, DataIntegrityStatus.valid);
+        }
+        // A title that merely mentions it is left alone.
+        for (final title in [
+          'Min kopia av mormors',
+          'Soppa (Min kopia) med bacon',
+        ]) {
+          final mention = testRecipe.core.copyWith(title: title);
+          final restored = RecipeCore.fromMap(
+            mention.id,
+            mention.toFirestore(),
+          );
+          expect(restored.title, title);
+          expect(restored.isOwnerCopy, isFalse);
+        }
+      });
     });
 
     group('RecipeCore Firestore Serialization', () {

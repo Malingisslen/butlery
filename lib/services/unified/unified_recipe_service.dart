@@ -734,6 +734,7 @@ class UnifiedRecipeService
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
+    bool isOwnerCopy = false,
   }) async => _personalCrud.createPersonalRecipe(
     title: title,
     description: description,
@@ -746,6 +747,7 @@ class UnifiedRecipeService
     rating: rating,
     personalTagIds: personalTagIds,
     sourceUrl: sourceUrl,
+    isOwnerCopy: isOwnerCopy,
   );
 
   @override

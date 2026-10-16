@@ -610,28 +610,33 @@ void main() {
         await service.initialize();
       });
 
-      test('should create personal recipe', () async {
-        // Arrange - stub repository method to return recipe with ID
-        when(() => mockRecipeRepository.create(any())).thenAnswer(
-          (invocation) async {
-            final recipe = invocation.positionalArguments[0] as Recipe;
-            // Return the recipe with its ID set
-            return recipe;
-          },
-        );
+      test(
+        'createPersonalRecipe keeps the owner-copy flag it is given',
+        () async {
+          await service.createPersonalRecipe(
+            title: 'Soppa',
+            ingredients: ['Vatten'],
+            instructions: ['Koka'],
+            isOwnerCopy: true,
+          );
+          await service.createPersonalRecipe(
+            title: 'Gryta',
+            ingredients: ['Vatten'],
+            instructions: ['Koka'],
+          );
 
-        // Act
-        final recipeId = await service.createPersonalRecipe(
-          title: 'Test Recipe',
-          description: 'A test recipe',
-          ingredients: ['Ingredient 1', 'Ingredient 2'],
-          instructions: ['Step 1', 'Step 2'],
-        );
-
-        // Assert
-        expect(recipeId, isNotNull);
-        expect(recipeId, isNotEmpty);
-      });
+          final queued = verify(
+            () => mockOfflineService.queueRecipeWrite(
+              captureAny(),
+              any(),
+              operation: any(named: 'operation'),
+              queueTagging: any(named: 'queueTagging'),
+            ),
+          ).captured.cast<Recipe>();
+          expect(queued.map((r) => r.title), ['Soppa', 'Gryta']);
+          expect(queued.map((r) => r.isOwnerCopy), [true, false]);
+        },
+      );
 
       test('should update recipe', () async {
         // Arrange

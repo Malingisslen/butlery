@@ -841,6 +841,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeDeleteAction => 'Delete';
 
   @override
+  String get recipeOwnerCopyLabel => 'My copy';
+
+  @override
   String get recipeDeleting => 'Deleting the recipe …';
 
   @override

@@ -144,6 +144,7 @@ class PersonalRecipeModule {
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
+    bool isOwnerCopy = false,
   }) => createPersonalRecipeFrom(
     Recipe.personal(
       title: title,
@@ -157,7 +158,7 @@ class PersonalRecipeModule {
       personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
       imageUrls: imageUrls,
-    ),
+    ).copyWith(isOwnerCopy: isOwnerCopy),
   );
 
   /// BUT-2280: stores [draft] as a new recipe owned by the signed-in

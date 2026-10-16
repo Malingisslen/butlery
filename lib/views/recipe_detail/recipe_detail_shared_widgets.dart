@@ -21,6 +21,7 @@ import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -154,6 +155,13 @@ abstract final class RecipeDetailSharedWidgets {
                     ),
             ),
           ),
+          if (recipe.isOwnerCopy)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
+              child: UnifiedBadge.status(
+                label: context.l10n.recipeOwnerCopyLabel,
+              ),
+            ),
           buildSourceRow(context, recipe),
           const SizedBox(height: AppDimensions.space8),
           RecipeDetailMetadata(

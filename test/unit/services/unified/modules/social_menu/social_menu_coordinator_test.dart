@@ -21,7 +21,7 @@
 ///   from `additionalData`; defaults `allowCollaboration` to false when missing;
 ///   falls back to computed title when `menuTitle` is null.
 /// - `createImportedContent`: returns a fresh map (no aliasing); imported
-///   recipes get the "(Min kopia)" title suffix and a cleared
+///   recipes are marked `isOwnerCopy` with their title untouched and a cleared
 ///   `lastCookedAt` (BUT-1093). Category names stay unchanged — only
 ///   `createStaticCopyForOwner` suffixes categories too.
 /// - `getOriginalContentFromShared`: pass-through to `menuSnapshot`.
@@ -59,8 +59,8 @@
 ///   in the constructor with `?? FirebaseSharedMenuRepository()` default.
 /// - **BUT-1093 (RESOLVED)**: production line 173 previously returned
 ///   `recipe` unchanged with a `// Placeholder` comment. Now mirrors the
-///   `createStaticCopyForOwner` attribution pattern: title gets
-///   "(Min kopia)" suffix and `lastCookedAt` is cleared. Category names
+///   `createStaticCopyForOwner` attribution pattern: the recipe is marked
+///   `isOwnerCopy` and `lastCookedAt` is cleared. Category names
 ///   stay original (imports preserve menu structure, unlike full forks).
 library;
 
@@ -628,12 +628,12 @@ void main() {
         expect(imported['Tis'], hasLength(2));
       });
 
-      /// BUT-1093: imported recipes get title-only attribution
-      /// ("(Min kopia)" suffix) and have their cooking history reset.
+      /// BUT-1093: imported recipes are marked as the owner's copy
+      /// (`isOwnerCopy`, title untouched) and have their cooking history reset.
       /// Category names stay original — unlike `createStaticCopyForOwner`
       /// which also suffixes categories, imports keep the menu layout.
       test(
-        'attributes recipe titles with (Min kopia) and clears lastCookedAt',
+        'marks recipes as the owner copy and clears lastCookedAt',
         () {
           final original = _makeRecipe(
             title: 'Köttbullar',
@@ -656,12 +656,8 @@ void main() {
           );
 
           final importedRecipe = imported['Mån']!.single;
-          expect(
-            importedRecipe.title,
-            endsWith('(Min kopia)'),
-            reason: 'BUT-1093: title gets "(Min kopia)" attribution suffix',
-          );
-          expect(importedRecipe.title, 'Köttbullar (Min kopia)');
+          expect(importedRecipe.isOwnerCopy, isTrue);
+          expect(importedRecipe.title, 'Köttbullar');
           expect(
             importedRecipe.lastCookedAt,
             isNull,
@@ -678,6 +674,30 @@ void main() {
             reason:
                 'category names unchanged — only static copies suffix categories',
           );
+        },
+      );
+    });
+
+    group('createStaticCopyForOwner', () {
+      test(
+        'keeps titles plain, marks the owner copy, suffixes the category',
+        () async {
+          final original = _makeRecipe(
+            title: 'Köttbullar',
+            description: 'X',
+            lastCookedAt: DateTime(2025, 1, 1),
+          );
+
+          await coordinator.createStaticCopyForOwner({
+            'Mån': [original],
+          }, 'me-uid');
+
+          final saved = savedMenus.single;
+          expect(saved.keys.toSet(), {'Mån (Min kopia)'});
+          final copy = saved['Mån (Min kopia)']!.single;
+          expect(copy.title, 'Köttbullar');
+          expect(copy.isOwnerCopy, isTrue);
+          expect(copy.lastCookedAt, isNull);
         },
       );
     });

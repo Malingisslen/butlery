@@ -45,4 +45,17 @@ void main() {
 
     expect(state.createRecipe().rev, isNull);
   });
+
+  test('editing an owner copy keeps it marked as one', () {
+    final built = RecipeFactory.build(id: 'r1', title: 'Linsgryta');
+    final copy = Recipe(
+      core: built.core.copyWith(isOwnerCopy: true),
+      type: built.type,
+    );
+    final state = RecipeFormState(initialRecipe: copy)
+      ..setTitle('Linsgryta med spenat');
+    addTearDown(state.dispose);
+
+    expect(state.createRecipe().isOwnerCopy, isTrue);
+  });
 }

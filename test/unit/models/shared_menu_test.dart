@@ -4,8 +4,7 @@
 /// content helpers, the CoW state machine (triggerCopyOnWrite +
 /// addActiveCollaborator), createImportMenu transformation, and
 /// computed getters (menuSummary / mostPopularCategory / conversionRate
-/// / allowImport / hasContent). Full toFirestore round-trip is left to
-/// integration tests because it requires a fully-populated RecipeCore.
+/// / allowImport / hasContent).
 library;
 
 import 'package:clock/clock.dart';
@@ -73,6 +72,26 @@ void main() {
       final dishes = SharedMenu.fromMap('sm-1', data).menuSnapshot['Middag']!;
 
       expect(dishes.map((d) => d.createdBy), ['bob', null]);
+    });
+
+    test('keeps an owner copy marked and cleans a legacy title suffix', () {
+      final copy = Recipe(
+        core: _recipe(id: 'r1').core.copyWith(isOwnerCopy: true),
+        type: RecipeType.personal,
+      );
+      final data = _menu(
+        menuSnapshot: {
+          'Middag': [copy, _recipe(id: 'r2', title: 'Soppa (Min kopia)')],
+        },
+      ).toFirestore();
+      // Written before the flag existed: the suffix lives in the title text.
+      final legacy = (data['menuSnapshot'] as Map)['Middag'] as List;
+      (legacy[1] as Map<String, dynamic>)['title'] = 'Soppa (Min kopia)';
+
+      final dishes = SharedMenu.fromMap('sm-1', data).menuSnapshot['Middag']!;
+
+      expect(dishes.map((d) => d.isOwnerCopy), [true, true]);
+      expect(dishes[1].title, 'Soppa');
     });
   });
 
