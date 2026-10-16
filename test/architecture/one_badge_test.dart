@@ -17,7 +17,6 @@ const _notYetMoved = <String>{
   // Material's Badge on a navigation glyph.
   'lib/widgets/common/navigation/butlery_bottom_navigation.dart NavBadgedIcon',
   // Marks over a photo, on its own overlay plate.
-  'lib/widgets/image/components/primary_badge.dart PrimaryBadge',
   'lib/widgets/recipe/cook_snap_gallery.dart _PhotoCountBadge',
   'lib/widgets/recipe/cook_snap_photo_carousel.dart _CounterBadge',
   // The import platform with its brand glyph.
