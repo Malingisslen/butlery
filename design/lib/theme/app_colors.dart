@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:4bd9368113cafb7507490cac2b555b1ed3d0b2bf8edc42a92858b59e671b7cd2 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:156ad0b5b861a3bd6a932f5e45235f6ef7be4873d30bbc3b00e1480829532ebc (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -164,6 +164,14 @@ class AppColors {
   static const Color actionDangerPressed = Color(0xFF7B2E1C);
   /// Ikon och text pa actionDanger och actionDangerPressed. · semantic.text.onActionDanger
   static const Color onActionDanger = Color(0xFFF5F4ED);
+  /// Fyllning pa primarknappen och skapa-knappen (FAB). Ljust ink, morkt greenLight. Byts alltid i par med onActionFill. · semantic.action.fill
+  static const Color actionFill = Color(0xFF24382C);
+  /// Text och ikon pa actionFill. · semantic.text.onActionFill
+  static const Color onActionFill = Color(0xFFF5F4ED);
+  /// Text och ikon pa fylld felfarg (error) eller framgangsfarg (success). Bar aliasen onError och onSuccess. · semantic.text.onStatusFill
+  static const Color onStatusFill = Color(0xFFF5F4ED);
+  /// Markerad text i falt. Bar text.primary. · semantic.surface.textSelection
+  static const Color surfaceTextSelection = Color(0xFFA9B2A0);
   /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning
   static const Color textWarning = Color(0xFF8A5212);
   /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent
@@ -227,8 +235,8 @@ class AppColors {
   static const Color onPrimary = textOnPrimary;
   static const Color outline = placeholderIcon;
   static const Color shadow = shadowColor;
-  static const Color onSuccess = textOnPrimary;
-  static const Color onError = textOnPrimary;
+  static const Color onSuccess = onStatusFill;
+  static const Color onError = onStatusFill;
   static const Color onWarning = textDark;
   static const Color onInfo = textOnPrimary;
   static const Color recipeCardBottomBorder = rustLight;
@@ -289,7 +297,7 @@ class AppColors {
     secondaryContainer: Color(0xFF2F4437),
     onSecondaryContainer: Color(0xFFDCA968),
     tertiary: Color(0xFF8FB89A),
-    onTertiary: Color(0xFFF5F4ED),
+    onTertiary: Color(0xFF17251D),
     tertiaryContainer: Color(0xFF2F4437),
     onTertiaryContainer: Color(0xFF8FB89A),
     error: Color(0xFFDE9078),

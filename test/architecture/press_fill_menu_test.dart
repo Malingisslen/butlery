@@ -107,7 +107,7 @@ void main() {
       final cs = theme.colorScheme;
       // A popup menu paints surfaceContainer when its theme sets no colour;
       // a dropdown menu paints canvasColor.
-      expect(theme.popupMenuTheme.color, isNull);
+      expect(theme.popupMenuTheme.color, cs.surface);
       expect(cs.surfaceContainer, cs.surface);
       expect(theme.canvasColor, cs.surface);
       // Every ListTile paints a raised tile.

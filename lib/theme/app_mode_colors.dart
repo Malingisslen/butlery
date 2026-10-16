@@ -93,6 +93,29 @@ abstract final class AppModeColors {
       ? AppColorsDark.overlayWhite40
       : AppColors.overlayWhite40;
 
+  /// semantic action.fill: ink #24382C light, greenLight #8FB89A dark. The fill
+  /// of the ordinary primary button and the create button; bears
+  /// [onActionFill]. Not ColorScheme.primary, which is ink in both modes for
+  /// surfaces that must be ink.
+  static Color actionFill(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.actionFill : AppColors.actionFill;
+
+  /// semantic text.onActionFill: paper light, inkDeep dark. Only on
+  /// [actionFill].
+  static Color onActionFill(Brightness brightness) =>
+      _isDark(brightness) ? AppColorsDark.onActionFill : AppColors.onActionFill;
+
+  /// semantic surface.textSelection: #A9B2A0 light, #4A5C50 dark. The
+  /// highlight behind selected text; text.primary stands on it.
+  static Color surfaceTextSelection(Brightness brightness) =>
+      _isDark(brightness)
+      ? AppColorsDark.surfaceTextSelection
+      : AppColors.surfaceTextSelection;
+
+  /// semantic surface.base light (paper) in both modes: the disc behind the
+  /// pull-to-refresh arc, which is ColorScheme.primary, ink in both modes.
+  static Color refreshDisc() => AppColors.cardWhite;
+
   // On surface.ink. The ink surface is #24382C in both modes
   // (tokens.json:112-115), so what stands on it takes one value in both
   // modes, whatever the page's brightness.

@@ -150,12 +150,9 @@ WidgetStateProperty<BorderSide?> _outlineWithDisabled(
   });
 }
 
-/// The rest edge of an ink-filled button. Ink is #24382C in both modes, so on
-/// the dark base #17251D the fill alone is 1.27:1 and sits one step from the
-/// disabled grey-green, and a live button reads as a dead one. Dark draws the
-/// outline of a secondary control (paperWash, 3.5:1) round it; light needs
-/// nothing, and a disabled button keeps no edge, so the two stay apart.
-WidgetStateProperty<BorderSide?> _filledRestEdge(ColorScheme cs) =>
+/// The dark rest edge of the saffron hero button: paperWash (3.5:1) round the
+/// fill. A disabled button keeps none.
+WidgetStateProperty<BorderSide?> _heroRestEdge(ColorScheme cs) =>
     WidgetStateProperty.resolveWith((states) {
       if (cs.brightness != Brightness.dark ||
           states.contains(WidgetState.disabled)) {
@@ -163,6 +160,10 @@ WidgetStateProperty<BorderSide?> _filledRestEdge(ColorScheme cs) =>
       }
       return BorderSide(color: _unfilledOutline(cs), width: 1.5);
     });
+
+/// action.fill and the text on it: the primary button and the create button.
+Color _fill(ColorScheme cs) => AppModeColors.actionFill(cs.brightness);
+Color _onFill(ColorScheme cs) => AppModeColors.onActionFill(cs.brightness);
 
 WidgetStateProperty<Color?> _withDisabled(Color enabled, Color disabled) {
   return WidgetStateProperty.resolveWith<Color?>((states) {
@@ -185,9 +186,8 @@ class ButtonThemes {
   static ElevatedButtonThemeData elevatedButtonTheme(ColorScheme cs) {
     return ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: _filledBackground(cs, cs.primary),
-        foregroundColor: _filledForeground(cs, cs.onPrimary),
-        side: _filledRestEdge(cs),
+        backgroundColor: _filledBackground(cs, _fill(cs)),
+        foregroundColor: _filledForeground(cs, _onFill(cs)),
         elevation: const WidgetStatePropertyAll(0),
         shadowColor: const WidgetStatePropertyAll(Colors.transparent),
         overlayColor: _noFocusTint,
@@ -216,9 +216,8 @@ class ButtonThemes {
   static FilledButtonThemeData filledButtonTheme(ColorScheme cs) {
     return FilledButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: _filledBackground(cs, cs.primary),
-        foregroundColor: _filledForeground(cs, cs.onPrimary),
-        side: _filledRestEdge(cs),
+        backgroundColor: _filledBackground(cs, _fill(cs)),
+        foregroundColor: _filledForeground(cs, _onFill(cs)),
         overlayColor: _noFocusTint,
         backgroundBuilder: _focusRing(_controlRadius),
         shape: WidgetStatePropertyAll(
@@ -315,7 +314,10 @@ class ButtonThemes {
   static IconButtonThemeData iconButtonTheme(ColorScheme cs) {
     return IconButtonThemeData(
       style: ButtonStyle(
-        foregroundColor: WidgetStatePropertyAll(cs.onSurfaceVariant),
+        foregroundColor: _withDisabled(
+          cs.onSurfaceVariant,
+          AppModeColors.textDisabled(cs.brightness),
+        ),
         backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
         overlayColor: _iconButtonOverlay(cs),
         // The ring goes round the whole 48 dp button, not the glyph.
@@ -340,8 +342,8 @@ class ButtonThemes {
     ColorScheme cs,
   ) {
     return FloatingActionButtonThemeData(
-      backgroundColor: cs.primary,
-      foregroundColor: cs.onPrimary,
+      backgroundColor: _fill(cs),
+      foregroundColor: _onFill(cs),
       elevation: 4,
       highlightElevation: 6,
       // The create button is round: the central plus in the bottom row is a
@@ -355,8 +357,8 @@ class ButtonThemes {
   /// Primary button style
   static ButtonStyle primaryButtonStyle(ColorScheme cs) =>
       ElevatedButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
+        backgroundColor: _fill(cs),
+        foregroundColor: _onFill(cs),
         disabledBackgroundColor: AppModeColors.surfaceDisabled(cs.brightness),
         disabledForegroundColor: _filledDisabledForeground(cs),
         elevation: 0,
@@ -367,7 +369,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         ),
-      ).copyWith(side: _filledRestEdge(cs));
+      );
 
   /// The hero style: the view's single saffron action, exactly one per view
   /// (Komponentark v1:843-844, "Saffranshierarki — en hero per vy"). Every
@@ -416,6 +418,7 @@ class ButtonThemes {
         }
         return null;
       }),
+      side: _heroRestEdge(cs),
       animationDuration: Duration.zero,
       elevation: const WidgetStatePropertyAll(0),
       shadowColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -563,8 +566,8 @@ class ButtonThemes {
   /// Extended FAB style
   static ButtonStyle extendedFabStyle(ColorScheme cs) =>
       ElevatedButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
+        backgroundColor: _fill(cs),
+        foregroundColor: _onFill(cs),
         elevation: AppDimensions.elevationMedium,
         shadowColor: cs.shadow,
         padding: const EdgeInsets.symmetric(

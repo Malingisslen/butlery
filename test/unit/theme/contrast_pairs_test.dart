@@ -98,7 +98,7 @@ void main() {
   };
 
   test('tokens.json declares the pairs and the policy', () {
-    expect(pairs, hasLength(33));
+    expect(pairs, hasLength(39));
     final policy = fixture['contrastPolicy'] as Map<String, dynamic>;
     expect((policy['floors'] as Map)['smallText'], 4.5);
   });

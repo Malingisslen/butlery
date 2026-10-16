@@ -369,6 +369,26 @@
    "text.onActionDanger",
    "Ikon och text pa actionDanger och actionDangerPressed."
   ],
+  "actionFill": [
+   "semantic",
+   "action.fill",
+   "Fyllning pa primarknappen och skapa-knappen (FAB). Ljust ink, morkt greenLight. Byts alltid i par med onActionFill."
+  ],
+  "onActionFill": [
+   "semantic",
+   "text.onActionFill",
+   "Text och ikon pa actionFill."
+  ],
+  "onStatusFill": [
+   "semantic",
+   "text.onStatusFill",
+   "Text och ikon pa fylld felfarg (error) eller framgangsfarg (success). Bar aliasen onError och onSuccess."
+  ],
+  "surfaceTextSelection": [
+   "semantic",
+   "surface.textSelection",
+   "Markerad text i falt. Bar text.primary."
+  ],
   "textWarning": [
    "semantic",
    "text.warning",
@@ -485,8 +505,8 @@
   "onPrimary": "textOnPrimary",
   "outline": "placeholderIcon",
   "shadow": "shadowColor",
-  "onSuccess": "textOnPrimary",
-  "onError": "textOnPrimary",
+  "onSuccess": "onStatusFill",
+  "onError": "onStatusFill",
   "onWarning": "textDark",
   "onInfo": "textOnPrimary",
   "recipeCardBottomBorder": "rustLight",
@@ -617,6 +637,10 @@
   },
   "darkOverrides": {
    "onError": [
+    "palette",
+    "inkDeep"
+   ],
+   "onTertiary": [
     "palette",
     "inkDeep"
    ],

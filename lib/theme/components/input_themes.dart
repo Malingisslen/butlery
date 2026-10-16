@@ -76,7 +76,9 @@ class InputThemes {
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
-      errorStyle: errorTextStyle(cs),
+      // Fields sit on the page and in dialogs, which are surface.raised in
+      // dark: the surface-safe danger text reads on both.
+      errorStyle: errorTextStyle(cs, onRaised: true),
     );
   }
 

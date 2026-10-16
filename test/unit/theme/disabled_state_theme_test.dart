@@ -97,10 +97,17 @@ void main() {
         }
       });
 
-      test('enabled filled buttons keep their ink rest colours', () {
+      test('enabled filled buttons rest on action.fill', () {
         final style = t.filledButtonTheme.style!;
-        expect(style.backgroundColor!.resolve({}), t.colorScheme.primary);
-        expect(style.foregroundColor!.resolve({}), t.colorScheme.onPrimary);
+        final dark = t.brightness == Brightness.dark;
+        expect(
+          style.backgroundColor!.resolve({}),
+          dark ? const Color(0xFF8FB89A) : t.colorScheme.primary,
+        );
+        expect(
+          style.foregroundColor!.resolve({}),
+          dark ? const Color(0xFF17251D) : t.colorScheme.onPrimary,
+        );
       });
 
       test('outlined buttons: surface.disabled edge, text.secondary text', () {

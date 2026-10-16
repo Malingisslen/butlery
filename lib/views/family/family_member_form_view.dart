@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_form_parts.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/views/family/profile_colors.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -33,15 +34,6 @@ class FamilyMemberFormView extends StatefulWidget {
 }
 
 class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
-  static const _palette = <String>[
-    '#3E6F8E',
-    '#7A5C8E',
-    '#B07A3C',
-    '#4A7C59',
-    '#8B5A3C',
-    '#C44536',
-  ];
-
   late final MinFamiljViewModel _vm;
   late final TextEditingController _name;
   late final String _initialSnapshot;
@@ -91,7 +83,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     final e = widget.existing;
     _name = TextEditingController(text: (e?.name).orEmpty())
       ..addListener(() => setState(() {}));
-    _color = e?.avatarColor ?? _palette.first;
+    _color = canonicalProfileColor(e?.avatarColor ?? kProfileColors.first);
     _band = e?.ageBand ?? DinerAgeBand.child;
     _allergens = {...?e?.allergenPreferences?.trackedAllergens};
     _dislikes = {...?e?.dislikedIngredients};
@@ -272,7 +264,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           spacing: AppDimensions.space8,
           runSpacing: AppDimensions.space8,
           children: [
-            for (final (index, hex) in _palette.indexed)
+            for (final (index, hex) in kProfileColors.indexed)
               Semantics(
                 button: true,
                 selected: _color == hex,

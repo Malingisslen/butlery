@@ -123,7 +123,12 @@ void main() {
       test('radius 6 and a 1.5 px edge', () {
         final shape = theme.checkboxTheme.shape! as RoundedRectangleBorder;
         expect(shape.borderRadius, BorderRadius.circular(6));
-        expect(theme.checkboxTheme.side!.width, 1.5);
+        expect(
+          (theme.checkboxTheme.side! as WidgetStateBorderSide)
+              .resolve(const {})!
+              .width,
+          1.5,
+        );
       });
 
       testWidgets('48 dp hit area', (tester) async {

@@ -231,7 +231,7 @@ class _ErrorMessage extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: errorTextStyle(cs, onDangerTint: true),
+              style: errorTextStyle(cs, onRaised: true),
             ),
           ),
         ],

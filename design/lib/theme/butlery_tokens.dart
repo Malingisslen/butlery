@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:14c2f0353ef38af23210aa422afe61116a8356445bc8574071b5f3a13c44b086 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:447d8d4596bfbc86727aa00c8502703dad8cae16a854fa8502b92725e04fd7a7 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -36,6 +36,14 @@ class ButleryColors {
   static const surfaceRaisedDark = Color(0xFF2F4437);
   static const surfaceInk = Color(0xFF24382C);
   static const surfaceInkDark = Color(0xFF24382C);
+  static const actionFill = Color(0xFF24382C);
+  static const actionFillDark = Color(0xFF8FB89A);
+  static const textOnActionFill = Color(0xFFF5F4ED);
+  static const textOnActionFillDark = Color(0xFF17251D);
+  static const textOnStatusFill = Color(0xFFF5F4ED);
+  static const textOnStatusFillDark = Color(0xFF17251D);
+  static const surfaceTextSelection = Color(0xFFA9B2A0);
+  static const surfaceTextSelectionDark = Color(0xFF4A5C50);
   static const surfacePressedOnRaised = Color(0xFFB4BFA6);
   static const surfacePressedOnRaisedDark = Color(0xFF17251D);
   static const surfacePressedOnInk = Color(0xFF17251D);

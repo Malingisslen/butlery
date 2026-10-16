@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/views/family/profile_colors.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -30,7 +31,10 @@ String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
 /// primary.
 Color parseAvatarColor(BuildContext context, String? hex) {
   if (hex != null && hex.startsWith('#') && hex.length == 7) {
-    final value = int.tryParse(hex.substring(1), radix: 16);
+    final value = int.tryParse(
+      canonicalProfileColor(hex).substring(1),
+      radix: 16,
+    );
     if (value != null) return Color(value).withAlpha(255);
   }
   return Theme.of(context).colorScheme.primary;
@@ -58,7 +62,9 @@ class FamilyAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = AppTextStyles.bodyBold.copyWith(color: Colors.white);
+    final style = AppTextStyles.bodyBold.copyWith(
+      color: onProfileColor(Theme.of(context).colorScheme, color),
+    );
     final label = Text(
       initials ?? initialsFor(name),
       // A small face keeps its letters inside the circle.
