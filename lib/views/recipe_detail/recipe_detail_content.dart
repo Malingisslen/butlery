@@ -318,8 +318,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     );
   }
 
-  static const double _nameRoomSlack = 4;
-
   Widget _buildIngredientRow(
     BuildContext context,
     String ingredient, {
@@ -356,19 +354,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      // The amount column and its gap leave the name what
-                      // is left; at large text a word the name cannot fit
-                      // there would be broken, so the amount goes above it.
-                      final stacked =
-                          isLargeText(context) &&
-                          widestWord(context, [
-                                parsed.name,
-                              ], AppTextStyles.bodyMedium) >
-                              constraints.maxWidth -
-                                  quantityWidth -
-                                  AppDimensions.space32 -
-                                  AppDimensions.iconSizeS -
-                                  _nameRoomSlack;
+                      // At large text every row puts the amount above the name,
+                      // so the rows read the same instead of switching layout
+                      // from one ingredient to the next.
+                      final stacked = isLargeText(context);
+                      final hasAmount =
+                          parsed.unit.isNotEmpty || parsed.quantity > 0;
                       final amount = Text(
                         parsed.unit.isNotEmpty
                             ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
@@ -428,7 +419,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [amount, name],
+                                children: [
+                                  if (hasAmount) amount,
+                                  name,
+                                ],
                               ),
                             )
                           else ...[
