@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/rating_notifications.dart
 
+import 'package:intl/intl.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ownership.dart';
@@ -38,7 +39,7 @@ class RatingNotifications {
           'recipeName': recipe.core.title,
           'message': review?.isNotEmpty == true && review != null
               ? '$raterName: ${_truncateReview(review)}'
-              : '$raterName betygsatte ditt recept $stars',
+              : AppLocale.current.notificationRatingReceived(raterName, stars),
         },
         additionalData: {
           'recipeId': recipe.id,
@@ -145,8 +146,11 @@ class RatingNotifications {
 
     final stars = '★' * rating.round();
     final message = review?.isNotEmpty == true
-        ? '$raterName skrev din första recension: ${_truncateReview(review!)}'
-        : '$raterName gav ditt recept dess första betyg: $stars';
+        ? AppLocale.current.notificationRatingFirstReview(
+            raterName,
+            _truncateReview(review!),
+          )
+        : AppLocale.current.notificationRatingFirstRating(raterName, stars);
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
@@ -179,22 +183,22 @@ class RatingNotifications {
     if (totalRatings == 5) {
       return {
         'type': 'first_five_ratings',
-        'message': 'Ditt recept har fått 5 betyg.',
+        'message': AppLocale.current.notificationRatingMilestoneCount(5),
       };
     } else if (totalRatings == 10) {
       return {
         'type': 'ten_ratings',
-        'message': 'Ditt recept har fått 10 betyg.',
+        'message': AppLocale.current.notificationRatingMilestoneCount(10),
       };
     } else if (totalRatings == 25) {
       return {
         'type': 'twenty_five_ratings',
-        'message': 'Ditt recept har fått 25 betyg.',
+        'message': AppLocale.current.notificationRatingMilestoneCount(25),
       };
     } else if (totalRatings == 50) {
       return {
         'type': 'fifty_ratings',
-        'message': 'Ditt recept har fått 50 betyg.',
+        'message': AppLocale.current.notificationRatingMilestoneCount(50),
       };
     }
 
@@ -203,14 +207,16 @@ class RatingNotifications {
       if (averageRating >= 4.8) {
         return {
           'type': 'excellent_rating',
-          'message':
-              'Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg.',
+          'message': AppLocale.current.notificationRatingMilestoneAverage(
+            _oneDecimal(averageRating),
+          ),
         };
       } else if (averageRating >= 4.5) {
         return {
           'type': 'great_rating',
-          'message':
-              'Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg.',
+          'message': AppLocale.current.notificationRatingMilestoneAverage(
+            _oneDecimal(averageRating),
+          ),
         };
       }
     }
@@ -248,6 +254,9 @@ class RatingNotifications {
       );
     }
   }
+
+  static String _oneDecimal(double value) =>
+      NumberFormat('0.0', AppLocale.current.localeName).format(value);
 
   /// Truncate review text for notifications
   static String _truncateReview(String review, {int maxLength = 50}) {
@@ -316,9 +325,10 @@ class RatingNotifications {
         ratings.fold<double>(0.0, (sum, r) => sum + (r['rating'] as double)) /
         ratingCount.toDouble();
 
-    final message = ratingCount == 2
-        ? 'Ditt recept fick 2 nya betyg.'
-        : 'Ditt recept fick $ratingCount nya betyg. Genomsnitt: ${averageRating.toStringAsFixed(1)} ★';
+    final message = AppLocale.current.notificationRatingBatch(
+      ratingCount,
+      _oneDecimal(averageRating),
+    );
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,

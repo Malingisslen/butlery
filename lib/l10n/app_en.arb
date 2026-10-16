@@ -7907,6 +7907,46 @@
       }
     }
   },
+  "notificationRatingReceived": "{rater} rated your recipe {stars}",
+  "@notificationRatingReceived": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "stars": {"type": "String"}
+    }
+  },
+  "notificationRatingFirstReview": "{rater} wrote your first review: {review}",
+  "@notificationRatingFirstReview": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "review": {"type": "String"}
+    }
+  },
+  "notificationRatingFirstRating": "{rater} gave your recipe its first rating: {stars}",
+  "@notificationRatingFirstRating": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "stars": {"type": "String"}
+    }
+  },
+  "notificationRatingMilestoneCount": "Your recipe has received {count, plural, =1{1 rating} other{{count} ratings}}.",
+  "@notificationRatingMilestoneCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notificationRatingMilestoneAverage": "Your recipe has an average rating of {average}.",
+  "@notificationRatingMilestoneAverage": {
+    "placeholders": {
+      "average": {"type": "String"}
+    }
+  },
+  "notificationRatingBatch": "Your recipe received {count, plural, =1{1 new rating} other{{count} new ratings}}. Average: {average}",
+  "@notificationRatingBatch": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "average": {"type": "String"}
+    }
+  },
   "timeCompactMonths": "{count}mo",
   "@timeCompactMonths": {
     "placeholders": {

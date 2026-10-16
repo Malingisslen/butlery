@@ -12055,6 +12055,36 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String notificationRatingReceived(String rater, String stars) {
+    return '$rater betygsatte ditt recept $stars';
+  }
+
+  @override
+  String notificationRatingFirstReview(String rater, String review) {
+    return '$rater skrev din första recension: $review';
+  }
+
+  @override
+  String notificationRatingFirstRating(String rater, String stars) {
+    return '$rater gav ditt recept dess första betyg: $stars';
+  }
+
+  @override
+  String notificationRatingMilestoneCount(int count) {
+    return 'Ditt recept har fått $count betyg.';
+  }
+
+  @override
+  String notificationRatingMilestoneAverage(String average) {
+    return 'Ditt recept har $average i genomsnittsbetyg.';
+  }
+
+  @override
+  String notificationRatingBatch(int count, String average) {
+    return 'Ditt recept fick $count nya betyg. Genomsnitt: $average';
+  }
+
+  @override
   String timeCompactMonths(int count) {
     return '${count}mån';
   }

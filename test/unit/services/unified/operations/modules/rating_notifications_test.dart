@@ -1,6 +1,8 @@
 // test/unit/services/unified/operations/modules/rating_notifications_test.dart
 
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -626,6 +628,122 @@ void main() {
           isFalse,
         );
       });
+    });
+
+    group('Message language', () {
+      late String? sent;
+
+      setUp(() {
+        sent = null;
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
+          sent =
+              (invocation.namedArguments[#variables]
+                  as Map<String, String>)['message'];
+        });
+      });
+
+      tearDown(() => AppLocale.updateLocale(const Locale('sv')));
+
+      test('milestone average uses the decimal comma in Swedish', () async {
+        AppLocale.updateLocale(const Locale('sv'));
+        await RatingNotifications.sendRatingMilestoneNotification(
+          notificationService: mockNotificationService,
+          recipe: testRecipe,
+          totalRatings: 7,
+          averageRating: 4.8,
+        );
+        expect(sent, equals('Ditt recept har 4,8 i genomsnittsbetyg.'));
+      });
+
+      test('milestone is English with a decimal point in English', () async {
+        AppLocale.updateLocale(const Locale('en'));
+        await RatingNotifications.sendRatingMilestoneNotification(
+          notificationService: mockNotificationService,
+          recipe: testRecipe,
+          totalRatings: 7,
+          averageRating: 4.8,
+        );
+        expect(sent, equals('Your recipe has an average rating of 4.8.'));
+      });
+
+      test(
+        'rating, first rating and count milestone follow the language',
+        () async {
+          AppLocale.updateLocale(const Locale('en'));
+          await RatingNotifications.sendRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            rating: 4.0,
+            raterName: 'Anna',
+          );
+          expect(sent, equals('Anna rated your recipe ★★★★'));
+          await RatingNotifications.sendFirstRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            rating: 5.0,
+            raterName: 'Anna',
+          );
+          expect(sent, equals('Anna gave your recipe its first rating: ★★★★★'));
+          await RatingNotifications.sendRatingMilestoneNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            totalRatings: 10,
+            averageRating: 4.0,
+          );
+          expect(sent, equals('Your recipe has received 10 ratings.'));
+        },
+      );
+
+      test(
+        'first review and batch follow the language and the comma',
+        () async {
+          AppLocale.updateLocale(const Locale('en'));
+          await RatingNotifications.sendFirstRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            rating: 5.0,
+            raterName: 'Anna',
+            review: 'Great',
+          );
+          expect(sent, equals('Anna wrote your first review: Great'));
+
+          Map<String, dynamic> rating(double r) => {
+            'recipeId': testRecipe.id,
+            'recipe': testRecipe,
+            'rating': r,
+            'raterName': 'Anna',
+          };
+          await RatingNotifications.sendBatchedRatingNotifications(
+            notificationService: mockNotificationService,
+            userId: 'user_123',
+            pendingRatings: [rating(4.0), rating(5.0)],
+          );
+          expect(
+            sent,
+            equals('Your recipe received 2 new ratings. Average: 4.5'),
+          );
+
+          AppLocale.updateLocale(const Locale('sv'));
+          await RatingNotifications.sendBatchedRatingNotifications(
+            notificationService: mockNotificationService,
+            userId: 'user_123',
+            pendingRatings: [rating(4.0), rating(5.0)],
+          );
+          expect(
+            sent,
+            equals('Ditt recept fick 2 nya betyg. Genomsnitt: 4,5'),
+          );
+        },
+      );
     });
   });
 }
