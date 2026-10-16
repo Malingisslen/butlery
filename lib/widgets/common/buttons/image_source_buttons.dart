@@ -2,8 +2,8 @@
 //
 // The two big buttons that start any picture import (Skarmar v12 'Importera
 // från bild'): take the photo now (ink) or choose it from the library
-// (outlined). Both are 88 dp high with the glyph over the word, so an import
-// that takes pictures draws them once.
+// (outlined). Both are at least 88 dp high with the glyph over the word and
+// grow with the text, so an import that takes pictures draws them once.
 library;
 
 import 'package:flutter/material.dart';
@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ImageSourceButtons extends StatelessWidget {
@@ -20,38 +21,48 @@ class ImageSourceButtons extends StatelessWidget {
     required this.libraryLabel,
     required this.onCamera,
     required this.onLibrary,
+    this.busy = false,
     super.key,
   });
 
   final String cameraLabel;
   final String libraryLabel;
 
-  /// Null disables both buttons, as while a picture is being read.
+  /// Null disables a button.
   final VoidCallback? onCamera;
   final VoidCallback? onLibrary;
 
+  /// Whether a picture is being read. Both buttons keep their surface and
+  /// name and get the plate line, so they never take the disabled look.
+  final bool busy;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _SourceButton(
-            label: cameraLabel,
-            icon: ButleryIcons.camera,
-            filled: true,
-            onTap: onCamera,
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _SourceButton(
+              label: cameraLabel,
+              icon: ButleryIcons.camera,
+              filled: true,
+              busy: busy,
+              onTap: onCamera,
+            ),
           ),
-        ),
-        const SizedBox(width: AppDimensions.space12),
-        Expanded(
-          child: _SourceButton(
-            label: libraryLabel,
-            icon: ButleryIcons.image,
-            filled: false,
-            onTap: onLibrary,
+          const SizedBox(width: AppDimensions.space12),
+          Expanded(
+            child: _SourceButton(
+              label: libraryLabel,
+              icon: ButleryIcons.image,
+              filled: false,
+              busy: busy,
+              onTap: onLibrary,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -61,15 +72,17 @@ class _SourceButton extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.filled,
+    required this.busy,
     required this.onTap,
   });
 
   final String label;
   final ButleryGlyph icon;
   final bool filled;
+  final bool busy;
   final VoidCallback? onTap;
 
-  static const double _height = 88;
+  static const double _minHeight = 88;
 
   @override
   Widget build(BuildContext context) {
@@ -84,37 +97,62 @@ class _SourceButton extends StatelessWidget {
             ),
     );
     final color = filled ? cs.onPrimary : cs.onSurface;
-    return Semantics(
+    final button = Semantics(
       label: label,
       button: true,
       enabled: onTap != null,
+      onTap: onTap,
       excludeSemantics: true,
       child: Material(
         color: filled ? cs.primary : Colors.transparent,
         shape: shape,
+        clipBehavior: Clip.antiAlias,
         child: PressFill(
           surface: filled ? PressSurface.ink : PressSurface.base,
           child: InkWell(
-            onTap: onTap,
+            // Busy keeps the button focusable, so Enter must reach a no-op.
+            onTap: busy ? PlateLineButton.ignore : onTap,
             customBorder: shape,
-            child: SizedBox(
-              height: _height,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ButleryIcon(icon, color: color),
-                  const SizedBox(height: AppDimensions.space8),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.labelLarge.copyWith(color: color),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: _minHeight),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.space8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ButleryIcon(icon, color: color),
+                          const SizedBox(height: AppDimensions.space8),
+                          Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
+                ),
+                if (busy)
+                  PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 0,
+                    child: ButtonPlateLine(color: color, onFill: filled),
+                  ),
+              ],
             ),
           ),
         ),
       ),
     );
+    return BusyButtonSemantics(busy: busy, name: label, child: button);
   }
 }

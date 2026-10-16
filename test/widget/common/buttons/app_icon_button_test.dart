@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -71,5 +73,40 @@ void main() {
       await tester.pump();
       expect(taps, 1);
     });
+
+    for (final dark in [false, true]) {
+      testWidgets('filled draws the action fill with its own glyph colour in '
+          '${dark ? 'dark' : 'light'} mode', (tester) async {
+        final brightness = dark ? Brightness.dark : Brightness.light;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+            home: Scaffold(
+              body: AppIconButton(
+                icon: ButleryIcons.plus,
+                onPressed: () {},
+                semanticLabel: 'Lägg till',
+                filled: true,
+              ),
+            ),
+          ),
+        );
+
+        final style = tester.widget<IconButton>(find.byType(IconButton)).style!;
+        final fill = style.backgroundColor!.resolve({})!;
+        final glyph = style.foregroundColor!.resolve({})!;
+        expect(fill, AppModeColors.actionFill(brightness));
+        expect(glyph, AppModeColors.onActionFill(brightness));
+
+        double contrast(Color a, Color b) {
+          final hi = a.computeLuminance() > b.computeLuminance() ? a : b;
+          final lo = identical(hi, a) ? b : a;
+          return (hi.computeLuminance() + 0.05) /
+              (lo.computeLuminance() + 0.05);
+        }
+
+        expect(contrast(fill, glyph), greaterThanOrEqualTo(4.5));
+      });
+    }
   });
 }

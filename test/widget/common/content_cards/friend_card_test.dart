@@ -11,6 +11,8 @@
 /// fetch needed in the test harness).
 library;
 
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -182,6 +184,20 @@ void main() {
       expectActivatable(tester, node.first);
       handle.dispose();
     });
+
+    for (final style in FriendCardStyle.values) {
+      testWidgets('the ${style.name} card without onTap is not a button', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(_wrap(FriendCard(user: _user(), style: style)));
+        final node = find.bySemanticsLabel(RegExp('Anna Andersson')).first;
+        final data = tester.getSemantics(node).getSemanticsData();
+        expect(data.flagsCollection.isButton, isFalse);
+        expect(data.hasAction(SemanticsAction.tap), isFalse);
+        handle.dispose();
+      });
+    }
 
     for (final style in FriendCardStyle.values) {
       testWidgets('the ${style.name} card announces the name once', (

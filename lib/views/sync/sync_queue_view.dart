@@ -60,6 +60,9 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   QueueSnapshot _queue = QueueSnapshot.empty;
   bool _syncing = false;
 
+  /// The queue could not be read, so an empty list is not "nothing queued".
+  bool _loadFailed = false;
+
   /// Redraws "nästa försök om N s" once a second while a retry time lies
   /// ahead; stopped when none does.
   Timer? _countdown;
@@ -74,13 +77,24 @@ class _SyncQueueViewState extends State<SyncQueueView> {
   @override
   void initState() {
     super.initState();
+    _listen();
+  }
+
+  void _listen() {
+    unawaited(_subscription?.cancel());
     _subscription = _source.watchChanges().listen(
       (queue) {
         if (!mounted) return;
-        setState(() => _queue = queue);
+        setState(() {
+          _queue = queue;
+          _loadFailed = false;
+        });
         _updateCountdown();
       },
-      onError: (Object _) {},
+      onError: (Object e) {
+        AppLogger.warning('SyncQueueView: queue not read: $e');
+        if (mounted) setState(() => _loadFailed = true);
+      },
     );
   }
 
@@ -308,7 +322,13 @@ class _SyncQueueViewState extends State<SyncQueueView> {
           // The offline line as a status: here it has nowhere to lead.
           StatusIndicators.offlineIndicator(),
           Expanded(
-            child: queue.isEmpty
+            child: queue.isEmpty && _loadFailed
+                ? StateWidget.error(
+                    message: l10n.syncQueueLoadFailed,
+                    actionLabel: l10n.commonRetry,
+                    onAction: _listen,
+                  )
+                : queue.isEmpty
                 ? StateWidget.empty(
                     key: SyncQueueView.emptyKey,
                     variant: EmptyStateVariant.nothingQueued,

@@ -274,7 +274,6 @@ class _PantrySectionState extends State<_PantrySection> {
             tone: widget.urgent
                 ? SectionBandTone.warning
                 : SectionBandTone.standard,
-            semanticLabel: widget.title,
             onTap: () => setState(() => _open = !_open),
           ),
           if (_open)

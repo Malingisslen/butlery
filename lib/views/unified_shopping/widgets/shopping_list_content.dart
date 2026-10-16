@@ -361,7 +361,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               progress.total,
             ),
             expanded: !isCollapsed,
-            semanticLabel: context.l10n.a11yToggleShoppingCategory,
             onTap: () => setState(() {
               if (isCollapsed) {
                 _collapsedCategories.remove(category);

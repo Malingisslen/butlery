@@ -141,7 +141,13 @@ void main() {
     final handle = tester.ensureSemantics();
     await _pump(tester, _vm(items));
 
-    final heading = find.bySemanticsLabel(RegExp(r'^Kategori\n')).first;
+    final heading = find.bySemanticsLabel(RegExp(r', 1 av 3$')).first;
+    final lines = announcedLines(tester, heading);
+    expect(lines, hasLength(1));
+    expect(
+      lines.single,
+      '${ShoppingCategory.displayName(ShoppingCategory.fruitVeg)}, 1 av 3',
+    );
     expectActivatable(tester, heading);
     expectNothingAnnouncedTwice(tester, heading);
     handle.dispose();

@@ -150,6 +150,21 @@ void main() {
         expect(find.textContaining('3 varor'), findsOneWidget);
       });
 
+      testWidgets('says "1 vara", not "1 varor", for a single item', (
+        WidgetTester tester,
+      ) async {
+        final single = testShoppingList.copyWith(
+          items: [testShoppingList.items.first],
+        );
+        await tester.pumpWidget(
+          createCardApp(shoppingList: single, showMetadata: true),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('1 vara'), findsOneWidget);
+        expect(find.textContaining('1 varor'), findsNothing);
+      });
+
       testWidgets('shows empty preview when no items', (
         WidgetTester tester,
       ) async {

@@ -205,7 +205,7 @@ void main() {
     await vm.startListening();
 
     expect(vm.familyCount, 3);
-    expect(vm.familyAverageDisplay, '4,0'); // (4+5+3)/3, Swedish comma
+    expect(vm.familyAverage, 4.0); // (4+5+3)/3
   });
 
   test('a proxy entry is attributed to whoever entered it', () async {
@@ -265,14 +265,14 @@ void main() {
     },
   );
 
-  test('fractional average renders with a Swedish decimal comma', () async {
+  test('a fractional average is exposed unrounded', () async {
     await rate(_malin, HouseholdMemberType.user, 4);
     await rate(_johan, HouseholdMemberType.user, 5, enteredBy: _malin);
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
     await vm.startListening();
 
-    expect(vm.familyAverageDisplay, '4,5'); // (4+5)/2, comma not dot
+    expect(vm.familyAverage, 4.5); // (4+5)/2
   });
 
   test(

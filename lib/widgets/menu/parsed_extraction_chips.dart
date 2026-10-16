@@ -4,6 +4,7 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -73,18 +74,13 @@ class ParsedExtractionChips extends StatelessWidget {
           ],
           if (trace.hasGaps && onRefinePrompt != null) ...[
             const SizedBox(height: AppDimensions.space4),
-            Semantics(
-              label: l10n.a11yRefineMenuPrompt,
-              button: true,
-              child: GestureDetector(
-                onTap: onRefinePrompt,
-                child: ExcludeSemantics(
-                  child: Text(
-                    l10n.weeklyMenuChipsRefinePrompt,
-                    style: AppTextStyles.linkSmall.copyWith(
-                      color: colors.textLink,
-                    ),
-                  ),
+            ButleryLink(
+              semanticLabel: l10n.a11yRefineMenuPrompt,
+              onTap: onRefinePrompt,
+              child: Text(
+                l10n.weeklyMenuChipsRefinePrompt,
+                style: AppTextStyles.linkSmall.copyWith(
+                  color: colors.textLink,
                 ),
               ),
             ),

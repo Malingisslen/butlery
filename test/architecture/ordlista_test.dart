@@ -82,6 +82,8 @@ void main() {
     expect(broken('Ta bort artikel'), {'artikel'});
     expect(broken('Tom handlingslista'), {'handlingslista'});
     expect(broken('Matsedel & inköp'), {'matsedel'});
+    expect(broken('Berätta hur man gör'), {'man'});
+    expect(broken('Manuell sparning i mannens namn'), isEmpty);
     expect(broken('Laddar...'), {'...'});
     expect(broken('Till "listan"'), {'"'});
     expect(broken('Försök igen imorgon'), {'imorgon'});

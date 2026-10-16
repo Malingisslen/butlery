@@ -365,20 +365,17 @@ class _PhotoImportViewContent extends StatelessWidget {
                   ImageSourceButtons(
                     cameraLabel: context.l10n.importPhotoCameraButton,
                     libraryLabel: context.l10n.importPhotoLibraryButton,
-                    onCamera: viewModel.isProcessing
-                        ? null
-                        : () => _startOver(
-                            context,
-                            viewModel,
-                            viewModel.pickImageFromCamera,
-                          ),
-                    onLibrary: viewModel.isProcessing
-                        ? null
-                        : () => _startOver(
-                            context,
-                            viewModel,
-                            viewModel.pickImageFromGallery,
-                          ),
+                    busy: viewModel.isProcessing,
+                    onCamera: () => _startOver(
+                      context,
+                      viewModel,
+                      viewModel.pickImageFromCamera,
+                    ),
+                    onLibrary: () => _startOver(
+                      context,
+                      viewModel,
+                      viewModel.pickImageFromGallery,
+                    ),
                   ),
                   const SizedBox(height: AppDimensions.space16),
 

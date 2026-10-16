@@ -36,6 +36,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -901,38 +902,24 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
   Widget _buildOverflowIndicator(BuildContext context, int count) {
     final cs = Theme.of(context).colorScheme;
 
-    return Semantics(
-      label: context.l10n.a11yShowMore,
-      button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => _isExpanded = true),
-        // BUT-2218: the chip stays small; its hit area is 48 dp tall and wide
-        // (tokens.json touchTarget), the chip centred inside it.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: AppDimensions.minTouchTarget,
-            minHeight: AppDimensions.minTouchTarget,
-          ),
-          child: Center(
-            widthFactor: 1,
-            heightFactor: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space4,
-                vertical: AppDimensions.space4,
-              ),
-              decoration: BoxDecoration(
-                color: cs.surface,
-                border: Border.all(color: cs.outlineVariant),
-              ),
-              child: Text(
-                context.l10n.commonMoreCount(count),
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: AppModeColors.textSecondaryOnRaised(cs.brightness),
-                ),
-              ),
-            ),
+    // BUT-2218: the chip stays small; its target is 48 dp tall and wide
+    // (tokens.json touchTarget), the chip centred inside it.
+    return ButleryTapTarget(
+      semanticLabel: context.l10n.a11yShowMore,
+      onTap: () => setState(() => _isExpanded = true),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.space4,
+          vertical: AppDimensions.space4,
+        ),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        child: Text(
+          context.l10n.commonMoreCount(count),
+          style: AppTextStyles.labelMedium.copyWith(
+            color: AppModeColors.textSecondaryOnRaised(cs.brightness),
           ),
         ),
       ),

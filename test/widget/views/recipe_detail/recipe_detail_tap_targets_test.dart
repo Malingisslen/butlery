@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
@@ -267,6 +268,20 @@ void main() {
       await tester.pump();
       expect(find.text(sv.commonMoreCount(1)), findsNothing);
       expect(find.text('Helg'), findsOneWidget);
+    });
+
+    testWidgets('the "+1 till" chip is a shared tap target', (
+      tester,
+    ) async {
+      await pump(tester);
+
+      expect(
+        find.ancestor(
+          of: find.text(sv.commonMoreCount(1)),
+          matching: find.byType(ButleryTapTarget),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('rows name their action once and leave the content to their '

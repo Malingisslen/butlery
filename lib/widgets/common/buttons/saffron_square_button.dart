@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class SaffronSquareButton extends StatelessWidget {
@@ -18,15 +19,25 @@ class SaffronSquareButton extends StatelessWidget {
     required this.semanticLabel,
     required this.onPressed,
     this.icon = ButleryIcons.plus,
+    this.busy = false,
+    this.busyLabel,
     super.key,
   });
 
   final String semanticLabel;
 
-  /// Null leaves the button inert, as while the add it stands for runs.
+  /// Null leaves the button inert.
   final VoidCallback? onPressed;
 
   final IconData icon;
+
+  /// Whether the add it stands for is running: the button keeps its saffron
+  /// surface and gets the plate line, never the disabled look.
+  final bool busy;
+
+  /// What a screen reader hears while [busy], for example "Lägger till …".
+  /// Null keeps [semanticLabel].
+  final String? busyLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +45,7 @@ class SaffronSquareButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
     );
-    return Semantics(
+    final button = Semantics(
       label: semanticLabel,
       button: true,
       enabled: onPressed != null,
@@ -44,17 +55,34 @@ class SaffronSquareButton extends StatelessWidget {
         dimension: AppDimensions.minTouchTarget,
         child: SaffronPress(
           shape: shape,
-          onTap: onPressed,
-          builder: (context, pressed) => Center(
-            child: ButleryIcon(
-              icon,
-              color: pressed
-                  ? AppModeColors.onActionPrimaryPressed(brightness)
-                  : AppModeColors.onActionPrimary(brightness),
-            ),
-          ),
+          // Busy keeps the button focusable, so Enter must reach a no-op.
+          onTap: busy ? PlateLineButton.ignore : onPressed,
+          builder: (context, pressed) {
+            final color = pressed
+                ? AppModeColors.onActionPrimaryPressed(brightness)
+                : AppModeColors.onActionPrimary(brightness);
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Center(child: ButleryIcon(icon, color: color)),
+                if (busy)
+                  PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 0,
+                    child: ButtonPlateLine(color: color),
+                  ),
+              ],
+            );
+          },
         ),
       ),
+    );
+    return BusyButtonSemantics(
+      busy: busy,
+      name: semanticLabel,
+      busyLabel: busyLabel,
+      child: button,
     );
   }
 }

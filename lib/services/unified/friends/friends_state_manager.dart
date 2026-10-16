@@ -10,6 +10,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
@@ -43,6 +44,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
 
   // Internal state
   List<UserProfile> _friends = [];
+  bool _friendsLoadFailed = false;
   List<FriendRequest> _incomingRequests = [];
   List<FriendRequest> _outgoingRequests = [];
   List<FriendCategory> _categories = [];
@@ -128,7 +130,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     } catch (e, stackTrace) {
       _isInitialized = true;
       _isLoading = false;
-      _error = 'Failed to load friends data: $e';
+      _error = AppLocale.current.friendsLoadFailed;
       AppLogger.error(
         'Failed to initialize FriendsStateManager: $e',
         stackTrace,
@@ -160,7 +162,9 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.warning('Failed to load friends: $e');
-      _friends = [];
+      // An empty list would tell the user they have no friends.
+      _friendsLoadFailed = true;
+      _error = AppLocale.current.friendsLoadFailed;
     }
   }
 
@@ -247,6 +251,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     _receivedInvitations.clear();
     _blockedUsers.clear();
 
+    _friendsLoadFailed = false;
     _isInitialized = false;
     _isLoading = false;
     _error = null;
@@ -299,6 +304,10 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
         (friendProfiles) {
           _friends = friendProfiles;
           AppLogger.debug('Real-time update: ${_friends.length} friends');
+          if (_friendsLoadFailed) {
+            _friendsLoadFailed = false;
+            _error = null;
+          }
           notifyListeners();
         },
         name: _kFriendsList,
@@ -468,7 +477,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
 
     final currentUserId = _repository.currentUserId;
     if (currentUserId == null) {
-      _error = 'User not authenticated';
+      _error = AppLocale.current.authRequiredError;
       notifyListeners();
       return;
     }
@@ -487,7 +496,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
 
       _isLoading = false;
     } catch (e) {
-      _error = 'Failed to refresh friends data: $e';
+      _error = AppLocale.current.friendsRefreshFailed;
       _isLoading = false;
       AppLogger.error('❌ Failed to refresh friends data: $e');
     }

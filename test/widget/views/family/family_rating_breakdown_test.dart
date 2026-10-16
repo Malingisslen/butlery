@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_en.dart';
 import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/models/household.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
@@ -30,6 +31,7 @@ import 'package:butlery/views/family/family_widgets.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
@@ -156,16 +158,21 @@ void main() {
     enteredByUid: enteredBy,
   );
 
-  Future<void> pumpBreakdown(WidgetTester tester) async {
+  Future<void> pumpBreakdown(
+    WidgetTester tester, {
+    Locale locale = const Locale('sv'),
+    Recipe? recipe,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.lightTheme,
-        locale: const Locale('sv'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: FamilyRatingBreakdown(
-            recipe: RecipeFactory.build(id: _recipe, title: 'Svamppasta'),
+            recipe:
+                recipe ?? RecipeFactory.build(id: _recipe, title: 'Svamppasta'),
           ),
         ),
       ),
@@ -195,6 +202,54 @@ void main() {
     final avatars = tester.widgetList<FamilyAvatar>(find.byType(FamilyAvatar));
     expect(avatars, isNotEmpty);
     expect(avatars.every((a) => a.round), isTrue);
+  });
+
+  testWidgets('English reads the same ratings with a decimal point', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await rate(_malin, HouseholdMemberType.user, 5);
+      await rate(_johan, HouseholdMemberType.user, 3, enteredBy: _malin);
+    });
+    await pumpBreakdown(tester, locale: const Locale('en'));
+
+    await tester.tap(find.text(AppLocalizationsEn().familyRatingSectionTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text('5.0'), findsOneWidget);
+    expect(find.text('3.0'), findsOneWidget);
+    expect(find.text('5,0'), findsNothing);
+  });
+
+  testWidgets('the household average pill follows the language too', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await rate(_malin, HouseholdMemberType.user, 5);
+      await rate(_johan, HouseholdMemberType.user, 3, enteredBy: _malin);
+    });
+    await pumpBreakdown(tester, locale: const Locale('en'));
+
+    expect(find.textContaining('4.0'), findsOneWidget);
+    expect(find.textContaining('4,0'), findsNothing);
+  });
+
+  testWidgets('the community average of a shared recipe follows the language', (
+    tester,
+  ) async {
+    final shared = RecipeFactory.build(
+      id: _recipe,
+      title: 'Svamppasta',
+      rating: null,
+      type: RecipeType.shared,
+    )..core.averageRating = 4.5;
+    await tester.runAsync(() => rate(_malin, HouseholdMemberType.user, 5));
+    await pumpBreakdown(tester, locale: const Locale('en'), recipe: shared);
+    await tester.tap(find.text(AppLocalizationsEn().familyRatingSectionTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text('4.5'), findsOneWidget);
+    expect(find.text('4,5'), findsNothing);
   });
 
   testWidgets('"· du" marks only the signed-in account holder', (tester) async {
