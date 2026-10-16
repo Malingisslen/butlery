@@ -12123,7 +12123,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationRatingMilestoneCount(int count) {
-    return 'Your recipe has received $count ratings.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ratings',
+      one: '1 rating',
+    );
+    return 'Your recipe has received $_temp0.';
   }
 
   @override
@@ -12133,7 +12139,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationRatingBatch(int count, String average) {
-    return 'Your recipe received $count new ratings. Average: $average';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new ratings',
+      one: '1 new rating',
+    );
+    return 'Your recipe received $_temp0. Average: $average';
   }
 
   @override

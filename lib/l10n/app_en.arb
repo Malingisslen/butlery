@@ -7928,7 +7928,7 @@
       "stars": {"type": "String"}
     }
   },
-  "notificationRatingMilestoneCount": "Your recipe has received {count} ratings.",
+  "notificationRatingMilestoneCount": "Your recipe has received {count, plural, =1{1 rating} other{{count} ratings}}.",
   "@notificationRatingMilestoneCount": {
     "placeholders": {
       "count": {"type": "int"}
@@ -7940,7 +7940,7 @@
       "average": {"type": "String"}
     }
   },
-  "notificationRatingBatch": "Your recipe received {count} new ratings. Average: {average}",
+  "notificationRatingBatch": "Your recipe received {count, plural, =1{1 new rating} other{{count} new ratings}}. Average: {average}",
   "@notificationRatingBatch": {
     "placeholders": {
       "count": {"type": "int"},
