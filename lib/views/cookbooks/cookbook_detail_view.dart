@@ -13,6 +13,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/cookbooks/cookbook_recipe_sheets.dart';
@@ -239,44 +240,52 @@ class _Toolbar extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final accent = context.modeColors.textAccent;
+    final hintText = Text(
+      hint,
+      style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+    );
+    final actions = [
+      if (hasCustomOrder)
+        KeyedSubtree(
+          key: CookbookDetailView.sortKey,
+          child: ActionButtons.textButton(
+            context,
+            label: l10n.cookbookSortAlphabetical,
+            onPressed: onSort,
+          ),
+        ),
+      if (canReorder)
+        KeyedSubtree(
+          key: CookbookDetailView.reorderKey,
+          child: ActionButtons.textButton(
+            context,
+            label: reordering ? l10n.cookbookReorderDone : l10n.cookbookReorder,
+            onPressed: onToggleReorder,
+          ),
+        ),
+    ];
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: accent, width: AppDimensions.borderWidthThick),
         ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              hint,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+      child: isLargeText(context)
+          // Large text: the hint keeps the whole width and the actions sit
+          // under it, rather than the hint breaking words in a narrow column.
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                hintText,
+                Wrap(children: actions),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: hintText),
+                ...actions,
+              ],
             ),
-          ),
-          if (hasCustomOrder)
-            KeyedSubtree(
-              key: CookbookDetailView.sortKey,
-              child: ActionButtons.textButton(
-                context,
-                label: l10n.cookbookSortAlphabetical,
-                onPressed: onSort,
-              ),
-            ),
-          if (canReorder)
-            KeyedSubtree(
-              key: CookbookDetailView.reorderKey,
-              child: ActionButtons.textButton(
-                context,
-                label: reordering
-                    ? l10n.cookbookReorderDone
-                    : l10n.cookbookReorder,
-                onPressed: onToggleReorder,
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

@@ -401,6 +401,31 @@ void main() {
       expect(find.text(_sv.decisionAppealLink), findsNothing);
     });
 
+    testWidgets('an open appeal follows the outcome as a new sentence', (
+      tester,
+    ) async {
+      when(() => outcomes.getMyContentDecisions()).thenAnswer(
+        (_) async => [
+          _outcome(
+            type: ContentType.recipe,
+            reason: 'copyright',
+            appeal: const ModerationAppeal(
+              status: AppealStatus.open,
+              text: 'x',
+            ),
+          ),
+        ],
+      );
+      await pumpApp(tester, const MyContentDecisionsView());
+
+      expect(
+        find.textContaining(
+          '${_sv.decisionHeadlineContentRemoved}. ${_sv.appealUnderReview}',
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('Back names Hjälp & om', (tester) async {
       when(() => outcomes.getMyContentDecisions()).thenAnswer((_) async => []);
       await pumpApp(tester, const MyContentDecisionsView());

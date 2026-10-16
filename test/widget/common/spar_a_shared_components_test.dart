@@ -171,7 +171,14 @@ void main() {
       );
 
       final list = tester
-          .getSemantics(find.byType(UnderlineTabs<String>))
+          .getSemantics(
+            find
+                .descendant(
+                  of: find.byType(UnderlineTabs<String>),
+                  matching: find.byType(Semantics),
+                )
+                .first,
+          )
           .getSemanticsData();
       expect(list.role, SemanticsRole.tabBar);
 

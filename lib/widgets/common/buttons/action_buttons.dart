@@ -22,6 +22,9 @@ export 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 /// (Komponentark v1:307, :365, :372; Grafisk manual v6:423; B-18). It never
 /// shows a spinner and never falls back to "Laddar...".
 class ActionButtons {
+  /// The widest a button that does not fill its row grows, at normal text.
+  static const double _maxButtonWidth = 200;
+
   static const ButtonStyle _hugLabel = ButtonStyle(
     minimumSize: WidgetStatePropertyAll(
       Size(0, AppDimensions.controlVisualHeight),
@@ -135,7 +138,11 @@ class ActionButtons {
     final sized = isExpanded
         ? SizedBox(width: double.infinity, child: button)
         : ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 200),
+            // The cap grows with the text, or a scaled label would wrap
+            // inside it and break its words.
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.textScalerOf(context).scale(_maxButtonWidth),
+            ),
             child: button,
           );
 
@@ -199,8 +206,9 @@ class ActionButtons {
     bool enablePressAnimation = true,
   }) {
     final onPrimary = AppModeColors.onActionFill(Theme.of(context).brightness);
-    final sized = SizedBox(
-      height: height,
+    final sized = ConstrainedBox(
+      // A floor: the button grows with large text instead of clipping it.
+      constraints: BoxConstraints(minHeight: height),
       child: ElevatedButton.icon(
         onPressed: isLoading ? PlateLineButton.ignore : onPressed,
         style: isLoading

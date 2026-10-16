@@ -277,20 +277,16 @@ void main() {
         // Verify the text is rendered
         expect(find.text('Archive'), findsOneWidget);
 
-        // Verify that SizedBox widgets exist in the tree
-        // The largeButton implementation uses a SizedBox to constrain height
-        final sizedBoxes = find.byType(SizedBox);
-        expect(sizedBoxes, findsAtLeastNWidgets(1));
-
         // Verify the icon is present
         expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
 
-        // Verify the button structure has proper height constraint
-        // The largeButton wraps the button in a SizedBox with height
-        final sizedBox = tester.widget<SizedBox>(
-          find.byType(SizedBox).first,
+        // The height is a floor, so large text can grow the button.
+        expect(
+          tester
+              .getSize(find.byWidgetPredicate((w) => w is ElevatedButton))
+              .height,
+          equals(100), // Default height from largeButton
         );
-        expect(sizedBox.height, equals(100)); // Default height from largeButton
       });
 
       testWidgets('should support icon in large button', (tester) async {

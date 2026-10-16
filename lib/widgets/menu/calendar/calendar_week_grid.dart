@@ -14,6 +14,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
 
 typedef CalendarCellBuilder =
     Widget Function(BuildContext context, DayOfWeek day, MealSlot slot);
@@ -43,6 +44,24 @@ class CalendarWeekGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final dayColumn = _dayColumnWidth(context);
+        // The row spaces its four children by space4, three gaps in all.
+        final cellWidth =
+            (constraints.maxWidth -
+                (dayColumn - AppDimensions.space4) -
+                AppDimensions.space4 * 3) /
+            MealSlot.values.length;
+        return CalendarCellWidth(
+          width: cellWidth,
+          child: _grid(context, dayColumn),
+        );
+      },
+    );
+  }
+
+  Widget _grid(BuildContext context, double dayColumn) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -56,7 +75,7 @@ class CalendarWeekGrid extends StatelessWidget {
                 spacing: AppDimensions.space4,
                 children: [
                   SizedBox(
-                    width: _dayColumnWidth(context) - AppDimensions.space4,
+                    width: dayColumn - AppDimensions.space4,
                     child: _DayLabel(
                       day: day,
                       date: weekStart.add(Duration(days: day.index)),
@@ -91,7 +110,13 @@ class _MealHeaderRow extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   start: AppDimensions.space8,
                 ),
-                child: SectionHeading(slot.displayLabel),
+                // One word on one line, scaled down to its column rather
+                // than broken in two ("LUNC" / "H").
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: SectionHeading(slot.displayLabel),
+                ),
               ),
             ),
         ],

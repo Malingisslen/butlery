@@ -127,7 +127,9 @@ class AdminTable extends StatelessWidget {
     );
   }
 
+  // The gap keeps one column's capitals from running into the next one's.
   Widget _line(List<Widget> cells) => Row(
+    spacing: AppDimensions.space8,
     children: [
       for (var i = 0; i < cells.length; i++)
         Expanded(flex: columns[i].flex, child: cells[i]),

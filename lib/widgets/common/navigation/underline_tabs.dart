@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 class UnderlineTabs<T> extends StatelessWidget {
   const UnderlineTabs({
@@ -29,41 +30,82 @@ class UnderlineTabs<T> extends StatelessWidget {
   final ValueChanged<T> onChanged;
 
   static const double _bar = 2.5;
+  static const double _tabPadding = AppDimensions.space12 * 2;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // A tab list, so a screen reader announces the tabs as a group rather
-    // than as loose buttons.
-    return Semantics(
-      role: SemanticsRole.tabBar,
-      container: true,
-      explicitChildNodes: true,
-      // The hairline sits under the chosen tab's bar rather than beside it,
-      // so the two never read as a pair of stacked lines.
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SizedBox(
-              height: 1,
-              child: ColoredBox(color: cs.outlineVariant),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final labels = [for (final value in values) labelOf(value)];
+        final share = constraints.maxWidth / values.length;
+        final wordsFit =
+            widestWord(context, labels, AppTextStyles.labelLarge) +
+                _tabPadding <=
+            share;
+        // The hairline sits under the chosen tab's bar rather than beside
+        // it, so the two never read as a pair of stacked lines.
+        Widget withHairline(Widget tabs) => Stack(
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                height: 1,
+                child: ColoredBox(color: cs.outlineVariant),
+              ),
+            ),
+            tabs,
+          ],
+        );
+        // A tab list, so a screen reader announces the tabs as a group
+        // rather than as loose buttons.
+        Widget tabBar(Widget child) => Semantics(
+          role: SemanticsRole.tabBar,
+          container: true,
+          explicitChildNodes: true,
+          child: child,
+        );
+        // Large text: tabs that cannot give each word its share keep their
+        // words whole on one line and scroll sideways, rather than breaking
+        // a word in two. The scroll view adds a semantics node of its own,
+        // so the tab list sits inside it, directly over the tabs.
+        if (wordsFit) {
+          return tabBar(
+            withHairline(
+              Row(
+                children: [
+                  for (final value in values)
+                    Flexible(child: _tab(context, cs, value)),
+                ],
+              ),
+            ),
+          );
+        }
+        return withHairline(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: tabBar(
+              Row(
+                children: [
+                  for (final value in values)
+                    _tab(context, cs, value, wrap: false),
+                ],
+              ),
             ),
           ),
-          Row(
-            children: [
-              for (final value in values)
-                Flexible(child: _tab(context, cs, value)),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _tab(BuildContext context, ColorScheme cs, T value) {
+  Widget _tab(
+    BuildContext context,
+    ColorScheme cs,
+    T value, {
+    bool wrap = true,
+  }) {
     final isSelected = value == selected;
     return Semantics(
       container: true,
@@ -96,6 +138,7 @@ class UnderlineTabs<T> extends StatelessWidget {
                 child: ExcludeSemantics(
                   child: Text(
                     labelOf(value),
+                    softWrap: wrap,
                     style:
                         (isSelected
                                 ? AppTextStyles.labelLarge

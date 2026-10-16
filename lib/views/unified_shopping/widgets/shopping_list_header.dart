@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
@@ -58,82 +59,94 @@ class ShoppingListHeader {
   ) {
     final cs = Theme.of(context).colorScheme;
 
-    return Row(
-      children: [
-        // BUT-723: beside the tablet's list of lists the picker would say
-        // the same thing twice, so only the list's own buttons stay.
-        if (!showListPicker)
-          const Spacer()
-        else
-          Expanded(
-            child: ButleryDropdown<String>(
-              semanticLabel: context.l10n.shoppingSelectList,
-              hint: context.l10n.shoppingSelectList,
-              value: viewModel.activeList?.id,
-              closedShowsSubtitle: true,
-              options: [
-                for (final list in viewModel.lists) _listOption(context, list),
-              ],
-              onChanged: viewModel.setActiveList,
-            ),
+    // BUT-723: beside the tablet's list of lists the picker would say the
+    // same thing twice, so only the list's own buttons stay.
+    final picker = showListPicker
+        ? ButleryDropdown<String>(
+            semanticLabel: context.l10n.shoppingSelectList,
+            hint: context.l10n.shoppingSelectList,
+            value: viewModel.activeList?.id,
+            closedShowsSubtitle: true,
+            options: [
+              for (final list in viewModel.lists) _listOption(context, list),
+            ],
+            onChanged: viewModel.setActiveList,
+          )
+        : null;
+
+    // Management buttons (only show if there's an active list)
+    final buttons = <Widget>[
+      if (viewModel.activeList != null) ...[
+        ButleryOutlinedBox(
+          paintOnly: true,
+          color: cs.surface,
+          borderColor: cs.outlineVariant,
+          child: AppIconButton(
+            icon: ButleryIcons.pencil,
+            onPressed: onRenameList,
+            semanticLabel: context.l10n.shoppingRenameList,
+            // text.primary itself, never faded.
+            color: cs.onSurface,
+            iconSize: AppDimensions.iconSizeM,
           ),
+        ),
 
-        // Management buttons (only show if there's an active list)
-        if (viewModel.activeList != null) ...[
-          const SizedBox(width: AppDimensions.space4),
-
-          // Rename button
+        // Convert button - show when user owns the list
+        if (onConvertList != null)
           ButleryOutlinedBox(
             paintOnly: true,
             color: cs.surface,
             borderColor: cs.outlineVariant,
+            radius: AppDimensions.radiusCard,
             child: AppIconButton(
-              icon: ButleryIcons.pencil,
-              onPressed: onRenameList,
-              semanticLabel: context.l10n.shoppingRenameList,
-              // text.primary itself, never faded (tokens.json:40-53).
+              icon: ButleryIcons.swapHorizontal,
+              onPressed: onConvertList,
+              semanticLabel: viewModel.activeList?.isPersonal == true
+                  ? context.l10n.shoppingConvertToCollaborative
+                  : context.l10n.shoppingConvertToPersonal,
               color: cs.onSurface,
               iconSize: AppDimensions.iconSizeM,
             ),
           ),
 
-          // Convert button - show when user owns the list
-          if (onConvertList != null) ...[
-            const SizedBox(width: AppDimensions.space4),
-            ButleryOutlinedBox(
-              paintOnly: true,
-              color: cs.surface,
-              borderColor: cs.outlineVariant,
-              radius: AppDimensions.radiusCard,
-              child: AppIconButton(
-                icon: ButleryIcons.swapHorizontal,
-                onPressed: onConvertList,
-                semanticLabel: viewModel.activeList?.isPersonal == true
-                    ? context.l10n.shoppingConvertToCollaborative
-                    : context.l10n.shoppingConvertToPersonal,
-                color: cs.onSurface,
-                iconSize: AppDimensions.iconSizeM,
-              ),
-            ),
-          ],
-
-          const SizedBox(width: AppDimensions.space4),
-
-          // Delete button
-          ButleryOutlinedBox(
-            paintOnly: true,
-            color: cs.surface,
-            borderColor: cs.outlineVariant,
-            child: AppIconButton(
-              icon: ButleryIcons.trash2,
-              onPressed: onDeleteList,
-              semanticLabel: context.l10n.shoppingDeleteList,
-              // text.primary itself, never faded (tokens.json:40-53).
-              color: cs.onSurface,
-              iconSize: AppDimensions.iconSizeM,
-            ),
+        ButleryOutlinedBox(
+          paintOnly: true,
+          color: cs.surface,
+          borderColor: cs.outlineVariant,
+          child: AppIconButton(
+            icon: ButleryIcons.trash2,
+            onPressed: onDeleteList,
+            semanticLabel: context.l10n.shoppingDeleteList,
+            // text.primary itself, never faded.
+            color: cs.onSurface,
+            iconSize: AppDimensions.iconSizeM,
           ),
+        ),
+      ],
+    ];
+
+    // Large text: the picker keeps the whole width and the buttons sit under
+    // it, so the list's name is not broken in a column beside three buttons.
+    if (isLargeText(context) && picker != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppDimensions.space4,
+        children: [
+          picker,
+          if (buttons.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: AppDimensions.space4,
+              children: buttons,
+            ),
         ],
+      );
+    }
+    return Row(
+      spacing: AppDimensions.space4,
+      children: [
+        if (picker == null) const Spacer() else Expanded(child: picker),
+        ...buttons,
       ],
     );
   }

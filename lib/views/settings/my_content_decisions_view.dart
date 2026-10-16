@@ -100,7 +100,7 @@ class _Content extends StatelessWidget {
           : decisionSubject(l10n, type, owner: true),
       subtitle: lines.isEmpty ? null : lines.join(' · '),
       outcome: [
-        decisionHeadline(l10n, decision.decision),
+        l10n.decisionOutcomeSentence(decisionHeadline(l10n, decision.decision)),
         if (open) l10n.appealUnderReview,
       ].join(' '),
       status: appealed == null

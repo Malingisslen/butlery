@@ -27,6 +27,8 @@ import '../../test_support/base_unit_test.dart';
 import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../infrastructure/helpers/word_break_finder.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
 
@@ -159,6 +161,22 @@ void main() {
       expect(result!.targets, const <SlotTarget>[
         (day: DayOfWeek.tue, slot: MealSlot.lunch),
       ]);
+    });
+
+    testWidgets('at 200 % text no word is broken in the multi-select '
+        'picker', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      await pumpHost(
+        tester,
+        open: (context) => showMultiSlotPickerDialog(context),
+        onResult: (_) {},
+      );
+      tester.view.physicalSize = const Size(360, 1600);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(findMidWordBreaks(tester), isEmpty);
     });
 
     testWidgets('confirm is disabled at zero selections', (tester) async {
@@ -500,6 +518,49 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(result()?.spill, SlotSpill.dropRest);
+    });
+
+    testWidgets('at 200 % text the panel buttons grow instead of clipping', (
+      tester,
+    ) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      await openAndTapFriday(tester, titles);
+      tester.view.physicalSize = const Size(360, 1600);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final button = find.ancestor(
+        of: find.text('Lägg bara de 3'),
+        matching: find.byType(ConstrainedBox),
+      );
+      expect(
+        tester.getSize(button.first).height,
+        greaterThan(AppDimensions.minTouchTarget),
+      );
+    });
+
+    testWidgets('at 200 % text an occupied cell grows past its floor', (
+      tester,
+    ) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearAllTestValues);
+      occupyMiddag([DayOfWeek.mon]);
+      await pumpHost(
+        tester,
+        open: (context) => showSlotPickerDialog(context, recipeTitles: titles),
+        onResult: (_) {},
+      );
+      tester.view.physicalSize = const Size(360, 1600);
+      await tester.pumpAndSettle();
+
+      final cell = find
+          .ancestor(of: find.text('Upptagen'), matching: find.byType(InkWell))
+          .first;
+      expect(
+        tester.getSize(cell).height,
+        greaterThan(AppDimensions.minTouchTarget + AppDimensions.space16),
+      );
     });
 
     testWidgets('on a short screen the panel scrolls instead of overflowing', (

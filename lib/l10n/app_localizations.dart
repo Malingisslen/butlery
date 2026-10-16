@@ -29098,6 +29098,12 @@ abstract class AppLocalizations {
   /// **'Innehållet ligger kvar'**
   String get decisionHeadlineNoAction;
 
+  /// BUT-2353: a decision headline closed as a sentence, where an appeal sentence follows it
+  ///
+  /// In sv, this message translates to:
+  /// **'{headline}.'**
+  String decisionOutcomeSentence(String headline);
+
   /// BUT-2353: badge on a decision with an open appeal
   ///
   /// In sv, this message translates to:
