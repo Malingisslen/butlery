@@ -2,6 +2,11 @@
   "beskrivning": "Ett ord per sak i appens svenska texter (lib/l10n/app_sv.arb). Raderna är maskinläsbara: test/architecture/ordlista_test.dart fäller ett värde som innehåller ett ord under \"aldrig\". Ord jämförs som hela ord utan hänsyn till versaler. Ett \"undantag\" är en fras som stryks innan jämförelsen. Regler: content-style-guide.md.",
   "ord": [
     {
+      "begrepp": "Tilltal i texterna",
+      "skriv": "du, eller en mening utan subjekt (\"hur det görs\")",
+      "aldrig": ["man"]
+    },
+    {
       "begrepp": "Rad i inköpslistan",
       "skriv": "vara",
       "aldrig": ["artikel", "artikeln", "artiklar", "artiklarna"],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod_di;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/diner_profile.dart';
@@ -201,6 +202,27 @@ void main() {
       expect(saved.avatarColor, '#B87F3F');
       handle.dispose();
     });
+
+    testWidgets(
+      'every swatch is a tap target that picks its colour',
+      (
+        tester,
+      ) async {
+        await openWith(tester, '#B07A3C');
+
+        final targets = find.byType(ButleryTapTarget);
+        expect(targets, findsNWidgets(kProfileColors.length));
+
+        await tester.tap(targets.at(0));
+        await tester.pump();
+        await tester.tap(find.widgetWithText(ElevatedButton, sv.commonSave));
+        await tester.pumpAndSettle();
+        final saved =
+            verify(() => _dinerRepo.update(captureAny())).captured.single
+                as DinerProfile;
+        expect(saved.avatarColor, isNot('#B87F3F'));
+      },
+    );
 
     testWidgets('one swatch per palette colour, painted in palette order', (
       tester,

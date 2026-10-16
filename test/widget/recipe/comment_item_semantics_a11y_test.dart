@@ -3,6 +3,7 @@
 // each expose discoverable Semantics labels.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../test_support/semantics_announcement.dart';
@@ -94,6 +95,9 @@ void main() {
     expect(react, findsWidgets);
     expectNothingAnnouncedTwice(tester, react.first);
     expectActivatable(tester, react.first);
+    final target = find.byType(ButleryTapTarget);
+    expect(target, findsOneWidget);
+    expect(tester.getSize(target).height, greaterThanOrEqualTo(48));
     handle.dispose();
   });
 

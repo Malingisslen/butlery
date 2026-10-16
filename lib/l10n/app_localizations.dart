@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Försök igen'**
   String get commonRetry;
 
+  /// No description provided for @recipesSharedWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{{title} delades med {name}} other{{count} recept delades med {name}}}'**
+  String recipesSharedWith(int count, String title, String name);
+
   /// Default title on the shared success state when no explicit title is passed (BUT-1430)
   ///
   /// In sv, this message translates to:
@@ -2087,7 +2093,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceImportPromptSteps.
   ///
   /// In sv, this message translates to:
-  /// **'Berätta hur man gör'**
+  /// **'Berätta hur du gör'**
   String get voiceImportPromptSteps;
 
   /// No description provided for @voiceImportTypeHint.
@@ -4256,12 +4262,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 vän vald} other{{count} vänner valda}}'**
   String friendSelectedCount(int count);
 
-  /// No description provided for @shoppingItems.
-  ///
-  /// In sv, this message translates to:
-  /// **'varor'**
-  String get shoppingItems;
-
   /// No description provided for @shoppingLists.
   ///
   /// In sv, this message translates to:
@@ -5180,11 +5180,11 @@ abstract class AppLocalizations {
   /// **'Importera utan AI'**
   String get dialogImportWithoutAi;
 
-  /// No description provided for @dialogItems.
+  /// No description provided for @dialogItemCount.
   ///
   /// In sv, this message translates to:
-  /// **'varor'**
-  String get dialogItems;
+  /// **'{count, plural, =1{1 vara} other{{count} varor}}'**
+  String dialogItemCount(int count);
 
   /// No description provided for @dialogItemsProgress.
   ///
@@ -6787,6 +6787,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vännerna kunde inte laddas. Försök igen.'**
   String messagingCouldNotLoadFriends(String error);
+
+  /// No description provided for @friendsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vännerna kunde inte laddas. Försök igen.'**
+  String get friendsLoadFailed;
+
+  /// No description provided for @friendsRefreshFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vännerna kunde inte uppdateras. Försök igen.'**
+  String get friendsRefreshFailed;
 
   /// No description provided for @messagingCouldNotLoadGroupInfo.
   ///
@@ -12739,6 +12751,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Under 30 min'**
   String get filterUnder30Min;
+
+  /// No description provided for @filter30To60Min.
+  ///
+  /// In sv, this message translates to:
+  /// **'30–60 min'**
+  String get filter30To60Min;
+
+  /// No description provided for @filterOver60Min.
+  ///
+  /// In sv, this message translates to:
+  /// **'Över 60 min'**
+  String get filterOver60Min;
 
   /// No description provided for @filterVegetarianQuick.
   ///
@@ -22246,11 +22270,11 @@ abstract class AppLocalizations {
   /// **'Stäng varning om importkvalitet'**
   String get a11yDismissParseQualityWarning;
 
-  /// Semantics label for the collapsible category header in the shopping list.
+  /// Semantics value on the filter toggle button while filters are applied; read after the button name.
   ///
   /// In sv, this message translates to:
-  /// **'Kategori'**
-  String get a11yToggleShoppingCategory;
+  /// **'Filter aktiva'**
+  String get a11yFiltersActive;
 
   /// The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).
   ///
@@ -25189,13 +25213,13 @@ abstract class AppLocalizations {
   /// No description provided for @cookingNoStepsBody.
   ///
   /// In sv, this message translates to:
-  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.'**
+  /// **'Ingredienserna finns – men ingen har skrivit hur det görs. Skriv stegen, eller ta ingredienserna till inköpslistan.'**
   String get cookingNoStepsBody;
 
   /// No description provided for @cookingNoStepsBodyNoIngredients.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.'**
+  /// **'Ingen har skrivit hur det görs än. Skriv stegen, så kan du laga härifrån.'**
   String get cookingNoStepsBodyNoIngredients;
 
   /// No description provided for @cookingNoStepsWrite.
@@ -25720,6 +25744,12 @@ abstract class AppLocalizations {
   /// **'Kön kunde inte skickas nu.'**
   String get syncQueueSyncFailed;
 
+  /// No description provided for @syncQueueLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kön gick inte att läsa just nu.'**
+  String get syncQueueLoadFailed;
+
   /// P6-T6 (P4-U19): what was kept after a failed action on one change.
   ///
   /// In sv, this message translates to:
@@ -26011,13 +26041,13 @@ abstract class AppLocalizations {
   /// Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients.
   ///
   /// In sv, this message translates to:
-  /// **'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.'**
+  /// **'Ingredienserna finns – men ingen har skrivit hur det görs. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.'**
   String get cookingNoStepsBodyOthers;
 
   /// Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.'**
+  /// **'Ingen har skrivit hur det görs än. Spara en egen kopia och skriv stegen där.'**
   String get cookingNoStepsBodyOthersNoIngredients;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Greeting 05-11 (produktregler.md:278).
@@ -30729,6 +30759,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 recept med taggen} other{{count} recept med taggen}}'**
   String tagDetailRecipesHeading(int count);
+
+  /// No description provided for @tagDetailRecipesLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten med taggen gick inte att hämta.'**
+  String get tagDetailRecipesLoadFailed;
 
   /// Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes
   ///

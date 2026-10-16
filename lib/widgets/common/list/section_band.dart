@@ -37,7 +37,6 @@ class SectionBand extends StatelessWidget {
     this.onTap,
     this.tone = SectionBandTone.standard,
     this.plate = true,
-    this.semanticLabel,
     super.key,
   });
 
@@ -58,10 +57,6 @@ class SectionBand extends StatelessWidget {
   /// A tinted plate behind the band: the surface.raised wash, or the warning
   /// tint on a [SectionBandTone.warning] band.
   final bool plate;
-
-  /// What a screen reader says for the fold control; the title is read as
-  /// part of the node.
-  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -127,9 +122,12 @@ class SectionBand extends StatelessWidget {
 
     if (onTap == null) return band;
     return Semantics(
-      label: semanticLabel,
+      label: count == null ? title : '$title, $count',
       button: true,
-      toggled: folded,
+      header: true,
+      expanded: folded,
+      onTap: onTap,
+      excludeSemantics: true,
       child: PressFill(
         surface: PressSurface.base,
         child: InkWell(onTap: onTap, child: band),

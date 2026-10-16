@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/widgets/recipe/recipe_form/save_blocked_hint.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -948,16 +949,13 @@ class _SkrivSjalvReceptViewContentState
                     ),
                   ),
                 ),
-                Semantics(
-                  label: context.l10n.a11yDismissParseQualityWarning,
-                  button: true,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _showQualityWarning = false),
-                    child: ButleryIcon(
-                      ButleryIcons.x,
-                      size: AppDimensions.iconSizeS,
-                      color: colors.onWarningContainer,
-                    ),
+                ButleryTapTarget(
+                  semanticLabel: context.l10n.a11yDismissParseQualityWarning,
+                  onTap: () => setState(() => _showQualityWarning = false),
+                  child: ButleryIcon(
+                    ButleryIcons.x,
+                    size: AppDimensions.iconSizeS,
+                    color: colors.onWarningContainer,
                   ),
                 ),
               ],

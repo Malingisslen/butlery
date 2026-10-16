@@ -44,6 +44,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test Filter',
@@ -66,6 +68,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: ThemeData(
               colorScheme: const ColorScheme.light(
                 primary: Colors.blue,
@@ -92,6 +96,8 @@ void main() {
       testWidgets('should render filter chips', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -116,6 +122,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -136,6 +144,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -159,6 +169,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -181,6 +193,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -206,6 +220,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setState) {
@@ -255,6 +271,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -283,6 +301,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -312,6 +332,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -342,6 +364,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -361,6 +385,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -382,6 +408,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -413,6 +441,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Måltidstyp',
@@ -441,6 +471,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Specialkost',
@@ -465,6 +497,8 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Empty',
@@ -496,6 +530,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -523,6 +559,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: SingleChildScrollView(
                 child: FilterChipsWidget(
@@ -546,6 +584,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -574,6 +614,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Time',
@@ -605,6 +647,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: FilterChipsWidget(
                 title: 'Test',
@@ -643,20 +687,25 @@ void main() {
       ) async {
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
-              body: FilterChipsWidget(
-                title: 'Cooking Time',
-                options: RecipeFilters.timeFilters,
-                activeFilters: const {'quick'},
-                onToggle: (id) {},
+              body: Builder(
+                builder: (context) => FilterChipsWidget(
+                  title: 'Cooking Time',
+                  options: RecipeFilters.timeFilters(context),
+                  activeFilters: const {'quick'},
+                  onToggle: (id) {},
+                ),
               ),
             ),
           ),
         );
 
-        expect(find.text('< 30 min'), findsOneWidget);
-        expect(find.text('30-60 min'), findsOneWidget);
-        expect(find.text('> 60 min'), findsOneWidget);
+        expect(find.text('Under 30 min'), findsOneWidget);
+        expect(find.text('30–60 min'), findsOneWidget);
+        expect(find.text('Över 60 min'), findsOneWidget);
         expect(find.byIcon(ButleryIcons.clock), findsNWidgets(3));
       });
 

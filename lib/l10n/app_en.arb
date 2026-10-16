@@ -18,6 +18,14 @@
   "commonYes": "Yes",
   "commonNo": "No",
   "commonRetry": "Retry",
+  "recipesSharedWith": "{count, plural, =1{{title} was shared with {name}} other{{count} recipes were shared with {name}}}",
+  "@recipesSharedWith": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "title": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
   "stateSuccessDefault": "Done",
   "@stateSuccessDefault": {
     "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
@@ -1924,7 +1932,6 @@
       }
     }
   },
-  "shoppingItems": "items",
   "shoppingLists": "Shopping lists",
   "shoppingNewList": "New list",
   "shoppingNewListNameTemplate": "{title} – Ingredients",
@@ -2203,7 +2210,12 @@
     }
   },
   "dialogImportWithoutAi": "Import without AI",
-  "dialogItems": "items",
+  "dialogItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@dialogItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "dialogItemsProgress": "{completed}/{total} done",
   "@dialogItemsProgress": {
     "placeholders": {
@@ -2842,6 +2854,8 @@
       }
     }
   },
+  "friendsLoadFailed": "Your friends could not be loaded. Try again.",
+  "friendsRefreshFailed": "Your friends could not be refreshed. Try again.",
   "messagingCouldNotLoadGroupInfo": "The group information could not be loaded. Try again.",
   "@messagingCouldNotLoadGroupInfo": {
     "placeholders": {
@@ -5448,6 +5462,8 @@
   },
   "filterFavorites": "Favourites",
   "filterUnder30Min": "Under 30 min",
+  "filter30To60Min": "30–60 min",
+  "filterOver60Min": "Over 60 min",
   "filterVegetarianQuick": "Vegetarian",
   "filterAll": "All",
   "instructionLabel": "Instruction {number}",
@@ -6855,7 +6871,7 @@
       }
     }
   },
-  "notificationBatchBodyCollaboration": "{count} new collaboration activities",
+  "notificationBatchBodyCollaboration": "{count, plural, =1{1 new collaboration activity} other{{count} new collaboration activities}}",
   "@notificationBatchBodyCollaboration": {
     "placeholders": {
       "count": {
@@ -9881,9 +9897,9 @@
   "@a11yDismissParseQualityWarning": {
     "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
   },
-  "a11yToggleShoppingCategory": "Category",
-  "@a11yToggleShoppingCategory": {
-    "description": "Semantics label for the collapsible category header in the shopping list."
+  "a11yFiltersActive": "Filters active",
+  "@a11yFiltersActive": {
+    "description": "Semantics value on the filter toggle button while filters are applied; read after the button name."
   },
   "shoppingCategoryProgress": "{completed} of {total}",
   "@shoppingCategoryProgress": {
@@ -11852,6 +11868,7 @@
   "@syncQueueSyncFailed": {
     "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
   },
+  "syncQueueLoadFailed": "The queue could not be read right now.",
   "syncQueueChangeKept": "It stays under Waiting for you.",
   "@syncQueueChangeKept": {
     "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
@@ -15861,6 +15878,7 @@
       }
     }
   },
+  "tagDetailRecipesLoadFailed": "The recipes with this tag could not be loaded.",
   "tagDetailRuleSummaryNumber": "{type} {operator} {value}",
   "@tagDetailRuleSummaryNumber": {
     "description": "Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes",

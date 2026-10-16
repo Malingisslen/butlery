@@ -1,6 +1,8 @@
 // ButlerySwitch is the token-sized toggle: a 34 x 20 track in a 48 x 48
 // touch target, toggling once per tap and not at all when disabled.
 
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,6 +39,18 @@ void main() {
       ),
     );
     expect(track, const Size(34, 20));
+  });
+
+  testWidgets('a screen reader gets one 48 x 48 node it can tap', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpSwitch(tester);
+
+    final node = tester.getSemantics(find.byType(ButlerySwitch));
+    expect(node.rect.size, const Size(48, 48));
+    expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    handle.dispose();
   });
 
   testWidgets('a tap on the track toggles once', (tester) async {

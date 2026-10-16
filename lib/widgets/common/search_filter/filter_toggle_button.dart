@@ -22,34 +22,41 @@ class FilterToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Stack(
-      children: [
-        IconButton(
-          onPressed: onToggle,
-          icon: ButleryIcon(
-            ButleryIcons.filter,
-            size: AppDimensions.iconSizeM,
-            color: showFilters ? cs.onSurface : cs.onSurfaceVariant,
-          ),
-          tooltip: showFilters
-              ? context.l10n.filterHide
-              : context.l10n.filterShow,
-        ),
-        // Active filters indicator
-        if (hasActiveFilters && !showFilters)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: cs.secondary,
-                shape: BoxShape.circle,
+    // The IconButton already names itself by its tooltip; the wrapper only
+    // adds the active-filters value to that one node.
+    return MergeSemantics(
+      child: Semantics(
+        value: hasActiveFilters ? context.l10n.a11yFiltersActive : null,
+        child: Stack(
+          children: [
+            IconButton(
+              onPressed: onToggle,
+              icon: ButleryIcon(
+                ButleryIcons.filter,
+                size: AppDimensions.iconSizeM,
+                color: showFilters ? cs.onSurface : cs.onSurfaceVariant,
               ),
+              tooltip: showFilters
+                  ? context.l10n.filterHide
+                  : context.l10n.filterShow,
             ),
-          ),
-      ],
+            // Active filters indicator
+            if (hasActiveFilters && !showFilters)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: cs.secondary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

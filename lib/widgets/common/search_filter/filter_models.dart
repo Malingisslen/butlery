@@ -28,22 +28,22 @@ class RecipeFilters {
   static const String filterPantry = 'pantry';
   static const String filterIngredientSearch = 'ingredient-search';
 
-  static const List<FilterOption> timeFilters = [
+  static List<FilterOption> timeFilters(BuildContext context) => [
     FilterOption(
       id: 'quick',
-      label: '< 30 min',
+      label: context.l10n.filterUnder30Min,
       icon: ButleryIcons.clock,
       value: 30,
     ),
     FilterOption(
       id: 'medium',
-      label: '30-60 min',
+      label: context.l10n.filter30To60Min,
       icon: ButleryIcons.clock,
       value: 60,
     ),
     FilterOption(
       id: 'long',
-      label: '> 60 min',
+      label: context.l10n.filterOver60Min,
       icon: ButleryIcons.clock,
       value: 999,
     ),

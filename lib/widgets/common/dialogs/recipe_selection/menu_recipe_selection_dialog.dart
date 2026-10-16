@@ -302,14 +302,14 @@ class MenuRecipeListItem extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.space4),
               Text(
-                '${recipe.timeMinutes} min',
+                context.l10n.recipeRowMinutes(recipe.timeMinutes!),
                 style: AppTextStyles.labelSmall,
               ),
             ],
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
                 const SizedBox(width: AppDimensions.space4),
-                Text('•', style: AppTextStyles.bodySmall),
+                Text('·', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.space4),
               ],
               ButleryIcon(
@@ -319,7 +319,7 @@ class MenuRecipeListItem extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.space4),
               Text(
-                '${recipe.portions} port',
+                context.l10n.hemMetaPortions(recipe.portions!),
                 style: AppTextStyles.labelSmall,
               ),
             ],

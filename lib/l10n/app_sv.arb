@@ -18,6 +18,14 @@
   "commonYes": "Ja",
   "commonNo": "Nej",
   "commonRetry": "Försök igen",
+  "recipesSharedWith": "{count, plural, =1{{title} delades med {name}} other{{count} recept delades med {name}}}",
+  "@recipesSharedWith": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "title": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
   "stateSuccessDefault": "Klart",
   "@stateSuccessDefault": {
     "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
@@ -922,7 +930,7 @@
   "voiceImportSectionSteps": "Gör så här",
   "voiceImportPromptTitle": "Vad heter rätten?",
   "voiceImportPromptIngredients": "Läs upp ingredienserna, en i taget",
-  "voiceImportPromptSteps": "Berätta hur man gör",
+  "voiceImportPromptSteps": "Berätta hur du gör",
   "voiceImportTypeHint": "Eller skriv här",
   "voiceImportSubmit": "Importera receptet",
   "voiceImportImporting": "Importerar …",
@@ -1930,7 +1938,6 @@
       }
     }
   },
-  "shoppingItems": "varor",
   "shoppingLists": "Inköpslistor",
   "shoppingNewList": "Ny lista",
   "shoppingNewListNameTemplate": "{title} – Ingredienser",
@@ -2209,7 +2216,12 @@
     }
   },
   "dialogImportWithoutAi": "Importera utan AI",
-  "dialogItems": "varor",
+  "dialogItemCount": "{count, plural, =1{1 vara} other{{count} varor}}",
+  "@dialogItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "dialogItemsProgress": "{completed}/{total, plural, =1{1 klar} other{{total} klara}}",
   "@dialogItemsProgress": {
     "placeholders": {
@@ -2848,6 +2860,8 @@
       }
     }
   },
+  "friendsLoadFailed": "Vännerna kunde inte laddas. Försök igen.",
+  "friendsRefreshFailed": "Vännerna kunde inte uppdateras. Försök igen.",
   "messagingCouldNotLoadGroupInfo": "Gruppens information kunde inte laddas. Försök igen.",
   "@messagingCouldNotLoadGroupInfo": {
     "placeholders": {
@@ -5482,6 +5496,8 @@
   },
   "filterFavorites": "Favoriter",
   "filterUnder30Min": "Under 30 min",
+  "filter30To60Min": "30–60 min",
+  "filterOver60Min": "Över 60 min",
   "filterVegetarianQuick": "Vegetariskt",
   "filterAll": "Alla",
   "instructionLabel": "Instruktion {number}",
@@ -9997,9 +10013,9 @@
   "@a11yDismissParseQualityWarning": {
     "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
   },
-  "a11yToggleShoppingCategory": "Kategori",
-  "@a11yToggleShoppingCategory": {
-    "description": "Semantics label for the collapsible category header in the shopping list."
+  "a11yFiltersActive": "Filter aktiva",
+  "@a11yFiltersActive": {
+    "description": "Semantics value on the filter toggle button while filters are applied; read after the button name."
   },
   "shoppingCategoryProgress": "{completed} av {total}",
   "@shoppingCategoryProgress": {
@@ -11763,8 +11779,8 @@
   "cookingExitConfirmLeave": "Avsluta matlagningen",
   "cookingDone": "Klart",
   "cookingNoStepsTitle": "Receptet har inga steg än",
-  "cookingNoStepsBody": "Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.",
-  "cookingNoStepsBodyNoIngredients": "Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.",
+  "cookingNoStepsBody": "Ingredienserna finns – men ingen har skrivit hur det görs. Skriv stegen, eller ta ingredienserna till inköpslistan.",
+  "cookingNoStepsBodyNoIngredients": "Ingen har skrivit hur det görs än. Skriv stegen, så kan du laga härifrån.",
   "cookingNoStepsWrite": "Skriv stegen",
   "cookingNoStepsShopping": "Till inköpslistan",
   "parseConfidenceConfirm": "Stämmer",
@@ -12200,6 +12216,7 @@
   "@syncQueueSyncFailed": {
     "description": "P6-T6 (P4-U19): what happened when Försök synka nu failed."
   },
+  "syncQueueLoadFailed": "Kön gick inte att läsa just nu.",
   "syncQueueChangeKept": "Den ligger kvar under Väntar på dig.",
   "@syncQueueChangeKept": {
     "description": "P6-T6 (P4-U19): what was kept after a failed action on one change."
@@ -12501,11 +12518,11 @@
   "@cookingNoStepsSaveCopy": {
     "description": "Q6-05 = C: the empty cooking mode's first action on someone else's recipe; it saves the user's own copy."
   },
-  "cookingNoStepsBodyOthers": "Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.",
+  "cookingNoStepsBodyOthers": "Ingredienserna finns – men ingen har skrivit hur det görs. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.",
   "@cookingNoStepsBodyOthers": {
     "description": "Q6-05 = C: empty cooking mode body on someone else's recipe with ingredients."
   },
-  "cookingNoStepsBodyOthersNoIngredients": "Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.",
+  "cookingNoStepsBodyOthersNoIngredients": "Ingen har skrivit hur det görs än. Spara en egen kopia och skriv stegen där.",
   "@cookingNoStepsBodyOthersNoIngredients": {
     "description": "Q6-05 = C: empty cooking mode body on someone else's recipe without ingredients."
   },
@@ -16449,6 +16466,7 @@
       }
     }
   },
+  "tagDetailRecipesLoadFailed": "Recepten med taggen gick inte att hämta.",
   "tagDetailRuleSummaryNumber": "{type} {operator} {value}",
   "@tagDetailRuleSummaryNumber": {
     "description": "Skiss spår 9 (v108): a numeric rule condition in plain words, the value without quotes",

@@ -52,34 +52,41 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('with onTap the band is a toggle button named by its label; '
-      'without it, a plain heading', (tester) async {
-    final handle = tester.ensureSemantics();
-    await pump(
-      tester,
-      SectionBand(
-        title: 'Kyl',
-        expanded: true,
-        semanticLabel: 'Kyl',
-        onTap: () {},
-      ),
-    );
-    final folding = tester
-        .getSemantics(find.byType(SectionBand))
-        .getSemanticsData();
-    expect(folding.flagsCollection.isButton, isTrue);
-    expect(folding.flagsCollection.isToggled, ui.Tristate.isTrue);
+  testWidgets(
+    'with onTap the band is an expandable button named by title and count; '
+    'without it, a plain heading',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await pump(
+        tester,
+        SectionBand(
+          title: 'Kyl',
+          expanded: true,
+          count: '3',
+          onTap: () {},
+        ),
+      );
+      final folding = tester
+          .getSemantics(find.byType(SectionBand))
+          .getSemanticsData();
+      expect(folding.flagsCollection.isButton, isTrue);
+      expect(folding.flagsCollection.isHeader, isTrue);
+      expect(folding.label, 'Kyl, 3');
+      expect(folding.flagsCollection.isExpanded, ui.Tristate.isTrue);
+      expect(folding.flagsCollection.isToggled, ui.Tristate.none);
+      expect(folding.hasAction(ui.SemanticsAction.tap), isTrue);
 
-    await pump(tester, const SectionBand(title: 'Kyl', count: '3'));
-    // Positive control: the heading is still in the tree.
-    expect(find.text('3'), findsOneWidget);
-    final plain = tester
-        .getSemantics(find.byType(SectionBand))
-        .getSemanticsData();
-    expect(plain.flagsCollection.isButton, isFalse);
-    expect(plain.hasAction(ui.SemanticsAction.tap), isFalse);
-    handle.dispose();
-  });
+      await pump(tester, const SectionBand(title: 'Kyl', count: '3'));
+      // Positive control: the heading is still in the tree.
+      expect(find.text('3'), findsOneWidget);
+      final plain = tester
+          .getSemantics(find.byType(SectionBand))
+          .getSemanticsData();
+      expect(plain.flagsCollection.isButton, isFalse);
+      expect(plain.hasAction(ui.SemanticsAction.tap), isFalse);
+      handle.dispose();
+    },
+  );
 
   for (final dark in [false, true]) {
     testWidgets('the bar is ink-toned for a standard band and saffron for a '
