@@ -225,7 +225,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_query_viewmodel.dart` | 636 | Recipe search/filter/sort VM with history |
 | `menu_content_widgets.dart` | 313 | **candidate**: multiple static widget builders for distinct menu sections — splittable by section type |
 | `image_gallery_widget.dart` | 507 | Image gallery widget |
-| `social_facade.dart` | 428 | Social UI facade widget |
 | `duplicate_merge_sheet.dart` | 498 | Single-purpose bottom sheet; merge logic and UI tightly coupled by design |
 | `shopping_sharing_status_dialog.dart` | 567 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
 | `calendar_cells.dart` | 235 | Focused stateless widget for calendar cell rendering; extracted for reuse |

@@ -340,9 +340,6 @@ export const SITE = {
   // diet_icons: circle-check, triangle-alert, info).
   'lib/widgets/tagging/allergen_status_badge.dart': { help_outline: 'info' },
   'lib/widgets/tagging/dietary_status_badge.dart': { help_outline: 'info' },
-  // Unknown permission / uncertain parse: circle-help "Okänt / förstods inte".
-  'lib/widgets/common/social_components/social_collaborative_components.dart':
-    { help_outline: 'circleHelp' },
   'lib/widgets/menu/parsed_extraction_chips.dart': { help_outline: 'circleHelp' },
   // stop = "Stoppa inspelning i matlagningsläget"; stopping uploads is the
   // close/cancel x.
@@ -359,9 +356,6 @@ export const SITE = {
   'lib/widgets/menu/menu_content_widgets.dart': { no_meals: 'user' },
   // A tag result that is out of date needs a re-run: refresh-cw.
   'lib/widgets/tagging/tag_result_display.dart': { update: 'refreshCw' },
-  // Shared menus are menus.
-  'lib/widgets/common/social_components/social_builder_components.dart':
-    { menu_book: 'utensils' },
   // A menu shared in chat is a menu.
   'lib/widgets/messaging/builders/message_content_builder.dart':
     { list_alt: 'utensils' },
