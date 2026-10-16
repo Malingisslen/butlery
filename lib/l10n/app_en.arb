@@ -2210,12 +2210,6 @@
     }
   },
   "dialogImportWithoutAi": "Import without AI",
-  "dialogItemCount": "{count, plural, =1{1 item} other{{count} items}}",
-  "@dialogItemCount": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
   "dialogItemsProgress": "{completed}/{total} done",
   "@dialogItemsProgress": {
     "placeholders": {

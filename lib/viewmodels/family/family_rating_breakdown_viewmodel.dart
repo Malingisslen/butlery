@@ -79,7 +79,7 @@ class FamilyRatingBreakdownViewModel extends BaseViewModel {
   int _generation = 0;
 
   bool get hasFamilyRatings => _summary.hasRatings;
-  String get familyAverageDisplay => _summary.displayAverage;
+  double get familyAverage => _summary.familyAverage;
   int get familyCount => _summary.familyRatingCount;
   List<DinerRatingDisplay> get rows => _rows;
 

@@ -550,6 +550,28 @@ void main() {
     });
 
     group('clearAllData', () {
+      test('forgets a failed friends read, so a later unrelated error is not '
+          'cleared by the live list', () async {
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenThrow(Exception('offline'));
+        await stateManager.initialize();
+        expect(stateManager.error, AppLocale.current.friendsLoadFailed);
+
+        stateManager.clearAllData();
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenAnswer((_) async => <String>[]);
+        await stateManager.initialize();
+        when(() => mockFriendsRepository.currentUserId).thenReturn(null);
+        await stateManager.refresh();
+        expect(stateManager.error, AppLocale.current.authRequiredError);
+        friendsController.add([]);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(stateManager.error, AppLocale.current.authRequiredError);
+      });
+
       test('should clear all state and cancel subscriptions', () async {
         // Arrange
         await stateManager.initialize();

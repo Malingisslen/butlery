@@ -251,6 +251,7 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     _receivedInvitations.clear();
     _blockedUsers.clear();
 
+    _friendsLoadFailed = false;
     _isInitialized = false;
     _isLoading = false;
     _error = null;

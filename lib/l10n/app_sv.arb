@@ -2216,12 +2216,6 @@
     }
   },
   "dialogImportWithoutAi": "Importera utan AI",
-  "dialogItemCount": "{count, plural, =1{1 vara} other{{count} varor}}",
-  "@dialogItemCount": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
   "dialogItemsProgress": "{completed}/{total, plural, =1{1 klar} other{{total} klara}}",
   "@dialogItemsProgress": {
     "placeholders": {

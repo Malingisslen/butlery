@@ -3322,17 +3322,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogImportWithoutAi => 'Importera utan AI';
 
   @override
-  String dialogItemCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count varor',
-      one: '1 vara',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String dialogItemsProgress(int completed, int total) {
     String _temp0 = intl.Intl.pluralLogic(
       total,
