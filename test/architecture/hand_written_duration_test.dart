@@ -31,7 +31,6 @@ const _handWritten = <String, int>{
   'lib/widgets/common/dialogs/session_timeout_warning_dialog.dart': 1,
   'lib/widgets/common/first_recipe_celebration_overlay.dart': 1,
   'lib/widgets/common/icons/butlery_expansion_chevron.dart': 1,
-  'lib/widgets/common/input/debounced_checkbox.dart': 1,
   'lib/widgets/common/profile/utils/result_displayer.dart': 1,
   'lib/widgets/common/state/delayed_skeleton.dart': 1,
   'lib/widgets/image/avatar_image_widget.dart': 1,
