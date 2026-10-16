@@ -1193,7 +1193,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCookingTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid'**
+  /// **'Tid att laga'**
   String get recipeCookingTime;
 
   /// No description provided for @recipePortions.
@@ -3608,6 +3608,12 @@ abstract class AppLocalizations {
   /// **'Inställningarna sparades'**
   String get allergenSettingsSaved;
 
+  /// No description provided for @notificationSettingsSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inställningarna sparades'**
+  String get notificationSettingsSaved;
+
   /// No description provided for @allergenReset.
   ///
   /// In sv, this message translates to:
@@ -3821,7 +3827,7 @@ abstract class AppLocalizations {
   /// No description provided for @ruleHintTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid i minuter'**
+  /// **'Tid att laga, i minuter'**
   String get ruleHintTime;
 
   /// No description provided for @ruleHintTimeShort.
@@ -5624,6 +5630,12 @@ abstract class AppLocalizations {
   /// **'Kolla in denna inköpslista: {name}'**
   String shareDefaultMessageShoppingList(String name);
 
+  /// No description provided for @shareTagMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla in min tagg ”{contentName}”'**
+  String shareTagMessage(String contentName);
+
   /// No description provided for @shareFriendsSelected.
   ///
   /// In sv, this message translates to:
@@ -7103,7 +7115,7 @@ abstract class AppLocalizations {
   /// No description provided for @importColumnCookingTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid'**
+  /// **'Tid att laga'**
   String get importColumnCookingTime;
 
   /// No description provided for @importColumnIngredients.
@@ -8015,7 +8027,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterCookingTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid'**
+  /// **'Tid att laga'**
   String get filterCookingTime;
 
   /// No description provided for @filterCreatePersonalTags.
@@ -9605,7 +9617,7 @@ abstract class AppLocalizations {
   /// No description provided for @sortCookCount.
   ///
   /// In sv, this message translates to:
-  /// **'Antal tillagningar'**
+  /// **'Antal gånger lagad'**
   String get sortCookCount;
 
   /// No description provided for @sortNewest.
@@ -14048,12 +14060,6 @@ abstract class AppLocalizations {
   /// **'Tjänsten är tillfälligt otillgänglig. Försök igen senare.'**
   String get errorServiceUnavailable;
 
-  /// No description provided for @errorNoItemsFound.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga objekt hittades.'**
-  String get errorNoItemsFound;
-
   /// No description provided for @errorNoUserLoggedIn.
   ///
   /// In sv, this message translates to:
@@ -15443,7 +15449,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotMarkAsCooked.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte markera recept som tillagat'**
+  /// **'Kunde inte markera receptet som lagat'**
   String get errorCouldNotMarkAsCooked;
 
   /// No description provided for @errorCouldNotAddIngredient.
@@ -17296,13 +17302,13 @@ abstract class AppLocalizations {
   /// No description provided for @textImportSuggestionInstructions.
   ///
   /// In sv, this message translates to:
-  /// **'Inkludera tillagningsinstruktioner eller steg'**
+  /// **'Inkludera instruktioner eller steg'**
   String get textImportSuggestionInstructions;
 
   /// No description provided for @textImportSuggestionTime.
   ///
   /// In sv, this message translates to:
-  /// **'Inkludera tillagningstid om tillgänglig'**
+  /// **'Inkludera tid att laga om tillgänglig'**
   String get textImportSuggestionTime;
 
   /// No description provided for @textImportSuggestionPortions.
@@ -18427,7 +18433,7 @@ abstract class AppLocalizations {
   /// No description provided for @validationFieldCookingTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid'**
+  /// **'Tid att laga'**
   String get validationFieldCookingTime;
 
   /// No description provided for @validationDisplayNameEmpty.
@@ -19868,7 +19874,7 @@ abstract class AppLocalizations {
   /// No description provided for @a11yCookingModeClose.
   ///
   /// In sv, this message translates to:
-  /// **'Stäng tillagningsläge'**
+  /// **'Stäng matlagningsläge'**
   String get a11yCookingModeClose;
 
   /// No description provided for @a11yRecipeFavorited.
@@ -20018,7 +20024,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsTotalCooks.
   ///
   /// In sv, this message translates to:
-  /// **'Totalt antal tillagningar'**
+  /// **'Totalt antal gånger lagat'**
   String get statsTotalCooks;
 
   /// No description provided for @statsNoMealTypes.
@@ -20288,7 +20294,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeImproveMissingTime.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagningstid'**
+  /// **'Tid att laga'**
   String get recipeImproveMissingTime;
 
   /// No description provided for @recipeImproveMissingImage.
@@ -22354,12 +22360,6 @@ abstract class AppLocalizations {
   /// **'Kunde inte ta bort länken'**
   String get recipeRelatedUnlinkError;
 
-  /// BUT-1057: screen-reader label for a related-recipe chip in the edit form.
-  ///
-  /// In sv, this message translates to:
-  /// **'Länkat recept'**
-  String get a11yRelatedRecipeChip;
-
   /// BUT-1057: screen-reader label for the X button that removes a related-recipe link.
   ///
   /// In sv, this message translates to:
@@ -23253,12 +23253,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Laddar upp fotot …'**
   String get uploadingCookSnap;
-
-  /// What is loading, for the plate line (P4-U05).
-  ///
-  /// In sv, this message translates to:
-  /// **'Skickar kommentaren …'**
-  String get sendingComment;
 
   /// The X that closes the recipe editor modal (Skarmar v12 etapp 4 #editorutkast).
   ///
@@ -26727,18 +26721,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =0{Går ut i dag} =1{1 dag kvar} other{{count} dagar kvar}}'**
   String trashDaysLeft(int count);
-
-  /// BUT-907: trash view. Footer button restoring the selection.
-  ///
-  /// In sv, this message translates to:
-  /// **'Återställ {count} recept'**
-  String trashRestoreSelected(int count);
-
-  /// BUT-907: trash view. Footer button deleting the selection for good.
-  ///
-  /// In sv, this message translates to:
-  /// **'Radera {count} recept'**
-  String trashDeleteSelected(int count);
 
   /// BUT-907: trash view. Footer button when nothing is selected, and confirm button of its dialog.
   ///

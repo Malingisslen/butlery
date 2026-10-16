@@ -48,13 +48,6 @@ class TrashViewModel extends BaseViewModel {
     return (left.inHours / 24).ceil();
   }
 
-  /// Share of the retention still left at [now], from 0 to 1.
-  static double fractionLeft(TrashItem item, DateTime now) {
-    final left = item.expireAt.difference(now).inSeconds;
-    final total = TrashItem.keptFor.inSeconds;
-    return (left / total).clamp(0.0, 1.0);
-  }
-
   /// Starts listening; calling it again after an error listens afresh.
   void start() {
     unawaited(_subscription?.cancel());

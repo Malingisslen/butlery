@@ -2352,6 +2352,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allergenSettingsSaved => 'Settings saved';
 
   @override
+  String get notificationSettingsSaved => 'Settings saved';
+
+  @override
   String get allergenReset => 'Reset';
 
   @override
@@ -3637,6 +3640,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String shareDefaultMessageShoppingList(String name) {
     return 'Check out this shopping list: $name';
+  }
+
+  @override
+  String shareTagMessage(String contentName) {
+    return 'Check out my tag “$contentName”';
   }
 
   @override
@@ -8999,9 +9007,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorServiceUnavailable =>
       'Service temporarily unavailable. Please try again later.';
-
-  @override
-  String get errorNoItemsFound => 'No items found.';
 
   @override
   String get errorNoUserLoggedIn => 'No user is signed in';
@@ -14509,9 +14514,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeRelatedUnlinkError => 'Could not remove link';
 
   @override
-  String get a11yRelatedRecipeChip => 'Linked recipe';
-
-  @override
   String get a11yRemoveRelatedRecipe => 'Remove link';
 
   @override
@@ -15105,9 +15107,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadingCookSnap => 'Uploading the photo …';
-
-  @override
-  String get sendingComment => 'Sending the comment …';
 
   @override
   String get recipeEditorClose => 'Close the editor';
@@ -17486,28 +17485,6 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$count days left',
       one: '1 day left',
       zero: 'Expires today',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String trashRestoreSelected(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Restore $count recipes',
-      one: 'Restore 1 recipe',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String trashDeleteSelected(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Delete $count recipes',
-      one: 'Delete 1 recipe',
     );
     return '$_temp0';
   }

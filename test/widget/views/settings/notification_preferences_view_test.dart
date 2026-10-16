@@ -304,7 +304,7 @@ void main() {
             .value,
         sv.notificationDigestFrequencyWeekly,
       );
-      expect(find.text(sv.allergenSettingsSaved), findsOneWidget);
+      expect(find.text(sv.notificationSettingsSaved), findsOneWidget);
     });
 
     testWidgets('no sound or vibration switch is offered (BUT-1783)', (
@@ -523,7 +523,7 @@ void main() {
               ).captured.single
               as NotificationPreferences;
       expect(saved.categorySettings[NotificationCategory.recipes], isFalse);
-      expect(find.text(sv.allergenSettingsSaved), findsOneWidget);
+      expect(find.text(sv.notificationSettingsSaved), findsOneWidget);
     });
 
     testWidgets('a failed save puts the toggle back and says so', (
@@ -554,7 +554,7 @@ void main() {
             .value,
         isTrue,
       );
-      expect(find.text(sv.allergenSettingsSaved), findsNothing);
+      expect(find.text(sv.notificationSettingsSaved), findsNothing);
     });
 
     testWidgets('quiet hours off hides the time rows and saves the clear', (

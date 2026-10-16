@@ -5,6 +5,7 @@
 /// and the roster service behind them are stubbed.
 library;
 
+import 'package:flutter/widgets.dart' show UniqueKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -17,6 +18,7 @@ import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/views/family/min_familj_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -121,5 +123,31 @@ void main() {
       find.descendant(of: malinRow, matching: find.textContaining('Du')),
       findsNothing,
     );
+  });
+
+  testWidgets('Back is named after where the caller says it leads', (
+    tester,
+  ) async {
+    final roster = _MockRoster();
+    when(() => roster.getRoster(any())).thenAnswer((_) async => []);
+    final dinerRepo = _MockDinerRepo();
+    when(() => dinerRepo.getByHousehold(any())).thenAnswer((_) async => []);
+    TestServiceLocator.registerSingleton<HouseholdRosterService>(roster);
+    TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
+
+    Future<ButleryTopBar> bar(String? backTo) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: MinFamiljView(key: UniqueKey(), backTo: backTo),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+    }
+
+    // Another group's name, so the label cannot come from a fixed string.
+    expect((await bar('Fredagsmiddag')).backTo, 'Fredagsmiddag');
+    expect((await bar(null)).backTo, isNull);
   });
 }
