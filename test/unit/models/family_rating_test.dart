@@ -192,5 +192,14 @@ void main() {
     test('an empty summary averages to zero, never NaN (card pill safety)', () {
       expect(FamilyRatingSummary.fromRatings('r1', const []).familyAverage, 0);
     });
+
+    test('the average is kept unrounded, formatting is the view\'s job', () {
+      final summary = FamilyRatingSummary.fromRatings('r1', [
+        star('m1', 4),
+        star('m2', 5),
+        star('m3', 4),
+      ]);
+      expect(summary.familyAverage, closeTo(13 / 3, 1e-9));
+    });
   });
 }
