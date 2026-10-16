@@ -775,9 +775,9 @@ void main() {
 
         // Assert
         expect(message, contains('Pannkakor'));
-        expect(message, contains('delat med'));
+        expect(message, contains('delades med'));
         expect(message, contains(testGroupName));
-        expect(message, endsWith('!'));
+        expect(message, isNot(endsWith('!')));
       });
 
       test('should provide multiple recipes success message', () async {
@@ -792,9 +792,9 @@ void main() {
 
         // Assert
         expect(message, contains('2 recept'));
-        expect(message, contains('delade med'));
+        expect(message, contains('delades med'));
         expect(message, contains(testGroupName));
-        expect(message, endsWith('!'));
+        expect(message, isNot(endsWith('!')));
       });
     });
 

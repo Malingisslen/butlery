@@ -119,7 +119,7 @@ class RecipeShareListItem extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.space4),
               Text(
-                '${recipe.timeMinutes} min',
+                context.l10n.recipeRowMinutes(recipe.timeMinutes!),
                 style: isAlreadyShared
                     ? AppTextStyles.bodySmall.copyWith(
                         color: successColor,
@@ -133,7 +133,7 @@ class RecipeShareListItem extends StatelessWidget {
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
                 const SizedBox(width: AppDimensions.space8),
-                Text('•', style: AppTextStyles.bodySmall),
+                Text('·', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.space8),
               ],
               ButleryIcon(
@@ -143,7 +143,7 @@ class RecipeShareListItem extends StatelessWidget {
               ),
               const SizedBox(width: AppDimensions.space4),
               Text(
-                '${recipe.portions} port',
+                context.l10n.hemMetaPortions(recipe.portions!),
                 style: isAlreadyShared
                     ? AppTextStyles.bodySmall.copyWith(
                         color: successColor,

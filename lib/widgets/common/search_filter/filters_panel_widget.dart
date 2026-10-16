@@ -109,7 +109,7 @@ class FiltersPanelWidget extends StatelessWidget {
                     // Time filters
                     FilterChipsWidget(
                       title: context.l10n.filterCookingTime,
-                      options: RecipeFilters.timeFilters,
+                      options: RecipeFilters.timeFilters(context),
                       activeFilters: activeTimeFilters,
                       onToggle: onTimeFilterToggle,
                     ),

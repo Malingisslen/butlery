@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/utils/distinct_initials.dart';
@@ -329,7 +330,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    communityAvg.toStringAsFixed(1).replaceAll('.', ','),
+                    _oneDecimal(context, communityAvg),
                     style: AppTextStyles.bodySmallBold.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
@@ -417,6 +418,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   }
 }
 
+String _oneDecimal(BuildContext context, double value) => NumberFormat(
+  '0.0',
+  Localizations.localeOf(context).toString(),
+).format(value);
+
 /// A rating as one star and the number ("★ 5,0"), as Skarmar v12 del 3
 /// #betygsoversikt draws a row's verdict.
 class _StarNumber extends StatelessWidget {
@@ -437,7 +443,7 @@ class _StarNumber extends StatelessWidget {
         ),
         const SizedBox(width: AppDimensions.space4),
         Text(
-          value.toStringAsFixed(1).replaceAll('.', ','),
+          _oneDecimal(context, value),
           style: AppTextStyles.bodySmallBold.copyWith(color: cs.onSurface),
         ),
       ],

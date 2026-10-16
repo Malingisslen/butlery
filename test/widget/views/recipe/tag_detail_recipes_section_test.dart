@@ -11,6 +11,8 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
 import 'package:butlery/widgets/tagging/tag_detail_recipes_section.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -118,9 +120,8 @@ void main() {
     verify(() => repo.fetchRecipesByTagId('tag-1')).called(1);
   });
 
-  testWidgets('a failed load keeps the heading and shows no recipes', (
-    tester,
-  ) async {
+  testWidgets('a failed load keeps the heading, says so and retries on '
+      'Försök igen', (tester) async {
     when(
       () => repo.fetchRecipesByTagId('tag-1'),
     ).thenThrow(Exception('offline'));
@@ -130,6 +131,17 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text(sv.tagDetailRecipesHeading(4)), findsOneWidget);
-    expect(find.byType(InkWell), findsNothing);
+    expect(find.text(sv.tagDetailRecipesLoadFailed), findsOneWidget);
+    expect(find.byType(RecipeThumbRow), findsNothing);
+
+    final pannkakor = RecipeFactory.build(id: 'r1', title: 'Pannkakor');
+    when(
+      () => repo.fetchRecipesByTagId('tag-1'),
+    ).thenAnswer((_) async => [pannkakor]);
+    await tester.tap(find.byKey(InlineError.actionKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text(sv.tagDetailRecipesLoadFailed), findsNothing);
+    expect(find.text('Pannkakor'), findsOneWidget);
   });
 }

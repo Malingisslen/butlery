@@ -60,6 +60,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonRetry => 'Försök igen';
 
   @override
+  String recipesSharedWith(int count, String title, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept delades med $name',
+      one: '$title delades med $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get stateSuccessDefault => 'Klart';
 
   @override
@@ -1309,7 +1320,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Läs upp ingredienserna, en i taget';
 
   @override
-  String get voiceImportPromptSteps => 'Berätta hur man gör';
+  String get voiceImportPromptSteps => 'Berätta hur du gör';
 
   @override
   String get voiceImportTypeHint => 'Eller skriv här';
@@ -2768,9 +2779,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get shoppingItems => 'varor';
-
-  @override
   String get shoppingLists => 'Inköpslistor';
 
   @override
@@ -3314,7 +3322,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogImportWithoutAi => 'Importera utan AI';
 
   @override
-  String get dialogItems => 'varor';
+  String dialogItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor',
+      one: '1 vara',
+    );
+    return '$_temp0';
+  }
 
   @override
   String dialogItemsProgress(int completed, int total) {
@@ -4358,6 +4374,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String messagingCouldNotLoadFriends(String error) {
     return 'Vännerna kunde inte laddas. Försök igen.';
   }
+
+  @override
+  String get friendsLoadFailed => 'Vännerna kunde inte laddas. Försök igen.';
+
+  @override
+  String get friendsRefreshFailed =>
+      'Vännerna kunde inte uppdateras. Försök igen.';
 
   @override
   String messagingCouldNotLoadGroupInfo(String error) {
@@ -8157,6 +8180,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get filterUnder30Min => 'Under 30 min';
+
+  @override
+  String get filter30To60Min => '30–60 min';
+
+  @override
+  String get filterOver60Min => 'Över 60 min';
 
   @override
   String get filterVegetarianQuick => 'Vegetariskt';
@@ -16369,11 +16398,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get cookingNoStepsBody =>
-      'Ingredienserna finns – men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.';
+      'Ingredienserna finns – men ingen har skrivit hur det görs. Skriv stegen, eller ta ingredienserna till inköpslistan.';
 
   @override
   String get cookingNoStepsBodyNoIngredients =>
-      'Ingen har skrivit hur man gör än. Skriv stegen, så kan du laga härifrån.';
+      'Ingen har skrivit hur det görs än. Skriv stegen, så kan du laga härifrån.';
 
   @override
   String get cookingNoStepsWrite => 'Skriv stegen';
@@ -16727,6 +16756,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get syncQueueSyncFailed => 'Kön kunde inte skickas nu.';
 
   @override
+  String get syncQueueLoadFailed => 'Kön gick inte att läsa just nu.';
+
+  @override
   String get syncQueueChangeKept => 'Den ligger kvar under Väntar på dig.';
 
   @override
@@ -16942,11 +16974,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get cookingNoStepsBodyOthers =>
-      'Ingredienserna finns – men ingen har skrivit hur man gör. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.';
+      'Ingredienserna finns – men ingen har skrivit hur det görs. Spara en egen kopia och skriv stegen där, eller ta ingredienserna till inköpslistan.';
 
   @override
   String get cookingNoStepsBodyOthersNoIngredients =>
-      'Ingen har skrivit hur man gör än. Spara en egen kopia och skriv stegen där.';
+      'Ingen har skrivit hur det görs än. Spara en egen kopia och skriv stegen där.';
 
   @override
   String get hemGreetingMorning => 'God morgon';
@@ -20020,6 +20052,10 @@ class AppLocalizationsSv extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get tagDetailRecipesLoadFailed =>
+      'Recepten med taggen gick inte att hämta.';
 
   @override
   String tagDetailRuleSummaryNumber(

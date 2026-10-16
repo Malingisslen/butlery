@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
@@ -499,8 +500,53 @@ void main() {
 
         // Assert
         expect(stateManager.hasError, isTrue);
-        expect(stateManager.error, contains('not authenticated'));
+        expect(stateManager.error, AppLocale.current.authRequiredError);
       });
+    });
+
+    test('a failed friends read keeps the list, says so in the user\'s '
+        'language and never shows the exception', () async {
+      await stateManager.initialize();
+      final friend = SocialFactory.createUserProfile(
+        uid: 'friend_123',
+        email: 'friend@test.com',
+        displayName: 'Friend',
+      );
+      stateManager.addFriend(friend);
+      when(
+        () => mockFriendsRepository.fetchFriendIds(testUserId),
+      ).thenThrow(Exception('permission-denied: secret detail'));
+
+      await stateManager.refresh();
+
+      expect(stateManager.error, AppLocale.current.friendsLoadFailed);
+      expect(stateManager.friends, contains(friend));
+    });
+
+    test('the friends error goes away when the live friends list arrives, '
+        'and an unrelated error stays', () async {
+      when(
+        () => mockFriendsRepository.fetchFriendIds(testUserId),
+      ).thenThrow(Exception('offline'));
+      await stateManager.initialize();
+      expect(stateManager.error, AppLocale.current.friendsLoadFailed);
+
+      friendsController.add([
+        SocialFactory.createUserProfile(
+          uid: 'friend_123',
+          email: 'friend@test.com',
+          displayName: 'Friend',
+        ),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(stateManager.error, isNull);
+
+      when(() => mockFriendsRepository.currentUserId).thenReturn(null);
+      await stateManager.refresh();
+      expect(stateManager.error, AppLocale.current.authRequiredError);
+      friendsController.add([]);
+      await Future<void>.delayed(Duration.zero);
+      expect(stateManager.error, AppLocale.current.authRequiredError);
     });
 
     group('clearAllData', () {

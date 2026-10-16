@@ -183,7 +183,7 @@ class ShoppingListCard extends StatelessWidget {
 
     final metadata = <String>[];
     if (totalItems > 0) {
-      metadata.add('$totalItems ${context.l10n.shoppingItems}');
+      metadata.add(context.l10n.shoppingItemCount(totalItems));
     }
     if (completedItems > 0) {
       metadata.add(context.l10n.shoppingCardCompleted(completedItems));
