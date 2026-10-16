@@ -12107,6 +12107,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String notificationRatingReceived(String rater, String stars) {
+    return '$rater rated your recipe $stars';
+  }
+
+  @override
+  String notificationRatingFirstReview(String rater, String review) {
+    return '$rater wrote your first review: $review';
+  }
+
+  @override
+  String notificationRatingFirstRating(String rater, String stars) {
+    return '$rater gave your recipe its first rating: $stars';
+  }
+
+  @override
+  String notificationRatingMilestoneCount(int count) {
+    return 'Your recipe has received $count ratings.';
+  }
+
+  @override
+  String notificationRatingMilestoneAverage(String average) {
+    return 'Your recipe has an average rating of $average.';
+  }
+
+  @override
+  String notificationRatingBatch(int count, String average) {
+    return 'Your recipe received $count new ratings. Average: $average ★';
+  }
+
+  @override
   String timeCompactMonths(int count) {
     return '${count}mo';
   }

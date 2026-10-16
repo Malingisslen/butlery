@@ -7962,6 +7962,46 @@
       }
     }
   },
+  "notificationRatingReceived": "{rater} betygsatte ditt recept {stars}",
+  "@notificationRatingReceived": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "stars": {"type": "String"}
+    }
+  },
+  "notificationRatingFirstReview": "{rater} skrev din första recension: {review}",
+  "@notificationRatingFirstReview": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "review": {"type": "String"}
+    }
+  },
+  "notificationRatingFirstRating": "{rater} gav ditt recept dess första betyg: {stars}",
+  "@notificationRatingFirstRating": {
+    "placeholders": {
+      "rater": {"type": "String"},
+      "stars": {"type": "String"}
+    }
+  },
+  "notificationRatingMilestoneCount": "Ditt recept har fått {count} betyg.",
+  "@notificationRatingMilestoneCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "notificationRatingMilestoneAverage": "Ditt recept har {average} i genomsnittsbetyg.",
+  "@notificationRatingMilestoneAverage": {
+    "placeholders": {
+      "average": {"type": "String"}
+    }
+  },
+  "notificationRatingBatch": "Ditt recept fick {count} nya betyg. Genomsnitt: {average} ★",
+  "@notificationRatingBatch": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "average": {"type": "String"}
+    }
+  },
   "timeCompactMonths": "{count}mån",
   "@timeCompactMonths": {
     "placeholders": {

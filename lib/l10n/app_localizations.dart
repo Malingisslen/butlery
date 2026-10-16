@@ -18460,6 +18460,42 @@ abstract class AppLocalizations {
     String period,
   );
 
+  /// No description provided for @notificationRatingReceived.
+  ///
+  /// In sv, this message translates to:
+  /// **'{rater} betygsatte ditt recept {stars}'**
+  String notificationRatingReceived(String rater, String stars);
+
+  /// No description provided for @notificationRatingFirstReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'{rater} skrev din första recension: {review}'**
+  String notificationRatingFirstReview(String rater, String review);
+
+  /// No description provided for @notificationRatingFirstRating.
+  ///
+  /// In sv, this message translates to:
+  /// **'{rater} gav ditt recept dess första betyg: {stars}'**
+  String notificationRatingFirstRating(String rater, String stars);
+
+  /// No description provided for @notificationRatingMilestoneCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt recept har fått {count} betyg.'**
+  String notificationRatingMilestoneCount(int count);
+
+  /// No description provided for @notificationRatingMilestoneAverage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt recept har {average} i genomsnittsbetyg.'**
+  String notificationRatingMilestoneAverage(String average);
+
+  /// No description provided for @notificationRatingBatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt recept fick {count} nya betyg. Genomsnitt: {average} ★'**
+  String notificationRatingBatch(int count, String average);
+
   /// No description provided for @timeCompactMonths.
   ///
   /// In sv, this message translates to:
