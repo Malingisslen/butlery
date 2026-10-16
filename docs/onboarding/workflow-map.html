@@ -5010,6 +5010,13 @@
           "verified": true
         },
         {
+          "from": "v-public-profile",
+          "to": "vm-friends",
+          "payload": "sendFriendRequest / acceptFriendRequest / unblockUser via FriendActions (lib/widgets/social/friend_actions.dart) — samma hanterare som vänlistans sökkort (BUT-2249)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
           "from": "vm-friends",
           "to": "svc-unified-friends",
           "payload": "management.sendFriendRequest",
@@ -5188,6 +5195,20 @@
           "to": "ds-recipes",
           "payload": "query publika recept för userId",
           "transport": "Firestore query",
+          "verified": true
+        },
+        {
+          "from": "vm-public-profile",
+          "to": "repo-user",
+          "payload": "fetchPersistedSearchable(userId) — serverläsning av public_profiles/{userId}.isSearchable (BUT-2249, R8-7). En dold profil (isHidden), ett saknat värde eller ett misslyckat anrop räknas som ej sökbar",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-public-profile",
+          "to": "vm-friends",
+          "payload": "PublicProfileFriendButton: isBlocked(uid) först, sedan getFriendshipStatus(uid) — samma lägen som sökkortet (Lägg till vän · Skickad · Vänner · Acceptera · Avblockera). Dold på egen profil och tills UnifiedFriendsService.initialize() laddat vänlistorna; utan relation visas knappen bara när vm.isSearchable är sant",
+          "transport": "method call",
           "verified": true
         },
         {
@@ -5620,7 +5641,7 @@
         {
           "from": "v-recipe-detail",
           "to": "svc-report",
-          "payload": "ReportContentDialog.show(contentType, contentId, contentOwnerId) → submitReport(reason, description?) — samma dialog anropas från kommentarer, vänprofil, grupper och chattmeddelanden",
+          "payload": "ReportContentDialog.show(contentType, contentId, contentOwnerId) → submitReport(reason, description?) — samma dialog anropas från kommentarer, vänprofil, publik profil (Fler åtgärder → Rapportera, contentType profile, BUT-2249), grupper och chattmeddelanden",
           "transport": "method call",
           "verified": true
         },
