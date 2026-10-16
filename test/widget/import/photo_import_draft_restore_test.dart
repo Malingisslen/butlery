@@ -12,9 +12,8 @@
 
 library;
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
@@ -27,6 +26,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/widgets/common/buttons/image_source_buttons.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/offline_banner_support.dart';
@@ -426,6 +426,41 @@ void main() {
 
       expect(find.text(l10n.unsavedChangesTitle), findsOneWidget);
     });
+
+    testWidgets(
+      'a running read marks the source buttons busy and Enter on them starts nothing',
+      (
+        tester,
+      ) async {
+        registerFake(
+          _FakePhotoImportViewModel(hasImage: true, processing: true),
+        );
+        final l10n = await pumpPushed(tester);
+
+        final buttons = tester.widget<ImageSourceButtons>(
+          find.byType(ImageSourceButtons),
+        );
+        expect(buttons.busy, isTrue);
+
+        for (var i = 0; i < 20; i++) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pump();
+          final focus = FocusManager.instance.primaryFocus?.context;
+          if (focus?.findAncestorWidgetOfExactType<ImageSourceButtons>() !=
+              null) {
+            break;
+          }
+        }
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        // A started pick would ask to start over (the view holds an image) or
+        // reach the fake's unimplemented pick methods and throw.
+        expect(tester.takeException(), isNull);
+        expect(find.text(l10n.importPhotoRestartTitle), findsNothing);
+      },
+    );
 
     testWidgets('nothing waiting leaves without asking', (tester) async {
       registerFake(_FakePhotoImportViewModel(hasImage: true));

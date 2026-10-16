@@ -26,18 +26,22 @@ class ButleryCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onChanged = this.onChanged;
-    return ButleryControlFocus(
-      borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
-      // The padding around the box is the touch target, so a tap beside the
-      // drawn box still toggles it.
-      child: SizedBox.square(
-        dimension: ButleryControlFocus.minSize,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          excludeFromSemantics: true,
-          onTap: onChanged == null ? null : () => onChanged(!value),
-          child: Center(
-            child: _TokenBox(value: value, onChanged: onChanged),
+    // One node the size of the touch target, so a screen reader's tap lands
+    // anywhere the finger would.
+    return MergeSemantics(
+      child: ButleryControlFocus(
+        borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
+        // The padding around the box is the touch target, so a tap beside the
+        // drawn box still toggles it.
+        child: SizedBox.square(
+          dimension: ButleryControlFocus.minSize,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: onChanged == null ? null : () => onChanged(!value),
+            child: Center(
+              child: _TokenBox(value: value, onChanged: onChanged),
+            ),
           ),
         ),
       ),

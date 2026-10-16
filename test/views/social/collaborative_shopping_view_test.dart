@@ -34,6 +34,8 @@
 /// and Stopwatch "performance" checks (17 of which failed).
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -491,6 +493,68 @@ void main() {
         isEmpty,
       );
     });
+
+    testWidgets(
+      'while an add runs the button shows the plate line and Enter on it '
+      'does not add again',
+      (tester) async {
+        tester.view.physicalSize = const Size(420, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        shoppingService.setShoppingState(
+          lists: [listWith(const [])],
+          isInitialized: true,
+        );
+        final pending = Completer<String?>();
+        when(
+          () => shoppingService.addItemToActiveListWithId(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          ),
+        ).thenAnswer((_) => pending.future);
+
+        await pumpFullView(tester);
+        expect(tester.widget<SaffronSquareButton>(addButton()).busy, isFalse);
+
+        await tester.enterText(find.byType(TextField), 'Havregryn');
+        await tester.tap(addButton());
+        await tester.pump();
+
+        final button = tester.widget<SaffronSquareButton>(addButton());
+        expect(button.busy, isTrue);
+        expect(button.semanticLabel, 'Lägg till');
+        expect(button.busyLabel, 'Lägger till …');
+
+        for (var i = 0; i < 20; i++) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pump();
+          final focus = FocusManager.instance.primaryFocus?.context;
+          if (focus?.findAncestorWidgetOfExactType<SaffronSquareButton>() !=
+              null) {
+            break;
+          }
+        }
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+        verify(
+          () => shoppingService.addItemToActiveListWithId(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          ),
+        ).called(1);
+
+        pending.complete(null);
+        await tester.pump(const Duration(milliseconds: 50));
+      },
+    );
 
     testWidgets('an added item offers Ångra, which removes exactly that row '
         '(BUT-2145)', (tester) async {

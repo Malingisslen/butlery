@@ -33,26 +33,28 @@ class ButlerySwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final onChanged = this.onChanged;
     // The padding around the track is the touch target, so a tap beside the
-    // drawn track still toggles it.
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTap: onChanged == null ? null : () => onChanged(!value),
-      child: SizedBox.square(
-        dimension: ButleryControlFocus.minSize,
-        child: Center(
-          child: SizedBox(
-            width: trackWidth,
-            height: trackHeight,
-            child: OverflowBox(
-              maxWidth: _materialTrackWidth,
-              maxHeight: _materialTrackHeight,
-              child: Transform.scale(
-                scale: _scale,
-                child: Switch(
-                  value: value,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  onChanged: onChanged,
+    // drawn track still toggles it; one node covers it for a screen reader.
+    return MergeSemantics(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
+        onTap: onChanged == null ? null : () => onChanged(!value),
+        child: SizedBox.square(
+          dimension: ButleryControlFocus.minSize,
+          child: Center(
+            child: SizedBox(
+              width: trackWidth,
+              height: trackHeight,
+              child: OverflowBox(
+                maxWidth: _materialTrackWidth,
+                maxHeight: _materialTrackHeight,
+                child: Transform.scale(
+                  scale: _scale,
+                  child: Switch(
+                    value: value,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onChanged: onChanged,
+                  ),
                 ),
               ),
             ),

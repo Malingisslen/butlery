@@ -55,7 +55,7 @@ class FriendCard extends StatelessWidget {
           type: MaterialType.transparency,
           child: Semantics(
             label: context.l10n.a11yFriend,
-            button: true,
+            button: onTap != null,
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,

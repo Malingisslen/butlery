@@ -14440,7 +14440,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yDismissParseQualityWarning => 'Dismiss import quality warning';
 
   @override
-  String get a11yToggleShoppingCategory => 'Category';
+  String get a11yFiltersActive => 'Filters active';
 
   @override
   String shoppingCategoryProgress(int completed, int total) {

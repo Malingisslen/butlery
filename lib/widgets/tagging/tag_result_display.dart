@@ -15,6 +15,7 @@ import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
@@ -360,42 +361,43 @@ class TagResultDisplay extends StatelessWidget {
         ),
         if (hasUnknowns) ...[
           const SizedBox(height: AppDimensions.space4),
-          Semantics(
-            label: context.l10n.tagResultUnknownIngredientsA11y(
-              tagResult.unknownIngredients.length,
-            ),
-            button: onUnknownIngredientsTap != null,
-            child: GestureDetector(
-              onTap: onUnknownIngredientsTap,
-              child: Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.triangleAlert,
-                    size: AppDimensions.iconSizeS,
-                    color: context.modeColors.warning,
-                  ),
-                  const SizedBox(width: AppDimensions.space4),
-                  Expanded(
-                    child: Text(
-                      context.l10n.tagResultUnknownIngredients(
-                        tagResult.unknownIngredients.length,
-                      ),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppModeColors.textWarning(
-                          Theme.of(context).brightness,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (onUnknownIngredientsTap != null)
-                    ButleryChevron(color: context.modeColors.warning),
-                ],
-              ),
-            ),
-          ),
+          _buildUnknownIngredientsRow(context),
         ],
       ],
     );
+  }
+
+  Widget _buildUnknownIngredientsRow(BuildContext context) {
+    final onTap = onUnknownIngredientsTap;
+    final label = context.l10n.tagResultUnknownIngredientsA11y(
+      tagResult.unknownIngredients.length,
+    );
+    final row = Row(
+      children: [
+        ButleryIcon(
+          ButleryIcons.triangleAlert,
+          size: AppDimensions.iconSizeS,
+          color: context.modeColors.warning,
+        ),
+        const SizedBox(width: AppDimensions.space4),
+        Expanded(
+          child: Text(
+            context.l10n.tagResultUnknownIngredients(
+              tagResult.unknownIngredients.length,
+            ),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppModeColors.textWarning(Theme.of(context).brightness),
+            ),
+          ),
+        ),
+        if (onTap != null) ButleryChevron(color: context.modeColors.warning),
+      ],
+    );
+    // The label says what the visible text says; reading both would announce
+    // the count twice.
+    final quiet = ExcludeSemantics(child: row);
+    if (onTap == null) return Semantics(label: label, child: quiet);
+    return ButleryTapTarget(semanticLabel: label, onTap: onTap, child: quiet);
   }
 
   Color _getCoverageColor(BuildContext context) {

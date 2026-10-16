@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,6 +22,19 @@ void main() {
       expect(tester.getSize(find.byType(ButleryCheckbox)).height, 48);
       // Material's 18 dp box is scaled to the token size, 20 dp.
       expect(tester.getSize(find.byType(Checkbox)), const Size(20, 20));
+    });
+
+    testWidgets('a screen reader gets one 48 dp node it can tap', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final seen = <bool>[];
+      await _pump(tester, ButleryCheckbox(value: false, onChanged: seen.add));
+
+      final node = tester.getSemantics(find.byType(ButleryCheckbox));
+      expect(node.rect.size, const Size(48, 48));
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      handle.dispose();
     });
 
     testWidgets('a tap on the box toggles once', (tester) async {

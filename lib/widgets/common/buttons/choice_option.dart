@@ -36,6 +36,7 @@ class ChoiceOption extends StatelessWidget {
       label: label,
       button: true,
       selected: selected,
+      onTap: onSelected,
       excludeSemantics: true,
       child: Material(
         color: selected ? cs.primary : Colors.transparent,

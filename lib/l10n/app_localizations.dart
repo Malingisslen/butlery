@@ -22246,11 +22246,11 @@ abstract class AppLocalizations {
   /// **'Stäng varning om importkvalitet'**
   String get a11yDismissParseQualityWarning;
 
-  /// Semantics label for the collapsible category header in the shopping list.
+  /// Semantics value on the filter toggle button while filters are applied; read after the button name.
   ///
   /// In sv, this message translates to:
-  /// **'Kategori'**
-  String get a11yToggleShoppingCategory;
+  /// **'Filter aktiva'**
+  String get a11yFiltersActive;
 
   /// The count beside a shopping list category heading: items checked off of the category's items (Skarmar v12 del 2 #inkop).
   ///

@@ -152,11 +152,10 @@ class CollaborativeShoppingActions extends BaseActionHandler
   Widget _buildAddButton(BuildContext context) {
     final adding = viewModel.isAddingItem;
     return SaffronSquareButton(
-      semanticLabel: adding
-          ? context.l10n.collaborativeAdding
-          : context.l10n.collaborativeAdd,
-      onPressed: adding ? null : onAddItem,
-      icon: adding ? ButleryIcons.hourglass : ButleryIcons.plus,
+      semanticLabel: context.l10n.collaborativeAdd,
+      busy: adding,
+      busyLabel: context.l10n.collaborativeAdding,
+      onPressed: onAddItem,
     );
   }
 
