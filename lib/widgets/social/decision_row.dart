@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class DecisionRow extends StatelessWidget {
@@ -55,6 +56,30 @@ class DecisionRow extends StatelessWidget {
     null => ButleryIcons.flag,
   };
 
+  // The status pill shares the title's line; at large text it would leave the
+  // title a sliver, so it drops under it.
+  Widget _titleLine(BuildContext context, ColorScheme cs) {
+    final name = Text(
+      title,
+      style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+    );
+    if (isLargeText(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: AppDimensions.space4,
+        children: [name, status],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: name),
+        const SizedBox(width: AppDimensions.space8),
+        status,
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -92,21 +117,7 @@ class DecisionRow extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  style: AppTextStyles.bodyBold.copyWith(
-                                    color: cs.onSurface,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: AppDimensions.space8),
-                              status,
-                            ],
-                          ),
+                          _titleLine(context, cs),
                           if (subtitle != null)
                             Text(
                               subtitle!,

@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// OFL 1.1 condition 2 requires the copyright notice and licence to reach the
 /// recipient of the font.
@@ -161,7 +162,7 @@ class _LicensesViewState extends State<LicensesView> {
       children: [
         Semantics(
           header: true,
-          child: Text(heading, style: AppTextStyles.titleLargeBold),
+          child: WholeWordText(heading, style: AppTextStyles.titleLargeBold),
         ),
         const SizedBox(height: AppDimensions.space8),
         SelectableText(

@@ -36,6 +36,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// A view for adding new members to an existing social group.
 /// Provides an interface for group administrators to discover and invite
@@ -193,27 +194,44 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             padding: const EdgeInsets.symmetric(
               vertical: AppDimensions.space12,
             ),
-            child: Row(
-              children: [
-                _friendAvatar(friend),
-                const SizedBox(width: AppDimensions.space16),
-                Expanded(
-                  child: Text(
-                    friend.displayName,
-                    style: AppTextStyles.titleBold,
-                  ),
+            child: _friendLine(
+              friend,
+              Text(
+                status,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: cs.onSurfaceVariant,
                 ),
-                Text(
-                  status,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // The state or control at the end shares the name's line; at large text it
+  // would leave the name a sliver, so it goes under the name.
+  Widget _friendLine(UserProfile friend, Widget end) {
+    final name = Text(friend.displayName, style: AppTextStyles.titleBold);
+    return Row(
+      crossAxisAlignment: isLargeText(context)
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        _friendAvatar(friend),
+        const SizedBox(width: AppDimensions.space16),
+        if (isLargeText(context))
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [name, end],
+            ),
+          )
+        else ...[
+          Expanded(child: name),
+          end,
+        ],
+      ],
     );
   }
 
@@ -255,24 +273,15 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 padding: const EdgeInsets.symmetric(
                   vertical: AppDimensions.space12,
                 ),
-                child: Row(
-                  children: [
-                    _friendAvatar(friend),
-                    const SizedBox(width: AppDimensions.space16),
-                    Expanded(
-                      child: Text(
-                        friend.displayName,
-                        style: AppTextStyles.titleBold,
-                      ),
-                    ),
-                    _buildFriendTileTrailing(
-                      friend,
-                      viewModel,
-                      isSelected,
-                      hasInvitation,
-                      invitationStatus,
-                    ),
-                  ],
+                child: _friendLine(
+                  friend,
+                  _buildFriendTileTrailing(
+                    friend,
+                    viewModel,
+                    isSelected,
+                    hasInvitation,
+                    invitationStatus,
+                  ),
                 ),
               ),
             ),

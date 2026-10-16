@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
+import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
 
 /// Reusable report dialog for any content type.
 ///
@@ -324,9 +325,7 @@ class _GuidelinesNote extends StatelessWidget {
           // announced as a link with a name (was an inline TapGestureRecognizer
           // — no link role). Dropping the
           // recognizer also lets this be a StatelessWidget.
-          WidgetSpan(
-            alignment: PlaceholderAlignment.baseline,
-            baseline: TextBaseline.alphabetic,
+          inlineWidgetSpan(
             child: ButleryLink(
               semanticLabel: linkText,
               onTap: () =>

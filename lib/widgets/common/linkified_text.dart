@@ -24,6 +24,7 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
 
 class LinkifiedText {
   const LinkifiedText._();
@@ -79,9 +80,7 @@ class LinkifiedText {
           // `TapGestureRecognizer(` since BUT-1426, which shipped before this
           // sentence was written.)
           spans.add(
-            WidgetSpan(
-              alignment: PlaceholderAlignment.baseline,
-              baseline: TextBaseline.alphabetic,
+            inlineWidgetSpan(
               child: ButleryLink(
                 semanticLabel: context.l10n.a11yLinkTo(url),
                 onTap: () => _openUrl(url),

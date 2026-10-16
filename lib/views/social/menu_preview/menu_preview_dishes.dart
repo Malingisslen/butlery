@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/dish_credit_line.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// The dishes of a shared menu, grouped by category, each followed by its
 /// creator's line when the creator opted in (BUT-2221).
@@ -116,6 +117,66 @@ class _DishRow extends StatelessWidget {
 
   static const double _categoryWidth = 72;
 
+  // The day sits in its own column beside the dish. At large text the column
+  // would take half the width and break the day's name, so it goes above.
+  Widget _line(BuildContext context, ColorScheme cs, int? minutes) {
+    final day = category == null
+        ? null
+        : Text(
+            category!,
+            style: AppTextStyles.labelMediumBold.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          );
+    final dish = Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
+      child: Text(
+        recipe.title,
+        style: AppTextStyles.labelLargeBold.copyWith(color: cs.onSurface),
+      ),
+    );
+    final time = minutes == null
+        ? null
+        : Text(
+            '$minutes ${context.l10n.unitMinutesShort}',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          );
+    if (isLargeText(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (day != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
+              child: day,
+            ),
+          Row(
+            children: [
+              Expanded(child: dish),
+              if (time != null) ...[
+                const SizedBox(width: AppDimensions.space8),
+                time,
+              ],
+            ],
+          ),
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(width: _categoryWidth, child: day),
+        Expanded(child: dish),
+        if (time != null) ...[
+          const SizedBox(width: AppDimensions.space8),
+          time,
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -146,43 +207,7 @@ class _DishRow extends StatelessWidget {
                       constraints: const BoxConstraints(
                         minHeight: AppDimensions.minTouchTarget,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: _categoryWidth,
-                            child: category == null
-                                ? null
-                                : Text(
-                                    category!,
-                                    style: AppTextStyles.labelMediumBold
-                                        .copyWith(color: cs.onSurfaceVariant),
-                                  ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppDimensions.space8,
-                              ),
-                              child: Text(
-                                recipe.title,
-                                style: AppTextStyles.labelLargeBold.copyWith(
-                                  color: cs.onSurface,
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (minutes != null) ...[
-                            const SizedBox(width: AppDimensions.space8),
-                            Text(
-                              '$minutes ${context.l10n.unitMinutesShort}',
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                      child: _line(context, cs, minutes),
                     ),
                   ),
                 ),
@@ -190,8 +215,8 @@ class _DishRow extends StatelessWidget {
             ),
             if (credit != null)
               Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: _categoryWidth,
+                padding: EdgeInsetsDirectional.only(
+                  start: isLargeText(context) ? 0 : _categoryWidth,
                   bottom: AppDimensions.space4,
                 ),
                 child: DishCreditLine(

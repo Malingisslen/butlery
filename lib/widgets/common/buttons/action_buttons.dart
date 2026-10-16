@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 export 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 
@@ -35,6 +36,35 @@ class ActionButtons {
   /// The visible label: the busy label while busy, else the button's name.
   static String _visibleLabel(bool busy, String name, String? busyLabel) =>
       busy ? (busyLabel ?? name) : name;
+
+  /// A label that wraps between words. At large text a word wider than the
+  /// button is scaled down until it fits, since breaking it between letters
+  /// reads as a typing error; the button's own text style is the one measured.
+  /// Only a button that fills its row is measured: one that hugs its label is
+  /// also asked for intrinsic sizes (a dialog's action row does), which the
+  /// measuring widget cannot give.
+  static Widget _label(
+    BuildContext context,
+    String text,
+    bool isLoading,
+    String? semanticLabel,
+    bool isExpanded,
+  ) {
+    final semantics = isLoading ? null : semanticLabel;
+    if (!isExpanded || !isLargeText(context)) {
+      return Text(
+        text,
+        semanticsLabel: semantics,
+        textAlign: TextAlign.center,
+      );
+    }
+    return WholeWordText(
+      text,
+      style: const TextStyle(),
+      semanticsLabel: semantics,
+      textAlign: TextAlign.center,
+    );
+  }
 
   static Widget actionButton(
     BuildContext context, {
@@ -71,10 +101,12 @@ class ActionButtons {
           Flexible(
             // BUT-2193: a label wraps rather than ellipsising; a button
             // never cuts its own name (plattformsmatris.md, systemtextstorlek).
-            child: Text(
+            child: _label(
+              context,
               effectiveLabel,
-              semanticsLabel: isLoading ? null : semanticLabel,
-              textAlign: TextAlign.center,
+              isLoading,
+              semanticLabel,
+              isExpanded,
             ),
           ),
         ],

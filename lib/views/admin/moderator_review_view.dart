@@ -25,6 +25,8 @@ import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
+import 'package:butlery/widgets/common/buttons/button_row.dart';
 import 'package:provider/provider.dart';
 
 /// Admin-only screen listing open moderation reports and exposing the
@@ -199,7 +201,7 @@ class _ReportCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.space8),
-          Text(
+          WholeWordText(
             moderatorReasonLabel(l10n, report.reason),
             style: AppTextStyles.titleMedium,
           ),
@@ -242,41 +244,48 @@ class _ReportCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppDimensions.space12),
-          Row(
-            children: [
-              if (report.status != ReportStatus.closed) ...[
-                Expanded(
-                  child: ActionButtons.outlinedButton(
-                    context,
-                    label: l10n.moderatorActionAdvance,
-                    onPressed: () => _advance(context, vm),
-                    isExpanded: true,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space8),
-              ],
-              Expanded(
-                child: ActionButtons.dangerButton(
-                  context,
-                  label: vm.isReversibleAction(report)
-                      ? l10n.moderatorActionHide
-                      : report.contentType == ContentType.menuDish
-                      ? l10n.moderatorActionRemoveDish
-                      : l10n.moderatorActionDelete,
-                  onPressed: () => _confirmTakeDown(context, vm),
-                  isExpanded: true,
-                ),
-              ),
-              if (report.status != ReportStatus.closed)
-                AppIconButton(
-                  icon: ButleryIcons.x,
-                  semanticLabel: l10n.moderatorCloseTooltip,
-                  onPressed: () => _close(context, vm),
-                ),
-            ],
-          ),
+          _actions(context, vm, l10n),
         ],
       ),
+    );
+  }
+
+  Widget _actions(
+    BuildContext context,
+    ModeratorReviewViewModel vm,
+    AppLocalizations l10n,
+  ) {
+    final open = report.status != ReportStatus.closed;
+    final advance = ActionButtons.outlinedButton(
+      context,
+      label: l10n.moderatorActionAdvance,
+      onPressed: () => _advance(context, vm),
+      isExpanded: true,
+    );
+    final takeDown = ActionButtons.dangerButton(
+      context,
+      label: vm.isReversibleAction(report)
+          ? l10n.moderatorActionHide
+          : report.contentType == ContentType.menuDish
+          ? l10n.moderatorActionRemoveDish
+          : l10n.moderatorActionDelete,
+      onPressed: () => _confirmTakeDown(context, vm),
+      isExpanded: true,
+    );
+    final close = AppIconButton(
+      icon: ButleryIcons.x,
+      semanticLabel: l10n.moderatorCloseTooltip,
+      onPressed: () => _close(context, vm),
+    );
+    return Row(
+      children: [
+        Expanded(
+          child: ButtonRow(
+            children: [if (open) advance, takeDown],
+          ),
+        ),
+        if (open) close,
+      ],
     );
   }
 
