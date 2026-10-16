@@ -12133,7 +12133,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationRatingBatch(int count, String average) {
-    return 'Your recipe received $count new ratings. Average: $average ★';
+    return 'Your recipe received $count new ratings. Average: $average';
   }
 
   @override

@@ -12081,7 +12081,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String notificationRatingBatch(int count, String average) {
-    return 'Ditt recept fick $count nya betyg. Genomsnitt: $average ★';
+    return 'Ditt recept fick $count nya betyg. Genomsnitt: $average';
   }
 
   @override

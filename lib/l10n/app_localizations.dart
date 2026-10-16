@@ -18493,7 +18493,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationRatingBatch.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt recept fick {count} nya betyg. Genomsnitt: {average} ★'**
+  /// **'Ditt recept fick {count} nya betyg. Genomsnitt: {average}'**
   String notificationRatingBatch(int count, String average);
 
   /// No description provided for @timeCompactMonths.

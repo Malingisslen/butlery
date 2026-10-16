@@ -729,7 +729,7 @@ void main() {
           );
           expect(
             sent,
-            equals('Your recipe received 2 new ratings. Average: 4.5 ★'),
+            equals('Your recipe received 2 new ratings. Average: 4.5'),
           );
 
           AppLocale.updateLocale(const Locale('sv'));
@@ -740,7 +740,7 @@ void main() {
           );
           expect(
             sent,
-            equals('Ditt recept fick 2 nya betyg. Genomsnitt: 4,5 ★'),
+            equals('Ditt recept fick 2 nya betyg. Genomsnitt: 4,5'),
           );
         },
       );

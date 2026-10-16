@@ -7940,7 +7940,7 @@
       "average": {"type": "String"}
     }
   },
-  "notificationRatingBatch": "Your recipe received {count} new ratings. Average: {average} ★",
+  "notificationRatingBatch": "Your recipe received {count} new ratings. Average: {average}",
   "@notificationRatingBatch": {
     "placeholders": {
       "count": {"type": "int"},

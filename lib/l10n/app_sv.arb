@@ -7995,7 +7995,7 @@
       "average": {"type": "String"}
     }
   },
-  "notificationRatingBatch": "Ditt recept fick {count} nya betyg. Genomsnitt: {average} ★",
+  "notificationRatingBatch": "Ditt recept fick {count} nya betyg. Genomsnitt: {average}",
   "@notificationRatingBatch": {
     "placeholders": {
       "count": {"type": "int"},
