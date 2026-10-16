@@ -398,7 +398,7 @@ class AppRouter {
 
         case Routes.settingsFamily:
           return _buildRoute(
-            const MinFamiljView(),
+            MinFamiljView(backTo: _backToArgument(settings)),
             settings,
             RouteAnimationType.slideFromRight,
           );

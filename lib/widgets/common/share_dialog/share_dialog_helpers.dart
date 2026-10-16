@@ -69,7 +69,7 @@ class ShareDialogHelpers {
       case ShareContentType.shoppingList:
         return context.l10n.shareDefaultMessageShoppingList(contentName);
       case ShareContentType.personalTag:
-        return 'Kolla in min tagg "$contentName"!';
+        return context.l10n.shareTagMessage(contentName);
     }
   }
 

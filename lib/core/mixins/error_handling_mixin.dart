@@ -268,21 +268,6 @@ mixin ErrorHandlingMixin {
     return result ?? <T>[];
   }
 
-  /// Safe list operation with empty check
-  Future<List<T>> safeLoadListWithEmptyCheck<T>(
-    Future<List<T>> Function() loadOperation,
-    String itemType, {
-    bool showEmptyMessage = false,
-  }) async {
-    final result = await safeLoadList(loadOperation, itemType);
-
-    if (result.isEmpty && showEmptyMessage) {
-      handleUserInfo(AppLocale.current.errorNoItemsFound);
-    }
-
-    return result;
-  }
-
   /// Network operation error handling - consolidates network patterns
   Future<T?> safeNetworkOperation<T>(
     Future<T> Function() networkOperation, {

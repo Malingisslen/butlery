@@ -9,13 +9,6 @@ import 'package:butlery/l10n/app_localizations_en.dart';
 void main() {
   final en = AppLocalizationsEn();
 
-  test('the footer buttons count one recipe and several', () {
-    expect(en.trashRestoreSelected(1), 'Restore 1 recipe');
-    expect(en.trashRestoreSelected(3), 'Restore 3 recipes');
-    expect(en.trashDeleteSelected(1), 'Delete 1 recipe');
-    expect(en.trashDeleteSelected(3), 'Delete 3 recipes');
-  });
-
   test('the partial-failure lines count one recipe and several', () {
     expect(
       en.trashFailOffline(1),

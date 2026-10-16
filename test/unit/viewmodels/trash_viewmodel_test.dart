@@ -149,12 +149,6 @@ void main() {
         age: const Duration(days: 31),
       );
       expect(TrashViewModel.daysLeft(expired, now), 0);
-      expect(TrashViewModel.fractionLeft(expired, now), 0);
-    });
-
-    test('fraction is the share of the 30 days left', () {
-      final half = trashItemFor('x', now: now, age: const Duration(days: 15));
-      expect(TrashViewModel.fractionLeft(half, now), closeTo(0.5, 1e-9));
     });
   });
 }

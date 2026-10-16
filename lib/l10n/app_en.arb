@@ -1633,6 +1633,7 @@
   "allergenSaveSettings": "Save settings",
   "allergenResetToDefaults": "Reset to defaults",
   "allergenSettingsSaved": "Settings saved",
+  "notificationSettingsSaved": "Settings saved",
   "allergenReset": "Reset",
   "personalTagCouldNotLoad": "Could not load tags",
   "personalTagManage": "Manage",
@@ -2388,6 +2389,14 @@
   "@shareDefaultMessageShoppingList": {
     "placeholders": {
       "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareTagMessage": "Check out my tag “{contentName}”",
+  "@shareTagMessage": {
+    "placeholders": {
+      "contentName": {
         "type": "String"
       }
     }
@@ -5758,7 +5767,6 @@
   "messageStatusFailed": "Failed",
   "errorDnsResolution": "Connection issue detected. Attempting to reconnect …",
   "errorServiceUnavailable": "Service temporarily unavailable. Please try again later.",
-  "errorNoItemsFound": "No items found.",
   "errorNoUserLoggedIn": "No user is signed in",
   "errorReauthRequired": "You must sign in again to delete your account",
   "errorCouldNotRemoveMfa": "Could not turn off two-step verification",
@@ -10003,10 +10011,6 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Linked recipe",
-  "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
-  },
   "a11yRemoveRelatedRecipe": "Remove link",
   "@a11yRemoveRelatedRecipe": {
     "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
@@ -10474,10 +10478,6 @@
   },
   "uploadingCookSnap": "Uploading the photo …",
   "@uploadingCookSnap": {
-    "description": "What is loading, for the plate line (P4-U05)."
-  },
-  "sendingComment": "Sending the comment …",
-  "@sendingComment": {
     "description": "What is loading, for the plate line (P4-U05)."
   },
   "recipeEditorClose": "Close the editor",
@@ -12666,8 +12666,6 @@
   "trashEmptyTitle": "The trash is empty",
   "trashEmptyBody": "Deleted recipes stay here for 30 days.",
   "trashDaysLeft": "{count, plural, =0{Expires today} =1{1 day left} other{{count} days left}}",
-  "trashRestoreSelected": "{count, plural, =1{Restore 1 recipe} other{Restore {count} recipes}}",
-  "trashDeleteSelected": "{count, plural, =1{Delete 1 recipe} other{Delete {count} recipes}}",
   "trashEmptyAction": "Empty the trash",
   "trashDeleteConfirmAction": "Delete for good",
   "trashEmptyConfirmTitle": "Empty the trash?",
@@ -16528,22 +16526,6 @@
   },
   "@trashDaysLeft": {
     "description": "BUT-907: trash view. Time left on a row.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@trashRestoreSelected": {
-    "description": "BUT-907: trash view. Footer button restoring the selection.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@trashDeleteSelected": {
-    "description": "BUT-907: trash view. Footer button deleting the selection for good.",
     "placeholders": {
       "count": {
         "type": "int"

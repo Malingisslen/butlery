@@ -107,13 +107,16 @@ void main() {
   }
 
   final pushed = <String?>[];
+  final pushedArguments = <Object?>[];
   Future<void> pump(WidgetTester tester, FriendCategory group) async {
     pushed.clear();
+    pushedArguments.clear();
     await tester.pumpWidget(
       createLocalizedTestApp(
         child: GroupHouseholdJoinTile(group: group),
         onGenerateRoute: (settings) {
           pushed.add(settings.name);
+          pushedArguments.add(settings.arguments);
           return MaterialPageRoute<void>(builder: (_) => const SizedBox());
         },
       ),
@@ -244,6 +247,7 @@ void main() {
     await tester.tap(find.text(sv.householdOpenSettings));
     await tester.pumpAndSettle();
     expect(pushed, [Routes.settingsFamily]);
+    expect(pushedArguments, [_group().name]);
   });
 
   testWidgets('a household linked to another group is not this one', (

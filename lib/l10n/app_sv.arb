@@ -686,7 +686,7 @@
   "recipeDescription": "Beskrivning",
   "recipeIngredients": "Ingredienser",
   "recipeInstructions": "Instruktioner",
-  "recipeCookingTime": "Tillagningstid",
+  "recipeCookingTime": "Tid att laga",
   "recipePortions": "Portioner",
   "recipeEdit": "Redigera recept",
   "recipeDelete": "Radera receptet",
@@ -1639,6 +1639,7 @@
   "allergenSaveSettings": "Spara inställningar",
   "allergenResetToDefaults": "Återställ till standard",
   "allergenSettingsSaved": "Inställningarna sparades",
+  "notificationSettingsSaved": "Inställningarna sparades",
   "allergenReset": "Återställ",
   "personalTagCouldNotLoad": "Kunde inte ladda taggar",
   "personalTagManage": "Hantera",
@@ -1695,7 +1696,7 @@
   "ruleHintSourceUrl": "Till exempel ”bbc.com”, ”reddit.com”",
   "ruleHintCuisine": "Till exempel ”italian”, ”asian”",
   "ruleHintDietary": "Till exempel ”vegetarian”, ”vegan”",
-  "ruleHintTime": "Tillagningstid i minuter",
+  "ruleHintTime": "Tid att laga, i minuter",
   "ruleHintTimeShort": "Tid i minuter",
   "ruleHintRating": "Betyg (1-5)",
   "ruleHintRecency": "Antal dagar sedan receptet lades till",
@@ -2398,6 +2399,14 @@
       }
     }
   },
+  "shareTagMessage": "Kolla in min tagg ”{contentName}”",
+  "@shareTagMessage": {
+    "placeholders": {
+      "contentName": {
+        "type": "String"
+      }
+    }
+  },
   "shareFriendsSelected": "{count, plural, =1{1 vän vald} other{{count} vänner valda}}",
   "@shareFriendsSelected": {
     "placeholders": {
@@ -2942,7 +2951,7 @@
   "imageSelectImage": "Välj bild",
   "imageTitle": "Bild",
   "importColumnCategory": "Kategori",
-  "importColumnCookingTime": "Tillagningstid",
+  "importColumnCookingTime": "Tid att laga",
   "importColumnIngredients": "Ingredienser",
   "importColumnInstructions": "Instruktioner",
   "importColumnServings": "Portioner",
@@ -3382,7 +3391,7 @@
   },
   "filterAllergenFree": "Allergenfri",
   "filterClearAll": "Rensa alla filter",
-  "filterCookingTime": "Tillagningstid",
+  "filterCookingTime": "Tid att laga",
   "filterCreatePersonalTags": "Skapa egna taggar",
   "filterDietary": "Specialkost",
   "filterExcludeTags": "Exkludera taggar",
@@ -4055,7 +4064,7 @@
   "sortTime": "Tid",
   "sortTitle": "Titel",
   "sortLastCooked": "Senast lagad",
-  "sortCookCount": "Antal tillagningar",
+  "sortCookCount": "Antal gånger lagad",
   "sortNewest": "Nyaste",
   "shuffleRecipes": "Slumpa",
   "importPreviewTitle": "Förhandsgranska import",
@@ -5792,7 +5801,6 @@
   "messageStatusFailed": "Misslyckades",
   "errorDnsResolution": "Anslutningsproblem upptäckts. Försöker återansluta …",
   "errorServiceUnavailable": "Tjänsten är tillfälligt otillgänglig. Försök igen senare.",
-  "errorNoItemsFound": "Inga objekt hittades.",
   "errorNoUserLoggedIn": "Ingen användare är inloggad",
   "errorReauthRequired": "Du måste logga in igen för att ta bort ditt konto",
   "errorCouldNotRemoveMfa": "Kunde inte stänga av tvåstegsverifiering",
@@ -6241,7 +6249,7 @@
   "errorCouldNotAddRecipe": "Receptet kunde inte läggas till.",
   "errorCouldNotUpdateRecipe": "Receptet kunde inte uppdateras.",
   "errorCouldNotExportRecipes": "Kunde inte exportera recept",
-  "errorCouldNotMarkAsCooked": "Kunde inte markera recept som tillagat",
+  "errorCouldNotMarkAsCooked": "Kunde inte markera receptet som lagat",
   "errorCouldNotAddIngredient": "Kunde inte lägga till ingrediens",
   "errorCouldNotUpdateIngredient": "Kunde inte uppdatera ingrediens",
   "errorCouldNotRemoveIngredient": "Kunde inte ta bort ingrediens",
@@ -7263,8 +7271,8 @@
   },
   "shareMessageShoppingListDefault": "Vill du hjälpa mig med inköpen denna vecka?",
   "textImportSuggestionIngredients": "Inkludera ingredienslista för bättre tolkning",
-  "textImportSuggestionInstructions": "Inkludera tillagningsinstruktioner eller steg",
-  "textImportSuggestionTime": "Inkludera tillagningstid om tillgänglig",
+  "textImportSuggestionInstructions": "Inkludera instruktioner eller steg",
+  "textImportSuggestionTime": "Inkludera tid att laga om tillgänglig",
   "textImportSuggestionPortions": "Inkludera antal portioner om känt",
   "textImportSuggestionLooksGood": "Texten ser bra ut för recepttolkning",
   "recipeFormPermissionsError": "Kunde inte läsa behörigheterna",
@@ -7983,7 +7991,7 @@
   "validationInvalidUrlHint": "Ange en giltig URL (börja med http:// eller https://)",
   "validationFieldRating": "Betyg",
   "validationFieldPortions": "Antal portioner",
-  "validationFieldCookingTime": "Tillagningstid",
+  "validationFieldCookingTime": "Tid att laga",
   "validationDisplayNameEmpty": "Visningsnamn får inte vara tomt",
   "validationDisplayNameTooShort": "Visningsnamn måste vara minst 2 tecken",
   "validationDisplayNameTooLong": "Visningsnamn får vara max 30 tecken",
@@ -8640,7 +8648,7 @@
   "emailVerificationSuccess": "E-posten är verifierad.",
   "a11yCookingModeFontScale": "Ändra textstorlek",
   "a11yCookingModeRotate": "Vrid skärmen",
-  "a11yCookingModeClose": "Stäng tillagningsläge",
+  "a11yCookingModeClose": "Stäng matlagningsläge",
   "a11yRecipeFavorited": "Recept tillagt i favoriter",
   "a11yRecipeUnfavorited": "Recept borttaget från favoriter",
   "a11yCommentPosted": "Kommentar publicerad",
@@ -8665,7 +8673,7 @@
   "statsMealTypes": "Vad du lagar",
   "statsPopularTags": "Vanligaste taggarna",
   "statsCookingActivity": "Matlagningsaktivitet",
-  "statsTotalCooks": "Totalt antal tillagningar",
+  "statsTotalCooks": "Totalt antal gånger lagat",
   "statsNoMealTypes": "Inga måltidstyper registrerade",
   "statsNoTags": "Inga taggar använda än",
   "statsCountedNote": "Räknat på {count} recept i telefonen. Siffrorna gäller din samling som den är hämtad hit – inte en beräkning på servern.",
@@ -8769,7 +8777,7 @@
   "recipeImproveMissingIngredients": "Ingredienser",
   "recipeImproveMissingInstructions": "Instruktioner",
   "recipeImproveMissingPortions": "Portioner",
-  "recipeImproveMissingTime": "Tillagningstid",
+  "recipeImproveMissingTime": "Tid att laga",
   "recipeImproveMissingImage": "Bild",
   "pwaInstallPrompt": "Installera Butlery på din hemskärm för snabbare åtkomst",
   "pwaInstallAction": "Installera",
@@ -10119,10 +10127,6 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Länkat recept",
-  "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
-  },
   "a11yRemoveRelatedRecipe": "Ta bort länk",
   "@a11yRemoveRelatedRecipe": {
     "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
@@ -10602,10 +10606,6 @@
   },
   "uploadingCookSnap": "Laddar upp fotot …",
   "@uploadingCookSnap": {
-    "description": "What is loading, for the plate line (P4-U05)."
-  },
-  "sendingComment": "Skickar kommentaren …",
-  "@sendingComment": {
     "description": "What is loading, for the plate line (P4-U05)."
   },
   "recipeEditorClose": "Stäng editorn",
@@ -13101,24 +13101,6 @@
   "trashDaysLeft": "{count, plural, =0{Går ut i dag} =1{1 dag kvar} other{{count} dagar kvar}}",
   "@trashDaysLeft": {
     "description": "BUT-907: trash view. Time left on a row.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "trashRestoreSelected": "Återställ {count} recept",
-  "@trashRestoreSelected": {
-    "description": "BUT-907: trash view. Footer button restoring the selection.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "trashDeleteSelected": "Radera {count} recept",
-  "@trashDeleteSelected": {
-    "description": "BUT-907: trash view. Footer button deleting the selection for good.",
     "placeholders": {
       "count": {
         "type": "int"

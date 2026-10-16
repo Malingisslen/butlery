@@ -27,19 +27,23 @@ import 'package:butlery/widgets/common/state_widget.dart';
 /// "Familj & hushåll": who the household is, how many portions recipes open
 /// with, and how allergies apply to everyone (Mer, omtänkt del 2).
 class MinFamiljView extends StatelessWidget {
-  const MinFamiljView({super.key});
+  const MinFamiljView({this.backTo, super.key});
+
+  final String? backTo;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => MinFamiljViewModel()..load(),
-      child: const _MinFamiljContent(),
+      child: _MinFamiljContent(backTo: backTo),
     );
   }
 }
 
 class _MinFamiljContent extends StatelessWidget {
-  const _MinFamiljContent();
+  const _MinFamiljContent({required this.backTo});
+
+  final String? backTo;
 
   Future<void> _openForm(
     BuildContext context, {
@@ -64,7 +68,7 @@ class _MinFamiljContent extends StatelessWidget {
 
     return ButleryPage.undersida(
       title: l10n.familyTitle,
-      backTo: l10n.moreTitle,
+      backTo: backTo,
       body: vm.isLoading
           // The plate line says what it fetches (produktregler.md:163).
           ? StateWidget.loading(message: l10n.loadingFamily)
