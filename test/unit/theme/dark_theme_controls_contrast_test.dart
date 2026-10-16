@@ -161,7 +161,7 @@ void main() {
       expect(_contrast(fill, _darkBase), greaterThanOrEqualTo(3.0));
     });
 
-    testWidgets('switch on: ink track with a paper edge and knob', (
+    testWidgets('B-99 switch on: ink track with a paper edge and knob', (
       tester,
     ) async {
       final ctx = await _pump(
