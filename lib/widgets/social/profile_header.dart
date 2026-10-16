@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// One figure of a person: "14" and "vänner".
 class ProfileStat {
@@ -91,13 +92,12 @@ class ProfileHeader extends StatelessWidget {
                         children: [
                           Semantics(
                             header: true,
-                            child: Text(
+                            child: WholeWordText(
                               displayName,
                               style: AppTextStyles.headlineMedium.copyWith(
                                 color: cs.onPrimary,
                               ),
                               maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (subline != null)

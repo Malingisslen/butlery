@@ -10,6 +10,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// Lightweight renderer for the controlled Markdown subset used by our legal
 /// documents (privacy policy, terms): `#`/`##`/`###` headings, `---` rules,
@@ -168,9 +170,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           // announce the legal-doc link with a role and name. Replaces the
           // inline TapGestureRecognizer (no link role, audit-invisible) and
           // removes the per-link recognizer-disposal bookkeeping.
-          _TokenKind.link => WidgetSpan(
-            alignment: PlaceholderAlignment.baseline,
-            baseline: TextBaseline.alphabetic,
+          _TokenKind.link => inlineWidgetSpan(
             child: ButleryLink(
               semanticLabel: t.text,
               onTap: () => _launch(t.url!),
@@ -279,10 +279,11 @@ class _MarkdownBodyState extends State<MarkdownBody> {
                 children: [
                   Text('•  ', style: bodyStyle),
                   Expanded(
-                    child: Text.rich(
+                    child: WholeWordText.rich(
                       TextSpan(
                         children: _spans(block.tokens, bodyStyle, linkColor),
                       ),
+                      style: bodyStyle,
                     ),
                   ),
                 ],
@@ -315,8 +316,9 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   }) {
     return Padding(
       padding: EdgeInsets.only(top: top, bottom: AppDimensions.space4),
-      child: Text.rich(
+      child: WholeWordText.rich(
         TextSpan(children: _spans(tokens, style, linkColor)),
+        style: style,
       ),
     );
   }

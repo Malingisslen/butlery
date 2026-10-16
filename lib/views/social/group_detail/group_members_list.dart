@@ -20,6 +20,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/layout/heading_actions_row.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -197,22 +198,20 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
       children: [
         // The members heading with "+ Bjud in" in its row (Välj in selection
         // mode takes its place; Avbryt leaves it).
-        Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: Text(
-                  context.l10n.groupMembersHeading,
-                  style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
-                ),
-              ),
+        HeadingActionsRow(
+          heading: Semantics(
+            header: true,
+            child: Text(
+              context.l10n.groupMembersHeading,
+              style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
             ),
-            // P5-U31: the list lives in the group view's scroll, so the
-            // section's header row carries "Välj", and Avbryt takes its
-            // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
-            // produktregler.md:870-874). text.primary on the page surface in
-            // both modes (cs.onSurface; tokens.json:54).
+          ),
+          // P5-U31: the list lives in the group view's scroll, so the
+          // section's header row carries "Välj", and Avbryt takes its
+          // place in selection mode (Skarmar v12 etapp 9 #flervalingang;
+          // produktregler.md). text.primary on the page surface in
+          // both modes (cs.onSurface; tokens.json).
+          actions: [
             if (_selectionMode)
               ButleryCancelSelectionButton(
                 key: const ValueKey('group-members-selection-cancel'),

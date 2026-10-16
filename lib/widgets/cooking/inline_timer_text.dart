@@ -17,6 +17,7 @@ import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
 
 class InlineTimerText extends StatelessWidget {
   /// The full instruction line.
@@ -109,7 +110,7 @@ class InlineTimerText extends StatelessWidget {
     final accent = chipColor ?? style?.color ?? cs.onSurface;
     final onChip = chipForeground ?? accent;
     final phrase = text.substring(match.start, match.end);
-    return WidgetSpan(
+    return inlineWidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: Semantics(
         label: context.l10n.a11yStartTimerForPhrase,

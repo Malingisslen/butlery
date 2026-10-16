@@ -14,6 +14,7 @@ import 'package:butlery/views/admin/widgets/admin_tab_header.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
     if (dart.library.js_interop) 'package:butlery/views/account/data_export_helpers/download_web.dart';
@@ -104,6 +105,31 @@ class _MetricTabContent extends StatelessWidget {
     }
   }
 
+  // At large text the cards fill the width one per line, since content-sized
+  // cards of different widths ragged the edge down the page.
+  Widget _scalarCards(
+    BuildContext context,
+    MetricsTabViewModel vm,
+    List<MetricKey> scalarKeys,
+  ) {
+    final cards = [
+      for (final key in scalarKeys)
+        MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
+    ];
+    if (isLargeText(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppDimensions.space8,
+        children: cards,
+      );
+    }
+    return Wrap(
+      spacing: AppDimensions.space8,
+      runSpacing: AppDimensions.space8,
+      children: cards,
+    );
+  }
+
   Widget _body(BuildContext context, MetricsTabViewModel vm) {
     if (vm.isLoading && vm.values.isEmpty) {
       return StateWidget.loading(message: context.l10n.loadingMetrics);
@@ -125,14 +151,7 @@ class _MetricTabContent extends StatelessWidget {
         if (scalarKeys.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(AppDimensions.space12),
-            child: Wrap(
-              spacing: AppDimensions.space8,
-              runSpacing: AppDimensions.space8,
-              children: [
-                for (final key in scalarKeys)
-                  MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
-              ],
-            ),
+            child: _scalarCards(context, vm, scalarKeys),
           ),
         for (final key in otherKeys) ...[
           const SizedBox(height: AppDimensions.space8),

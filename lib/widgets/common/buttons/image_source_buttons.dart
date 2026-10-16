@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ImageSourceButtons extends StatelessWidget {
@@ -38,31 +39,56 @@ class ImageSourceButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: _SourceButton(
-              label: cameraLabel,
-              icon: ButleryIcons.camera,
-              filled: true,
-              busy: busy,
-              onTap: onCamera,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.space12),
-          Expanded(
-            child: _SourceButton(
-              label: libraryLabel,
-              icon: ButleryIcons.image,
-              filled: false,
-              busy: busy,
-              onTap: onLibrary,
-            ),
-          ),
-        ],
+    final buttons = [
+      _SourceButton(
+        label: cameraLabel,
+        icon: ButleryIcons.camera,
+        filled: true,
+        busy: busy,
+        onTap: onCamera,
       ),
+      _SourceButton(
+        label: libraryLabel,
+        icon: ButleryIcons.image,
+        filled: false,
+        busy: busy,
+        onTap: onLibrary,
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Side by side each button gets half the width; a label word that
+        // does not fit its half would be broken between letters, so the
+        // buttons stack instead.
+        final half = (constraints.maxWidth - AppDimensions.space12) / 2;
+        final stacked =
+            isLargeText(context) &&
+            widestWord(context, [
+                  cameraLabel,
+                  libraryLabel,
+                ], AppTextStyles.labelLarge) >
+                half - 2 * _SourceButton.labelPadding;
+        if (stacked) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              IntrinsicHeight(child: buttons[0]),
+              const SizedBox(height: AppDimensions.space12),
+              IntrinsicHeight(child: buttons[1]),
+            ],
+          );
+        }
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: buttons[0]),
+              const SizedBox(width: AppDimensions.space12),
+              Expanded(child: buttons[1]),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -83,6 +109,7 @@ class _SourceButton extends StatelessWidget {
   final VoidCallback? onTap;
 
   static const double _minHeight = 88;
+  static const double labelPadding = AppDimensions.space8;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +149,7 @@ class _SourceButton extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppDimensions.space8,
+                        horizontal: labelPadding,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,

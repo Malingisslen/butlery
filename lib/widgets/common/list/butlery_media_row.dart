@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 class ButleryMediaRow extends StatelessWidget {
   const ButleryMediaRow({
@@ -76,73 +77,58 @@ class ButleryMediaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final titleColor = muted ? cs.onSurfaceVariant : cs.onSurface;
+    final textColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text.rich(
+          TextSpan(
+            text: title,
+            style: AppTextStyles.bodyBold.copyWith(color: titleColor),
+            children: [
+              if (titleSuffix != null)
+                TextSpan(
+                  text: ' · $titleSuffix',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (meta != null)
+          DefaultTextStyle(
+            style: AppTextStyles.captionBase.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+            child: meta!,
+          )
+        else if (subtitle != null)
+          Text(
+            subtitle!,
+            style: AppTextStyles.captionBase.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        if (extraLine != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
+            child: Text(
+              extraLine!,
+              style: AppTextStyles.captionBase.copyWith(
+                color: cs.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+      ],
+    );
     final content = ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: AppDimensions.minTouchTarget,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
-        child: Row(
-          children: [
-            ExcludeSemantics(child: leading),
-            const SizedBox(width: AppDimensions.space12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      text: title,
-                      style: AppTextStyles.bodyBold.copyWith(color: titleColor),
-                      children: [
-                        if (titleSuffix != null)
-                          TextSpan(
-                            text: ' · $titleSuffix',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (meta != null)
-                    DefaultTextStyle(
-                      style: AppTextStyles.captionBase.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      child: meta!,
-                    )
-                  else if (subtitle != null)
-                    Text(
-                      subtitle!,
-                      style: AppTextStyles.captionBase.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  if (extraLine != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: AppDimensions.space4),
-                      child: Text(
-                        extraLine!,
-                        style: AppTextStyles.captionBase.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (trailing != null) ...[
-              const SizedBox(width: AppDimensions.space8),
-              trailing!,
-            ],
-            if (chevron) ...[
-              const SizedBox(width: AppDimensions.space8),
-              const ButleryChevron(),
-            ],
-          ],
-        ),
+        child: _row(context, textColumn),
       ),
     );
 
@@ -159,6 +145,42 @@ class ButleryMediaRow extends StatelessWidget {
         surface: PressSurface.base,
         child: InkWell(onTap: onTap, onLongPress: onLongPress, child: content),
       ),
+    );
+  }
+
+  // The end control shares the line with the name. At large text it would
+  // leave the name a sliver, so it drops to a line of its own under the name.
+  Widget _row(BuildContext context, Widget textColumn) {
+    final end = trailing;
+    final stackEnd = end != null && isLargeText(context);
+    return Row(
+      crossAxisAlignment: stackEnd
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        ExcludeSemantics(child: leading),
+        const SizedBox(width: AppDimensions.space12),
+        Expanded(
+          child: stackEnd
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    textColumn,
+                    const SizedBox(height: AppDimensions.space8),
+                    end,
+                  ],
+                )
+              : textColumn,
+        ),
+        if (end != null && !stackEnd) ...[
+          const SizedBox(width: AppDimensions.space8),
+          end,
+        ],
+        if (chevron) ...[
+          const SizedBox(width: AppDimensions.space8),
+          const ButleryChevron(),
+        ],
+      ],
     );
   }
 }

@@ -22,6 +22,8 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
+import 'package:butlery/widgets/common/layout/heading_actions_row.dart';
 
 /// One tag as a row that opens the tag's page; in selection mode it toggles.
 class PersonalTagRow extends StatelessWidget {
@@ -85,24 +87,7 @@ class PersonalTagRow extends StatelessWidget {
                     else
                       _TagDot(color: _dotColor(cs, tag.id)),
                     const SizedBox(width: AppDimensions.space12),
-                    Expanded(
-                      child: Text(
-                        tag.name,
-                        style: AppTextStyles.bodySmallBold.copyWith(
-                          color: cs.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.space8),
-                    Flexible(
-                      child: Text(
-                        summary,
-                        textAlign: TextAlign.end,
-                        style: AppTextStyles.captionText.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
+                    ..._nameAndSummary(context, cs, summary),
                     if (!inSelectionMode) ...[
                       const SizedBox(width: AppDimensions.space8),
                       const ButleryChevron(),
@@ -115,6 +100,42 @@ class PersonalTagRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // The usage summary shares the line with the name; at large text it would
+  // leave the name a sliver, so it goes under it.
+  List<Widget> _nameAndSummary(
+    BuildContext context,
+    ColorScheme cs,
+    String summary,
+  ) {
+    final name = Text(
+      tag.name,
+      style: AppTextStyles.bodySmallBold.copyWith(color: cs.onSurface),
+    );
+    Widget detail(TextAlign align) => Text(
+      summary,
+      textAlign: align,
+      style: AppTextStyles.captionText.copyWith(color: cs.onSurfaceVariant),
+    );
+    if (isLargeText(context)) {
+      return [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [name, detail(TextAlign.start)],
+            ),
+          ),
+        ),
+      ];
+    }
+    return [
+      Expanded(child: name),
+      const SizedBox(width: AppDimensions.space8),
+      Flexible(child: detail(TextAlign.end)),
+    ];
   }
 
   /// The tag's dot: one of five steps from ink to muted, fixed by the tag's id
@@ -268,16 +289,14 @@ class UnusedTagsSection extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: cs.outlineVariant)),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.personalTagUnusedHeading(unusedTags.length),
-                  style: AppTextStyles.labelMediumBold.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
+          child: HeadingActionsRow(
+            heading: Text(
+              l10n.personalTagUnusedHeading(unusedTags.length),
+              style: AppTextStyles.labelMediumBold.copyWith(
+                color: cs.onSurfaceVariant,
               ),
+            ),
+            actions: [
               ButleryTextButton(
                 label: l10n.personalTagDeleteAllShort,
                 tone: ButleryTextButtonTone.danger,

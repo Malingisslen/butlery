@@ -106,8 +106,8 @@ void main() {
     }
   });
 
-  testWidgets('at 2.0x text on 320 dp the buttons grow instead of '
-      'overflowing, and stay equally high', (tester) async {
+  testWidgets('at 2.0x text on 320 dp the buttons stack instead of '
+      'overflowing, and neither is lower than 88 dp', (tester) async {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -135,8 +135,13 @@ void main() {
             )
             .height,
     ];
-    expect(heights[0], heights[1]);
-    expect(heights[0], greaterThan(88));
+    expect(heights[0], greaterThanOrEqualTo(88));
+    expect(heights[1], greaterThanOrEqualTo(88));
+    expect(
+      tester.getTopLeft(find.text('Ur bildbiblioteket')).dy,
+      greaterThan(tester.getBottomLeft(find.text('Fota nu')).dy),
+      reason: 'the second button sits under the first',
+    );
   });
 
   testWidgets('busy keeps both buttons named, draws the plate line and '

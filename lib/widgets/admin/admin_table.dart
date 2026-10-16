@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class AdminTableColumn {
@@ -111,7 +112,7 @@ class AdminTable extends StatelessWidget {
       ),
       child: _line([
         for (var i = 0; i < columns.length; i++)
-          Text(
+          WholeWordText(
             i < row.cells.length ? row.cells[i] : '',
             style: AppTextStyles.bodyMedium.copyWith(
               color: row.cellColors?[i] ?? cs.onSurface,

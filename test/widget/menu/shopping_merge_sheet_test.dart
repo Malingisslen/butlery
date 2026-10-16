@@ -313,9 +313,9 @@ void main() {
     });
   }
 
-  // BUT-2193, BUT-2219: Avbryt wraps at a large system text size instead of
+  // BUT-2193, BUT-2219: Avbryt is whole at a large system text size instead of
   // ending in "…".
-  testWidgets('Avbryt wraps instead of being cut at a large text size', (
+  testWidgets('Avbryt is whole instead of being cut at a large text size', (
     tester,
   ) async {
     await _open(tester);
@@ -334,9 +334,11 @@ void main() {
     expect(tester.takeException(), isNull);
     final paragraph = tester.renderObject<RenderParagraph>(label);
     expect(paragraph.didExceedMaxLines, isFalse);
+    // A word wider than the button scales down instead of breaking between
+    // letters, so the one-word label stays on one line.
     expect(
       tester.getSize(label).height,
-      greaterThan(paragraph.preferredLineHeight * 1.5),
+      lessThan(paragraph.preferredLineHeight * 1.5),
     );
   });
 

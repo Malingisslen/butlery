@@ -1,5 +1,6 @@
 // lib/views/cooking_mode_view.dart
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -50,6 +51,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
 /// pushed it.
@@ -888,25 +890,31 @@ class _IngredientsPanel extends StatelessWidget {
                       vertical: AppDimensions.space8,
                     ),
                     decoration: BoxDecoration(border: Border(bottom: line)),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
+                    // A Wrap, not a Row: at large text the count drops under
+                    // the heading instead of squeezing it into a broken word.
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppDimensions.space8,
+                        children: [
+                          Text(
                             l10n.recipeIngredients.toUpperCase(),
                             style: AppTextStyles.overline.copyWith(
                               color: muted,
                             ),
                           ),
-                        ),
-                        Text(
-                          l10n.cookingModeIngredientRows(
-                            vm.scaledIngredients.length,
+                          Text(
+                            l10n.cookingModeIngredientRows(
+                              vm.scaledIngredients.length,
+                            ),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: muted,
+                            ),
                           ),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: muted,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -992,26 +1000,44 @@ class _IngredientsPanel extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
           decoration: BoxDecoration(border: Border(bottom: rule)),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (split.quantity.isNotEmpty)
-                SizedBox(
-                  width: _quantityColumnWidth,
-                  child: Text(
-                    split.quantity,
-                    style: AppTextStyles.bodyLargeBold.copyWith(
-                      color: cs.onPrimary,
-                    ),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final quantityWidth = math.min(
+                MediaQuery.textScalerOf(context).scale(_quantityColumnWidth),
+                constraints.maxWidth * 0.4,
+              );
+              final nameStyle = AppTextStyles.bodyLarge.copyWith(
+                color: cs.onPrimary,
+              );
+              // At large text the amount column leaves the name a sliver and
+              // breaks its words, so the amount goes above the name.
+              final stacked =
+                  split.quantity.isNotEmpty &&
+                  isLargeText(context) &&
+                  widestWord(context, [split.name], nameStyle) >
+                      constraints.maxWidth - quantityWidth;
+              final amount = Text(
+                split.quantity,
+                style: AppTextStyles.bodyLargeBold.copyWith(
+                  color: cs.onPrimary,
                 ),
-              Expanded(
-                child: Text(
-                  split.name,
-                  style: AppTextStyles.bodyLarge.copyWith(color: cs.onPrimary),
-                ),
-              ),
-            ],
+              );
+              final name = Text(split.name, style: nameStyle);
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [amount, name],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (split.quantity.isNotEmpty)
+                    SizedBox(width: quantityWidth, child: amount),
+                  Expanded(child: name),
+                ],
+              );
+            },
           ),
         ),
       ),

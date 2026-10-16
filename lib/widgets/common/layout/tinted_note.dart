@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 class TintedNote extends StatelessWidget {
   /// A note: rounded panel with body text.
@@ -99,13 +100,13 @@ class TintedNoteEntry extends StatelessWidget {
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        WholeWordText(
           title,
           style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
         if (body != null) ...[
           const SizedBox(height: AppDimensions.space4),
-          Text(body!, style: TintedNote.textStyle(context)),
+          WholeWordText(body!, style: TintedNote.textStyle(context)),
         ],
       ],
     );
@@ -139,7 +140,7 @@ class _LabelledNoteBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final base = TintedNote.textStyle(context);
-    return Text.rich(
+    return WholeWordText.rich(
       TextSpan(
         children: [
           TextSpan(

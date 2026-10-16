@@ -21,6 +21,7 @@ import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
@@ -351,70 +352,88 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   padding: const EdgeInsets.symmetric(
                     vertical: AppDimensions.space12,
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: quantityWidth,
-                        child: Text(
-                          parsed.unit.isNotEmpty
-                              ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                              : parsed.quantity > 0
-                              ? _formatQuantity(parsed.quantity)
-                              : '',
-                          style: AppTextStyles.bodyBold.copyWith(
-                            color: cs.onSurface,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                          textAlign: TextAlign.end,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // At large text every row puts the amount above the name,
+                      // so the rows read the same instead of switching layout
+                      // from one ingredient to the next.
+                      final stacked = isLargeText(context);
+                      final hasAmount =
+                          parsed.unit.isNotEmpty || parsed.quantity > 0;
+                      final amount = Text(
+                        parsed.unit.isNotEmpty
+                            ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                            : parsed.quantity > 0
+                            ? _formatQuantity(parsed.quantity)
+                            : '',
+                        style: AppTextStyles.bodyBold.copyWith(
+                          color: cs.onSurface,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
-                      ),
-                      const SizedBox(width: AppDimensions.space32),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                if (isAllergen)
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                      end: AppDimensions.space4,
-                                    ),
-                                    child: ButleryIcon(
-                                      ButleryIcons.triangleAlert,
-                                      size: AppDimensions.iconSizeS,
-                                      color: cs.error,
-                                    ),
+                        textAlign: stacked ? TextAlign.start : TextAlign.end,
+                      );
+                      final name = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              if (isAllergen)
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.only(
+                                    end: AppDimensions.space4,
                                   ),
-                                Expanded(
-                                  child: Text(
-                                    parsed.name,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: isAllergen
-                                          ? cs.error
-                                          : cs.onSurface,
-                                    ),
+                                  child: ButleryIcon(
+                                    ButleryIcons.triangleAlert,
+                                    size: AppDimensions.iconSizeS,
+                                    color: cs.error,
                                   ),
                                 ),
-                              ],
-                            ),
-                            if (isAllergen)
-                              Text(
-                                context.l10n.allergenContainsLabel(allergen),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: cs.error,
+                              Expanded(
+                                child: Text(
+                                  parsed.name,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: isAllergen ? cs.error : cs.onSurface,
+                                  ),
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
-                      ButleryIcon(
+                            ],
+                          ),
+                          if (isAllergen)
+                            Text(
+                              context.l10n.allergenContainsLabel(allergen),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.error,
+                              ),
+                            ),
+                        ],
+                      );
+                      final swap = ButleryIcon(
                         ButleryIcons.swapHorizontal,
                         size: AppDimensions.iconSizeS,
                         color: AppModeColors.textDisabled(cs.brightness),
-                      ),
-                    ],
+                      );
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (stacked)
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (hasAmount) amount,
+                                  name,
+                                ],
+                              ),
+                            )
+                          else ...[
+                            SizedBox(width: quantityWidth, child: amount),
+                            const SizedBox(width: AppDimensions.space32),
+                            Expanded(child: name),
+                          ],
+                          swap,
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),

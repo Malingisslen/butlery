@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
 
 /// The consent a new account gives, on the sign-up form, before a guest start
 /// and when a guest creates an account.
@@ -104,9 +105,7 @@ class TermsConsentRow extends StatelessWidget {
     required String label,
     required String text,
     required String route,
-  }) => WidgetSpan(
-    alignment: PlaceholderAlignment.baseline,
-    baseline: TextBaseline.alphabetic,
+  }) => inlineWidgetSpan(
     child: ButleryLink.inline(
       semanticLabel: label,
       onTap: () => Navigator.pushNamed(context, route),

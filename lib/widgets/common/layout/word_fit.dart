@@ -79,15 +79,32 @@ const double _fitSlack = 1;
 /// scaled until it does.
 class WholeWordText extends StatelessWidget {
   const WholeWordText(
-    this.text, {
+    String this.text, {
     required this.style,
     this.maxLines,
     this.width,
+    this.textAlign,
+    this.semanticsLabel,
     super.key,
-  });
+  }) : span = null;
 
-  final String text;
+  /// Text with spans of its own (a bold label before the sentence). The
+  /// widest word is measured in [style], the base the spans are laid over.
+  const WholeWordText.rich(
+    InlineSpan this.span, {
+    required this.style,
+    this.maxLines,
+    this.width,
+    this.textAlign,
+    super.key,
+  }) : text = null,
+       semanticsLabel = null;
+
+  final String? text;
+  final InlineSpan? span;
   final TextStyle style;
+  final TextAlign? textAlign;
+  final String? semanticsLabel;
 
   /// Null lets the text take as many lines as it needs.
   final int? maxLines;
@@ -108,14 +125,25 @@ class WholeWordText extends StatelessWidget {
 
   Widget _text(BuildContext context, double available) {
     final overflow = maxLines == null ? null : TextOverflow.ellipsis;
-    final fitted = wordFitScale(context, text, style, available);
-    if (fitted == null) {
-      return Text(text, style: style, maxLines: maxLines, overflow: overflow);
+    final plain = text ?? span!.toPlainText(includePlaceholders: false);
+    final fitted = wordFitScale(context, plain, style, available);
+    final scaler = fitted == null ? null : TextScaler.linear(fitted);
+    if (span != null) {
+      return Text.rich(
+        span!,
+        style: style,
+        textAlign: textAlign,
+        textScaler: scaler,
+        maxLines: maxLines,
+        overflow: overflow,
+      );
     }
     return Text(
-      text,
+      text!,
       style: style,
-      textScaler: TextScaler.linear(fitted),
+      textAlign: textAlign,
+      semanticsLabel: semanticsLabel,
+      textScaler: scaler,
       maxLines: maxLines,
       overflow: overflow,
     );

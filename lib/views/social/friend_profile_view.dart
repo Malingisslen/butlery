@@ -29,6 +29,7 @@ import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_vie
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/views/social/friend_profile/friend_profile_menu.dart';
+import 'package:butlery/widgets/common/buttons/button_row.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
@@ -159,31 +160,26 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SizedBox(height: AppDimensions.space16),
-                        Row(
+                        ButtonRow(
                           children: [
                             // Opening the chat keeps the name and draws
                             // the plate line (Komponentark v1:365).
-                            Expanded(
-                              child: HeroButton(
-                                key: const ValueKey(
-                                  'friendProfile.sendMessage',
-                                ),
-                                label: l10n.socialSendMessage,
-                                busy: _isStartingConversation,
-                                onPressed: _isStartingConversation
-                                    ? null
-                                    : () => _startConversation(context),
-                                expand: true,
+                            HeroButton(
+                              key: const ValueKey(
+                                'friendProfile.sendMessage',
                               ),
+                              label: l10n.socialSendMessage,
+                              busy: _isStartingConversation,
+                              onPressed: _isStartingConversation
+                                  ? null
+                                  : () => _startConversation(context),
+                              expand: true,
                             ),
-                            const SizedBox(width: AppDimensions.space8),
-                            Expanded(
-                              child: ActionButtons.outlinedButton(
-                                context,
-                                label: l10n.friendProfileShareRecipe,
-                                onPressed: () => _showRecipeSelection(context),
-                                isExpanded: true,
-                              ),
+                            ActionButtons.outlinedButton(
+                              context,
+                              label: l10n.friendProfileShareRecipe,
+                              onPressed: () => _showRecipeSelection(context),
+                              isExpanded: true,
                             ),
                           ],
                         ),

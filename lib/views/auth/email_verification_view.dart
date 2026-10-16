@@ -199,8 +199,10 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
             Expanded(
               child: ButleryPageBody(
                 width: PageWidth.compact,
+                // Scrolls when the screen is too short for the whole form (a
+                // phone on its side, large text).
                 child: Center(
-                  child: Padding(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.all(AppDimensions.space12),
                     // BUT-701: scope keyboard tab-order to this screen's controls
                     // (resend + continue) so Tab walks them in visual order. No

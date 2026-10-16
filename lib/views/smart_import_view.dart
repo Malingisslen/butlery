@@ -142,80 +142,83 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                     constraints: BoxConstraints(
                       minHeight: constraints.maxHeight,
                     ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Pending import retry banner
-                          if (viewModel.hasPendingImport && viewModel.isOnline)
-                            PendingImportBanner(
-                              onRetry: viewModel.retryPendingImport,
-                              onDismiss: viewModel.dismissPendingImport,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Pending import retry banner
+                            if (viewModel.hasPendingImport &&
+                                viewModel.isOnline)
+                              PendingImportBanner(
+                                onRetry: viewModel.retryPendingImport,
+                                onDismiss: viewModel.dismissPendingImport,
+                              ),
+
+                            // Input section
+                            ImportInputSection(
+                              controller: _inputController,
+                              focusNode: _focusNode,
+                              viewModel: viewModel,
+                              onChanged: viewModel.updateInput,
                             ),
 
-                          // Input section
-                          ImportInputSection(
-                            controller: _inputController,
-                            focusNode: _focusNode,
-                            viewModel: viewModel,
-                            onChanged: viewModel.updateInput,
-                          ),
+                            // Platform badge
+                            if (viewModel.detection != null &&
+                                viewModel.detection!.input.isNotEmpty) ...[
+                              const SizedBox(
+                                height: AppDimensions.space12,
+                              ),
+                              PlatformBadgeWidget(
+                                detection: viewModel.detection,
+                              ),
+                            ],
 
-                          // Platform badge
-                          if (viewModel.detection != null &&
-                              viewModel.detection!.input.isNotEmpty) ...[
-                            const SizedBox(
-                              height: AppDimensions.space12,
-                            ),
-                            PlatformBadgeWidget(
-                              detection: viewModel.detection,
-                            ),
+                            // Progress indicator
+                            if (viewModel.isImporting ||
+                                viewModel.phase == ImportPhase.complete) ...[
+                              const SizedBox(
+                                height: AppDimensions.space24,
+                              ),
+                              ImportProgressWidget(
+                                currentStep: viewModel.currentStep,
+                                message: viewModel.progressMessage,
+                                isLoading: viewModel.isImporting,
+                                isVisible: true,
+                                elapsed: viewModel.isImporting
+                                    ? viewModel.elapsed
+                                    : null,
+                              ),
+                            ],
+
+                            // Error message
+                            if (viewModel.error != null &&
+                                viewModel.phase == ImportPhase.error) ...[
+                              const SizedBox(
+                                height: AppDimensions.space16,
+                              ),
+                              ImportErrorMessage(
+                                message: viewModel.error!,
+                                preserved: viewModel.failurePreserved,
+                                routes: viewModel.failureRoutes,
+                                onRoute: (route) =>
+                                    _openRoute(context, viewModel, route),
+                              ),
+                            ],
                           ],
+                        ),
 
-                          // Progress indicator
-                          if (viewModel.isImporting ||
-                              viewModel.phase == ImportPhase.complete) ...[
-                            const SizedBox(
-                              height: AppDimensions.space24,
-                            ),
-                            ImportProgressWidget(
-                              currentStep: viewModel.currentStep,
-                              message: viewModel.progressMessage,
-                              isLoading: viewModel.isImporting,
-                              isVisible: true,
-                              elapsed: viewModel.isImporting
-                                  ? viewModel.elapsed
-                                  : null,
-                            ),
-                          ],
-
-                          // Error message
-                          if (viewModel.error != null &&
-                              viewModel.phase == ImportPhase.error) ...[
-                            const SizedBox(
-                              height: AppDimensions.space16,
-                            ),
-                            ImportErrorMessage(
-                              message: viewModel.error!,
-                              preserved: viewModel.failurePreserved,
-                              routes: viewModel.failureRoutes,
-                              onRoute: (route) =>
-                                  _openRoute(context, viewModel, route),
-                            ),
-                          ],
-
-                          const Spacer(),
-
-                          // Action buttons
-                          ImportActionSection(
-                            viewModel: viewModel,
-                            onImport: () => _handleImport(context, viewModel),
-                            onManualImport: () =>
-                                _handleManualImport(context, viewModel),
-                            onPaste: () => _handlePaste(viewModel),
-                          ),
-                        ],
-                      ),
+                        // Action buttons
+                        ImportActionSection(
+                          viewModel: viewModel,
+                          onImport: () => _handleImport(context, viewModel),
+                          onManualImport: () =>
+                              _handleManualImport(context, viewModel),
+                          onPaste: () => _handlePaste(viewModel),
+                        ),
+                      ],
                     ),
                   ),
                 );

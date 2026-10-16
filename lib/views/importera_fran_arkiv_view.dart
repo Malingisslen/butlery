@@ -100,20 +100,28 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         children: [
           Column(
             children: [
-              Padding(
-                padding: AppDimensions.responsiveContentPadding(context),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ButlerySearchBox(
-                      hintText: context.l10n.importSearchArchive,
-                      onChanged: viewModel.updateSearch,
-                    ),
-                    const SizedBox(height: AppDimensions.space12),
-                    _buildFilterPills(context, viewModel),
-                    const SizedBox(height: AppDimensions.space8),
-                    _buildHeadingRow(context, viewModel),
-                  ],
+              // Natural height, but scrolls on its own when it would take more
+              // than a third of the screen (a phone on its side), so the list
+              // below keeps room.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height / 3,
+                ),
+                child: SingleChildScrollView(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ButlerySearchBox(
+                        hintText: context.l10n.importSearchArchive,
+                        onChanged: viewModel.updateSearch,
+                      ),
+                      const SizedBox(height: AppDimensions.space12),
+                      _buildFilterPills(context, viewModel),
+                      const SizedBox(height: AppDimensions.space8),
+                      _buildHeadingRow(context, viewModel),
+                    ],
+                  ),
                 ),
               ),
               Expanded(child: _buildRecipeList(context, viewModel)),
