@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
@@ -33,11 +34,15 @@ class _IngredientSubstitutionSheetState
     extends State<IngredientSubstitutionSheet> {
   late Future<List<IngredientSubstitution>> _future;
 
+  Future<List<IngredientSubstitution>> _load() =>
+      ServiceLocator.get<SubstitutionSuggestionService>().suggestFor(
+        widget.ingredientName,
+      );
+
   @override
   void initState() {
     super.initState();
-    final service = ServiceLocator.get<SubstitutionSuggestionService>();
-    _future = service.suggestFor(widget.ingredientName);
+    _future = _load();
   }
 
   @override
@@ -64,6 +69,19 @@ class _IngredientSubstitutionSheetState
                   padding: const EdgeInsets.all(AppDimensions.space32),
                   child: PlateLine(
                     semanticLabel: context.l10n.loadingSubstitutions,
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(AppDimensions.space16),
+                  child: InlineError(
+                    what: context.l10n.substitutionLoadFailed,
+                    actionLabel: context.l10n.commonRetry,
+                    onAction: () => setState(() {
+                      _future = _load();
+                    }),
                   ),
                 );
               }

@@ -225,7 +225,6 @@ class FriendRecipeSharingDialog extends StatelessWidget {
       SnackBarUtils.showSuccess(
         context,
         shareMessage,
-        duration: const Duration(seconds: 3),
       );
     } else if (!success && context.mounted) {
       SnackBarUtils.showFailure(

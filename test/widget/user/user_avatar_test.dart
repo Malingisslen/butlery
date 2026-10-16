@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -412,7 +413,24 @@ void main() {
         expect(find.byType(CachedNetworkImage), findsNothing);
       });
 
-      testWidgets('renders square avatar container (Butlery design language)', (
+      testWidgets('the shared avatar builder is round when asked for nothing '
+          '(B-63)', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: UserAvatarWidgets.avatar(displayName: 'Anna Berg'),
+          ),
+        );
+
+        final shapes = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .map((d) => d.shape);
+        expect(shapes, contains(BoxShape.circle));
+        expect(shapes, isNot(contains(BoxShape.rectangle)));
+      });
+
+      testWidgets('renders a round avatar container (B-63)', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -423,14 +441,13 @@ void main() {
           ),
         );
 
-        // Butlery design language is square — avatar Container uses
-        // BoxDecoration without shape: BoxShape.circle.
+        // B-63: a person is always round.
         final avatarContainer = find.byWidgetPredicate(
           (widget) {
             if (widget is Container) {
               final decoration = widget.decoration;
               return decoration is BoxDecoration &&
-                  decoration.shape == BoxShape.rectangle;
+                  decoration.shape == BoxShape.circle;
             }
             return false;
           },

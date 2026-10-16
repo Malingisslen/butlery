@@ -63,6 +63,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
   // Local UI state (not part of business logic)
   bool _isNavigating = false;
+  bool _reloading = false;
 
   @override
   void initState() {
@@ -91,9 +92,26 @@ class _GroupDetailViewState extends State<GroupDetailView>
     });
 
     // Handle navigation for removed/deleted groups
-    if (_viewModel.group == null && !_isNavigating) {
+    if (_viewModel.group == null &&
+        _viewModel.errorMessage == null &&
+        !_reloading &&
+        !_isNavigating) {
       _navigateAway();
     }
+  }
+
+  Future<void> _retryLoad() async {
+    // clearError() notifies before the load starts, and a null group with no
+    // error would then read as a removed group.
+    _reloading = true;
+    try {
+      await _viewModel.loadGroupData();
+    } catch (_) {
+      // loadGroupData has put the failure in errorMessage for the view.
+    } finally {
+      _reloading = false;
+    }
+    if (mounted) _onViewModelChanged();
   }
 
   /// Navigate away when group is deleted or user removed
@@ -354,7 +372,17 @@ class _GroupDetailViewState extends State<GroupDetailView>
       );
     }
 
-    // Show error state if group not found
+    if (_viewModel.group == null && _viewModel.errorMessage != null) {
+      return ButleryPage.undersida(
+        title: context.l10n.socialGroups,
+        body: StateWidget.error(
+          message: _viewModel.errorMessage!,
+          actionLabel: context.l10n.commonRetry,
+          onAction: _retryLoad,
+        ),
+      );
+    }
+
     if (_viewModel.group == null) {
       return ButleryPage.undersida(
         title: context.l10n.groupNotFound,

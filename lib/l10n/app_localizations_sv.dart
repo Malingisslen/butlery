@@ -8947,6 +8947,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get substitutionEmptyState => 'Inga ersättningar hittades';
 
   @override
+  String get substitutionLoadFailed => 'Kunde inte hämta ersättningar';
+
+  @override
   String get pollCreateTitle => 'Skapa omröstning';
 
   @override
@@ -14687,6 +14690,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuPresenceSummaryAllHome => 'Alla hemma hela veckan';
+
+  @override
+  String commonListJoinAnd(String head, String last) {
+    return '$head och $last';
+  }
 
   @override
   String menuPresenceSummaryAway(String names) {

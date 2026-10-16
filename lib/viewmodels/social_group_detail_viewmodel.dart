@@ -181,7 +181,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
   void _initialize() {
     _setupEventListening();
-    loadGroupData();
+    // executeAsync has already put the failure in errorMessage for the view.
+    loadGroupData().catchError((Object _) {});
   }
 
   /// Set up event listening for group changes.
@@ -274,7 +275,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         _pendingInvitations = [];
         _inviteeNames = {};
       }
-    });
+    }, errorPrefix: AppLocale.current.errorCouldNotLoad('gruppen'));
   }
 
   Future<void> _readMemberProfiles() async {

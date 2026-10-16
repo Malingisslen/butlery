@@ -38,7 +38,7 @@ class UserAvatar extends StatelessWidget {
     this.showStatus = false,
     this.isOnline = false,
     this.announceName = true,
-    this.round = false,
+    this.round = true,
   });
 
   @override
