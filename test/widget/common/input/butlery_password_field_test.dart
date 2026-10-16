@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/butlery_password_field.dart';
+import 'package:butlery/widgets/common/input/butlery_password_field.dart';
 
 Widget _app(Widget child, {double scale = 1}) => MaterialApp(
   theme: AppTheme.lightTheme,

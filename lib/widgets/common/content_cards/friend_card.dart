@@ -7,7 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 /// Focused module for friend card components
 /// This module handles ONLY friend and user card display responsibilities:

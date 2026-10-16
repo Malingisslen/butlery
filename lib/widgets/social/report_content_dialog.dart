@@ -14,7 +14,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// Reusable report dialog for any content type.
 ///

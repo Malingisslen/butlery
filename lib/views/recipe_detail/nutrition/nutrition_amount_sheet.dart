@@ -13,7 +13,7 @@ import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// Opens the amount sheet for [line]; completes with true when the
 /// household's amount was saved, false when it was removed, null when the

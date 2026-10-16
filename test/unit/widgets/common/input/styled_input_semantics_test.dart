@@ -2,11 +2,11 @@
 // in every shape it ships in.
 
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_support/semantics_announcement.dart';
+import '../../../../test_support/semantics_announcement.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(

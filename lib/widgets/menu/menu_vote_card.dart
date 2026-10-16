@@ -6,7 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';

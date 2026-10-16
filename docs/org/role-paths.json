@@ -22,8 +22,8 @@
       "lib/widgets/common/state/empty_states.dart",
       "lib/widgets/common/state/loading_states.dart",
       "lib/widgets/common/state_widget.dart",
-      "lib/widgets/styled/**",
-      "lib/widgets/styled/styled_card.dart"
+      "lib/widgets/common/input/**",
+      "lib/widgets/common/cards/styled_card.dart"
     ],
     "Accessibility Specialist": [
       ".claude/rules/ui-conventions.md",

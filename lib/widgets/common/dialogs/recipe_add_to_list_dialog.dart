@@ -15,7 +15,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// What the user picked: an existing list ([listId], [listName]) or a new
 /// one ([newListName]).

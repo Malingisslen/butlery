@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/widgets/styled/butlery_password_field.dart';
+import 'package:butlery/widgets/common/input/butlery_password_field.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -11,7 +11,7 @@ import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/widgets/auth/auth_surface.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
-import 'package:butlery/widgets/styled/field_helper_line.dart';
+import 'package:butlery/widgets/common/input/field_helper_line.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 

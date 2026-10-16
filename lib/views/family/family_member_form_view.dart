@@ -17,7 +17,7 @@ import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:

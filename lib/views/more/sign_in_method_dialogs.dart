@@ -11,7 +11,7 @@ import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
-import 'package:butlery/widgets/styled/butlery_password_field.dart';
+import 'package:butlery/widgets/common/input/butlery_password_field.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 

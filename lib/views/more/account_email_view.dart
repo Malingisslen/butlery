@@ -17,8 +17,8 @@ import 'package:butlery/views/more/account_form_parts.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
-import 'package:butlery/widgets/styled/butlery_password_field.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/butlery_password_field.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 
 class AccountEmailView extends StatefulWidget {
   const AccountEmailView({super.key});

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,

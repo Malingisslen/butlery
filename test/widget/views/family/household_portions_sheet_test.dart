@@ -22,7 +22,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/views/family/household_portions_sheet.dart';
 import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 

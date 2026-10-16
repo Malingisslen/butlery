@@ -15,7 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';

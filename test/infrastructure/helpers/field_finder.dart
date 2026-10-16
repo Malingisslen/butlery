@@ -3,7 +3,7 @@
 // it (LabeledField). [type] is TextFormField or TextField. The label is
 // exact-matched, so it never collides with a hint such as 'Varunamn...'.
 
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

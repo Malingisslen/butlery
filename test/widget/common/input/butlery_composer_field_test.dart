@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/styled/butlery_composer_field.dart';
+import 'package:butlery/widgets/common/input/butlery_composer_field.dart';
 
 Future<void> _pump(
   WidgetTester tester,

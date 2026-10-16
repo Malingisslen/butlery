@@ -23,7 +23,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';

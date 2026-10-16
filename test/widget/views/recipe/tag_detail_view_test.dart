@@ -29,7 +29,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import 'fake_personal_tag_viewmodel.dart';

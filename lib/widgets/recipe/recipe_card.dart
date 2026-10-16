@@ -11,7 +11,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';

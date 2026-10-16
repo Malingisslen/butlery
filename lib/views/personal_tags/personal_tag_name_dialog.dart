@@ -4,8 +4,8 @@ import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// The one-field name dialog behind creating a tag, creating a group and
 /// renaming a group.

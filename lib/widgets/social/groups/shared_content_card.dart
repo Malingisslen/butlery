@@ -12,7 +12,7 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
 class SharedContentCard extends StatelessWidget {

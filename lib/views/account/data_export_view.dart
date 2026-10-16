@@ -21,7 +21,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI

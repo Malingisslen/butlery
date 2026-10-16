@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // The ceiling only goes down: owners of the remaining files move their row
 // chevrons to ButleryChevron.
-const _ceiling = 24;
+const _ceiling = 4;
 
 const _owners = {
   'lib/widgets/common/icons/butlery_icons.dart',

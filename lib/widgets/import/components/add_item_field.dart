@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/butlery_row_field.dart';
+import 'package:butlery/widgets/common/input/butlery_row_field.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Text field for adding new items to a list.

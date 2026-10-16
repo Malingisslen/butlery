@@ -12,8 +12,8 @@ import 'package:butlery/viewmodels/auth/provider_terms_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 

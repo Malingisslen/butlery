@@ -33,7 +33,7 @@ import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {

@@ -96,13 +96,15 @@ CorpusLoad loadEntries(CorpusPaths paths) {
       final ocrFile = File(entry.ocrTextPath);
       final ocrText = ocrFile.existsSync() ? ocrFile.readAsStringSync() : '';
 
-      entries.add(CorpusEntry(
-        bookSlug: bookSlug,
-        recipeId: entry.recipeId,
-        gold: gold,
-        prediction: prediction,
-        ocrText: ocrText,
-      ));
+      entries.add(
+        CorpusEntry(
+          bookSlug: bookSlug,
+          recipeId: entry.recipeId,
+          gold: gold,
+          prediction: prediction,
+          ocrText: ocrText,
+        ),
+      );
     }
   }
 
@@ -110,11 +112,11 @@ CorpusLoad loadEntries(CorpusPaths paths) {
 }
 
 RecipeReport scoreEntry(CorpusEntry entry) => RecipeReport(
-      bookSlug: entry.bookSlug,
-      recipeId: entry.recipeId,
-      score: scoreRecipe(entry.gold, entry.prediction),
-      ocrRecall: goldTokenRecall(entry.gold, entry.ocrText),
-    );
+  bookSlug: entry.bookSlug,
+  recipeId: entry.recipeId,
+  score: scoreRecipe(entry.gold, entry.prediction),
+  ocrRecall: goldTokenRecall(entry.gold, entry.ocrText),
+);
 
 /// Corpus-level means. Scalar accuracies (portions/time) are computed only
 /// over the recipes whose facit actually asserts that field — see
@@ -147,18 +149,18 @@ class CorpusSummary {
   });
 
   Map<String, dynamic> toJson() => {
-        'count': count,
-        'titleMatchRate': _round(titleMatchRate),
-        'meanTitleSimilarity': _round(meanTitleSimilarity),
-        'meanIngredientNameF1': _round(meanIngredientNameF1),
-        'meanIngredientFullF1': _round(meanIngredientFullF1),
-        'meanInstructionF1': _round(meanInstructionF1),
-        'meanOcrRecall': _round(meanOcrRecall),
-        'portionsAsserted': portionsAsserted,
-        'portionsAccuracy': _round(portionsAccuracy),
-        'timeAsserted': timeAsserted,
-        'timeAccuracy': _round(timeAccuracy),
-      };
+    'count': count,
+    'titleMatchRate': _round(titleMatchRate),
+    'meanTitleSimilarity': _round(meanTitleSimilarity),
+    'meanIngredientNameF1': _round(meanIngredientNameF1),
+    'meanIngredientFullF1': _round(meanIngredientFullF1),
+    'meanInstructionF1': _round(meanInstructionF1),
+    'meanOcrRecall': _round(meanOcrRecall),
+    'portionsAsserted': portionsAsserted,
+    'portionsAccuracy': _round(portionsAccuracy),
+    'timeAsserted': timeAsserted,
+    'timeAccuracy': _round(timeAccuracy),
+  };
 }
 
 /// Aggregate scored reports into a [CorpusSummary]. Pure — no IO.
@@ -183,8 +185,9 @@ CorpusSummary summarize(List<RecipeReport> reports) {
   double mean(double Function(RecipeReport) f) =>
       reports.map(f).reduce((a, b) => a + b) / n;
 
-  final portionsScored =
-      reports.where((r) => r.score.portionsMatch != null).toList();
+  final portionsScored = reports
+      .where((r) => r.score.portionsMatch != null)
+      .toList();
   final timeScored = reports.where((r) => r.score.timeMatch != null).toList();
 
   double rate(List<RecipeReport> rs, bool Function(RecipeReport) ok) =>
@@ -199,8 +202,10 @@ CorpusSummary summarize(List<RecipeReport> reports) {
     meanInstructionF1: mean((r) => r.score.instructions.f1),
     meanOcrRecall: mean((r) => r.ocrRecall.recall),
     portionsAsserted: portionsScored.length,
-    portionsAccuracy:
-        rate(portionsScored, (r) => r.score.portionsMatch == true),
+    portionsAccuracy: rate(
+      portionsScored,
+      (r) => r.score.portionsMatch == true,
+    ),
     timeAsserted: timeScored.length,
     timeAccuracy: rate(timeScored, (r) => r.score.timeMatch == true),
   );
@@ -219,11 +224,13 @@ String formatReport(
   if (reports.isNotEmpty) {
     b.writeln('Per-recipe (ingredient name-F1 / full-F1 / OCR-recall):');
     for (final r in reports) {
-      b.writeln('  ${r.bookSlug}/${r.recipeId}: '
-          '${_pct(r.score.ingredientNames.f1)} / '
-          '${_pct(r.score.ingredientsFull.f1)} / '
-          '${_pct(r.ocrRecall.recall)}'
-          '${r.ocrRecall.missing.isEmpty ? '' : '  (OCR missed: ${r.ocrRecall.missing.join(', ')})'}');
+      b.writeln(
+        '  ${r.bookSlug}/${r.recipeId}: '
+        '${_pct(r.score.ingredientNames.f1)} / '
+        '${_pct(r.score.ingredientsFull.f1)} / '
+        '${_pct(r.ocrRecall.recall)}'
+        '${r.ocrRecall.missing.isEmpty ? '' : '  (OCR missed: ${r.ocrRecall.missing.join(', ')})'}',
+      );
     }
     b.writeln('');
   }
@@ -234,10 +241,14 @@ String formatReport(
   b.writeln('  Ingredient full-F1   : ${_pct(summary.meanIngredientFullF1)}');
   b.writeln('  Instruction F1       : ${_pct(summary.meanInstructionF1)}');
   b.writeln('  OCR token recall     : ${_pct(summary.meanOcrRecall)}');
-  b.writeln('  Portions accuracy    : ${_pct(summary.portionsAccuracy)} '
-      '(${summary.portionsAsserted} asserted)');
-  b.writeln('  Time accuracy        : ${_pct(summary.timeAccuracy)} '
-      '(${summary.timeAsserted} asserted)');
+  b.writeln(
+    '  Portions accuracy    : ${_pct(summary.portionsAccuracy)} '
+    '(${summary.portionsAsserted} asserted)',
+  );
+  b.writeln(
+    '  Time accuracy        : ${_pct(summary.timeAccuracy)} '
+    '(${summary.timeAsserted} asserted)',
+  );
   if (skipped.isNotEmpty) {
     b.writeln('');
     b.writeln('--- Skipped (${skipped.length}) ---');

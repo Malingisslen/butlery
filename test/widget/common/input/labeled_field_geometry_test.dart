@@ -5,8 +5,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/butlery_field_border.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 void main() {
   for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {

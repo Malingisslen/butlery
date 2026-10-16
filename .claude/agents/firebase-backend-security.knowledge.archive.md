@@ -11283,3 +11283,11 @@ Confirmed `account_sign_in_methods_view.dart` calls `_confirmItIsYou` (→
 guard: `unlinkProvider` reloads the user before `canUnlinkAny`. No new PII logging in the
 repository diff. No new principle; existing "sign-in methods are a credential change"
 bullet in repo-guards-audit covers it.
+
+## 2026-10-16 — mechanicalRewrites "styled-to-common-paths" (verified clean, no new principle)
+
+Staged diff: `.claude/shared-plugin.json` (new `mechanicalRewrites` rule, 12 import-path pairs `widgets/styled/*` -> `widgets/common/{input,cards}/*`) and `test/unit/theme/mechanical_rewrites_test.dart` (path pairs split from value pairs; per-pair existence test; collision test widened to all pairs). No Firebase, auth, rules, repository, Cloud Functions or user-data code touched. The `reviewGates` block is unchanged. Gate-skip exposure: the rule's `paths` cover `lib/repositories/` and `lib/services/`, so a file in this gate's scope whose only change is one of these import swaps would skip review. Judged safe: every `from` path is absent from the tree and every `to` exists (the suite asserts both), so a swap can only point an import at the moved UI widget. Grep found no `widgets/styled/` string literal in `test/` or `tools/`, so no probe that uses the path as data would be rewritten. `flutter test test/unit/theme/mechanical_rewrites_test.dart`: 37 passed.
+
+## 2026-10-16 — styled-to-common-paths mechanicalRewrites rule (clean, no new principle)
+
+Staged: .claude/shared-plugin.json (new mechanicalRewrites rule "styled-to-common-paths", 12 import-path pairs) and test/unit/theme/mechanical_rewrites_test.dart (splits path pairs from value pairs, collision check over all pairs). No Firebase, auth, rules or user-data code touched; no firebase-backend-security chapter path matched. Verified lib/widgets/styled/ no longer exists, all 12 target files exist under lib/widgets/common/{input,cards}/, and grep finds no remaining widgets/styled/ reference in lib, test or tools, so a swap can only move a non-compiling import to a compiling one. Pass.

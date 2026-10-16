@@ -19,8 +19,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 
 /// Lightweight recipe quick capture — just a title and optional meal type.
 class QuickCaptureView extends StatelessWidget {

@@ -16,7 +16,7 @@ import 'package:butlery/widgets/common/list/butlery_media_row.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';

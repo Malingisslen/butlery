@@ -12,7 +12,7 @@ import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail/tag_detail_actions.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 Future<void> showTagEditSheet(
   BuildContext context, {

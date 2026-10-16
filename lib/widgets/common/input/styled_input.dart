@@ -1,18 +1,18 @@
-// lib/widgets/styled/styled_input.dart
+// lib/widgets/common/input/styled_input.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/styled/styled_input_borders.dart';
+import 'package:butlery/widgets/common/input/styled_input_borders.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/field_valid_mark.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/field_valid_mark.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
-export 'package:butlery/widgets/styled/styled_form_field.dart';
+export 'package:butlery/widgets/common/input/styled_form_field.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app

@@ -34,11 +34,11 @@ class Violation {
   });
 
   Map<String, dynamic> toJson() => {
-        'file': file,
-        'type': type.name,
-        'message': message,
-        if (lineNumber != null) 'line': lineNumber,
-      };
+    'file': file,
+    'type': type.name,
+    'message': message,
+    if (lineNumber != null) 'line': lineNumber,
+  };
 }
 
 /// Main validation runner
@@ -80,11 +80,13 @@ Future<void> main() async {
     // Check 1: File size (500 line limit)
     if (lineCount > maxFileLines) {
       fileSizeViolations++;
-      violations.add(Violation(
-        file: relativePath,
-        type: ViolationType.fileSize,
-        message: 'File has $lineCount lines (max: $maxFileLines)',
-      ));
+      violations.add(
+        Violation(
+          file: relativePath,
+          type: ViolationType.fileSize,
+          message: 'File has $lineCount lines (max: $maxFileLines)',
+        ),
+      );
     }
 
     // Check 2: Direct Firestore access (should use repositories)
@@ -101,12 +103,15 @@ Future<void> main() async {
           !relativePath.contains('repository') &&
           !relativePath.contains('_repository.dart')) {
         firestoreViolations++;
-        violations.add(Violation(
-          file: relativePath,
-          type: ViolationType.directFirebaseInstance,
-          message: 'Direct FirebaseFirestore.instance usage outside repository',
-          lineNumber: i + 1,
-        ));
+        violations.add(
+          Violation(
+            file: relativePath,
+            type: ViolationType.directFirebaseInstance,
+            message:
+                'Direct FirebaseFirestore.instance usage outside repository',
+            lineNumber: i + 1,
+          ),
+        );
       }
 
       // Check for hardcoded hex colors only (Colors.* is often legitimate)
@@ -116,12 +121,14 @@ Future<void> main() async {
           !relativePath.contains('constants') &&
           !line.contains('// ignore-theme-check')) {
         themeViolations++;
-        violations.add(Violation(
-          file: relativePath,
-          type: ViolationType.themeHardcoded,
-          message: 'Hardcoded hex color - consider using theme',
-          lineNumber: i + 1,
-        ));
+        violations.add(
+          Violation(
+            file: relativePath,
+            type: ViolationType.themeHardcoded,
+            message: 'Hardcoded hex color - consider using theme',
+            lineNumber: i + 1,
+          ),
+        );
       }
     }
   }

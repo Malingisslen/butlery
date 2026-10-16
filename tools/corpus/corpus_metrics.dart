@@ -237,7 +237,8 @@ RecipeScore scoreRecipe(GoldRecipe gold, GoldRecipe predicted) {
 
   bool? portions;
   if (gold.portions != null) {
-    portions = normalizeText(gold.portions!) ==
+    portions =
+        normalizeText(gold.portions!) ==
         normalizeText(predicted.portions ?? '');
   }
 

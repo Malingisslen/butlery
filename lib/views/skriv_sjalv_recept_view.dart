@@ -30,7 +30,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';

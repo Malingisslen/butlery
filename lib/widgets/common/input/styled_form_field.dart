@@ -1,4 +1,4 @@
-// lib/widgets/styled/styled_form_field.dart
+// lib/widgets/common/input/styled_form_field.dart
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';

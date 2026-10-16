@@ -14,9 +14,9 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
-import 'package:butlery/widgets/styled/styled_input_borders.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
+import 'package:butlery/widgets/common/input/styled_input_borders.dart';
 
 /// One choice in a [ButleryMenu].
 class ButleryMenuChoice<T> {

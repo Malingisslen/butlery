@@ -1,4 +1,4 @@
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

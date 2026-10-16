@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 
 /// Injectable wrapper for `permission_handler` static APIs. Lets tests drive
 /// status transitions without touching plugin channels.
@@ -368,7 +369,6 @@ class OsPermissionRationaleDialog extends StatelessWidget {
 /// the grant action.
 ///
 /// Colours, both modes:
-/// - Card: slot 835, #F5F4ED light = cs.surface, #24382C dark = cs.primary.
 /// - Title and icon: #24382C light / #F5F4ED dark = cs.onSurface.
 /// - Body: slot 833 = text.bodyMuted, #37453A light / #C9D3C4 dark.
 /// - Consequence line: slot 702 = cs.onSurfaceVariant.
@@ -392,87 +392,80 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final dark = cs.brightness == Brightness.dark;
     // The cancel label falls back to MaterialLocalizations so the helper can
     // present without forcing every caller to pipe a cancel string.
     final cancel =
         cancelLabel ?? MaterialLocalizations.of(context).cancelButtonLabel;
-    return Dialog(
-      backgroundColor: dark ? cs.primary : cs.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.space24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (icon != null) ...[
-                  ExcludeSemantics(
-                    child: ButleryIcon(
-                      icon,
-                      color: cs.onSurface,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.space16),
-                ],
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      title,
-                      style: AppTextStyles.titleLarge.copyWith(
-                        color: cs.onSurface,
-                      ),
-                    ),
+    return ButleryDialogFrame(
+      padding: const EdgeInsets.all(AppDimensions.space24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (icon != null) ...[
+                ExcludeSemantics(
+                  child: ButleryIcon(
+                    icon,
+                    color: cs.onSurface,
+                    size: AppDimensions.iconSizeM,
                   ),
                 ),
+                const SizedBox(width: AppDimensions.space16),
               ],
-            ),
-            const SizedBox(height: AppDimensions.space16),
-            Text(
-              body,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppModeColors.textBodyMuted(cs.brightness),
-              ),
-            ),
-            if (consequence != null) ...[
-              const SizedBox(height: AppDimensions.space16),
-              Text(
-                consequence!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: AppTextStyles.titleLarge.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
                 ),
               ),
             ],
-            const SizedBox(height: AppDimensions.space24),
-            Row(
-              children: [
-                Expanded(
-                  child: ActionButtons.outlinedButton(
-                    context,
-                    label: cancel,
-                    onPressed: () => Navigator.of(context).pop(false),
-                    isExpanded: true,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: ActionButtons.primaryButton(
-                    context,
-                    label: grantLabel,
-                    onPressed: () => Navigator.of(context).pop(true),
-                    isExpanded: true,
-                  ),
-                ),
-              ],
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          Text(
+            body,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppModeColors.textBodyMuted(cs.brightness),
+            ),
+          ),
+          if (consequence != null) ...[
+            const SizedBox(height: AppDimensions.space16),
+            Text(
+              consequence!,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: AppDimensions.space24),
+          Row(
+            children: [
+              Expanded(
+                child: ActionButtons.outlinedButton(
+                  context,
+                  label: cancel,
+                  onPressed: () => Navigator.of(context).pop(false),
+                  isExpanded: true,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.space8),
+              Expanded(
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: grantLabel,
+                  onPressed: () => Navigator.of(context).pop(true),
+                  isExpanded: true,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

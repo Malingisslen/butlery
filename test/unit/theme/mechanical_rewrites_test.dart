@@ -79,6 +79,13 @@ void main() {
     expect(pathPairs, isNotEmpty);
   });
 
+  for (final (from, to) in pathPairs) {
+    test('$from has moved to $to', () {
+      expect(File('lib/$from').existsSync(), isFalse);
+      expect(File('lib/$to').existsSync(), isTrue);
+    });
+  }
+
   test('no pair renames to a name another pair renames away', () {
     final froms = {for (final (a, _) in all) a};
     expect([for (final (_, b) in all) b].where(froms.contains), isEmpty);

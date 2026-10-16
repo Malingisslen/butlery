@@ -19,7 +19,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 
 /// Dialog that collects feedback details and submits via FeedbackService.
 class FeedbackFormDialog extends StatefulWidget {

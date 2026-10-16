@@ -1,4 +1,4 @@
-// lib/widgets/styled/styled_card.dart
+// lib/widgets/common/cards/styled_card.dart
 //
 // The one card (BUT-2370). Its surface, edge, corner and lack of shadow come
 // from the theme's cardTheme alone, so changing the card is a change there and

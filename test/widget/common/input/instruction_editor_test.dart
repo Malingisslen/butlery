@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
-import 'package:butlery/widgets/styled/butlery_row_field.dart';
+import 'package:butlery/widgets/common/input/butlery_row_field.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 

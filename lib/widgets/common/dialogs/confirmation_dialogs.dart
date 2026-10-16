@@ -7,7 +7,7 @@ import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 
 /// Confirmation dialogs for user actions
 /// Refactored to use BaseDialog classes, eliminating 50+ lines of duplicate dialog code.
