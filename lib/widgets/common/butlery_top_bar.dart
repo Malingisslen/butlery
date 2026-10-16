@@ -19,6 +19,8 @@
 // Beslut B-45 (beslutslogg.md rad 52): ingen Cupertino-gren. Plattformskänslan
 // sitter i rörelse och gest, inte i fältets form.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -29,6 +31,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
 /// Vilket av Komponentarkets toppfältsmönster ett [ButleryTopBar] ritar.
@@ -333,15 +336,33 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           container: true,
           header: true,
           headingLevel: 1,
-          child: Text(
-            title,
-            key: const ValueKey('butleryTopBar.title'),
-            style: _resolvedTitleStyle.copyWith(
-              color: _resolvedTitleStyle.color ?? foreground,
-            ),
-            textAlign: centerTitle ? TextAlign.center : TextAlign.start,
-            maxLines: _isRoot ? _rootTitleMaxLines : 1,
-            overflow: TextOverflow.ellipsis,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final titleTextStyle = _resolvedTitleStyle.copyWith(
+                color: _resolvedTitleStyle.color ?? foreground,
+              );
+              // A one-word title wider than the bar is scaled down toward
+              // its unscaled size, never broken between letters.
+              final fitted = _isRoot
+                  ? wordFitScale(
+                      context,
+                      title,
+                      titleTextStyle,
+                      constraints.maxWidth,
+                    )
+                  : null;
+              return Text(
+                title,
+                key: const ValueKey('butleryTopBar.title'),
+                style: titleTextStyle,
+                textScaler: fitted == null
+                    ? null
+                    : TextScaler.linear(math.max(fitted, 1)),
+                textAlign: centerTitle ? TextAlign.center : TextAlign.start,
+                maxLines: _isRoot ? _rootTitleMaxLines : 1,
+                overflow: TextOverflow.ellipsis,
+              );
+            },
           ),
         ),
         if (secondaryLine != null) ...[
@@ -482,7 +503,17 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
     Color foreground,
   ) {
     final base = TextButtonTheme.of(context).style;
+    final direction = Directionality.of(context);
+    // A style's own fields win over the one merged under it, so the padding
+    // and the foreground are written first.
     return ButtonStyle(
+      // The bar reserves hitbox-high content, and the theme's vertical
+      // padding on a scaled label would make the button taller than that.
+      // The 48 dp target comes from the button's minimum size, not padding.
+      padding: WidgetStateProperty.resolveWith((states) {
+        final padding = base?.padding?.resolve(states)?.resolve(direction);
+        return padding?.copyWith(top: 0, bottom: 0);
+      }),
       foregroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
           return base?.foregroundColor?.resolve(states);

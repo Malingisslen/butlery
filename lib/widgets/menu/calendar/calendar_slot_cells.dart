@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
@@ -37,6 +38,29 @@ typedef PresenceTapCallback = void Function(DayOfWeek day, MealSlot slot);
 
 /// The place a cell has to stay tappable: B-03.
 const double kCalendarCellMinHeight = AppDimensions.minTouchTarget;
+
+/// The width a week grid gives each cell, for the text in it to be sized
+/// against. The grid sits in an `IntrinsicHeight`, which cannot host a
+/// `LayoutBuilder`, so it measures once outside it and passes the width down.
+class CalendarCellWidth extends InheritedWidget {
+  const CalendarCellWidth({
+    super.key,
+    required this.width,
+    required super.child,
+  });
+
+  final double width;
+
+  static double? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<CalendarCellWidth>()?.width;
+
+  @override
+  bool updateShouldNotify(CalendarCellWidth old) => width != old.width;
+}
+
+/// What a cell's frame takes of its width: padding and the thicker edge.
+const double kCalendarCellChrome =
+    AppDimensions.space8 * 2 + AppDimensions.borderWidthOutlinedEdge * 2;
 
 /// What every cell of the table shares: the border, the radius and the chosen
 /// state. A cell never draws its own frame.
@@ -196,24 +220,15 @@ class CalendarDishCell extends StatelessWidget {
       color: cs.onSurface,
       height: 1.15,
     );
-    final name = extraCount > 0
-        ? Text.rich(
-            TextSpan(
-              text: title,
-              children: [
-                TextSpan(text: ' +$extraCount'),
-              ],
-            ),
-            style: style,
-            maxLines: maxTitleLines,
-            overflow: maxTitleLines == null ? null : TextOverflow.ellipsis,
-          )
-        : Text(
-            title,
-            style: style,
-            maxLines: maxTitleLines,
-            overflow: maxTitleLines == null ? null : TextOverflow.ellipsis,
-          );
+    final cellWidth = CalendarCellWidth.maybeOf(context);
+    final name = WholeWordText(
+      extraCount > 0 ? '$title +$extraCount' : title,
+      style: style,
+      maxLines: maxTitleLines,
+      width: cellWidth == null
+          ? null
+          : cellWidth - kCalendarCellChrome - marks.reservedWidth,
+    );
     final corner = <Widget>[
       if (marks.placementOrder != null)
         PlacementOrderNumber(order: marks.placementOrder!),

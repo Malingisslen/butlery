@@ -118,9 +118,15 @@ void main() {
       );
     }
 
+    // The tabs scroll sideways when a word does not fit its share, so the
+    // second tab is reached by scrolling it into view first.
+    await tester.ensureVisible(find.text('Kokböcker'));
+    await tester.pump();
     await tester.tap(find.text('Kokböcker'));
     await tester.pump();
     expect(changes, [true]);
+    await tester.ensureVisible(find.text('Alla recept'));
+    await tester.pump();
     await tester.tap(find.text('Alla recept'));
     await tester.pump();
     expect(changes, [true, false]);

@@ -14480,6 +14480,15 @@
   "@decisionHeadlineNoAction": {
     "description": "BUT-2353: decision headline"
   },
+  "decisionOutcomeSentence": "{headline}.",
+  "@decisionOutcomeSentence": {
+    "description": "BUT-2353: a decision headline closed as a sentence, where an appeal sentence follows it",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
   "decisionStatusAppealed": "Appealed",
   "@decisionStatusAppealed": {
     "description": "BUT-2353: badge on a decision with an open appeal"

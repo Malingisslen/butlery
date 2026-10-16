@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// What every admin tab is made of under the shell's bar: a light header with
 /// the tab's title and its own actions (refresh, export), an optional strip
@@ -38,7 +39,7 @@ class AdminTabPage extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     header: true,
-                    child: Text(
+                    child: WholeWordText(
                       title,
                       style: AppTextStyles.headlineSmall.copyWith(
                         color: cs.onSurface,

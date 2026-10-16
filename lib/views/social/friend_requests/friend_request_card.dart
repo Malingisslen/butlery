@@ -17,6 +17,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -41,6 +42,30 @@ class FriendRequestCard {
         userProfile?.displayName ?? context.l10n.friendRequestTitle;
     final cs = Theme.of(context).colorScheme;
     final hasMessage = request.message?.isNotEmpty == true;
+
+    // PQ-18 = A (produktbeslut 2026-09-23, revised after the prototype):
+    // every incoming row keeps a saffron "Acceptera", as drawn. This is a
+    // deliberate exception to one saffron action per view (Komponentark
+    // v1:843-844; Grafisk manual v6:219), for friend requests only.
+    final accept = HeroButton(
+      key: ValueKey('friendRequest.accept.${request.id}'),
+      label: context.l10n.commonAccept,
+      semanticLabel: context.l10n.a11yAcceptFriendRequestFrom(displayName),
+      busy: viewModel.isAccepting(request.id),
+      busyLabel: context.l10n.socialAccepting,
+      onPressed: viewModel.isLoading
+          ? null
+          : () => _acceptRequest(context, request, viewModel),
+      expand: true,
+    );
+    final decline = ActionButtons.outlinedButton(
+      context,
+      label: context.l10n.socialDecline,
+      semanticLabel: context.l10n.a11yDeclineFriendRequestFrom(displayName),
+      onPressed: viewModel.isLoading
+          ? null
+          : () => _rejectRequest(context, request, viewModel),
+    );
 
     final content = Padding(
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.space12),
@@ -111,43 +136,21 @@ class FriendRequestCard {
             // Acceptera first, then the decline action, in the order drawn
             // in Skarmar v12 del 3 #forfragningar, which labels the decline
             // action "Avböj" (del 3:406, :420).
-            Row(
-              children: [
-                // PQ-18 = A (produktbeslut 2026-09-23, revised after the
-                // prototype): every incoming row keeps a saffron "Acceptera",
-                // as drawn. This is a deliberate exception to one saffron
-                // action per view (Komponentark v1:843-844; Grafisk manual
-                // v6:219), for friend requests only.
-                Expanded(
-                  child: HeroButton(
-                    key: ValueKey('friendRequest.accept.${request.id}'),
-                    label: context.l10n.commonAccept,
-                    semanticLabel: context.l10n.a11yAcceptFriendRequestFrom(
-                      displayName,
-                    ),
-                    busy: viewModel.isAccepting(request.id),
-                    busyLabel: context.l10n.socialAccepting,
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _acceptRequest(context, request, viewModel),
-                    expand: true,
+            isLargeText(context)
+                // Large text: one button to a line, so "Acceptera" is not
+                // broken in half by a button half the width.
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: AppDimensions.space8,
+                    children: [accept, decline],
+                  )
+                : Row(
+                    children: [
+                      Expanded(child: accept),
+                      const SizedBox(width: AppDimensions.space12),
+                      Expanded(child: decline),
+                    ],
                   ),
-                ),
-                const SizedBox(width: AppDimensions.space12),
-                Expanded(
-                  child: ActionButtons.outlinedButton(
-                    context,
-                    label: context.l10n.socialDecline,
-                    semanticLabel: context.l10n.a11yDeclineFriendRequestFrom(
-                      displayName,
-                    ),
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _rejectRequest(context, request, viewModel),
-                  ),
-                ),
-              ],
-            ),
           ],
         ],
       ),

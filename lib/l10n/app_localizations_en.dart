@@ -19148,6 +19148,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get decisionHeadlineNoAction => 'The content stays';
 
   @override
+  String decisionOutcomeSentence(String headline) {
+    return '$headline.';
+  }
+
+  @override
   String get decisionStatusAppealed => 'Appealed';
 
   @override

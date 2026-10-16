@@ -18995,6 +18995,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get decisionHeadlineNoAction => 'Innehållet ligger kvar';
 
   @override
+  String decisionOutcomeSentence(String headline) {
+    return '$headline.';
+  }
+
+  @override
   String get decisionStatusAppealed => 'Överklagad';
 
   @override

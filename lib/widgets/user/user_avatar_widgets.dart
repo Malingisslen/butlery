@@ -332,11 +332,16 @@ class UserAvatarWidgets {
     if (initials == unknownInitials) {
       return ButleryIcon(ButleryIcons.user, size: fontSize * 1.5, color: color);
     }
-    return Text(
-      initials,
-      style: (baseStyle ?? AppTextStyles.bodyLargeBold).copyWith(
-        fontSize: fontSize,
-        color: color,
+    // Scaled down rather than clipped: at large text the initials are wider
+    // than the circle they sit in.
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        initials,
+        style: (baseStyle ?? AppTextStyles.bodyLargeBold).copyWith(
+          fontSize: fontSize,
+          color: color,
+        ),
       ),
     );
   }

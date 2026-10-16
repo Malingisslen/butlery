@@ -20,6 +20,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/dialogs/slot_spill_panel.dart';
@@ -98,6 +99,9 @@ class SlotPickerDialog extends StatefulWidget {
 }
 
 class _SlotPickerDialogState extends State<SlotPickerDialog> {
+  static const double _cellMinHeight =
+      AppDimensions.minTouchTarget + AppDimensions.space16;
+
   late final WeeklyMenuPlanService _planService;
   late DateTime _visibleWeekStart;
   WeeklyMenuPlan? _plan;
@@ -250,7 +254,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
               const ButleryIcon(ButleryIcons.calendar),
               const SizedBox(width: AppDimensions.space8),
               Expanded(
-                child: Text(
+                child: WholeWordText(
                   context.l10n.slotPickerDialogTitle,
                   style: AppTextStyles.titleLarge,
                 ),
@@ -320,14 +324,19 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           style: AppTextStyles.titleMedium.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AppDimensions.space4),
-        Row(
-          children: [
-            for (final day in DayOfWeek.values) ...[
-              Expanded(child: _buildCell(plan, day, slot)),
-              if (day != DayOfWeek.sun)
-                const SizedBox(width: AppDimensions.space4),
+        // The cells of a row take the height of the tallest, so a cell that
+        // grows with large text does not leave its neighbours short.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final day in DayOfWeek.values) ...[
+                Expanded(child: _buildCell(plan, day, slot)),
+                if (day != DayOfWeek.sun)
+                  const SizedBox(width: AppDimensions.space4),
+              ],
             ],
-          ],
+          ),
         ),
       ],
     );
@@ -358,7 +367,6 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           child: InkWell(
             onTap: () => _selectSlot(day, slot),
             child: Ink(
-              height: 64,
               decoration: BoxDecoration(
                 // Square per design language.
                 borderRadius: BorderRadius.zero,
@@ -366,73 +374,83 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                     ? cs.primaryContainer
                     : cs.surface,
               ),
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.space4),
-                decoration: BoxDecoration(
-                  // A chosen slot is surface.selected with a 1.5 px text.primary
-                  // border; an occupied one surface.raised with border.control.
-                  // Never a tint.
-                  // primaryContainer / onSurface / outline carry the tokens in
-                  // both schemes.
-                  border: Border.all(
-                    color: isSelected
-                        ? cs.onSurface
-                        : isOccupied
-                        ? cs.outline
-                        : cs.outlineVariant,
-                    width: isSelected ? 1.5 : 1,
+              // A floor, not a height: the cell grows with large text.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: _cellMinHeight),
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.space4),
+                  decoration: BoxDecoration(
+                    // A chosen slot is surface.selected with a 1.5 px text.primary
+                    // border; an occupied one surface.raised with border.control.
+                    // Never a tint.
+                    // primaryContainer / onSurface / outline carry the tokens in
+                    // both schemes.
+                    border: Border.all(
+                      color: isSelected
+                          ? cs.onSurface
+                          : isOccupied
+                          ? cs.outline
+                          : cs.outlineVariant,
+                      width: isSelected ? 1.5 : 1,
+                    ),
                   ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            day.displayLabel,
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                              letterSpacing: 1,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            // One word, scaled down to the narrow cell rather
+                            // than broken in two.
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                day.displayLabel,
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        if (widget.multiSelect)
-                          ButleryIcon(
-                            isSelected
-                                ? ButleryIcons.checkSquare
-                                : ButleryIcons.square,
-                            size: AppDimensions.iconSize18,
-                            color: isSelected
-                                ? cs.onSurface
-                                : cs.onSurfaceVariant,
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Expanded(
-                      child: isOccupied
-                          ? Text(
-                              entries.first.recipeTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.labelSmall,
-                            )
-                          : order >= 0 && order < widget.recipeTitles.length
-                          ? Text(
-                              '${order + 1}',
-                              style: AppTextStyles.titleMedium,
-                            )
-                          : widget.multiSelect
-                          ? const SizedBox.shrink()
-                          : ButleryIcon(
-                              ButleryIcons.plus,
+                          if (widget.multiSelect)
+                            ButleryIcon(
+                              isSelected
+                                  ? ButleryIcons.checkSquare
+                                  : ButleryIcons.square,
                               size: AppDimensions.iconSize18,
-                              color: cs.onSurfaceVariant,
+                              color: isSelected
+                                  ? cs.onSurface
+                                  : cs.onSurfaceVariant,
                             ),
-                    ),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Expanded(
+                        child: isOccupied
+                            ? Text(
+                                entries.first.recipeTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.labelSmall,
+                              )
+                            : order >= 0 && order < widget.recipeTitles.length
+                            ? Text(
+                                '${order + 1}',
+                                style: AppTextStyles.titleMedium,
+                              )
+                            : widget.multiSelect
+                            ? const SizedBox.shrink()
+                            : ButleryIcon(
+                                ButleryIcons.plus,
+                                size: AppDimensions.iconSize18,
+                                color: cs.onSurfaceVariant,
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -454,9 +472,11 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           AppDimensions.space24,
           AppDimensions.space16,
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: 48,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: double.infinity,
+            minHeight: AppDimensions.minTouchTarget,
+          ),
           child: FilledButton(
             onPressed: _selected.isEmpty ? null : _confirmMultiSelection,
             child: Text(

@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_week_grid.dart';
@@ -160,6 +161,15 @@ class _PlacedDish extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isSession = vm.isSessionEntry(entry.id);
+    final cellWidth = CalendarCellWidth.maybeOf(context);
+    final badgeWidth = isSession
+        ? widestWord(
+                context,
+                [context.l10n.weeklyMenuNewBadge],
+                AppTextStyles.overline,
+              ) +
+              AppDimensions.badgePadding.horizontal
+        : 0.0;
     final frame = CalendarCellFrame(
       selected: isSession,
       fillWhenSelected: false,
@@ -167,8 +177,11 @@ class _PlacedDish extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
+            child: WholeWordText(
               entry.recipeTitle,
+              width: cellWidth == null
+                  ? null
+                  : cellWidth - kCalendarCellChrome - badgeWidth,
               style: AppTextStyles.bodySmall.copyWith(
                 height: 1.15,
                 color: off

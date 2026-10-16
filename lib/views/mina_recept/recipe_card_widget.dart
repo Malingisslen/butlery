@@ -214,7 +214,10 @@ class MinaReceptRecipeCard extends StatelessWidget {
             icon: ButleryIcons.trash2,
             iconColor: cs.onError,
           ),
-          child: card,
+          // Dismissible lays its child out in a loose Stack, so without this
+          // a grid card shrinks to its own text and the corner menu ends up
+          // outside it.
+          child: SizedBox(width: double.infinity, child: card),
         ),
       );
     }

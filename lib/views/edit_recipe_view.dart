@@ -178,7 +178,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       leading: bar.leading,
       actions: bar.actions,
       showTabBar: false,
-      width: PageWidth.wide,
+      width: PageWidth.text,
       bottomNavigationBar: _buildBottomBar(context, viewModel),
       body: Stack(
         children: [

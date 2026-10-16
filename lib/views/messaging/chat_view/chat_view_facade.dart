@@ -114,7 +114,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
             secondaryLineIsLive: false,
             backTo: widget.backTo,
             showTabBar: false,
-            width: PageWidth.wide,
+            width: PageWidth.text,
             actions: [
               ChatMenuButton(
                 conversation: conversation,

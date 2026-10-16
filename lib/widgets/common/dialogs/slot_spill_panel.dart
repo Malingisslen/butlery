@@ -80,8 +80,10 @@ class SlotSpillPanel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppDimensions.space16),
-                  SizedBox(
-                    height: 48,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
+                    ),
                     child: FilledButton(
                       onPressed: onNextWeek,
                       child: Text(
@@ -96,8 +98,10 @@ class SlotSpillPanel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppDimensions.space8),
-                  SizedBox(
-                    height: 48,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
+                    ),
                     child: OutlinedButton(
                       onPressed: onChooseMore,
                       child: Text(l.slotSpillChooseMore),
@@ -105,8 +109,10 @@ class SlotSpillPanel extends StatelessWidget {
                   ),
                   if (placed > 0) ...[
                     const SizedBox(height: AppDimensions.space8),
-                    SizedBox(
-                      height: 48,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppDimensions.minTouchTarget,
+                      ),
                       child: OutlinedButton(
                         onPressed: onPlaceOnly,
                         child: Text(l.slotSpillPlaceOnly(placed)),

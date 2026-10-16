@@ -23,6 +23,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 // Theme and utility components
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -257,21 +259,41 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     );
   }
 
+  /// Material's own horizontal label padding on a tab.
+  static const double _tabLabelPadding = AppDimensions.space16 * 2;
+
   Widget _buildTabBar(BuildContext context) {
+    final names = [
+      context.l10n.shoppingTabLists,
+      context.l10n.shoppingTabPantry,
+    ];
     return ColoredBox(
       color: Theme.of(context).colorScheme.surface,
-      child: TabBar(
-        controller: _tabController,
-        tabs: [
-          ButleryTab(
-            icon: const ButleryIcon(ButleryIcons.shoppingCart),
-            text: context.l10n.shoppingTabLists,
-          ),
-          ButleryTab(
-            icon: const ButleryIcon(ButleryIcons.refrigerator),
-            text: context.l10n.shoppingTabPantry,
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) => TabBar(
+          controller: _tabController,
+          // Large text: tabs that cannot each hold their widest word at half
+          // the width take their own width and scroll, instead of clipping.
+          isScrollable:
+              widestWord(
+                    context,
+                    names,
+                    Theme.of(context).tabBarTheme.labelStyle ??
+                        AppTextStyles.tabText,
+                  ) +
+                  _tabLabelPadding >
+              constraints.maxWidth / names.length,
+          tabs: [
+            ButleryTab(
+              icon: const ButleryIcon(ButleryIcons.shoppingCart),
+              text: names[0],
+            ),
+            ButleryTab(
+              icon: const ButleryIcon(ButleryIcons.refrigerator),
+              text: names[1],
+            ),
+          ],
+        ),
       ),
     );
   }

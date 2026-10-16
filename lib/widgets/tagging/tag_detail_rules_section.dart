@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/input/butlery_switch.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -39,6 +40,11 @@ class TagDetailRulesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
+    final newRule = ButleryTextButton(
+      onPressed: onAddRule,
+      label: l10n.tagDetailNewRule,
+      tone: ButleryTextButtonTone.link,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -46,16 +52,22 @@ class TagDetailRulesSection extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: cs.outlineVariant)),
           ),
-          child: Row(
-            children: [
-              Expanded(child: SectionHeading(l10n.tagDetailRulesHeading)),
-              ButleryTextButton(
-                onPressed: onAddRule,
-                label: l10n.tagDetailNewRule,
-                tone: ButleryTextButtonTone.link,
-              ),
-            ],
-          ),
+          child: isLargeText(context)
+              // Large text: the link sits under the heading, so the heading
+              // keeps its words whole.
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionHeading(l10n.tagDetailRulesHeading),
+                    newRule,
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: SectionHeading(l10n.tagDetailRulesHeading)),
+                    newRule,
+                  ],
+                ),
         ),
         for (final rule in tag.rules)
           _RuleRow(

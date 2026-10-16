@@ -19,6 +19,7 @@ import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
@@ -157,6 +158,7 @@ class PantryItemCard extends StatelessWidget {
     required bool selectionMode,
     required bool selected,
   }) {
+    final stackBadge = isLargeText(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space24,
@@ -199,10 +201,16 @@ class PantryItemCard extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
+                // Large text: the badge sits under the amount, where it
+                // cannot squeeze the amount into a column a letter wide.
+                if (item.expiryDate != null && stackBadge) ...[
+                  const SizedBox(height: AppDimensions.space8),
+                  _ExpiryBadge(item: item),
+                ],
               ],
             ),
           ),
-          if (item.expiryDate != null) ...[
+          if (item.expiryDate != null && !stackBadge) ...[
             const SizedBox(width: AppDimensions.space8),
             _ExpiryBadge(item: item),
           ],

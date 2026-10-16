@@ -15,7 +15,7 @@ void main() {
           child: SizedBox(
             width: 90,
             child: CalendarDishCell(
-              title: 'Söndagsstek med potatisgratäng och rödvinssås',
+              title: 'Soppa med rökt skinka och stekt potatis från ugnen',
               marks: const CalendarCellMarks(),
               semanticsLabel: 'Visa',
               onTap: () {},
@@ -30,7 +30,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(cell(maxTitleLines: 2));
-    final text = tester.widget<Text>(find.textContaining('Söndagsstek'));
+    final text = tester.widget<Text>(find.textContaining('Soppa med'));
     expect(text.maxLines, 2);
     expect(text.overflow, TextOverflow.ellipsis);
   });
