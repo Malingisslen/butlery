@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
-import 'package:butlery/widgets/common/input_components.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -233,8 +232,7 @@ void main() {
 
   // BUT-444: when structuredIngredients is provided, the WIDGET must route
   // scaling through PortionScalerLogic.scaleEntries (persisted amounts), not
-  // the v1 string re-parse. Driven through InputComponents.portionScaler so
-  // the facade's parameter forwarding is exercised too. The fixture line
+  // the v1 string re-parse. The fixture line
   // ("ca 2,5 dl ...") defeats the string parser (quantity coerced to 1.0 and
   // the "ca" dropped — '2 dl vispgrädde' at factor 2), so these tests FAIL
   // if any link in the chain silently drops back to the legacy path.
@@ -253,7 +251,7 @@ void main() {
 
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: InputComponents.portionScaler(
+            child: PortionScaler(
               originalPortions: 1,
               originalIngredients: const ['ca 2,5 dl vispgrädde'],
               structuredIngredients: const [structuredEntry],
@@ -285,7 +283,7 @@ void main() {
 
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: InputComponents.portionScaler(
+          child: PortionScaler(
             originalPortions: 1,
             originalIngredients: const ['ca 2,5 dl vispgrädde'],
             onPortionChanged: (_, i) => scaled = i,

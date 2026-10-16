@@ -614,7 +614,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
 | `mockup-kit/examples.html` | `13b4984be8e1769d54e66d672f28e68a13dc5a80848c07719bf91af5503b6099` |
 | `mockup-kit/kit.html` | `26ce8c607ec78d2d418557345c4b52f0c786c8f5147a59ee86b96992f6cc9f75` |
-| `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
+| `ordlista.json` | `a3a98ffc207ae0bc4648f575d0b92e491baf30c200a28a6f95c3ac5d48ed27c7` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f555eb2921f54cf4eda3c19c4d99c5c20cb2c373e6adbc7c460b558a1cc37f85` |
 | `screen-register.json` | `9322881cda268534b54d8b44f32c41f789b82d8f691aa24e50eddf46528df645` |

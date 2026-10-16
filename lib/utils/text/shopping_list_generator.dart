@@ -272,7 +272,7 @@ class ShoppingListGenerator {
   /// Swedish ingredient parsing infrastructure and intelligent categorization system.
   /// **Processing Features:**
   /// - Swedish ingredient parsing with unit/quantity extraction
-  /// - Automatic ingredient categorization (Mejeri, Kött & Fisk, etc.)
+  /// - Automatic ingredient categorization (Mejeri, Kött & fisk, etc.)
   /// - Smart unit conversion and formatting
   /// - Fallback categorization for unknown ingredients
   /// - Robust error handling for malformed ingredient strings

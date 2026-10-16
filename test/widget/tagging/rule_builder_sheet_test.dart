@@ -34,28 +34,6 @@ final _existingRule = PersonalTagRule(
   updatedAt: DateTime(2026, 1, 1),
 );
 
-/// Wrapper that suppresses RenderFlex overflow errors.
-/// RuleConditionCard has a pre-existing overflow issue on narrow test viewports
-/// (dropdown labels exceed available width). We test sheet logic, not card layout.
-void testWidgetsNoOverflow(
-  String description,
-  Future<void> Function(WidgetTester) callback,
-) {
-  testWidgets(description, (tester) async {
-    final originalHandler = FlutterError.onError;
-    FlutterError.onError = (details) {
-      final msg = details.exceptionAsString();
-      if (msg.contains('RenderFlex') && msg.contains('overflowed')) return;
-      originalHandler?.call(details);
-    };
-    try {
-      await callback(tester);
-    } finally {
-      FlutterError.onError = originalHandler;
-    }
-  });
-}
-
 /// Shows the RuleBuilderSheet and returns the result when popped.
 Future<PersonalTagRule?> _showSheet(
   WidgetTester tester, {
@@ -106,7 +84,7 @@ Future<PersonalTagRule?> _showSheet(
 void main() {
   group('RuleBuilderSheet', () {
     group('create mode', () {
-      testWidgetsNoOverflow('shows new rule title and create button', (
+      testWidgets('shows new rule title and create button', (
         tester,
       ) async {
         await _showSheet(tester);
@@ -121,13 +99,13 @@ void main() {
         );
       });
 
-      testWidgetsNoOverflow('starts with 1 default condition', (tester) async {
+      testWidgets('starts with 1 default condition', (tester) async {
         await _showSheet(tester);
 
         expect(find.byType(Card), findsAtLeastNWidgets(1));
       });
 
-      testWidgetsNoOverflow(
+      testWidgets(
         'save with empty name shows snackbar, does NOT pop',
         (tester) async {
           await _showSheet(tester);
@@ -147,7 +125,7 @@ void main() {
     });
 
     group('edit mode', () {
-      testWidgetsNoOverflow('pre-fills name, matchMode, isEnabled', (
+      testWidgets('pre-fills name, matchMode, isEnabled', (
         tester,
       ) async {
         await _showSheet(tester, existingRule: _existingRule);
@@ -163,7 +141,7 @@ void main() {
         expect(segmented.selected, contains(MatchMode.any));
       });
 
-      testWidgetsNoOverflow('shows edit title and save button', (tester) async {
+      testWidgets('shows edit title and save button', (tester) async {
         await _showSheet(tester, existingRule: _existingRule);
 
         expect(
@@ -177,7 +155,7 @@ void main() {
     });
 
     group('cancel', () {
-      testWidgetsNoOverflow('cancel pops with no value', (tester) async {
+      testWidgets('cancel pops with no value', (tester) async {
         await _showSheet(tester);
 
         final cancelButtons = find.byType(TextButton);
@@ -189,7 +167,7 @@ void main() {
     });
 
     group('conditions', () {
-      testWidgetsNoOverflow('add condition increases count', (tester) async {
+      testWidgets('add condition increases count', (tester) async {
         await _showSheet(tester);
 
         final initialCards = find.byType(Card).evaluate().length;
@@ -201,7 +179,7 @@ void main() {
         expect(newCards, initialCards + 1);
       });
 
-      testWidgetsNoOverflow(
+      testWidgets(
         'removing the first of two conditions keeps the second one\'s value',
         (tester) async {
           await _showSheet(tester);
@@ -229,7 +207,7 @@ void main() {
         },
       );
 
-      testWidgetsNoOverflow(
+      testWidgets(
         'last condition delete button is disabled (canDelete: false)',
         (tester) async {
           await _showSheet(tester);
@@ -240,7 +218,7 @@ void main() {
     });
 
     group('enabled switch', () {
-      testWidgetsNoOverflow('enabled switch toggles subtitle text', (
+      testWidgets('enabled switch toggles subtitle text', (
         tester,
       ) async {
         await _showSheet(tester);

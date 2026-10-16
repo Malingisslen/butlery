@@ -25,7 +25,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
@@ -764,7 +764,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   }
 
   Widget _buildPortionScaler(BuildContext context) {
-    return InputComponents.portionScaler(
+    return PortionScaler(
       originalPortions: viewModel.recipe.portions ?? 1,
       originalIngredients: viewModel.recipe.ingredients,
       // BUT-444: scale on persisted amounts; falls back per-entry to the

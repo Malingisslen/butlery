@@ -37,7 +37,6 @@ void main() {
         CheckboxListTile(value: a);
         Checkbox.adaptive(value: a);
         ButleryCheckbox(value: a);
-        DebouncedCheckbox(value: a);
         ButleryCheckboxTile(value: a);
       ''',
       ).length,
