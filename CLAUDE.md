@@ -63,6 +63,11 @@ commit both. Don't rebuild the map; don't ignore the marker.
 forward slashes in test paths. Before declaring work done, the `verify` skill runs the full
 check (analyze + tests on changed files).
 
+**Work that lands through a PR** (cloud/Projects threads): after your LAST push, turn on
+auto-merge (squash) and end the turn — don't sit waiting for CI. The `main: CI must be
+green` ruleset still holds a red PR back. Never turn it on while commits remain to push:
+the PR merges as soon as the commit already there goes green, without the rest.
+
 ## Stop hook response
 
 When the stop hook blocks with a `reason`, fix it immediately rather than asking:
