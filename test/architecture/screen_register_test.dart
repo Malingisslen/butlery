@@ -1,7 +1,8 @@
 // Every view has a row in design/screen-register.json tying it to its sketch
 // frames and a committed sketch-against-app image. A view that was never
 // compared is `ej-bedömd`; that count only shrinks, so a new view cannot
-// arrive without being compared.
+// arrive without being compared. The same goes for `skillnader-listade`, a
+// view whose differences are written down but not yet closed.
 
 import 'dart:convert';
 import 'dart:io';
@@ -17,6 +18,17 @@ const _statuses = {
 };
 
 const _notAssessedBaseline = 3;
+const _differencesListedBaseline = 16;
+
+// The onboarding pages are steps inside onboarding_view.dart and are compared
+// through its row; any other *_page.dart needs a row of its own.
+const _pagesCoveredByAnotherRow = {
+  'lib/views/onboarding/onboarding_age_gate_page.dart',
+  'lib/views/onboarding/onboarding_allergen_page.dart',
+  'lib/views/onboarding/onboarding_import_page.dart',
+  'lib/views/onboarding/onboarding_setup_page.dart',
+  'lib/views/onboarding/onboarding_welcome_page.dart',
+};
 
 Map<String, dynamic> _json(String path) =>
     jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
@@ -27,21 +39,28 @@ void main() {
   final frames =
       _json('design/sketch-frames.json')['frames'] as Map<String, dynamic>;
 
-  test('every *_view.dart under lib/views has a register row', () {
-    final missing = [
-      for (final e in Directory('lib/views').listSync(recursive: true))
-        if (e is File && e.path.endsWith('_view.dart'))
-          if (!views.containsKey(e.path.replaceAll(r'\', '/')))
-            e.path.replaceAll(r'\', '/'),
-    ]..sort();
-    expect(
-      missing,
-      isEmpty,
-      reason:
-          'Add the view to design/screen-register.json with its sketch '
-          'frames and a sketch-against-app image (design/skiss-mot-app/).',
-    );
-  });
+  test(
+    'every *_view.dart and *_page.dart under lib/views has a register row',
+    () {
+      final missing = [
+        for (final e in Directory('lib/views').listSync(recursive: true))
+          if (e is File &&
+              (e.path.endsWith('_view.dart') || e.path.endsWith('_page.dart')))
+            if (!views.containsKey(e.path.replaceAll(r'\', '/')) &&
+                !_pagesCoveredByAnotherRow.contains(
+                  e.path.replaceAll(r'\', '/'),
+                ))
+              e.path.replaceAll(r'\', '/'),
+      ]..sort();
+      expect(
+        missing,
+        isEmpty,
+        reason:
+            'Add the view to design/screen-register.json with its sketch '
+            'frames and a sketch-against-app image (design/skiss-mot-app/).',
+      );
+    },
+  );
 
   test('every register row names a file that exists and a valid status', () {
     final bad = [
@@ -83,6 +102,19 @@ void main() {
       reason: n > _notAssessedBaseline
           ? 'A view was added without being compared with its sketch.'
           : 'Lower _notAssessedBaseline to $n.',
+    );
+  });
+
+  test('the differences-listed count only shrinks', () {
+    final n = views.values
+        .where((v) => (v as Map)['status'] == 'skillnader-listade')
+        .length;
+    expect(
+      n,
+      _differencesListedBaseline,
+      reason: n > _differencesListedBaseline
+          ? 'A view moved to skillnader-listade; close the differences instead.'
+          : 'Lower _differencesListedBaseline to $n.',
     );
   });
 }

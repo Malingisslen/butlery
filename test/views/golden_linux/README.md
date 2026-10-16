@@ -8,7 +8,7 @@ it), and the recipe detail and Mina recept again at 200 % text
 compared on Linux only, in the `views (ubuntu)` job of `test.yml`. On Windows
 and macOS the tests report as skipped, and `--update-goldens` refuses to run.
 
-The ten older Windows-pinned PNGs under `test/widget/` are separate and
+The eight older Windows-pinned PNGs under `test/widget/` are separate and
 unchanged (`test/widget/golden/golden_helper.dart`).
 
 ## Landed

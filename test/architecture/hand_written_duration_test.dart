@@ -1,12 +1,25 @@
 // Motion is spoken in AppMotion's tokens (micro, standard, pulse). A duration
 // typed out in a widget is a fourth speed nobody decided, so the files that
-// still hold one are pinned by count and the number only falls.
+// still hold one are pinned by count and the number only falls. The scan
+// covers every layer that draws or times UI; bootstrap, repositories and
+// services that only time network calls are left out.
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 const _handWritten = <String, int>{
+  'lib/app/auth/auth_wrapper.dart': 1,
+  'lib/app/butlery_app.dart': 1,
+  'lib/core/base/base_action_handler.dart': 3,
+  'lib/core/utils/captured_snackbars.dart': 3,
+  'lib/core/utils/connectivity_check.dart': 6,
+  'lib/core/utils/os_permission_helper.dart': 2,
+  'lib/core/utils/retry_helper.dart': 6,
+  'lib/core/utils/snackbar_utils.dart': 9,
+  'lib/core/utils/undo_window.dart': 1,
+  'lib/services/performance/optimized_image_loader.dart': 3,
+  'lib/services/performance/performance_monitoring_service.dart': 3,
   'lib/views/account/data_export_helpers/download_web.dart': 2,
   'lib/views/account/data_export_view.dart': 1,
   'lib/views/auth/email_verification_view.dart': 3,
@@ -53,7 +66,14 @@ final _literal = RegExp(r'\bDuration\(\s*(milliseconds|seconds)\s*:');
 
 Map<String, int> _counts() {
   final counts = <String, int>{};
-  for (final root in ['lib/views', 'lib/widgets']) {
+  for (final root in [
+    'lib/views',
+    'lib/widgets',
+    'lib/app',
+    'lib/core/base',
+    'lib/core/utils',
+    'lib/services/performance',
+  ]) {
     for (final file in Directory(root).listSync(recursive: true)) {
       if (file is! File || !file.path.endsWith('.dart')) continue;
       final path = file.path.replaceAll(r'\', '/');

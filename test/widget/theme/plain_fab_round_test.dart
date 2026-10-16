@@ -1,9 +1,4 @@
-/// P7-U04 follow-up: the FAB theme's CircleBorder is inherited by every
-/// FloatingActionButton.extended that sets no shape of its own, which would
-/// draw a labelled button as a 56 dp disc with the label spilling out. The
-/// labelled FAB in the app therefore sets a pill (Komponentark v1:665;
-/// tokens.json space.radius.pill). Checked under the real app theme in both
-/// modes.
+/// The FAB theme draws a plain FloatingActionButton as a disc in both modes.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components/invitation_actions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 void main() {
@@ -58,21 +52,6 @@ void main() {
   }
 
   for (final entry in themes.entries) {
-    testWidgets('send-invitations FAB is a pill (${entry.key})', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        app(
-          entry.value,
-          (_) => InvitationActions.floatingActionButtons(
-            onSendInvitations: () {},
-            showAdd: false,
-          ),
-        ),
-      );
-      expect(fabShape(tester), isA<StadiumBorder>());
-    });
-
     testWidgets('plain FAB stays round (${entry.key})', (tester) async {
       await tester.pumpWidget(
         app(

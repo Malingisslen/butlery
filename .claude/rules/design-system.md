@@ -65,6 +65,7 @@ light bar (B-60), the tab bar shows on every page reached from a tab (B-54).
 - The rule is on by default for every `ButleryTopBar.undersida`. A modal bar (the photo
   viewer) or a main-tab bar built with `implyBack: false` passes `accentRule: false`.
 - `titleStyle`, `backgroundColor` and `foregroundColor` on `ButleryTopBar` are not for
-  views. A view that needs one has found a missing row.
+  views. A view that needs one has found a missing row. The one sanctioned `titleStyle` is
+  `ButleryTopBar.selectionCountStyle`, for the count while a list is in selection mode.
 - `test/architecture/top_bar_choice_test.dart` lists the files that still construct
   `ButleryTopBar` themselves. The list only shrinks: a new view uses `ButleryPage`.

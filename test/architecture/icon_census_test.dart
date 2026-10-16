@@ -10,8 +10,7 @@
 ///
 /// Also enforced: no CupertinoIcons and no AdaptiveIcon(s) anywhere in lib
 /// (plattformsmatris.md:75: the icon family is identical on both
-/// platforms), and every icon is built with ButleryIcon, never a plain Icon,
-/// outside the two files package 7 deletes (P7-Z).
+/// platforms), and every icon is built with ButleryIcon, never a plain Icon.
 library;
 
 import 'dart:io';
@@ -21,19 +20,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// file -> Material icon name -> number of uses.
 const Map<String, Map<String, int>> _residue = {};
 
-/// Files the package 7 closing track (P7-Z) deletes; left untouched by
-/// P7-U08. Their residue rows only count while the file exists, so the two
-/// package 7 tracks can merge in either order. After P7-Z lands, delete
-/// their rows here and in [_residue].
-const Set<String> _deletedByClosingTrack = {
-  'lib/widgets/common/feedback/snackbar_widgets.dart',
-  'lib/widgets/common/indicators/sync_indicator.dart',
-};
-
-/// Files allowed to build a plain Icon: the glyph widget itself and the
-/// files [_deletedByClosingTrack] names.
+/// Files allowed to build a plain Icon: the glyph widget itself.
 const Set<String> _plainIconAllowed = {
-  ..._deletedByClosingTrack,
   'lib/widgets/common/icons/butlery_glyph.dart',
 };
 
@@ -69,9 +57,6 @@ void main() {
       }
     }
     for (final MapEntry(key: file, value: names) in _residue.entries) {
-      if (_deletedByClosingTrack.contains(file) && !File(file).existsSync()) {
-        continue;
-      }
       for (final MapEntry(key: name, value: allowed) in names.entries) {
         final count = actual[file]?[name] ?? 0;
         if (count < allowed) {

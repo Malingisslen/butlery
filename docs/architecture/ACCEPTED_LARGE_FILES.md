@@ -213,11 +213,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `menu_viewmodel.dart` | 1155 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 684 | Shopping list member management dialog |
 | `photo_import_view.dart` | 561 | Photo import screen |
-| `social_invitation_components.dart` | 513 | Pure facade delegating to focused invitation sub-modules |
-| `social_builder_components.dart` | 516 | Pure static facade delegating to SocialFacade; no direct logic |
-| `friend_category_manager.dart` | 488 | **candidate**: stateful widget mixing friend-selection and category-management UI — splittable into picker + management sub-widgets |
 | `layout_components.dart` | 171 | Common layout component widgets |
-| `social_collaborative_components.dart` | 504 | Collaborative social UI components |
 | `group_weekly_menu_widget.dart` | 347 | The group's weekly menu screen (BUT-1971). Row added 2026-08-30. Grew past 500 with the provenance row and the voter sheet, which the Art. 15 keep decision rests on. The day rows, the face row and the week arrows are already separate widgets; the next split is the sheet. |
 | `menu_preview_view.dart` | 326 | Shared menu preview screen |
 | `chat_action_handler.dart` | 756 | Chat action handling — extracted from messaging view; single handler class. The size guard matches on basename only, so a stale figure here reddens nothing; re-measure with `wc -l` in the same call that stages. |
@@ -229,7 +225,6 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_query_viewmodel.dart` | 636 | Recipe search/filter/sort VM with history |
 | `menu_content_widgets.dart` | 313 | **candidate**: multiple static widget builders for distinct menu sections — splittable by section type |
 | `image_gallery_widget.dart` | 507 | Image gallery widget |
-| `social_facade.dart` | 428 | Social UI facade widget |
 | `duplicate_merge_sheet.dart` | 498 | Single-purpose bottom sheet; merge logic and UI tightly coupled by design |
 | `shopping_sharing_status_dialog.dart` | 567 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
 | `calendar_cells.dart` | 235 | Focused stateless widget for calendar cell rendering; extracted for reuse |
@@ -259,7 +254,6 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 
 | File | Lines | Why it's a candidate |
 |------|-------|---------------------|
-| `friend_category_manager.dart` | 488 | Friend-picker UI and category-management UI are independent; split into picker + management sub-widgets |
 | `veckomeny_view.dart` | 1181 | Top-level weekly-menu view pulling many widget builders; extract section sub-widgets |
 | `collection_stats_view.dart` | 185 | Stats sections (_HeroBanner, _SectionHeader, etc.) are self-contained; good widget-extraction candidates |
 | `shopping_sharing_status_dialog.dart` | 567 | 5+ distinct sections in one dialog; extract as private sub-widgets |

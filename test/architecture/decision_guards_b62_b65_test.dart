@@ -35,18 +35,22 @@ void main() {
     });
 
     test('knappar och fält läser höjden ur AppDimensions', () {
-      for (final path in const [
-        'lib/theme/components/button_themes.dart',
-        'lib/theme/components/input_themes.dart',
-      ]) {
-        final code = _source(path);
-        expect(
-          code.contains('controlVisualHeight') ||
-              code.contains('fieldVisualPaddingY'),
-          isTrue,
-          reason: 'B-62: $path ritar inte längre med det delade måttet',
-        );
-      }
+      // One read per button theme (elevated, filled, outlined, text and the
+      // hero style), so a single button drifting to its own height is caught.
+      expect(
+        'AppDimensions.controlVisualHeight'
+            .allMatches(_source('lib/theme/components/button_themes.dart'))
+            .length,
+        5,
+        reason: 'B-62: en knapp ritar inte längre med det delade måttet',
+      );
+      expect(
+        'AppDimensions.fieldVisualPaddingY'
+            .allMatches(_source('lib/theme/components/input_themes.dart'))
+            .length,
+        1,
+        reason: 'B-62: fältet ritar inte längre med det delade måttet',
+      );
     });
   });
 

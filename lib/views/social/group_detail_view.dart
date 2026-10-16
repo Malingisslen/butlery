@@ -11,7 +11,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/groups/group_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -141,14 +141,12 @@ class _GroupDetailViewState extends State<GroupDetailView>
   }
 
   Future<void> _showEditGroupDialog(FriendCategory group) async {
-    final result = await SocialGroupComponents.showEditGroupDialog(
-      context: context,
-      groupId: group.id,
-      currentGroupName: group.name,
-      currentMemberIds: group.memberIds,
+    final updated = await GroupDialogs.showEditGroupDialog(
+      context,
+      group: group,
     );
 
-    if (result == true && mounted) {
+    if (updated != null && mounted) {
       SnackBarUtils.showSuccess(context, context.l10n.groupUpdated);
       await _viewModel.loadGroupData();
     }
@@ -176,10 +174,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
       return;
     }
 
-    final shouldDelete = await SocialGroupComponents.showDeleteGroupDialog(
-      context: context,
-      groupId: group.id,
-      groupName: group.name,
+    final shouldDelete = await GroupDialogs.showDeleteGroupDialog(
+      context,
+      group: group,
     );
 
     if (shouldDelete == true && mounted && !_isNavigating) {

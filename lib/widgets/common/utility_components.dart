@@ -6,7 +6,6 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/service/service_widgets.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
-import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/widgets/common/permissions/permission_widgets.dart';
 
 // Re-export ActionButtonStyle from the focused component
@@ -187,36 +186,6 @@ class UtilityComponents {
       child: child,
       maxWidth: maxWidth,
       padding: padding,
-    );
-  }
-
-  /// Friend category manager for social sharing.
-  static Widget friendCategoryManager({
-    required List<String> selectedFriendIds,
-    required Function(List<String>) onSelectionChanged,
-    bool allowMultipleCategories = true,
-    String? title,
-    String? subtitle,
-  }) {
-    return FriendCategoryWidgets.friendCategoryManager(
-      selectedFriendIds: selectedFriendIds,
-      onSelectionChanged: onSelectionChanged,
-      allowMultipleCategories: allowMultipleCategories,
-      title: title,
-      subtitle: subtitle,
-    );
-  }
-
-  /// Compact variant for smaller spaces.
-  static Widget compactFriendCategoryManager({
-    required List<String> selectedFriendIds,
-    required Function(List<String>) onSelectionChanged,
-    int maxHeight = 300,
-  }) {
-    return FriendCategoryWidgets.compactFriendCategoryManager(
-      selectedFriendIds: selectedFriendIds,
-      onSelectionChanged: onSelectionChanged,
-      maxHeight: maxHeight,
     );
   }
 

@@ -110,7 +110,6 @@ const _foregroundCalls = {
   'all', // Border.all
   'Divider',
   'VerticalDivider',
-  'StatItemWidget',
   'BarChartRodData',
 };
 
