@@ -7,7 +7,7 @@
 
 ## 1. Introduktion
 
-Välkommen till Butlery! Vi värnar om din integritet och är engagerade i att skydda dina personuppgifter. Denna integritetspolicy förklarar hur vi samlar in, använder, lagrar och skyddar din information i enlighet med Dataskyddsförordningen (GDPR).
+Välkommen till Butlery. Vi värnar om din integritet och är engagerade i att skydda dina personuppgifter. Denna integritetspolicy förklarar hur vi samlar in, använder, lagrar och skyddar din information i enlighet med Dataskyddsförordningen (GDPR).
 
 Genom att använda Butlery godkänner du de metoder som beskrivs i denna policy.
 
@@ -48,7 +48,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 ### 3.3 Information från tredje part
 
 - **Importerade recept:** Recept du importerar från externa webbplatser
-- **Inloggning med Google eller Apple:** Om du väljer "Fortsätt med Google" eller "Fortsätt med Apple" får vi ditt namn, din e-postadress och ditt användar-id hos Google eller Apple. Se avsnitt 6.5.
+- **Inloggning med Google eller Apple:** Om du väljer ”Fortsätt med Google” eller ”Fortsätt med Apple” får vi ditt namn, din e-postadress och ditt användar-id hos Google eller Apple. Se avsnitt 6.5.
 
 ### 3.4 Om du provar som gäst
 
@@ -71,7 +71,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Sociala funktioner | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Push-notiser | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Säkerhet och bedrägeriförebyggande | Berättigat intresse (Art. 6.1.f) | Skydda tjänsten |
-| Gemensamma betyg ("Butlery-betyget") | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
+| Gemensamma betyg (”Butlery-betyget”) | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
 | Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
 
 ---
@@ -123,17 +123,17 @@ Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom E
 
 **Delade allergier i hushållet (om du har samtyckt):**
 
-Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
+Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar – även de som går med senare – se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
 
 **Ditt namn på rätter i delade menyer (om du har samtyckt):**
 
-Om du slår på "Visa mitt namn på mina rätter i delade menyer" ser den som öppnar en delad meny ditt namn under de rätter du har gjort, med en länk till din offentliga profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Valet bygger på ditt **samtycke (art. 6.1 a)**, är avstängt som standard och kan inte slås på av den som är under 18 år. Vi sparar valet och tidpunkten då du senast ändrade det på din offentliga profil, och båda ingår i din dataexport. Stänger du av valet försvinner namnet inom 30 minuter. Inget namn sparas i menyerna; en rätt bär bara ditt användar-id som skapare. Den som är med i en meny kan skriva in rätter, så ditt id kan hamna på en rätt du inte har gjort. Trycker du då på "Det här är inte min rätt" tar vi bort ditt id från den rätten direkt, och en moderator får se anmälan. Anmälan och en textkopia av rätten (titel och beskrivning, och om rätten angav dig som skapare) sparas enligt raden om anmält innehåll i avsnitt 8.
+Om du slår på ”Visa mitt namn på mina rätter i delade menyer” ser den som öppnar en delad meny ditt namn under de rätter du har gjort, med en länk till din offentliga profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Valet bygger på ditt **samtycke (art. 6.1 a)**, är avstängt som standard och kan inte slås på av den som är under 18 år. Vi sparar valet och tidpunkten då du senast ändrade det på din offentliga profil, och båda ingår i din dataexport. Stänger du av valet försvinner namnet inom 30 minuter. Inget namn sparas i menyerna; en rätt bär bara ditt användar-id som skapare. Den som är med i en meny kan skriva in rätter, så ditt id kan hamna på en rätt du inte har gjort. Trycker du då på ”Det här är inte min rätt” tar vi bort ditt id från den rätten direkt, och en moderator får se anmälan. Anmälan och en textkopia av rätten (titel och beskrivning, och om rätten angav dig som skapare) sparas enligt raden om anmält innehåll i avsnitt 8.
 
-### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
+### 5.3 Gemensamma betyg (”Butlery-betyget”) – berättigat intresse, inte samtycke
 
-När du betygsätter ett recept (betyget "alla", 1–5 stjärnor) sammanförs det med
+När du betygsätter ett recept (betyget ”alla”, 1–5 stjärnor) sammanförs det med
 betygen från andra användare som har **samma rätt** till ett gemensamt
-snittbetyg som visas som "Butlery-betyget". Rätten känns igen via ett
+snittbetyg som visas som ”Butlery-betyget”. Rätten känns igen via ett
 innehållsfingeravtryck av titel och ingredienser – **ingen recepttext delas, bara
 siffrorna.**
 
@@ -144,7 +144,7 @@ siffrorna.**
   ditt konto. Denna uppgift är **pseudonym, inte anonym** – den är din personuppgift
   och ingår i din dataexport och raderas när du tar bort ditt konto eller det
   underliggande betyget.
-- **Familjens privata betyg räknas aldrig in** – hushållets/"familjens" betyg
+- **Familjens privata betyg räknas aldrig in** – hushållets/”familjens” betyg
   ligger separat och är strukturellt undantagna.
 - **Rättslig grund – berättigat intresse (Art. 6.1.f):** att förbättra
   receptupptäckt och menykvalitet med en pålitlig gemensam signal. Detta kräver
@@ -174,7 +174,7 @@ Vi delar dina personuppgifter med följande tredje parter:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Irland)**
 - **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys) via Gemini-modeller
 - **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
-- **Överföring:** Inom EU/EES — bearbetningen sker i Google Clouds EU-multiregion (`eu`). Ingen överföring till USA.
+- **Överföring:** Inom EU/EES – bearbetningen sker i Google Clouds EU-multiregion (`eu`). Ingen överföring till USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Obs:** Bilder som skickas för OCR-bearbetning kan innehålla personuppgifter som syns i fotografiet. Text rensas från kända PII-mönster före bearbetning; bilder kan inte rensas.
 
@@ -184,7 +184,7 @@ Vi delar dina personuppgifter med följande tredje parter:
 - **Överföring:** Inom EU/EES
 - **Policy:** [https://ocr.space/privacypolicy](https://ocr.space/privacypolicy)
 
-**Algolia (Algolia Inc., USA/EU)** *(för närvarande inaktiv — tillgänglig via funktionsflagga)*
+**Algolia (Algolia Inc., USA/EU)** *(för närvarande inaktiv – tillgänglig via funktionsflagga)*
 - **Syfte:** Sökindexering och receptsökning (när aktiverad)
 - **Rättslig grund:** Berättigat intresse (nödvändigt för tjänstens sökfunktion)
 - **Överföring:** EU-datacenter (Frankrike), med USA-backup under EU-USA Data Privacy Framework
@@ -199,10 +199,10 @@ Vi kan dela information om:
 
 ### 6.3 Vad vi INTE gör
 
-- ❌ Vi säljer aldrig dina personuppgifter
-- ❌ Vi delar inte dina recept utan ditt samtycke
-- ❌ Vi skickar inte spam
-- ❌ Vi använder inte dina uppgifter för annan annonsering än den du samtyckt till
+- Vi säljer aldrig dina personuppgifter
+- Vi delar inte dina recept utan ditt samtycke
+- Vi skickar inte spam
+- Vi använder inte dina uppgifter för annan annonsering än den du samtyckt till
 
 ### 6.4 Sammanställning av personuppgiftsbiträden (GDPR Art. 13.1.f)
 
@@ -212,8 +212,8 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 |---------|---------------|---------------|-------------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering, inloggningsuppgifter från Google eller Apple | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
-| **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
+| **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) – ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) – ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
 
 Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje förändring av vår leverantörskedja.
@@ -267,7 +267,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 | Begäran om kontoradering (datum och den anledning du angav) | Tills kontot raderas, högst 7 dagar efter begäran, eller tills du ångrar | Fullgöra din begäran om radering och låta dig ångra den (Art. 17) |
-| Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
+| Gemensamma betygsbidrag (”Butlery-betyget”) | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
 | Nyckel för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering, använder en reservkod för att logga in eller raderar kontot | Fullgörande av avtal |
 | Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
@@ -291,7 +291,7 @@ Du har följande rättigheter enligt GDPR:
 - Korrigera felaktig information
 - **Hur:** Uppdatera i appens inställningar eller kontakta oss
 
-### 9.3 Rätt till radering (Art. 17 - "Rätten att bli glömd")
+### 9.3 Rätt till radering (Art. 17 - ”Rätten att bli glömd”)
 - Radera ditt konto och alla dina uppgifter
 - **Hur:** Profil → Kontohantering → Radera konto
 - **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt. Har du loggat in med Apple ångrar du raderingen genom att logga in med Apple igen. Apple frågar då på nytt om du vill använda Butlery med ditt Apple-konto.
@@ -330,20 +330,20 @@ Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina
 
 ### 10.1 Tekniska åtgärder
 
-- ✅ Branschstandard lösenordshashning (Firebase Auth)
-- ✅ HTTPS/TLS-kryptering vid överföring
-- ✅ Kryptering av data i vila (Firebase)
-- ✅ Säker autentisering (Firebase Auth)
-- ✅ Regelbundna säkerhetsuppdateringar
-- ✅ Åtkomstbegränsningar och behörighetskontroller
-- ✅ Frivillig tvåstegsverifiering med autentiseringsapp och reservkoder
+- Branschstandard lösenordshashning (Firebase Auth)
+- HTTPS/TLS-kryptering vid överföring
+- Kryptering av data i vila (Firebase)
+- Säker autentisering (Firebase Auth)
+- Regelbundna säkerhetsuppdateringar
+- Åtkomstbegränsningar och behörighetskontroller
+- Frivillig tvåstegsverifiering med autentiseringsapp och reservkoder
 
 ### 10.2 Organisatoriska åtgärder
 
-- ✅ Begränsad åtkomst till personuppgifter
-- ✅ Säkerhetsrutiner och policies
-- ✅ Regelbunden säkerhetsutbildning
-- ✅ Incidenthanteringsplaner
+- Begränsad åtkomst till personuppgifter
+- Säkerhetsrutiner och policies
+- Regelbunden säkerhetsutbildning
+- Incidenthanteringsplaner
 
 ### 10.3 Vid dataintrång
 
@@ -370,7 +370,7 @@ Du kan hantera samtycke för databehandling i: **Profil → Kontohantering → H
 
 Butlery är avsedd för användare som är 15 år eller äldre. Vi samlar inte medvetet in personuppgifter från barn under 15 år.
 
-Åldersgränsen 15 år följer av svensk dataskyddslagstiftning (dataskyddslagen 2 kap. 4 §), som sätter 15 år för informationssamhällets tjänster med ett socialt inslag. Butlery har sociala funktioner (kommentarer, delning, grupper, betyg) och omfattas därför av 15-årsgränsen — striktare än GDPR:s allmänna åldersgräns på 13 år (artikel 8), som gäller vanlig behandling utan socialt inslag.
+Åldersgränsen 15 år följer av svensk dataskyddslagstiftning (dataskyddslagen 2 kap. 4 §), som sätter 15 år för informationssamhällets tjänster med ett socialt inslag. Butlery har sociala funktioner (kommentarer, delning, grupper, betyg) och omfattas därför av 15-årsgränsen – striktare än GDPR:s allmänna åldersgräns på 13 år (artikel 8), som gäller vanlig behandling utan socialt inslag.
 
 För att upprätthålla åldersgränsen samlar vi vid registreringen in ditt födelseår och sparar en åldersverifieringspost (ett bevis på att kontrollen har gjorts). Födelseåret behandlas som kontouppgift och lagras på vår server. Registreringar som avvisas för att personen är under 15 år loggas anonymiserat, utan uppgifter som kopplar en enskild person till åldern.
 
@@ -388,9 +388,9 @@ Vi kan uppdatera denna policy när:
 - Vår databehandling ändras
 
 Vid väsentliga ändringar:
-- 🔔 Vi visar en notifikation i appen
-- 📱 Vi meddelar dig via push-notis (om aktiverad)
-- ✅ Vi kan be om förnyat samtycke (om tillämpligt)
+- Vi visar en notifikation i appen
+- Vi meddelar dig via push-notis (om aktiverad)
+- Vi kan be om förnyat samtycke (om tillämpligt)
 
 **Senaste ändring:** 11 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
@@ -444,7 +444,7 @@ För att utöva dina GDPR-rättigheter:
 
 ---
 
-**Tack för att du använder Butlery och för att du litar på oss med dina personuppgifter!** 🍽️
+**Tack för att du använder Butlery och för att du litar på oss med dina personuppgifter.**
 
 Vi är engagerade i att skydda din integritet och följa GDPR fullt ut. Om du har frågor eller funderingar, tveka inte att kontakta oss.
 

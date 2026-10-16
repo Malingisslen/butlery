@@ -7,9 +7,9 @@ Senast uppdaterad: 2026-10-11
 
 ## 1. GODKÄNNANDE AV VILLKOR
 
-Genom att skapa ett konto eller använda Butlery-appen ("Tjänsten") godkänner du dessa användarvillkor ("Villkoren"). Om du inte accepterar villkoren, vänligen använd inte Tjänsten.
+Genom att skapa ett konto eller använda Butlery-appen (”Tjänsten”) godkänner du dessa användarvillkor (”Villkoren”). Om du inte accepterar villkoren, vänligen använd inte Tjänsten.
 
-Tjänsten tillhandahålls av Butlery ("vi", "oss", "vår").
+Tjänsten tillhandahålls av Butlery (”vi”, ”oss”, ”vår”).
 
 ## 2. BEHÖRIGHET
 
@@ -68,7 +68,7 @@ Vi behandlar överklaganden inom 14 dagar.
 
 ## 7. ANSVARSBEGRÄNSNING
 
-Tjänsten tillhandahålls "i befintligt skick" utan garantier av något slag. Vi ansvarar inte för:
+Tjänsten tillhandahålls ”i befintligt skick” utan garantier av något slag. Vi ansvarar inte för:
 - Förlust av data (utöver vad som krävs enligt lag)
 - Indirekta skador eller följdskador
 - Avbrott i Tjänsten
