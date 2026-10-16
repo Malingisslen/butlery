@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/menu_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -231,10 +232,7 @@ class _MenuListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const ButleryIcon(
-        ButleryIcons.chevronRight,
-        size: AppDimensions.iconSizeS,
-      ),
+      trailing: const ButleryChevron(),
       onTap: onTap,
     );
   }

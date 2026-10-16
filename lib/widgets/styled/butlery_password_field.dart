@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/field_valid_mark.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -49,9 +49,9 @@ class _ButleryPasswordFieldState extends State<ButleryPasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    final toggle = IconButton(
-      icon: ButleryIcon(_obscured ? ButleryIcons.eye : ButleryIcons.eyeOff),
-      tooltip: _obscured
+    final toggle = AppIconButton(
+      icon: _obscured ? ButleryIcons.eye : ButleryIcons.eyeOff,
+      semanticLabel: _obscured
           ? context.l10n.tooltipShowPassword
           : context.l10n.tooltipHidePassword,
       onPressed: () => setState(() => _obscured = !_obscured),

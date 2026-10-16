@@ -389,7 +389,7 @@ void main() {
           const ButleryTopBar.undersida(title: 'Receptet'),
         );
         expect(find.byType(CupertinoNavigationBar), findsNothing);
-        expect(find.byIcon(ButleryIcons.chevronLeft), findsOneWidget);
+        expect(find.byIcon(ButleryIcons.arrowLeft), findsOneWidget);
       } finally {
         debugDefaultTargetPlatformOverride = null;
       }
@@ -575,7 +575,7 @@ void main() {
             ),
           );
           Focus.of(
-            tester.element(find.byIcon(ButleryIcons.chevronLeft)),
+            tester.element(find.byIcon(ButleryIcons.arrowLeft)),
           ).requestFocus();
           await tester.pumpAndSettle();
 

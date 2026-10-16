@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -138,11 +139,7 @@ class _SourceOption extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  ButleryIcon(
-                    ButleryIcons.chevronRight,
-                    color: color,
-                    size: AppDimensions.iconSizeS,
-                  ),
+                  ButleryChevron(color: color),
                 ],
               ),
             ),

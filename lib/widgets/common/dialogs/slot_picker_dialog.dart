@@ -10,6 +10,7 @@
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -263,15 +264,15 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: const ButleryIcon(ButleryIcons.chevronLeft),
-                tooltip: context.l10n.slotPickerPreviousWeek,
+              AppIconButton(
+                icon: ButleryIcons.chevronLeft,
+                semanticLabel: context.l10n.slotPickerPreviousWeek,
                 onPressed: _isLoading ? null : _goToPreviousWeek,
               ),
               Text(weekLabel, style: AppTextStyles.bodyMedium),
-              IconButton(
-                icon: const ButleryIcon(ButleryIcons.chevronRight),
-                tooltip: context.l10n.slotPickerNextWeek,
+              AppIconButton(
+                icon: ButleryIcons.chevronRight,
+                semanticLabel: context.l10n.slotPickerNextWeek,
                 onPressed: _isLoading ? null : _goToNextWeek,
               ),
             ],

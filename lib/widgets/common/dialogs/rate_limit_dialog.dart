@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -277,10 +278,7 @@ class _ActionTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                ButleryIcon(
-                  ButleryIcons.chevronRight,
-                  color: cs.onSurfaceVariant,
-                ),
+                const ButleryChevron(),
               ],
             ),
           ),
