@@ -2355,6 +2355,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationSettingsSaved => 'Settings saved';
 
   @override
+  String get tierFailureRateLimited =>
+      'Daily limit reached. Try again tomorrow.';
+
+  @override
+  String get tierFailureNoData => 'Could not find any recipe information.';
+
+  @override
+  String get tierFailureInvalidResponse => 'The AI response could not be read.';
+
+  @override
+  String get tierFailureSchemaValidation => 'The recipe had invalid values.';
+
+  @override
+  String get tierFailureParseError => 'A technical error occurred.';
+
+  @override
+  String get tierFailureTimeout => 'The time limit was exceeded. Try again.';
+
+  @override
+  String get tierFailureNetworkError => 'Network error. Check your connection.';
+
+  @override
+  String get tierFailureSecurityBlocked =>
+      'The content was blocked for security reasons.';
+
+  @override
+  String get tierFailureInputTooLarge => 'The text is too long to process.';
+
+  @override
+  String get tierFailureDeadlineExceeded => 'Processing took too long.';
+
+  @override
   String get allergenReset => 'Reset';
 
   @override

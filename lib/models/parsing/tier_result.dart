@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 
 /// Reason why a parsing tier failed.
@@ -208,23 +209,23 @@ class TierResult {
       'TierResult($tierName: ${success ? "success" : failureReason?.name ?? "failed"}, quality: ${quality.toStringAsFixed(2)})';
 }
 
-/// User-facing Swedish messages for tier failure reasons.
+/// User-facing messages for tier failure reasons.
 /// Used by RecipeParserService to surface actionable feedback.
 extension TierFailureReasonMessage on TierFailureReason {
-  String get userMessage => switch (this) {
-    TierFailureReason.rateLimited => 'Daglig gräns nådd. Försök igen i morgon.',
-    TierFailureReason.noData => 'Kunde inte hitta receptinformation.',
-    TierFailureReason.invalidResponse => 'AI-svaret kunde inte tolkas.',
-    TierFailureReason.schemaValidationFailed =>
-      'Receptet hade ogiltiga värden.',
-    TierFailureReason.parseError => 'Ett tekniskt fel uppstod.',
-    TierFailureReason.timeout => 'Tidsgränsen överskreds. Försök igen.',
-    TierFailureReason.networkError =>
-      'Nätverksfel. Kontrollera din anslutning.',
-    TierFailureReason.securityBlocked =>
-      'Innehållet blockerades av säkerhetsskäl.',
-    TierFailureReason.inputTooLarge => 'Texten är för lång för bearbetning.',
-    TierFailureReason.deadlineExceeded => 'Bearbetningen tog för lång tid.',
-    TierFailureReason.skipped => 'Kunde inte hitta receptinformation.',
-  };
+  String get userMessage {
+    final l = AppLocale.current;
+    return switch (this) {
+      TierFailureReason.rateLimited => l.tierFailureRateLimited,
+      TierFailureReason.noData => l.tierFailureNoData,
+      TierFailureReason.invalidResponse => l.tierFailureInvalidResponse,
+      TierFailureReason.schemaValidationFailed => l.tierFailureSchemaValidation,
+      TierFailureReason.parseError => l.tierFailureParseError,
+      TierFailureReason.timeout => l.tierFailureTimeout,
+      TierFailureReason.networkError => l.tierFailureNetworkError,
+      TierFailureReason.securityBlocked => l.tierFailureSecurityBlocked,
+      TierFailureReason.inputTooLarge => l.tierFailureInputTooLarge,
+      TierFailureReason.deadlineExceeded => l.tierFailureDeadlineExceeded,
+      TierFailureReason.skipped => l.tierFailureNoData,
+    };
+  }
 }

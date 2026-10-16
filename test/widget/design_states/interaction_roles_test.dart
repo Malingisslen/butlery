@@ -58,7 +58,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
@@ -305,7 +305,7 @@ final _controls = <String, _Control>{
   'checkbox': _Control(
     build: ({required enabled}) => _stateful<bool>(
       false,
-      (value, set) => DebouncedCheckbox(value: value, onChanged: set),
+      (value, set) => ButleryCheckbox(value: value, onChanged: set),
     ),
     target: () => find.byType(Checkbox),
     box: () => find.byType(ButleryControlFocus).first,

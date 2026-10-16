@@ -68,7 +68,7 @@ class InvitationLists {
         return ButleryItemRow(
           title: target.displayName,
           subtitle:
-              '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
+              '${target.type.name} · ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -155,7 +155,7 @@ class InvitationLists {
         return ButleryItemRow(
           title: target.displayName,
           subtitle:
-              '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
+              '${target.type.name} · ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },

@@ -2320,6 +2320,39 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationSettingsSaved => 'Inställningarna sparades';
 
   @override
+  String get tierFailureRateLimited =>
+      'Daglig gräns nådd. Försök igen i morgon.';
+
+  @override
+  String get tierFailureNoData => 'Kunde inte hitta receptinformation.';
+
+  @override
+  String get tierFailureInvalidResponse => 'AI-svaret kunde inte tolkas.';
+
+  @override
+  String get tierFailureSchemaValidation => 'Receptet hade ogiltiga värden.';
+
+  @override
+  String get tierFailureParseError => 'Ett tekniskt fel uppstod.';
+
+  @override
+  String get tierFailureTimeout => 'Tidsgränsen överskreds. Försök igen.';
+
+  @override
+  String get tierFailureNetworkError =>
+      'Nätverksfel. Kontrollera din anslutning.';
+
+  @override
+  String get tierFailureSecurityBlocked =>
+      'Innehållet blockerades av säkerhetsskäl.';
+
+  @override
+  String get tierFailureInputTooLarge => 'Texten är för lång för bearbetning.';
+
+  @override
+  String get tierFailureDeadlineExceeded => 'Bearbetningen tog för lång tid.';
+
+  @override
   String get allergenReset => 'Återställ';
 
   @override
@@ -7714,13 +7747,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterKidFriendly => 'Barnvänlig';
 
   @override
-  String get categoryFruitVeg => 'Frukt & Grönt';
+  String get categoryFruitVeg => 'Frukt & grönt';
 
   @override
   String get categoryDairy => 'Mejeri';
 
   @override
-  String get categoryMeatFish => 'Kött & Fisk';
+  String get categoryMeatFish => 'Kött & fisk';
 
   @override
   String get categoryBread => 'Bröd';
@@ -7735,10 +7768,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get categoryBeverage => 'Dryck';
 
   @override
-  String get categorySnacks => 'Snacks & Godis';
+  String get categorySnacks => 'Snacks & godis';
 
   @override
-  String get categoryHygiene => 'Städ & Hygien';
+  String get categoryHygiene => 'Städ & hygien';
 
   @override
   String get categoryOther => 'Övrigt';

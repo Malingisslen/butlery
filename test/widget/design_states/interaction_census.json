@@ -107,7 +107,7 @@
     {
       "row_id": "CSR::ROLE::checkbox::DEFAULT",
       "status": "TESTED",
-      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "control": "ButleryCheckbox (lib/widgets/common/input/butlery_checkbox.dart)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::checkbox::DEFAULT (light)",
       "also": [
@@ -121,7 +121,7 @@
     {
       "row_id": "CSR::ROLE::checkbox::FOCUSED",
       "status": "TESTED",
-      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "control": "ButleryCheckbox (lib/widgets/common/input/butlery_checkbox.dart)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::checkbox::FOCUSED (light)",
       "also": [
@@ -139,7 +139,7 @@
     {
       "row_id": "CSR::ROLE::checkbox::SELECTED",
       "status": "TESTED",
-      "control": "DebouncedCheckbox (lib/widgets/common/input/debounced_checkbox.dart)",
+      "control": "ButleryCheckbox (lib/widgets/common/input/butlery_checkbox.dart)",
       "test_file": "test/widget/design_states/interaction_roles_test.dart",
       "test_name": "CSR::ROLE::checkbox::SELECTED (light)",
       "also": [

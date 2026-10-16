@@ -83,6 +83,6 @@ class SearchStatsWidget extends StatelessWidget {
       parts.add(context.l10n.searchResults(resultCount!));
     }
 
-    return parts.join(' • ');
+    return parts.join(' · ');
   }
 }

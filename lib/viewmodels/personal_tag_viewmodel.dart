@@ -36,7 +36,6 @@ class PersonalTagViewModel extends ChangeNotifier
   // Primary isLoading and error provided by StateNotifierMixin
   bool _isLoadingStats = false;
   bool _isLoadingRuleStats = false;
-  String? _selectedTagId;
   bool _isDisposed = false;
   bool _loadFailed = false;
 
@@ -50,11 +49,6 @@ class PersonalTagViewModel extends ChangeNotifier
   List<PersonalTag> get tags => List.unmodifiable(_tags);
   List<PersonalTagGroup> get groups => List.unmodifiable(_groups);
   // isLoading, error, hasError provided by StateNotifierMixin
-  String? get selectedTagId => _selectedTagId;
-
-  PersonalTag? get selectedTag =>
-      _selectedTagId != null ? getTagById(_selectedTagId!) : null;
-
   bool get hasTags => _tags.isNotEmpty;
   bool get hasGroups => _groups.isNotEmpty;
 
@@ -77,12 +71,6 @@ class PersonalTagViewModel extends ChangeNotifier
       }
     }
     return rules;
-  }
-
-  /// Gets all rules from selected tag.
-  List<PersonalTagRule> get selectedTagRules {
-    final tag = selectedTag;
-    return tag?.rules ?? [];
   }
 
   /// Gets recipe count for a specific tag name.
@@ -199,12 +187,6 @@ class PersonalTagViewModel extends ChangeNotifier
         setError(AppLocale.current.errorTagUpdateFailed);
       },
     );
-  }
-
-  /// Selects a tag for rule management.
-  void selectTag(String? tagId) {
-    _selectedTagId = tagId;
-    _safeNotifyListeners();
   }
 
   /// Creates a new personal tag.

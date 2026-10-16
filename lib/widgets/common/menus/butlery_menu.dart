@@ -373,7 +373,7 @@ class _OptionRow<T> extends StatelessWidget {
                     children: [
                       if (option.subtitleSuffix != null)
                         TextSpan(
-                          text: ' • ${option.subtitleSuffix}',
+                          text: ' · ${option.subtitleSuffix}',
                           style: TextStyle(
                             color:
                                 option.subtitleSuffixColor ??

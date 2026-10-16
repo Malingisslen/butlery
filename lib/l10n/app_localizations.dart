@@ -3614,6 +3614,66 @@ abstract class AppLocalizations {
   /// **'Inställningarna sparades'**
   String get notificationSettingsSaved;
 
+  /// No description provided for @tierFailureRateLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Daglig gräns nådd. Försök igen i morgon.'**
+  String get tierFailureRateLimited;
+
+  /// No description provided for @tierFailureNoData.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hitta receptinformation.'**
+  String get tierFailureNoData;
+
+  /// No description provided for @tierFailureInvalidResponse.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-svaret kunde inte tolkas.'**
+  String get tierFailureInvalidResponse;
+
+  /// No description provided for @tierFailureSchemaValidation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet hade ogiltiga värden.'**
+  String get tierFailureSchemaValidation;
+
+  /// No description provided for @tierFailureParseError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett tekniskt fel uppstod.'**
+  String get tierFailureParseError;
+
+  /// No description provided for @tierFailureTimeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidsgränsen överskreds. Försök igen.'**
+  String get tierFailureTimeout;
+
+  /// No description provided for @tierFailureNetworkError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel. Kontrollera din anslutning.'**
+  String get tierFailureNetworkError;
+
+  /// No description provided for @tierFailureSecurityBlocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet blockerades av säkerhetsskäl.'**
+  String get tierFailureSecurityBlocked;
+
+  /// No description provided for @tierFailureInputTooLarge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten är för lång för bearbetning.'**
+  String get tierFailureInputTooLarge;
+
+  /// No description provided for @tierFailureDeadlineExceeded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bearbetningen tog för lång tid.'**
+  String get tierFailureDeadlineExceeded;
+
   /// No description provided for @allergenReset.
   ///
   /// In sv, this message translates to:
@@ -11987,7 +12047,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryFruitVeg.
   ///
   /// In sv, this message translates to:
-  /// **'Frukt & Grönt'**
+  /// **'Frukt & grönt'**
   String get categoryFruitVeg;
 
   /// No description provided for @categoryDairy.
@@ -11999,7 +12059,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryMeatFish.
   ///
   /// In sv, this message translates to:
-  /// **'Kött & Fisk'**
+  /// **'Kött & fisk'**
   String get categoryMeatFish;
 
   /// No description provided for @categoryBread.
@@ -12029,13 +12089,13 @@ abstract class AppLocalizations {
   /// No description provided for @categorySnacks.
   ///
   /// In sv, this message translates to:
-  /// **'Snacks & Godis'**
+  /// **'Snacks & godis'**
   String get categorySnacks;
 
   /// No description provided for @categoryHygiene.
   ///
   /// In sv, this message translates to:
-  /// **'Städ & Hygien'**
+  /// **'Städ & hygien'**
   String get categoryHygiene;
 
   /// No description provided for @categoryOther.
