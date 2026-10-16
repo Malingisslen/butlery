@@ -308,7 +308,7 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
                   value: list.id,
                   title: Text(list.name),
                   subtitle: Text(
-                    '${l10n.dialogItemCount(list.totalItems)} · ${list.type == ListType.collaborative ? l10n.dialogShared : l10n.dialogPrivate}',
+                    '${l10n.shoppingItemCount(list.totalItems)} · ${list.type == ListType.collaborative ? l10n.dialogShared : l10n.dialogPrivate}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: cs.onSurfaceVariant,
                     ),

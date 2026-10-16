@@ -221,6 +221,19 @@ void main() {
     expect(find.text('5,0'), findsNothing);
   });
 
+  testWidgets('the household average pill follows the language too', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await rate(_malin, HouseholdMemberType.user, 5);
+      await rate(_johan, HouseholdMemberType.user, 3, enteredBy: _malin);
+    });
+    await pumpBreakdown(tester, locale: const Locale('en'));
+
+    expect(find.textContaining('4.0'), findsOneWidget);
+    expect(find.textContaining('4,0'), findsNothing);
+  });
+
   testWidgets('the community average of a shared recipe follows the language', (
     tester,
   ) async {

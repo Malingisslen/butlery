@@ -5180,12 +5180,6 @@ abstract class AppLocalizations {
   /// **'Importera utan AI'**
   String get dialogImportWithoutAi;
 
-  /// No description provided for @dialogItemCount.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 vara} other{{count} varor}}'**
-  String dialogItemCount(int count);
-
   /// No description provided for @dialogItemsProgress.
   ///
   /// In sv, this message translates to:

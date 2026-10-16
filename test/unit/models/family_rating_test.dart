@@ -189,23 +189,17 @@ void main() {
       expect(summary.familyRatingCount, 0);
     });
 
-    test('displayAverage of an empty summary is "0,0" (card pill safety)', () {
-      // Intent: this string renders on the recipe-card family pill, so a zero
-      // summary must format cleanly, never "NaN".
-      expect(
-        FamilyRatingSummary.fromRatings('r1', const []).displayAverage,
-        '0,0',
-      );
+    test('an empty summary averages to zero, never NaN (card pill safety)', () {
+      expect(FamilyRatingSummary.fromRatings('r1', const []).familyAverage, 0);
     });
 
-    test('displayAverage uses a Swedish decimal comma', () {
+    test('the average is kept unrounded, formatting is the view\'s job', () {
       final summary = FamilyRatingSummary.fromRatings('r1', [
         star('m1', 4),
         star('m2', 5),
         star('m3', 4),
       ]);
-      // mean = 4.333... → "4,3"
-      expect(summary.displayAverage, '4,3');
+      expect(summary.familyAverage, closeTo(13 / 3, 1e-9));
     });
   });
 }

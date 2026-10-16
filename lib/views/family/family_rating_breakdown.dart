@@ -133,7 +133,11 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space8),
-                  _familyPill(context, vm.familyAverageDisplay, l10n),
+                  _familyPill(
+                    context,
+                    _oneDecimal(context, vm.familyAverage),
+                    l10n,
+                  ),
                   const Spacer(),
                   ButleryIcon(
                     _expanded
@@ -186,7 +190,12 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
       child: Row(
         children: [
-          _familyPill(context, vm.familyAverageDisplay, l10n, large: true),
+          _familyPill(
+            context,
+            _oneDecimal(context, vm.familyAverage),
+            l10n,
+            large: true,
+          ),
           const SizedBox(width: AppDimensions.space12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

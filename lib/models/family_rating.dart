@@ -232,9 +232,4 @@ class FamilyRatingSummary {
   }
 
   bool get hasRatings => familyRatingCount > 0;
-
-  /// Display-friendly average using Swedish decimal comma (e.g. "4,2").
-  /// toStringAsFixed always emits '.' regardless of locale, so the replace is safe.
-  String get displayAverage =>
-      familyAverage.toStringAsFixed(1).replaceAll('.', ',');
 }

@@ -316,7 +316,7 @@ Datamodellen har **exakt en** `FamilyRating` per `(recipeId, memberId)` — doku
 | Regel | Innebörd |
 |---|---|
 | **Ett betyg per person och recept** | Inte per tillfälle. Lagar man rätten igen ändras samma betyg; det finns ingen betygshistorik per måltid |
-| **Stjärnor är 1–5, som heltal** | \`final int stars\`. Ett enskilt medlemsbetyg kan aldrig vara 4,5 — decimalen finns bara på aggregatet (\`FamilyRatingSummary.displayAverage\`). Noll finns inte; ”inte satt” är **avsaknad av rad** |
+| **Stjärnor är 1–5, som heltal** | \`final int stars\`. Ett enskilt medlemsbetyg kan aldrig vara 4,5 — decimalen finns bara på aggregatet. Noll finns inte; ”inte satt” är **avsaknad av rad** |
 | **Snittet är ett enkelt medelvärde** | Varje ätande person väger lika. Ogiltiga betyg (utanför 1–5) räknas inte |
 | **`memberType`** | `user` för kontoinnehavare, `profile` för hushållsprofiler utan konto |
 | **`enteredByUid`** | Vem som fysiskt matade in stjärnorna. Skiljer sig från `memberId` vid ombudsinmatning |
