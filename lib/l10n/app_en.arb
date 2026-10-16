@@ -692,6 +692,7 @@
   "recipePortions": "Servings",
   "recipeEdit": "Edit recipe",
   "recipeDelete": "Delete recipe",
+  "recipeDeleteAction": "Delete",
   "recipeDeleting": "Deleting the recipe …",
   "recipeFormatPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@recipeFormatPortions": {

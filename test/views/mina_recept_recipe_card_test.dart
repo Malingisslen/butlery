@@ -347,14 +347,14 @@ void main() {
       expect((pushed.last.arguments as Recipe).id, 'assessed');
     });
 
-    testWidgets('Ta bort deletes only after the user confirms', (
+    testWidgets('Radera deletes only after the user confirms', (
       tester,
     ) async {
       await pumpActions(tester);
 
       await tester.tap(button);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ta bort'));
+      await tester.tap(find.text('Radera'));
       await tester.pumpAndSettle();
 
       expect(deleted, isEmpty);
@@ -365,7 +365,7 @@ void main() {
 
       await tester.tap(button);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ta bort'));
+      await tester.tap(find.text('Radera'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.ancestor(

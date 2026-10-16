@@ -698,6 +698,7 @@
   "recipePortions": "Portioner",
   "recipeEdit": "Redigera recept",
   "recipeDelete": "Radera receptet",
+  "recipeDeleteAction": "Radera",
   "recipeDeleting": "Raderar receptet …",
   "recipeFormatPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@recipeFormatPortions": {

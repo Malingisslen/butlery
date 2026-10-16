@@ -1220,6 +1220,12 @@ abstract class AppLocalizations {
   /// **'Radera receptet'**
   String get recipeDelete;
 
+  /// No description provided for @recipeDeleteAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera'**
+  String get recipeDeleteAction;
+
   /// No description provided for @recipeDeleting.
   ///
   /// In sv, this message translates to:
