@@ -662,7 +662,7 @@
       "docs/org/role-paths\\.json$"
     ]
   },
-  "_mechanicalRewrites": "2026-10-11 (Malin, cards \"Byt med skript\" and \"Ja, ändra spärren\" in the thread Avsnittsrubriker): the review gates skip a file whose only change is these pairs swapped. test/unit/theme/mechanical_rewrites_test.dart proves each pair value-equal and fails when this list and its own list drift apart, so the paths leave that test, and the census test whose probe names an alias, out of the rename.",
+  "_mechanicalRewrites": "2026-10-11 (Malin, cards \"Byt med skript\" and \"Ja, ändra spärren\" in the thread Avsnittsrubriker): the review gates skip a file whose only change is these pairs swapped. test/unit/theme/mechanical_rewrites_test.dart fails when this list and its own list drift apart, so the paths leave that test, and the census test whose probe names an alias, out of the rename.",
   "mechanicalRewrites": [
     {
       "id": "scale-aliases",
@@ -691,6 +691,26 @@
         ["AppTextStyles.bodyMediumMuted", "AppTextStyles.bodyMedium"],
         ["AppTextStyles.titleMediumMuted", "AppTextStyles.titleMedium"],
         ["AppTextStyles.labelMediumMuted", "AppTextStyles.labelMedium"]
+      ]
+    },
+    {
+      "id": "styled-to-common-paths",
+      "paths": [
+        "^(?:lib|test|tools)/(?!widgets/(?:styled|common/input|common/cards)/)(?!unit/theme/mechanical_rewrites_test\\.dart$)"
+      ],
+      "pairs": [
+        ["widgets/styled/butlery_code_field.dart", "widgets/common/input/butlery_code_field.dart"],
+        ["widgets/styled/butlery_composer_field.dart", "widgets/common/input/butlery_composer_field.dart"],
+        ["widgets/styled/butlery_password_field.dart", "widgets/common/input/butlery_password_field.dart"],
+        ["widgets/styled/butlery_row_field.dart", "widgets/common/input/butlery_row_field.dart"],
+        ["widgets/styled/field_error_line.dart", "widgets/common/input/field_error_line.dart"],
+        ["widgets/styled/field_helper_line.dart", "widgets/common/input/field_helper_line.dart"],
+        ["widgets/styled/field_valid_mark.dart", "widgets/common/input/field_valid_mark.dart"],
+        ["widgets/styled/labeled_field.dart", "widgets/common/input/labeled_field.dart"],
+        ["widgets/styled/styled_form_field.dart", "widgets/common/input/styled_form_field.dart"],
+        ["widgets/styled/styled_input.dart", "widgets/common/input/styled_input.dart"],
+        ["widgets/styled/styled_input_borders.dart", "widgets/common/input/styled_input_borders.dart"],
+        ["widgets/styled/styled_card.dart", "widgets/common/cards/styled_card.dart"]
       ]
     }
   ]
