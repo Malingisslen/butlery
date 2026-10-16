@@ -10,7 +10,7 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 - **Migration complete:** YES
 - Known failures: 0 ()
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
-- Accepted failures, counted apart (D5 = B): 11
+- Accepted failures, counted apart (D5 = B): 12
 - Resting transition requirements, counted apart: 3
 - Tickets: 0 registered in Linear
 - Failures without a ticket: 0
@@ -44,7 +44,7 @@ Required: 33; TESTED 33. Unspecified in block 288 (not tested): 33; not required
 
 ## Contrast pairs
 
-Declared pairs: 33. Measured in both modes: 33, of which under their floor: 0; unmeasurable (no generated member): 0. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
+Declared pairs: 39. Measured in both modes: 39, of which under their floor: 0; unmeasurable (no generated member): 0. a measured pair meets its floor in light and dark whenever test/unit/theme/contrast_pairs_test.dart is green, except the pairs listed under their floor.
 
 | Unmeasurable pair | Ticket |
 | --- | --- |
@@ -53,14 +53,14 @@ Declared pairs: 33. Measured in both modes: 33, of which under their floor: 0; u
 
 Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
 - Host-bound text contrast (glyph rasteriser): linux 0, windows 0
-- Accepted findings, not known failures: 11 (ceiling 11; BUT-2196 11)
+- Accepted findings, not known failures: 12 (ceiling 12; BUT-2196 12)
 - By check: 
 - By view: 
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `18f913cd45040490c58d38c33aaa42c8171bf89044a4ff1bcfdbaf7757c337bf`); generated files say tokens 1.13 (light) and 1.13 (dark).
-- Semantic keys: 54; with a generated member: 54
+tokens.json 1.13 (sha256 `3a06c1d140335b310b63e368747386493e9c9c84b4767f3a152173ea4e1baf04`); generated files say tokens 1.13 (light) and 1.13 (dark).
+- Semantic keys: 58; with a generated member: 58
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
 | Semantic key without a member | Ticket |
@@ -89,9 +89,9 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `error_contract_test.dart` | `_errorPrefixLiterals` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `error_contract_test.dart` | `_privateInlineErrors` | ALLOWANCE | LIVE | 1 | 1 | 1 |
 | `views_dark_mode_colour_test.dart` | `_widgetSnackBarsOwnedByT7` | RESIDUE | RETIRED | 0 | 0 | 0 |
-| `views_dark_mode_colour_test.dart` | `_inkOnPaperSites` | ALLOWANCE | LIVE | 3 | 7 | 7 |
-| `package4_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 27 | 27 | 27 |
-| `package4_adoption_test.dart` | `_scaffoldFiles` | ADOPTION | LIVE | 9 | 9 | 9 |
+| `views_dark_mode_colour_test.dart` | `_inkOnPaperSites` | ALLOWANCE | LIVE | 1 | 1 | 1 |
+| `package4_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 19 | 19 | 19 |
+| `package4_adoption_test.dart` | `_scaffoldFiles` | ADOPTION | LIVE | 2 | 2 | 2 |
 | `package4_adoption_test.dart` | `_package7Components` | ALLOWANCE | LIVE | 1 | 1 | 1 |
 | `package4_adoption_test.dart` | `_spinnerResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `package4_adoption_test.dart` | `_barResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
@@ -99,13 +99,13 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_adoption_test.dart` | `_snackBarResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `package4_t3_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_topBarFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
-| `package4_t3_adoption_test.dart` | `_inkSnackbarFiles` | ADOPTION | LIVE | 11 | 11 | 11 |
-| `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 82 | 82 | 82 |
+| `package4_t3_adoption_test.dart` | `_inkSnackbarFiles` | ADOPTION | LIVE | 10 | 10 | 10 |
+| `package4_social_account_adoption_test.dart` | `_files` | ADOPTION | LIVE | 79 | 79 | 79 |
 | `p4_recipe_views_loading_test.dart` | `_files` | ADOPTION | LIVE | 25 | 25 | 25 |
 | `p4_recipe_views_loading_test.dart` | `_forbidden` | BAN | LIVE | 4 | 4 | 4 |
 | `icon_census_test.dart` | `_residue` | RESIDUE | LIVE | 0 | 0 | 0 |
-| `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | LIVE | 2 | 2 | 0 |
-| `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 2 | 3 | 3 |
+| `icon_census_test.dart` | `_deletedByClosingTrack` | RESIDUE | RETIRED | 0 | 0 | 0 |
+| `icon_census_test.dart` | `_plainIconAllowed` | ALLOWANCE | LIVE | 1 | 1 | 1 |
 | `p7_type_and_space_scale_test.dart` | `_rawFontSizeAllowlist` | RESIDUE | LIVE | 0 | 0 | 0 |
 | `p7_type_and_space_scale_test.dart` | `_retiredSpacing` | BAN | LIVE | 19 | 19 | 19 |
 | `legacy_retirement_test.dart` | `_retired` | BAN | LIVE | 22 | 22 | 22 |
@@ -130,7 +130,53 @@ Code only: comments are not counted; generated l10n is left out.
 | `commonOk` | 0 |  | "OK" as a label (content-style-guide.md:77) |
 | `fontSize: <number>` | 18 | `lib/theme/app_text_styles.dart` | raw font sizes; allowance in p7_type_and_space_scale_test |
 | `Color(0x…) outside lib/theme` | 0 |  | literal colours outside the theme files |
-| `BorderRadius.circular(<number>)` | 0 |  | raw corner radii |
+| `BorderRadius.circular(<number>)` | 3 | `lib/views/recipe_detail/recipe_detail_shared_widgets.dart`, `lib/widgets/onboarding/onboarding_parts.dart` | raw corner radii |
 | `AppDimensions.opacity*` | 0 |  | the old opacity steps (BUT-2183); residue in opacity_ladder_ratchet_test |
 | `spacingS / spacingXxs` | 0 |  | spacing members retired in package 7 |
 | `pubspec fonts` | 0 |  | retired type families still declared in pubspec.yaml |
+
+## Variants per component type
+
+Places that draw a component type outside its canonical widget. A count may only fall: component_variants_test fails when one rises above its ceiling. Target is where the ticket brings it.
+
+| Type | Count | Ceiling | Target | Files | Ticket | What is counted |
+| --- | --- | --- | --- | --- | --- | --- |
+| `raw_destructive_alert_dialogs` | 3 | 3 | 0 | 3 | BUT-2366 | AlertDialog built in place that uses the error colour, instead of the shared destructive confirmation dialog |
+| `hero_style_outside_hero_button` | 0 | 0 | 0 | 0 | BUT-2367 | ComponentThemes.heroButtonStyle used outside HeroButton |
+| `raw_button_style_from` | 1 | 2 | 0 | 1 | BUT-2367 | Filled/Elevated/OutlinedButton.styleFrom in views and widgets, outside lib/widgets/common/buttons/ |
+| `raw_dialog_cancel` | 0 | 0 | 0 | 0 | BUT-2367 | TextButton( labelled with the commonCancel text, outside lib/widgets/common/dialogs/, instead of DialogCancelButton |
+| `raw_snackbars` | 0 | 0 | 0 | 0 | BUT-2371 | SnackBar( built outside SnackBarUtils |
+| `own_empty_states` | 1 | 1 | 0 | 1 | BUT-2371 | classes whose name holds Empty...State, or _Empty, outside lib/widgets/common/state/, each its own empty state |
+| `card_surface_overrides` | 1 | 1 | 0 | 1 | BUT-2370 | Card( with its own shape or elevation instead of the theme surface |
+| `chevron_sizes` | 1 | 1 | 1 | 1 | BUT-2370 | distinct size: values on ButleryIcon(chevronRight/chevronLeft) ("default" when none is given) |
+| `sheet_shape_overrides` | 0 | 0 | 0 | 0 | BUT-2373 | showModalBottomSheet( with its own shape instead of the theme |
+| `direct_font_weights` | 4 | 4 | 0 | 3 | BUT-2369 | fontWeight: written in views and widgets instead of a text style |
+| `hardcoded_max_width` | 4 | 5 | 0 | 4 | BUT-2368 | maxWidth: with a number literal outside lib/theme/ and lib/core/responsive/ |
+| `raw_white_black` | 0 | 1 | 0 | 0 | BUT-2376 | Colors.white or Colors.black in views and widgets instead of a theme or mode colour |
+| `photo_viewers` | 0 | 0 | 0 | 0 | BUT-2376 | InteractiveViewer( outside the shared FullscreenImageViewer, each its own fullscreen photo viewer |
+| `alpha_literals` | 0 | 0 | 0 | 0 | BUT-2376 | alpha: with a number literal, or withOpacity(, outside lib/theme/ instead of a step on the opacity ladder |
+| `icon_size_literals` | 2 | 2 | 0 | 2 | BUT-2376 | ButleryIcon size: written as a number instead of an AppDimensions icon size |
+| `spacing_literals` | 38 | 40 | 0 | 32 | BUT-2376 | EdgeInsets with a non-zero number, or a SizedBox gap of 32 or less written as a number, in views and widgets instead of space4…space32 |
+| `scale_aliases` | 0 | 0 | 0 | 0 | BUT-2376 | AppDimensions names that repeat a value the scale already names (spacingSm for space8, iconSizeAction for iconSizeM …) |
+| `own_bordered_boxes` | 0 | 0 | 0 | 0 | BUT-2391 | BoxDecoration with both a border and a corner radius outside lib/widgets/common/, each its own card, chip or row box |
+| `own_circle_boxes` | 0 | 0 | 0 | 0 | BUT-2391 | BoxDecoration with shape: BoxShape.circle outside lib/widgets/common/, each its own avatar or dot |
+| `forbidden_words_sv` | 0 | 0 | 0 | 0 | BUT-2372 | app_sv.arb values with "artikel", "handlingslista", "matsedel", "..." or a straight double quote |
+| `raw_input_decoration` | 0 | 0 | 0 | 0 | helskanning | InputDecoration built outside lib/widgets/common/, instead of the shared input fields |
+| `raw_list_tile` | 0 | 0 | 0 | 0 | helskanning | ListTile built outside lib/widgets/common/, instead of ButleryListRow |
+| `raw_divider` | 0 | 0 | 0 | 0 | helskanning | Divider / VerticalDivider built outside lib/widgets/common/, instead of the shared hairline |
+| `raw_chips` | 0 | 0 | 0 | 0 | helskanning | Chip / ChoiceChip / FilterChip / ActionChip / InputChip built outside lib/widgets/common/, instead of the shared chip |
+| `raw_app_bar` | 0 | 0 | 0 | 0 | helskanning | AppBar built outside lib/widgets/common/, instead of ButleryTopBar |
+| `raw_text_style` | 6 | 6 | 0 | 5 | helskanning | TextStyle built outside lib/widgets/common/, instead of a theme text role |
+| `raw_toggles` | 0 | 0 | 0 | 0 | helskanning | Checkbox / CheckboxListTile / Switch / SwitchListTile / RadioListTile built outside lib/widgets/common/, instead of the shared checkbox / switch |
+| `raw_menus` | 0 | 0 | 0 | 0 | helskanning | PopupMenuButton / DropdownButton / DropdownButtonFormField built outside lib/widgets/common/, instead of the shared menu / dropdown |
+| `raw_circle_avatar` | 0 | 0 | 0 | 0 | helskanning | CircleAvatar built outside lib/widgets/common/, instead of the shared avatar |
+| `raw_show_dialog` | 0 | 0 | 0 | 0 | helskanning | showDialog built outside lib/widgets/common/, instead of the shared dialog helpers |
+| `raw_show_sheet` | 0 | 0 | 0 | 0 | helskanning | showModalBottomSheet built outside lib/widgets/common/, instead of the shared bottom-sheet helper |
+| `raw_segmented` | 0 | 0 | 0 | 0 | helskanning | SegmentedButton built outside lib/widgets/common/, instead of ButlerySegmentSwitch |
+| `raw_icon_button` | 0 | 0 | 0 | 0 | helskanning | IconButton / IconButton.filled / IconButton.filledTonal / IconButton.outlined / IconButton.styleFrom built outside lib/widgets/common/, instead of AppIconButton or ButleryCloseButton |
+| `raw_text_button` | 0 | 0 | 0 | 0 | helskanning | TextButton / TextButton.icon / TextButton.styleFrom built outside lib/widgets/common/, instead of ButleryTextButton |
+| `raw_filled_button` | 0 | 0 | 0 | 0 | helskanning | FilledButton / FilledButton.icon / FilledButton.tonal / FilledButton.tonalIcon built outside lib/widgets/common/, instead of ActionButtons or ButleryDialogPrimary |
+| `raw_outlined_button` | 0 | 0 | 0 | 0 | helskanning | OutlinedButton / OutlinedButton.icon built outside lib/widgets/common/, instead of ActionButtons.outlinedButton |
+| `raw_elevated_button` | 0 | 0 | 0 | 0 | helskanning | ElevatedButton / ElevatedButton.icon built outside lib/widgets/common/, instead of ActionButtons |
+| `raw_alert_dialog` | 0 | 0 | 0 | 0 | helskanning | AlertDialog / SimpleDialog / Dialog built outside lib/widgets/common/, instead of ButleryDialog |
+| `raw_card` | 0 | 0 | 0 | 0 | helskanning | Card built outside lib/widgets/common/, instead of the shared card |
