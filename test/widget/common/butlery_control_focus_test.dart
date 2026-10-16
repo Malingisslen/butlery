@@ -29,7 +29,7 @@ import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
@@ -120,7 +120,7 @@ class _Case {
 
 final _cases = <String, _Case>{
   'checkbox': _Case(
-    () => DebouncedCheckbox(value: false, onChanged: (_) {}),
+    () => ButleryCheckbox(value: false, onChanged: (_) {}),
     () => find.byType(ButleryControlFocus),
   ),
   'switch': _Case(

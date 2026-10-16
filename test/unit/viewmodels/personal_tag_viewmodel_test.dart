@@ -152,7 +152,6 @@ void main() {
         expect(viewModel.groups, isEmpty);
         expect(viewModel.isLoading, false);
         expect(viewModel.hasError, false);
-        expect(viewModel.selectedTagId, isNull);
         expect(viewModel.hasTags, false);
         expect(viewModel.hasGroups, false);
       });
@@ -663,74 +662,6 @@ void main() {
 
         expect(merged, 0);
         verifyNever(() => mockService.mergeTags(any(), any()));
-      });
-    });
-
-    // ---- Selection ----
-
-    group('selection', () {
-      test('should set selectedTagId on selectTag', () {
-        viewModel.selectTag('tag-1');
-
-        expect(viewModel.selectedTagId, 'tag-1');
-      });
-
-      test('should clear selectedTagId on selectTag(null)', () {
-        viewModel.selectTag('tag-1');
-        viewModel.selectTag(null);
-
-        expect(viewModel.selectedTagId, isNull);
-      });
-
-      test('should resolve selectedTag from tags list', () async {
-        when(
-          () => mockService.getAllTags(),
-        ).thenAnswer((_) async => [testTag1, testTag2]);
-        when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
-        await viewModel.initialize();
-
-        viewModel.selectTag('tag-1');
-
-        expect(viewModel.selectedTag, isNotNull);
-        expect(viewModel.selectedTag!.name, 'Favoriter');
-      });
-
-      test('should return null selectedTag when id not found', () async {
-        when(
-          () => mockService.getAllTags(),
-        ).thenAnswer((_) async => [testTag1]);
-        when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
-        await viewModel.initialize();
-
-        viewModel.selectTag('nonexistent');
-
-        expect(viewModel.selectedTag, isNull);
-      });
-
-      test('should return selected tag rules', () async {
-        when(
-          () => mockService.getAllTags(),
-        ).thenAnswer((_) async => [testTagWithRule]);
-        when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
-        await viewModel.initialize();
-
-        viewModel.selectTag('tag-3');
-
-        expect(viewModel.selectedTagRules, hasLength(1));
-        expect(viewModel.selectedTagRules.first.name, 'Fish rule');
-      });
-
-      test('should return empty rules when no tag selected', () {
-        expect(viewModel.selectedTagRules, isEmpty);
-      });
-
-      test('should notify listeners on selectTag', () async {
-        int notifyCount = 0;
-        viewModel.addListener(() => notifyCount++);
-
-        viewModel.selectTag('tag-1');
-
-        expect(notifyCount, 1);
       });
     });
 

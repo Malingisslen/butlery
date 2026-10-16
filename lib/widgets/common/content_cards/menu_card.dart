@@ -185,7 +185,7 @@ class MenuCard extends StatelessWidget {
     }
 
     return Text(
-      metadata.join(' • '),
+      metadata.join(' · '),
       style: AppTextStyles.labelMedium,
     );
   }

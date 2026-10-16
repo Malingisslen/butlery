@@ -42,6 +42,11 @@
       "begrepp": "Fel",
       "skriv": "vad som hände, sakligt",
       "aldrig": ["tyvärr", "något gick fel", "hoppsan"]
+    },
+    {
+      "begrepp": "Att göra mat",
+      "skriv": "laga",
+      "aldrig": ["tillaga", "tillagar", "tillagade", "tillagas", "tillagat", "tillagning", "tillagningen", "tillagningar", "tillagningarna"]
     }
   ],
   "tecken": [

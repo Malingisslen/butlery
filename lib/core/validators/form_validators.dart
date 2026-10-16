@@ -304,7 +304,7 @@ class FormValidators {
     };
   }
 
-  /// Shopping item validation - Name field (from input_components.dart)
+  /// Shopping item validation - Name field
   static FormFieldValidator<String> shoppingItemName() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
@@ -314,7 +314,7 @@ class FormValidators {
     };
   }
 
-  /// Shopping item validation - Amount field (from input_components.dart)
+  /// Shopping item validation - Amount field
   static FormFieldValidator<String> shoppingItemAmount() {
     return (value) {
       if (value == null || value.isEmpty) {

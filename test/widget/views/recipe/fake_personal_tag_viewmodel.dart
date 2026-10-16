@@ -20,7 +20,6 @@ class FakePersonalTagViewModel extends ChangeNotifier
   Map<String, int> _usageCounts = const {};
   bool _isLoading = false;
   String? _error;
-  String? _selectedTagId;
 
   int initializeCalls = 0;
   int loadTagStatisticsCalls = 0;
@@ -71,19 +70,6 @@ class FakePersonalTagViewModel extends ChangeNotifier
 
   @override
   bool get isLoadingRuleStats => false;
-
-  @override
-  String? get selectedTagId => _selectedTagId;
-
-  @override
-  PersonalTag? get selectedTag =>
-      _selectedTagId != null ? getTagById(_selectedTagId!) : null;
-
-  @override
-  void selectTag(String? tagId) {
-    _selectedTagId = tagId;
-    notifyListeners();
-  }
 
   @override
   PersonalTag? getTagById(String id) =>

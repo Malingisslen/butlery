@@ -179,14 +179,14 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | File | Lines | Reason |
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,428 | Already uses facade pattern (5 sub-managers) |
-| `personal_tag_dialogs.dart` | 627 | 14 static dialog functions — already extracted from view |
+| `personal_tag_dialogs.dart` | 405 | 14 static dialog functions — already extracted from view |
 | `skriv_sjalv_recept_view.dart` | 1050 | Recipe creation screen — refactored from 836. |
-| `personal_tag_rule_dialog.dart` | 934 | Complex rule editing dialog — many condition types |
+| `personal_tag_rule_dialog.dart` | 834 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 1,694 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
 | `weekly_menu_plan_viewmodel.dart` | 1652 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
-| `personal_tag_viewmodel.dart` | 810 | Personal tag management VM |
+| `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
 | `recipe_detail_content.dart` | 935 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |
@@ -201,7 +201,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `auth_view.dart` | 711 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 463 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
 | `recipe_form_viewmodel.dart` | 945 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. Refreshed 2026-10-08: measured 915 before BUT-2158 and 940 after it added the import review from a confidence snapshot. |
-| `personal_tag_selector.dart` | 591 | Tag picker widget |
+| `personal_tag_selector.dart` | 577 | Tag picker widget |
 | `adaptive_navigation.dart` | 341 | Bottom nav / side nav adaptive widget |
 | `universal_image_manager.dart` | 590 | Image management widget |
 | `friends_invitations_operations.dart` | 706 | Invitation operations |

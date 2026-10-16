@@ -93,7 +93,7 @@ void main() {
       );
 
       // Someone else's list the current user may edit, so the meta line
-      // carries " • Redigera" after the count.
+      // carries " · Redigera" after the count.
       final list = ShoppingListFactory.build(
         id: 'delad',
         ownerId: 'u-owner',
@@ -113,7 +113,7 @@ void main() {
 
       final sv = AppLocalizationsSv();
       final countText = sv.shoppingItemCount(2);
-      final permissionText = ' • ${sv.shoppingPermissionEdit}';
+      final permissionText = ' · ${sv.shoppingPermissionEdit}';
 
       // Layout errors are collected rather than read via takeException, so
       // an overflow elsewhere in the header cannot answer for this line.

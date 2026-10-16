@@ -768,7 +768,7 @@ void main() {
 
         final summary = realtimeRecipe.recipeSummary;
 
-        expect(summary, equals('2 ingredienser • 1 steg'));
+        expect(summary, equals('2 ingredienser · 1 steg'));
         expect(summary, isNot(contains('portioner')));
         expect(summary, isNot(contains('min')));
         expect(summary, isNot(contains('★')));

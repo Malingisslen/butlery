@@ -556,7 +556,7 @@ class RealtimeRecipe extends RealtimeResource {
       parts.add('${rating!.toStringAsFixed(1)} ★');
     }
 
-    return parts.join(' • ');
+    return parts.join(' · ');
   }
 
   bool matchesSearchQuery(String query) {
