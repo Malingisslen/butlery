@@ -7,7 +7,7 @@
 ///     callbacks fire on the InkWell.
 ///
 /// Avatars are exercised via UserProfile.avatarUrl == null so the underlying
-/// SocialAvatarComponents falls back to its initials placeholder (no network
+/// AvatarWidgets falls back to its initials placeholder (no network
 /// fetch needed in the test harness).
 library;
 

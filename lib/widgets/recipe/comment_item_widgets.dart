@@ -11,7 +11,7 @@ import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
@@ -155,7 +155,7 @@ class CommentItemWidgets {
                 return ButleryItemRow(
                   key: ValueKey(userId),
                   padded: false,
-                  leading: SocialAvatarComponents.avatar(
+                  leading: AvatarWidgets.avatar(
                     displayName: displayName,
                     imageUrl: avatarUrl,
                     size: ImageSize.small,
@@ -302,7 +302,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                 // Comment header
                 Row(
                   children: [
-                    SocialAvatarComponents.avatar(
+                    AvatarWidgets.avatar(
                       displayName: widget.authorDisplayName,
                       imageUrl: widget.authorAvatarUrl,
                       size: ImageSize.small,

@@ -84,7 +84,6 @@ const _files = [
   'lib/widgets/common/profile/handlers/auth_action_handler.dart',
   'lib/widgets/common/settings/blocked_users_section.dart',
   'lib/widgets/common/share_dialog/share_dialog_states.dart',
-  'lib/widgets/common/social_components/social_avatar_components.dart',
   'lib/widgets/messaging/builders/message_content_builder.dart',
   'lib/widgets/messaging/chat_menu_button.dart',
   'lib/widgets/messaging/dialogs/block_group_member_dialog.dart',

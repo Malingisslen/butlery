@@ -26,9 +26,8 @@ import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/social_components/social_avatar_components.dart';
+import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
-import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/guest/guest_account_sheet.dart';
 import 'package:butlery/widgets/guest/guest_band.dart';
 import 'package:butlery/widgets/guest/guest_builder.dart';
@@ -272,7 +271,7 @@ class _ProfileRowState extends State<_ProfileRow> {
               child: Row(
                 children: [
                   ExcludeSemantics(
-                    child: SocialAvatarComponents.avatar(
+                    child: AvatarWidgets.avatar(
                       user: users?.currentUserProfile,
                       displayName: shownName,
                       size: ImageSize.medium,

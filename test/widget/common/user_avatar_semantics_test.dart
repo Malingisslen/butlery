@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/butlery_link.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -165,14 +165,14 @@ void main() {
     });
   });
 
-  group('SocialAvatarComponents.avatar', () {
+  group('AvatarWidgets.avatar', () {
     Future<void> pumpRow(WidgetTester tester, {bool? announceName}) =>
         tester.pumpWidget(
           createLocalizedTestApp(
             child: ListTile(
               leading: announceName == null
-                  ? SocialAvatarComponents.avatar(displayName: 'Anna Lindgren')
-                  : SocialAvatarComponents.avatar(
+                  ? AvatarWidgets.avatar(displayName: 'Anna Lindgren')
+                  : AvatarWidgets.avatar(
                       displayName: 'Anna Lindgren',
                       announceName: announceName,
                     ),

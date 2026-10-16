@@ -13,8 +13,7 @@
 ///
 /// Friends are supplied through the already-registered [MockFriendsViewModel]
 /// (overridden to a singleton so the view's `initState` lookup gets OUR
-/// configured instance) and [MockUnifiedFriendsService], so the real
-/// `FriendCategoryManager` renders a tappable friend list.
+/// configured instance) and [MockUnifiedFriendsService].
 ///
 /// Rebuilt for BUT-1180 — replaces a ~50-test ULTRATHINK smoke-suite of
 /// `takeException isNull` / `findsOneWidget` structural asserts. Each test here
@@ -88,13 +87,6 @@ void main() {
   setUp(() async {
     await ViewTestHelpers.setupViewTestEnvironment();
 
-    // The unified friends service backs the FriendCategoryManager's "did the
-    // category/friend data load?" gates. We keep categoriesList EMPTY (no
-    // category chip section → a shorter friend-manager column → the friend
-    // rows stay within the hit-testable region of the view's fixed-height
-    // selector). The manager's postFrame `if (categoriesList.isEmpty) refresh()`
-    // would then fire; the mock's noSuchMethod `refresh()` returns null (not a
-    // Future) and throws, so we stub it to a real completed Future.
     friendsService =
         TestServiceLocator.get<UnifiedFriendsService>()
             as MockUnifiedFriendsService;

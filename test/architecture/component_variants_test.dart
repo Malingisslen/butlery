@@ -13,17 +13,17 @@ import '../../tools/design_migration_census.dart';
 import '../../tools/design_variants.dart';
 
 const variantCeilings = {
-  'raw_destructive_alert_dialogs': 4,
+  'raw_destructive_alert_dialogs': 3,
   'hero_style_outside_hero_button': 0,
   'raw_button_style_from': 2,
-  'raw_dialog_cancel': 1,
-  'raw_snackbars': 1,
+  'raw_dialog_cancel': 0,
+  'raw_snackbars': 0,
   'own_empty_states': 1,
-  'card_surface_overrides': 3,
+  'card_surface_overrides': 1,
   'chevron_sizes': 1,
   'sheet_shape_overrides': 0,
   'direct_font_weights': 4,
-  'hardcoded_max_width': 10,
+  'hardcoded_max_width': 5,
   'own_bordered_boxes': 0,
   'own_circle_boxes': 0,
   'forbidden_words_sv': 0,
@@ -33,12 +33,12 @@ const variantCeilings = {
   'icon_size_literals': 2,
   'spacing_literals': 40,
   'scale_aliases': 0,
-  'raw_input_decoration': 5,
+  'raw_input_decoration': 0,
   'raw_list_tile': 0,
   'raw_divider': 0,
   'raw_chips': 0,
   'raw_app_bar': 0,
-  'raw_text_style': 7,
+  'raw_text_style': 6,
   'raw_toggles': 0,
   'raw_menus': 0,
   'raw_circle_avatar': 0,
@@ -51,7 +51,7 @@ const variantCeilings = {
   'raw_outlined_button': 0,
   'raw_elevated_button': 0,
   'raw_alert_dialog': 0,
-  'raw_card': 1,
+  'raw_card': 0,
 };
 
 void main() {
