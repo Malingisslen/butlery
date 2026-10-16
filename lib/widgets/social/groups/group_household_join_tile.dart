@@ -153,8 +153,11 @@ class _GroupHouseholdJoinTileState extends State<GroupHouseholdJoinTile> {
         trailing: joined
             ? ButleryTextButton(
                 label: l10n.householdOpenSettings,
-                onPressed: () =>
-                    Navigator.pushNamed(context, Routes.settingsFamily),
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  Routes.settingsFamily,
+                  arguments: widget.group.name,
+                ),
               )
             : ButleryTextButton(
                 label: l10n.householdJoinAction,

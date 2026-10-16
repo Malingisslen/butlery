@@ -198,7 +198,11 @@ void main() {
     final pushes = _Pushes();
     await tester.pumpWidget(_app(AppTheme.lightTheme, pushes));
     await tester.pump();
-    const named = {Routes.settingsAllergens, Routes.settingsPersonalTags};
+    const named = {
+      Routes.settingsFamily,
+      Routes.settingsAllergens,
+      Routes.settingsPersonalTags,
+    };
     for (final route in _rows.keys) {
       if (route == Routes.syncQueue) continue;
       pushes.pushed.clear();

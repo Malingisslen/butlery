@@ -140,6 +140,7 @@ class MoreView extends StatelessWidget {
                 l10n.moreFamily,
                 Routes.settingsFamily,
                 needsAccount: true,
+                namesBack: true,
               ),
               row(
                 l10n.moreAllergens,

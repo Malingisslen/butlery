@@ -73,7 +73,7 @@ void main() {
         ('Receptnamn *', TextFormField),
         ('Beskrivning', TextFormField),
         ('Portioner', TextFormField),
-        ('Tillagningstid', TextFormField),
+        ('Tid att laga', TextFormField),
         ('Måltid', DropdownButtonFormField<String>),
       ]) {
         expect(fieldLabelled(label, type: type), findsOneWidget, reason: label);

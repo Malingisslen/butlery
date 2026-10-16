@@ -212,7 +212,7 @@ class TierResult {
 /// Used by RecipeParserService to surface actionable feedback.
 extension TierFailureReasonMessage on TierFailureReason {
   String get userMessage => switch (this) {
-    TierFailureReason.rateLimited => 'Daglig gräns nådd. Försök igen imorgon.',
+    TierFailureReason.rateLimited => 'Daglig gräns nådd. Försök igen i morgon.',
     TierFailureReason.noData => 'Kunde inte hitta receptinformation.',
     TierFailureReason.invalidResponse => 'AI-svaret kunde inte tolkas.',
     TierFailureReason.schemaValidationFailed =>

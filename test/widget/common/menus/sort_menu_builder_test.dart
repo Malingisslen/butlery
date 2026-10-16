@@ -119,7 +119,7 @@ void main() {
       expect(find.text('Betyg'), findsOneWidget);
       expect(find.text('Måltidstyp'), findsOneWidget);
       expect(find.text('Senast lagad'), findsOneWidget);
-      expect(find.text('Antal tillagningar'), findsOneWidget);
+      expect(find.text('Antal gånger lagad'), findsOneWidget);
       expect(find.text('Nyaste'), findsOneWidget);
       expect(find.text('Slumpa'), findsOneWidget);
     });

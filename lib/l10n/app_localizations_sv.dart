@@ -788,7 +788,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeInstructions => 'Instruktioner';
 
   @override
-  String get recipeCookingTime => 'Tillagningstid';
+  String get recipeCookingTime => 'Tid att laga';
 
   @override
   String get recipePortions => 'Portioner';
@@ -2317,6 +2317,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get allergenSettingsSaved => 'Inställningarna sparades';
 
   @override
+  String get notificationSettingsSaved => 'Inställningarna sparades';
+
+  @override
   String get allergenReset => 'Återställ';
 
   @override
@@ -2428,7 +2431,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ruleHintDietary => 'Till exempel ”vegetarian”, ”vegan”';
 
   @override
-  String get ruleHintTime => 'Tillagningstid i minuter';
+  String get ruleHintTime => 'Tid att laga, i minuter';
 
   @override
   String get ruleHintTimeShort => 'Tid i minuter';
@@ -3602,6 +3605,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String shareTagMessage(String contentName) {
+    return 'Kolla in min tagg ”$contentName”';
+  }
+
+  @override
   String shareFriendsSelected(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -4541,7 +4549,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importColumnCategory => 'Kategori';
 
   @override
-  String get importColumnCookingTime => 'Tillagningstid';
+  String get importColumnCookingTime => 'Tid att laga';
 
   @override
   String get importColumnIngredients => 'Ingredienser';
@@ -5126,7 +5134,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterClearAll => 'Rensa alla filter';
 
   @override
-  String get filterCookingTime => 'Tillagningstid';
+  String get filterCookingTime => 'Tid att laga';
 
   @override
   String get filterCreatePersonalTags => 'Skapa egna taggar';
@@ -6117,7 +6125,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sortLastCooked => 'Senast lagad';
 
   @override
-  String get sortCookCount => 'Antal tillagningar';
+  String get sortCookCount => 'Antal gånger lagad';
 
   @override
   String get sortNewest => 'Nyaste';
@@ -8967,9 +8975,6 @@ class AppLocalizationsSv extends AppLocalizations {
       'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
 
   @override
-  String get errorNoItemsFound => 'Inga objekt hittades.';
-
-  @override
   String get errorNoUserLoggedIn => 'Ingen användare är inloggad';
 
   @override
@@ -9782,7 +9787,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorCouldNotMarkAsCooked =>
-      'Kunde inte markera recept som tillagat';
+      'Kunde inte markera receptet som lagat';
 
   @override
   String get errorCouldNotAddIngredient => 'Kunde inte lägga till ingrediens';
@@ -11106,11 +11111,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get textImportSuggestionInstructions =>
-      'Inkludera tillagningsinstruktioner eller steg';
+      'Inkludera instruktioner eller steg';
 
   @override
   String get textImportSuggestionTime =>
-      'Inkludera tillagningstid om tillgänglig';
+      'Inkludera tid att laga om tillgänglig';
 
   @override
   String get textImportSuggestionPortions =>
@@ -12034,7 +12039,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get validationFieldPortions => 'Antal portioner';
 
   @override
-  String get validationFieldCookingTime => 'Tillagningstid';
+  String get validationFieldCookingTime => 'Tid att laga';
 
   @override
   String get validationDisplayNameEmpty => 'Visningsnamn får inte vara tomt';
@@ -12915,7 +12920,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yCookingModeRotate => 'Vrid skärmen';
 
   @override
-  String get a11yCookingModeClose => 'Stäng tillagningsläge';
+  String get a11yCookingModeClose => 'Stäng matlagningsläge';
 
   @override
   String get a11yRecipeFavorited => 'Recept tillagt i favoriter';
@@ -12990,7 +12995,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statsCookingActivity => 'Matlagningsaktivitet';
 
   @override
-  String get statsTotalCooks => 'Totalt antal tillagningar';
+  String get statsTotalCooks => 'Totalt antal gånger lagat';
 
   @override
   String get statsNoMealTypes => 'Inga måltidstyper registrerade';
@@ -13149,7 +13154,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeImproveMissingPortions => 'Portioner';
 
   @override
-  String get recipeImproveMissingTime => 'Tillagningstid';
+  String get recipeImproveMissingTime => 'Tid att laga';
 
   @override
   String get recipeImproveMissingImage => 'Bild';
@@ -14432,9 +14437,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeRelatedUnlinkError => 'Kunde inte ta bort länken';
 
   @override
-  String get a11yRelatedRecipeChip => 'Länkat recept';
-
-  @override
   String get a11yRemoveRelatedRecipe => 'Ta bort länk';
 
   @override
@@ -15011,9 +15013,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get uploadingCookSnap => 'Laddar upp fotot …';
-
-  @override
-  String get sendingComment => 'Skickar kommentaren …';
 
   @override
   String get recipeEditorClose => 'Stäng editorn';
@@ -17383,16 +17382,6 @@ class AppLocalizationsSv extends AppLocalizations {
       zero: 'Går ut i dag',
     );
     return '$_temp0';
-  }
-
-  @override
-  String trashRestoreSelected(int count) {
-    return 'Återställ $count recept';
-  }
-
-  @override
-  String trashDeleteSelected(int count) {
-    return 'Radera $count recept';
   }
 
   @override

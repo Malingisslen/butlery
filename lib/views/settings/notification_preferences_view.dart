@@ -169,7 +169,10 @@ class _NotificationPreferencesViewState
       return;
     }
     if (mounted) {
-      SnackBarUtils.showSuccess(context, context.l10n.allergenSettingsSaved);
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.notificationSettingsSaved,
+      );
     }
   }
 
