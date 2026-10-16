@@ -16,6 +16,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
@@ -234,11 +235,7 @@ class _ShortcutRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                ButleryIcon(
-                  ButleryIcons.chevronRight,
-                  color: cs.onSurfaceVariant,
-                  size: AppDimensions.iconSizeM,
-                ),
+                const ButleryChevron(),
               ],
             ),
           ),

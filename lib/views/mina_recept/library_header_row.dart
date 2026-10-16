@@ -23,10 +23,10 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
+import 'package:butlery/widgets/common/buttons/butlery_icon_button_scope.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 
@@ -107,32 +107,22 @@ class MinaReceptLibraryHeader extends StatelessWidget {
         side - AppDimensions.space8,
         0,
       ),
-      child: IconTheme.merge(
-        data: IconThemeData(color: foreground),
-        child: IconButtonTheme(
-          data: IconButtonThemeData(
-            style: IconButton.styleFrom(
-              foregroundColor: foreground,
-              disabledForegroundColor: AppModeColors.textDisabled(
-                cs.brightness,
-              ),
-            ).merge(IconButtonTheme.of(context).style),
+      child: ButleryIconButtonScope(
+        foreground: foreground,
+        // One height in both modes, so entering selection does not move
+        // the library (produktregler.md): both contents are laid
+        // out and the row takes the taller one's height, at any text
+        // size. The hidden one takes no pointer, focus or semantics.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
           ),
-          // One height in both modes, so entering selection does not move
-          // the library (produktregler.md): both contents are laid
-          // out and the row takes the taller one's height, at any text
-          // size. The hidden one takes no pointer, focus or semantics.
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppDimensions.minTouchTarget,
-            ),
-            child: Stack(
-              alignment: AlignmentDirectional.centerStart,
-              children: [
-                _Shown(visible: !selecting, child: libraryRow),
-                _Shown(visible: selecting, child: selectionRow),
-              ],
-            ),
+          child: Stack(
+            alignment: AlignmentDirectional.centerStart,
+            children: [
+              _Shown(visible: !selecting, child: libraryRow),
+              _Shown(visible: selecting, child: selectionRow),
+            ],
           ),
         ),
       ),

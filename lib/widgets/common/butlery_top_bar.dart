@@ -508,13 +508,12 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
       key: const ValueKey('butleryTopBar.back'),
       // Ikonen är arrow-left, betydelse "Tillbaka" (icons.json rad 76–78).
       // Dess glyf är en vinkel, samma som Komponentark rad 74 ritar, och
-      // den är densamma på båda plattformarna (B-45). Material chevron_left
-      // står i dess ställe tills Butlerys ikonfamilj når appen.
+      // den är densamma på båda plattformarna (B-45).
       //
       // Tolkning: ritningen visar glyfen i 17 px. Här gäller appens
       // ikonknappstema (AppDimensions.iconSizeL), som alla ikonknappar
       // har; arket anger ingen egen storlek för toppfältet.
-      icon: const ButleryIcon(ButleryIcons.chevronLeft),
+      icon: const ButleryIcon(ButleryIcons.arrowLeft),
       tooltip: name,
       onPressed: onBack ?? () => Navigator.maybePop(context),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -387,11 +388,7 @@ class TagResultDisplay extends StatelessWidget {
                     ),
                   ),
                   if (onUnknownIngredientsTap != null)
-                    ButleryIcon(
-                      ButleryIcons.chevronRight,
-                      size: AppDimensions.iconSize18,
-                      color: context.modeColors.warning,
-                    ),
+                    ButleryChevron(color: context.modeColors.warning),
                 ],
               ),
             ),
