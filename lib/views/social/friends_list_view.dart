@@ -9,7 +9,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/groups/group_dialogs.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -264,9 +264,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent> {
 
   Future<void> _showCreateGroupDialog() async {
     try {
-      final createdGroup = await SocialGroupComponents.showCreateGroupDialog(
-        context: context,
-      );
+      final createdGroup = await GroupDialogs.showCreateGroupDialog(context);
 
       if (createdGroup != null && mounted) {
         SnackBarUtils.showSuccess(context, context.l10n.groupCreatedSuccess);

@@ -194,6 +194,55 @@ void main() {
     );
   });
 
+  testWidgets('unticking a friend removes only that friend from the invite', (
+    tester,
+  ) async {
+    when(
+      () => categories.createCategory(
+        name: any(named: 'name'),
+        description: any(named: 'description'),
+        icon: any(named: 'icon'),
+      ),
+    ).thenAnswer((_) async => 'g1');
+    when(
+      () => invitations.sendGroupInvitations(
+        userIds: any(named: 'userIds'),
+        groupId: any(named: 'groupId'),
+      ),
+    ).thenAnswer((_) async => {'u-per': true});
+    when(() => categories.getCategoryById('g1')).thenReturn(
+      FriendCategory(
+        id: 'g1',
+        ownerId: _me,
+        name: 'Middagsgänget',
+        friendUserIds: const [],
+      ),
+    );
+
+    await openDialog(tester);
+    await tester.enterText(
+      fieldLabelled(_sv.socialGroupName),
+      'Middagsgänget',
+    );
+    for (final name in ['Anna Andersson', 'Per Persson', 'Anna Andersson']) {
+      await tester.ensureVisible(find.text(name));
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await tester.tap(find.text(name));
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+    }
+    expect(find.text(_sv.groupSelectedMembers(1)), findsOneWidget);
+
+    await tester.tap(find.text(_sv.socialCreateGroup));
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+
+    verify(
+      () => invitations.sendGroupInvitations(
+        userIds: ['u-per'],
+        groupId: 'g1',
+      ),
+    ).called(1);
+  });
+
   testWidgets('a group that cannot be created tells the user, invites '
       'nobody, and keeps the dialog open', (tester) async {
     when(

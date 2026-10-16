@@ -9,6 +9,8 @@ import 'package:butlery/core/validators/password_rule.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../tools/design_variants.dart';
+
 String _source(String path) {
   final file = File(path);
   expect(file.existsSync(), isTrue, reason: '$path is gone; update the guard');
@@ -214,12 +216,13 @@ void main() {
 
     test('ingen vy ger undersidans fält en egen bakgrundsfärg', () {
       final found = <String>[];
-      final ownColour = RegExp(
-        r'ButleryTopBar\.undersida\([^)]*backgroundColor\s*:',
-      );
       for (final file in _libFiles()) {
         final path = file.path.replaceAll(r'\', '/');
-        if (ownColour.hasMatch(_source(path))) found.add(path);
+        final ownColour = callArguments(
+          _source(path),
+          'ButleryTopBar.undersida',
+        ).any((args) => namedArgument(args, 'backgroundColor') != null);
+        if (ownColour) found.add(path);
       }
       found.sort();
       expect(found, isEmpty, reason: 'B-60: ljust överallt');

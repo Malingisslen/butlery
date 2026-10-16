@@ -2,7 +2,7 @@
 
 ## Rules
 - Use `StateWidget` factory constructors for all loading/empty/error states — no raw `CircularProgressIndicator`
-  - `StateWidget.loading()`, `StateWidget.skeletonRecipeList()`, `StateWidget.noRecipes(onAction: ...)`
+  - `StateWidget.loading(message: ...)`, `StateWidget.skeletonRecipeList()`, `StateWidget.noRecipes(onAction: ...)`
   - `StateWidget.error(message: ..., onAction: ...)`, `StateWidget.empty(title: ..., icon: ...)`
 - Colors via `Theme.of(context).colorScheme` or `context.modeColors.xxx` (lib/theme/app_mode_colors.dart; picks the generated member for the brightness), not `AppColors.xxx` directly. The old theme-extension accessor was retired in package 7
 - Prefer `StatelessWidget`; only `StatefulWidget` for local UI state (animations, focus, text controllers)

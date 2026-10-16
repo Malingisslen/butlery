@@ -8,7 +8,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -18,7 +17,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Dialog for creating a new group
 /// Enhanced consolidation using DialogFormFields, eliminating 40+ lines of duplicate
@@ -354,14 +353,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           );
         }
 
-        // Convert UserProfile to InvitationTarget for SocialComponents
-        final availableTargets = availableFriends
-            .map((friend) => InvitationTarget.individual(friend))
-            .toList();
-
-        final selectedTargets = _selectedFriends
-            .map((friend) => InvitationTarget.individual(friend))
-            .toList();
+        final selectedUids = _selectedFriends.map((f) => f.uid).toSet();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,23 +372,22 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             const SizedBox(height: AppDimensions.space8),
             Container(
               constraints: const BoxConstraints(maxHeight: 200),
-              child: SocialInvitationComponents.checkableTargetList(
-                targets: availableTargets,
-                selectedTargets: selectedTargets,
-                onSelectionChanged: (selectedTargetsList) {
-                  // Convert back to UserProfile
-                  final selectedFriends = selectedTargetsList
-                      .map(
-                        (target) => availableFriends.firstWhere(
-                          (friend) => friend.uid == target.targetId,
-                        ),
-                      )
-                      .toList();
-                  _onFriendSelectionChanged(selectedFriends);
+              child: ListView.builder(
+                itemCount: availableFriends.length,
+                itemBuilder: (context, index) {
+                  final friend = availableFriends[index];
+                  return ButleryCheckboxTile(
+                    title: Text(friend.displayName),
+                    value: selectedUids.contains(friend.uid),
+                    onChanged: (checked) => _onFriendSelectionChanged(
+                      checked
+                          ? [..._selectedFriends, friend]
+                          : _selectedFriends
+                                .where((f) => f.uid != friend.uid)
+                                .toList(),
+                    ),
+                  );
                 },
-                showSelectAll: true,
-                selectAllText: context.l10n.commonSelectAll,
-                selectNoneText: context.l10n.commonDeselectAll,
               ),
             ),
           ],

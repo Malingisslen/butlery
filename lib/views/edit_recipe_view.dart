@@ -44,7 +44,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/collaborative/collaborative_indicators.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
@@ -289,7 +289,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         // Shared editing is carried by the badge and the banner below, not
         // by a tinted bar (tokens.json:40-53).
         if (isCollaborative)
-          SocialCollaborativeComponents.collaborativeStatusBadge(
+          CollaborativeIndicators.collaborativeStatusBadge(
             text: context.l10n.socialShared,
             icon: ButleryIcons.users,
           ),
@@ -305,7 +305,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           selector: (_, vm) => vm.editMode,
           builder: (context, _, __) {
             final recipeViewModel = context.read<RecipeFormViewModel>();
-            return SocialCollaborativeComponents.smartPermissionsBanner(
+            return CollaborativeIndicators.smartPermissionsBanner(
               context: context,
               viewModel: recipeViewModel,
             );
@@ -322,7 +322,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       builder: (context, isCollaborative, child) {
         if (!isCollaborative) return const SizedBox.shrink();
 
-        return SocialCollaborativeComponents.collaborativeBanner(
+        return CollaborativeIndicators.collaborativeBanner(
           title: context.l10n.socialEditingTogether,
           subtitle: context.l10n.socialChangesSyncAutomatically,
           context: context,
