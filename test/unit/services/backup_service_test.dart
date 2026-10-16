@@ -33,6 +33,8 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/backup_service.dart';
+import 'package:butlery/services/unified/types/recipe_types.dart'
+    show RecipeOperationResult;
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:clock/clock.dart';
 import 'package:file_picker/file_picker.dart';
@@ -402,6 +404,59 @@ void main() {
         ),
       );
     });
+
+    /// An owner copy shares its name with the recipe it was copied from, so
+    /// the title alone must not make it a duplicate, and the import has to
+    /// store it through the path that keeps the flag.
+    test('imports an owner copy beside its original, flag kept', () async {
+      final original = RecipeFactory.build(title: 'Pasta Carbonara');
+      mockRecipeService.setRecipeState(
+        recipes: [original],
+        personalOperations: mockPersonalOps,
+      );
+      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+        (_) async => RecipeOperationResult.success(),
+      );
+      final copy = RecipeFactory.build(
+        title: 'Pasta Carbonara',
+      ).copyWith(isOwnerCopy: true);
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: [copy])),
+      );
+
+      final result = await service.importFromFile();
+
+      expect(result.successCount, equals(1));
+      expect(result.skipCount, equals(0));
+      final stored =
+          verify(
+                () => mockPersonalOps.addUnifiedRecipe(captureAny()),
+              ).captured.single
+              as Recipe;
+      expect(stored.title, 'Pasta Carbonara');
+      expect(stored.isOwnerCopy, isTrue);
+    });
+
+    test(
+      'an owner copy the service refuses is reported, not counted',
+      () async {
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.failure('refused'),
+        );
+        final copy = RecipeFactory.build(
+          title: 'Pasta Carbonara',
+        ).copyWith(isOwnerCopy: true);
+        fakeFilePicker.respondWithBytes(
+          _utf8Bytes(_backupEnvelope(recipes: [copy])),
+        );
+
+        final result = await service.importFromFile();
+
+        expect(result.successCount, equals(0));
+        expect(result.skipCount, equals(1));
+        expect(result.errors, equals(['Pasta Carbonara']));
+      },
+    );
 
     /// Empty existing library + N unique titles in backup → all imported.
     /// Pins the happy path of the dedup branch (no false-positive collisions).
