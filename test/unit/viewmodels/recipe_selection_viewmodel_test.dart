@@ -467,7 +467,8 @@ void main() {
 
       expect(message, contains('Pasta'));
       expect(message, contains('Anna Andersson'));
-      expect(message, contains('delat med'));
+      expect(message, contains('delades med'));
+      expect(message, isNot(endsWith('!')));
     });
 
     test('should get share message for multiple recipes', () {
@@ -478,7 +479,8 @@ void main() {
 
       expect(message, contains('2 recept'));
       expect(message, contains('Anna Andersson'));
-      expect(message, contains('delade med'));
+      expect(message, contains('delades med'));
+      expect(message, isNot(endsWith('!')));
     });
 
     test('should get empty share message when no selection', () {

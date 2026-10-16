@@ -695,4 +695,25 @@ void main() {
       handle.dispose();
     });
   });
+
+  testWidgets('a queue that cannot be read says so instead of "nothing queued" '
+      'and Försök igen reads it again', (tester) async {
+    await pump(tester, AppTheme.lightTheme);
+    expect(find.byKey(SyncQueueView.emptyKey), findsOneWidget);
+
+    source.failReading(Exception('boom'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(_sv.syncQueueLoadFailed), findsOneWidget);
+    expect(find.byKey(SyncQueueView.emptyKey), findsNothing);
+
+    final readsBefore = source.watchCalls;
+    await tester.tap(find.text(_sv.commonRetry));
+    await tester.pump();
+    await tester.pump();
+
+    expect(source.watchCalls, readsBefore + 1);
+    expect(find.text(_sv.syncQueueLoadFailed), findsNothing);
+  });
 }

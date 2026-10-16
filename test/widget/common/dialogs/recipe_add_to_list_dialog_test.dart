@@ -128,6 +128,28 @@ void main() {
     expect(result?.listId, recent.id);
   });
 
+  testWidgets('a list subtitle counts its items in the singular and plural', (
+    tester,
+  ) async {
+    UnifiedShoppingItem item(String name) =>
+        UnifiedShoppingItem(name: name, amount: 1, unit: 'st');
+    final one = _list(
+      'Ensam',
+      DateTime(2026, 1, 1),
+    ).copyWith(items: [item('Mjölk')]);
+    final two = _list(
+      'Tvåan',
+      DateTime(2026, 1, 2),
+    ).copyWith(items: [item('Mjölk'), item('Ägg')]);
+    when(() => service.lists).thenReturn([one, two]);
+    when(() => service.activeListId).thenReturn(null);
+
+    await open(tester);
+
+    expect(find.textContaining('1 vara ·'), findsOneWidget);
+    expect(find.textContaining('2 varor ·'), findsOneWidget);
+  });
+
   testWidgets('with no lists it offers a new list named after the recipe', (
     tester,
   ) async {

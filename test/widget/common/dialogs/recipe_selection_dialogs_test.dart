@@ -179,7 +179,7 @@ void main() {
       expect(find.text('Middag'), findsOneWidget);
       expect(find.text('Klassisk italiensk pasta'), findsOneWidget);
       expect(find.text('30 min'), findsOneWidget);
-      expect(find.text('4 port'), findsOneWidget);
+      expect(find.text('4 port.'), findsOneWidget);
     });
 
     testWidgets('checkbox value reflects isSelected=true', (tester) async {
@@ -337,7 +337,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(ButleryIcons.users), findsNothing);
-      expect(find.text('4 port'), findsNothing);
+      expect(find.text('4 port.'), findsNothing);
     });
 
     testWidgets(
@@ -380,9 +380,9 @@ void main() {
       gap(find.byIcon(ButleryIcons.clock), find.text('30 min')),
       AppDimensions.space4,
     );
-    expect(gap(find.text('30 min'), find.text('•')), AppDimensions.space8);
+    expect(gap(find.text('30 min'), find.text('·')), AppDimensions.space8);
     expect(
-      gap(find.text('•'), find.byIcon(ButleryIcons.users)),
+      gap(find.text('·'), find.byIcon(ButleryIcons.users)),
       AppDimensions.space8,
     );
   });
@@ -403,7 +403,7 @@ void main() {
       expect(find.text('Carbonara'), findsOneWidget);
       expect(find.text('Middag'), findsOneWidget);
       expect(find.text('30 min'), findsOneWidget);
-      expect(find.text('4 port'), findsOneWidget);
+      expect(find.text('4 port.'), findsOneWidget);
     });
 
     testWidgets('checkbox reflects isSelected=true', (tester) async {
@@ -529,7 +529,7 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(ButleryIcons.users), findsNothing);
-      expect(find.text('4 port'), findsNothing);
+      expect(find.text('4 port.'), findsNothing);
     });
 
     testWidgets(

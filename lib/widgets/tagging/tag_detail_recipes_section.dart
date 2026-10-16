@@ -12,6 +12,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
 
 class TagDetailRecipesSection extends StatefulWidget {
@@ -41,7 +42,7 @@ class _TagDetailRecipesSectionState extends State<TagDetailRecipesSection> {
       );
     } catch (e) {
       AppLogger.warning('Tag page: recipes with the tag not loaded: $e');
-      return const [];
+      rethrow;
     }
   }
 
@@ -82,6 +83,17 @@ class _TagDetailRecipesSectionState extends State<TagDetailRecipesSection> {
           future: _recipes,
           builder: (context, snapshot) => Column(
             children: [
+              if (snapshot.hasError)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.space12),
+                  child: InlineError(
+                    what: context.l10n.tagDetailRecipesLoadFailed,
+                    actionLabel: context.l10n.commonRetry,
+                    onAction: () => setState(() {
+                      _recipes = _load();
+                    }),
+                  ),
+                ),
               for (final recipe in snapshot.data ?? const <Recipe>[])
                 RecipeThumbRow(
                   key: ValueKey('tag-recipe-${recipe.id}'),

@@ -60,6 +60,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String recipesSharedWith(int count, String title, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were shared with $name',
+      one: '$title was shared with $name',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get stateSuccessDefault => 'Done';
 
   @override
@@ -2800,9 +2811,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingItems => 'items';
-
-  @override
   String get shoppingLists => 'Shopping lists';
 
   @override
@@ -3358,7 +3366,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogImportWithoutAi => 'Import without AI';
 
   @override
-  String get dialogItems => 'items';
+  String dialogItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
 
   @override
   String dialogItemsProgress(int completed, int total) {
@@ -4406,6 +4422,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String messagingCouldNotLoadFriends(String error) {
     return 'Your friends could not be loaded. Try again.';
   }
+
+  @override
+  String get friendsLoadFailed =>
+      'Your friends could not be loaded. Try again.';
+
+  @override
+  String get friendsRefreshFailed =>
+      'Your friends could not be refreshed. Try again.';
 
   @override
   String messagingCouldNotLoadGroupInfo(String error) {
@@ -8237,6 +8261,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterUnder30Min => 'Under 30 min';
 
   @override
+  String get filter30To60Min => '30–60 min';
+
+  @override
+  String get filterOver60Min => 'Over 60 min';
+
+  @override
   String get filterVegetarianQuick => 'Vegetarian';
 
   @override
@@ -10731,7 +10761,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationBatchBodyCollaboration(int count) {
-    return '$count new collaboration activities';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new collaboration activities',
+      one: '1 new collaboration activity',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -16827,6 +16863,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncQueueSyncFailed => 'The queue could not be sent right now.';
 
   @override
+  String get syncQueueLoadFailed => 'The queue could not be read right now.';
+
+  @override
   String get syncQueueChangeKept => 'It stays under Waiting for you.';
 
   @override
@@ -20162,6 +20201,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get tagDetailRecipesLoadFailed =>
+      'The recipes with this tag could not be loaded.';
 
   @override
   String tagDetailRuleSummaryNumber(

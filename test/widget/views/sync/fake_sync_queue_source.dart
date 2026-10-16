@@ -22,6 +22,7 @@ class FakeSyncQueueSource extends SyncQueueSource {
   QueueSnapshot _last = QueueSnapshot.empty;
 
   bool online = true;
+  int watchCalls = 0;
   int syncs = 0;
   final List<QueuedChange> retried = [];
   final List<QueuedChange> discarded = [];
@@ -46,11 +47,18 @@ class FakeSyncQueueSource extends SyncQueueSource {
     }
   }
 
+  void failReading(Object error) {
+    for (final c in _changes) {
+      c.addError(error);
+    }
+  }
+
   static QueueCounts _countsOf(QueueSnapshot q) =>
       QueueCounts(draining: q.draining.length, needsUser: q.needsUser.length);
 
   @override
   Stream<QueueSnapshot> watchChanges() {
+    watchCalls++;
     final c = StreamController<QueueSnapshot>()..add(_last);
     _changes.add(c);
     return c.stream;

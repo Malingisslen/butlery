@@ -371,12 +371,11 @@ class RecipeSelectionViewModel extends ChangeNotifier
   String getShareMessage() {
     if (_selectedRecipeIds.isEmpty) return '';
 
-    if (_selectedRecipeIds.length == 1) {
-      final recipe = selectedRecipes.first;
-      return '${recipe.title} delat med ${targetFriend.displayName}!';
-    } else {
-      return '${_selectedRecipeIds.length} recept delade med ${targetFriend.displayName}!';
-    }
+    return AppLocale.current.recipesSharedWith(
+      _selectedRecipeIds.length,
+      _selectedRecipeIds.length == 1 ? selectedRecipes.first.title : '',
+      targetFriend.displayName,
+    );
   }
 
   /// setLoading, setError, clearError provided by StateNotifierMixin
