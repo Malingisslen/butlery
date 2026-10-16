@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 import 'package:butlery/widgets/common/stat_row.dart';
@@ -171,4 +172,62 @@ void main() {
       greaterThan(100), // the default floor of largeButton
     );
   });
+
+  testWidgets('InlineError puts its action under the message at 200 % text', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      (_) => InlineError(
+        what: 'Recepten med taggen gick inte att hämta.',
+        actionLabel: 'Försök igen',
+        onAction: () {},
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(findMidWordBreaks(tester), isEmpty);
+    expect(
+      tester.getTopLeft(find.byKey(InlineError.actionKey)).dy,
+      greaterThan(
+        tester
+                .getBottomLeft(
+                  find.text('Recepten med taggen gick inte att hämta.'),
+                )
+                .dy -
+            1,
+      ),
+      reason: 'stacked below the message, not beside it',
+    );
+  });
+
+  testWidgets(
+    'InlineError keeps its action beside the message at normal text',
+    (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        (_) => InlineError(
+          what: 'Recepten med taggen gick inte att hämta.',
+          actionLabel: 'Försök igen',
+          onAction: () {},
+        ),
+        scale: 1,
+        width: 600,
+      );
+
+      expect(
+        tester.getTopLeft(find.byKey(InlineError.actionKey)).dx,
+        greaterThan(
+          tester
+                  .getTopRight(
+                    find.text('Recepten med taggen gick inte att hämta.'),
+                  )
+                  .dx -
+              1,
+        ),
+      );
+    },
+  );
 }

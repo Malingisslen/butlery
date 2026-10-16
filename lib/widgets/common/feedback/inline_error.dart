@@ -38,6 +38,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// An error line with what happened, what was kept and one action.
 class InlineError extends StatelessWidget {
@@ -104,57 +105,87 @@ class InlineError extends StatelessWidget {
             AppDimensions.space4,
             AppDimensions.space12,
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.space4),
-                child: ExcludeSemantics(
-                  child: ButleryIcon(
-                    ButleryIcons.triangleAlert,
-                    color: danger,
-                    size: AppDimensions.iconSize18,
+          child: _layout(
+            context,
+            message: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.space4),
+                  child: ExcludeSemantics(
+                    child: ButleryIcon(
+                      ButleryIcons.triangleAlert,
+                      color: danger,
+                      size: AppDimensions.iconSize18,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppDimensions.space8),
-              Expanded(
-                child: Semantics(
-                  container: true,
-                  liveRegion: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        what,
-                        style: AppTextStyles.labelMediumBold.copyWith(
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      if (preserved != null) ...[
-                        const SizedBox(height: AppDimensions.space4),
+                const SizedBox(width: AppDimensions.space8),
+                Expanded(
+                  child: Semantics(
+                    container: true,
+                    liveRegion: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          preserved,
-                          style: AppTextStyles.captionBase.copyWith(
-                            color: bodyColor,
+                          what,
+                          style: AppTextStyles.labelMediumBold.copyWith(
+                            color: cs.onSurface,
                           ),
                         ),
+                        if (preserved != null) ...[
+                          const SizedBox(height: AppDimensions.space4),
+                          Text(
+                            preserved,
+                            style: AppTextStyles.captionBase.copyWith(
+                              color: bodyColor,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              if (actionLabel != null && onAction != null)
-                TextButton(
-                  key: actionKey,
-                  onPressed: onAction,
-                  style: TextButton.styleFrom(foregroundColor: actionColor),
-                  child: Text(actionLabel),
-                ),
-            ],
+              ],
+            ),
+            action: actionLabel != null && onAction != null
+                ? TextButton(
+                    key: actionKey,
+                    onPressed: onAction,
+                    style: TextButton.styleFrom(foregroundColor: actionColor),
+                    child: Text(actionLabel),
+                  )
+                : null,
           ),
         ),
       ),
+    );
+  }
+
+  // At large text the action would take most of the line and leave the
+  // message a few letters wide, so it stacks below the message instead.
+  Widget _layout(
+    BuildContext context, {
+    required Widget message,
+    required Widget? action,
+  }) {
+    if (action == null) return message;
+    if (!isLargeText(context)) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: message),
+          action,
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        message,
+        Align(alignment: AlignmentDirectional.centerEnd, child: action),
+      ],
     );
   }
 }
