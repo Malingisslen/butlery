@@ -6,7 +6,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 /// Focused module for friend card components
@@ -142,11 +142,11 @@ class FriendCard extends StatelessWidget {
         ? ImageSize.large
         : (size >= 40 ? ImageSize.medium : ImageSize.small);
 
-    return SocialAvatarComponents.avatar(
+    return AvatarWidgets.avatar(
       announceName: false,
       user: user,
       size: imageSize,
-      showOnlineStatus: showOnlineStatus,
+      showStatus: showOnlineStatus,
       isOnline: user.isOnline == true,
     );
   }

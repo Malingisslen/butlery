@@ -250,6 +250,10 @@ const _svArb = 'lib/l10n/app_sv.arb';
 const _snackBarUtils = 'lib/core/utils/snackbar_utils.dart';
 const _heroButton = 'lib/widgets/common/buttons/hero_button.dart';
 const _photoViewer = 'lib/widgets/common/image/fullscreen_image_viewer.dart';
+const _capturedSnackBars = 'lib/core/utils/captured_snackbars.dart';
+const _selectionCancel = 'lib/widgets/common/butlery_top_bar.dart';
+const _baseDialog = 'lib/widgets/common/dialogs/base_dialog.dart';
+const _styledCard = 'lib/widgets/common/cards/styled_card.dart';
 
 final _errorColour = RegExp(
   r'\b(?:colorScheme|cs|scheme|colors|theme\.colorScheme)\.error\b'
@@ -331,7 +335,7 @@ countVariants(CensusSource src) {
       }
     }
     for (final args in callArguments(code, 'AlertDialog')) {
-      if (_errorColour.hasMatch(args)) {
+      if (path != _baseDialog && _errorColour.hasMatch(args)) {
         add('raw_destructive_alert_dialogs', path);
       }
     }
@@ -363,7 +367,8 @@ countVariants(CensusSource src) {
         ).allMatches(code).length,
       );
     }
-    if (!path.startsWith('lib/widgets/common/dialogs/')) {
+    if (!path.startsWith('lib/widgets/common/dialogs/') &&
+        path != _selectionCancel) {
       for (final args in callArguments(code, 'TextButton')) {
         final child = namedArgument(args, 'child');
         if (child != null && _cancelLabel.hasMatch(child)) {
@@ -378,7 +383,7 @@ countVariants(CensusSource src) {
         callArguments(code, 'InteractiveViewer').length,
       );
     }
-    if (path != _snackBarUtils) {
+    if (path != _snackBarUtils && path != _capturedSnackBars) {
       add('raw_snackbars', path, callArguments(code, 'SnackBar').length);
     }
     if (!path.startsWith('lib/widgets/common/state/')) {
@@ -391,8 +396,9 @@ countVariants(CensusSource src) {
       );
     }
     for (final args in callArguments(code, 'Card')) {
-      if (namedArgument(args, 'shape') != null ||
-          namedArgument(args, 'elevation') != null) {
+      if (path != _styledCard &&
+          (namedArgument(args, 'shape') != null ||
+              namedArgument(args, 'elevation') != null)) {
         add('card_surface_overrides', path);
       }
     }
@@ -458,10 +464,21 @@ countVariants(CensusSource src) {
     }
     if (!path.startsWith('lib/theme/') &&
         !path.startsWith('lib/core/responsive/')) {
+      final maxWidth = RegExp(r'\bmaxWidth\s*:\s*\d');
+      // A downscale size handed to the image picker is not a layout width.
+      var pickerSizes = 0;
+      for (final m in RegExp(r'\bpick(?:Multi)?Image\s*\(').allMatches(code)) {
+        final close = _matchingParen(code, m.end - 1);
+        if (close > 0) {
+          pickerSizes += maxWidth
+              .allMatches(code.substring(m.end, close))
+              .length;
+        }
+      }
       add(
         'hardcoded_max_width',
         path,
-        RegExp(r'\bmaxWidth\s*:\s*\d').allMatches(code).length,
+        maxWidth.allMatches(code).length - pickerSizes,
       );
     }
   }
