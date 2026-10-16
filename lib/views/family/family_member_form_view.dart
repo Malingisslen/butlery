@@ -13,6 +13,7 @@ import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_form_parts.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/views/family/profile_colors.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -265,29 +266,29 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           runSpacing: AppDimensions.space8,
           children: [
             for (final (index, hex) in kProfileColors.indexed)
-              Semantics(
-                button: true,
+              ButleryTapTarget(
+                semanticLabel: l10n.a11yColorSwatch(index + 1),
                 selected: _color == hex,
-                label: l10n.a11yColorSwatch(index + 1),
-                child: GestureDetector(
-                  onTap: () => setState(() => _color = hex),
-                  // The ring stands off the swatch, so the picked one reads
-                  // as picked without hiding its colour.
-                  child: ButleryOutlinedBox(
-                    width: AppDimensions.minTouchTarget,
-                    height: AppDimensions.minTouchTarget,
-                    padding: const EdgeInsets.all(AppDimensions.space4),
-                    borderColor: _color == hex
-                        ? cs.onSurface
-                        : Colors.transparent,
-                    borderWidth: AppDimensions.borderWidthThick,
-                    radius: AppDimensions.radiusControl,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: parseAvatarColor(context, hex),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.space8,
-                        ),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusControl,
+                ),
+                onTap: () => setState(() => _color = hex),
+                // The ring stands off the swatch, so the picked one reads
+                // as picked without hiding its colour.
+                child: ButleryOutlinedBox(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  padding: const EdgeInsets.all(AppDimensions.space4),
+                  borderColor: _color == hex
+                      ? cs.onSurface
+                      : Colors.transparent,
+                  borderWidth: AppDimensions.borderWidthThick,
+                  radius: AppDimensions.radiusControl,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: parseAvatarColor(context, hex),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.space8,
                       ),
                     ),
                   ),

@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../test_support/semantics_announcement.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
+import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/widgets/menu/menu_vote_card.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
@@ -68,6 +70,7 @@ void main() {
       final opener = find.bySemanticsLabel(RegExp(r'^Öppna recept'));
       expect(opener, findsOneWidget);
       expectNothingAnnouncedTwice(tester, opener);
+      expect(find.byType(ButleryTapTarget), findsOneWidget);
       handle.dispose();
     });
 
@@ -171,6 +174,7 @@ void main() {
         final link = find.bySemanticsLabel(RegExp(r'^Förbättra menyprompten'));
         expect(link, findsOneWidget);
         expectActivatable(tester, link);
+        expect(find.byType(ButleryLink), findsOneWidget);
         expect(announcedLines(tester, link), ['Förbättra menyprompten']);
         expectNothingAnnouncedTwice(tester, link);
         handle.dispose();

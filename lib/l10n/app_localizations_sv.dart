@@ -14394,7 +14394,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Stäng varning om importkvalitet';
 
   @override
-  String get a11yToggleShoppingCategory => 'Kategori';
+  String get a11yFiltersActive => 'Filter aktiva';
 
   @override
   String shoppingCategoryProgress(int completed, int total) {

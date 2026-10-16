@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -47,7 +48,7 @@ class AppIconButton extends StatelessWidget {
   /// Padding inside the button; affects visual size but not the 48dp hit area.
   final EdgeInsetsGeometry? padding;
 
-  /// A primary-coloured disc behind the glyph, for the one action of a row,
+  /// An action-fill disc behind the glyph, for the one action of a row,
   /// such as the add button beside a text field.
   final bool filled;
 
@@ -60,8 +61,8 @@ class AppIconButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final own = filled
         ? IconButton.styleFrom(
-            backgroundColor: cs.primary,
-            foregroundColor: cs.onPrimary,
+            backgroundColor: AppModeColors.actionFill(cs.brightness),
+            foregroundColor: AppModeColors.onActionFill(cs.brightness),
           )
         : null;
     final style = busy

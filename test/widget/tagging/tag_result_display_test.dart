@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/semantics_announcement.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
@@ -161,6 +163,49 @@ void main() {
       await tester.tap(find.byIcon(ButleryIcons.triangleAlert));
       expect(tapped, isTrue);
     });
+
+    testWidgets(
+      'the unknown-ingredients row is a 48 dp tap target only when it '
+      'has a callback, and announces its count once',
+      (tester) async {
+        final result = TaggingTestHelper.createTagResult(
+          allergenStatus: {'gluten': TriState.free},
+          coverage: 0.8,
+          unknownIngredients: ['unknown1'],
+          generatorVersion: '2.0.0',
+        );
+        Future<void> pump({VoidCallback? onTap}) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: TagResultDisplay(
+                tagResult: result,
+                onUnknownIngredientsTap: onTap,
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+
+        final handle = tester.ensureSemantics();
+        await pump();
+        expect(find.byType(ButleryTapTarget), findsNothing);
+        final plain = find.bySemanticsLabel(RegExp('okänd'));
+        expect(plain, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, plain);
+
+        await pump(onTap: () {});
+        final tappable = find.bySemanticsLabel(RegExp('okänd'));
+        expect(tappable, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, tappable);
+        handle.dispose();
+        expect(find.byType(ButleryTapTarget), findsOneWidget);
+        expect(
+          tester.getSize(find.byType(ButleryTapTarget)).height,
+          greaterThanOrEqualTo(48),
+        );
+      },
+    );
 
     testWidgets('userAllergenPrefs filters badge set', (tester) async {
       final result = TaggingTestHelper.createTagResult(

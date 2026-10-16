@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -70,16 +71,13 @@ class _ShelfCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final thumbnail = recipe.displayThumbnailUrl;
 
-    return Semantics(
-      label: context.l10n.a11yShelfRecipeOpen,
-      button: true,
-      child: GestureDetector(
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: AppDimensions.space8),
+      child: ButleryTapTarget(
+        semanticLabel: context.l10n.a11yShelfRecipeOpen,
         onTap: onTap,
-        child: Container(
+        child: SizedBox(
           width: AppDimensions.imageSizeThumbnail + AppDimensions.space16,
-          margin: const EdgeInsetsDirectional.only(
-            end: AppDimensions.space8,
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -9897,9 +9897,9 @@
   "@a11yDismissParseQualityWarning": {
     "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
   },
-  "a11yToggleShoppingCategory": "Category",
-  "@a11yToggleShoppingCategory": {
-    "description": "Semantics label for the collapsible category header in the shopping list."
+  "a11yFiltersActive": "Filters active",
+  "@a11yFiltersActive": {
+    "description": "Semantics value on the filter toggle button while filters are applied; read after the button name."
   },
   "shoppingCategoryProgress": "{completed} of {total}",
   "@shoppingCategoryProgress": {

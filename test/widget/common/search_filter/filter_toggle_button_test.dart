@@ -1,7 +1,10 @@
 // test/widget/common/search_filter/filter_toggle_button_test.dart
 // Tests for FilterToggleButton - updated for UI Redesign (ButleryIcons.filter, l10n tooltips)
 
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsData;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -787,6 +790,56 @@ void main() {
 
     tearDownAll(() {
       // Clean up after all tests
+    });
+
+    group('Semantics', () {
+      Future<SemanticsData> pumpAndRead(
+        WidgetTester tester, {
+        required bool showFilters,
+        required bool hasActiveFilters,
+      }) async {
+        await tester.pumpWidget(
+          _buildApp(
+            home: Scaffold(
+              body: FilterToggleButton(
+                showFilters: showFilters,
+                hasActiveFilters: hasActiveFilters,
+                onToggle: () {},
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        return tester
+            .getSemantics(find.byType(FilterToggleButton))
+            .getSemanticsData();
+      }
+
+      testWidgets('says that filters are active, as one button node', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        final active = await pumpAndRead(
+          tester,
+          showFilters: false,
+          hasActiveFilters: true,
+        );
+        expect(active.value, 'Filter aktiva');
+        expect(active.flagsCollection.isButton, isTrue);
+        expect(active.hasAction(SemanticsAction.tap), isTrue);
+        handle.dispose();
+      });
+
+      testWidgets('says nothing extra without active filters', (tester) async {
+        final handle = tester.ensureSemantics();
+        final quiet = await pumpAndRead(
+          tester,
+          showFilters: false,
+          hasActiveFilters: false,
+        );
+        expect(quiet.value, isEmpty);
+        handle.dispose();
+      });
     });
   });
 }

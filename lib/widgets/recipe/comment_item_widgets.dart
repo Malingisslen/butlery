@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
 import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
@@ -405,14 +406,10 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     ),
                   ] else ...[
                     const SizedBox(height: AppDimensions.space4),
-                    Semantics(
-                      label: context.l10n.a11yReactToComment,
-                      container: true,
-                      button: true,
-                      excludeSemantics: true,
+                    ButleryTapTarget(
+                      semanticLabel: context.l10n.a11yReactToComment,
                       onTap: _showReactionPicker,
-                      child: GestureDetector(
-                        onTap: _showReactionPicker,
+                      child: ExcludeSemantics(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
