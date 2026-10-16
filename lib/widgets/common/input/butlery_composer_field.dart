@@ -1,4 +1,4 @@
-// lib/widgets/styled/butlery_composer_field.dart
+// lib/widgets/common/input/butlery_composer_field.dart
 
 import 'package:flutter/material.dart';
 

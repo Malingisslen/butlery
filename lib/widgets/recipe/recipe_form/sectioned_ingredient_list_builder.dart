@@ -10,7 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
-import 'package:butlery/widgets/styled/butlery_row_field.dart';
+import 'package:butlery/widgets/common/input/butlery_row_field.dart';
 
 /// The sectioned ingredient editor (PR #211). Renders an ordered list of
 /// component headings ("Deg", "Fyllning") and ingredient lines as a single

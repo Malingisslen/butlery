@@ -11,10 +11,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// The field components, which build the field first and put it in the
 /// ring further down the same build method.
 const _components = <String>{
-  'lib/widgets/styled/styled_input.dart',
-  'lib/widgets/styled/butlery_composer_field.dart',
-  'lib/widgets/styled/butlery_row_field.dart',
-  'lib/widgets/styled/butlery_code_field.dart',
+  'lib/widgets/common/input/styled_input.dart',
+  'lib/widgets/common/input/butlery_composer_field.dart',
+  'lib/widgets/common/input/butlery_row_field.dart',
+  'lib/widgets/common/input/butlery_code_field.dart',
   'lib/widgets/common/butlery_search_box.dart',
 };
 

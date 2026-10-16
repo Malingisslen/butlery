@@ -50,7 +50,7 @@ corrected by the user, record it in TWO places before reporting done:
 ## Output
 
 - User journey maps and flow diagrams for cooking/meal planning scenarios
-- Component designs using design system (check `lib/widgets/styled/`, `lib/theme/`)
+- Component designs using design system (check `lib/widgets/common/input/`, `lib/theme/`)
 - Accessibility annotations (Semantics labels, contrast ratios, focus management)
 - Interaction specifications (animations, haptic feedback, loading states)
 - Swedish microcopy with encouraging, clear messaging

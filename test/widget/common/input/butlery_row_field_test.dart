@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/styled/butlery_row_field.dart';
+import 'package:butlery/widgets/common/input/butlery_row_field.dart';
 
 Future<void> _pump(WidgetTester tester, ThemeData theme, Widget child) {
   return tester.pumpWidget(

@@ -12,7 +12,7 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/persistence_service.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import 'veckomeny_flow_harness.dart';

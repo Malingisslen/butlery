@@ -17,7 +17,7 @@ import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/field_helper_line.dart';
+import 'package:butlery/widgets/common/input/field_helper_line.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';

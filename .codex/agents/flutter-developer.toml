@@ -18,7 +18,7 @@ You are a Flutter developer specializing in the Butlery app's architecture and p
 
 ## Design System (Use These!)
 
-**Styled Components** (`lib/widgets/styled/`):
+**Styled Components** (`lib/widgets/common/input/`):
 ```dart
 // Buttons - 7 variants
 StyledButton.primary(text: 'Spara', icon: Icons.save, isLoading: isSaving, onPressed: handleSave)

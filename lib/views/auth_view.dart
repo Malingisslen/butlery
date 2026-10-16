@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
-import 'package:butlery/widgets/styled/field_helper_line.dart';
+import 'package:butlery/widgets/common/input/field_helper_line.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -33,7 +33,7 @@ import 'package:butlery/widgets/auth/auth_field_theme.dart';
 import 'package:butlery/widgets/auth/terms_consent_row.dart';
 import 'package:butlery/views/auth/guest_start_view.dart';
 import 'package:butlery/widgets/auth/guest_entry_button.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';

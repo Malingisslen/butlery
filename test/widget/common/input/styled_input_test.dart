@@ -1,10 +1,10 @@
-// test/widget/styled/styled_input_test.dart
+// test/widget/common/input/styled_input_test.dart
 // Comprehensive tests for StyledInput and StyledFormField widgets using ultrathink methodology
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';

@@ -14,7 +14,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// Dialog for editing an existing group
 /// This dialog provides a focused interface for group editing with:

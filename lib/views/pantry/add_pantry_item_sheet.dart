@@ -22,8 +22,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_previous_version_row.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});

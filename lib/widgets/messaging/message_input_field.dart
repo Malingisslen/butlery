@@ -1,7 +1,7 @@
 // lib/widgets/messaging/message_input_field.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/styled/butlery_composer_field.dart';
+import 'package:butlery/widgets/common/input/butlery_composer_field.dart';
 
 /// The chat's message field.
 class MessageInputField extends StatelessWidget {

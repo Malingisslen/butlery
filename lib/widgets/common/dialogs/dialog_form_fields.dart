@@ -29,8 +29,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/styled/field_error_line.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/field_error_line.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Static builders for a dialog's form fields. Every TEXT variant funnels

@@ -17,7 +17,7 @@ import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Makes [tag] a cookbook, or edits it when it already is one. True when

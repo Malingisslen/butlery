@@ -1,4 +1,4 @@
-// lib/widgets/styled/styled_input_borders.dart
+// lib/widgets/common/input/styled_input_borders.dart
 //
 // The edges of a StyledInput: resting, error and disabled, round or square.
 library;

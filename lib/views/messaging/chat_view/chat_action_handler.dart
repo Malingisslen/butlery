@@ -34,7 +34,7 @@ import 'package:butlery/widgets/messaging/dialogs/block_group_member_dialog.dart
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';

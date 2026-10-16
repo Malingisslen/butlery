@@ -16,7 +16,7 @@ import 'package:butlery/widgets/common/layout/tinted_note.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 /// The in-app appeal: one text, one appeal per decision. Pops with `true`
 /// once the server has accepted it.

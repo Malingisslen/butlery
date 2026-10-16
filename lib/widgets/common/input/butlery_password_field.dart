@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/field_valid_mark.dart';
-import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/input/field_valid_mark.dart';
+import 'package:butlery/widgets/common/input/labeled_field.dart';
 
 /// A password field: the label above the box, a show/hide button at its
 /// end, and optionally the validated mark before the button, as a repeated

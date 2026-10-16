@@ -21,7 +21,7 @@ import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 final _boundaryKey = GlobalKey();
 

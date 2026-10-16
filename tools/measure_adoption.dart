@@ -26,7 +26,8 @@ void main(List<String> args) async {
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'))
       .where(
-          (f) => !f.path.replaceAll('\\', '/').contains('lib/site-packages/'))
+        (f) => !f.path.replaceAll('\\', '/').contains('lib/site-packages/'),
+      )
       .toList(growable: false);
 
   // Denominators count canonical artifact files only (filename suffix
@@ -53,31 +54,52 @@ void main(List<String> args) async {
     for (final f in dartFiles) f.path: _read(f),
   };
 
-  final baseService =
-      _countMatching(cache, services, RegExp(r'\bextends BaseService\b'));
+  final baseService = _countMatching(
+    cache,
+    services,
+    RegExp(r'\bextends BaseService\b'),
+  );
   final errorHandlingMixin = _countMatching(
-      cache, services, RegExp(r'\bwith[^;{]*\bErrorHandlingMixin\b'));
+    cache,
+    services,
+    RegExp(r'\bwith[^;{]*\bErrorHandlingMixin\b'),
+  );
   final baseFirebaseRepo = _countMatching(
-      cache, repos, RegExp(r'\bextends BaseFirebaseRepository<'));
+    cache,
+    repos,
+    RegExp(r'\bextends BaseFirebaseRepository<'),
+  );
   // BUT-873: PermissionValidationMixin is mixed into BaseFirebaseRepository
   // (lib/repositories/firebase/base_firebase_repository.dart:17), so most
   // adopters get it transitively without naming it. Effective coverage =
   // files that either declare the mixin directly OR extend BFR. Reporting
   // only the direct-mixin count would understate the security guarantee.
   final permissionValidationDirect = _countMatching(
-      cache, repos, RegExp(r'\bwith[^;{]*\bPermissionValidationMixin\b'));
+    cache,
+    repos,
+    RegExp(r'\bwith[^;{]*\bPermissionValidationMixin\b'),
+  );
   final permissionValidationEffective = _countMatching(
-      cache,
-      repos,
-      RegExp(r'\bextends BaseFirebaseRepository<|'
-          r'\bwith[^;{]*\bPermissionValidationMixin\b'));
-  final baseViewModel =
-      _countMatching(cache, viewmodels, RegExp(r'\bextends BaseViewModel\b'));
+    cache,
+    repos,
+    RegExp(
+      r'\bextends BaseFirebaseRepository<|'
+      r'\bwith[^;{]*\bPermissionValidationMixin\b',
+    ),
+  );
+  final baseViewModel = _countMatching(
+    cache,
+    viewmodels,
+    RegExp(r'\bextends BaseViewModel\b'),
+  );
 
   // SerializationUtils is invoked per-call, not per-class.
   final serUtilsPattern = RegExp(r'SerializationUtils\.safe[A-Za-z]+\(');
-  final serUtilsCallSites =
-      _countAllOccurrences(cache, dartFiles, serUtilsPattern);
+  final serUtilsCallSites = _countAllOccurrences(
+    cache,
+    dartFiles,
+    serUtilsPattern,
+  );
   final serUtilsFiles = _countMatching(cache, dartFiles, serUtilsPattern);
 
   final serviceClassCount = services.length;
@@ -113,7 +135,10 @@ bool _isUnder(File f, String pathFragment) {
 }
 
 int _countMatching(
-    Map<String, String> cache, List<File> files, RegExp pattern) {
+  Map<String, String> cache,
+  List<File> files,
+  RegExp pattern,
+) {
   var n = 0;
   for (final f in files) {
     if (pattern.hasMatch(cache[f.path] ?? '')) n++;
@@ -122,7 +147,10 @@ int _countMatching(
 }
 
 int _countAllOccurrences(
-    Map<String, String> cache, List<File> files, RegExp pattern) {
+  Map<String, String> cache,
+  List<File> files,
+  RegExp pattern,
+) {
   var n = 0;
   for (final f in files) {
     n += pattern.allMatches(cache[f.path] ?? '').length;

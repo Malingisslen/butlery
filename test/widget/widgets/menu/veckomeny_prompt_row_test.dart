@@ -13,7 +13,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 

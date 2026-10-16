@@ -13,7 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/views/more/account_form_parts.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
-import 'package:butlery/widgets/styled/butlery_password_field.dart';
+import 'package:butlery/widgets/common/input/butlery_password_field.dart';
 
 class AccountPasswordView extends StatefulWidget {
   const AccountPasswordView({super.key});

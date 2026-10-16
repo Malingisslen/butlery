@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';

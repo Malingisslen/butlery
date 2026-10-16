@@ -3,7 +3,7 @@
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/constants/routes.dart';
 

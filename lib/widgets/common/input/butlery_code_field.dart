@@ -1,4 +1,4 @@
-// lib/widgets/styled/butlery_code_field.dart
+// lib/widgets/common/input/butlery_code_field.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

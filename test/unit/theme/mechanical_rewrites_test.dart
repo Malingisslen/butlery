@@ -1,6 +1,6 @@
 /// The review gates skip a file whose only change swaps the pairs listed under
 /// `mechanicalRewrites` in .claude/shared-plugin.json. That is safe only while
-/// every pair names the same value, which this test proves for each pair.
+/// every pair names the same value.
 library;
 
 import 'dart:convert';
@@ -44,6 +44,9 @@ final _values = <String, Object>{
   'AppTextStyles.titleMedium': AppTextStyles.titleMedium,
 };
 
+bool _isPathPair((String, String) pair) =>
+    pair.$1.contains('/') && pair.$2.contains('/');
+
 List<(String, String)> _declaredPairs() {
   final config =
       jsonDecode(File('.claude/shared-plugin.json').readAsStringSync())
@@ -56,7 +59,9 @@ List<(String, String)> _declaredPairs() {
 }
 
 void main() {
-  final pairs = _declaredPairs();
+  final all = _declaredPairs();
+  final pairs = all.where((p) => !_isPathPair(p)).toList();
+  final pathPairs = all.where(_isPathPair).toList();
 
   test('the config declares at least one pair', () {
     expect(pairs, isNotEmpty);
@@ -70,9 +75,20 @@ void main() {
     });
   }
 
+  test('the config declares at least one path pair', () {
+    expect(pathPairs, isNotEmpty);
+  });
+
+  for (final (from, to) in pathPairs) {
+    test('$from has moved to $to', () {
+      expect(File('lib/$from').existsSync(), isFalse);
+      expect(File('lib/$to').existsSync(), isTrue);
+    });
+  }
+
   test('no pair renames to a name another pair renames away', () {
-    final froms = {for (final (a, _) in pairs) a};
-    expect([for (final (_, b) in pairs) b].where(froms.contains), isEmpty);
+    final froms = {for (final (a, _) in all) a};
+    expect([for (final (_, b) in all) b].where(froms.contains), isEmpty);
   });
 
   test('this file is outside every rewrite path', () {

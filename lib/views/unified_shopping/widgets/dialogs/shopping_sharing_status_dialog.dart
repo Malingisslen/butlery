@@ -4,7 +4,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';

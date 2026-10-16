@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 Widget _app(Widget child, {ThemeData? theme}) => MaterialApp(
   theme: theme ?? AppTheme.lightTheme,

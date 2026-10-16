@@ -1,4 +1,4 @@
-// lib/widgets/styled/butlery_row_field.dart
+// lib/widgets/common/input/butlery_row_field.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

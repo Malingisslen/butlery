@@ -50,7 +50,7 @@ const variantCeilings = {
   'raw_filled_button': 0,
   'raw_outlined_button': 0,
   'raw_elevated_button': 0,
-  'raw_alert_dialog': 1,
+  'raw_alert_dialog': 0,
   'raw_card': 1,
 };
 

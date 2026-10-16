@@ -19,7 +19,7 @@ import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/widgets/styled/butlery_composer_field.dart';
+import 'package:butlery/widgets/common/input/butlery_composer_field.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';

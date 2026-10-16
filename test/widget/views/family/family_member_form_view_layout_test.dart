@@ -12,7 +12,7 @@ import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/family/family_member_form_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/input/styled_input.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
