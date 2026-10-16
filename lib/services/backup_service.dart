@@ -198,7 +198,9 @@ class BackupService extends BaseService {
 
           final existingRecipes = recipeService.recipes;
           final alreadyExists = existingRecipes.any(
-            (r) => r.title.toLowerCase() == recipe.title.toLowerCase(),
+            (r) =>
+                r.title.toLowerCase() == recipe.title.toLowerCase() &&
+                r.isOwnerCopy == recipe.isOwnerCopy,
           );
 
           if (alreadyExists) {
@@ -226,23 +228,35 @@ class BackupService extends BaseService {
               createdAt: clock.now(),
               updatedAt: clock.now(),
               createdBy: '',
+              isOwnerCopy: recipe.isOwnerCopy,
             ),
             type: RecipeType.personal,
           );
 
-          await recipeService.personal.createRecipe(
-            title: newRecipe.title,
-            description: newRecipe.description,
-            ingredients: newRecipe.ingredients,
-            instructions: newRecipe.instructions,
-            imageUrls: newRecipe.imageUrls,
-            mealType: newRecipe.mealType,
-            portions: newRecipe.portions,
-            timeMinutes: newRecipe.timeMinutes,
-            rating: newRecipe.rating,
-            personalTagIds: newRecipe.personalTagIds,
-            sourceUrl: newRecipe.sourceUrl,
-          );
+          if (newRecipe.isOwnerCopy) {
+            // createRecipe has no way to carry the owner-copy flag.
+            final added = await recipeService.personal.addUnifiedRecipe(
+              newRecipe,
+            );
+            // addUnifiedRecipe reports a refusal instead of throwing.
+            if (!added.isSuccess) {
+              throw StateError('addUnifiedRecipe refused the recipe');
+            }
+          } else {
+            await recipeService.personal.createRecipe(
+              title: newRecipe.title,
+              description: newRecipe.description,
+              ingredients: newRecipe.ingredients,
+              instructions: newRecipe.instructions,
+              imageUrls: newRecipe.imageUrls,
+              mealType: newRecipe.mealType,
+              portions: newRecipe.portions,
+              timeMinutes: newRecipe.timeMinutes,
+              rating: newRecipe.rating,
+              personalTagIds: newRecipe.personalTagIds,
+              sourceUrl: newRecipe.sourceUrl,
+            );
+          }
           successCount++;
         } catch (e, stackTrace) {
           skipCount++;

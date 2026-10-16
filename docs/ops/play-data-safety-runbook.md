@@ -186,7 +186,7 @@ Processors (no sharing flag triggered):
 |---|---|---|---|
 | **Google Firebase** (Auth, Firestore, Storage, FCM, Analytics, Crashlytics, Performance, Installations, App Check, Realtime Database) | Backend infrastructure | Firestore data: **`europe-west3` (Frankfurt)** — resolved in BUT-819, 2026-06-14. Compute (Cloud Functions) pinned to `europe-west1`. Auth: global (managed). Both regions are EU. Verify live: `gcloud firestore backups list --location=europe-west3` (see `docs/ops/backups.md`) | Google Cloud DPA |
 | **Google Cloud Vertex AI** (Gemini models for recipe parsing + OCR) | LLM-based recipe extraction | `europe-west1` (Belgium) | Google Cloud DPA |
-| **OCR.space** (a]o Software GmbH) | OCR tier 2 for recipe-photo import | EU/EEA (Austria) | OCR.space privacy policy |
+| **OCR.space** (a9t9 software GmbH) | OCR tier 2 for recipe-photo import | EU/EEA (Austria) | OCR.space privacy policy |
 | **Google Cloud Vision** | OCR tier 3 fallback | **Global endpoint `vision.googleapis.com` — NOT EU-pinned.** Dormant: gated on a build-time `--dart-define GOOGLE_VISION_API_KEY` that is set nowhere in this repo | Google Cloud DPA — **but see the warning below** |
 | **Tesseract** (self-hosted) | OCR tier 4 fallback | Wherever the endpoint is hosted. Dormant: gated on a build-time `--dart-define TESSERACT_API_URL`, set nowhere in this repo | Self-hosted — no third party |
 | **Algolia** (currently inactive — feature flag `enable_algolia_search`, default false) | Recipe search indexing | EU (France primary, US backup) | Algolia DPA + EU-US DPF |
