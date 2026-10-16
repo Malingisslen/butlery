@@ -78,7 +78,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
                 },
               ),
               ButleryListRow(
-                label: sheetContext.l10n.commonDelete,
+                label: sheetContext.l10n.recipeDeleteAction,
                 leading: ButleryIcons.trash2,
                 onTap: () {
                   Navigator.of(sheetContext).pop();

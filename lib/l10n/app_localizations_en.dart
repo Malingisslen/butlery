@@ -838,6 +838,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeDelete => 'Delete recipe';
 
   @override
+  String get recipeDeleteAction => 'Delete';
+
+  @override
   String get recipeDeleting => 'Deleting the recipe …';
 
   @override

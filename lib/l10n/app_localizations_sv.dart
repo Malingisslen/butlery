@@ -811,6 +811,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeDelete => 'Radera receptet';
 
   @override
+  String get recipeDeleteAction => 'Radera';
+
+  @override
   String get recipeDeleting => 'Raderar receptet …';
 
   @override
