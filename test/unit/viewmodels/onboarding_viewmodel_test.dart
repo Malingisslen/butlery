@@ -452,6 +452,63 @@ void main() {
         );
 
         test(
+          'returning to the gate with the SAME year advances without another '
+          'CF round-trip (beta feedback 5L0UM1rkvdvsztn3XB8V)',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            await viewModel.verifyAgeGate();
+
+            final second = await viewModel.verifyAgeGate();
+
+            expect(second, AgeGateAdvanceResult.compliant);
+            verify(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).called(1);
+          },
+        );
+
+        test(
+          'a CHANGED year after a compliant pass re-runs the CF, which rewrites '
+          'the stored birth year',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            await viewModel.verifyAgeGate();
+            viewModel.setBirthYear(DateTime.now().year - 40);
+
+            await viewModel.verifyAgeGate();
+
+            verify(
+              () => mockAgeVerificationService.verifyAge(
+                DateTime.now().year - 40,
+              ),
+            ).called(1);
+          },
+        );
+
+        test(
+          'after a FAILED check on another year, returning to the verified '
+          'year calls the CF again — the failed call may have written its year',
+          () async {
+            final yearA = DateTime.now().year - 30;
+            final yearB = DateTime.now().year - 16;
+            viewModel.setBirthYear(yearA);
+            await viewModel.verifyAgeGate();
+            when(
+              () => mockAgeVerificationService.verifyAge(yearB),
+            ).thenThrow(Exception('timeout'));
+            viewModel.setBirthYear(yearB);
+            expect(await viewModel.verifyAgeGate(), AgeGateAdvanceResult.error);
+            viewModel.setBirthYear(yearA);
+
+            await viewModel.verifyAgeGate();
+
+            verify(
+              () => mockAgeVerificationService.verifyAge(yearA),
+            ).called(2);
+          },
+        );
+
+        test(
           'a RESUMED session (re-enters past the gate, no birth year held) '
           'completes WITHOUT calling the CF — the claim was minted in the '
           'session that passed the gate',

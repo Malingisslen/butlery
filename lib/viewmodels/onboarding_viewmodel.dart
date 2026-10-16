@@ -103,6 +103,10 @@ class OnboardingViewModel extends BaseViewModel {
   // completion belt only fires when a birth year is held this session AND
   // the gate handler hasn't already verified it.
   bool _ageVerifiedThisSession = false;
+  // The year the CF confirmed. Returning to the gate and pressing Next on the
+  // same year skips the round-trip; a changed year must re-run it because the
+  // CF rewrites the stored `birthYear`/`isMinor`.
+  int? _verifiedBirthYear;
   // BUT-1454: captured from the verifySignupAge CF response when the gate (or
   // the belt-and-suspenders re-check) confirms compliance this session. A
   // compliant 15–17-year-old is a minor and is stamped onto the profile at
@@ -196,6 +200,12 @@ class OnboardingViewModel extends BaseViewModel {
     // Defensive: the view keeps "Next" disabled until a year is picked, so this
     // should never be null here. Treat a missing year as a non-pass.
     if (year == null) return AgeGateAdvanceResult.error;
+    if (_ageVerifiedThisSession && year == _verifiedBirthYear) {
+      return AgeGateAdvanceResult.compliant;
+    }
+    // A call that fails may still have written its year server-side, so an
+    // older verified year must not stay skippable past it.
+    _verifiedBirthYear = null;
 
     setLoading(true);
     _ageRejected = false;
@@ -210,6 +220,7 @@ class OnboardingViewModel extends BaseViewModel {
         return AgeGateAdvanceResult.rejected;
       }
       _ageVerifiedThisSession = true;
+      _verifiedBirthYear = year;
       // BUT-1454: remember the minor status so completion can suppress search.
       _isMinor = result.isMinor;
       return AgeGateAdvanceResult.compliant;
