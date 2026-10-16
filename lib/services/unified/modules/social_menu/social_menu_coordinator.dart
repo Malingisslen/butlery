@@ -179,13 +179,9 @@ class SocialMenuCoordinator
     final attributedMenu = <String, List<Recipe>>{};
     importedMenu.forEach((category, recipes) {
       attributedMenu[category] = recipes.map((recipe) {
-        // BUT-1093: mirror createStaticCopyForOwner attribution pattern.
-        // Title-only attribution (category names stay original for imports —
-        // unlike full static copies which also suffix the category).
-        return recipe.copyWith(
-          title: '${recipe.title} (Min kopia)',
-          lastCookedAt: null,
-        );
+        // BUT-1093: mirror createStaticCopyForOwner. Category names stay
+        // original for imports, unlike full static copies which suffix them.
+        return recipe.copyWith(isOwnerCopy: true, lastCookedAt: null);
       }).toList();
     });
 
@@ -577,7 +573,7 @@ class SocialMenuCoordinator
     menu.forEach((category, recipes) {
       staticMenu['$category (Min kopia)'] = recipes.map((recipe) {
         return recipe.copyWith(
-          title: '${recipe.title} (Min kopia)',
+          isOwnerCopy: true,
           lastCookedAt: null, // Reset cooking history for static copy
         );
       }).toList();

@@ -693,6 +693,7 @@
   "recipeEdit": "Edit recipe",
   "recipeDelete": "Delete recipe",
   "recipeDeleteAction": "Delete",
+  "recipeOwnerCopyLabel": "My copy",
   "recipeDeleting": "Deleting the recipe …",
   "recipeFormatPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@recipeFormatPortions": {

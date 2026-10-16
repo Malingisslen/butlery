@@ -304,14 +304,22 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         for (final recipeData in recipes) {
           try {
             final recipeMap = recipeData as Map<String, dynamic>;
+            final storedTitle = utils.SerializationUtils.safeString(
+              recipeMap,
+              'title',
+              defaultValue: 'Untitled Recipe',
+            );
+            final title = RecipeCore.withoutOwnerCopySuffix(storedTitle);
             final recipe = Recipe(
               core: RecipeCore(
                 id: utils.SerializationUtils.safeString(recipeMap, 'id'),
-                title: utils.SerializationUtils.safeString(
-                  recipeMap,
-                  'title',
-                  defaultValue: 'Untitled Recipe',
-                ),
+                title: title,
+                isOwnerCopy:
+                    utils.SerializationUtils.safeBool(
+                      recipeMap,
+                      'isOwnerCopy',
+                    ) ||
+                    title != storedTitle,
                 description: utils.SerializationUtils.safeString(
                   recipeMap,
                   'description',

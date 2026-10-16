@@ -39,6 +39,7 @@ class PersonalRecipeCrud {
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
+    bool isOwnerCopy = false,
   }) async {
     final recipeId = await personalModule.createPersonalRecipe(
       title: title,
@@ -52,6 +53,7 @@ class PersonalRecipeCrud {
       rating: rating,
       personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
+      isOwnerCopy: isOwnerCopy,
     );
     return _addCreated(recipeId);
   }

@@ -209,6 +209,33 @@ void main() {
     expect(pushedRoute, Routes.editRecipe);
   });
 
+  testWidgets('an owner copy shows the Min kopia label under the title', (
+    tester,
+  ) async {
+    final recipe = RecipeFactory.build(
+      id: 'r-copy',
+      title: 'Krämig svamppasta',
+      createdBy: _me,
+      imageUrls: [],
+    ).copyWith(isOwnerCopy: true);
+    await pump(tester, recipe);
+
+    expect(find.text('Krämig svamppasta'), findsOneWidget);
+    expect(find.text('MIN KOPIA'), findsOneWidget);
+  });
+
+  testWidgets('an ordinary recipe shows no Min kopia label', (tester) async {
+    final recipe = RecipeFactory.build(
+      id: 'r-plain',
+      title: 'Krämig svamppasta',
+      createdBy: _me,
+      imageUrls: [],
+    );
+    await pump(tester, recipe);
+
+    expect(find.text('MIN KOPIA'), findsNothing);
+  });
+
   testWidgets('no photo, own recipe on a tablet: the add-photo chip', (
     tester,
   ) async {

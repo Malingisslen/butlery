@@ -923,6 +923,7 @@ class RecipeFormState extends ChangeNotifier {
         tagOverrides: _tagOverrides,
         sourceArtefact: _sourceArtefact,
         heirloom: heirloom ?? _originalRecipe?.core.heirloom,
+        isOwnerCopy: _originalRecipe?.core.isOwnerCopy ?? false,
       ),
       type: RecipeType.personal,
       // BUT-2213: the revision the opened recipe was read at, so a queued

@@ -346,6 +346,7 @@ class RecipeFactory {
         cuisine: core.cuisine,
         difficulty: core.difficulty,
         nutritionInfo: core.nutritionInfo,
+        isOwnerCopy: core.isOwnerCopy,
       ),
       type: RecipeType.personal,
     );

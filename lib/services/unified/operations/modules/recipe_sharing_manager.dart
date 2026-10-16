@@ -54,6 +54,7 @@ typedef CreatePersonalRecipeFn =
       double? rating,
       List<String>? personalTagIds,
       String? sourceUrl,
+      bool isOwnerCopy,
     });
 
 /// Focused module for recipe sharing and collaboration setup
@@ -303,7 +304,8 @@ class RecipeSharingManager {
 
       // Create personal copy with new title if provided
       final personalRecipeId = await _createPersonalRecipe(
-        title: newTitle ?? '${collaborativeRecipe.title} (Min kopia)',
+        title: newTitle ?? collaborativeRecipe.title,
+        isOwnerCopy: newTitle == null,
         description: collaborativeRecipe.description,
         ingredients: collaborativeRecipe.ingredients,
         instructions: collaborativeRecipe.instructions,

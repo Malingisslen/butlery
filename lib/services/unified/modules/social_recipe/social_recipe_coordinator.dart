@@ -535,10 +535,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       // Use contentSnapshot which handles V1 (full snapshot) or V2 (minimal from metadata)
       final originalRecipe = sharedRecipe.contentSnapshot;
       final staticCopy = Recipe(
-        core: originalRecipe.core.copyWith(
-          title:
-              '${originalRecipe.core.title} (Min kopia)', // Mark as owner's copy
-        ),
+        core: originalRecipe.core.copyWith(isOwnerCopy: true),
         type: originalRecipe.type,
         socialData: originalRecipe.socialData,
         realtimeData: originalRecipe.realtimeData,

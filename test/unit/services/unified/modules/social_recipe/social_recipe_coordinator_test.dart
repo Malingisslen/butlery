@@ -26,6 +26,16 @@ import '../../../../../infrastructure/factories/recipe_factory.dart';
 class _MockSharedRecipeRepo extends Mock
     implements FirebaseSharedRecipeRepository {}
 
+class _CapturingAdapter extends MockRecipeServiceAdapter {
+  Recipe? created;
+
+  @override
+  Future<String?> createRecipe(Recipe recipe) async {
+    created = recipe;
+    return 'static-copy-1';
+  }
+}
+
 void main() {
   group('SocialRecipeCoordinator', () {
     late SocialRecipeCoordinator coordinator;
@@ -299,6 +309,41 @@ void main() {
         await coordinator.joinSharedRecipe(sharedRecipeId: 'shared-1');
 
         expect(coordinator.isRecipeImported('shared-1'), isTrue);
+      });
+    });
+
+    group('Start collaborative editing', () {
+      test('the owner keeps a plain-titled copy marked isOwnerCopy', () async {
+        when(() => mockSharedRecipeRepo.getSharedRecipe('shared-1')).thenAnswer(
+          (_) async => SharedRecipe.create(
+            originalRecipeId: 'recipe-2',
+            sharedByUserId: currentUserId,
+            sharedByDisplayName: currentUserDisplayName,
+            sharedToUserIds: const ['friend-1'],
+            recipeSnapshot: testRecipesMap['recipe-2']!,
+          ),
+        );
+        when(() => mockSharedRecipeRepo.update(any())).thenAnswer((_) async {});
+        final adapter = _CapturingAdapter();
+        final owner = SocialRecipeCoordinator(
+          getCacheHelper: () => mockCacheHelper,
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (error) {},
+          notifyListeners: () {},
+          getRecipe: (id) async => testRecipesMap[id],
+          saveRecipe: (recipe) async => true,
+          serviceAdapter: adapter,
+        );
+
+        final result = await owner.startCollaborativeEditing(
+          sharedRecipeId: 'shared-1',
+        );
+
+        expect(result, 'shared-1');
+        expect(adapter.created, isNotNull);
+        expect(adapter.created!.title, 'Personal Recipe');
+        expect(adapter.created!.isOwnerCopy, isTrue);
       });
     });
 
