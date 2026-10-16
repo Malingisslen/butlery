@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// One dish in the tray, a pill: the chosen one filled with ink and a check,
 /// the others outlined (approved picture 78-menu-placement). A placed dish is
@@ -47,7 +48,7 @@ class PlacementTrayCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               ),
               // The border is a box above the ink, so a press shows beneath it.
-              child: Container(
+              child: ButleryOutlinedBox(
                 constraints: const BoxConstraints(
                   minHeight: AppDimensions.minTouchTarget,
                 ),
@@ -55,15 +56,9 @@ class PlacementTrayCard extends StatelessWidget {
                   horizontal: AppDimensions.space16,
                   vertical: AppDimensions.space8,
                 ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isSelected ? cs.onSurface : cs.outline,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusPill,
-                  ),
-                ),
+                borderColor: isSelected ? cs.onSurface : cs.outline,
+                borderWidth: 1.5,
+                radius: AppDimensions.radiusPill,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

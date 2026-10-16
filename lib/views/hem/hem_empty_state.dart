@@ -28,6 +28,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Hem when the library is empty (#hemtom).
 class HemEmptyState extends StatelessWidget {
@@ -75,17 +76,14 @@ class HemEmptyState extends StatelessWidget {
         children: [
           // The card: border.subtle outline (colorScheme.outlineVariant,
           // #CCD1C2 light, rgba(245,244,237,.18) dark; tokens.json:124-127).
-          Container(
+          ButleryOutlinedBox(
             padding: const EdgeInsets.fromLTRB(
               AppDimensions.space24,
               AppDimensions.space24,
               AppDimensions.space24,
               AppDimensions.space24,
             ),
-            decoration: BoxDecoration(
-              border: Border.all(color: cs.outlineVariant),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-            ),
+            borderColor: cs.outlineVariant,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/group_shared_content_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -352,18 +353,13 @@ class _CountTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-          child: Container(
+          child: ButleryOutlinedBox(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
               vertical: AppDimensions.space12,
             ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(
-                color: selected ? cs.onSurface : cs.outlineVariant,
-                width: selected ? 1.5 : 1,
-              ),
-            ),
+            borderColor: selected ? cs.onSurface : cs.outlineVariant,
+            borderWidth: selected ? 1.5 : 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

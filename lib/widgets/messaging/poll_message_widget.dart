@@ -1,6 +1,7 @@
 // lib/widgets/messaging/poll_message_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -184,7 +185,7 @@ class PollMessageWidget extends StatelessWidget {
         enabled: poll.isActive,
         child: GestureDetector(
           onTap: poll.isActive ? () => onVote?.call(option.id) : null,
-          child: Container(
+          child: ButleryOutlinedBox(
             constraints: const BoxConstraints(
               minHeight: AppDimensions.minTouchTarget,
             ),
@@ -193,19 +194,15 @@ class PollMessageWidget extends StatelessWidget {
               horizontal: AppDimensions.space8,
               vertical: AppDimensions.space4 + 2,
             ),
-            decoration: BoxDecoration(
-              color: isFromCurrentUser
-                  ? AppModeColors.surfaceRaisedOnInk()
-                  : cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              // On the ink bubble the line is paper.
-              border: Border.all(
-                color: hasVoted
-                    ? (isFromCurrentUser ? cs.onPrimary : cs.onSurface)
-                    : Colors.transparent,
-                width: 1.5,
-              ),
-            ),
+            color: isFromCurrentUser
+                ? AppModeColors.surfaceRaisedOnInk()
+                : cs.surface,
+            radius: AppDimensions.radiusControl,
+            // On the ink bubble the line is paper.
+            borderColor: hasVoted
+                ? (isFromCurrentUser ? cs.onPrimary : cs.onSurface)
+                : Colors.transparent,
+            borderWidth: 1.5,
             child: isRecipeOption
                 ? _buildRecipeOptionContent(
                     context: context,

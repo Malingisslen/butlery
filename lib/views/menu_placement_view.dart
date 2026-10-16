@@ -31,6 +31,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 class MenuPlacementView extends StatefulWidget {
   /// Generated menu (`Map<mealType, List<Recipe>>`) to place.
@@ -123,15 +124,13 @@ class _MenuPlacementViewContent extends StatelessWidget {
         width: PageWidth.wide,
         actions: [
           Center(
-            child: Container(
+            child: ButleryOutlinedBox(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space8,
                 vertical: AppDimensions.space4,
               ),
-              decoration: BoxDecoration(
-                border: Border.all(color: cs.onSurface),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              ),
+              borderColor: cs.onSurface,
+              radius: AppDimensions.radiusPill,
               child: Text(
                 context.l10n.menuPlacementProgress(
                   vm.placedCount,

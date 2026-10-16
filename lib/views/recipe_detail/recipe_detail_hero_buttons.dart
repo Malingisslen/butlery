@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Diameter of the paper ring behind a hero icon button (Komponentark
 /// v1:81-89 draws 40 px). The hitbox around it is 48 dp.
@@ -128,20 +129,15 @@ class _PaperRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ButleryDisc(
       key: const ValueKey('recipe-detail-paper-ring'),
-      width: _paperRingSize,
-      height: _paperRingSize,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: pressed
-            ? AppModeColors.surfaceRaisedOnPhoto()
-            : visible
-            ? Theme.of(context).colorScheme.onPrimary
-            : Colors.transparent,
-        shape: BoxShape.circle,
-      ),
-      child: child,
+      size: _paperRingSize,
+      color: pressed
+          ? AppModeColors.surfaceRaisedOnPhoto()
+          : visible
+          ? Theme.of(context).colorScheme.onPrimary
+          : Colors.transparent,
+      child: Center(child: child),
     );
   }
 }

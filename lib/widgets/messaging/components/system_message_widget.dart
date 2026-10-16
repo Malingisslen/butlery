@@ -1,6 +1,8 @@
 // lib/widgets/messaging/components/system_message_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -146,17 +148,15 @@ class ReplyPreviewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space8),
       margin: const EdgeInsets.only(bottom: AppDimensions.space8),
-      decoration: BoxDecoration(
-        color: isFromCurrentUser
-            ? AppModeColors.surfaceRaisedOnInk()
-            : cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border(
-          left: BorderSide(color: cs.secondary, width: 3),
-        ),
+      color: isFromCurrentUser
+          ? AppModeColors.surfaceRaisedOnInk()
+          : cs.surface,
+      radius: AppDimensions.radiusControl,
+      border: Border(
+        left: BorderSide(color: cs.secondary, width: 3),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,13 +202,9 @@ class MessageAvatarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: cs.surfaceContainerHighest,
-      ),
+    return ButleryDisc(
+      size: 32,
+      color: cs.surfaceContainerHighest,
       child: avatarImage ?? _buildFallback(cs),
     );
   }

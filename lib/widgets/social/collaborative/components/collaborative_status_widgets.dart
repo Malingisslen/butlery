@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -27,22 +28,18 @@ class CollaborativeStatusWidgets {
         final cs = Theme.of(context).colorScheme;
         final effectiveColor = color ?? (onInk ? cs.onPrimary : cs.onSurface);
 
-        return Container(
+        return ButleryOutlinedBox(
           padding:
               padding ??
               const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space4,
                 vertical: AppDimensions.space4,
               ),
-          decoration: BoxDecoration(
-            color: onInk
-                ? AppModeColors.surfaceRaisedOnInk()
-                : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-            border: Border.all(
-              color: onInk ? AppModeColors.borderOnInk() : cs.outlineVariant,
-            ),
-          ),
+          color: onInk
+              ? AppModeColors.surfaceRaisedOnInk()
+              : cs.surfaceContainerHighest,
+          radius: AppDimensions.radiusPill,
+          borderColor: onInk ? AppModeColors.borderOnInk() : cs.outlineVariant,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

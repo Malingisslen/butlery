@@ -7,6 +7,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/captured_snackbars.dart';
@@ -545,20 +546,14 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   ) {
     final cs = Theme.of(context).colorScheme;
 
-    return AnimatedContainer(
+    return ButleryAnimatedDisc(
       duration: AppMotion.micro.respectingMotion(context),
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: isCompleted ? cs.primary : cs.surfaceContainerHighest,
-        shape: BoxShape.circle,
-        // Done: control.checked.background, ink in both modes (tokens.json:
-        // 145-148). Not done: a text.primary edge, paper on dark.
-        border: Border.all(
-          color: isCompleted ? cs.primary : cs.onSurface,
-          width: 2,
-        ),
-      ),
+      size: 28,
+      color: isCompleted ? cs.primary : cs.surfaceContainerHighest,
+      // Done: control.checked.background, ink in both modes (tokens.json:
+      // 145-148). Not done: a text.primary edge, paper on dark.
+      borderColor: isCompleted ? cs.primary : cs.onSurface,
+      borderWidth: 2,
       child: Center(
         child: isCompleted
             ? ButleryIcon(

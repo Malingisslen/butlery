@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -41,9 +42,9 @@ class StyledCard extends StatelessWidget {
     final cardTheme = Theme.of(context).cardTheme;
     final shape = cardTheme.shape;
     final side = shape is OutlinedBorder ? shape.side : BorderSide.none;
-    return BoxDecoration(
+    return ButleryOutlinedBox.decoration(
       color: cardTheme.color,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+      radius: AppDimensions.radiusCard,
       border: side == BorderSide.none ? null : Border.fromBorderSide(side),
     );
   }

@@ -12,6 +12,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Header section with the list selector and its management buttons.
 ///
@@ -82,12 +83,10 @@ class ShoppingListHeader {
           const SizedBox(width: AppDimensions.space4),
 
           // Rename button
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(color: cs.outlineVariant),
-            ),
+          ButleryOutlinedBox(
+            paintOnly: true,
+            color: cs.surface,
+            borderColor: cs.outlineVariant,
             child: AppIconButton(
               icon: ButleryIcons.pencil,
               onPressed: onRenameList,
@@ -101,14 +100,11 @@ class ShoppingListHeader {
           // Convert button - show when user owns the list
           if (onConvertList != null) ...[
             const SizedBox(width: AppDimensions.space4),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusCard,
-                ),
-                border: Border.all(color: cs.outlineVariant),
-              ),
+            ButleryOutlinedBox(
+              paintOnly: true,
+              color: cs.surface,
+              borderColor: cs.outlineVariant,
+              radius: AppDimensions.radiusCard,
               child: AppIconButton(
                 icon: ButleryIcons.swapHorizontal,
                 onPressed: onConvertList,
@@ -124,12 +120,10 @@ class ShoppingListHeader {
           const SizedBox(width: AppDimensions.space4),
 
           // Delete button
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(color: cs.outlineVariant),
-            ),
+          ButleryOutlinedBox(
+            paintOnly: true,
+            color: cs.surface,
+            borderColor: cs.outlineVariant,
             child: AppIconButton(
               icon: ButleryIcons.trash2,
               onPressed: onDeleteList,

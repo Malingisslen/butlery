@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -174,10 +175,11 @@ void main() {
   }
 
   Color? ringColor(WidgetTester tester) {
-    final ring = tester.widget<Container>(
-      find.byKey(const ValueKey('recipe-detail-paper-ring')).first,
-    );
-    return (ring.decoration as BoxDecoration).color;
+    return tester
+        .widget<ButleryDisc>(
+          find.byKey(const ValueKey('recipe-detail-paper-ring')).first,
+        )
+        .color;
   }
 
   testWidgets('no photo, own recipe: typographic head and the add-photo chip', (

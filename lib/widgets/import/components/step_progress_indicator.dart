@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Progress indicator showing step completion status.
 class StepProgressIndicator extends StatelessWidget {
@@ -69,13 +70,9 @@ class StepProgressIndicator extends StatelessWidget {
       textColor = colorScheme.onSurfaceVariant;
     }
 
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: backgroundColor,
-      ),
+    return ButleryDisc(
+      size: 28,
+      color: backgroundColor,
       child: Center(
         child: isCompleted
             ? ButleryIcon(

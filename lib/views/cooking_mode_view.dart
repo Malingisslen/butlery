@@ -49,6 +49,7 @@ import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
 /// pushed it.
@@ -771,17 +772,15 @@ class _OutlinedBarButton extends StatelessWidget {
     return TappableWrapper(
       onTap: onTap,
       semanticLabel: semanticLabel,
-      child: Container(
+      child: ButleryOutlinedBox(
         constraints: const BoxConstraints(
           minWidth: AppDimensions.minTouchTarget,
           minHeight: AppDimensions.minTouchTarget,
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppModeColors.borderOnInk()),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
+        borderColor: AppModeColors.borderOnInk(),
+        radius: AppDimensions.radiusControl,
         child: child,
       ),
     );
@@ -1340,14 +1339,12 @@ class _NavButton extends StatelessWidget {
           : null,
       enabled: enabled,
       semanticLabel: label,
-      child: Container(
+      child: ButleryOutlinedBox(
         width: AppDimensions.minTouchTarget,
         height: AppDimensions.minTouchTarget,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border.all(color: AppModeColors.borderOnInk()),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
+        borderColor: AppModeColors.borderOnInk(),
+        radius: AppDimensions.radiusControl,
         child: ButleryIcon(
           icon,
           color: enabled ? cs.onPrimary : _disabledOnInk,

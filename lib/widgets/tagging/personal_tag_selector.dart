@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -150,13 +151,11 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   Widget _buildEmptyState() {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      color: cs.surface,
+      radius: AppDimensions.radiusControl,
+      borderColor: cs.outlineVariant,
       child: Row(
         children: [
           ButleryIcon(

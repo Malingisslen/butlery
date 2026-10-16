@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Shown at the top when notifications are off in the phone: a 1.5 px error
 /// outline, a warning glyph and a way to the system settings.
@@ -17,16 +18,15 @@ class NotificationSystemOffRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    return Container(
+    return ButleryOutlinedBox(
       key: const ValueKey('notification-system-off-row'),
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
         vertical: AppDimensions.space8,
       ),
-      decoration: BoxDecoration(
-        border: Border.all(color: cs.error, width: 1.5),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
+      borderColor: cs.error,
+      borderWidth: 1.5,
+      radius: AppDimensions.radiusControl,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

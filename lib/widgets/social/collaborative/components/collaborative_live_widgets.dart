@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_live_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -121,13 +122,9 @@ class _PulsingDotState extends State<_PulsingDot>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: _animation.value),
-            shape: BoxShape.circle,
-          ),
+        return ButleryDisc(
+          size: 8,
+          color: widget.color.withValues(alpha: _animation.value),
         );
       },
     );

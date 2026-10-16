@@ -18,6 +18,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 // Re-export removed - image_source_picker.dart was dead code
 // export 'package:butlery/widgets/image/image_source_picker.dart';
@@ -114,17 +116,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     final cs = Theme.of(context).colorScheme;
     final dimensions = widget.config.getDimensions();
 
-    return Container(
+    return ButleryOutlinedBox(
+      color: cs.surfaceContainerHighest,
+      border: Border.all(
+        color: cs.outlineVariant,
+        style: BorderStyle.solid,
+      ),
+      borderRadius: widget.config.effectiveBorderRadius,
       width: double.infinity,
       constraints: BoxConstraints(minHeight: dimensions.height),
-      decoration: BoxDecoration(
-        borderRadius: widget.config.effectiveBorderRadius,
-        border: Border.all(
-          color: cs.outlineVariant,
-          style: BorderStyle.solid,
-        ),
-        color: cs.surfaceContainerHighest,
-      ),
       child: Material(
         color: Colors.transparent,
         child: Semantics(
@@ -154,16 +154,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                   ] else ...[
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.space16),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: cs.surface,
-                      ),
-                      child: ButleryIcon(
-                        ButleryIcons.camera,
-                        size: AppDimensions.iconSizeXl,
-                        color: cs.onSurface,
+                    ButleryDisc(
+                      color: cs.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.space16),
+                        child: ButleryIcon(
+                          ButleryIcons.camera,
+                          size: AppDimensions.iconSizeXl,
+                          color: cs.onSurface,
+                        ),
                       ),
                     ),
                     const SizedBox(
@@ -234,11 +233,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     return Stack(
       children: [
         // Image container
-        DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-            border: Border.all(color: cs.outlineVariant),
-          ),
+        ButleryOutlinedBox(
+          paintOnly: true,
+          borderColor: cs.outlineVariant,
+          radius: AppDimensions.radiusControl,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: imagePath.startsWith('http')
@@ -285,20 +283,16 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             button: true,
             child: GestureDetector(
               onTap: () => _removeImage(imagePath, index),
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.space4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: cs.error,
-                  border: Border.all(
+              child: ButleryDisc(
+                color: cs.error,
+                borderColor: cs.surfaceContainerHighest,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.space4),
+                  child: ButleryIcon(
+                    ButleryIcons.x,
+                    size: AppDimensions.iconSizeS,
                     color: cs.surfaceContainerHighest,
-                    width: 1,
                   ),
-                ),
-                child: ButleryIcon(
-                  ButleryIcons.x,
-                  size: AppDimensions.iconSizeS,
-                  color: cs.surfaceContainerHighest,
                 ),
               ),
             ),

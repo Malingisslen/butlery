@@ -21,6 +21,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
@@ -144,16 +145,15 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
     final what = describeQueuedChange(l10n, change);
     final trySmaller = change.canTrySmaller ? onTrySmaller : null;
     final saveAsCopy = change.canSaveAsCopy ? onSaveAsCopy : null;
-    return Container(
+    return ButleryOutlinedBox(
       margin: const EdgeInsets.only(top: AppDimensions.space8),
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space12,
         vertical: AppDimensions.space12,
       ),
-      decoration: BoxDecoration(
-        border: Border.all(color: cs.error, width: _edge),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
+      borderColor: cs.error,
+      borderWidth: _edge,
+      radius: AppDimensions.radiusControl,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

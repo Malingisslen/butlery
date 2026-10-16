@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Callback fired when an empty slot is tapped — orchestrator owns the
 /// recipe-picker dialog flow.
@@ -57,17 +58,13 @@ class CalendarCellFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      constraints: const BoxConstraints(minHeight: kCalendarCellMinHeight),
+    return ButleryOutlinedBox(
+      color: selected && fillWhenSelected ? cs.surfaceContainerHighest : null,
+      borderColor: selected ? cs.onSurface : cs.outlineVariant,
+      borderWidth: selected ? 1.5 : 1,
+      radius: AppDimensions.radiusControl,
       padding: const EdgeInsets.all(AppDimensions.space8),
-      decoration: BoxDecoration(
-        color: selected && fillWhenSelected ? cs.surfaceContainerHighest : null,
-        border: Border.all(
-          color: selected ? cs.onSurface : cs.outlineVariant,
-          width: selected ? 1.5 : 1,
-        ),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
+      constraints: const BoxConstraints(minHeight: kCalendarCellMinHeight),
       child: child,
     );
   }

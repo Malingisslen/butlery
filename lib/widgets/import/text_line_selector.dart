@@ -14,6 +14,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -280,35 +282,25 @@ class _LineItem extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-              child: Container(
+              child: ButleryOutlinedBox(
+                radius: AppDimensions.radiusControl,
+                border: Border.all(
+                  color: borderColor,
+                  width: isSelected ? 1.5 : 1,
+                  style: borderStyle,
+                ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space12,
                   vertical: AppDimensions.space8,
                 ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                  border: Border.all(
-                    color: borderColor,
-                    width: isSelected ? 1.5 : 1,
-                    style: borderStyle,
-                  ),
-                ),
                 child: Row(
                   children: [
                     // Selection indicator
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected ? modeColor : Colors.transparent,
-                        border: Border.all(
-                          color: isSelected ? modeColor : colorScheme.outline,
-                          width: 2,
-                        ),
-                      ),
+                    ButleryDisc(
+                      size: 24,
+                      color: isSelected ? modeColor : Colors.transparent,
+                      borderColor: isSelected ? modeColor : colorScheme.outline,
+                      borderWidth: 2,
                       child: isSelected
                           ? ButleryIcon(
                               ButleryIcons.check,
@@ -377,16 +369,12 @@ class _LineItem extends StatelessWidget {
                     // Highlighted indicator
                     if (isHighlighted && !isSelected) ...[
                       const SizedBox(width: AppDimensions.space8),
-                      Container(
+                      // A thin border in the mode's colour, not a tint:
+                      // the line's suggested state is never opacity.
+                      ButleryOutlinedBox(
+                        borderColor: modeColor,
+                        radius: AppDimensions.radiusControl,
                         padding: AppDimensions.badgePadding,
-                        // A thin border in the mode's colour, not a tint:
-                        // the line's suggested state is never opacity.
-                        decoration: BoxDecoration(
-                          border: Border.all(color: modeColor),
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusControl,
-                          ),
-                        ),
                         child: Text(
                           mode == SelectionMode.ingredients
                               ? context.l10n.importLikely

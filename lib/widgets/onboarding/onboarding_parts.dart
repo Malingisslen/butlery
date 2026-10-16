@@ -8,6 +8,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -279,13 +281,9 @@ class _ActiveDot extends StatelessWidget {
       width: 24,
       height: 24,
       child: Center(
-        child: Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondary,
-            shape: BoxShape.circle,
-          ),
+        child: ButleryDisc(
+          size: 14,
+          color: Theme.of(context).colorScheme.secondary,
         ),
       ),
     );
@@ -300,14 +298,12 @@ class _Tick extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
+    return ButleryOutlinedBox(
       width: 24,
       height: 24,
-      decoration: BoxDecoration(
-        color: checked ? cs.onSurface : Colors.transparent,
-        border: checked ? null : Border.all(color: cs.outline, width: 1.5),
-        borderRadius: BorderRadius.circular(6),
-      ),
+      color: checked ? cs.onSurface : Colors.transparent,
+      border: checked ? null : Border.all(color: cs.outline, width: 1.5),
+      radius: 6,
       child: checked
           ? ButleryIcon(
               ButleryIcons.check,

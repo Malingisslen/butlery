@@ -29,6 +29,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Handler for personal tag operations from recipe detail view.
 class RecipePersonalTagHandler {
@@ -418,12 +419,7 @@ class _QuickTagChip extends StatelessWidget {
       onSelected: (_) => onTap(),
       unselectedAvatar: SizedBox.square(
         dimension: AppDimensions.space12,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: cs.onSurface,
-          ),
-        ),
+        child: ButleryDisc(paintOnly: true, color: cs.onSurface),
       ),
     );
   }

@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
@@ -97,11 +98,9 @@ class SharedContentRow extends StatelessWidget {
     );
     if (!framed) return row;
     final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      borderColor: cs.outlineVariant,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         child: Padding(

@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Focused widget for collaborative shopping list header
 /// This widget handles ONLY header display responsibilities:
@@ -92,14 +93,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: cs.onSurface,
-                  shape: BoxShape.circle,
-                ),
-              ),
+              ButleryDisc(size: 8, color: cs.onSurface),
               const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.handlarNu(

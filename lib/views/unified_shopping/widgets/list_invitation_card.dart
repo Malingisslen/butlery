@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// One pending invitation to a shared shopping list. While [busy] both
 /// buttons are off and the answer being given shows progress.
@@ -36,19 +37,16 @@ class ListInvitationCard extends StatelessWidget {
         ? l10n.listInvitationMetaView(senderName)
         : l10n.listInvitationMetaEdit(senderName);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
+    return ButleryOutlinedBox(
+      color: cs.surface,
+      borderColor: cs.outlineVariant,
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.space16,
         AppDimensions.space8,
         AppDimensions.space8,
         AppDimensions.space8,
       ),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border.all(color: cs.outlineVariant),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

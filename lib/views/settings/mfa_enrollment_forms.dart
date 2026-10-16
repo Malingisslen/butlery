@@ -10,6 +10,7 @@ import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/styled/butlery_code_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// The first step of enabling two-step verification: what it means, and
 /// the button that starts it.
@@ -187,17 +188,13 @@ class MfaErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ButleryOutlinedBox(
       padding: const EdgeInsets.all(AppDimensions.space12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.error.withValues(alpha: AppOpacity.onPaper40),
-        ),
-      ),
+      color: Theme.of(context).colorScheme.errorContainer,
+      borderColor: Theme.of(
+        context,
+      ).colorScheme.error.withValues(alpha: AppOpacity.onPaper40),
+      radius: AppDimensions.radiusControl,
       child: Row(
         children: [
           ButleryIcon(

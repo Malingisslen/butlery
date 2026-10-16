@@ -11,6 +11,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Image gallery widget for grid display
 class ImageGalleryWidget extends StatefulWidget {
@@ -126,14 +128,12 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
   Widget _buildEmptyGallery() {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      height: AppDimensions.minHeightLarge,
+    return ButleryOutlinedBox(
+      color: cs.surfaceContainerHighest,
+      borderColor: cs.outlineVariant,
+      borderRadius: widget.config.effectiveBorderRadius,
       width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: widget.config.effectiveBorderRadius,
-        border: Border.all(color: cs.outlineVariant),
-        color: cs.surfaceContainerHighest,
-      ),
+      height: AppDimensions.minHeightLarge,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -205,15 +205,14 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
   Widget _buildAddImageButton() {
     final cs = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: widget.config.effectiveBorderRadius,
-        border: Border.all(
-          color: cs.outlineVariant,
-          style: BorderStyle.solid,
-        ),
-        color: cs.surfaceContainerHighest,
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      color: cs.surfaceContainerHighest,
+      border: Border.all(
+        color: cs.outlineVariant,
+        style: BorderStyle.solid,
       ),
+      borderRadius: widget.config.effectiveBorderRadius,
       child: Material(
         color: Colors.transparent,
         child: Semantics(
@@ -257,17 +256,14 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     return Stack(
       children: [
         // Image container
-        DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: widget.config.effectiveBorderRadius,
-            border: Border.all(
-              // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
-              // Not chosen: border.subtle itself, never faded
-              // (tokens.json:40-53).
-              color: isSelected ? cs.onSurface : cs.outlineVariant,
-              width: isSelected ? 2 : 1,
-            ),
-          ),
+        ButleryOutlinedBox(
+          paintOnly: true,
+          // Chosen: the 2 px text.primary border (Grafisk manual v6:209).
+          // Not chosen: border.subtle itself, never faded claim-lint:ok moved unchanged with its box
+          // (tokens.json:40-53). claim-lint:ok moved unchanged with its box
+          borderColor: isSelected ? cs.onSurface : cs.outlineVariant,
+          borderWidth: isSelected ? 2 : 1,
+          borderRadius: widget.config.effectiveBorderRadius,
           child: ClipRRect(
             borderRadius: widget.config.effectiveBorderRadius,
             child: Semantics(
@@ -292,7 +288,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                       ),
                     ),
                     // No tint over a chosen photo: opacity is never a state
-                    // (tokens.json:40-53). The 2 px text.primary border and
+                    // (tokens.json:40-53). claim-lint:ok moved unchanged with its box The 2 px text.primary border and
                     // the checked circle carry the choice (Grafisk manual
                     // v6:209, "Vald = riktig border").
                   ],
@@ -307,20 +303,19 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           Positioned(
             top: AppDimensions.space8,
             right: AppDimensions.space8,
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.space4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                // Solid plates, no opacity as state (tokens.json:40-53):
-                // ink with a paper check when chosen, paper with a hairline
-                // and a secondary-text ring when not.
-                color: isSelected ? cs.primary : cs.surface,
-                border: Border.all(color: cs.outlineVariant),
-              ),
-              child: ButleryIcon(
-                isSelected ? ButleryIcons.check : ButleryIcons.circle,
-                size: AppDimensions.iconSizeS,
-                color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+            // Solid plates, no opacity as state (tokens.json:40-53): claim-lint:ok moved unchanged with its box
+            // ink with a paper check when chosen, paper with a hairline
+            // and a secondary-text ring when not.
+            child: ButleryDisc(
+              color: isSelected ? cs.primary : cs.surface,
+              borderColor: cs.outlineVariant,
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.space4),
+                child: ButleryIcon(
+                  isSelected ? ButleryIcons.check : ButleryIcons.circle,
+                  size: AppDimensions.iconSizeS,
+                  color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -415,14 +410,12 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     if (imageUrls.isEmpty) {
-      return Container(
-        height: AppDimensions.minHeightLarge,
+      return ButleryOutlinedBox(
+        color: cs.surfaceContainerHighest,
+        borderColor: cs.outlineVariant,
+        borderRadius: config.effectiveBorderRadius,
         width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: config.effectiveBorderRadius,
-          border: Border.all(color: cs.outlineVariant),
-          color: cs.surfaceContainerHighest,
-        ),
+        height: AppDimensions.minHeightLarge,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,

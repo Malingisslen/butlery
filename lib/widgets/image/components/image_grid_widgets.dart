@@ -14,6 +14,8 @@ import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Provides grid layout components for displaying multiple images.
 class ImageGridWidgets {
@@ -110,16 +112,13 @@ class ImageGridWidgets {
         child: Stack(
           children: [
             Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: config.effectiveBorderRadius,
-                  border: Border.all(
-                    color: Theme.of(context).primaryColor,
-                    width: isPrimary
-                        ? AppDimensions.borderWidthThick * 2
-                        : AppDimensions.borderWidthStandard,
-                  ),
-                ),
+              child: ButleryOutlinedBox(
+                paintOnly: true,
+                borderColor: Theme.of(context).primaryColor,
+                borderWidth: isPrimary
+                    ? AppDimensions.borderWidthThick * 2
+                    : AppDimensions.borderWidthStandard,
+                borderRadius: config.effectiveBorderRadius,
                 child: ClipRRect(
                   borderRadius: config.effectiveBorderRadius,
                   child: ImageComponents.buildAdaptiveImage(
@@ -221,14 +220,10 @@ class ImageGridWidgets {
         final cs = Theme.of(context).colorScheme;
         return Tooltip(
           message: tooltip,
-          child: Container(
-            width: AppDimensions.iconSizeM,
-            height: AppDimensions.iconSizeM,
-            decoration: BoxDecoration(
-              color: isDestructive ? cs.error : cs.surfaceContainerHighest,
-              shape: BoxShape.circle,
-              boxShadow: AppShadows.subtle,
-            ),
+          child: ButleryDisc(
+            size: AppDimensions.iconSizeM,
+            color: isDestructive ? cs.error : cs.surfaceContainerHighest,
+            boxShadow: AppShadows.subtle,
             child: ButleryIcon(
               icon,
               size: AppDimensions.iconSizeS,
@@ -259,16 +254,12 @@ class ImageGridWidgets {
           liveRegion: isLoading,
           child: GestureDetector(
             onTap: isLoading ? null : onAddImage,
-            child: Container(
+            child: ButleryOutlinedBox(
+              color: cs.surfaceContainerHighest,
+              borderColor: cs.outlineVariant,
+              borderWidth: AppDimensions.borderWidthThin,
+              borderRadius: config.effectiveBorderRadius,
               height: AppDimensions.buttonHeight,
-              decoration: BoxDecoration(
-                borderRadius: config.effectiveBorderRadius,
-                border: Border.all(
-                  color: cs.outlineVariant,
-                  width: AppDimensions.borderWidthThin,
-                ),
-                color: cs.surfaceContainerHighest,
-              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

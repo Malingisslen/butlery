@@ -112,6 +112,7 @@ void main() {
       final code = _source('lib/widgets/image/avatar_image_widget.dart');
       expect(
         code.contains('BoxShape.circle') ||
+            code.contains('ButleryDisc') ||
             code.contains('ClipOval') ||
             code.contains('CircleAvatar'),
         isTrue,

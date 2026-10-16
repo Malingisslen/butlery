@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -260,21 +261,17 @@ class _ShoppingRowState extends State<ShoppingRow>
     final checked = widget.checked;
     return ScaleTransition(
       scale: _scale,
-      child: AnimatedContainer(
+      child: ButleryAnimatedOutlinedBox(
         duration: AppMotion.micro.respectingMotion(context),
         curve: AppMotion.curve,
         width: _boxSize,
         height: _boxSize,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.checkboxRadius),
-          // Ticked: control.checked.background, ink in both modes. Unticked:
-          // the control edge, as the sketch draws the box.
-          border: Border.all(
-            color: checked ? cs.primary : cs.outline,
-            width: AppDimensions.borderWidthOutlinedEdge,
-          ),
-          color: checked ? cs.primary : null,
-        ),
+        radius: AppDimensions.checkboxRadius,
+        // Ticked: control.checked.background, ink in both modes. Unticked:
+        // the control edge, as the sketch draws the box.
+        borderColor: checked ? cs.primary : cs.outline,
+        borderWidth: AppDimensions.borderWidthOutlinedEdge,
+        color: checked ? cs.primary : null,
         child: AnimatedSwitcher(
           duration: AppMotion.micro.respectingMotion(context),
           switchInCurve: AppMotion.curve,

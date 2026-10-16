@@ -95,13 +95,11 @@ class _Figures extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      child: DecoratedBox(
+      child: ButleryOutlinedBox(
+        paintOnly: true,
         // border.subtle shows through the 1 px gaps and around the cells.
-        decoration: BoxDecoration(
-          color: cs.outlineVariant,
-          border: Border.all(color: cs.outlineVariant),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        ),
+        color: cs.outlineVariant,
+        borderColor: cs.outlineVariant,
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,

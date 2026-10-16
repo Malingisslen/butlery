@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -218,12 +219,11 @@ class _CodeBox extends StatelessWidget {
             color: digit.isEmpty ? cs.outline : cs.onSurfaceVariant,
             width: AppDimensions.borderWidthStandard,
           );
-    final face = DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: corners,
-        border: Border.fromBorderSide(edge),
-      ),
+    final face = ButleryOutlinedBox(
+      paintOnly: true,
+      color: cs.surface,
+      borderRadius: corners,
+      border: Border.fromBorderSide(edge),
       child: Center(
         child: Text(
           digit,
@@ -247,16 +247,13 @@ class _CodeBox extends StatelessWidget {
           right: -gap,
           bottom: -gap,
           child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl + gap,
-                ),
-                border: Border.all(
-                  color: AppModeColors.focusRing(cs.brightness),
-                  width: AppDimensions.focusRingWidth,
-                  strokeAlign: BorderSide.strokeAlignOutside,
-                ),
+            child: ButleryOutlinedBox(
+              paintOnly: true,
+              radius: AppDimensions.radiusControl + gap,
+              border: Border.all(
+                color: AppModeColors.focusRing(cs.brightness),
+                width: AppDimensions.focusRingWidth,
+                strokeAlign: BorderSide.strokeAlignOutside,
               ),
             ),
           ),
