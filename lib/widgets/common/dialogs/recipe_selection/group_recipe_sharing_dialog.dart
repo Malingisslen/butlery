@@ -229,7 +229,6 @@ class GroupRecipeSharingDialog extends StatelessWidget {
       SnackBarUtils.showSuccess(
         context,
         viewModel.successMessage,
-        duration: const Duration(seconds: 3),
       );
       Navigator.pop(context);
     } else if (viewModel.hasError) {

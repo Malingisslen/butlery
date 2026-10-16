@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _handWritten = <String, int>{
   'lib/app/auth/auth_wrapper.dart': 1,
   'lib/app/butlery_app.dart': 1,
-  'lib/core/base/base_action_handler.dart': 3,
+  'lib/core/base/base_action_handler.dart': 2,
   'lib/core/utils/captured_snackbars.dart': 3,
   'lib/core/utils/connectivity_check.dart': 6,
   'lib/core/utils/os_permission_helper.dart': 2,
@@ -31,16 +31,12 @@ const _handWritten = <String, int>{
   'lib/views/onboarding/onboarding_view.dart': 3,
   'lib/views/recipe_detail/recipe_detail_comments.dart': 1,
   'lib/views/social/group_detail_view.dart': 1,
-  'lib/views/social/menu_preview_view.dart': 2,
+  'lib/views/social/menu_preview_view.dart': 1,
   'lib/views/social/shared_with_me/shared_content_actions.dart': 3,
   'lib/views/social/user_profile_edit_view.dart': 1,
   'lib/views/sync/sync_queue_view.dart': 1,
   'lib/widgets/common/animations/animated_list_item.dart': 3,
   'lib/widgets/common/brand/start_splash.dart': 1,
-  'lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart':
-      1,
-  'lib/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart':
-      1,
   'lib/widgets/common/dialogs/session_timeout_warning_dialog.dart': 1,
   'lib/widgets/common/first_recipe_celebration_overlay.dart': 1,
   'lib/widgets/common/icons/butlery_expansion_chevron.dart': 1,

@@ -8981,6 +8981,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get substitutionEmptyState => 'No substitutions found';
 
   @override
+  String get substitutionLoadFailed => 'Could not load substitutions';
+
+  @override
   String get pollCreateTitle => 'Create poll';
 
   @override
@@ -14788,6 +14791,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPresenceSummaryAllHome => 'Everyone home all week';
+
+  @override
+  String commonListJoinAnd(String head, String last) {
+    return '$head and $last';
+  }
 
   @override
   String menuPresenceSummaryAway(String names) {

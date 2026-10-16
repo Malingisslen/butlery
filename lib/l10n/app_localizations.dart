@@ -13988,6 +13988,12 @@ abstract class AppLocalizations {
   /// **'Inga ersättningar hittades'**
   String get substitutionEmptyState;
 
+  /// No description provided for @substitutionLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta ersättningar'**
+  String get substitutionLoadFailed;
+
   /// No description provided for @pollCreateTitle.
   ///
   /// In sv, this message translates to:
@@ -22773,6 +22779,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Alla hemma hela veckan'**
   String get menuPresenceSummaryAllHome;
+
+  /// No description provided for @commonListJoinAnd.
+  ///
+  /// In sv, this message translates to:
+  /// **'{head} och {last}'**
+  String commonListJoinAnd(String head, String last);
 
   /// No description provided for @menuPresenceSummaryAway.
   ///

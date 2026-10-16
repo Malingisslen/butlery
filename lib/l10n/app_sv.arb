@@ -5789,6 +5789,7 @@
   "metricEngagementTableHow": "En rad per dag från de nattliga aktivitetssammanställningarna.",
   "metricEngagementTableWhy": "Visar vilka funktioner som driver engagemang över tid.",
   "substitutionEmptyState": "Inga ersättningar hittades",
+  "substitutionLoadFailed": "Kunde inte hämta ersättningar",
   "pollCreateTitle": "Skapa omröstning",
   "pollQuestionLabel": "Fråga",
   "pollQuestionHint": "Vad vill du fråga?",
@@ -10301,6 +10302,17 @@
   "menuPresenceAfterGenerateNotice": "närvaron uppdaterad – planerade rätter ligger kvar",
   "menuPresenceSummaryTitle": "Vem är hemma?",
   "menuPresenceSummaryAllHome": "Alla hemma hela veckan",
+  "commonListJoinAnd": "{head} och {last}",
+  "@commonListJoinAnd": {
+    "placeholders": {
+      "head": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceSummaryAway": "{names} borta delar av veckan",
   "@menuPresenceSummaryAway": {
     "placeholders": {

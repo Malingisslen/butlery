@@ -35,9 +35,12 @@ class PresenceOverview extends StatelessWidget {
   });
 
   /// "Elias", "Elias och Petra", "Elias, Petra och Maja".
-  static String _names(List<String> names) {
+  static String _names(BuildContext context, List<String> names) {
     if (names.length < 2) return names.join();
-    return '${names.sublist(0, names.length - 1).join(', ')} och ${names.last}';
+    return context.l10n.commonListJoinAnd(
+      names.sublist(0, names.length - 1).join(', '),
+      names.last,
+    );
   }
 
   @override
@@ -56,7 +59,7 @@ class PresenceOverview extends StatelessWidget {
     final summary = away.isEmpty
         ? l10n.menuPresenceSummaryAllHome
         : l10n.menuPresenceSummaryAway(
-            _names([for (final m in away) m.displayName]),
+            _names(context, [for (final m in away) m.displayName]),
           );
     final initials = distinctInitials([
       for (final m in roster) m.displayName,

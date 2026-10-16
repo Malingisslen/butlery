@@ -222,11 +222,7 @@ abstract class BaseActionHandler {
   // colour (Komponentark v1:300).
   void _showSuccessSnackBar(BuildContext context, String message) {
     if (!context.mounted) return;
-    SnackBarUtils.showSuccess(
-      context,
-      message,
-      duration: const Duration(seconds: 3),
-    );
+    SnackBarUtils.showSuccess(context, message);
   }
 
   void _showErrorSnackBar(BuildContext context, String message) {

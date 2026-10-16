@@ -213,6 +213,49 @@ void main() {
     );
   });
 
+  testWidgets('a failed load stays on the view with a retry instead of '
+      'reading as a missing group', (tester) async {
+    when(() => friendsService.refresh()).thenThrow(StateError('offline'));
+    await tester.pumpWidget(viewApp(home: const _NotFoundHost()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('host'), findsNothing);
+    expect(find.text('Kunde inte ladda gruppen'), findsOneWidget);
+    expect(find.text('Försök igen'), findsOneWidget);
+    expect(find.text(_notFoundDescription), findsNothing);
+  });
+
+  testWidgets('Försök igen stays on the view while the group loads again, '
+      'then leaves if it is gone', (tester) async {
+    var calls = 0;
+    final second = Completer<void>();
+    when(() => friendsService.refresh()).thenAnswer((_) {
+      if (++calls == 1) throw StateError('offline');
+      return second.future;
+    });
+    await tester.pumpWidget(viewApp(home: const _NotFoundHost()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Försök igen'));
+    await tester.pump();
+
+    expect(calls, 2);
+    expect(find.text('host'), findsNothing);
+    expect(find.text('Kunde inte ladda gruppen'), findsNothing);
+
+    second.complete();
+    await tester.pumpAndSettle();
+
+    // The second load answers with no group, so the view leaves as it does
+    // for a removed group.
+    expect(find.text('host'), findsOneWidget);
+  });
+
   group('GroupDetailAppBar — role-based access control gate', () {
     // Pump just the real app-bar facade (the production code that builds the
     // permission-gated popup menu) inside a Scaffold. This needs ONLY the

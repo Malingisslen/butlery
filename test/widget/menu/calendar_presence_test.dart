@@ -36,8 +36,8 @@ WeeklyMenuPlan _emptyPlan() => WeeklyMenuPlan(
   updatedAt: DateTime.utc(2026, 4, 13),
 );
 
-Widget _host(Widget child) => MaterialApp(
-  locale: const Locale('sv'),
+Widget _host(Widget child, {Locale locale = const Locale('sv')}) => MaterialApp(
+  locale: locale,
   supportedLocales: AppLocalizations.supportedLocales,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   theme: AppTheme.lightTheme,
@@ -195,8 +195,9 @@ void main() {
     Future<void> pumpSummary(
       WidgetTester tester,
       List<HouseholdRosterMember> roster,
-      WeeklyMenuPlan plan,
-    ) => tester.pumpWidget(
+      WeeklyMenuPlan plan, {
+      Locale locale = const Locale('sv'),
+    }) => tester.pumpWidget(
       _host(
         PresenceOverview(
           roster: roster,
@@ -204,6 +205,7 @@ void main() {
           expanded: false,
           onToggleExpanded: () {},
         ),
+        locale: locale,
       ),
     );
 
@@ -232,6 +234,22 @@ void main() {
 
       expect(
         find.text('Malin och Mormor borta delar av veckan'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('joins the names with "and" in English (BUT-2392)', (
+      tester,
+    ) async {
+      await pumpSummary(
+        tester,
+        roster,
+        planWithHome(['nobody']),
+        locale: const Locale('en'),
+      );
+
+      expect(
+        find.text('Malin, Mormor and Elias away part of the week'),
         findsOneWidget,
       );
     });

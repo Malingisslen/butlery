@@ -38,7 +38,7 @@ class UserAvatarWidgets {
     bool showStatus = false,
     bool isOnline = false,
     bool announceName = true,
-    bool round = false,
+    bool round = true,
   }) {
     return Builder(
       builder: (context) {
@@ -259,7 +259,7 @@ class UserAvatarWidgets {
     double size,
     Color backgroundColor,
     Color textColor, {
-    bool round = false,
+    bool round = true,
   }) {
     final initials = getInitials(displayName);
     final fontSize = size * 0.4;

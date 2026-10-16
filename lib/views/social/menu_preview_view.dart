@@ -213,7 +213,6 @@ class MenuPreviewView extends StatelessWidget {
         SnackBarUtils.showSuccess(
           context,
           context.l10n.menuImportedSuccess(sharedMenu.menuTitle),
-          duration: const Duration(seconds: 3),
         );
         // Navigera tillbaka efter lyckad import
         Navigator.pop(context);

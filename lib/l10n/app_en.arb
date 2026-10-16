@@ -5755,6 +5755,7 @@
   "metricEngagementTableHow": "One row per day from the nightly activity rollups.",
   "metricEngagementTableWhy": "Shows which features drive engagement over time.",
   "substitutionEmptyState": "No substitutions found",
+  "substitutionLoadFailed": "Could not load substitutions",
   "pollCreateTitle": "Create poll",
   "pollQuestionLabel": "Question",
   "pollQuestionHint": "What do you want to ask?",
@@ -10185,6 +10186,17 @@
   "menuPresenceAfterGenerateNotice": "presence updated – planned meals stay put",
   "menuPresenceSummaryTitle": "Who’s home?",
   "menuPresenceSummaryAllHome": "Everyone home all week",
+  "commonListJoinAnd": "{head} and {last}",
+  "@commonListJoinAnd": {
+    "placeholders": {
+      "head": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceSummaryAway": "{names} away part of the week",
   "@menuPresenceSummaryAway": {
     "placeholders": {
