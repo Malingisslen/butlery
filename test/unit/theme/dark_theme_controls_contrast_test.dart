@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 const _darkBase = Color(0xFF17251D);
 const _darkRaised = Color(0xFF2F4437);
 const _ink = Color(0xFF24382C);
+const _greenLight = Color(0xFF8FB89A);
 const _paper = Color(0xFFF5F4ED);
 const _saffron = Color(0xFFCE7C1E);
 
@@ -313,19 +314,25 @@ void main() {
       );
     });
 
-    test('filled backgrounds stay ink with paper', () {
-      final cs = dark.colorScheme;
-      expect(
-        dark.elevatedButtonTheme.style!.backgroundColor!.resolve({}),
-        _ink,
-      );
-      expect(dark.filledButtonTheme.style!.backgroundColor!.resolve({}), _ink);
-      expect(dark.floatingActionButtonTheme.backgroundColor, _ink);
-      expect(
-        ButtonThemes.primaryButtonStyle(cs).backgroundColor!.resolve({}),
-        _ink,
-      );
-    });
+    test(
+      'filled backgrounds are action.fill, greenLight, with inkDeep text (L6-07)',
+      () {
+        final cs = dark.colorScheme;
+        expect(
+          dark.elevatedButtonTheme.style!.backgroundColor!.resolve({}),
+          _greenLight,
+        );
+        expect(
+          dark.filledButtonTheme.style!.backgroundColor!.resolve({}),
+          _greenLight,
+        );
+        expect(dark.floatingActionButtonTheme.backgroundColor, _greenLight);
+        expect(
+          ButtonThemes.primaryButtonStyle(cs).backgroundColor!.resolve({}),
+          _greenLight,
+        );
+      },
+    );
   });
 
   // BUT-2183: Malin chose no pressed halo around the slider thumb.

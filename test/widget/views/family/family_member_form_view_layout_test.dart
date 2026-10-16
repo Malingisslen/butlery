@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -11,6 +13,7 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/family/family_member_form_view.dart';
+import 'package:butlery/views/family/profile_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
@@ -26,7 +29,20 @@ class _MockDinerProfileRepository extends Mock
 class _MockHouseholdRosterService extends Mock
     implements HouseholdRosterService {}
 
+late _MockDinerProfileRepository _dinerRepo;
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(
+      DinerProfile.create(
+        householdId: 'h',
+        name: 'n',
+        ageBand: DinerAgeBand.adult,
+        createdBy: 'u',
+      ),
+    );
+  });
+
   setUp(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
 
@@ -36,10 +52,11 @@ void main() {
     ).thenAnswer((_) async => Household.create(creatorId: 'test-user-123'));
     TestServiceLocator.registerSingleton<HouseholdRepository>(householdRepo);
 
-    final dinerRepo = _MockDinerProfileRepository();
+    final dinerRepo = _dinerRepo = _MockDinerProfileRepository();
     when(
       () => dinerRepo.getByHousehold(any()),
     ).thenAnswer((_) async => <DinerProfile>[]);
+    when(() => dinerRepo.update(any())).thenAnswer((_) async {});
     TestServiceLocator.registerSingleton<DinerProfileRepository>(dinerRepo);
 
     final rosterService = _MockHouseholdRosterService();
@@ -132,4 +149,86 @@ void main() {
       expect(find.byType(FamilyMemberFormView), findsNothing);
     },
   );
+
+  group('colour picker', () {
+    final sv = AppLocalizationsSv();
+
+    Future<void> openWith(WidgetTester tester, String avatarColor) async {
+      tester.view.physicalSize = const Size(420, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: FamilyMemberFormView(
+            existing: DinerProfile(
+              id: 'd1',
+              householdId: 'h1',
+              name: 'Siri',
+              ageBand: DinerAgeBand.adult,
+              avatarColor: avatarColor,
+              createdBy: 'test-user-123',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a stored legacy colour opens on its new shade and saves it', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await openWith(tester, '#B07A3C');
+
+      for (var i = 1; i <= kProfileColors.length; i++) {
+        final node = tester.getSemantics(
+          find.bySemanticsLabel(sv.a11yColorSwatch(i)),
+        );
+        expect(
+          node.flagsCollection.isSelected,
+          i == 3 ? Tristate.isTrue : Tristate.isFalse,
+          reason: 'swatch $i',
+        );
+      }
+
+      await tester.tap(find.widgetWithText(ElevatedButton, sv.commonSave));
+      await tester.pumpAndSettle();
+
+      final saved =
+          verify(() => _dinerRepo.update(captureAny())).captured.single
+              as DinerProfile;
+      expect(saved.avatarColor, '#B87F3F');
+      handle.dispose();
+    });
+
+    testWidgets('one swatch per palette colour, painted in palette order', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await openWith(tester, kProfileColors.first);
+      for (final (index, hex) in kProfileColors.indexed) {
+        final swatch = find.descendant(
+          of: find.bySemanticsLabel(sv.a11yColorSwatch(index + 1)),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is DecoratedBox &&
+                w.decoration is BoxDecoration &&
+                (w.decoration as BoxDecoration).color != null,
+          ),
+        );
+        expect(
+          (tester.widget<DecoratedBox>(swatch).decoration as BoxDecoration)
+              .color,
+          Color(int.parse('FF${hex.substring(1)}', radix: 16)),
+          reason: 'swatch ${index + 1}',
+        );
+      }
+      expect(
+        find.bySemanticsLabel(RegExp('^Avatarfärg ')),
+        findsNWidgets(kProfileColors.length),
+      );
+      handle.dispose();
+    });
+  });
 }

@@ -82,7 +82,7 @@ void main() {
   group('dark mode', () {
     final dark = AppTheme.darkTheme;
 
-    testWidgets('a live primary button has an edge a disabled one lacks', (
+    testWidgets('a live primary button reads as a fill, without an edge', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -104,18 +104,16 @@ void main() {
       );
 
       final style = dark.elevatedButtonTheme.style!;
-      final live = style.side!.resolve(<WidgetState>{});
-      final dead = style.side!.resolve({WidgetState.disabled});
-      expect(live, isNotNull);
-      expect(dead, isNull);
-      final onBase = Color.alphaBlend(
-        live!.color,
-        dark.colorScheme.primary,
+      expect(style.side?.resolve(<WidgetState>{}), isNull);
+      final fill = style.backgroundColor!.resolve(<WidgetState>{})!;
+      expect(
+        _contrast(fill, dark.colorScheme.surface),
+        greaterThanOrEqualTo(3.0),
+        reason: 'the fill is the non-text boundary: 3:1 against the page',
       );
       expect(
-        _contrast(onBase, dark.colorScheme.surface),
+        _contrast(fill, dark.colorScheme.surfaceContainerHighest),
         greaterThanOrEqualTo(3.0),
-        reason: 'the edge is a non-text boundary: 3:1 against the page',
       );
     });
 

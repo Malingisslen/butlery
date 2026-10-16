@@ -40,7 +40,10 @@ class AppTheme {
         colorScheme: colorScheme,
         textTheme: AppTextStyles.createTextTheme(),
 
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // Standard density on every platform: adaptivePlatformDensity is
+        // compact on desktop and web, which takes 8 dp off every button's
+        // 48 dp target and off each list row.
+        visualDensity: VisualDensity.standard,
 
         // P7-U08: the framework back and close buttons draw the Butlery
         // glyphs (beslutslogg.md:9, B-02; plattformsmatris.md:75), in the
@@ -81,6 +84,9 @@ class AppTheme {
           colorScheme,
         ),
         scrollbarTheme: ComponentThemes.scrollbarTheme(colorScheme),
+        textSelectionTheme: ComponentThemes.textSelectionTheme(colorScheme),
+        tooltipTheme: ComponentThemes.tooltipTheme(colorScheme),
+        popupMenuTheme: ComponentThemes.popupMenuTheme(colorScheme),
 
         scaffoldBackgroundColor: colorScheme.surface,
 

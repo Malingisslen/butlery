@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:4cf83282b68c85ffb12cea72ead78e11f56f7b1a70ad534e321b52f76feb5775 (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:52b86c169c8b16a1f0ba15b070fd4f5371ec0b083dec3cc3b8ee0417dd9c2bef (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -123,6 +123,14 @@ class AppColorsDark {
   static const Color actionDangerPressed = Color(0xFFD67557);
   /// Ikon och text pa actionDanger och actionDangerPressed. · semantic.text.onActionDanger (dark)
   static const Color onActionDanger = Color(0xFF17251D);
+  /// Fyllning pa primarknappen och skapa-knappen (FAB). Ljust ink, morkt greenLight. Byts alltid i par med onActionFill. · semantic.action.fill (dark)
+  static const Color actionFill = Color(0xFF8FB89A);
+  /// Text och ikon pa actionFill. · semantic.text.onActionFill (dark)
+  static const Color onActionFill = Color(0xFF17251D);
+  /// Text och ikon pa fylld felfarg (error) eller framgangsfarg (success). Bar aliasen onError och onSuccess. · semantic.text.onStatusFill (dark)
+  static const Color onStatusFill = Color(0xFF17251D);
+  /// Markerad text i falt. Bar text.primary. · semantic.surface.textSelection (dark)
+  static const Color surfaceTextSelection = Color(0xFF4A5C50);
   /// Varningstext och varningsglyf pa papper: offlinebannerns kontur och wifi-off (Komponentark 753, morkt 571). Inte warning (border.statusWarning, aldrig text) och inte onWarningContainer (text.accent.onRaised, samma ljusa hex men annat token). · semantic.text.warning (dark)
   static const Color textWarning = Color(0xFFDCA968);
   /// Accenttext (produktbeslut R6-01 = A): Hem-kortets Ikvall-rubrik i morkt lage tar text.accent #DCA968 pa surface.ink, som ritningen Skarmar v12 del 1:47 (--r04slot-765). Ytbunden, inte ytblind: det ljusa #A15A0A klarar surface.base (4,78:1) men inte surface.raised (4,30:1, dar galler text.accent.onRaised) och aldrig surface.ink (2,37:1, dar galler textAccentOnInk). · semantic.text.accent (dark)
@@ -181,8 +189,8 @@ class AppColorsDark {
   static const Color onPrimary = textOnPrimary;
   static const Color outline = placeholderIcon;
   static const Color shadow = shadowColor;
-  static const Color onSuccess = textOnPrimary;
-  static const Color onError = textOnPrimary;
+  static const Color onSuccess = onStatusFill;
+  static const Color onError = onStatusFill;
   static const Color onWarning = textDark;
   static const Color onInfo = textOnPrimary;
   static const Color recipeCardBottomBorder = rustLight;

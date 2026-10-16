@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -10,6 +11,14 @@ import '../../../test_support/base_unit_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 const _longLabel = 'This is a very long button label that wraps';
+
+double _contrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
+}
 
 void main() {
   group('ActionButtons', () {
@@ -300,6 +309,50 @@ void main() {
 
         expect(find.byIcon(ButleryIcons.archive), findsOneWidget);
       });
+
+      for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
+        testWidgets(
+          'text and icon reach 4.5:1 on the button fill, ${theme.brightness}',
+          (tester) async {
+            await tester.pumpWidget(
+              MaterialApp(
+                theme: theme,
+                home: Scaffold(
+                  body: Builder(
+                    builder: (context) => ActionButtons.largeButton(
+                      context,
+                      label: 'Archive',
+                      icon: ButleryIcons.archive,
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              ),
+            );
+
+            final fill = theme.elevatedButtonTheme.style!.backgroundColor!
+                .resolve({})!;
+            final text = tester
+                .widget<Text>(find.text('Archive'))
+                .style!
+                .color!;
+            final icon = tester
+                .widget<ButleryIcon>(find.byType(ButleryIcon))
+                .color!;
+
+            expect(
+              _contrast(text, fill),
+              greaterThanOrEqualTo(4.5),
+              reason: 'label on the fill',
+            );
+            expect(
+              _contrast(icon, fill),
+              greaterThanOrEqualTo(4.5),
+              reason: 'icon on the fill',
+            );
+          },
+        );
+      }
     });
 
     group('FloatingActionButtonWidget', () {
@@ -336,9 +389,8 @@ void main() {
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
-        // FAB is an ink fill with onPrimary (paper) on it: surfaceContainerHighest
-        // turned #2F4437 in dark mode and vanished on the ink fill (P4-T7).
-        // Paket 1: FAB:en tar sina färger ur det kanoniska schemat.
+        // FAB is the action.fill with onActionFill on it: ink and paper in
+        // light mode, which is the canonical scheme's primary and onPrimary.
         expect(fab.backgroundColor, equals(AppColors.lightColorScheme.primary));
         expect(
           fab.foregroundColor,

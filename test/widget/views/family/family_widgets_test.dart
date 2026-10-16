@@ -16,6 +16,7 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/views/family/profile_colors.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/helpers/ink_fill.dart';
@@ -38,6 +39,52 @@ DinerProfile _diner({
 );
 
 void main() {
+  group('FamilyAvatar initials contrast', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets('every profile colour reads at 4.5:1, $mode', (tester) async {
+        for (final hex in kProfileColors) {
+          late Color bg;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: mode == ThemeMode.dark
+                  ? AppTheme.darkTheme
+                  : AppTheme.lightTheme,
+              home: Builder(
+                builder: (context) {
+                  bg = parseAvatarColor(context, hex);
+                  return FamilyAvatar(name: 'Anna Berg', color: bg);
+                },
+              ),
+            ),
+          );
+          final fg = tester.widget<Text>(find.text('AB')).style!.color!;
+          final l1 = fg.computeLuminance(), l2 = bg.computeLuminance();
+          final ratio =
+              (l1 > l2 ? l1 + 0.05 : l2 + 0.05) /
+              (l1 > l2 ? l2 + 0.05 : l1 + 0.05);
+          expect(ratio, greaterThanOrEqualTo(4.5), reason: hex);
+        }
+      });
+    }
+
+    testWidgets('a stored legacy colour is drawn as its measured shade', (
+      tester,
+    ) async {
+      late Color parsed;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Builder(
+            builder: (context) {
+              parsed = parseAvatarColor(context, '#B07A3C');
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(parsed, const Color(0xFFB87F3F));
+    });
+  });
   group('FamilyAvatar initials', () {
     testWidgets('falls back to the name when no initials are passed', (
       tester,

@@ -183,16 +183,23 @@ void main() {
     }
   });
 
-  group('dark rest edge on every filled button theme', () {
-    test('elevated and filled carry it', () {
+  group('dark filled buttons need no rest edge', () {
+    test('the fill itself reads 3:1 on the dialog surface', () {
       final dark = AppTheme.darkTheme;
-      final edges = [
-        dark.elevatedButtonTheme.style!.side!.resolve({}),
-        dark.filledButtonTheme.style!.side!.resolve({}),
-      ];
-      for (final edge in edges) {
-        expect(edge, isNotNull);
-        expect(edge!.width, 1.5);
+      final surface = dark.colorScheme.surfaceContainerHighest;
+      for (final style in [
+        dark.elevatedButtonTheme.style!,
+        dark.filledButtonTheme.style!,
+      ]) {
+        expect(style.side?.resolve({}), isNull);
+        final fill = style.backgroundColor!.resolve({})!;
+        final hi = fill.computeLuminance() > surface.computeLuminance()
+            ? fill.computeLuminance()
+            : surface.computeLuminance();
+        final lo = fill.computeLuminance() > surface.computeLuminance()
+            ? surface.computeLuminance()
+            : fill.computeLuminance();
+        expect((hi + 0.05) / (lo + 0.05), greaterThanOrEqualTo(3.0));
       }
     });
   });

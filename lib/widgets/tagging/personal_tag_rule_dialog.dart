@@ -571,7 +571,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           Expanded(
             child: Text(
               _error!,
-              style: errorTextStyle(cs, onDangerTint: true),
+              style: errorTextStyle(cs, onRaised: true),
             ),
           ),
         ],

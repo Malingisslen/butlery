@@ -115,7 +115,9 @@ class FeedbackThemes {
         if (states.contains(WidgetState.selected)) {
           return cs.onPrimary;
         }
-        return cs.outline;
+        // text.secondary rather than border.control: the knob is a graphic
+        // on the outlineVariant track and must reach 3:1 there.
+        return cs.onSurfaceVariant;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
@@ -158,17 +160,32 @@ class FeedbackThemes {
   /// and far above 3:1 on the dark base.
   static CheckboxThemeData checkboxTheme(ColorScheme cs) {
     return CheckboxThemeData(
+      // Disabled follows the radio: a surface.disabled edge, and a
+      // surface.disabled fill under a text.primary tick when checked, never
+      // the live ink.
       fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return states.contains(WidgetState.selected)
+              ? AppModeColors.surfaceDisabled(cs.brightness)
+              : cs.surfaceContainerHighest;
+        }
         if (states.contains(WidgetState.selected)) {
           return cs.primary;
         }
         return cs.surfaceContainerHighest;
       }),
-      checkColor: WidgetStateProperty.all(cs.onPrimary),
-      side: BorderSide(
-        color: cs.outline,
-        width: 1.5,
+      checkColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.disabled) ? cs.onSurface : cs.onPrimary,
       ),
+      side: WidgetStateBorderSide.resolveWith((states) {
+        return BorderSide(
+          color: states.contains(WidgetState.disabled)
+              ? AppModeColors.surfaceDisabled(cs.brightness)
+              : cs.outline,
+          width: 1.5,
+        );
+      }),
       // The checkbox keeps its own locked radius, 6 (tokens.json
       // controls.checkbox.radius), outside the five-step scale.
       shape: RoundedRectangleBorder(
@@ -243,6 +260,10 @@ class FeedbackThemes {
       color: colors.progressIndicator,
       linearTrackColor: colors.progressTrack,
       circularTrackColor: colors.progressTrack,
+      // The pull-to-refresh arc is ColorScheme.primary, ink in both modes: on
+      // a paper disc it reads 11.36:1 in both, where on the dark base it was
+      // 1.27:1.
+      refreshBackgroundColor: AppModeColors.refreshDisc(),
     );
   }
 

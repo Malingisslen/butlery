@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
@@ -197,7 +198,7 @@ class ActionButtons {
     EdgeInsets? margin,
     bool enablePressAnimation = true,
   }) {
-    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final onPrimary = AppModeColors.onActionFill(Theme.of(context).brightness);
     final sized = SizedBox(
       height: height,
       child: ElevatedButton.icon(
@@ -448,7 +449,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
     // FloatingActionButton puts its tooltip on a node above its button node,
     // leaving the button unnamed; the name goes inside the button instead.
     final result = Tooltip(
@@ -458,8 +459,10 @@ class FloatingActionButtonWidget extends StatelessWidget {
         surface: PressSurface.ink,
         child: FloatingActionButton(
           onPressed: onPressed,
-          backgroundColor: backgroundColor ?? cs.primary,
-          foregroundColor: foregroundColor ?? cs.onPrimary,
+          backgroundColor:
+              backgroundColor ?? AppModeColors.actionFill(brightness),
+          foregroundColor:
+              foregroundColor ?? AppModeColors.onActionFill(brightness),
           child: Semantics(label: semanticLabel, child: child),
         ),
       ),

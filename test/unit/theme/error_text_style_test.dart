@@ -19,8 +19,8 @@ void main() {
       expect(style.fontWeight, AppTextStyles.bodySmall.fontWeight);
     });
 
-    test('$mode: on the danger tint it is onErrorContainer', () {
-      expect(errorTextStyle(cs, onDangerTint: true).color, cs.onErrorContainer);
+    test('$mode: on raised or the danger tint it is onErrorContainer', () {
+      expect(errorTextStyle(cs, onRaised: true).color, cs.onErrorContainer);
     });
   }
 

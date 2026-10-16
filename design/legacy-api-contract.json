@@ -9,6 +9,7 @@
    "accent",
    "actionDanger",
    "actionDangerPressed",
+   "actionFill",
    "actionPrimary",
    "actionPrimaryPressed",
    "backgroundDark",
@@ -91,6 +92,7 @@
    "neutralLight",
    "neutralMedium",
    "onActionDanger",
+   "onActionFill",
    "onActionPrimary",
    "onActionPrimaryPressed",
    "onError",
@@ -99,6 +101,7 @@
    "onInfoContainer",
    "onPrimary",
    "onPrimaryContainer",
+   "onStatusFill",
    "onSuccess",
    "onSuccessContainer",
    "onSurface",
@@ -142,6 +145,7 @@
    "surfacePressedOnInk",
    "surfacePressedOnRaised",
    "surfaceSelected",
+   "surfaceTextSelection",
    "surfaceTintAccent",
    "surfaceTintDanger",
    "surfaceTintSuccess",
@@ -275,6 +279,7 @@
   "members": [
    "actionDanger",
    "actionDangerPressed",
+   "actionFill",
    "actionPrimary",
    "actionPrimaryPressed",
    "backgroundTint",
@@ -296,10 +301,12 @@
    "infoContainer",
    "neutralLight",
    "onActionDanger",
+   "onActionFill",
    "onActionPrimary",
    "onActionPrimaryPressed",
    "onErrorContainer",
    "onInfoContainer",
+   "onStatusFill",
    "onSuccessContainer",
    "onWarningContainer",
    "overlay",
@@ -324,6 +331,7 @@
    "surfacePressedOnInk",
    "surfacePressedOnRaised",
    "surfaceSelected",
+   "surfaceTextSelection",
    "surfaceTintAccent",
    "surfaceTintDanger",
    "surfaceTintSuccess",
@@ -378,6 +386,7 @@
   "semanticTokens": [
    "action.danger",
    "action.dangerPressed",
+   "action.fill",
    "action.primary",
    "action.primaryPressed",
    "border.cardEdge",
@@ -405,6 +414,7 @@
    "surface.pressed.onRaised",
    "surface.raised",
    "surface.selected",
+   "surface.textSelection",
    "surface.tint.accent",
    "surface.tint.danger",
    "surface.tint.success",
@@ -422,8 +432,10 @@
    "text.disabled.onRaised",
    "text.link",
    "text.onActionDanger",
+   "text.onActionFill",
    "text.onActionPrimary",
    "text.onActionPrimaryPressed",
+   "text.onStatusFill",
    "text.primary",
    "text.secondary",
    "text.secondary.onRaised",
@@ -930,6 +942,34 @@
     "KIND": "CANONICAL"
    },
    {
+    "FLUTTER_MEMBER": "actionFill",
+    "SEMANTIC_TOKEN": "action.fill",
+    "TOKENS_JSON_PATH": "semantic[\"action.fill\"].dark",
+    "DARK_VALUE": "#8FB89A",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "onActionFill",
+    "SEMANTIC_TOKEN": "text.onActionFill",
+    "TOKENS_JSON_PATH": "semantic[\"text.onActionFill\"].dark",
+    "DARK_VALUE": "#17251D",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "onStatusFill",
+    "SEMANTIC_TOKEN": "text.onStatusFill",
+    "TOKENS_JSON_PATH": "semantic[\"text.onStatusFill\"].dark",
+    "DARK_VALUE": "#17251D",
+    "KIND": "CANONICAL"
+   },
+   {
+    "FLUTTER_MEMBER": "surfaceTextSelection",
+    "SEMANTIC_TOKEN": "surface.textSelection",
+    "TOKENS_JSON_PATH": "semantic[\"surface.textSelection\"].dark",
+    "DARK_VALUE": "#4A5C50",
+    "KIND": "CANONICAL"
+   },
+   {
     "FLUTTER_MEMBER": "textSecondary",
     "SEMANTIC_TOKEN": "text.secondary.onRaised",
     "TOKENS_JSON_PATH": "semantic[\"text.secondary.onRaised\"].dark",
@@ -1064,16 +1104,16 @@
    },
    {
     "FLUTTER_MEMBER": "onSuccess",
-    "SEMANTIC_TOKEN": "control.checked.foreground",
-    "TOKENS_JSON_PATH": "semantic[\"control.checked.foreground\"].dark",
-    "DARK_VALUE": "#F5F4ED",
+    "SEMANTIC_TOKEN": "text.onStatusFill",
+    "TOKENS_JSON_PATH": "semantic[\"text.onStatusFill\"].dark",
+    "DARK_VALUE": "#17251D",
     "KIND": "ALIAS"
    },
    {
     "FLUTTER_MEMBER": "onError",
-    "SEMANTIC_TOKEN": "control.checked.foreground",
-    "TOKENS_JSON_PATH": "semantic[\"control.checked.foreground\"].dark",
-    "DARK_VALUE": "#F5F4ED",
+    "SEMANTIC_TOKEN": "text.onStatusFill",
+    "TOKENS_JSON_PATH": "semantic[\"text.onStatusFill\"].dark",
+    "DARK_VALUE": "#17251D",
     "KIND": "ALIAS"
    },
    {

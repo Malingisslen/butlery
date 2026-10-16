@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 
@@ -17,6 +18,7 @@ const _saffronPressed = Color(0xFF9A5C14);
 const _inkDeep = Color(0xFF17251D);
 const _paper = Color(0xFFF5F4ED);
 const _ink = Color(0xFF24382C);
+const _greenLight = Color(0xFF8FB89A);
 
 double _contrast(Color a, Color b) {
   final la = a.computeLuminance();
@@ -72,21 +74,39 @@ void main() {
         expect(style.backgroundBuilder, isNotNull);
       });
 
-      test('the ink primaries stay ink', () {
-        final cs = t.colorScheme;
-        expect(cs.primary, _ink);
-        expect(t.elevatedButtonTheme.style!.backgroundColor!.resolve({}), _ink);
-        expect(t.filledButtonTheme.style!.backgroundColor!.resolve({}), _ink);
-        expect(
-          ButtonThemes.primaryButtonStyle(cs).backgroundColor!.resolve({}),
-          _ink,
-        );
-        expect(
-          ButtonThemes.extendedFabStyle(cs).backgroundColor!.resolve({}),
-          _ink,
-        );
-        expect(t.floatingActionButtonTheme.backgroundColor, _ink);
+      test('dark draws a paperWash edge at rest, light and disabled none', () {
+        final rest = style.side!.resolve({});
+        if (t.brightness == Brightness.dark) {
+          expect(rest!.width, 1.5);
+          expect(rest.color, AppModeColors.paperWash(Brightness.dark));
+        } else {
+          expect(rest, isNull);
+        }
+        expect(style.side!.resolve({WidgetState.disabled}), isNull);
       });
+
+      test(
+        'the primaries take action.fill: ink in light, greenLight in dark',
+        () {
+          final cs = t.colorScheme;
+          final fill = t.brightness == Brightness.dark ? _greenLight : _ink;
+          expect(cs.primary, _ink);
+          expect(
+            t.elevatedButtonTheme.style!.backgroundColor!.resolve({}),
+            fill,
+          );
+          expect(t.filledButtonTheme.style!.backgroundColor!.resolve({}), fill);
+          expect(
+            ButtonThemes.primaryButtonStyle(cs).backgroundColor!.resolve({}),
+            fill,
+          );
+          expect(
+            ButtonThemes.extendedFabStyle(cs).backgroundColor!.resolve({}),
+            fill,
+          );
+          expect(t.floatingActionButtonTheme.backgroundColor, fill);
+        },
+      );
     });
   }
 

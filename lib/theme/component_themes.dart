@@ -4,12 +4,14 @@ export 'components/button_themes.dart';
 export 'components/input_themes.dart';
 export 'components/navigation_themes.dart';
 export 'components/feedback_themes.dart';
+export 'components/overlay_themes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/theme/components/feedback_themes.dart';
+import 'package:butlery/theme/components/overlay_themes.dart';
 
 /// Legacy facade maintaining existing API for backward compatibility.
 /// All methods now accept [ColorScheme] for dark/light mode awareness.
@@ -97,6 +99,14 @@ class ComponentThemes {
       FeedbackThemes.progressIndicatorTheme(cs);
   static ScrollbarThemeData scrollbarTheme(ColorScheme cs) =>
       FeedbackThemes.scrollbarTheme(cs);
+
+  // Overlays
+  static TextSelectionThemeData textSelectionTheme(ColorScheme cs) =>
+      OverlayThemes.textSelectionTheme(cs);
+  static TooltipThemeData tooltipTheme(ColorScheme cs) =>
+      OverlayThemes.tooltipTheme(cs);
+  static PopupMenuThemeData popupMenuTheme(ColorScheme cs) =>
+      OverlayThemes.popupMenuTheme(cs);
 
   // Named styles (accept ColorScheme)
   static ButtonStyle primaryButtonStyle(ColorScheme cs) =>
