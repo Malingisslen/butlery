@@ -1226,6 +1226,12 @@ abstract class AppLocalizations {
   /// **'Radera'**
   String get recipeDeleteAction;
 
+  /// No description provided for @recipeOwnerCopyLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min kopia'**
+  String get recipeOwnerCopyLabel;
+
   /// No description provided for @recipeDeleting.
   ///
   /// In sv, this message translates to:

@@ -814,6 +814,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeDeleteAction => 'Radera';
 
   @override
+  String get recipeOwnerCopyLabel => 'Min kopia';
+
+  @override
   String get recipeDeleting => 'Raderar receptet …';
 
   @override

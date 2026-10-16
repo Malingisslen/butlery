@@ -184,6 +184,25 @@ void main() {
         expect(structured[2].amount, isNull);
       });
 
+      test('isOwnerCopy reaches the stored recipe, plain title kept', () async {
+        await module.createPersonalRecipe(
+          title: 'Kycklingcurry',
+          ingredients: ['Salt'],
+          instructions: ['Koka'],
+          isOwnerCopy: true,
+        );
+        final copy = module.popLastCreatedRecipe()!;
+        expect(copy.title, 'Kycklingcurry');
+        expect(copy.isOwnerCopy, isTrue);
+
+        await module.createPersonalRecipe(
+          title: 'Kycklingcurry',
+          ingredients: ['Salt'],
+          instructions: ['Koka'],
+        );
+        expect(module.popLastCreatedRecipe()!.isOwnerCopy, isFalse);
+      });
+
       group('BUT-2280: a new recipe is stored whole', () {
         HeirloomMetadata heirloomBy(String uid) => HeirloomMetadata(
           sourceImageUrl: 'https://storage/heirloom/abc.jpg',

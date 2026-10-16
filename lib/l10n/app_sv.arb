@@ -699,6 +699,7 @@
   "recipeEdit": "Redigera recept",
   "recipeDelete": "Radera receptet",
   "recipeDeleteAction": "Radera",
+  "recipeOwnerCopyLabel": "Min kopia",
   "recipeDeleting": "Raderar receptet …",
   "recipeFormatPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@recipeFormatPortions": {
