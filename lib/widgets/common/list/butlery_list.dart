@@ -333,14 +333,7 @@ class ButleryListRow extends StatelessWidget {
     // word goes under the label.
     bool stacks(double rowWidth) {
       if (value == null || !isLargeText(context)) return false;
-      final painter = TextPainter(
-        text: TextSpan(text: value, style: valueStyle),
-        textScaler: MediaQuery.textScalerOf(context),
-        textDirection: Directionality.of(context),
-        maxLines: 1,
-      )..layout();
-      final valueWidth = painter.width;
-      painter.dispose();
+      final valueWidth = singleLineWidth(context, value!, valueStyle);
       final chrome =
           AppDimensions.space12 * 2 +
           AppDimensions.minTouchTarget +

@@ -253,7 +253,10 @@ class FormTabs<T> extends StatelessWidget {
               child: Row(
                 children: [
                   for (final value in values)
-                    _tab(context, cs, value, scaled: false),
+                    _ScrollIntoView(
+                      active: value == selected,
+                      child: _tab(context, cs, value, scaled: false),
+                    ),
                 ],
               ),
             )
@@ -319,4 +322,44 @@ class FormTabs<T> extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Brings [child] into the visible part of the scroll view it sits in when it
+/// becomes [active], so the chosen tab is never cut at the edge.
+class _ScrollIntoView extends StatefulWidget {
+  const _ScrollIntoView({required this.active, required this.child});
+
+  final bool active;
+  final Widget child;
+
+  @override
+  State<_ScrollIntoView> createState() => _ScrollIntoViewState();
+}
+
+class _ScrollIntoViewState extends State<_ScrollIntoView> {
+  @override
+  void initState() {
+    super.initState();
+    _reveal();
+  }
+
+  @override
+  void didUpdateWidget(_ScrollIntoView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !oldWidget.active) _reveal();
+  }
+
+  void _reveal() {
+    if (!widget.active) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Only the tab strip scrolls; the page around it stays where it is.
+      Scrollable.maybeOf(
+        context,
+      )?.position.ensureVisible(context.findRenderObject()!);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

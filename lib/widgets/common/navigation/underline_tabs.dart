@@ -39,10 +39,13 @@ class UnderlineTabs<T> extends StatelessWidget {
       builder: (context, constraints) {
         final labels = [for (final value in values) labelOf(value)];
         final share = constraints.maxWidth / values.length;
-        final wordsFit =
-            widestWord(context, labels, AppTextStyles.labelLarge) +
-                _tabPadding <=
-            share;
+        // Under large text a two-word tab that wraps beside one-word tabs
+        // reads as a mistake, so every label must fit its share on one line.
+        final wordsFit = isLargeText(context)
+            ? _widestLabel(context, labels) + _tabPadding <= share
+            : widestWord(context, labels, AppTextStyles.labelLarge) +
+                      _tabPadding <=
+                  share;
         // The hairline sits under the chosen tab's bar rather than beside
         // it, so the two never read as a pair of stacked lines.
         Widget withHairline(Widget tabs) => Stack(
@@ -99,6 +102,14 @@ class UnderlineTabs<T> extends StatelessWidget {
       },
     );
   }
+
+  static double _widestLabel(BuildContext context, List<String> labels) =>
+      labels
+          .map(
+            (label) =>
+                singleLineWidth(context, label, AppTextStyles.labelLarge),
+          )
+          .fold(0.0, (widest, width) => width > widest ? width : widest);
 
   Widget _tab(
     BuildContext context,
