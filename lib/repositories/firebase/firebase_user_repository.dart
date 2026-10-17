@@ -633,6 +633,27 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     );
   }
 
+  @override
+  Future<void> updatePreferredLocale(String userId, String localeCode) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update preferred locale',
+    );
+
+    await _settingsDoc(
+      userId,
+    ).set({'preferredLocale': localeCode}, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update_preferred_locale',
+      granted: true,
+    );
+  }
+
   /// Clear FCM token (e.g., on logout)
   @override
   Future<void> clearFCMToken(String userId) async {

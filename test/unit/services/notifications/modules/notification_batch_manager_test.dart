@@ -585,6 +585,33 @@ void main() {
         expect(combinedNotification.data['count'], equals(3));
       });
 
+      test('should carry the summary in every supported language', () async {
+        final batch = createTestBatch(
+          batchKey: 'translations-test',
+          notifications: List.generate(
+            3,
+            (i) => createTestTemplate(
+              data: {
+                'category': 'NotificationCategory.recipes',
+                'timestamp': DateTime.now().toIso8601String(),
+              },
+            ),
+          ),
+        );
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('translations-test'),
+        ).thenAnswer((_) async => batch);
+
+        await batchManager.forceBatchProcessing('translations-test');
+
+        final summary = sentBatches.single.notifications.first;
+        expect(summary.translations!['sv']!.title, summary.title);
+        expect(summary.translations!['en']!.title, 'New recipe activity');
+      });
+
       test('should generate localized batch titles by category', () async {
         // Test different categories
         final categoryTests = [

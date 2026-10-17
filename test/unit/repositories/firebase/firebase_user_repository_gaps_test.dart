@@ -375,6 +375,23 @@ void main() {
       expect(s.data()?['notificationsEnabled'], isFalse);
     });
 
+    test(
+      'updatePreferredLocale stores the language the server reads',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+
+        await repo.updatePreferredLocale(_alice, 'en');
+        final s = await firestore
+            .collection('users')
+            .doc(_alice)
+            .collection('settings')
+            .doc('preferences')
+            .get();
+        expect(s.data()?['preferredLocale'], 'en');
+      },
+    );
+
     test('clearFCMToken sets fcmToken to null', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);

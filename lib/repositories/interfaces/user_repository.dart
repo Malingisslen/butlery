@@ -102,6 +102,9 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Update notification settings
   Future<void> updateNotificationSettings(String userId, bool enabled);
 
+  /// Store the app language so the server can write pushes in it.
+  Future<void> updatePreferredLocale(String userId, String localeCode);
+
   /// Clear FCM token (e.g., on logout)
   Future<void> clearFCMToken(String userId);
 

@@ -122,6 +122,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -161,6 +162,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -245,6 +247,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -515,6 +518,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -754,6 +758,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -783,6 +788,7 @@ void main() {
         // shared recipe would simply never be told.
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_999'],
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -806,6 +812,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -877,6 +884,7 @@ void main() {
         ).thenAnswer((_) async => true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),

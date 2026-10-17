@@ -258,9 +258,27 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     await _localeProvider.initialize();
     AppLocale.initialize(_localeProvider.locale);
     _localeProvider.addListener(_onLocaleChanged);
+    _userService = ServiceLocator.tryGet<UserService>();
+    _userService?.addListener(_fillPreferredLocale);
+    _fillPreferredLocale();
     if (mounted) {
       setState(() {});
     }
+  }
+
+  UserService? _userService;
+
+  /// Accounts that chose a language before it was stored have none yet. Runs
+  /// only once the locale is initialised (the service loads its profile
+  /// earlier, while the locale is still the default) and never replaces a
+  /// stored choice.
+  void _fillPreferredLocale() {
+    unawaited(
+      _userService?.updatePreferredLocale(
+        _localeProvider.locale.languageCode,
+        onlyIfUnset: true,
+      ),
+    );
   }
 
   /// Handle locale change
@@ -269,6 +287,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     // Re-fire `language` user property (BUT-636) so segmentation reflects
     // the user's new locale immediately — fire-and-forget; failures logged.
     _userPropertyBootstrap?.emitLanguage(_localeProvider.locale);
+    unawaited(
+      ServiceLocator.tryGet<UserService>()?.updatePreferredLocale(
+        _localeProvider.locale.languageCode,
+      ),
+    );
     if (mounted) {
       setState(() {});
     }
@@ -394,6 +417,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _localeProvider.removeListener(_onLocaleChanged);
+    _userService?.removeListener(_fillPreferredLocale);
     _themeService?.removeListener(_onThemeChanged);
     _sessionTimeoutService?.dispose();
     _disposeCacheManager();

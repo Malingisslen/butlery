@@ -79,6 +79,7 @@ void main() {
         // Arrange
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_123'],
             strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
@@ -100,6 +101,7 @@ void main() {
         // Assert
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_123'],
             strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
@@ -109,11 +111,49 @@ void main() {
         ).called(1);
       });
 
+      test(
+        'writes the rating sentence in each language for the recipient',
+        () async {
+          Map<String, Map<String, String>>? byLocale;
+          when(
+            () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+              actions: any(named: 'actions'),
+              imageUrl: any(named: 'imageUrl'),
+            ),
+          ).thenAnswer((invocation) async {
+            byLocale =
+                invocation.namedArguments[#variablesByLocale]
+                    as Map<String, Map<String, String>>?;
+          });
+
+          await RatingNotifications.sendRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            rating: 4.0,
+            raterName: 'Test Rater',
+          );
+
+          expect(byLocale!.keys, containsAll(['sv', 'en']));
+          expect(byLocale!['sv']!['message'], contains('Test Rater'));
+          expect(byLocale!['en']!['message'], contains('Test Rater'));
+          expect(
+            byLocale!['sv']!['message'],
+            isNot(byLocale!['en']!['message']),
+          );
+        },
+      );
+
       test('should format rating notification with stars', () async {
         // Arrange
         String? capturedMessage;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -149,6 +189,7 @@ void main() {
         String? capturedReview;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -189,6 +230,7 @@ void main() {
           // Arrange
           when(
             () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
               targetUserIds: ['user_456'],
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
@@ -210,6 +252,7 @@ void main() {
           // Assert
           verify(
             () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
               targetUserIds: ['user_456'], // Uses socialData.ownerId
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
@@ -237,6 +280,7 @@ void main() {
         // Arrange
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -264,6 +308,7 @@ void main() {
         String? preview;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -296,6 +341,7 @@ void main() {
         // Arrange
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -316,6 +362,7 @@ void main() {
         // Assert
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_123'],
             strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
@@ -330,6 +377,7 @@ void main() {
         // Arrange
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -350,6 +398,7 @@ void main() {
         // Assert
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -372,6 +421,7 @@ void main() {
         // Assert
         verifyNever(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -387,6 +437,7 @@ void main() {
         Map<String, dynamic>? capturedData;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -431,6 +482,7 @@ void main() {
         // Arrange
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_123'],
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -464,6 +516,7 @@ void main() {
         // Assert
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['user_123'],
             strategy: RecipeActivityStrategies.ratingNotice,
             variables: any(named: 'variables'),
@@ -485,6 +538,7 @@ void main() {
         // Assert
         verifyNever(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -500,6 +554,7 @@ void main() {
         Map<String, dynamic>? capturedData;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -534,6 +589,7 @@ void main() {
         String? capturedRecipeName;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -564,6 +620,7 @@ void main() {
         List<NotificationAction>? capturedActions;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -637,6 +694,7 @@ void main() {
         sent = null;
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),

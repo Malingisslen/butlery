@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:clock/clock.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -85,6 +86,7 @@ class NotificationOfflineManager {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -94,6 +96,7 @@ class NotificationOfflineManager {
         targetUserIds: targetUserIds,
         strategy: strategy,
         variables: variables,
+        variablesByLocale: variablesByLocale,
         additionalData: additionalData,
         imageUrl: imageUrl,
         actions: actions,
@@ -384,6 +387,7 @@ class PendingNotification {
   final List<String> targetUserIds;
   final NotificationStrategy strategy;
   final Map<String, String> variables;
+  final LocalizedVariables? variablesByLocale;
   final Map<String, dynamic>? additionalData;
   final String? imageUrl;
   final List<NotificationAction>? actions;
@@ -394,6 +398,7 @@ class PendingNotification {
     required this.targetUserIds,
     required this.strategy,
     required this.variables,
+    this.variablesByLocale,
     this.additionalData,
     this.imageUrl,
     this.actions,
@@ -407,6 +412,7 @@ class PendingNotification {
       targetUserIds: targetUserIds,
       strategy: strategy,
       variables: variables,
+      variablesByLocale: variablesByLocale,
       additionalData: additionalData,
       imageUrl: imageUrl,
       actions: actions,

@@ -1,9 +1,14 @@
 // lib/services/notifications/modules/notification_batch_manager.dart
 
 import 'dart:async';
+import 'dart:ui' show Locale;
 import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/providers/locale_provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
@@ -430,7 +435,20 @@ class NotificationBatchManager {
       data: combinedData,
       imageUrl: firstNotification.imageUrl, // Use first image if any
       actions: firstNotification.actions, // Use first actions if any
+      translations: {
+        for (final code in LocaleProvider.supportedLocales)
+          code: _summaryText(categoryName, notifications.length, code),
+      },
     );
+  }
+
+  NotificationText _summaryText(String category, int count, String code) {
+    final content = NotificationContentManager.batchContentFor(
+      category,
+      count,
+      lookupAppLocalizations(Locale(code)),
+    );
+    return NotificationText(title: content['title']!, body: content['body']!);
   }
 
   /// Generate batch key for grouping notifications

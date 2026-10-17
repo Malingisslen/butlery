@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Notification helper utilities for safe notification sending
@@ -88,6 +89,7 @@ class NotificationHelper {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -99,6 +101,7 @@ class NotificationHelper {
         targetUserIds: targetUserIds,
         strategy: strategy,
         variables: variables,
+        variablesByLocale: variablesByLocale,
         additionalData: additionalData,
         imageUrl: imageUrl,
         actions: actions,
