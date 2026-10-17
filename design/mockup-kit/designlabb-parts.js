@@ -99,6 +99,10 @@ function parentPart(el) {
 // The recipe list is a grid in one Hem view and a list in the other: the same part in two layouts.
 const SAME_PART = { 'mr-grid': ':is(.mr-grid,.mr-list)', 'mr-list': ':is(.mr-grid,.mr-list)' };
 function selectorFor(el, variant) {
+  if ('labSym' in el.dataset) return `[data-lab-kind-loose="${el.dataset.labKindLoose}"]`;
+  return selectorBase(el, variant) + ('labSibsym' in el.dataset ? ':not([data-lab-sym])' : '');
+}
+function selectorBase(el, variant) {
   for (const c of el.classList) if (SAME_PART[c]) return `.phone ${SAME_PART[c]}`;
   if (el.classList.contains('phone')) return '.phone';
   if (el.dataset.glyph && !el.classList.contains('b-icon')) return `svg[data-glyph="${el.dataset.glyph}"]` + (variant ? [...el.classList].filter(c => !c.startsWith('lab-')).map(c => '.' + c).join('') : '');

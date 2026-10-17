@@ -67,7 +67,23 @@ function assignLayoutIds() {
       }
     });
   });
+  markSymbols();
   layoutBase = $('screens').innerHTML;
+}
+// A bullet or a slash is its own part even when it shares a class with the numbers next to it
+// ("• 4,5"), so picking it does not pick the numbers, and the numbers leave the symbols out.
+function markSymbols() {
+  const leaf = el => !el.children.length && el.closest('.phone') && !el.closest('svg') && el.textContent.trim();
+  const keyOf = el => el.tagName + '.' + [...el.classList].filter(c => !c.startsWith('lab-')).join('.');
+  const syms = new Set();
+  const all = [...document.querySelectorAll('#screens .phone *')].filter(leaf);
+  for (const el of all) {
+    if (!/^[^\p{L}\p{N}]+$/u.test(el.textContent.trim()) || !el.classList.length) continue;
+    el.dataset.labSym = '';
+    el.dataset.labKindLoose ||= 'y' + el.textContent.trim().codePointAt(0);
+    syms.add(keyOf(el));
+  }
+  for (const el of all) if (!('labSym' in el.dataset) && syms.has(keyOf(el))) el.dataset.labSibsym = '';
 }
 function snapshotLayoutBase() { layoutBase = $('screens').innerHTML; }
 
