@@ -246,7 +246,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `d333760acfa22da29ab32d73ab244c661274738fcd0f2b8cf2a27044f7c40820` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
-| `exports/ios/AppIcon-1024.png` | `2bce7e0b683b3054285607fb19d3a58706b483a69ade344c1e90fcfed74b036a` |
+| `exports/ios/AppIcon-1024.png` | `a721111a819b85e574f759a1b052a5a0496437c35a2ddf3a80004396996ebf86` |
 | `exports/ios/AppIcon-1024.svg` | `d112949abe93a4a4b18921520099ed8d24e22f7c1f19cbc0d8235c79e153d375` |
 | `fas0/LAS-MIG.md` | `5e99d40df92c4b5c68024570ce15d38bbd9037bb05978b7b71b61f28c18fde82` |
 | `fas0/artefaktforslag.md` | `f69520ede848fac35caaa5f743d5d73b5a2e4f24b131b6b1fc64389555fbbcf4` |
