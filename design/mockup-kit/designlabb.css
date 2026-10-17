@@ -276,9 +276,15 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .color-pop { position: fixed; z-index: 9999; width: 320px; max-height: 430px; overflow-y: auto; background: #fff; color: #17251d; border: 1px solid #c9d2c6; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 37, 29, .28); padding: 10px; font: 13px system-ui, sans-serif; }
 .color-pop .cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .color-pop h3 { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; margin: 10px 0 4px; color: #627061; }
-.color-pop .cp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; }
-.color-pop .cp-sws { display: flex; gap: 4px; }
-.color-pop .cp-sw { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .25); padding: 0; cursor: pointer; }
+.color-pop .cp-row { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; border-top: 1px solid #eef1ea; }
+.color-pop .cp-text { display: flex; flex-direction: column; }
+.color-pop .cp-text small { color: #627061; font-size: 11px; }
+.color-pop .cp-now { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+.color-pop .cp-now i { flex: none; width: 24px; height: 24px; border-radius: 6px; border: 1px solid rgba(0, 0, 0, .25); }
+.color-pop .cp-sws { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-pop .cp-sw { width: 66px; height: 46px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .25); padding: 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+.color-pop .cp-sw b { font-size: 14px; }
+.color-pop .cp-sw small { font-size: 9px; letter-spacing: .2px; }
 .color-pop .cp-app { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; color: inherit; font: inherit; }
 .color-pop .cp-app:hover { background: #eef1ea; }
 .color-pop .cp-app i { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); }

@@ -59,8 +59,10 @@ function harmonies(hex) {
   const rot = d => hslToHex((h + d + 360) % 360, s, l);
   const tone = dl => hslToHex(h, s, Math.max(0.08, Math.min(0.95, l + dl / 100)));
   return [
-    ['Komplementfärg', [rot(180)]], ['Närliggande', [rot(-30), rot(30)]], ['Trio', [rot(120), rot(240)]],
-    ['Ljusare och mörkare', [tone(-24), tone(-12), tone(12), tone(24)]],
+    ['Motfärg', 'Rakt motsatt på färghjulet. Ger starkast kontrast mot din färg.', [rot(180)]],
+    ['Grannfärger', 'Ligger bredvid din färg på hjulet. Ger en lugn och sammanhängande känsla.', [rot(-30), rot(30)]],
+    ['Trio', 'Tre jämnt fördelade färger med din. Ger en livlig och färgglad känsla.', [rot(120), rot(240)]],
+    ['Samma färg, andra ljushet', 'Din färg i fyra steg, från mörkare till ljusare.', [tone(-24), tone(-12), tone(12), tone(24)]],
   ];
 }
 
@@ -78,10 +80,13 @@ function openColorPopover(anchor, current, onPick) {
   head.append(x);
   pop.append(head);
   const pick = hex => { onPick(hex); closeColorPop(); };
+  const textOn = hex => (lumOf(hex) > 0.45 ? '#17251d' : '#ffffff');
   const swatch = (hex, label) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'cp-sw'; b.title = `${label || ''} ${hex}`.trim();
     b.style.background = hex;
+    b.style.color = textOn(hex);
+    b.innerHTML = `<b>Aa</b><small>${hex}</small>`;
     b.onclick = () => pick(hex);
     return b;
   };
@@ -92,17 +97,21 @@ function openColorPopover(anchor, current, onPick) {
     pop.append(eye);
   }
   if (current) {
-    const h2 = document.createElement('h3'); h2.textContent = 'Förslag utifrån den här färgen';
-    pop.append(h2);
-    for (const [name, list] of harmonies(current)) {
+    const h2 = document.createElement('h3'); h2.textContent = 'Idéer som passar ihop med din färg';
+    const now = document.createElement('div'); now.className = 'cp-now';
+    now.innerHTML = `<i style="background:${current}"></i><span>Din färg just nu: <b>${current}</b>. Klicka på en ruta nedan för att byta till den.</span>`;
+    pop.append(h2, now);
+    for (const [name, text, list] of harmonies(current)) {
       const row = document.createElement('div'); row.className = 'cp-row';
-      const t = document.createElement('span'); t.textContent = name;
+      const t = document.createElement('div'); t.className = 'cp-text';
+      t.innerHTML = `<b></b><small></small>`;
+      t.firstChild.textContent = name; t.lastChild.textContent = text;
       const sw = document.createElement('div'); sw.className = 'cp-sws';
       for (const hex of list) sw.append(swatch(hex, name));
       row.append(t, sw); pop.append(row);
     }
   }
-  const h3 = document.createElement('h3'); h3.textContent = 'Färger som redan används i appen';
+  const h3 = document.createElement('h3'); h3.textContent = 'Färger som redan används i appen (mest använda först)';
   pop.append(h3);
   const all = [...scanAppColors()].sort((a, b) => [...b[1].uses.values()].reduce((s, u) => s + u.n, 0) - [...a[1].uses.values()].reduce((s, u) => s + u.n, 0));
   for (const [hex, info] of all) {
