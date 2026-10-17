@@ -417,18 +417,18 @@ void main() {
     }
 
     // P4-U07: the editor is a modal with X; Skriv själv is a subpage; each
-    // has one saffron save (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
+    // has one green save, B-158 (Komponentark v1:57, :71-78; Skarmar v12 etapp 4
     // #editorutkast; Grafisk manual v6:219).
     int heroCount(WidgetTester tester) => tester
         .widgetList<FilledButton>(find.byType(FilledButton))
         .where(
           (b) =>
               b.style?.backgroundColor?.resolve(const {}) ==
-              AppModeColors.actionPrimary(Brightness.light),
+              AppModeColors.actionFill(Brightness.light),
         )
         .length;
 
-    testWidgets('the edit screen is a modal with X and one saffron save', (
+    testWidgets('the edit screen is a modal with X and one green save', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -446,7 +446,7 @@ void main() {
       expect(heroCount(tester), 1);
     });
 
-    testWidgets('Skriv själv is a subpage with one saffron save', (
+    testWidgets('Skriv själv is a subpage with one green save', (
       tester,
     ) async {
       await pumpSkrivSjalv(tester, 'dinner');

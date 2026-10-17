@@ -171,7 +171,7 @@ class _PortionsContent extends StatelessWidget {
               ),
             ),
           const SizedBox(height: AppDimensions.space16),
-          HeroButton(
+          FormButton(
             label: l10n.commonDone,
             onPressed: viewModel.isSaving ? null : () => _done(context),
             busy: viewModel.isSaving,

@@ -1,9 +1,8 @@
 // Malin's decision (megagenomgången): the primary button's colour follows the
 // place. Saffron (HeroButton) opens a flow: Hem, sign-in, start cooking. Dark
-// green (ActionButtons.primaryButton) is the button on forms and account
-// pages. Files outside the flow starts that still draw a saffron button are
-// pinned by count; the owning track lowers its number when it moves the view
-// to the green button, and a new file cannot join the list.
+// green (FormButton) is the button on forms and account
+// pages. A file outside the flow starts cannot draw a saffron
+// button.
 
 import 'dart:io';
 
@@ -17,45 +16,29 @@ const _flowStarts = <String>{
   'lib/views/auth/mfa_challenge_view.dart',
   'lib/views/recipe_detail/recipe_detail_hero_buttons.dart',
   'lib/views/recipe_detail_view.dart',
+  // Dark focus mode: the sketch draws a saffron "Nästa steg" on the ink surface,
+  // where the ink form button would disappear.
+  'lib/views/cooking_mode_view.dart',
   'lib/widgets/common/buttons/hero_button.dart',
 };
 
-const _notYetMoved = <String, int>{
-  'lib/views/account/consent_management_view.dart': 1,
-  'lib/views/account/data_export_view.dart': 2,
-  'lib/views/account/pending_deletion_view.dart': 1,
-  'lib/views/auth/guest_upgrade_view.dart': 1,
-  'lib/views/auth/provider_link_view.dart': 1,
-  'lib/views/auth/provider_terms_view.dart': 1,
-  'lib/views/auth/set_new_password_view.dart': 2,
-  'lib/views/cooking_mode_view.dart': 2,
-  'lib/views/edit_recipe_view.dart': 1,
-  'lib/views/family/household_portions_sheet.dart': 1,
-  'lib/views/ingredient_search/ingredient_search_view.dart': 1,
-  'lib/views/menu_placement_view.dart': 1,
-  'lib/views/messaging/create_group_conversation_view.dart': 1,
-  'lib/views/photo_import_view.dart': 1,
-  'lib/views/quick_capture_view.dart': 1,
-  'lib/views/realtime/conflict_diff_view.dart': 1,
-  'lib/views/realtime/recipe_suggestion_view.dart': 1,
-  'lib/views/settings/mfa_enrollment_forms.dart': 2,
-  'lib/views/skriv_sjalv_recept_view.dart': 1,
-  'lib/views/social/add_members_to_group_view.dart': 1,
-  'lib/views/social/create_shared_shopping_list_view.dart': 1,
+// Friend-request and friend-profile buttons that the sketch draws in saffron
+// under B-75 (Acceptera on every request row) and B-76 (one saffron action on
+// the friend profile). B-158 is the later and more general rule, so these wait
+// for Malin's call on which one governs; the pins keep the list from growing.
+const _friendButtons = <String, int>{
   'lib/views/social/friend_profile_view.dart': 1,
   'lib/views/social/friend_requests/friend_request_card.dart': 1,
   'lib/views/social/friend_requests/friend_requests_view.dart': 1,
-  'lib/views/social/group_detail_view.dart': 1,
-  'lib/views/social/menu_preview_view.dart': 1,
-  'lib/views/social/user_profile_edit/preferences_sections.dart': 1,
+  'lib/widgets/social/public_profile_friend_button.dart': 2,
+};
+
+// The Inköp add button and its empty-state button are drawn saffron on the
+// shopping-list sketch frame, and a list is neither a form nor an account page,
+// so B-158 does not move them. They wait for Malin's call.
+const _shoppingButtons = <String, int>{
   'lib/views/unified_shopping/widgets/shopping_app_bar.dart': 1,
   'lib/views/unified_shopping/widgets/shopping_list_content.dart': 1,
-  'lib/widgets/common/feedback_form_dialog.dart': 1,
-  'lib/widgets/common/navigation/add_sheet.dart': 1,
-  'lib/widgets/common/profile/dialogs/profile_dialogs.dart': 1,
-  'lib/widgets/menu/shopping_merge_sheet.dart': 1,
-  'lib/widgets/menu/veckomeny_selection_widgets.dart': 1,
-  'lib/widgets/social/public_profile_friend_button.dart': 2,
 };
 
 String _code(String path) => File(path)
@@ -89,6 +72,6 @@ void main() {
         reason: '$path moved; update the list',
       );
     }
-    expect(_heroOutsideFlowStarts(), _notYetMoved);
+    expect(_heroOutsideFlowStarts(), {..._friendButtons, ..._shoppingButtons});
   });
 }

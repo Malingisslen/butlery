@@ -28,7 +28,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// View for creating new group conversations: a name, the friends to invite
-/// (at least two) and one saffron "Skapa konversation".
+/// (at least two) and one primary "Skapa konversation".
 class CreateGroupConversationView extends StatefulWidget {
   const CreateGroupConversationView({super.key});
 
@@ -259,9 +259,9 @@ class _CreateGroupConversationViewState
                 textAlign: TextAlign.center,
               ),
             ),
-          // The view's one saffron action, "Skapa konversation" as drawn
+          // The view's one primary action, "Skapa konversation" as drawn
           // (Skarmar v12 del 3 #nygruppchatt:602; Grafisk manual v6:219).
-          HeroButton(
+          FormButton(
             key: const ValueKey('createGroupConversation.create'),
             label: context.l10n.messagingCreateConversation,
             onPressed: viewModel.canCreateGroup

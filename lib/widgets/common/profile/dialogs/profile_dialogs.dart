@@ -70,10 +70,9 @@ class ProfileDialogs {
               style: TextButton.styleFrom(foregroundColor: cs.error),
               child: Text(l10n.signOutPendingDiscard),
             ),
-            // Drawn saffron (Skarmar v12 del 4 morkt lage och etapp 0-1:312,
-            // background #ce7c1e): the view's one hero, so waiting is the
-            // obvious answer (Komponentark v1:843-844).
-            HeroButton(
+            // The view's one primary action, so waiting is the obvious answer
+            // (Komponentark v1:843-844).
+            FormButton(
               key: const ValueKey('signOut.pendingChanges.wait'),
               label: l10n.signOutPendingWait,
               onPressed: () =>

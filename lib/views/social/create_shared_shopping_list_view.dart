@@ -213,9 +213,9 @@ class _CreateSharedShoppingListViewState
     CreateSharedListViewModel viewModel,
   ) {
     return BottomActionContainer(
-      // The view's one saffron action (Skarmar v12 del 3 'Ny delad
+      // The view's one primary action (Skarmar v12 del 3 'Ny delad
       // inköpslista', "Skapa och dela"; Grafisk manual v6:219).
-      child: HeroButton(
+      child: FormButton(
         key: const ValueKey('createSharedList.create'),
         label: viewModel.createButtonText,
         onPressed: viewModel.canCreate

@@ -249,7 +249,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
               const SizedBox(width: AppDimensions.space8),
               Expanded(
                 flex: 3,
-                child: HeroButton(
+                child: FormButton(
                   key: ShoppingMergeSheet.confirmKey,
                   label: confirmLabel,
                   expand: true,

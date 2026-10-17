@@ -182,7 +182,7 @@ void main() {
     }
   }
 
-  // The create action is the view's saffron HeroButton (P4-U13) → a
+  // The create action is the view's primary FormButton (P4-U13) → a
   // FilledButton carrying the localized label. We read its onPressed to
   // assert the canCreate gate as the user experiences it (tappable vs the
   // disabled surface).

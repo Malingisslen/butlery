@@ -97,7 +97,7 @@ class _IngredientSearchContent extends StatelessWidget {
               const SizedBox(height: AppDimensions.space24),
 
               // Search button
-              HeroButton(
+              FormButton(
                 expand: true,
                 label: l10n.ingredientSearchButton,
                 onPressed: vm.selectedIngredients.isEmpty

@@ -313,7 +313,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
             // v1:365, :372; produktregler.md:902). What the button does is
             // unchanged (P4-U19 owns the recovery path and its look).
             children: [
-              HeroButton(
+              FormButton(
                 key: const ValueKey('conflictDiff.keepMine'),
                 label: context.l10n.conflictDiffKeepMine,
                 busy: _saving,

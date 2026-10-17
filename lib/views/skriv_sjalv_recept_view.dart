@@ -763,10 +763,10 @@ class _SkrivSjalvReceptViewContentState
                 identifier: 'btn-save-recipe',
                 child: SizedBox(
                   key: const ValueKey('test-skriv-sjalv-save'),
-                  // The view's one saffron action. Busy keeps the name and draws
+                  // The view's one primary action. Busy keeps the name and draws
                   // the plate line.
                   width: double.infinity,
-                  child: HeroButton(
+                  child: FormButton(
                     label: context.l10n.recipeSave,
                     busy: _isSaving || viewModel.isSaving,
                     onPressed: saveBlocked ? null : _saveRecipe,

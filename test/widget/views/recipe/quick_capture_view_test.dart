@@ -143,7 +143,7 @@ void main() {
     expect(captured.mealType, other);
   });
 
-  testWidgets('P4-U07: a subpage with one saffron save, named for its way '
+  testWidgets('P4-U07: a subpage with one green save, named for its way '
       'back', (tester) async {
     // Komponentark v1:71-78; Skarmar v12 del 1 'Snabbspara'; Grafisk manual
     // v6:219.
@@ -160,7 +160,7 @@ void main() {
     );
     expect(
       save.style!.backgroundColor!.resolve(const {}),
-      AppModeColors.actionPrimary(Brightness.light),
+      AppModeColors.actionFill(Brightness.light),
     );
   });
 

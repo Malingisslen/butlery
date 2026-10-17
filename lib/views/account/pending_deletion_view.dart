@@ -211,7 +211,7 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          HeroButton(
+                          FormButton(
                             label: l10n.pendingDeletionUndo,
                             onPressed: _undo,
                             expand: true,

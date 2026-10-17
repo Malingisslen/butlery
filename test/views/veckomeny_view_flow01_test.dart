@@ -85,8 +85,8 @@ void main() {
       expect(find.text('Kraven: Under 30 min, Vegetariskt'), findsOneWidget);
       expect(find.textContaining('Ett fel uppstod'), findsNothing);
       expect(find.byIcon(ButleryIcons.triangleAlert), findsNothing);
-      // The view's one saffron action stays Generera.
-      expect(find.byType(HeroButton), findsNothing);
+      // The view's one primary action stays Generera.
+      expect(find.byType(FormButton), findsNothing);
 
       await tester.tap(find.byKey(VeckomenyNoMatch.editPromptKey));
       await tester.tap(find.byKey(VeckomenyNoMatch.planYourselfKey));
@@ -149,7 +149,7 @@ void main() {
         var generated = 0;
         await tester.pumpWidget(button(() => generated++, theme: theme));
 
-        final hero = tester.widget<HeroButton>(find.byType(HeroButton));
+        final hero = tester.widget<FormButton>(find.byType(FormButton));
         expect(hero.onPressed, isNull);
         final reason = tester.widget<Text>(
           find.byKey(VeckomenyGenerateButton.offlineReasonKey),
@@ -162,7 +162,7 @@ void main() {
         // text.secondary in both modes.
         expect(reason.style!.color, theme.colorScheme.onSurfaceVariant);
 
-        await tester.tap(find.byType(HeroButton), warnIfMissed: false);
+        await tester.tap(find.byType(FormButton), warnIfMissed: false);
         await tester.pump();
         expect(generated, 0, reason: 'no generation, so no save');
       });
@@ -182,7 +182,7 @@ void main() {
         find.byKey(VeckomenyGenerateButton.offlineReasonKey),
         findsNothing,
       );
-      await tester.tap(find.byType(HeroButton));
+      await tester.tap(find.byType(FormButton));
       await tester.pump();
       expect(generated, 1);
     });

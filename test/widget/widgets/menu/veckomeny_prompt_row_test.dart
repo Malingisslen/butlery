@@ -1,4 +1,4 @@
-/// The week generator's prompt row: the field with the one saffron action
+/// The week generator's prompt row: the field with the one primary action
 /// beside it (or under it when there is no room), the compact field-only
 /// form on a planned week, and the offline reason said once under the row.
 library;
@@ -85,7 +85,7 @@ void main() {
       expect(button.top, lessThan(field.bottom));
       expect(button.right, lessThanOrEqualTo(420));
 
-      await tester.tap(find.byType(HeroButton));
+      await tester.tap(find.byType(FormButton));
       expect(generated, 1);
     });
 
@@ -106,7 +106,7 @@ void main() {
       await pump(tester);
 
       expect(
-        tester.widget<HeroButton>(find.byType(HeroButton)).onPressed,
+        tester.widget<FormButton>(find.byType(FormButton)).onPressed,
         isNull,
       );
     });
@@ -166,7 +166,7 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(
-        tester.widget<HeroButton>(find.byType(HeroButton)).onPressed,
+        tester.widget<FormButton>(find.byType(FormButton)).onPressed,
         isNull,
       );
       final reason = find.byKey(VeckomenyOfflineReason.reasonKey);
@@ -176,7 +176,7 @@ void main() {
         greaterThanOrEqualTo(tester.getRect(find.byType(StyledInput)).bottom),
       );
 
-      await tester.tap(find.byType(HeroButton), warnIfMissed: false);
+      await tester.tap(find.byType(FormButton), warnIfMissed: false);
       expect(generated, 0);
     });
   });

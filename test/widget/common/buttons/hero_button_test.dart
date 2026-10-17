@@ -209,4 +209,88 @@ void main() {
     expect(find.text('Två rader'), findsNothing);
     expect(find.text('Snabbspara'), findsOneWidget);
   });
+
+  // B-158: the primary action on a form or an account page is the dark green
+  // button; it shares the hero's face and busy behaviour.
+  group('FormButton', () {
+    for (final dark in [false, true]) {
+      testWidgets('FormButton rests on the filled button colours '
+          '(${dark ? 'dark' : 'light'})', (tester) async {
+        final theme = dark ? AppTheme.darkTheme : AppTheme.lightTheme;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            home: Scaffold(
+              body: FormButton(label: 'Spara', onPressed: () {}),
+            ),
+          ),
+        );
+        final material = tester.widget<Material>(
+          find.descendant(
+            of: find.byType(FilledButton),
+            matching: find.byType(Material),
+          ),
+        );
+        final filled = theme.filledButtonTheme.style!.backgroundColor!.resolve(
+          const {},
+        );
+        final hero = ComponentThemes.heroButtonStyle(
+          theme.colorScheme,
+        ).backgroundColor!.resolve(const {});
+        expect(material.color, filled);
+        expect(material.color, isNot(hero));
+      });
+    }
+
+    testWidgets('FormButton busy keeps the name and does nothing', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      var taps = 0;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: FormButton(
+            label: 'Spara',
+            busyLabel: 'Sparar …',
+            busy: true,
+            onPressed: () => taps++,
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(ButtonPlateLine), findsOneWidget);
+      expect(
+        tester.getSemantics(find.byType(FormButton)),
+        containsSemantics(label: 'Sparar …', isButton: true),
+      );
+      await tester.tap(find.byType(FilledButton), warnIfMissed: false);
+      expect(taps, 0);
+      handle.dispose();
+    });
+
+    testWidgets(
+      'FormButton idle runs its action and a null action disables it',
+      (
+        tester,
+      ) async {
+        var taps = 0;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: FormButton(label: 'Klar', onPressed: () => taps++),
+          ),
+        );
+        await tester.tap(find.text('Klar'));
+        expect(taps, 1);
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const FormButton(label: 'Klar', onPressed: null),
+          ),
+        );
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+          isNull,
+        );
+      },
+    );
+  });
 }

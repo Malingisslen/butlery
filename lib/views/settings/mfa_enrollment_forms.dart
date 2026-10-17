@@ -39,7 +39,7 @@ class MfaEnrollStartForm extends StatelessWidget {
             const SizedBox(height: AppDimensions.space8),
             Text(context.l10n.mfaAppIntro),
             const SizedBox(height: AppDimensions.space16),
-            HeroButton(
+            FormButton(
               key: const ValueKey('mfa.turnOn'),
               label: context.l10n.mfaTurnOn,
               onPressed: onStart,
@@ -161,10 +161,10 @@ class MfaTotpSetupForm extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppDimensions.space12),
-                // The view's one saffron action (Skarmar v12 del 3 #mfa;
+                // The view's one primary action (Skarmar v12 del 3 #mfa;
                 // Grafisk manual v6:219).
                 Expanded(
-                  child: HeroButton(
+                  child: FormButton(
                     key: const ValueKey('mfa.confirm'),
                     label: context.l10n.mfaSetupConfirm,
                     onPressed: onConfirm,

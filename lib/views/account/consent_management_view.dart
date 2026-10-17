@@ -197,7 +197,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ],
       ),
       const SizedBox(height: AppDimensions.space16),
-      HeroButton(
+      FormButton(
         label: l10n.consentSaveMyChoices,
         expand: true,
         busy: viewModel.isSaving,

@@ -12,7 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// The one saffron action, fixed at the foot of the page. Saving says so and
+/// The one primary action, fixed at the foot of the page. Saving says so and
 /// draws the plate line.
 class ProfileSaveBar extends StatelessWidget {
   final UserProfileViewModel viewModel;
@@ -27,7 +27,7 @@ class ProfileSaveBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomActionContainer(
-      child: HeroButton(
+      child: FormButton(
         key: const ValueKey('profileEdit.save'),
         label: context.l10n.profileSaveProfile,
         onPressed: viewModel.isFormValid ? onSave : null,

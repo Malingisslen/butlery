@@ -221,10 +221,8 @@ class _VeckomenyGeneratingOverlayState
 /// alone. The offline banner above the view (LayoutComponents
 /// .offlineIndicator) is the "banner" of the flow.
 ///
-/// It is the view's one saffron action (Komponentark v1:843-844; Skarmar v12
-/// del 1 #veckomeny draws "Generera" as the only saffron button). While the
-/// week is planned it keeps its shape and gets the plate line along its
-/// bottom edge (Komponentark v1:372).
+/// While the week is planned it keeps its shape and gets the plate line along
+/// its bottom edge (Komponentark v1:372).
 class VeckomenyGenerateButton extends StatelessWidget {
   const VeckomenyGenerateButton({
     super.key,
@@ -260,7 +258,7 @@ class VeckomenyGenerateButton extends StatelessWidget {
       builder: (context, isOnline) {
         final button = Semantics(
           identifier: 'btn-generate-menu',
-          child: HeroButton(
+          child: FormButton(
             label: label,
             busy: busy,
             busyLabel: busyLabel,

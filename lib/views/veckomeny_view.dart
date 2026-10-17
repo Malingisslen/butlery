@@ -951,7 +951,7 @@ class VeckomenyPartialResult extends StatelessWidget {
 /// "Planera utan tidsgräns" rewrite the prompt, which nothing in the app can
 /// do yet, so the requirements are named as text and "Ändra beskrivningen"
 /// moves focus to the prompt. "Lägg dagarna själv" opens the calendar. Both
-/// are outlined, because the view's one saffron action is Generera
+/// are outlined, because the view's one primary action is Generera
 /// (Komponentark v1:843-844). The app has no cookbook illustration, so the
 /// empty state's no-search-results illustration stands in.
 class VeckomenyNoMatch extends StatelessWidget {

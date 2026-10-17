@@ -165,7 +165,7 @@ class _ProviderLinkContentState extends State<_ProviderLinkContent> {
                     ),
                   ),
                   const SizedBox(height: AppDimensions.space24),
-                  HeroButton(
+                  FormButton(
                     key: const ValueKey('providerLink.submit'),
                     label: l10n.providerLinkSubmit,
                     onPressed: link == null || vm.isLoading

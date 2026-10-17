@@ -179,10 +179,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 const SizedBox(height: AppDimensions.space16),
               ],
 
-              // The form's one saffron action (Skarmar v12 etapp 9
+              // The form's one primary action (Skarmar v12 etapp 9
               // #fbformular, "Skicka"). Sending keeps the name and draws the
               // plate line under it, never a spinner in its place (K-06).
-              HeroButton(
+              FormButton(
                 key: const ValueKey('feedback.submit'),
                 label: context.l10n.feedbackSendButton,
                 onPressed: _submit,
