@@ -360,6 +360,12 @@ function showPart(variant = false) {
     size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
     w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height),
   };
+  if (el.matches('svg.i')) {
+    const set = cs.getPropertyValue('--icon-stroke').trim();
+    const g = document.getElementById(el.querySelector('use')?.getAttribute('href')?.slice(1))?.firstElementChild;
+    const base = g?.getAttribute('style')?.match(/var\(--icon-stroke,([\d.]+)\)/)?.[1];
+    if (set || base) now.iStroke = +(set || base);
+  }
   const read = (q, map) => {
     const k = kid(q);
     if (!k) return;
