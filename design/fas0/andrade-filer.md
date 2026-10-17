@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=943-->
+<!--manifest:files=950-->
 
 ## Reporoten
 
@@ -610,15 +610,21 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `0570a80ee482b98ad6c6f7ae6ec793218519cf804cc6ca84cff910a1141a377d` |
+| `mockup-kit/README.md` | `0f4cd0b86fdfb9822d3071087548398c117994922d4a28e5eaa71d54a26da655` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
+| `mockup-kit/designlabb-advice-more.js` | `9643967603b2366a53691621a08c91f7cd6d7959a971e64022f8f0a09496c204` |
+| `mockup-kit/designlabb-advice-ui.js` | `c6bf7073cb7139748254dca1cca00ced737356131acb0d3203f18a2134e63683` |
+| `mockup-kit/designlabb-advice.js` | `132df41a4dd8287086251bcacf999b5f66b33f7c5de9a3aca19b37f1c09ef0cd` |
+| `mockup-kit/designlabb-claude.js` | `61924c7af4de73918b9b85cfee8c8d8c51f4a3a83d28e970a293d26682c637cc` |
 | `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
-| `mockup-kit/designlabb-extra.js` | `d7885bcb8d1de8a768a0ce01f357103f9cbfa152207551ad13218c6f0b22af46` |
+| `mockup-kit/designlabb-extra.js` | `a55c5cb412de283f93d3fbbe133ab517549ddf6b4f8c2628f0c2be2cf0928be2` |
+| `mockup-kit/designlabb-fx.js` | `c36f834bc056848471735a1f90093cb87facb447557019b4c02c921d917d67a7` |
+| `mockup-kit/designlabb-iconlibs.js` | `e972e1063603e483c13bf41467b08d8717fba718ac5f4c1f06d060532ec90e46` |
 | `mockup-kit/designlabb-layout.js` | `b32c26ee3cdca82ecab6a6e78f97ee88811cc5cf5f81fb56d5e8c6a376de9913` |
-| `mockup-kit/designlabb-parts.js` | `96595df826b3f133ee300f6506b3c5958ab492616e52393e6cb82f6584df44ff` |
-| `mockup-kit/designlabb-ui.js` | `b8212669555cb0f88c1ed9ff5bac35a0c295d331b97743baa6b9de78b7bebd80` |
-| `mockup-kit/designlabb.css` | `caf98b27f57e2f90a6e3b3ca8760c239170e9fa4798a7e155cc682f6498ac5e0` |
-| `mockup-kit/designlabb.html` | `08360d4bad80790c4509931fafe0522d11a2446c5766d508d833badb1db23dd1` |
+| `mockup-kit/designlabb-parts.js` | `2077083ea7f94e528cbe1c195652fab37c99dac14fb8cac378a77e87c4dc7a61` |
+| `mockup-kit/designlabb-ui.js` | `d8a2c74873f6bc4706afb0a72940921e4f91dac2fa11ba7a58a33641c5197ae6` |
+| `mockup-kit/designlabb.css` | `8ffdd0f63f2d4b634206f024e6926d24b6a1f76a0e94a187b3ea84577d200348` |
+| `mockup-kit/designlabb.html` | `be134ef26e2d7846fa529d3f0fcdedc3937bfff7e3f68520a1b2c6f91994dcb4` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
@@ -847,6 +853,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-flutter.mjs` | `442f5f4d550acf2b27b9c38da03fb105e76fcf971e080f247010d11fbc9c6e3f` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
+| `tools/gen-lab-icons.mjs` | `f515fe210a7dd611846adee5dd489b97c1d2fa134ceeea5f869bac809d1ff370` |
 | `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
