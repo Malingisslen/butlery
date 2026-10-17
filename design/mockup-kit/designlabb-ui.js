@@ -465,6 +465,10 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     stepHistory(e.shiftKey ? 1 : -1);
   }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) {
+    e.preventDefault();
+    stepHistory(1);
+  }
 });
 $('reset').onclick = () => { state = defaults(); stopCompare(); clearSelection(); replayLayout(); syncUi(); showMoves(); };
 for (const [ev, off] of [['pointerdown', true], ['pointerup', false], ['pointerleave', false]]) {

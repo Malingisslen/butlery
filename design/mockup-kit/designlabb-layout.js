@@ -213,17 +213,33 @@ function drawGuides(els) {
   }
 }
 function freeMove(e) {
-  const dx = Math.round(e.clientX - drag.x), dy = Math.round(e.clientY - drag.y);
+  let dx = Math.round(e.clientX - drag.x), dy = Math.round(e.clientY - drag.y);
+  const lockX = e.shiftKey && Math.abs(dy) > Math.abs(dx), lockY = e.shiftKey && !lockX;
+  if (lockX) dx = 0;
+  if (lockY) dy = 0;
   const place = (sx, sy) => { for (const st of drag.starts) freeSet(st.el, st.ox + dx + sx, st.oy + dy + sy); render(); };
   place(0, 0);
   const els = drag.starts.map(st => st.el);
   if (!e.altKey) {
     drag.targets ||= guideTargets(els);
     const s = snapDelta(unionRect(els), drag.targets);
-    if (s.dx || s.dy) place(s.dx, s.dy);
+    if (s.dx || s.dy) place(lockX ? 0 : s.dx, lockY ? 0 : s.dy);
   }
   drawGuides(els);
+  const o = freeOffset(drag.el);
+  showMeasure(els, `x ${o.ox >= 0 ? '+' : ''}${o.ox}  y ${o.oy >= 0 ? '+' : ''}${o.oy}`);
   showFreeGaps(drag.el);
+}
+// Small number tag under the picked part(s) while dragging or resizing, so nothing has to be read in the panel.
+function showMeasure(els, text) {
+  document.querySelectorAll('.lab-measure-tag').forEach(n => n.remove());
+  if (!text) return;
+  const phone = els[0].closest('.phone'), base = phone.getBoundingClientRect(), r = unionRect(els);
+  const d = document.createElement('div');
+  d.className = 'lab-measure-tag';
+  d.textContent = text;
+  d.style.cssText = `left:${r.left - base.left + r.width / 2}px;top:${r.bottom - base.top + 6}px`;
+  phone.append(d);
 }
 function showFreeGaps(el, kind = '') {
   document.querySelectorAll(kind ? '.lab-gap.measure' : '.lab-gap:not(.measure)').forEach(n => n.remove());
@@ -271,7 +287,7 @@ function wireLayout() {
     const d = drag;
     drag = null;
     for (const st of d.starts) st.el.classList.remove('lab-dragging');
-    document.querySelectorAll('.lab-drop,.lab-gap,.lab-guide').forEach(n => n.remove());
+    document.querySelectorAll('.lab-drop,.lab-gap,.lab-guide,.lab-measure-tag').forEach(n => n.remove());
     if (d.started && d.free) { showMoves(); refreshExact(); }
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
     drawHandles();

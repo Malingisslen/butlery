@@ -547,6 +547,8 @@ function wireHandles() {
         if (ky !== 1) m.part.props.h = clamp(m.hh * ky);
       }
       render();
+      const els = pickedEls();
+      showMeasure(els, `${Math.round(unionRect(els).width)} × ${Math.round(unionRect(els).height)}`);
       return;
     }
     for (const p of selected.parts || [part]) {
@@ -556,8 +558,12 @@ function wireHandles() {
       if (h.includes('n')) p.props.h = clamp(resizing.hh - dy);
     }
     render();
+    const els = pickedEls();
+    if (els.length) { const r = els.length > 1 ? unionRect(els) : els[0].getBoundingClientRect(); showMeasure(els, `${Math.round(r.width)} × ${Math.round(r.height)}`); }
   });
-  window.addEventListener('pointerup', () => { if (resizing) { resizing = null; showPart(false); } });
+  window.addEventListener('pointerup', () => {
+    if (resizing) { resizing = null; document.querySelectorAll('.lab-measure-tag').forEach(n => n.remove()); showPart(false); }
+  });
   screens.addEventListener('scroll', () => drawHandles(), true);
 }
 
