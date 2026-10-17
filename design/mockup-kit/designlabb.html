@@ -754,6 +754,15 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel button { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #24382c; background: #24382c; color: #f5f4ed; font-weight: 600; cursor: pointer; }
 .panel button.ghost { background: #fff; color: #24382c; }
 .panel textarea { width: 100%; height: 150px; margin-top: 8px; box-sizing: border-box; font: 11px monospace; }
+.panel details { margin: 8px 0; }
+.panel summary { cursor: pointer; font-weight: 600; margin-bottom: 6px; }
+.panel .role { display: grid; grid-template-columns: 1fr 74px 62px; gap: 6px; align-items: center; margin: 4px 0; }
+.panel .role input[type=range] { width: 100%; }
+.panel .role select { padding: 2px; }
+.panel .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.panel .chips button { flex: none; padding: 6px 10px; font-size: 12px; }
+.panel .contrast { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 12px; }
+.panel .ok { color: #2f6b3f; } .panel .bad { color: #9c3b23; font-weight: 700; }
 .stage { flex: 1; min-width: 0; }
 .stage h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.6px; }
 .stage > p { margin: 0 0 24px; color: var(--butlery-text-secondary); max-width: 72ch; }
@@ -767,16 +776,28 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 <div class="lab">
 <aside class="panel" id="panel">
 <h1>Designlabb</h1>
-<p>Dra i reglagen så ändras skärmarna direkt. Inget sparas i appen: när du är nöjd kopierar du ändringarna och ger dem till Claude.</p>
+<p>Dra i reglagen så ändras skärmarna direkt. Inget sparas i appen: när du är nöjd kopierar du ändringarna och ger dem till Claude. Adressen i webbläsaren innehåller dina val, så du kan spara eller dela länken.</p>
+<h2>Stämningar</h2>
+<div class="chips" id="presets"></div>
 <h2>Typsnitt</h2>
 <label><span>Typsnitt</span><select id="font"></select></label>
 <label><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
-<h2>Former</h2>
-<label><span>Kort och ark</span><input type="range" id="r-card" min="0" max="28" value="12"><span class="val" id="r-card-v">12 px</span></label>
-<label><span>Knappar och fält</span><input type="range" id="r-control" min="0" max="20" value="8"><span class="val" id="r-control-v">8 px</span></label>
-<h2>Färger</h2>
+<label><span>Radavstånd</span><input type="range" id="lh" min="100" max="170" value="100"><span class="val" id="lh-v">orig</span></label>
+<details><summary>Storlek och tyngd per textroll</summary><div id="roles"></div></details>
+<h2>Former och luft</h2>
+<label><span>Kort och ark</span><input type="range" id="card" min="0" max="28" value="12"><span class="val" id="card-v">12 px</span></label>
+<label><span>Knappar och fält</span><input type="range" id="control" min="0" max="20" value="8"><span class="val" id="control-v">8 px</span></label>
+<label><span>Sidmarginal</span><input type="range" id="margin" min="12" max="40" value="24"><span class="val" id="margin-v">24 px</span></label>
+<h2>Färgstämning (alla färger)</h2>
+<label><span>Nyans</span><input type="range" id="hue" min="-180" max="180" value="0"><span class="val" id="hue-v">0°</span></label>
+<label><span>Mättnad</span><input type="range" id="sat" min="0" max="200" value="100"><span class="val" id="sat-v">100 %</span></label>
+<label><span>Ljushet</span><input type="range" id="light" min="70" max="130" value="100"><span class="val" id="light-v">100 %</span></label>
+<h2>Kontroll av läsbarhet</h2>
+<div class="contrast" id="contrast"></div>
+<h2>Enskilda färger</h2>
 <div id="colors"></div>
-<div class="row"><button class="ghost" id="reset" type="button">Återställ</button><button id="copy" type="button">Kopiera ändringar</button></div>
+<div class="row"><button class="ghost" id="hold" type="button">Håll: visa original</button><button class="ghost" id="reset" type="button">Återställ</button></div>
+<div class="row"><button id="copy" type="button">Kopiera ändringar</button></div>
 <textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
 </aside>
 <div class="stage">
@@ -917,8 +938,9 @@ for (const fig of [...document.querySelectorAll('#screens > figure')]) {
 const HEX = /^#[0-9a-f]{6}$/i;
 const used = new Map(); // original hex -> [{ selector, name }]
 const paletteNames = new Map(); // original hex -> palette names
-const sizes = []; // [name, px]
-const radii = []; // { selector, prop, px }
+const sizes = new Map(); // type role -> original px
+const weights = new Map(); // type role -> original weight
+const radii = []; // { selector, px }
 for (const sheet of document.styleSheets) {
   for (const rule of sheet.cssRules) {
     if (!(rule instanceof CSSStyleRule)) continue;
@@ -934,14 +956,13 @@ for (const sheet of document.styleSheets) {
           paletteNames.get(hex).push(prop.replace('--butlery-palette-', ''));
         }
       }
-      if (root && /^--butlery-type-.*-size$/.test(prop) && v.endsWith('px') && rule.selectorText === ':root') {
-        sizes.push([prop, parseFloat(v)]);
+      const type = /^--butlery-type-(.*)-(size|weight)$/.exec(prop);
+      if (type && rule.selectorText === ':root') {
+        (type[2] === 'size' ? sizes : weights).set(type[1], parseFloat(v));
       }
     }
-    for (const prop of ['border-radius', 'border-top-left-radius']) {
-      const v = rule.style.getPropertyValue(prop).trim();
-      if (!root && (v === '12px' || v === '8px')) radii.push({ selector: rule.selectorText, px: v });
-    }
+    const v = rule.style.getPropertyValue('border-radius').trim();
+    if (!root && (v === '12px' || v === '8px')) radii.push({ selector: rule.selectorText, px: v });
   }
 }
 
@@ -957,53 +978,137 @@ const FONTS = {
   'Georgia': null,
   'system-ui': null,
 };
-const state = { font: 'ButlerySans', scale: 100, card: 12, control: 8, colors: {} };
+const defaults = () => ({
+  font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
+  hue: 0, sat: 100, light: 100, colors: {}, roles: {},
+});
+let state = defaults();
+
+function hexToHsl(hex) {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (!d) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, s, l];
+}
+function hslToHex(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return '#' + [r, g, b].map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
+}
+const tinted = () => state.hue !== 0 || state.sat !== 100 || state.light !== 100;
+function finalColor(hex) {
+  if (state.colors[hex]) return state.colors[hex];
+  if (!tinted()) return hex;
+  const [h, s, l] = hexToHsl(hex);
+  return hslToHex((h + state.hue + 360) % 360, Math.min(1, s * state.sat / 100), Math.min(1, l * state.light / 100));
+}
 
 const lab = document.createElement('style');
 document.head.append(lab);
 
 function render() {
-  let css = '';
   const byRule = new Map();
-  for (const [hex, to] of Object.entries(state.colors)) {
+  for (const hex of used.keys()) {
+    const to = finalColor(hex);
+    if (to === hex) continue;
     for (const { selector, name } of used.get(hex)) {
       byRule.set(selector, (byRule.get(selector) || '') + `${name}:${to};`);
     }
   }
+  let css = '';
   for (const [sel, body] of byRule) css += `${sel}{${body}}`;
-  if (state.scale !== 100) {
-    css += `:root{${sizes.map(([n, px]) => `${n}:${+(px * state.scale / 100).toFixed(2)}px;`).join('')}}`;
+  const typeVars = [];
+  for (const [role, px] of sizes) {
+    const own = state.roles[role]?.size;
+    const size = own ?? px * state.scale / 100;
+    if (own != null || state.scale !== 100) typeVars.push(`--butlery-type-${role}-size:${+size.toFixed(2)}px`);
   }
-  if (state.font !== 'ButlerySans') {
-    css += `.phone,.phone *{font-family:'${state.font}',sans-serif !important}`;
+  for (const [role, w] of weights) {
+    const own = state.roles[role]?.weight;
+    if (own != null && own !== w) typeVars.push(`--butlery-type-${role}-weight:${own}`);
   }
+  if (typeVars.length) css += `:root{${typeVars.join(';')}}`;
+  if (state.font !== 'ButlerySans') css += `.phone,.phone *{font-family:'${state.font}',sans-serif !important}`;
+  if (state.lh !== 100) css += `.phone *{line-height:${state.lh / 100} !important}`;
+  if (state.margin !== 24) css += `.phone{--page-margin:${state.margin}px}`;
   for (const { selector, px } of radii) {
-    const to = px === '12px' ? state.card : state.control;
-    css += `${selector}{border-radius:${to}px}`;
+    css += `${selector}{border-radius:${px === '12px' ? state.card : state.control}px}`;
   }
   lab.textContent = css;
   document.getElementById('out').value = summary();
+  contrast();
+  try { history.replaceState(null, '', summary() ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search); } catch {}
 }
 
 function summary() {
   const out = {};
-  const palette = {};
-  for (const [hex, to] of Object.entries(state.colors)) {
-    const names = paletteNames.get(hex);
-    palette[names ? names.join(' / ') : hex] = { from: hex, to };
+  const colors = {};
+  for (const hex of used.keys()) {
+    const to = finalColor(hex);
+    if (to === hex) continue;
+    const names = paletteNames.get(hex) || used.get(hex).slice(0, 3).map(u => u.name.replace('--butlery-', ''));
+    colors[names.join(' / ')] = { from: hex, to };
   }
-  if (Object.keys(palette).length) out.palette = palette;
+  if (Object.keys(colors).length) out.colors = colors;
   if (state.font !== 'ButlerySans') out.fontFamily = state.font;
   if (state.scale !== 100) out.textScalePercent = state.scale;
+  if (state.lh !== 100) out.lineHeight = state.lh / 100;
+  const roles = {};
+  for (const [role, r] of Object.entries(state.roles)) {
+    if (r.size != null && r.size !== sizes.get(role)) (roles[role] ||= {}).sizePx = r.size;
+    if (r.weight != null && r.weight !== weights.get(role)) (roles[role] ||= {}).weight = r.weight;
+  }
+  if (Object.keys(roles).length) out.textRoles = roles;
   if (state.card !== 12) out.radiusCard = state.card;
   if (state.control !== 8) out.radiusControl = state.control;
+  if (state.margin !== 24) out.pageMargin = state.margin;
   return Object.keys(out).length ? JSON.stringify(out, null, 2) : '';
 }
 
-const fontSel = document.getElementById('font');
+// Text pairs that carry reading: WCAG AA wants 4.5:1 for body text.
+const PAIRS = [
+  ['text-primary', 'surface-base'], ['text-secondary', 'surface-base'], ['text-body', 'surface-raised'],
+  ['text-link', 'surface-base'], ['text-danger', 'surface-base'], ['text-on-action-fill', 'action-fill'],
+  ['text-on-action-primary', 'action-primary'], ['text-accent-on-ink', 'surface-ink'],
+];
+function rgbOf(phone, token, prop) {
+  const probe = document.createElement('span');
+  probe.style[prop] = `var(--butlery-${token})`;
+  phone.append(probe);
+  const c = getComputedStyle(probe)[prop];
+  probe.remove();
+  return (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+}
+const lum = ([r, g, b]) => [r, g, b].map(v => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+  .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+function contrast() {
+  const box = document.getElementById('contrast');
+  box.textContent = '';
+  const phones = document.querySelectorAll('#screens .phone');
+  for (const phone of [phones[0], [...phones].find(p => p.dataset.theme === 'dark')]) {
+    const mode = phone.dataset.theme === 'dark' ? 'mörkt' : 'ljust';
+    for (const [fg, bg] of PAIRS) {
+      const a = rgbOf(phone, fg, 'color'), b = rgbOf(phone, bg, 'backgroundColor');
+      if (a.length < 3 || b.length < 3) continue;
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+      const ratio = (hi + 0.05) / (lo + 0.05);
+      const row = [`${fg} på ${bg} (${mode})`, ratio.toFixed(1) + ':1', ratio >= 4.5 ? 'ok' : 'för svag'];
+      row.forEach((txt, i) => {
+        const el = document.createElement('span');
+        el.textContent = txt;
+        if (i === 2) el.className = ratio >= 4.5 ? 'ok' : 'bad';
+        box.append(el);
+      });
+    }
+  }
+}
+
+const $ = id => document.getElementById(id);
+const fontSel = $('font');
 for (const f of Object.keys(FONTS)) fontSel.add(new Option(f, f));
-fontSel.onchange = () => {
-  state.font = fontSel.value;
+function loadFont() {
   const q = FONTS[state.font];
   if (q && !document.getElementById('gf-' + q)) {
     const l = document.createElement('link');
@@ -1011,18 +1116,38 @@ fontSel.onchange = () => {
     l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
     document.head.append(l);
   }
-  render();
-};
-
-function slider(id, key, unit) {
-  const el = document.getElementById(id), val = document.getElementById(id + '-v');
-  el.oninput = () => { state[key] = +el.value; val.textContent = el.value + unit; render(); };
 }
-slider('scale', 'scale', ' %');
-slider('r-card', 'card', ' px');
-slider('r-control', 'control', ' px');
+fontSel.onchange = () => { state.font = fontSel.value; loadFont(); render(); };
 
-const colors = document.getElementById('colors');
+const SLIDERS = { scale: ' %', lh: '', card: ' px', control: ' px', margin: ' px', hue: '°', sat: ' %', light: ' %' };
+function showValue(id) {
+  $(id + '-v').textContent = id === 'lh' && state.lh === 100 ? 'orig' : state[id] + SLIDERS[id];
+}
+for (const id of Object.keys(SLIDERS)) {
+  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); render(); };
+}
+
+const rolesBox = $('roles');
+const roleInputs = [];
+for (const [role, px] of sizes) {
+  const row = document.createElement('div');
+  row.className = 'role';
+  const name = document.createElement('span');
+  name.textContent = role;
+  const size = document.createElement('input');
+  size.type = 'range'; size.min = 8; size.max = 56; size.step = 0.5; size.value = px;
+  size.title = `${px} px`;
+  const weight = document.createElement('select');
+  for (const w of [400, 600, 700]) weight.add(new Option(w, w));
+  weight.value = weights.get(role);
+  size.oninput = () => { (state.roles[role] ||= {}).size = +size.value; size.title = size.value + ' px'; render(); };
+  weight.onchange = () => { (state.roles[role] ||= {}).weight = +weight.value; render(); };
+  roleInputs.push({ role, size, weight });
+  row.append(name, size, weight);
+  rolesBox.append(row);
+}
+
+const colors = $('colors');
 const pickers = [];
 const rows = [...used.entries()]
   .map(([hex, uses]) => ({ hex, uses: uses.length, label: (paletteNames.get(hex) || [uses[0].name.replace('--butlery-', '')])[0] }))
@@ -1038,26 +1163,73 @@ for (const { hex, uses, label } of rows) {
     text.classList.toggle('changed', hex in state.colors);
     render();
   };
-  pickers.push([input, hex, text]);
+  pickers.push({ input, hex, text });
   row.append(text, input);
   colors.append(row);
 }
 
-document.getElementById('reset').onclick = () => {
-  Object.assign(state, { font: 'ButlerySans', scale: 100, card: 12, control: 8, colors: {} });
+// Push the state into every control, so presets, reset and a shared link use one path.
+function syncUi() {
   fontSel.value = state.font;
-  for (const [id, v, u] of [['scale', 100, ' %'], ['r-card', 12, ' px'], ['r-control', 8, ' px']]) {
-    document.getElementById(id).value = v; document.getElementById(id + '-v').textContent = v + u;
+  for (const id of Object.keys(SLIDERS)) { $(id).value = state[id]; showValue(id); }
+  for (const { role, size, weight } of roleInputs) {
+    size.value = state.roles[role]?.size ?? sizes.get(role);
+    weight.value = state.roles[role]?.weight ?? weights.get(role);
   }
-  for (const [input, hex, text] of pickers) { input.value = hex; text.classList.remove('changed'); }
+  for (const { input, hex, text } of pickers) {
+    input.value = state.colors[hex] ?? hex;
+    text.classList.toggle('changed', hex in state.colors);
+  }
+  loadFont();
   render();
+}
+
+const PRESETS = {
+  'Original': {},
+  'Varmare': { hue: 12, sat: 112, light: 104 },
+  'Kallare': { hue: -35, sat: 95 },
+  'Mjukt och runt': { card: 24, control: 16, margin: 28, lh: 150 },
+  'Kantigt': { card: 0, control: 0 },
+  'Stort och tydligt': { scale: 120, lh: 150, margin: 20 },
+  'Dämpat': { sat: 55, light: 104 },
+  'Högmättat': { sat: 160 },
+  'Serif': { font: 'Lora' },
 };
-document.getElementById('copy').onclick = async () => {
-  const out = document.getElementById('out');
+const presets = $('presets');
+for (const [name, patch] of Object.entries(PRESETS)) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = name;
+  b.onclick = () => { state = { ...defaults(), ...patch }; syncUi(); };
+  presets.append(b);
+}
+const surprise = document.createElement('button');
+surprise.type = 'button'; surprise.textContent = 'Överraska mig';
+surprise.onclick = () => {
+  const pick = (a, b) => Math.round(a + Math.random() * (b - a));
+  const fonts = Object.keys(FONTS);
+  state = {
+    ...defaults(), hue: pick(-180, 180), sat: pick(60, 150), light: pick(90, 110),
+    card: pick(0, 26), control: pick(0, 18), font: fonts[pick(0, fonts.length - 1)],
+  };
+  syncUi();
+};
+presets.append(surprise);
+
+$('reset').onclick = () => { state = defaults(); syncUi(); };
+const hold = $('hold');
+for (const [ev, off] of [['pointerdown', true], ['pointerup', false], ['pointerleave', false]]) {
+  hold.addEventListener(ev, () => { lab.disabled = off; });
+}
+$('copy').onclick = async () => {
+  const out = $('out');
   out.select();
   try { await navigator.clipboard.writeText(out.value); } catch { document.execCommand('copy'); }
 };
-render();
+
+if (location.hash.length > 1) {
+  try { state = { ...defaults(), ...JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))) }; } catch {}
+}
+syncUi();
 </script>
 </body>
 </html>
