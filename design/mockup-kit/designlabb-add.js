@@ -136,8 +136,20 @@ function placeAt(domId, at) {
 const addText = (ref, replace, at) => commitAdd({ kind: 'text', text: 'Ny text' }, addSpot(ref), replace, at);
 const addIcon = (ref, replace, at) => commitAdd({ kind: 'icon', glyph: 'star' }, addSpot(ref), replace, at);
 const addImage = (ref, replace, at) => imageAdd(addSpot(ref), replace, at);
-// Converting follows the same rule as moves: the like part in the other views, unless "bara vald del"
-// / "bara i den här vyn" is ticked; within a view only the picked part changes.
+// Converting reaches what the pink frame shows: every like part (the same selector as sizes and
+// colours) in all views, unless "bara vald del" / "bara i den här vyn" is ticked.
+function convertTargets(el) {
+  const sel = selectorFor(el, false);
+  const own = el.closest('.phone');
+  if (selected?.onlyThis || sel === '.phone' || sel.includes(':nth-child')) return [el];
+  const out = new Set([el]);
+  for (const ph of document.querySelectorAll('#screens .phone')) {
+    if (ph.dataset.theme === 'dark' || (selected?.onlyView && ph !== own)) continue;
+    try { ph.querySelectorAll(sel.replace(/^\.phone /, '')).forEach(n => { if (idOf(n) && idOf(n.parentElement)) out.add(n); }); } catch { /* a selector the browser refuses matches nothing */ }
+  }
+  if (!selected?.onlyView) likeTargets(el).forEach(n => out.add(n));
+  return [...out];
+}
 async function convertTo(kind, el) {
   const make = { text: () => ({ kind: 'text', text: 'Ny text' }), icon: () => ({ kind: 'icon', glyph: 'star' }) };
   let img = null;
@@ -146,9 +158,9 @@ async function convertTo(kind, el) {
     if (!img) return;
     if (img.src.length > ADD_IMG_BYTES) { toast('Bilden är för stor. Välj en mindre bild eller en SVG.'); return; }
   }
-  const targets = likeTargets(el);
+  const targets = convertTargets(el);
   for (const t of targets) commitAdd(img ? { kind: 'img', src: img.src, name: img.name } : make[kind](), addSpot(t), t);
-  if (targets.length > 1) toast(`Gjorde om samma del i ${targets.length} vyer. Kryssa i "Bara vald del" först om bara en ska ändras.`);
+  if (targets.length > 1) toast(`Gjorde om ${targets.length} likadana delar. Kryssa i "Bara vald del" först om bara en ska ändras.`);
 }
 // "Make it ..." works on one picked part, which stays where it is as the new part's neighbour.
 const canConvert = el => !!el && !el.classList.contains('phone') && !!idOf(el.parentElement);
