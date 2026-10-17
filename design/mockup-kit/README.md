@@ -99,3 +99,8 @@ dart run tools/mockup_kit.dart
 CI-jobbet Design system kör `dart run tools/mockup_kit.dart --check` och blir rött när
 kitet inte längre stämmer med tokens, ikoner eller `components.css`. Ändras en
 komponent i appen ändras `components.css` i samma PR.
+
+
+## Designlabbets exempelvyer
+
+Varje `<figure data-views="...">` i `designlabb.html` namnger de appfiler skärmen är en handbyggd kopia av. `design/mockup-kit/lab-views.json` håller en hash av dem från dagen skärmen senast stämdes av. Ändras en vy i appen varnar workflowen Lab views (bara en varning). Uppdatera skärmen, kör sedan `cd design && node tools/lab-views-check.mjs --stamp`.

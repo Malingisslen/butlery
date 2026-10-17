@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=958-->
+<!--manifest:files=960-->
 
 ## Reporoten
 
@@ -610,7 +610,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `f64e446dc561119ba0a1ce343c34046400e6b2986af0afe4e0f2f44c64d5b3d1` |
+| `mockup-kit/README.md` | `773d8263ac0c32b855b253af372ac456affe10a6d8462dee2219ba6d55852565` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
 | `mockup-kit/designlabb-advice-more.js` | `9944a655910e29e421eda3ad6ef1fb3064b6e76bb2f7feac8bd1392dde068a7f` |
 | `mockup-kit/designlabb-advice-ui.js` | `900f92edf0fe52372105c8a0ff41e0f3058f66780087b9922c682b5c84fc2607` |
@@ -622,7 +622,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/designlabb-iconlibs.js` | `b0b57d7b79d44962a9b8d842744f78395b69e44542b3f83de298295d4c931f6b` |
 | `mockup-kit/designlabb-iconnames.js` | `184a1aa16d5030cb594e90591e971352b3b02ea0a1b02591f6a26ffc1f94d8c4` |
 | `mockup-kit/designlabb-layout.js` | `9670cbaeceaa978f0700bbeb9412e816e308404b8b23d5d8c60b6f5dd89d7a95` |
-| `mockup-kit/designlabb-modular.js` | `602ea9088d01ae7c3a9977861c5c3f39451dc03ddb53f447a818d8790124ee93` |
+| `mockup-kit/designlabb-modular.js` | `105c4398ff1a4ad7085acb001adf7430fedb89eb3a585d858aeb8cabd5604a69` |
 | `mockup-kit/designlabb-notes.js` | `9276d462981c59e21029295ee50408129b99582c6309e186b7e044400747d013` |
 | `mockup-kit/designlabb-palette.js` | `dd6684dcc3dbcf17fcd1e22cd72d757f2520cbc9aa0049679d8c41537c5c049f` |
 | `mockup-kit/designlabb-parts.js` | `6c61a3ba730f1c0fa289250ed7de68d4cfd51b1ba6b01810b4d85ac480defaa3` |
@@ -632,9 +632,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/designlabb-viewtools.js` | `381e6d2d3192dcee87ed753fd9e77451fd332b12994f71455a46a99523a9b07b` |
 | `mockup-kit/designlabb-warn.js` | `1ec15683907cbad7bbcb86250f6725d70a1982156f453f11c69f6c9f75663f49` |
 | `mockup-kit/designlabb.css` | `8300af86417109d10952064e39259476597ed29a415b87e3fc67045397956d34` |
-| `mockup-kit/designlabb.html` | `4c3486f838ffc3e23ca6841e3f2621acd35d0ff18b39a9f5439c5414b0ac3b69` |
+| `mockup-kit/designlabb.html` | `e02e62ecf4bcffbd576d9557d085880b1fe3aee074581f6001f55ade643ce88a` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
+| `mockup-kit/lab-views.json` | `5165b0c9f2effa4f72bc7600d8b38252fd0a02f2e65d146e39d18ac76b18e994` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `2eab8547a2d825a42d7117b31990009991eb1c7d2e151a2dc457e1e2968eb0a8` |
@@ -881,6 +882,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/identity-audit.mjs` | `7207bf9d5259982f3c957a4d2e58b2428eb69eb9343c2fee4f05b7f1ddb8e7e3` |
 | `tools/identity-fixtures.mjs` | `86c012427679bf2b61c584d77b5e9960b4a6c2bec2aa11d50a4bbf2a57abc15c` |
 | `tools/identity-v2.mjs` | `9137bc7cf0a69dac41a768e6c12e4feaeaf8f49bdd2fa8d2971a0abaff1055d4` |
+| `tools/lab-views-check.mjs` | `0f7583b0a4cea6c38713069f33d5a2977f10079974b55b73f6d103304ab0aefe` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/low-contrast-planner-fixtures.mjs` | `33026e3536e6582e41c448e7f267179574e6f5bfcb38feaff47c412e98d5c848` |
