@@ -53,22 +53,33 @@ function clearSelection() {
   selected = null;
   showPartHint();
 }
+// Anything inside a screen can be picked; a second click on the picked part picks the one around it.
+const isLab = e => [...e.classList].some(c => c.startsWith('lab-'));
 function componentOf(el) {
-  for (let e = el; e && e.closest('.phone'); e = e.parentElement) {
-    if ([...e.classList].some(c => c.startsWith('b-') && c !== 'b-scroll')) return e;
-    if (e.classList.contains('phone')) return e;
-  }
-  return null;
+  if (!el?.closest || !el.closest('.phone') || isLab(el)) return null;
+  const e = el.closest('svg') || el;
+  if (e.classList.contains('b-scroll')) return componentOf(e.parentElement);
+  return e;
+}
+function parentPart(el) {
+  let p = el.parentElement;
+  while (p && p.closest('.phone') && (p.classList.contains('b-scroll') || (!p.classList.contains('phone') && !p.className))) p = p.parentElement;
+  return p && p.closest('.phone') ? p : el;
 }
 function selectorFor(el, variant) {
   if (el.classList.contains('phone')) return '.phone';
-  const classes = [...el.classList];
+  const classes = [...el.classList].filter(c => !c.startsWith('lab-') && c !== 'lab-selected');
   const base = classes.find(c => c.startsWith('b-'));
-  const rest = classes.filter(c => c !== base && !c.startsWith('lab-'));
-  return '.' + base + (variant ? rest.map(c => '.' + c).join('') : '');
+  if (base) return '.' + base + (variant ? classes.filter(c => c !== base).map(c => '.' + c).join('') : '');
+  let anchor = el.parentElement;
+  while (anchor && !anchor.classList.contains('phone') && ![...anchor.classList].some(c => c.startsWith('b-') && c !== 'b-scroll')) anchor = anchor.parentElement;
+  const prefix = !anchor || anchor.classList.contains('phone') ? '.phone' : selectorFor(anchor, false);
+  const tag = el.tagName.toLowerCase();
+  if (!classes.length) return `${prefix} ${tag}:nth-child(${[...el.parentElement.children].indexOf(el) + 1})`;
+  return `${prefix} ${tag}.${classes[0]}` + (variant ? classes.slice(1).map(c => '.' + c).join('') : '');
 }
 function showPartHint() {
-  $('part').innerHTML = '<p class="hint">Klicka på en knapp, ett kort, en rad eller en ikon i skärmarna, så kan du justera just den delen här.</p>';
+  $('part').innerHTML = '<p class="hint">Klicka på vad som helst i skärmarna, till exempel en flik, en ikon, en text eller en knapp, så kan du justera just den delen här. Klicka igen på samma del för att välja delen runt omkring.</p>';
 }
 
 function control(part, spec, now, keyword, onSet) {
@@ -184,8 +195,9 @@ function wireScreens() {
   const screens = $('screens');
   screens.addEventListener('click', e => {
     if (moveMode) return;
-    const el = componentOf(e.target);
+    let el = componentOf(e.target);
     if (!el) return;
+    if (selected?.el.isConnected && selected.el.contains(e.target)) el = parentPart(selected.el);
     e.preventDefault(); e.stopPropagation();
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     el.setAttribute('data-lab-selected', '');
