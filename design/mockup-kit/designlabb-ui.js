@@ -63,6 +63,7 @@ function render() {
   drawOverlay();
   applyViewTools();
   markPresets();
+  markSliders();
   drawPins();
   if (typeof drawHandles === 'function') drawHandles();
   shareNow();
@@ -129,7 +130,14 @@ function showValue(id) {
   $(id + '-v').textContent = id in ORIGINAL_AT && state[id] === ORIGINAL_AT[id] ? 'orig' : state[id] + SLIDERS[id];
 }
 for (const id of Object.keys(SLIDERS)) {
-  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); render(); };
+  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); markSliders(); render(); };
+  const rst = document.createElement('button');
+  rst.type = 'button'; rst.className = 'rst'; rst.textContent = '↺'; rst.title = 'Återställ till original'; rst.hidden = true;
+  rst.onclick = () => { state[id] = defaults()[id]; $(id).value = state[id]; showValue(id); markSliders(); render(); };
+  $(id).closest('label').append(rst);
+}
+function markSliders() {
+  for (const id of Object.keys(SLIDERS)) $(id).closest('label').querySelector('.rst').hidden = state[id] === defaults()[id];
 }
 
 const roleInputs = [];
@@ -246,7 +254,7 @@ foldSections();
 
 // ---- Tabs and search ----
 function openTab(name) {
-  for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
+  for (const b of document.querySelectorAll('#tabs button, #check-open')) b.classList.toggle('on', b.dataset.tab === name);
   for (const p of document.querySelectorAll('.pane')) p.hidden = !!$('search').value ? false : p.dataset.pane !== name;
 }
 function applySearch() {
@@ -256,9 +264,9 @@ function applySearch() {
     el.hidden = !hit;
     if (q && el.tagName === 'DETAILS' && hit) el.open = true;
   }
-  openTab(document.querySelector('#tabs button.on')?.dataset.tab || 'all');
+  openTab(document.querySelector('#tabs button.on, #check-open.on')?.dataset.tab || 'all');
 }
-for (const b of document.querySelectorAll('#tabs button')) b.onclick = () => { $('search').value = ''; applySearch(); openTab(b.dataset.tab); };
+for (const b of document.querySelectorAll('#tabs button, #check-open')) b.onclick = () => { $('search').value = ''; applySearch(); openTab(b.dataset.tab); };
 $('search').oninput = applySearch;
 
 // ---- Saved variants and compare ----
