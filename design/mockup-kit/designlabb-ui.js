@@ -276,13 +276,21 @@ normalizeVariants();
 // Saved versions live in this browser and, when the page can reach the shared store, in the artifact's database too.
 const variantDb = () => (typeof claudeAi !== 'undefined' ? claudeAi.db : null);
 // The id is derived from the save time, so the same version saved in two places is recognised as one.
+function variantKey(v) { return `${v.name}|${JSON.stringify({ ...defaults(), ...v.state })}`; }
+function stableAt(v) {
+  let h = 7;
+  for (const c of variantKey(v)) h = (h * 31 + c.charCodeAt(0)) % 1000000007;
+  return h;
+}
 function normalizeVariants() {
   const seen = new Set();
   variants = variants.filter(v => {
-    v.at ||= Date.now();
+    v.state = { ...defaults(), ...v.state };
+    v.at ||= stableAt(v);
     v.id = 'v' + v.at;
-    if (seen.has(v.id)) return false;
-    seen.add(v.id);
+    const key = variantKey(v);
+    if (seen.has(v.id) || seen.has(key)) return false;
+    seen.add(v.id); seen.add(key);
     return true;
   });
 }
@@ -299,7 +307,7 @@ function renderVariantSelect() {
   const sel = $('ver-select');
   sel.textContent = '';
   sel.add(new Option(variants.length ? 'Öppna version …' : 'Inga sparade versioner än', ''));
-  variants.forEach((v, i) => sel.add(new Option(v.name + (v.at ? ' · ' + new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : ''), String(i))));
+  variants.forEach((v, i) => sel.add(new Option(v.name + (v.at > 1e11 ? ' · ' + new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : ''), String(i))));
   sel.disabled = !variants.length;
 }
 function renderVariants() {
@@ -317,9 +325,9 @@ function renderVariants() {
     summaryEl.className = 'hint';
     const s = v.state;
     summaryEl.textContent = [s.font !== 'ButlerySans' && s.font, s.hue && `nyans ${s.hue}°`, s.sat !== 100 && `mättnad ${s.sat} %`,
-      s.card !== 12 && `kort ${s.card} px`, s.control !== 8 && `knappar ${s.control} px`, s.scale !== 100 && `text ${s.scale} %`, Object.keys(s.parts).length && `${Object.keys(s.parts).length} delar`, Object.keys(s.colors).length && `${Object.keys(s.colors).length} färger`]
+      s.card !== 12 && `kort ${s.card} px`, s.control !== 8 && `knappar ${s.control} px`, s.scale !== 100 && `text ${s.scale} %`, Object.keys(s.parts || {}).length && `${Object.keys(s.parts).length} delar`, Object.keys(s.colors).length && `${Object.keys(s.colors).length} färger`]
       .filter(Boolean).join(' · ') || 'originalet';
-    if (v.at) summaryEl.textContent += ` · sparad ${new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`;
+    if (v.at > 1e11) summaryEl.textContent += ` · sparad ${new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`;
     const actions = document.createElement('div');
     actions.className = 'row';
     for (const [label, fn] of [
@@ -355,9 +363,9 @@ async function loadVariantsFromDb() {
     for (const d of snap.docs) {
       const data = typeof d.data === 'function' ? d.data() : d.data;
       if (!data?.json) continue;
-      const canonical = 'v' + data.at;
-      if (d.id !== canonical) db.doc(`variants/${d.id}`).delete().catch(() => {});
-      if (variants.some(v => v.at === data.at)) continue;
+      let incoming = { name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } };
+      const twin = variants.find(v => v.at === data.at || variantKey(v) === variantKey(incoming));
+      if (twin) { if (twin.id !== d.id) db.doc(`variants/${d.id}`).delete().catch(() => {}); continue; }
       variants.push({ name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } });
     }
     variants.sort((a, b) => (a.at || 0) - (b.at || 0));
