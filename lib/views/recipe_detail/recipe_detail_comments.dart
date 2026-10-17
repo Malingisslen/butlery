@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/recipe_detail_comments.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/comment_audience_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
@@ -297,68 +298,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   ) async {
     final audience = _resolveCommentAudience(vm);
     if (audience.total <= 0) return;
-    final unresolved = audience.total - audience.resolved.length;
-
-    await showButleryDialog<void>(
-      context: context,
-      builder: (ctx) {
-        final cs = Theme.of(ctx).colorScheme;
-        return ButleryDialog.notice(
-          title: ctx.l10n.recipeCommentAudienceTitle,
-          titleIcon: ButleryIcons.eye,
-          scrollable: false,
-          // No name resolved → disclose the count only (never hide the audience).
-          // A collaborative recipe can have many members, so the name list
-          // scrolls rather than overflowing the dialog.
-          content: audience.resolved.isEmpty
-              ? Text(
-                  ctx.l10n.recipeCommentVisiblePeople(audience.total),
-                  style: AppTextStyles.bodyMedium,
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final name in audience.resolved)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: AppDimensions.space4,
-                          ),
-                          child: Row(
-                            children: [
-                              ButleryIcon(
-                                ButleryIcons.user,
-                                size: AppDimensions.iconSizeS,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: AppDimensions.space8),
-                              Flexible(
-                                child: Text(
-                                  name,
-                                  style: AppTextStyles.bodyMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (unresolved > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: AppDimensions.space4,
-                          ),
-                          child: Text(
-                            ctx.l10n.recipeCommentAudienceOthers(unresolved),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-        );
-      },
+    await showCommentAudienceDialog(
+      context,
+      resolved: audience.resolved,
+      total: audience.total,
     );
   }
 

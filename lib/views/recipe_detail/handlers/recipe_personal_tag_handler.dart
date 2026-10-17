@@ -29,6 +29,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/chips/butlery_filter_chip.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 
 /// Handler for personal tag operations from recipe detail view.
@@ -224,19 +225,13 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
       builder: (context, scrollController) {
         return Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.space24),
-              child: Row(
+            const SizedBox(height: AppDimensions.space16),
+            ButlerySheetHeader(
+              title: context.l10n.taggingPersonalTags,
+              leading: const ButleryIcon(ButleryIcons.tag),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const ButleryIcon(ButleryIcons.tag),
-                  const SizedBox(width: AppDimensions.space8),
-                  Expanded(
-                    child: Text(
-                      context.l10n.taggingPersonalTags,
-                      style: AppTextStyles.titleLarge,
-                    ),
-                  ),
                   ButleryTextButton(
                     onPressed: _cancel,
                     label: context.l10n.commonCancel,
@@ -247,9 +242,11 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                     onPressed: _save,
                     label: context.l10n.commonSave,
                   ),
+                  const SizedBox(width: AppDimensions.space8),
                 ],
               ),
             ),
+            const SizedBox(height: AppDimensions.space16),
             const ButleryDivider(spacing: 1),
             // Content
             Expanded(

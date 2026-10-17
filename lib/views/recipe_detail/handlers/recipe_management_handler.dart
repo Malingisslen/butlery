@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/handlers/recipe_management_handler.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/recipe/collaboration_enable_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -17,7 +18,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
-import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -260,45 +260,13 @@ class RecipeManagementHandler {
       return;
     }
 
-    final selectedIds = <String>{};
-
     if (!context.mounted) return;
-    final confirmed = await showButleryDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setDialogState) => ButleryDialog.confirm(
-            title: context.l10n.collaborationEnableTitle,
-            primaryLabel: context.l10n.commonEnable,
-            primaryEnabled: selectedIds.isNotEmpty,
-            scrollable: false,
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 300,
-              child: ListView(
-                children: friends
-                    .map(
-                      (friend) => ButleryCheckboxTile(
-                        title: Text(friend.displayName),
-                        value: selectedIds.contains(friend.uid),
-                        onChanged: (v) => setDialogState(() {
-                          if (v) {
-                            selectedIds.add(friend.uid);
-                          } else {
-                            selectedIds.remove(friend.uid);
-                          }
-                        }),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-        );
-      },
+    final selectedIds = await showCollaborationEnableDialog(
+      context,
+      friends: friends,
     );
 
-    if (confirmed == true && selectedIds.isNotEmpty) {
+    if (selectedIds != null) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final success = await recipeService.collaboration
           .enableCollaborativeEditing(
