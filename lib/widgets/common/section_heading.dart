@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// What the heading's colour says about the section under it.
 enum SectionHeadingTone {
@@ -57,7 +58,7 @@ class SectionHeading extends StatelessWidget {
       // the content under it.
       container: true,
       header: true,
-      child: Text(
+      child: WholeWordText(
         text.toUpperCase(),
         style: AppTextStyles.sectionHeading.copyWith(color: color),
       ),

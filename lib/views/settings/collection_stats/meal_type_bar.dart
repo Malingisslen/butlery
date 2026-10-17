@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 class MealTypeBar extends StatelessWidget {
   const MealTypeBar({
@@ -36,11 +37,11 @@ class MealTypeBar extends StatelessWidget {
           builder: (context, constraints) => Row(
             children: [
               SizedBox(
-                width: constraints.maxWidth * 0.28,
-                child: Text(
+                width:
+                    constraints.maxWidth * (isLargeText(context) ? 0.4 : 0.28),
+                child: WholeWordText(
                   label,
                   style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Expanded(

@@ -5,8 +5,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
-import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +13,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -25,8 +22,10 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Focused components (Phase 9 refactoring)
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_notices.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_actions.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// Collaborative shopping view using facade pattern for real-time list coordination.
 class CollaborativeShoppingView extends StatefulWidget {
@@ -323,176 +322,55 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
     CollaborativeShoppingViewModel viewModel,
   ) {
     final updatedByNotice = viewModel.updatedByNotice;
-    return Column(
+    final top = Column(
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),
         if (updatedByNotice != null)
-          _UpdatedByNotice(
+          CollaborativeUpdatedByNotice(
             key: const ValueKey('collaborativeShopping.updatedByNotice'),
             text: updatedByNotice,
             onDismiss: viewModel.dismissUpdatedByNotice,
           ),
         actions.buildAddItemSection(context),
         if (unaddedText != null)
-          _UnaddedTextNotice(
+          CollaborativeUnaddedTextNotice(
             text: unaddedText!,
             onCopy: onCopyUnaddedText,
             onClose: onCloseUnaddedText,
           ),
-        Expanded(
-          child: CollaborativeShoppingItems(
-            viewModel: viewModel,
-            onToggleItem: onToggleItem,
-            onClearCompleted: viewModel.canEdit
-                ? () => actions.handleMenuAction(context, 'clear_completed')
-                : null,
-          ),
-        ),
       ],
     );
-  }
-}
-
-/// P6-U05: the item a user had typed but not added when their role on the
-/// list dropped to read-only, kept in the view until they close it.
-///
-/// A notice box like [_UpdatedByNotice]: surface.tint.warning fill, no
-/// border, the control radius, text.body (B83-2e).
-/// The typed text is body text, so it is never cut off
-/// (content-style-guide.md) and can be selected as well as copied.
-class _UnaddedTextNotice extends StatelessWidget {
-  const _UnaddedTextNotice({
-    required this.text,
-    required this.onCopy,
-    required this.onClose,
-  });
-
-  final String text;
-  final VoidCallback onCopy;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final body = AppModeColors.textBody(Theme.of(context).brightness);
-    return Padding(
-      key: const ValueKey('collaborativeShopping.unaddedText'),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space8,
-      ),
-      child: Material(
-        color: context.modeColors.surfaceTintWarning,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimensions.space12,
-            AppDimensions.space8,
-            AppDimensions.space4,
-            AppDimensions.space4,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l.roleLoweredShoppingUnsaved,
-                style: AppTextStyles.captionBase.copyWith(color: body),
-              ),
-              const SizedBox(height: AppDimensions.space4),
-              SelectableText(
-                text,
-                style: AppTextStyles.bodyMedium.copyWith(color: body),
-              ),
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Wrap(
-                  children: [
-                    ButleryTextButton(
-                      onPressed: onCopy,
-                      label: l.roleLoweredCopyText,
-                    ),
-                    ButleryTextButton(
-                      onPressed: onClose,
-                      label: l.commonClose,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final items = CollaborativeShoppingItems(
+      viewModel: viewModel,
+      onToggleItem: onToggleItem,
+      onClearCompleted: viewModel.canEdit
+          ? () => actions.handleMenuAction(context, 'clear_completed')
+          : null,
     );
-  }
-}
-
-/// BUT-2187: "Listan uppdaterades av namn" (produktregler.md) — shown in
-/// the header when someone else updates this shared list while it is open.
-///
-/// Drawn as a list row (v10-2): a warning plate with the warning edge and a
-/// hairline under it, the text in text.body, and a dismiss control. Sits
-/// between the header's participant row and "Lägg till vara".
-class _UpdatedByNotice extends StatelessWidget {
-  const _UpdatedByNotice({
-    super.key,
-    required this.text,
-    required this.onDismiss,
-  });
-
-  final String text;
-  final VoidCallback onDismiss;
-
-  @override
-  Widget build(BuildContext context) {
-    final body = AppModeColors.textBody(Theme.of(context).brightness);
-    // Keyed on the text so a screen reader announces each distinct notice
-    // once (a rebuild of the same text, or the same notice reappearing
-    // unchanged, stays silent) — same pattern as ConflictBanner.
-    return KeyedSubtree(
-      key: ValueKey(text),
-      child: Semantics(
-        container: true,
-        liveRegion: true,
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: AppDimensions.space4),
-          decoration: BoxDecoration(
-            color: context.modeColors.surfaceTintWarning,
-            border: Border(
-              left: BorderSide(
-                color: AppModeColors.textWarning(Theme.of(context).brightness),
-                width: 3,
-              ),
-              bottom: BorderSide(color: Theme.of(context).dividerColor),
-            ),
-          ),
-          child: Row(
+    final largeText = isLargeText(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Header, notices and the add field leave no room for the items on a
+        // short screen or at large text: they scroll away with the page and
+        // the items keep a height of their own.
+        final short = constraints.maxHeight < (largeText ? 720 : 480);
+        if (!short) {
+          return Column(
             children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space12,
-                    vertical: AppDimensions.space8,
-                  ),
-                  child: Text(
-                    text,
-                    style: AppTextStyles.captionBase.copyWith(color: body),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                child: ButleryCloseButton(
-                  semanticLabel: context.l10n.a11yShoppingListUpdatedByDismiss,
-                  onPressed: onDismiss,
-                ),
-              ),
+              top,
+              Expanded(child: items),
+            ],
+          );
+        }
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              top,
+              SizedBox(height: constraints.maxHeight, child: items),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
