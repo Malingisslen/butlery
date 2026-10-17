@@ -196,9 +196,11 @@ function drawGuides(el) {
   };
   for (const t of guideTargets(el)) {
     const o = lines(t.r);
-    const top = Math.min(r.top, t.r.top), bottom = Math.max(r.bottom, t.r.bottom), left = Math.min(r.left, t.r.left), right = Math.max(r.right, t.r.right);
-    for (const a of m.x) if (o.x.some(b => Math.abs(a - b) < 0.6)) add(a, t.screen ? base.top : top, 1, t.screen ? base.height : bottom - top);
-    for (const a of m.y) if (o.y.some(b => Math.abs(a - b) < 0.6)) add(t.screen ? base.left : left, a, t.screen ? base.width : right - left, 1);
+    // Lines only span the two parts they connect (the screen only draws its centre), so a guide never
+    // reads as a frame around something.
+    const top = Math.max(Math.min(r.top, t.r.top), r.top - 80), bottom = Math.min(Math.max(r.bottom, t.r.bottom), r.bottom + 80), left = Math.max(Math.min(r.left, t.r.left), r.left - 80), right = Math.min(Math.max(r.right, t.r.right), r.right + 80);
+    m.x.forEach((a, i) => { if ((!t.screen || i === 1) && o.x.some(b => Math.abs(a - b) < 0.6)) add(a, top, 1, bottom - top); });
+    m.y.forEach((a, i) => { if ((!t.screen || i === 1) && o.y.some(b => Math.abs(a - b) < 0.6)) add(left, a, right - left, 1); });
   }
 }
 function freeMove(e) {

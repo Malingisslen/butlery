@@ -403,3 +403,5 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .placebox .prow input { width: 100%; box-sizing: border-box; }
 .placebox .hint { margin: 6px 0 0; }
 .phone .lab-guide { position: absolute; z-index: 65; background: #ff2d8f; pointer-events: none; }
+.phone .lab-gap.between:not(.measure) { background: rgba(255, 45, 143, .10); border: 1px dashed rgba(255, 45, 143, .7); box-sizing: border-box; color: #c2185b; }
+.phone .lab-dragging { opacity: .6; }
