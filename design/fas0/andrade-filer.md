@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=936-->
+<!--manifest:files=940-->
 
 ## Reporoten
 
@@ -612,7 +612,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `mockup-kit/README.md` | `8c8ca0dddc6183e6a79a0a1e8bf88d6b33a75cb04cd8ec473991a594e5b5e773` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb.html` | `17c4db51ca9219998125a96e194a8925739ee1773d9bb6325f20aa01acb0c1bb` |
+| `mockup-kit/designlabb-core.js` | `702120ccc60ab6599200a024a5f28c85fe86118313acb0e22b2d8d7d180f0afe` |
+| `mockup-kit/designlabb-parts.js` | `27bcd16e10dbd0396ffd7539fa627cabed6692858813dd1d7d3f502f593ae35b` |
+| `mockup-kit/designlabb-ui.js` | `a04bdd5929a616327e3ad9b9220fc8cab5d1d36207cfbb412092ae26895d1ef5` |
+| `mockup-kit/designlabb.css` | `743c64c9d1f09e0dd4d2b1951f64181b88d0a546475aef874eee48c4f04b017d` |
+| `mockup-kit/designlabb.html` | `c995952cdf8b0cd9fd6f055ee87283fb1e9d731178b41d84f9e4dca88c961598` |
 | `mockup-kit/examples.html` | `817d9f524862f4382216b505df39e4d815ff2a42398628fb8c9718b4f2df1e8a` |
 | `mockup-kit/kit.html` | `d7cc5fc6f136d3759f955298805fb2d51648c6de73b0ce7c90380baabd4b3c63` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |

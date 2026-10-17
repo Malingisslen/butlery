@@ -735,65 +735,19 @@
 <symbol id="i-zap" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--icon-stroke,1.75)"><path d="M13.4 3.2L6.8 12.4h4.3l-.6 8.4 6.7-9.8h-4.4z"></path></g></symbol>
 </svg>
 <!-- END GENERATED -->
-<style>
-/* The page around the screens, not part of a mockup. */
-body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'ButlerySans', sans-serif; color: var(--butlery-text-primary); }
-.lab { display: flex; align-items: flex-start; gap: 24px; padding: 24px 16px 64px; max-width: 1760px; margin: 0 auto; }
-.panel { position: sticky; top: 16px; flex: 0 0 300px; max-height: calc(100vh - 32px); overflow: auto; background: #fff; border: 1px solid #ccd1c2; border-radius: 12px; padding: 16px; font-family: system-ui, sans-serif; font-size: 13px; color: #24382c; }
-.panel h1 { font-size: 18px; margin: 0 0 4px; }
-.panel p { margin: 0 0 12px; color: #627061; }
-.panel h2 { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; margin: 16px 0 8px; color: #627061; }
-.panel label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-.panel label span { flex: 1; }
-.panel label > span:first-child { flex: 0 1 118px; }
-.panel input[type=range] { min-width: 0; }
-.panel input[type=color] { width: 36px; height: 28px; padding: 0; border: 1px solid #7d897c; border-radius: 6px; background: none; }
-.panel input[type=range] { flex: 1; }
-.panel .val { flex: 0 0 44px; text-align: right; color: #627061; }
-.panel select { flex: 1; padding: 6px; }
-.panel .changed { font-weight: 700; }
-.panel .row { display: flex; gap: 8px; margin-top: 12px; }
-.panel button { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #24382c; background: #24382c; color: #f5f4ed; font-weight: 600; cursor: pointer; }
-.panel button.ghost { background: #fff; color: #24382c; }
-.panel textarea { width: 100%; height: 150px; margin-top: 8px; box-sizing: border-box; font: 11px monospace; }
-.panel details { margin: 8px 0; }
-.panel summary { cursor: pointer; font-weight: 600; margin-bottom: 6px; }
-.panel .role { display: grid; grid-template-columns: 1fr 74px 62px; gap: 6px; align-items: center; margin: 4px 0; }
-.panel .role input[type=range] { width: 100%; }
-.panel .role select { padding: 2px; }
-.panel .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.panel .chips button { flex: none; padding: 6px 10px; font-size: 12px; }
-.panel .contrast { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 12px; }
-.panel .ok { color: #2f6b3f; } .panel .bad { color: #9c3b23; font-weight: 700; }
-.panel #part { border: 2px solid #ce7c1e; border-radius: 10px; padding: 8px 12px; margin: 0 0 12px; background: #fffaf2; }
-.panel #part h2 { margin-top: 4px; }
-.panel #part .path { font: 11px monospace; color: #627061; word-break: break-all; }
-.panel .seg { display: flex; gap: 4px; margin: 6px 0; }
-.panel .seg button { padding: 4px 8px; font-size: 12px; }
-.panel .seg button.on { background: #ce7c1e; border-color: #ce7c1e; }
-.phone [data-lab-hover] { outline: 1px dashed #ce7c1e; outline-offset: 1px; }
-.phone [data-lab-selected], .phone[data-lab-selected] { outline: 2px solid #e0457b !important; outline-offset: 2px; }
-.stage { flex: 1; min-width: 0; }
-.stage h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.6px; }
-.stage > p { margin: 0 0 24px; color: var(--butlery-text-secondary); max-width: 72ch; }
-.screens { display: flex; flex-wrap: wrap; gap: 24px; }
-figure { margin: 0; }
-figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--butlery-text-secondary); }
-@media (max-width: 900px) { .lab { flex-direction: column; } .panel { position: static; flex: none; width: 100%; box-sizing: border-box; max-height: none; } }
-</style>
+
+<link rel="stylesheet" href="designlabb.css">
 </head>
 <body>
 <div class="lab">
 <aside class="panel" id="panel">
-<h1>Designlabb</h1>
-<p>Dra i reglagen så ändras skärmarna direkt. Inget sparas i appen: när du är nöjd kopierar du ändringarna och ger dem till Claude. Adressen i webbläsaren innehåller dina val, så du kan spara eller dela länken.</p>
-<div id="part" hidden></div>
-<p class="hint">Tips: klicka på en knapp, ett kort eller en rad i skärmarna för att justera just den delen.</p>
+<div class="head"><h1>Designlabb</h1><button class="ghost" id="undo" type="button" disabled>Ångra</button><button class="ghost" id="redo" type="button" disabled>Gör om</button></div>
+<input id="search" type="search" placeholder="Sök reglage: skugga, rundning, färg ...">
+<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="vars" type="button">Varianter</button><button data-tab="check" type="button">Kontroll</button></nav>
+<div class="panes">
+<section class="pane" data-pane="all">
 <h2>Stämningar</h2>
 <div class="chips" id="presets"></div>
-<h2>Effekter att prova</h2>
-<div class="chips" id="effects"></div>
-<label><input type="checkbox" id="pause"><span>Pausa animationer</span></label>
 <h2>Typsnitt</h2>
 <label><span>Typsnitt</span><select id="font"></select></label>
 <label><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
@@ -807,17 +761,32 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 <label><span>Nyans</span><input type="range" id="hue" min="-180" max="180" value="0"><span class="val" id="hue-v">0°</span></label>
 <label><span>Mättnad</span><input type="range" id="sat" min="0" max="200" value="100"><span class="val" id="sat-v">100 %</span></label>
 <label><span>Ljushet</span><input type="range" id="light" min="70" max="130" value="100"><span class="val" id="light-v">100 %</span></label>
-<h2>Kontroll av läsbarhet</h2>
-<div class="contrast" id="contrast"></div>
 <h2>Enskilda färger</h2>
 <div id="colors"></div>
-<div class="row"><button class="ghost" id="hold" type="button">Håll: visa original</button><button class="ghost" id="reset" type="button">Återställ</button></div>
-<div class="row"><button id="copy" type="button">Kopiera ändringar</button></div>
+</section>
+<section class="pane" data-pane="part"><div id="part"></div></section>
+<section class="pane" data-pane="fx">
+<h2>Effekter att prova</h2>
+<div class="chips" id="effects"></div>
+<label><input type="checkbox" id="pause"><span>Pausa animationer</span></label>
+</section>
+<section class="pane" data-pane="vars">
+<h2>Sparade varianter</h2>
+<button class="ghost" id="save-variant" type="button" style="width:100%">Spara nuvarande som variant</button>
+<div id="variants"></div>
+</section>
+<section class="pane" data-pane="check">
+<h2>Kontroll av läsbarhet</h2>
+<div class="contrast" id="contrast"></div>
+<h2>Dina ändringar som text</h2>
 <textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
+</section>
+</div>
+<div class="foot"><button class="ghost" id="hold" type="button">Original</button><button class="ghost" id="reset" type="button">Återställ</button><button id="copy" type="button">Kopiera</button></div>
 </aside>
 <div class="stage">
 <h1>Designlabb: se ändringar direkt</h1>
-<p>Samma tre skärmar som i facit, ljust och mörkt. Färgerna ändras överallt där samma färg används, i båda lägena.</p>
+<p>Samma tre skärmar som i facit, ljust och mörkt. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
 <div class="screens" id="screens">
 
 <!-- ===== 1. Mer (huvudflik) ===== -->
@@ -937,557 +906,14 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 </figure>
 
 </div>
+<div id="compare" hidden>
+<div class="compare-bar"><span>Jämför på skärm:</span><select id="cmp-screen"><option value="0">Mer</option><option value="1">Appinställningar</option><option value="2">Recept</option></select><select id="cmp-mode"><option value="0">Ljust</option><option value="1">Mörkt</option></select><button id="cmp-close" type="button">Stäng jämförelsen</button></div>
+<div id="compare-grid"></div>
 </div>
 </div>
-<script>
-// Each screen is written once; its dark copy is cloned next to it.
-for (const fig of [...document.querySelectorAll('#screens > figure')]) {
-  const dark = fig.cloneNode(true);
-  dark.querySelector('.phone').dataset.theme = 'dark';
-  dark.querySelector('figcaption').textContent += ' (mörkt)';
-  fig.after(dark);
-}
-
-// The page's only input is the generated token block above, read back from the
-// page itself, so it follows tokens.json without a list to keep in sync.
-const HEX = /^#[0-9a-f]{6}$/i;
-const used = new Map(); // original hex -> [{ selector, name }]
-const paletteNames = new Map(); // original hex -> palette names
-const sizes = new Map(); // type role -> original px
-const weights = new Map(); // type role -> original weight
-const radii = []; // { selector, px }
-for (const sheet of document.styleSheets) {
-  for (const rule of sheet.cssRules) {
-    if (!(rule instanceof CSSStyleRule)) continue;
-    const root = /:root|\[data-theme/.test(rule.selectorText);
-    for (const prop of rule.style) {
-      const v = rule.style.getPropertyValue(prop).trim();
-      if (root && prop.startsWith('--') && HEX.test(v)) {
-        const hex = v.toLowerCase();
-        if (!used.has(hex)) used.set(hex, []);
-        used.get(hex).push({ selector: rule.selectorText, name: prop });
-        if (prop.startsWith('--butlery-palette-')) {
-          if (!paletteNames.has(hex)) paletteNames.set(hex, []);
-          paletteNames.get(hex).push(prop.replace('--butlery-palette-', ''));
-        }
-      }
-      const type = /^--butlery-type-(.*)-(size|weight)$/.exec(prop);
-      if (type && rule.selectorText === ':root') {
-        (type[2] === 'size' ? sizes : weights).set(type[1], parseFloat(v));
-      }
-    }
-    const v = rule.style.getPropertyValue('border-radius').trim();
-    if (!root && (v === '12px' || v === '8px')) radii.push({ selector: rule.selectorText, px: v });
-  }
-}
-
-const FONTS = {
-  'ButlerySans': null,
-  'Inter': 'Inter:wght@400;600;700',
-  'DM Sans': 'DM+Sans:wght@400;600;700',
-  'Nunito': 'Nunito:wght@400;600;700',
-  'Poppins': 'Poppins:wght@400;600;700',
-  'Lora': 'Lora:wght@400;600;700',
-  'Fraunces': 'Fraunces:wght@400;600;700',
-  'Playfair Display': 'Playfair+Display:wght@400;600;700',
-  'Georgia': null,
-  'system-ui': null,
-};
-const defaults = () => ({
-  font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
-  hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-});
-let state = defaults();
-
-function hexToHsl(hex) {
-  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
-  if (!d) return [0, 0, l];
-  const s = d / (1 - Math.abs(2 * l - 1));
-  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  return [(h * 60 + 360) % 360, s, l];
-}
-function hslToHex(h, s, l) {
-  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
-  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
-  return '#' + [r, g, b].map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
-}
-const tinted = () => state.hue !== 0 || state.sat !== 100 || state.light !== 100;
-function finalColor(hex) {
-  if (state.colors[hex]) return state.colors[hex];
-  if (!tinted()) return hex;
-  const [h, s, l] = hexToHsl(hex);
-  return hslToHex((h + state.hue + 360) % 360, Math.min(1, s * state.sat / 100), Math.min(1, l * state.light / 100));
-}
-
-const lab = document.createElement('style');
-document.head.append(lab);
-
-function render() {
-  const byRule = new Map();
-  for (const hex of used.keys()) {
-    const to = finalColor(hex);
-    if (to === hex) continue;
-    for (const { selector, name } of used.get(hex)) {
-      byRule.set(selector, (byRule.get(selector) || '') + `${name}:${to};`);
-    }
-  }
-  let css = '';
-  for (const [sel, body] of byRule) css += `${sel}{${body}}`;
-  const typeVars = [];
-  for (const [role, px] of sizes) {
-    const own = state.roles[role]?.size;
-    const size = own ?? px * state.scale / 100;
-    if (own != null || state.scale !== 100) typeVars.push(`--butlery-type-${role}-size:${+size.toFixed(2)}px`);
-  }
-  for (const [role, w] of weights) {
-    const own = state.roles[role]?.weight;
-    if (own != null && own !== w) typeVars.push(`--butlery-type-${role}-weight:${own}`);
-  }
-  if (typeVars.length) css += `:root{${typeVars.join(';')}}`;
-  if (state.font !== 'ButlerySans') css += `.phone,.phone *{font-family:'${state.font}',sans-serif !important}`;
-  if (state.lh !== 100) css += `.phone *{line-height:${state.lh / 100} !important}`;
-  if (state.margin !== 24) css += `.phone{--page-margin:${state.margin}px}`;
-  for (const { selector, px } of radii) {
-    css += `${selector}{border-radius:${px === '12px' ? state.card : state.control}px}`;
-  }
-  css += partsCss();
-  lab.textContent = css;
-  document.getElementById('out').value = summary();
-  contrast();
-  try { history.replaceState(null, '', summary() ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search); } catch {}
-}
-
-function summary() {
-  const out = {};
-  const colors = {};
-  for (const hex of used.keys()) {
-    const to = finalColor(hex);
-    if (to === hex) continue;
-    const names = paletteNames.get(hex) || used.get(hex).slice(0, 3).map(u => u.name.replace('--butlery-', ''));
-    colors[names.join(' / ')] = { from: hex, to };
-  }
-  if (Object.keys(colors).length) out.colors = colors;
-  if (state.font !== 'ButlerySans') out.fontFamily = state.font;
-  if (state.scale !== 100) out.textScalePercent = state.scale;
-  if (state.lh !== 100) out.lineHeight = state.lh / 100;
-  const roles = {};
-  for (const [role, r] of Object.entries(state.roles)) {
-    if (r.size != null && r.size !== sizes.get(role)) (roles[role] ||= {}).sizePx = r.size;
-    if (r.weight != null && r.weight !== weights.get(role)) (roles[role] ||= {}).weight = r.weight;
-  }
-  if (Object.keys(roles).length) out.textRoles = roles;
-  if (state.card !== 12) out.radiusCard = state.card;
-  if (state.control !== 8) out.radiusControl = state.control;
-  if (state.margin !== 24) out.pageMargin = state.margin;
-  const parts = Object.values(state.parts).filter(p => Object.keys(p.props).length);
-  if (parts.length) out.components = parts.map(p => ({ selector: p.sel, mode: p.mode, ...p.props }));
-  return Object.keys(out).length ? JSON.stringify(out, null, 2) : '';
-}
-
-// Text pairs that carry reading: WCAG AA wants 4.5:1 for body text.
-const PAIRS = [
-  ['text-primary', 'surface-base'], ['text-secondary', 'surface-base'], ['text-body', 'surface-raised'],
-  ['text-link', 'surface-base'], ['text-danger', 'surface-base'], ['text-on-action-fill', 'action-fill'],
-  ['text-on-action-primary', 'action-primary'], ['text-accent-on-ink', 'surface-ink'],
-];
-function rgbOf(phone, token, prop) {
-  const probe = document.createElement('span');
-  probe.style[prop] = `var(--butlery-${token})`;
-  phone.append(probe);
-  const c = getComputedStyle(probe)[prop];
-  probe.remove();
-  return (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
-}
-const lum = ([r, g, b]) => [r, g, b].map(v => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
-  .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
-function contrast() {
-  const box = document.getElementById('contrast');
-  box.textContent = '';
-  const phones = document.querySelectorAll('#screens .phone');
-  for (const phone of [phones[0], [...phones].find(p => p.dataset.theme === 'dark')]) {
-    const mode = phone.dataset.theme === 'dark' ? 'mörkt' : 'ljust';
-    for (const [fg, bg] of PAIRS) {
-      const a = rgbOf(phone, fg, 'color'), b = rgbOf(phone, bg, 'backgroundColor');
-      if (a.length < 3 || b.length < 3) continue;
-      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
-      const ratio = (hi + 0.05) / (lo + 0.05);
-      const row = [`${fg} på ${bg} (${mode})`, ratio.toFixed(1) + ':1', ratio >= 4.5 ? 'ok' : 'för svag'];
-      row.forEach((txt, i) => {
-        const el = document.createElement('span');
-        el.textContent = txt;
-        if (i === 2) el.className = ratio >= 4.5 ? 'ok' : 'bad';
-        box.append(el);
-      });
-    }
-  }
-}
-
-const $ = id => document.getElementById(id);
-const fontSel = $('font');
-for (const f of Object.keys(FONTS)) fontSel.add(new Option(f, f));
-function loadFont() {
-  const q = FONTS[state.font];
-  if (q && !document.getElementById('gf-' + q)) {
-    const l = document.createElement('link');
-    l.id = 'gf-' + q; l.rel = 'stylesheet';
-    l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
-    document.head.append(l);
-  }
-}
-fontSel.onchange = () => { state.font = fontSel.value; loadFont(); render(); };
-
-const SLIDERS = { scale: ' %', lh: '', card: ' px', control: ' px', margin: ' px', hue: '°', sat: ' %', light: ' %' };
-function showValue(id) {
-  $(id + '-v').textContent = id === 'lh' && state.lh === 100 ? 'orig' : state[id] + SLIDERS[id];
-}
-for (const id of Object.keys(SLIDERS)) {
-  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); render(); };
-}
-
-const rolesBox = $('roles');
-const roleInputs = [];
-for (const [role, px] of sizes) {
-  const row = document.createElement('div');
-  row.className = 'role';
-  const name = document.createElement('span');
-  name.textContent = role;
-  const size = document.createElement('input');
-  size.type = 'range'; size.min = 8; size.max = 56; size.step = 0.5; size.value = px;
-  size.title = `${px} px`;
-  const weight = document.createElement('select');
-  for (const w of [400, 600, 700]) weight.add(new Option(w, w));
-  weight.value = weights.get(role);
-  size.oninput = () => { (state.roles[role] ||= {}).size = +size.value; size.title = size.value + ' px'; render(); };
-  weight.onchange = () => { (state.roles[role] ||= {}).weight = +weight.value; render(); };
-  roleInputs.push({ role, size, weight });
-  row.append(name, size, weight);
-  rolesBox.append(row);
-}
-
-const colors = $('colors');
-const pickers = [];
-const rows = [...used.entries()]
-  .map(([hex, uses]) => ({ hex, uses: uses.length, label: (paletteNames.get(hex) || [uses[0].name.replace('--butlery-', '')])[0] }))
-  .sort((a, b) => b.uses - a.uses);
-for (const { hex, uses, label } of rows) {
-  const row = document.createElement('label');
-  const text = document.createElement('span');
-  text.textContent = `${label} · ${uses}`;
-  const input = document.createElement('input');
-  input.type = 'color'; input.value = hex;
-  input.oninput = () => {
-    if (input.value.toLowerCase() === hex) delete state.colors[hex]; else state.colors[hex] = input.value;
-    text.classList.toggle('changed', hex in state.colors);
-    render();
-  };
-  pickers.push({ input, hex, text });
-  row.append(text, input);
-  colors.append(row);
-}
-
-// Push the state into every control, so presets, reset and a shared link use one path.
-function syncUi() {
-  fontSel.value = state.font;
-  for (const id of Object.keys(SLIDERS)) { $(id).value = state[id]; showValue(id); }
-  for (const { role, size, weight } of roleInputs) {
-    size.value = state.roles[role]?.size ?? sizes.get(role);
-    weight.value = state.roles[role]?.weight ?? weights.get(role);
-  }
-  for (const { input, hex, text } of pickers) {
-    input.value = state.colors[hex] ?? hex;
-    text.classList.toggle('changed', hex in state.colors);
-  }
-  loadFont();
-  $('pause').checked = state.pause;
-  clearSelection();
-  render();
-}
-
-const PRESETS = {
-  'Original': {},
-  'Varmare': { hue: 12, sat: 112, light: 104 },
-  'Kallare': { hue: -35, sat: 95 },
-  'Mjukt och runt': { card: 24, control: 16, margin: 28, lh: 150 },
-  'Kantigt': { card: 0, control: 0 },
-  'Stort och tydligt': { scale: 120, lh: 150, margin: 20 },
-  'Dämpat': { sat: 55, light: 104 },
-  'Högmättat': { sat: 160 },
-  'Serif': { font: 'Lora' },
-};
-const presets = $('presets');
-for (const [name, patch] of Object.entries(PRESETS)) {
-  const b = document.createElement('button');
-  b.type = 'button'; b.textContent = name;
-  b.onclick = () => { state = { ...defaults(), ...patch }; syncUi(); };
-  presets.append(b);
-}
-const surprise = document.createElement('button');
-surprise.type = 'button'; surprise.textContent = 'Överraska mig';
-surprise.onclick = () => {
-  const pick = (a, b) => Math.round(a + Math.random() * (b - a));
-  const fonts = Object.keys(FONTS);
-  state = {
-    ...defaults(), hue: pick(-180, 180), sat: pick(60, 150), light: pick(90, 110),
-    card: pick(0, 26), control: pick(0, 18), font: fonts[pick(0, fonts.length - 1)],
-  };
-  syncUi();
-};
-presets.append(surprise);
-
-
-// Clicking a part of a screen selects its component class and edits it on its own.
-const KEYFRAMES = `
-@keyframes lab-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-@keyframes lab-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes lab-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
-@keyframes lab-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(.8deg)}}
-@keyframes lab-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(206,124,30,0))}50%{filter:drop-shadow(0 0 12px rgba(206,124,30,.9))}}
-@keyframes lab-spin{to{transform:rotate(360deg)}}
-@keyframes lab-fade{0%,100%{opacity:1}50%{opacity:.35}}
-@keyframes lab-wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}`;
-const ANIMS = [['', 'Ingen'], ['pulse', 'Pulsera'], ['bounce', 'Studsa'], ['shake', 'Skaka'], ['float', 'Sväva'], ['glow', 'Glöda'], ['wiggle', 'Vicka'], ['fade', 'Blinka mjukt'], ['spin', 'Snurra']];
-const HOVERS = [['', 'Ingen'], ['lift', 'Lyft med skugga'], ['grow', 'Förstora'], ['glow', 'Glöd'], ['bright', 'Ljusna'], ['dim', 'Tona ner']];
-const PRESSES = [['', 'Ingen'], ['sink', 'Krymp'], ['dip', 'Tryck ner']];
-const HOVER_CSS = {
-  lift: 'transform:translateY(-3px);filter:drop-shadow(0 8px 14px rgba(23,37,29,.28))',
-  grow: 'transform:scale(1.06)', glow: 'filter:drop-shadow(0 0 10px rgba(206,124,30,.85))',
-  bright: 'filter:brightness(1.12)', dim: 'opacity:.7',
-};
-const PRESS_CSS = { sink: 'transform:scale(.95)', dip: 'transform:translateY(2px)' };
-// Control specs: [key, label, type, lo, hi, fallback, step].
-const PART_SPECS = [
-  ['bg', 'Bakgrund', 'color'], ['color', 'Textfärg', 'color'],
-  ['radius', 'Rundning', 'px', 0, 40], ['size', 'Textstorlek', 'px', 8, 44],
-  ['weight', 'Tyngd', 'sel', [[400, '400'], [600, '600'], [700, '700']]],
-  ['padY', 'Luft upp/ner', 'px', 0, 40], ['padX', 'Luft sidor', 'px', 0, 40],
-  'Skugga',
-  ['shY', 'Höjd', 'px', -12, 32, 4], ['shBlur', 'Mjukhet', 'px', 0, 60, 12],
-  ['shAlpha', 'Styrka', '%', 0, 80, 25], ['shColor', 'Färg', 'color', 0, 0, '#17251d'],
-  'Genomskinlighet',
-  ['opacity', 'Hela delen', '%', 10, 100, 100], ['bgAlpha', 'Bakgrunden', '%', 0, 100, 100],
-  ['blur', 'Sudda bakom (glas)', 'px', 0, 30, 0],
-  'Kant, toning och form',
-  ['bw', 'Kantlinje', 'px', 0, 6, 0], ['bc', 'Kantfärg', 'color', 0, 0, '#7d897c'],
-  ['grad', 'Toning till', 'color', 0, 0, '#ce7c1e'], ['gradAngle', 'Toningens vinkel', '°', 0, 360, 135],
-  ['scale', 'Storlek', '%', 70, 140, 100], ['rot', 'Lutning', '°', -15, 15, 0],
-  ['tracking', 'Teckenavstånd', 'px', -1, 6, 0], ['caps', 'Versaler', 'check'],
-  'Rörelse',
-  ['anim', 'Animation', 'sel', ANIMS], ['dur', 'Animationstid', 's', 0.3, 4, 1.4, 0.1],
-  ['hover', 'Vid hovring', 'sel', HOVERS], ['press', 'Vid tryck', 'sel', PRESSES],
-];
-const SCOPE = { light: '.phone:not([data-theme="dark"])', dark: '.phone[data-theme="dark"]', both: '.phone' };
-const partBase = {};
-const rgba = (hex, a) => {
-  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
-  return `rgba(${r},${g},${b},${a})`;
-};
-function declsFor(p, base) {
-  const d = [];
-  const bg = p.bg ?? base?.bg;
-  if (p.bg || p.bgAlpha != null || p.grad) {
-    if (bg) {
-      const a = (p.bgAlpha ?? 100) / 100;
-      if (p.grad) d.push(`background-color:transparent;background-image:linear-gradient(${p.gradAngle ?? 135}deg,${rgba(bg, a)},${rgba(p.grad, a)})`);
-      else d.push(`background-color:${rgba(bg, a)}`);
-    }
-  }
-  if (p.color) d.push(`color:${p.color}`);
-  if (p.radius != null) d.push(`border-radius:${p.radius}px`);
-  if (p.size != null) d.push(`font-size:${p.size}px`);
-  if (p.weight != null) d.push(`font-weight:${p.weight}`);
-  if (p.padY != null) d.push(`padding-top:${p.padY}px;padding-bottom:${p.padY}px`);
-  if (p.padX != null) d.push(`padding-left:${p.padX}px;padding-right:${p.padX}px`);
-  if (p.shY != null || p.shBlur != null || p.shAlpha != null || p.shColor) {
-    d.push(`filter:drop-shadow(0 ${p.shY ?? 4}px ${p.shBlur ?? 12}px ${rgba(p.shColor ?? '#17251d', (p.shAlpha ?? 25) / 100)})`);
-  }
-  if (p.opacity != null) d.push(`opacity:${p.opacity / 100}`);
-  if (p.blur) d.push(`backdrop-filter:blur(${p.blur}px);-webkit-backdrop-filter:blur(${p.blur}px)`);
-  if (p.bw) d.push(`border:${p.bw}px solid ${p.bc ?? '#7d897c'};box-sizing:border-box`);
-  if (p.scale != null || p.rot != null) d.push(`transform:scale(${(p.scale ?? 100) / 100}) rotate(${p.rot ?? 0}deg)`);
-  if (p.tracking != null) d.push(`letter-spacing:${p.tracking}px`);
-  if (p.caps) d.push('text-transform:uppercase');
-  if (p.anim) d.push(`animation:lab-${p.anim} ${p.dur ?? 1.4}s ease-in-out infinite${state.pause ? ';animation-play-state:paused' : ''}`);
-  if (p.hover || p.press) d.push('transition:transform .18s ease,filter .18s ease,opacity .18s ease');
-  return d.join(';');
-}
-const important = css => css.split(';').filter(Boolean).map(x => x + ' !important').join(';');
-function partsCss() {
-  let css = KEYFRAMES;
-  for (const [key, { sel, mode, props }] of Object.entries(state.parts)) {
-    const target = sel === '.phone' ? SCOPE[mode] : `${SCOPE[mode]} ${sel}`;
-    const decls = declsFor(props, partBase[key]);
-    if (decls) css += `${target}{${important(decls)}}`;
-    if (props.hover) css += `${target}:hover{${important(HOVER_CSS[props.hover])}}`;
-    if (props.press) css += `${target}:active{${important(PRESS_CSS[props.press])}}`;
-  }
-  return css;
-}
-const toHex = c => {
-  const m = c.match(/[\d.]+/g)?.map(Number);
-  if (!m || m.length < 3 || (m.length > 3 && m[3] === 0)) return null;
-  return '#' + m.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
-};
-let selected = null;
-function clearSelection() {
-  document.querySelectorAll('[data-lab-selected]').forEach(e => e.removeAttribute('data-lab-selected'));
-  selected = null;
-  $('part').hidden = true;
-}
-function componentOf(el) {
-  for (let e = el; e && e.closest('.phone'); e = e.parentElement) {
-    if ([...e.classList].some(c => c.startsWith('b-') && c !== 'b-scroll')) return e;
-    if (e.classList.contains('phone')) return e;
-  }
-  return null;
-}
-function selectorFor(el, variant) {
-  if (el.classList.contains('phone')) return '.phone';
-  const classes = [...el.classList];
-  const base = classes.find(c => c.startsWith('b-'));
-  const rest = classes.filter(c => c !== base && !c.startsWith('lab-'));
-  return '.' + base + (variant ? rest.map(c => '.' + c).join('') : '');
-}
-function showPart(variant = false) {
-  const el = selected.el, box = $('part');
-  const sel = selectorFor(el, variant), base = selectorFor(el, false);
-  selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
-  const key = `${selected.mode}|${sel}`;
-  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {} };
-  const cs = getComputedStyle(el);
-  const now = {
-    bg: toHex(cs.backgroundColor), color: toHex(cs.color), radius: parseFloat(cs.borderTopLeftRadius) || 0,
-    size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
-  };
-  partBase[key] ||= { bg: now.bg };
-  box.textContent = '';
-  box.hidden = false;
-  const add = (tag, text, cls) => { const n = document.createElement(tag); n.textContent = text; if (cls) n.className = cls; box.append(n); return n; };
-  add('h2', 'Vald del');
-  add('div', sel, 'path');
-  const seg = document.createElement('div');
-  seg.className = 'seg';
-  for (const [m, label] of [['light', 'Ljust'], ['dark', 'Mörkt'], ['both', 'Båda']]) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = label; b.className = 'ghost' + (selected.mode === m ? ' on' : '');
-    b.onclick = () => { selected.mode = m; showPart(variant); };
-    seg.append(b);
-  }
-  box.append(seg);
-  if (sel !== base) {
-    const l = document.createElement('label');
-    const c = document.createElement('input');
-    c.type = 'checkbox'; c.checked = variant; c.onchange = () => showPart(c.checked);
-    const s = document.createElement('span'); s.textContent = 'Bara just den här varianten';
-    l.append(c, s); box.append(l);
-  }
-  const set = (k, v) => { if (v === '' || v === false) delete part.props[k]; else part.props[k] = v; render(); };
-  for (const spec of PART_SPECS) {
-    if (typeof spec === 'string') { add('h2', spec); continue; }
-    const [k, label, type, lo, hi, fallback, step] = spec;
-    const l = document.createElement('label');
-    const s = document.createElement('span'); s.textContent = label;
-    const cur = part.props[k] ?? now[k] ?? fallback;
-    let input;
-    if (type === 'color') {
-      if (!cur) continue;
-      input = document.createElement('input');
-      input.type = 'color'; input.value = cur;
-      input.oninput = () => set(k, input.value);
-      l.append(s, input);
-    } else if (type === 'sel') {
-      input = document.createElement('select');
-      for (const o of lo) input.add(Array.isArray(o) ? new Option(o[1], o[0]) : new Option(o, o));
-      input.value = part.props[k] ?? now[k] ?? '';
-      input.onchange = () => set(k, isNaN(+input.value) || input.value === '' ? input.value : +input.value);
-      l.append(s, input);
-    } else if (type === 'check') {
-      input = document.createElement('input');
-      input.type = 'checkbox'; input.checked = !!part.props[k];
-      input.onchange = () => set(k, input.checked);
-      l.append(input, s);
-    } else {
-      input = document.createElement('input');
-      input.type = 'range'; input.min = lo; input.max = hi; input.step = step ?? 1; input.value = cur;
-      const v = document.createElement('span'); v.className = 'val'; v.textContent = `${cur} ${type}`;
-      input.oninput = () => { v.textContent = `${input.value} ${type}`; set(k, +input.value); };
-      l.append(s, input, v);
-    }
-    box.append(l);
-  }
-  const r = document.createElement('div');
-  r.className = 'row';
-  for (const [label, fn] of [['Nollställ delen', () => { delete state.parts[key]; render(); showPart(variant); }], ['Stäng', clearSelection]]) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
-  }
-  box.append(r);
-  add('p', 'Skuggor, glas och rörelse är nya uttryck som inte finns i appens regler idag; med minskad rörelse ska appen visa dem stilla.').style.cssText = 'margin:8px 0 0;font-size:11px';
-  render();
-}
-
-// Ready-made looks that touch many parts at once; each is still editable by clicking the part.
-const EFFECTS = {
-  'Skuggor på alla kort': [['.b-card', { shY: 6, shBlur: 18, shAlpha: 22 }]],
-  'Glas på ark och dialoger': [['.b-sheet', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }], ['.b-dialog', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }]],
-  'Knappar lyfter vid hovring': [['.b-btn', { hover: 'lift', press: 'sink' }]],
-  'Hjälteknappen pulserar': [['.b-btn.hero', { anim: 'pulse', dur: 1.6 }]],
-  'Svävande kort': [['.b-card', { anim: 'float', dur: 3.5, shY: 10, shBlur: 24, shAlpha: 18 }]],
-  'Chips växer vid hovring': [['.b-chip', { hover: 'grow' }]],
-  'Rader tonar vid hovring': [['.b-row', { hover: 'dim' }]],
-  'Glödande hjälteknapp': [['.b-btn.hero', { anim: 'glow', dur: 2 }]],
-  'Släck alla effekter': [],
-};
-const effects = $('effects');
-for (const [name, list] of Object.entries(EFFECTS)) {
-  const b = document.createElement('button');
-  b.type = 'button'; b.textContent = name;
-  b.onclick = () => {
-    if (!list.length) state.parts = {};
-    for (const [sel, props] of list) {
-      const key = `both|${sel}`;
-      state.parts[key] = { sel, mode: 'both', props: { ...(state.parts[key]?.props || {}), ...props } };
-    }
-    clearSelection();
-    render();
-  };
-  effects.append(b);
-}
-$('pause').onchange = e => { state.pause = e.target.checked; render(); };
-
-const screens = $('screens');
-screens.addEventListener('click', e => {
-  const el = componentOf(e.target);
-  if (!el) return;
-  e.preventDefault(); e.stopPropagation();
-  document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
-  el.setAttribute('data-lab-selected', '');
-  selected = { el, mode: null };
-  showPart(false);
-  $('part').scrollIntoView({ block: 'nearest' });
-}, true);
-screens.addEventListener('mouseover', e => {
-  screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
-  componentOf(e.target)?.setAttribute('data-lab-hover', '');
-});
-screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') clearSelection(); });
-
-$('reset').onclick = () => { state = defaults(); syncUi(); };
-const hold = $('hold');
-for (const [ev, off] of [['pointerdown', true], ['pointerup', false], ['pointerleave', false]]) {
-  hold.addEventListener(ev, () => { lab.disabled = off; });
-}
-$('copy').onclick = async () => {
-  const out = $('out');
-  out.select();
-  try { await navigator.clipboard.writeText(out.value); } catch { document.execCommand('copy'); }
-};
-
-if (location.hash.length > 1) {
-  try { state = { ...defaults(), ...JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))) }; } catch {}
-}
-syncUi();
-</script>
+</div>
+<script src="designlabb-core.js"></script>
+<script src="designlabb-parts.js"></script>
+<script src="designlabb-ui.js"></script>
 </body>
 </html>
