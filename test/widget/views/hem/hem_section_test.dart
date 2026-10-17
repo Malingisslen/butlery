@@ -364,6 +364,18 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('route ${Routes.photoImport}'), findsOneWidget);
     });
+
+    testWidgets('the allergy link opens the allergen settings', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(const Scaffold(body: HemEmptyState())));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(HemEmptyState.allergyLinkKey));
+      await tester.pumpAndSettle();
+
+      expect(find.text('route ${Routes.settingsAllergens}'), findsOneWidget);
+    });
   });
 
   group('loading (#hemladdar)', () {

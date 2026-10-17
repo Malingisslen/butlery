@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// The Kokböcker half of Hem's library (BUT-1325): the user's cookbooks as
 /// a shelf, and a tile that turns another tag into one.
@@ -144,8 +145,10 @@ class _AddTile extends StatelessWidget {
           key: CookbookShelf.addTileKey,
           onTap: () =>
               showMakeCookbookFlow(context, context.read<CookbookViewModel>()),
-          child: DecoratedBox(
-            decoration: BoxDecoration(border: Border.all(color: cs.outline)),
+          child: ButleryOutlinedBox(
+            paintOnly: true,
+            radius: AppDimensions.radiusSharp,
+            borderColor: cs.outline,
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.space8),

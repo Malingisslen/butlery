@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 class ButleryCheckboxGrid extends StatelessWidget {
@@ -70,21 +71,11 @@ class ButleryCheckboxGrid extends StatelessWidget {
   /// Two columns while the longest word fits one, otherwise one: a word
   /// broken in the middle ("Kosheranpassa/d") reads as a typing error.
   int _columnsFor(BuildContext context, double width) {
-    final scaler = MediaQuery.textScalerOf(context);
-    final direction = Directionality.of(context);
-    var widest = 0.0;
-    for (final label in options.values) {
-      for (final word in label.split(RegExp(r'\s+'))) {
-        final painter = TextPainter(
-          text: TextSpan(text: word, style: AppTextStyles.bodyMedium),
-          textScaler: scaler,
-          textDirection: direction,
-          maxLines: 1,
-        )..layout();
-        if (painter.width > widest) widest = painter.width;
-        painter.dispose();
-      }
-    }
+    final widest = widestWord(
+      context,
+      options.values,
+      AppTextStyles.bodyMedium,
+    );
     final columnWidth = (width - AppDimensions.space24) / columns;
     return widest + _cellChrome <= columnWidth ? columns : 1;
   }
