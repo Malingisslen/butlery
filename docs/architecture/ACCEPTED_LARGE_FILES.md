@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` finds 180 files over 500 lines. 18 of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, butlery_top_bar.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, session_timeout_service.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
+**Last Updated**: 2026-10-13. The Lines column was recounted with `wc -l` on that date for every row whose basename is unique under `lib/`; `bash tools/count_large_files.sh` lists the files over 500 lines. Some of them have no row here and no rationale yet: butlery_icons.dart, snackbar_utils.dart, realtime_sync_service.dart, image_picker_service.dart, core_module.dart, button_themes.dart, text_layout.dart, session_timeout_service.dart, auth_service.dart, calendar_weekly_menu_widget.dart, profile_dialogs.dart, invitation_selectors.dart, universal_share_dialog.dart, deep_link_handler.dart, who_is_eating_sheet.dart, shared_menu.dart, recipe_factory.dart. They are named without backticks on purpose: the size guard matches backticked names, so the guard still warns on them. Rows whose Lines figure is now 500 or less are kept until their owner removes them.
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -187,7 +187,8 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_detail_view.dart` | 1,694 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
 | `weekly_menu_plan_viewmodel.dart` | 1652 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
-| `recipe_detail_content.dart` | 935 | Body content widget for recipe detail |
+| `recipe_detail_content.dart` | 947 | Body content widget for recipe detail |
+| `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |
 | `mina_recept_view.dart` | 947 | Main recipe list screen, the Hem tab — facade-extracted to `lib/views/mina_recept/` per BUT-441; the Hem top (greeting, tonight, empty state) lives in `lib/views/hem/` (HEM-HERO) |
 | `recipe_card.dart` | 741 | Recipe list card widget. |
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
