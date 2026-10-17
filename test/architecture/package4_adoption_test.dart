@@ -235,6 +235,7 @@ const _package7Components = {'lib/widgets/common/indicators/plate_line.dart'};
 /// start cooking versus save a copy of someone else's recipe, and two
 /// different empty states in one file.
 const _exclusiveHeroFiles = [
+  'lib/views/recipe_detail/recipe_action_bar.dart',
   'lib/views/recipe_detail_view.dart',
   'lib/views/mina_recept/empty_state_widgets.dart',
 ];
