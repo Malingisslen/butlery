@@ -826,54 +826,345 @@
 </aside>
 <div class="stage">
 <h1>Designlabb: se ändringar direkt</h1>
-<p>Samma sex skärmar som i facit. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
+<p>Samma skärmar som i appens goldenbilder. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
 <div class="viewbar" id="viewbar"><span>Visa</span><button type="button" data-view="light">Ljust</button><button type="button" data-view="dark">Mörkt</button><button type="button" data-view="both">Båda</button></div>
 <div class="screens only-light" id="screens">
-
-<!-- ===== 1. Mer (huvudflik) ===== -->
 <figure>
 <div class="phone">
-  <div class="b-statusbar"><span>9:41</span><span></span></div>
-  <div class="b-topbar-root">
+  <div style="padding:24px 24px 0;flex:none">
+    <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 9 juli</div>
+    <div class="t-display-compact" style="margin-top:6px">God kväll, Malin</div>
+  </div>
+  <div class="b-heroband" style="margin-top:11px;padding-top:15px;padding-bottom:9px;flex:none">
+    <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
+    <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
+    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:12px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:12px 0;font-size:15px">Byt rätt</button></div>
+    <div style="margin-top:8px;font-size:13px;font-weight:600;color:var(--butlery-palette-sage-muted)">allt i skafferiet</div>
+  </div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:28px">
+    <div class="b-overline muted" style="color:var(--cs-on-surface-variant)">Dina recept · 1</div>
+  </div></div>
+</div>
+<figcaption>Hem: hälsning, kvällens rätt och rubriken Dina recept</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div style="padding:24px 24px 0;flex:none">
+    <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 24 september</div>
+    <div class="t-display-compact" style="margin-top:6px">God kväll</div>
+  </div>
+  <div class="b-heroband" style="margin-top:11px;padding-top:15px;padding-bottom:12px;flex:none">
+    <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
+    <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
+    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:12px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:12px 0;font-size:15px">Byt rätt</button></div>
+  </div>
+  <div class="b-scroll"><div style="padding:8px 0 0">
+    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:8px;height:48px">
+      <div class="b-overline" style="flex:1;padding:0;color:var(--cs-on-surface-variant)">Dina recept · 4</div>
+      <span style="font-size:14px;font-weight:600;padding:0 8px">Välj</span>
+      <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-refrigerator"/></svg></button>
+      <button class="b-iconbtn" style="color:var(--cs-on-surface);margin-left:-8px"><svg class="i"><use href="#i-list"/></svg></button>
+    </div>
+    <div class="b-input search" style="margin:10px 12px 0 16px;min-height:48px"><svg class="i" style="color:var(--cs-on-surface-variant)"><use href="#i-search"/></svg><span class="hint" style="margin-left:-4px">Sök bland recepten ...</span><svg class="i i-m" style="color:var(--cs-on-surface);margin-right:8px"><use href="#i-mic"/></svg><svg class="i i-m" style="color:var(--cs-on-surface-variant);margin-right:12px"><use href="#i-filter"/></svg></div>
+    <div class="mr-chips" style="margin-top:20px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
+    <div class="b-band mr-tip" style="margin-top:18px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:500">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-m"><use href="#i-x"/></svg></div>
+    <div class="mr-grid" style="margin-top:26px">
+      <div class="mr-card"><div class="top"><span class="tile">K</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <span class="rate">•</span> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">L</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <span class="rate">•</span> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">C</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Citronkyckling med ris</div><div class="meta">40 min · 4 port</div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">R</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Rotfruktssoppa</div><div class="meta">30 min · 4 port</div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+    </div>
+  </div></div>
+</div>
+<figcaption>Mina recept: kvällens rätt, flikar, sök, chips, tips och receptrutor</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div style="display:flex;align-items:center;padding:4px 8px 0 4px;flex:none">
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-chevron-left"/></svg></button><span style="flex:1"></span>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i" viewBox="0 0 24 24"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-users"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-external-link"/></svg></button>
+    <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-more-vertical"/></svg></button>
+  </div>
+  <div class="b-scroll"><div class="b-body" style="padding:0 16px 24px">
+    <div style="display:flex;align-items:center;gap:12px;margin:18px 0 16px"><span style="width:22px;height:4px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:1px;background:var(--cs-outline-variant)"></span></div>
+    <div class="t-overline accent" style="text-transform:uppercase">Lunch</div>
+    <div class="t-display-compact" style="margin-top:6px;line-height:1.1">Linsgryta med kokos och koriander</div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:13px;font-weight:600"><span><svg class="i i-s"><use href="#i-clock"/></svg> 30 min</span><span><svg class="i i-s"><use href="#i-user"/></svg> 4 port</span></div>
+    <div style="display:flex;align-items:center;margin-top:8px;color:var(--cs-saffron)">
+      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
+      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
+      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
+      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star"/></svg></span>
+      <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg class="i i-m"><use href="#i-star-half"/></svg></span>
+      <span style="margin-left:6px;font-size:12px;font-weight:700;color:var(--cs-on-surface)">4,5</span></div>
+    <div style="display:flex;gap:16px;margin-top:20px"><span class="rd-tag ok"><svg class="i i-s"><use href="#i-circle-check"/></svg>Lagat i dag</span><span class="rd-tag house"><svg class="i i-s"><use href="#i-users"/></svg>Betygsatt som hushåll</span></div>
+    <div style="margin-top:22px"><button class="b-btn outlined hug" style="border-radius:999px;padding:12px 16px;font-size:13px"><svg class="i i-s"><use href="#i-camera"/></svg>Lägg till foto</button></div>
+    <div style="margin-top:10px"><button class="b-btn outlined hug rd-btn">Näringsvärden</button></div>
+    <div style="margin-top:14px"><span style="display:inline-flex;align-items:center;gap:8px;padding:3px 10px;border-radius:2px;background:var(--cs-raised);color:var(--cs-on-surface-variant);font-size:13px;font-weight:600"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+    <div class="muted" style="margin-top:8px;font-size:13px;font-weight:600;line-height:1.25">Allergenerna är inte kontrollerade för det här receptet. Läs ingredienserna själv.</div>
+    <div class="muted" style="margin-top:6px;font-size:15px;line-height:1.5">Test recipe description</div>
+    <div style="margin-top:32px;font-size:15px;font-weight:700;line-height:1.3">Ingredienser</div>
+    <div style="display:flex;align-items:center;margin-top:27px;padding-left:16px"><span class="muted" style="width:87px;font-size:14px">Portioner</span><div class="b-stepper" style="gap:16px"><button><svg class="i"><use href="#i-minus"/></svg></button><span class="n">4</span><button><svg class="i"><use href="#i-plus"/></svg></button></div></div>
+  </div></div>
+  <div style="padding:11px 12px 10px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
+    <button class="b-btn hero rd-btn">Börja laga</button>
+    <button class="b-btn ink rd-btn">Lägg i inköpslistan</button>
+  </div>
+  <nav class="b-bottomnav">
+    <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
+    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
+  </nav>
+</div>
+<figcaption>Receptdetalj: betyg, taggar, näringsvärden, ingredienser och två knappar</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="re-bar"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-x"/></svg></button><div class="title" style="margin-left:0">Redigera recept</div></div>
+  <div style="display:flex;align-items:center;gap:12px;margin:6px 24px 0;flex:none"><span style="width:24px;height:4px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:2px;background:var(--cs-outline-variant)"></span></div>
+  <div class="b-scroll"><div class="b-body" style="padding:14px 16px 24px">
+    <div class="b-band" style="margin:0 -12px;min-height:48px;border-radius:12px;background:var(--cs-raised);font-size:15px;font-weight:400;padding-left:12px"><svg class="i i-m"><use href="#i-pencil"/></svg><span class="text">Redigeringsläge</span></div>
+    <div class="b-field re-field" style="margin-top:20px"><span class="label">Måltidstyp</span><div class="b-input"><span class="val">Lunch</span><svg class="i i-m" style="color:var(--cs-on-surface)"><use href="#i-chevron-down"/></svg></div></div>
+    <div style="margin-top:37px;width:96px;height:96px;border:1px solid var(--cs-outline-variant);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--cs-on-surface-variant)"><svg class="i"><use href="#i-plus"/></svg></div>
+    <div class="b-field re-field" style="margin-top:32px"><span class="label">Titel</span><div class="b-input"><span class="val">Linsgryta med kokos och koriander</span></div></div>
+    <div class="b-field re-field"><span class="label">Beskrivning</span><div class="b-input" style="align-items:flex-start;min-height:53px"><span class="val">Test recipe description</span></div></div>
+    <div class="b-field re-field" style="margin-top:33px"><span class="label">Portioner</span><div class="b-input"><span class="val">4</span></div></div>
+    <div class="b-field re-field"><span class="label">Tid (min)</span><div class="b-input"><span class="val">30</span></div></div>
+  </div></div>
+  <div style="padding:21px 16px 20px;flex:none;border-top:1px solid var(--cs-outline-variant)">
+    <button class="b-btn" style="min-height:40px;padding:8px 24px;font-size:13px;font-weight:700;background:var(--butlery-action-fill);color:var(--butlery-text-on-action-fill)">Spara ändringar</button>
+  </div>
+</div>
+<figcaption>Receptredigerare: redigeringsläge, fält för måltid, titel och portioner, spara längst ned</figcaption>
+</figure>
+
+<figure>
+<div class="phone" style="width:800px;height:360px;border-radius:0;background:var(--cs-ink);color:var(--cs-on-ink)">
+  <div style="display:flex;align-items:center;gap:12px;padding:0 16px;height:64px;flex:none;border-bottom:1px solid var(--butlery-border-on-ink)">
+    <div style="flex:1;font-size:20px;font-weight:700;letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Krämig svamppasta med timjan</div>
+    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-smartphone"/></svg></button>
+    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);font-size:14px;font-weight:700">A+</button>
+    <button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-x"/></svg></button>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:280px;flex:none;padding:16px 16px 0;border-right:1px solid var(--butlery-border-on-ink);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600;color:var(--butlery-palette-sage-muted)">Portioner
+        <span style="margin-left:0;display:inline-flex;align-items:center;gap:28px;padding:0 16px;height:46px;border-radius:24px;background:var(--butlery-palette-ink-raised);color:var(--cs-on-ink)"><svg class="i i-m"><use href="#i-minus"/></svg><b style="font-size:20px;min-width:16px;text-align:center">4</b><svg class="i i-m"><use href="#i-plus"/></svg></span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--butlery-palette-sage-muted)"><span>Ingredienser</span><span>5 rader</span></div>
+      <div style="margin-top:12px;font-size:15px">
+        <div style="display:flex;gap:16px;padding:13px 0"><b style="width:68px">400 g</b><span>färska champinjoner</span></div>
+        <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">3 dl</b><span>grädde</span></div>
+        <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">400 g</b><span>pasta</span></div>
+        <div style="display:flex;gap:16px;padding:13px 0;border-top:1px solid var(--butlery-border-on-ink)"><b style="width:68px">2 st</b><span>vitlöksklyftor</span></div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;padding:8px 16px 8px 8px;min-width:0">
+      <div style="display:flex;align-items:center;gap:12px;min-height:62px;margin-top:8px;padding:0 12px;border-radius:8px;background:var(--butlery-palette-ink-raised);font-size:12px;font-weight:700"><svg class="i i-s"><use href="#i-hand"/></svg><span style="flex:1">Tips: håll inne ett steg för att starta en timer</span><svg class="i i-s"><use href="#i-x"/></svg></div>
+      <div style="margin-top:26px;border-radius:8px;padding:16px 8px 0 16px;flex:1;min-height:0;overflow:hidden;position:relative" class="ml-step">
+        <div style="display:flex;align-items:center;gap:12px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--butlery-palette-sage-muted)"><span>Steg 1 av 6</span><span style="flex:1;height:4px;border-radius:2px;background:var(--butlery-border-on-ink);position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:15%;border-radius:2px;background:var(--cs-saffron)"></span></span></div>
+        <div style="display:flex;gap:12px;margin-top:16px"><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:700;line-height:1.4">Skiva svampen och stek den gyllene i smör.</div>
+        <div style="font-size:15px;line-height:1.4;margin-top:16px;color:var(--butlery-palette-sage-muted)">Nästa: Tillsätt grädden och låt sjuda 15 min under omrörning.</div></div>
+        <span style="align-self:center;width:44px;height:56px;display:flex;align-items:center;justify-content:center"><svg class="i"><use href="#i-mic"/></svg></span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin:-8px 0 0 8px;position:relative"><button class="b-iconbtn" style="width:48px;height:48px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--butlery-border-on-ink);color:var(--cs-on-ink);background:var(--cs-ink)"><svg class="i i-m"><use href="#i-chevron-left"/></svg></button><button class="b-btn hero" style="flex:1;min-height:48px;border-radius:4px">Nästa steg<svg class="i i-s"><use href="#i-arrow-right"/></svg></button></div>
+    </div>
+  </div>
+</div>
+<figcaption>Matlagningsläge: liggande vy med ingredienser och aktuellt steg</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-scroll" style="padding:0 32px;display:flex;flex-direction:column">
+    <div style="margin-top:64px;display:flex;flex-direction:column;align-items:center;gap:2px">
+      <svg width="24" height="16" viewBox="0 0 24 16" aria-hidden="true"><path d="M12 1v2" stroke="var(--cs-on-surface)" stroke-width="2" fill="none"/><path d="M2 12a10 9 0 0 1 20 0z" fill="var(--cs-ink)" style="fill:var(--cs-on-surface)"/><rect x="0" y="13.5" width="24" height="2" fill="var(--cs-saffron)"/></svg>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-0.5px;line-height:1.2">Butlery</div>
+    </div>
+    <div class="muted" style="text-align:center;font-size:14px;margin-top:16px">Recept, meny och inköp på ett ställe.</div>
+    <h1 style="margin:56px 0 29px;font-size:24px;font-weight:700;letter-spacing:-0.4px;line-height:1.3">Logga in</h1>
+    <div class="b-field" style="gap:6px"><div class="label">E-post</div><div class="b-input" style="min-height:40px;padding-top:8px;padding-bottom:8px"><span class="hint">namn@exempel.se</span></div></div>
+    <div class="b-field" style="margin-top:20px;gap:6px"><div class="label">Lösenord</div><div class="b-input" style="min-height:40px;padding-top:8px;padding-bottom:8px"><span class="hint">Ange ditt lösenord</span><svg class="i i-m"><use href="#i-eye"/></svg></div></div>
+    <div style="text-align:right;margin-top:24px;font-size:14px;font-weight:600;color:var(--butlery-text-accent)">Glömt lösenord?</div>
+    <button class="b-btn hero" style="margin-top:32px;min-height:40px;padding:8px 24px">Logga in</button>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:24px;color:var(--cs-on-surface-variant)"><span style="flex:1;border-top:1px solid var(--cs-outline-variant)"></span><span>eller</span><span style="flex:1;border-top:1px solid var(--cs-outline-variant)"></span></div>
+    <button class="b-btn outlined" style="margin-top:24px;min-height:40px;padding:8px 24px">Skapa konto</button>
+    <button class="b-btn text" style="margin:12px auto 0;min-height:40px;padding:8px 16px">Prova utan konto</button>
+    <div style="margin-top:auto;padding-bottom:16px;text-align:center;font-size:12px;font-weight:600;color:var(--butlery-text-accent)"><u>Villkor</u> &nbsp;·&nbsp; <u>Integritetspolicy</u></div>
+  </div>
+</div>
+<figcaption>Inloggning: e-post, lösenord och alternativ för att skapa konto</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-topbar-root" style="padding-top:16px">
     <div style="flex:1"><div class="title">Mer</div></div>
-    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-bell"/></svg></button></div>
+    <div class="actions" style="position:relative"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-triangle-alert"/></svg></button><span class="b-count" style="position:absolute;top:2px;right:8px;padding:0 5px;line-height:1.3">1</span></div>
   </div>
   <div class="b-scroll"><div class="b-body" style="padding-top:8px">
-    <div class="b-row" style="padding:12px 0"><span class="b-avatar">DP</span>
-      <div class="text"><div class="t-card-title">Din profil</div><div class="subtitle">Profil och synlighet</div></div>
+    <div class="b-row" style="padding:12px 0"><span class="b-avatar" style="width:56px;height:56px;border-radius:50%;background:var(--cs-ink);color:var(--cs-on-ink);font-size:20px">DP</span>
+      <div class="text"><div class="t-card-title" style="font-size:15px;font-weight:600;line-height:1.3">Din profil</div><div class="subtitle">Profil och synlighet</div></div>
       <svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-    <div class="b-band" style="margin-top:8px"><svg class="i i-m"><use href="#i-refresh-cw"/></svg><span class="text">2 ändringar väntar på synk</span><span class="b-count">1</span><svg class="i i-m"><use href="#i-chevron-right"/></svg></div>
+    <div class="b-band" style="margin-top:8px"><svg class="i i-m"><use href="#i-refresh-cw"/></svg><span class="text">2 ändringar väntar på synk</span><span class="b-count">1</span><svg class="i i-s" style="color:var(--cs-on-surface-variant)"><use href="#i-chevron-right"/></svg></div>
     <section class="b-section"><div class="b-overline">Tillsammans</div>
       <div class="b-row"><div class="text"><div class="label">Notiser</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-      <div class="b-row"><div class="text"><div class="label">Meddelanden</div></div><span class="b-count">3</span><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+      <div class="b-row"><div class="text"><div class="label">Meddelanden</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
       <div class="b-row"><div class="text"><div class="label">Vänner &amp; grupper</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
       <div class="b-row"><div class="text"><div class="label">Delat med mig</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
     </section>
     <section class="b-section"><div class="b-overline">Hushåll &amp; mat</div>
-      <div class="b-row"><div class="text"><div class="label">Familj &amp; hushåll</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+      <div class="b-row"><div class="text"><div class="label">Mitt hushåll</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
       <div class="b-row"><div class="text"><div class="label">Allergener &amp; kost</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
     </section>
     <section class="b-section"><div class="b-overline">Ditt kök</div>
       <div class="b-row"><div class="text"><div class="label">Egna taggar</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-      <div class="b-row"><div class="text"><div class="label">Statistik</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+      <div class="b-row"><div class="text"><div class="label">Min samling</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
       <div class="b-row"><div class="text"><div class="label">Papperskorgen</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
     </section>
+    <section class="b-section"><div class="b-overline">Konto &amp; app</div>
+      <div class="b-row"><div class="text"><div class="label">Appinställningar</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+      <div class="b-row"><div class="text"><div class="label">Hjälp &amp; support</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+    </section>
   </div></div>
+</div>
+<figcaption>Mer: huvudflik med profil, synkband och rader</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-topbar-root" style="padding-top:17px">
+    <div style="flex:1"><div class="title">Inköp</div><div class="sub" style="margin-top:0">Veckans inköp · 1 av 5 klara</div></div>
+    <div class="actions" style="align-items:center;margin-right:0"><span style="font-size:14px;font-weight:600;padding:0 12px;height:48px;display:inline-flex;align-items:center">Välj</span><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="ik-tabs"><div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><span>Inköpslistor</span></div><div class="tab"><svg class="i"><use href="#i-refrigerator"/></svg><span>Skafferiet</span></div></div>
+  <div class="ik-select">
+    <div class="pick"><svg class="i"><use href="#i-user"/></svg><div class="t">Veckans i…<small>5 varor</small></div><svg class="i" style="width:24px;height:24px"><use href="#i-chevron-down"/></svg></div>
+    <span class="sq"><svg class="i i-m"><use href="#i-pencil"/></svg></span>
+    <span class="sq"><svg class="i i-m"><use href="#i-swap-horizontal"/></svg></span>
+    <span class="sq"><svg class="i i-m"><use href="#i-trash-2"/></svg></span>
+  </div>
+  <div class="b-scroll">
+    <div class="ik-sec"><span class="name">Torrvaror</span><span class="cnt">0 av 1</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
+    <div class="ik-item"><span class="b-checkbox"></span><span class="nm">Röda linser <small>3 dl</small></span><svg class="i"><use href="#i-more-vertical"/></svg></div>
+    <div class="ik-sec"><span class="name">Konserver</span><span class="cnt">0 av 1</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
+    <div class="ik-item"><span class="b-checkbox"></span><span class="nm">Kokosmjölk <small>1 burk</small></span><svg class="i"><use href="#i-more-vertical"/></svg></div>
+    <div class="ik-sec"><span class="name">Frukt &amp; grönt</span><span class="cnt">1 av 2</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
+    <div class="ik-item"><span class="b-checkbox"></span><span class="nm">Gul lök <small>2 st</small></span><svg class="i"><use href="#i-more-vertical"/></svg></div>
+    <div class="ik-sec"><span class="name">Mejeri</span><span class="cnt">0 av 1</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
+    <div class="ik-item"><span class="b-checkbox"></span><span class="nm">Havremjölk <small>1 l</small></span><svg class="i"><use href="#i-more-vertical"/></svg></div>
+  </div>
+  <button class="b-btn hero ik-add"><svg class="i i-m"><use href="#i-plus"/></svg>Lägg till vara</button>
+</div>
+<figcaption>Inköpslista: veckans lista med avsnitt, kryssrutor och knappen Lägg till vara</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-topbar-root" style="padding-top:17px">
+    <div style="flex:1"><div class="title">Inköp</div></div>
+    <div class="actions" style="align-items:center;margin-right:0"><span style="font-size:14px;font-weight:600;padding:0 12px;height:48px;display:inline-flex;align-items:center">Välj</span></div>
+  </div>
+  <div class="sk-tabs"><div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><span>Inköpslistor</span></div><div class="tab active"><svg class="i"><use href="#i-refrigerator"/></svg><span>Skafferiet</span></div></div>
+  <div class="b-scroll">
+    <div class="sk-sec"><span class="name">Går ut snart</span><span class="cnt">2</span><svg class="i"><use href="#i-chevron-up"/></svg></div>
+    <div class="sk-item"><div class="tx" style="flex:none">Havremjölk<small>1 l</small></div><span class="tag">Utgår 30 september</span></div>
+    <div class="sk-item"><div class="tx" style="flex:none">Röda linser<small>500 g</small></div><span class="tag">Utgår 29 september</span></div>
+  </div>
+  <span class="sk-fab"><svg class="i"><use href="#i-plus"/></svg></span>
+</div>
+<figcaption>Skafferiet: varor som går ut snart, med utgångsdatum och en plusknapp</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-topbar-root" style="padding-top:17px">
+    <div style="flex:1"><div class="title">Veckomeny</div><div class="sub" style="margin-top:0">Vecka 39 · 3 rätter</div></div>
+    <div class="actions" style="align-items:center;margin-right:0"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-users"/></svg></button><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="vm-tabs"><div class="tab">Lista</div><div class="tab active">Kalender</div></div>
+  <div class="vm-search"><svg class="i"><use href="#i-utensils"/></svg><span class="h">Vad vill du ha för meny?</span><svg class="i"><use href="#i-mic"/></svg></div>
+  <div class="vm-weeknav"><svg class="i"><use href="#i-chevron-left"/></svg><div class="w">Vecka 39<small>21 sep–27 sep</small></div><svg class="i"><use href="#i-chevron-right"/></svg></div>
+  <div class="vm-tools"><svg class="i"><use href="#i-list-check"/></svg><svg class="i"><use href="#i-copy"/></svg><svg class="i"><use href="#i-trash-2"/></svg></div>
+  <div class="vm-grid">
+    <div class="vm-row vm-head"><span></span><span>Lunch</span><span>Middag</span><span>Övrigt</span></div>
+    <div class="vm-row"><div class="vm-day">Mån<small>21</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><span class="vm-meal">Linsgryta med kokos</span></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day">Tis<small>22</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><span class="vm-meal">Ugnsbakad lax med dill</span></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day">Ons<small>23</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day today">Tor<small>24</small><em>I DAG</em></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><span class="vm-meal">Krämig svamppasta</span></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day">Fre<small>25</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day">Lör<small>26</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+    <div class="vm-row"><div class="vm-day">Sön<small>27</small></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div><div class="vm-cell"><svg class="i"><use href="#i-plus"/></svg></div></div>
+  </div>
+  <div class="vm-foot"><button class="b-btn"><svg class="i i-s"><use href="#i-nav-shopping"/></svg>Till inköpslista</button></div>
+</div>
+<figcaption>Veckomeny: kalendervy med lunch, middag och övrigt för veckans sju dagar</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-topbar-root" style="padding-top:17px">
+    <div style="flex:1"><div class="title">Veckomeny</div><div class="sub" style="margin-top:0">Vecka 39 · 3 rätter</div></div>
+    <div class="actions" style="align-items:center;margin-right:0"><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-users"/></svg></button><button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="vg-tabs"><div class="tab active">Lista</div><div class="tab">Kalender</div></div>
+  <div class="vg-body">
+    <div class="vg-q">Vad vill du ha för meny?</div>
+    <div class="vg-input"><span class="h">Vegetariskt i veckan, snabba middagar</span><svg class="i"><use href="#i-x"/></svg><svg class="i"><use href="#i-mic"/></svg></div>
+    <button class="b-btn busy vg-gen">Generera meny</button>
+    <div class="vg-prog"><div class="t">Planerar veckan ...</div><div class="b-plateline"></div><div class="d">Det tar längre tid än vanligt</div></div>
+    <hr class="vg-rule">
+    <button class="b-btn outlined vg-cancel">Avbryt planeringen</button>
+    <div class="vg-note">Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.</div>
+  </div>
+</div>
+<figcaption>Veckogenerering: menyn planeras, med förloppsruta och knappen Avbryt planeringen</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div style="display:flex;align-items:center;padding:16px 24px 0;font-size:15px;font-weight:700"><span style="flex:1">Väntar på synk</span><span class="muted tabular" style="font-size:12px;font-weight:600;margin-right:4px">2</span></div>
+  <div style="display:flex;gap:0;padding:18px 24px 0;align-items:center"><span style="width:24px;height:3px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:2px;margin-left:12px;background:var(--cs-outline)"></span></div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:26px">
+    <div class="b-overline" style="color:var(--cs-error);padding-bottom:4px">Väntar på dig · 1</div>
+    <div class="muted" style="font-size:12.5px;line-height:1.45;margin-bottom:12px">Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling.</div>
+    <div style="border:1.5px solid var(--cs-error);border-radius:4px;padding:16px 12px 12px">
+      <div style="font-size:13px;font-weight:600">Citronrisotto · ändrat</div>
+      <div style="font-size:13px;font-weight:600;color:var(--cs-error);margin-top:8px">Du har inte längre behörighet</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:12px">
+        <button class="b-btn outlined hug" style="min-height:40px;padding:8px 28px;border-radius:4px">Försök igen</button>
+        <button class="b-btn outlined hug" style="min-height:40px;padding:8px 28px;border-radius:4px">Spara som kopia</button>
+        <button class="b-btn text hug" style="min-height:40px;padding:8px 20px;color:var(--cs-error)">Släng ändringen</button>
+      </div>
+    </div>
+    <div class="b-overline" style="margin-top:32px">I kö · 1</div>
+    <div class="b-row" style="padding:12px 0;min-height:0"><div class="text"><div style="font-size:15px">Linsgryta med kokos · ändrat</div></div><span class="muted tabular" style="font-size:13px">12 min</span></div>
+    <div class="muted" style="font-size:13px;line-height:1.45;margin-top:4px">Ordningen är först in, först ut per objekt, men parallellt mellan objekt.</div>
+  </div></div>
+  <div style="flex:none;border-top:1px solid var(--cs-outline-variant);padding:16px 24px 20px">
+    <button class="b-btn outlined" style="min-height:40px;padding:8px 24px;border-radius:4px"><svg class="i i-s"><use href="#i-refresh-cw"/></svg>Försök synka nu</button>
+  </div>
   <nav class="b-bottomnav">
     <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
     <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
     <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
     <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
   </nav>
 </div>
-<figcaption>Mer: huvudflik med rader</figcaption>
+<figcaption>Väntar på synk: poster som kräver handling och posten i kö</figcaption>
 </figure>
 
 <!-- ===== 2. Appinställningar (undersida) ===== -->
 <figure>
 <div class="phone">
-  <div class="b-statusbar on-ink"><span>9:41</span><span></span></div>
   <div class="b-topbar-sub"><button class="b-iconbtn"><svg class="i"><use href="#i-chevron-left"/></svg></button><div class="title">Appinställningar</div></div>
   <div class="b-scroll"><div class="b-body">
     <section class="b-section"><div class="b-overline">Utseende</div>
@@ -905,160 +1196,9 @@
 </div>
 <figcaption>Appinställningar: undersida med brytare och snackbar</figcaption>
 </figure>
-
-<!-- ===== 3. Ett recept ===== -->
-<figure>
-<div class="phone">
-  <div class="b-statusbar"><span>9:41</span><span></span></div>
-  <div style="display:flex;align-items:center;padding:0 12px 0 8px;flex:none">
-    <button class="b-iconbtn"><svg class="i"><use href="#i-chevron-left"/></svg></button><span style="flex:1"></span>
-    <button class="b-iconbtn"><svg class="i"><use href="#i-heart"/></svg></button>
-    <button class="b-iconbtn"><svg class="i"><use href="#i-users"/></svg></button>
-    <button class="b-iconbtn"><svg class="i"><use href="#i-export"/></svg></button>
-    <button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button>
-  </div>
-  <div class="b-scroll"><div class="b-body">
-    <div style="display:flex;align-items:center;gap:12px;margin:8px 0 16px"><span style="width:22px;height:4px;border-radius:2px;background:var(--cs-saffron)"></span><span style="flex:1;height:1px;background:var(--cs-outline-variant)"></span></div>
-    <div class="t-overline accent" style="text-transform:uppercase">Lunch</div>
-    <div class="t-display-compact" style="margin-top:4px">Linsgryta med kokos och koriander</div>
-    <div class="muted" style="display:flex;gap:16px;margin-top:8px;font-size:13px"><span><svg class="i i-s"><use href="#i-clock"/></svg> 30 min</span><span><svg class="i i-s"><use href="#i-user"/></svg> 4 port</span></div>
-    <div class="b-chips" style="margin-top:16px"><span class="b-chip">Vegetariskt</span><span class="b-chip">Under 30 min</span></div>
-    <section class="b-section" style="padding-top:24px"><div class="b-overline">Ingredienser</div>
-      <div style="display:flex;align-items:center;gap:16px;padding:8px 0 12px"><span class="muted">Portioner</span>
-        <div class="b-stepper"><button><svg class="i"><use href="#i-minus"/></svg></button><span class="n">4</span><button><svg class="i"><use href="#i-plus"/></svg></button></div></div>
-      <div class="b-row info"><span class="tabular" style="width:64px;font-weight:600">3 dl</span><div class="text"><div class="label">röda linser</div></div></div>
-      <div class="b-row info"><span class="tabular" style="width:64px;font-weight:600">1 burk</span><div class="text"><div class="label">kokosmjölk</div></div></div>
-      <div class="b-row info"><span class="tabular" style="width:64px;font-weight:600">1 knippe</span><div class="text"><div class="label">färsk koriander</div></div></div>
-    </section>
-  </div></div>
-  <div style="padding:12px 12px 8px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
-    <button class="b-btn hero">Börja laga</button>
-    <button class="b-btn">Lägg i inköpslistan</button>
-  </div>
-  <nav class="b-bottomnav">
-    <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
-<figcaption>Ett recept: en hjälteknapp, en primärknapp</figcaption>
-</figure>
-
-<figure>
-<div class="phone">
-  <div class="b-statusbar"><span>9:41</span><span></span></div>
-  <div class="b-topbar-root">
-    <div style="flex:1"><div class="title">Inköp</div><div class="sub">Veckans inköp · 2 av 7 klara</div></div>
-    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
-  </div>
-  <div class="b-tabs"><div class="tab active"><span>Inköpslistor</span></div><div class="tab"><span>Skafferiet</span></div></div>
-  <div class="b-scroll"><div class="b-body" style="padding-top:16px">
-    <div class="b-input"><svg class="i"><use href="#i-plus"/></svg><span class="hint">Lägg till vara</span></div>
-    <section class="b-section"><div class="b-overline">Frukt och grönt</div>
-      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Gul lök</div><div class="subtitle">2 st</div></div></div>
-      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Broccoli</div><div class="subtitle">1 huvud</div></div></div>
-      <div class="b-row"><span class="b-checkbox on"><svg class="i"><use href="#i-check"/></svg></span><div class="text"><div class="label" style="text-decoration:line-through;color:var(--cs-on-surface-variant)">Färsk koriander</div><div class="subtitle">1 knippe</div></div></div>
-
-    </section>
-    <section class="b-section"><div class="b-overline">Mejeri</div>
-      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Kokosmjölk</div><div class="subtitle">2 burkar</div></div></div>
-      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Havredryck</div><div class="subtitle">1 liter</div></div></div>
-      <div class="b-row"><span class="b-checkbox on"><svg class="i"><use href="#i-check"/></svg></span><div class="text"><div class="label" style="text-decoration:line-through;color:var(--cs-on-surface-variant)">Smör</div><div class="subtitle">1 paket</div></div></div>
-      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Parmesan</div><div class="subtitle">100 g</div></div></div>
-
-    </section>
-  </div></div>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
-<figcaption>Inköpslista: kryssrutor, avsnitt och ett inmatningsfält</figcaption>
-</figure>
-
-<figure>
-<div class="phone">
-  <div class="b-statusbar"><span>9:41</span><span></span></div>
-  <div class="b-topbar-root">
-    <div style="flex:1"><div class="title">Inköp</div><div class="sub">Skafferiet · 24 varor</div></div>
-    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
-  </div>
-  <div class="b-tabs"><div class="tab"><span>Inköpslistor</span></div><div class="tab active"><span>Skafferiet</span></div></div>
-  <div class="b-scroll"><div class="b-body" style="padding-top:16px">
-    <div class="b-input search"><span class="hint">Sök i skafferiet</span><button class="b-iconbtn"><svg class="i"><use href="#i-search"/></svg></button></div>
-    <div class="b-chips" style="margin-top:12px"><span class="b-chip selected">Alla</span><span class="b-chip">Kyl</span><span class="b-chip">Frys</span><span class="b-chip">Torrvaror</span></div>
-    <section class="b-section"><div class="b-overline">Kyl</div>
-      <div class="b-row"><div class="text"><div class="label">Mjölk</div><div class="subtitle">Bäst före 24 okt</div></div><span class="value">1 l</span></div>
-      <div class="b-row"><div class="text"><div class="label">Gräddfil</div><div class="subtitle">Går ut om 2 dagar</div></div><span class="b-pill warning">Snart</span><span class="value">1 dl</span></div>
-      <div class="b-row"><div class="text"><div class="label">Ägg</div><div class="subtitle">Bäst före 30 okt</div></div><span class="value">6 st</span></div>
-
-    </section>
-    <section class="b-section"><div class="b-overline">Torrvaror</div>
-      <div class="b-row"><div class="text"><div class="label">Röda linser</div><div class="subtitle"></div></div><span class="value">500 g</span></div>
-      <div class="b-row"><div class="text"><div class="label">Basmatiris</div><div class="subtitle"></div></div><span class="value">2 kg</span></div>
-      <div class="b-row"><div class="text"><div class="label">Havregryn</div><div class="subtitle"></div></div><span class="value">1 kg</span></div>
-
-    </section>
-  </div></div>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
-<figcaption>Skafferiet: sök, chips, rader med datum och en statuspiller</figcaption>
-</figure>
-
-<figure>
-<div class="phone">
-  <div class="b-statusbar"><span>9:41</span><span></span></div>
-  <div class="b-topbar-root">
-    <div style="flex:1"><div class="title">Meny</div><div class="sub">Vecka 43 · 20–26 okt</div></div>
-    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-calendar"/></svg></button><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
-  </div>
-  <div class="b-scroll"><div class="b-body" style="padding-top:8px">
-    <section class="b-section"><div class="b-overline">Måndag 20 okt</div>
-      <div class="b-row"><div class="text"><div class="label">Linsgryta med kokos och koriander</div><div class="subtitle">Middag · 30 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-
-    </section>
-    <section class="b-section"><div class="b-overline">Tisdag 21 okt</div>
-      <div class="b-row"><div class="text"><div class="label">Krämig svamppasta med timjan</div><div class="subtitle">Middag · 25 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-      <div class="b-row"><div class="text"><div class="label">Havregrynsgröt med äpple</div><div class="subtitle">Frukost · 10 min · 2 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-
-    </section>
-    <section class="b-section"><div class="b-overline">Onsdag 22 okt</div>
-      <div class="b-row"><svg class="i"><use href="#i-plus"/></svg><div class="text"><div class="label">Lägg till måltid</div></div></div>
-    </section>
-    <section class="b-section"><div class="b-overline">Torsdag 23 okt</div>
-      <div class="b-row"><div class="text"><div class="label">Ugnsbakad torsk med citron</div><div class="subtitle">Middag · 35 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
-
-    </section>
-  </div></div>
-  <div style="padding:12px 12px 8px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
-    <button class="b-btn hero">Generera meny</button>
-    <button class="b-btn">Skapa inköpslista av veckan</button>
-  </div>
-  <nav class="b-bottomnav">
-    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
-    <div class="tab active"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
-    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
-    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
-  </nav>
-</div>
-<figcaption>Veckomeny: dagar med måltider, en tom dag och två knappar</figcaption>
-</figure>
-
 </div>
 <div id="compare" hidden>
-<div class="compare-bar"><span>Jämför på skärm:</span><select id="cmp-screen"><option value="0">Mer</option><option value="1">Appinställningar</option><option value="2">Recept</option><option value="3">Inköpslista</option><option value="4">Skafferiet</option><option value="5">Veckomeny</option></select><select id="cmp-mode"><option value="0">Ljust</option><option value="1">Mörkt</option></select><button id="cmp-close" type="button">Stäng jämförelsen</button></div>
+<div class="compare-bar"><span>Jämför på skärm:</span><select id="cmp-screen"><option value="0">Hem</option><option value="1">Mina recept</option><option value="2">Receptdetalj</option><option value="3">Receptredigerare</option><option value="4">Matlagningsläge</option><option value="5">Inloggning</option><option value="6">Mer</option><option value="7">Inköpslista</option><option value="8">Skafferiet</option><option value="9">Veckomeny</option><option value="10">Veckogenerering</option><option value="11">Väntar på synk</option><option value="12">Appinställningar</option></select><select id="cmp-mode"><option value="0">Ljust</option><option value="1">Mörkt</option></select><button id="cmp-close" type="button">Stäng jämförelsen</button></div>
 <div id="compare-grid"></div>
 </div>
 </div>
@@ -1067,8 +1207,10 @@
 <div class="panes">
 <div id="advice-box">
 <h2>Råd</h2>
-<p class="hint">Bakgrund och tumregler för det du justerar. Peka på eller ändra ett reglage, så öppnas rådet för det.</p>
+<p class="hint">Bakgrund och tumregler för det du justerar. Peka på eller ändra ett reglage, så öppnas rådet för det, och du ser hur dina val står sig.</p>
+<input type="search" id="advice-q" placeholder="Sök i råden och ordlistan">
 <div id="advice-list"></div>
+<button class="ghost" id="advice-all" type="button">Visa alla råd</button>
 </div>
 <div id="chat-box" hidden>
 <h2>Fråga Claude</h2>
@@ -1094,6 +1236,8 @@
 <script src="designlabb-parts.js"></script>
 <script src="designlabb-fx.js"></script>
 <script src="designlabb-advice.js"></script>
+<script src="designlabb-advice-more.js"></script>
+<script src="designlabb-advice-ui.js"></script>
 <script src="designlabb-claude.js"></script>
 <script src="designlabb-ui.js"></script>
 </body>

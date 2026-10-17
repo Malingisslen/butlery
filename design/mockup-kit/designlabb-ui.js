@@ -62,6 +62,7 @@ function render() {
   applyIcons();
   drawOverlay();
   shareNow();
+  refreshAdvice();
   scheduleSnapshot();
   try {
     window.history.replaceState(null, '', summary(state) ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search);

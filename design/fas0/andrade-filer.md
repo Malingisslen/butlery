@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=948-->
+<!--manifest:files=950-->
 
 ## Reporoten
 
@@ -610,19 +610,21 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `adf0b5f0608df0e0e8947d4efd1a56df8767b8c648d01ad2f53cfbbcd59f4b08` |
+| `mockup-kit/README.md` | `0f4cd0b86fdfb9822d3071087548398c117994922d4a28e5eaa71d54a26da655` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb-advice.js` | `2581c49272492707457e48011dd1c3d683bed5ca5afa56f5c57a87acdb312129` |
-| `mockup-kit/designlabb-claude.js` | `9cec641682b783d3cf437438abe6e03ab0f4edfafca5a185ccc26e9de862c2e1` |
+| `mockup-kit/designlabb-advice-more.js` | `9643967603b2366a53691621a08c91f7cd6d7959a971e64022f8f0a09496c204` |
+| `mockup-kit/designlabb-advice-ui.js` | `c6bf7073cb7139748254dca1cca00ced737356131acb0d3203f18a2134e63683` |
+| `mockup-kit/designlabb-advice.js` | `132df41a4dd8287086251bcacf999b5f66b33f7c5de9a3aca19b37f1c09ef0cd` |
+| `mockup-kit/designlabb-claude.js` | `61924c7af4de73918b9b85cfee8c8d8c51f4a3a83d28e970a293d26682c637cc` |
 | `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
 | `mockup-kit/designlabb-extra.js` | `a55c5cb412de283f93d3fbbe133ab517549ddf6b4f8c2628f0c2be2cf0928be2` |
 | `mockup-kit/designlabb-fx.js` | `c36f834bc056848471735a1f90093cb87facb447557019b4c02c921d917d67a7` |
 | `mockup-kit/designlabb-iconlibs.js` | `e972e1063603e483c13bf41467b08d8717fba718ac5f4c1f06d060532ec90e46` |
 | `mockup-kit/designlabb-layout.js` | `b32c26ee3cdca82ecab6a6e78f97ee88811cc5cf5f81fb56d5e8c6a376de9913` |
 | `mockup-kit/designlabb-parts.js` | `2077083ea7f94e528cbe1c195652fab37c99dac14fb8cac378a77e87c4dc7a61` |
-| `mockup-kit/designlabb-ui.js` | `2e16de39a12b97f45a2f0c9ec9463aee4c3cd8ed33c9f33a4df236e0237b769c` |
-| `mockup-kit/designlabb.css` | `a8bf8d806e3a6795919a3732a81502c7792e3d09d77f9e20c8bfb8f8c5c5556d` |
-| `mockup-kit/designlabb.html` | `ae06e3cdda7ac554df963fc923aad8ec52c93413ff0733031f3b5499d3e0fb27` |
+| `mockup-kit/designlabb-ui.js` | `767b403a9bf3b2d11df799852ec1c91ddebf9a83c21af8de6b3e08f06f866eff` |
+| `mockup-kit/designlabb.css` | `8ffdd0f63f2d4b634206f024e6926d24b6a1f76a0e94a187b3ea84577d200348` |
+| `mockup-kit/designlabb.html` | `80ea152d5d151922ec3d615af39c05811edb79d6f53885038e12bf7cba5a67a2` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |

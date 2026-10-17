@@ -5,9 +5,9 @@
 // file is opened outside a published page.
 
 const CHAT_RULES = `Du är Claude och sitter i Butlerys designlabb, en webbsida där Malin (som inte kodar) provar färger, typsnitt, avstånd, ikoner och layout på tre exempelskärmar. Svara på svenska, kort och utan fackspråk.
-Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart och resetLab. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i rutan Claude, så bygger sessionen som jobbar med appen det.
+Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart, resetLab, getColors, listAdvice och getAdvice. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i rutan Claude, så bygger sessionen som jobbar med appen det.
 Läs alltid färglistan med getColors innan du ändrar en färg, gissa aldrig hexkoder, och kontrollera i svaret från setLabState (applied och lightScreenNow, den ljusa skärmens verkliga bakgrund) att det du lovar Malin är det som hände. Beskriv bara det som faktiskt ändrades.
-Brödtext ska ha minst 4,5:1 i kontrast. Säg ifrån om en ändring bryter mot det. Inga emoji.`;
+Rutan Råd i labbet innehåller vedertagna tumregler (Material, Apple, WCAG) med fördelar, nackdelar och nyckeltal, och en kontroll av Malins nuvarande val. Läs den med getAdvice innan du ger designråd, bygg på den, säg vilket råd det gäller och förklara enkelt eftersom Malin inte är designer. Kom ihåg att appen är en receptapp för hushåll. Brödtext ska ha minst 4,5:1 i kontrast. Säg ifrån om en ändring bryter mot det. Inga emoji.`;
 const claudeAi = { sample: null, db: null };
 const chatTurns = [];
 let chatCtl = null;
@@ -21,7 +21,8 @@ function selectionInfo() {
 }
 function labContext() {
   const tab = document.querySelector('#tabs button.on')?.textContent || '';
-  return JSON.stringify({ openTab: tab, changes: summary(state) ? JSON.parse(summary(state)) : {}, selectedPart: selectionInfo() }, null, 1);
+  const flagged = adviceLevels().filter(x => x.level !== 'ok').map(x => `${x.title}: ${x.text}`);
+  return JSON.stringify({ openTab: tab, changes: summary(state) ? JSON.parse(summary(state)) : {}, selectedPart: selectionInfo(), openAdvice: adviceTopic, adviceChecks: flagged }, null, 1);
 }
 
 function colorNames(hex) {
@@ -72,6 +73,8 @@ function applyChanges(changes) {
     keep.el.setAttribute('data-lab-selected', '');
   }
   askApplied.push(...applied);
+  const adviceKey = Object.keys(changes || {}).map(k => ADVICE_FOR[k]).find(Boolean);
+  if (adviceKey) showAdvice(adviceKey); else showAdvice();
   const phone = document.querySelector('#screens .phone:not([data-theme="dark"])');
   const lightScreenNow = phone ? toHex(getComputedStyle(phone).backgroundColor) : null;
   return { applied, refused, lightScreenNow, now: summary(state) ? JSON.parse(summary(state)) : {} };
@@ -102,6 +105,21 @@ const chatTools = () => [
     name: 'getColors',
     description: 'Listar labbets färger: hex (original), now (nuvarande), usedBy (vilka roller och namn den bär, till exempel surface-base för skärmens bakgrund) och uses. Anropa den före varje färgändring.',
     execute: () => colorList(),
+  },
+  {
+    name: 'listAdvice',
+    description: 'Listar alla råd i rutan Råd: id, rubrik och hur Malins val står sig just nu (ok, warn eller bad).',
+    execute: () => Object.keys(ADVICE).map(id => ({ id, title: ADVICE[id].t, now: adviceVerdict(id)?.[0] || null })),
+  },
+  {
+    name: 'getAdvice',
+    description: 'Hämtar ett råd med id från listAdvice: vad det är, fördelar, nackdelar, tumregel, nyckeltal, vanliga misstag, källa och hur labbet står sig mot det. Öppnar också rådet i rutan Råd så att Malin ser det.',
+    inputSchema: { type: 'object', properties: { topic: { type: 'string' } }, required: ['topic'] },
+    execute: input => {
+      if (!ADVICE[input.topic]) throw new Error('Okänt råd. Använd listAdvice för id.');
+      showAdvice(input.topic);
+      return adviceText(input.topic);
+    },
   },
   { name: 'getLabState', description: 'Returnerar labbets nuvarande ändringar och vilken del Malin har markerat.', execute: () => JSON.parse(labContext()) },
   {
