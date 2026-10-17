@@ -77,9 +77,102 @@ class HeroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    var hero = ComponentThemes.heroButtonStyle(cs);
+    return _FilledAction(
+      style: ComponentThemes.heroButtonStyle(cs),
+      label: label,
+      onPressed: onPressed,
+      busy: busy,
+      busyLabel: busyLabel,
+      icon: icon,
+      expand: expand,
+      semanticLabel: semanticLabel,
+      minimumSize: minimumSize,
+      iconAtEnd: iconAtEnd,
+      content: content,
+    );
+  }
+}
+
+/// The primary action on a form or an account page, in the app's dark green.
+///
+/// B-158: saffron opens a flow ([HeroButton]); every other primary is this
+/// button. Same face and busy behaviour as [HeroButton], only the colours differ.
+class FormButton extends StatelessWidget {
+  const FormButton({
+    required this.label,
+    required this.onPressed,
+    this.busy = false,
+    this.busyLabel,
+    this.icon,
+    this.expand = false,
+    this.semanticLabel,
+    this.minimumSize,
+    this.iconAtEnd = false,
+    this.content,
+    super.key,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool busy;
+  final String? busyLabel;
+  final IconData? icon;
+  final bool expand;
+  final String? semanticLabel;
+  final Size? minimumSize;
+  final bool iconAtEnd;
+  final Widget? content;
+
+  @override
+  Widget build(BuildContext context) {
+    return _FilledAction(
+      style: Theme.of(context).filledButtonTheme.style ?? const ButtonStyle(),
+      label: label,
+      onPressed: onPressed,
+      busy: busy,
+      busyLabel: busyLabel,
+      icon: icon,
+      expand: expand,
+      semanticLabel: semanticLabel,
+      minimumSize: minimumSize,
+      iconAtEnd: iconAtEnd,
+      content: content,
+    );
+  }
+}
+
+class _FilledAction extends StatelessWidget {
+  const _FilledAction({
+    required this.style,
+    required this.label,
+    required this.onPressed,
+    required this.busy,
+    required this.busyLabel,
+    required this.icon,
+    required this.expand,
+    required this.semanticLabel,
+    required this.minimumSize,
+    required this.iconAtEnd,
+    required this.content,
+  });
+
+  final ButtonStyle style;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool busy;
+  final String? busyLabel;
+  final IconData? icon;
+  final bool expand;
+  final String? semanticLabel;
+  final Size? minimumSize;
+  final bool iconAtEnd;
+  final Widget? content;
+
+  @override
+  Widget build(BuildContext context) {
+    var base = style;
     if (minimumSize != null) {
-      hero = hero.copyWith(minimumSize: WidgetStatePropertyAll(minimumSize));
+      base = base.copyWith(minimumSize: WidgetStatePropertyAll(minimumSize));
     }
     final Widget text = content != null && !busy
         ? content!
@@ -91,18 +184,18 @@ class HeroButton extends StatelessWidget {
             textAlign: TextAlign.center,
           );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;
-    final style = busy
+    final effective = busy
         ? PlateLineButton.busyStyle(
-            hero,
+            base,
             Theme.of(context).filledButtonTheme.style,
           )
-        : hero;
+        : base;
 
     Widget button = (icon == null || busy || content != null)
-        ? FilledButton(onPressed: pressed, style: style, child: text)
+        ? FilledButton(onPressed: pressed, style: effective, child: text)
         : FilledButton.icon(
             onPressed: pressed,
-            style: style,
+            style: effective,
             iconAlignment: iconAtEnd ? IconAlignment.end : IconAlignment.start,
             icon: ButleryIcon(icon),
             label: text,

@@ -326,7 +326,7 @@ class VeckomenyFlowHarness {
     await tester.tap(
       find.descendant(
         of: find.byKey(const ValueKey('test-veckomeny-generate')),
-        matching: find.byType(HeroButton),
+        matching: find.byType(FormButton),
       ),
     );
     await tester.pump();

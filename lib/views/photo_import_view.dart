@@ -542,11 +542,11 @@ class _PhotoImportViewContent extends StatelessWidget {
         ],
       ),
       // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are taken or
-      // chosen first and the text is read only here, the view's one saffron
+      // chosen first and the text is read only here, the view's one primary
       // action (Skarmar v12 del 2 #fotoimport :704-706; Grafisk manual v6:219).
       bottomNavigationBar: readPages
           ? BottomActionContainer(
-              child: HeroButton(
+              child: FormButton(
                 key: const ValueKey('photo-import-read-pages'),
                 label: context.l10n.importReadPages(viewModel.unreadPageCount),
                 expand: true,

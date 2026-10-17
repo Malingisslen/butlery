@@ -280,7 +280,7 @@ class _GuestUpgradeViewState extends State<GuestUpgradeView> {
                 StateWidget.error(message: _error!),
                 const SizedBox(height: AppDimensions.space16),
               ],
-              HeroButton(
+              FormButton(
                 key: GuestUpgradeView.submitKey,
                 label: _linked ? l10n.commonRetry : l10n.guestCreateAccount,
                 onPressed: _submit,

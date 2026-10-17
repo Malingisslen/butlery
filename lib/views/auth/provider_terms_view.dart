@@ -195,7 +195,7 @@ class _ProviderTermsContentState extends State<_ProviderTermsContent> {
                     FieldErrorLine(vm.error!),
                   ],
                   const SizedBox(height: AppDimensions.space24),
-                  HeroButton(
+                  FormButton(
                     key: const ValueKey('providerTerms.create'),
                     label: l10n.authCreateAccount,
                     onPressed: vm.canCreate ? () => _create(vm) : null,

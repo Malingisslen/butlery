@@ -361,10 +361,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             InlineError(what: viewModel.invitationError!),
             const SizedBox(height: AppDimensions.space8),
           ],
-          // The view's one saffron action, "Bjud in 1 vald" as drawn
+          // The view's one primary action, "Bjud in 1 vald" as drawn
           // (Skarmar v12 del 3 #laggtillmedlemmar:562; Grafisk manual
           // v6:219). The count is a plural: "Bjud in 3 valda".
-          HeroButton(
+          FormButton(
             key: const ValueKey('addMembers.invite'),
             label: context.l10n.groupSendInvitations(viewModel.selectedCount),
             onPressed: () async {

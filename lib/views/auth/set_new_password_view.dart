@@ -165,7 +165,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
             isExpanded: true,
           )
         else
-          HeroButton(
+          FormButton(
             key: const ValueKey('setNewPassword.requestNew'),
             label: context.l10n.setNewPasswordRequestNew,
             onPressed: _requestNewLink,
@@ -222,7 +222,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               ),
             ],
             const SizedBox(height: AppDimensions.space16),
-            HeroButton(
+            FormButton(
               key: const ValueKey('setNewPassword.save'),
               label: l.setNewPasswordSave,
               onPressed: _save,

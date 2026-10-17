@@ -159,11 +159,11 @@ class MenuPreviewView extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // The view's one saffron action, "Spara till mina menyer" as
+              // The view's one primary action, "Spara till mina menyer" as
               // drawn (Skarmar v12 del 3 #menyforhands). Imported, it takes
               // the hero's disabled surface; importing keeps the name and
               // draws the plate line.
-              HeroButton(
+              FormButton(
                 key: const ValueKey('menuPreview.import'),
                 label: isImported
                     ? context.l10n.menuImported

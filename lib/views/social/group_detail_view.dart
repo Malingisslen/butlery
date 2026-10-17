@@ -414,7 +414,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            HeroButton(
+            FormButton(
               key: const ValueKey('groupDetail.whatToEat'),
               label: context.l10n.askWhatToEat,
               onPressed: () => startMealVotePoll(group),

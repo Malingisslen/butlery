@@ -407,9 +407,9 @@ class PlacementTray extends StatelessWidget {
                 const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   flex: 2,
-                  // "Klar" is the placement's one saffron action (Skarmar
+                  // "Klar" is the placement's one primary action (Skarmar
                   // v12 del 2 #placera; Komponentark v1:843-844).
-                  child: HeroButton(
+                  child: FormButton(
                     key: const ValueKey('menu-placement-done'),
                     label: context.l10n.commonDone,
                     expand: true,

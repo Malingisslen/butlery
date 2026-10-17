@@ -122,7 +122,7 @@ class ButleryAddSheet extends StatelessWidget {
           // The sheet's one filled hero (#plussheet), with a two-line face.
           Semantics(
             identifier: 'btn-quick-save',
-            child: HeroButton(
+            child: FormButton(
               key: quickSaveKey,
               label: l10n.addSheetQuickSaveTitle,
               onPressed: () => onChoose(Routes.quickCapture),

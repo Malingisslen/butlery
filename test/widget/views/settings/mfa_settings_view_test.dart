@@ -86,7 +86,7 @@ void main() {
     final sv = AppLocalizationsSv();
     expect(find.text(sv.mfaStatusLoadFailed), findsOneWidget);
     expect(find.text(sv.mfaOffTitle), findsNothing);
-    expect(find.byType(HeroButton), findsNothing);
+    expect(find.byType(FormButton), findsNothing);
 
     when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
     await tester.tap(find.text(sv.commonRetry));
@@ -128,7 +128,7 @@ void main() {
   });
 
   testWidgets('without two-step verification, the form offers to turn it on '
-      'with one saffron action', (tester) async {
+      'with one primary action', (tester) async {
     when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
     when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
 
@@ -141,7 +141,7 @@ void main() {
     );
     expect(find.text('Slå på tvåstegsverifiering'), findsOneWidget);
     expect(find.byKey(const ValueKey('mfa.turnOn')), findsOneWidget);
-    expect(find.byType(HeroButton), findsOneWidget);
+    expect(find.byType(FormButton), findsOneWidget);
   });
 
   final codes = List.generate(10, (i) => 'ABCDE-FGH${i}K');
