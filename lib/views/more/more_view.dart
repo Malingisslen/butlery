@@ -26,7 +26,7 @@ import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/widgets/guest/guest_account_sheet.dart';
 import 'package:butlery/widgets/guest/guest_band.dart';
@@ -271,11 +271,10 @@ class _ProfileRowState extends State<_ProfileRow> {
               child: Row(
                 children: [
                   ExcludeSemantics(
-                    child: AvatarWidgets.avatar(
-                      user: users?.currentUserProfile,
+                    child: AvatarCircle(
+                      imageUrl: users?.currentUserProfile?.avatarUrl,
                       displayName: shownName,
-                      size: ImageSize.medium,
-                      announceName: false,
+                      size: AvatarCircleSize.header,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.space12),

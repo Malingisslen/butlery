@@ -51,7 +51,7 @@ const _allowed = <_Allowed>[
   ),
   _Allowed(
     'lib/widgets/recipe/comment_form_widget.dart',
-    'currentUser?.displayName ??',
+    'currentUser?.displayName).orEmpty()',
     'display-only label for the viewer\'s own avatar; not written anywhere',
   ),
   _Allowed(

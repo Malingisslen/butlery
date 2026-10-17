@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_opacity.dart';
@@ -268,7 +269,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
   @override
   Widget build(BuildContext context) {
     final socialViewModel = widget.socialViewModel;
-    final viewerName = socialViewModel.currentUser?.displayName ?? '';
+    final viewerName = (socialViewModel.currentUser?.displayName).orEmpty();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
