@@ -1,0 +1,239 @@
+'use strict';
+// "Råd" box: plain-language background for the choices in the lab. Shown for the open tab, and the
+// topic of the control Malin last touched is opened first. Each topic is written for someone who
+// does not design for a living: what it is, what it gives, what it costs and the usual rule.
+
+const ADVICE = {
+  farg: {
+    t: 'Färger och stämning',
+    what: 'Färgerna bär appens känsla: bakgrund, text, knappar och accenten som leder ögat.',
+    pro: 'En tydlig accentfärg gör att man hittar det viktigaste direkt. Få färger ger lugn och igenkänning.',
+    con: 'Många starka färger konkurrerar om uppmärksamheten. Färg ensam får inte bära en betydelse, för färgblinda ser den inte.',
+    rule: 'Tumregel 60-30-10: ungefär 60 % grundfärg, 30 % stödfärg och 10 % accent. Använd accenten på det du vill att man trycker på.',
+  },
+  kontrast: {
+    t: 'Kontrast och läsbarhet',
+    what: 'Hur tydligt text och ikoner skiljer sig från bakgrunden. Mäts som ett tal, till exempel 4,5:1.',
+    pro: 'God kontrast gör appen läsbar i solsken, för äldre ögon och för den som ser sämre.',
+    con: 'Mycket hög kontrast över stora ytor (ren svart mot ren vit) kan kännas hårt och flimra för ögat.',
+    rule: 'WCAG AA, som de flesta tillgänglighetskrav bygger på: brödtext minst 4,5:1, stor text (från cirka 24 px, eller 19 px fet) och ikoner minst 3:1.',
+  },
+  morkt: {
+    t: 'Ljust och mörkt läge',
+    what: 'Samma app i två färgvärldar. Mörkt läge följer ofta telefonens inställning.',
+    pro: 'Skonsamt i mörker och sparar batteri på OLED-skärmar. Många användare förväntar sig att det finns.',
+    con: 'Dubbelt arbete: allt måste vara läsbart i båda. Skuggor syns knappt i mörkt, så djup görs med ljusare ytor.',
+    rule: 'Använd mörkgrönt eller mörkgrått i stället för ren svart, och lite dämpad text i stället för ren vit. Följ systemet som standard.',
+  },
+  typsnitt: {
+    t: 'Typsnitt',
+    what: 'Bokstävernas form. Det påverkar både läsbarhet och personlighet.',
+    pro: 'Sans serif (utan klackar) är lättläst på skärm och känns modernt. Serif känns varmt och redaktionellt och passar rubriker.',
+    con: 'Dekorativa typsnitt är trötta att läsa i längre text. Varje extra typsnitt gör appen rörigare och tyngre.',
+    rule: 'Högst två typsnitt, och ett räcker gott. Variera i storlek och tyngd i stället för i typsnitt.',
+  },
+  textstorlek: {
+    t: 'Textstorlek',
+    what: 'Hur stor brödtexten och rubrikerna är.',
+    pro: 'Större text är lättare att läsa, särskilt för äldre och i rörelse.',
+    con: 'För stor text ger färre rader per skärm och mer scrollande, och layouten kan gå sönder.',
+    rule: 'Brödtext gärna 16 sp (Flutters enhet, som följer användarens textinställning) och ingen text under 12. Appen ska tåla att användaren gör texten större i telefonens inställningar.',
+  },
+  radavstand: {
+    t: 'Radavstånd',
+    what: 'Luften mellan textrader.',
+    pro: 'Lite mer luft gör längre texter lättare att följa.',
+    con: 'För mycket luft får text att falla isär och tar plats.',
+    rule: 'Cirka 1,4 till 1,6 gånger textstorleken för brödtext. Rubriker kan vara tätare, runt 1,2.',
+  },
+  form: {
+    t: 'Rundning på hörn',
+    what: 'Hur runda hörnen är på kort, knappar och fält.',
+    pro: 'Runda hörn känns mjuka och vänliga. Skarpa hörn känns exakta och allvarliga. Rundningen är en stor del av appens personlighet.',
+    con: 'Mycket runda hörn kan se barnsliga ut och äter yta i små element. Helt skarpa kan kännas kalla.',
+    rule: 'Var konsekvent: samma rundning på samma sorts sak. Mindre element får mindre rundning än stora kort. Piller (helt runda knappar) fungerar bäst för chips och primära knappar.',
+  },
+  marginal: {
+    t: 'Sidmarginal',
+    what: 'Luften mellan innehållet och skärmens kant.',
+    pro: 'Ger lugn och gör att innehållet inte klibbar mot kanten.',
+    con: 'Stora marginaler minskar yta för innehållet på små telefoner.',
+    rule: 'Android och iOS använder oftast 16–24 dp. Håll samma marginal på alla sidor så att allt linjerar.',
+  },
+  avstand: {
+    t: 'Avstånd och täthet',
+    what: 'Hur mycket luft det är mellan rader, kort och sektioner.',
+    pro: 'Luftigt ger lugn och färre felträffar. Tätt ger mer innehåll per skärm och mindre scrollande.',
+    con: 'För luftigt blir långt och segt att scrolla. För tätt blir stressigt och svårt att träffa rätt.',
+    rule: 'Håll dig till ett rutnät på 4 eller 8 px, så att alla avstånd är multipler av det. Lite mer luft mellan grupper än inom en grupp, så syns vad som hör ihop.',
+  },
+  tathet: {
+    t: 'Tät eller luftig app',
+    what: 'Appens grundrytm: många rader på skärmen eller få och stora.',
+    pro: 'Receptappar och listor vinner ofta på lugn luft. Verktyg och admin vinner på täthet.',
+    con: 'Du kan inte få båda i samma vy: välj efter vad användaren gör (bläddra och njuta eller scanna och jobba).',
+    rule: 'Börja luftigt för huvudflödena och gör bara hjälpvyer tätare.',
+  },
+  trycksyta: {
+    t: 'Trycksytor',
+    what: 'Hur stor yta runt en knapp som reagerar på tryck, mätt i px eller dp.',
+    pro: 'Stora ytor gör att man träffar rätt med tummen, även i rörelse och för den med skakiga händer.',
+    con: 'Stora ytor tar plats. Små ytor ger felträffar och frustration.',
+    rule: 'Android (Material) rekommenderar 48 dp, Apple 44 pt. WCAG 2.2 kräver minst 24 px (nivå AA) och rekommenderar 44 px. Ytan får gärna vara större än själva ikonen.',
+  },
+  avdelare: {
+    t: 'Avdelare och linjer',
+    what: 'Tunna linjer mellan rader och sektioner.',
+    pro: 'Ordnar listor utan att lägga till färg. Lugna och diskreta.',
+    con: 'För många linjer ger ett rutigt, stökigt intryck. Ofta räcker luft i stället för linje.',
+    rule: 'Använd 1 px och en dämpad färg. Ta bort en linje om avståndet ensamt redan visar att något hör ihop.',
+  },
+  skugga: {
+    t: 'Skuggor och djup',
+    what: 'Skuggor får ett kort eller en knapp att verka ligga ovanpå resten.',
+    pro: 'Visar vad som går att trycka på och vad som ligger överst (dialoger, menyer).',
+    con: 'Tunga skuggor ser daterade ut och kostar prestanda om de ligger på många element. I mörkt läge syns de knappt.',
+    rule: 'Mjuk och liten skugga (suddighet 8–16 px, låg styrka). Ju högre upp ett element ligger, desto större och mjukare skugga. Låt inte alla element ha skugga: då försvinner poängen.',
+  },
+  glas: {
+    t: 'Glas och genomskinlighet',
+    what: 'En halvgenomskinlig yta som suddar det som ligger bakom, som i iOS.',
+    pro: 'Ger en modern, lätt känsla och visar att något ligger över innehållet.',
+    con: 'Texten kan bli svårläst när det som ligger bakom ändras. Suddigt glas är dyrt för processorn, särskilt på äldre Android-telefoner (i Flutter kostar BackdropFilter).',
+    rule: 'Använd sparsamt, på något som flyter ovanpå (bottenmeny, dialog) och kontrollera kontrasten på det ljusaste och mörkaste som kan ligga bakom.',
+  },
+  rorelse: {
+    t: 'Animation och rörelse',
+    what: 'Element som pulserar, studsar eller sveper in.',
+    pro: 'Rörelse leder blicken, ger feedback och får appen att kännas levande.',
+    con: 'Rörelse som aldrig slutar stör läsningen och kan ge illamående hos vissa. Den kostar batteri.',
+    rule: 'Korta övergångar, 150–300 ms. Loopande animationer bara på något som ska fånga blicken en kort stund. Respektera systeminställningen "minska rörelse" (WCAG kräver att rörelse som pågår över 5 sekunder går att pausa).',
+  },
+  hovring: {
+    t: 'Hovringseffekter',
+    what: 'Något som händer när muspekaren är över ett element.',
+    pro: 'Bra signal på dator och webb att något går att klicka på.',
+    con: 'Finns inte på telefon, eftersom det inte finns någon pekare. Effekten kan alltså aldrig vara det enda sättet att visa något.',
+    rule: 'Se hovring som en extra på webben och desktop. På telefon är tryckeffekten det som räknas.',
+  },
+  tryck: {
+    t: 'Tryckeffekter',
+    what: 'Hur ett element reagerar medan man trycker på det: krymper, mörknar eller sjunker.',
+    pro: 'Direkt feedback visar att trycket gick fram. Det känns snabbare och mer fysiskt.',
+    con: 'För kraftig effekt (stor krympning) ser ryckig ut.',
+    rule: 'Reagera inom cirka 100 ms. Små förändringar räcker: 3–6 % krympning eller en lätt mörkare ton.',
+  },
+  kant: {
+    t: 'Kantlinjer',
+    what: 'En linje runt kort, fält och knappar.',
+    pro: 'Tydliggör gränser utan skugga, och fungerar lika bra i ljust som mörkt läge. Fält med kant syns som skrivbara.',
+    con: 'Kanter runt allt blir tungt och tecknat.',
+    rule: 'Tunna kanter (1 px) i dämpad färg. En kantfärg som är tillräckligt synlig mot bakgrunden (3:1) hjälper dem som ser dåligt.',
+  },
+  ikonbibliotek: {
+    t: 'Ikonbibliotek',
+    what: 'En färdig uppsättning ikoner med samma stil: Lucide (linjer), Phosphor (flera vikter) och Butlerys egna.',
+    pro: 'Ett färdigt bibliotek ger hundratals konsekventa ikoner utan eget ritande. Egna ikoner gör appen unik.',
+    con: 'Blandar man bibliotek ser ikonerna ut som olika appar. Ett stort bibliotek ger större app om det inte trimmas.',
+    rule: 'Använd ett enda bibliotek och bara en stil i det. Välj det som matchar typsnittet: runda ikoner till runda typsnitt.',
+  },
+  ikonstil: {
+    t: 'Linjeändar och dubbeltoning',
+    what: 'Om ikonlinjer slutar runt, kantigt eller med en ton fylld bakom.',
+    pro: 'Runda ändar känns mjuka, kantiga känns tekniska. Dubbeltoning ger ikonerna mer karaktär.',
+    con: 'Dubbeltoning blir stökigt i små storlekar.',
+    rule: 'Låt ikonerna ha samma ändar som typsnittets hörn: runda bokstäver, runda ikoner.',
+  },
+  ikonstorlek: {
+    t: 'Ikonstorlek',
+    what: 'Hur stora ikonerna ritas.',
+    pro: 'Större ikoner syns tydligare och är lättare att träffa.',
+    con: 'För stora ikoner dominerar texten. För små går inte att tolka.',
+    rule: 'Standard är 24 px. Mindre än 16 px är svårt att tolka. Ikonen kan vara 24 px men trycksytan runt den 48.',
+  },
+  ikonlinje: {
+    t: 'Ikonernas linjetjocklek',
+    what: 'Tjockleken på linjerna i ikonerna.',
+    pro: 'Tjockare linjer är tydligare och matchar fet text. Tunnare känns elegant.',
+    con: 'Tunna linjer blir svaga på små storlekar och i solsken.',
+    rule: 'Linjerna ska ha ungefär samma tjocklek som texten bredvid. Vanligt är 1,5–2 px på en 24 px-ikon.',
+  },
+  layout: {
+    t: 'Layout och placering',
+    what: 'Vad som ligger var, och i vilken ordning.',
+    pro: 'Det viktigaste högst upp och längst ned (nära tummen) hittas först.',
+    con: 'Att flytta runt ofta gör att användare tappar bort sig. Många element på samma nivå dränker det viktiga.',
+    rule: 'Det man gör ofta ska ligga lätt att nå. Nedre delen av skärmen är där tummen är. Gruppera sådant som hör ihop och ge grupper rubriker.',
+  },
+  bottenmeny: {
+    t: 'Bottenmeny',
+    what: 'Flikar längst ned för de främsta delarna av appen.',
+    pro: 'Nåbar med tummen och alltid synlig, så man vet var man är.',
+    con: 'Tar plats hela tiden. Fler än fem flikar blir trångt och svårt att träffa.',
+    rule: 'Tre till fem flikar med ikon och kort text. Markera den aktiva tydligt. Visa den på alla vyer som nås från en flik, men inte under helskärmsflöden som matlagning.',
+  },
+  varianter: {
+    t: 'Jämföra varianter',
+    what: 'Spara ett läge och ställ det bredvid ett annat.',
+    pro: 'Man ser skillnaden direkt i stället för att minnas den. Det är lättare att välja när man har två att välja mellan.',
+    con: 'Fler än två eller tre varianter gör valet svårare, inte lättare.',
+    rule: 'Jämför en sak i taget. Ändrar du färg och form samtidigt vet du inte vilken ändring som gav intrycket.',
+  },
+};
+
+// Which topics belong to which tab, and which topic each control opens.
+const ADVICE_TABS = {
+  all: ['farg', 'kontrast', 'morkt', 'typsnitt', 'textstorlek', 'radavstand', 'form', 'marginal'],
+  part: ['kontrast', 'form', 'skugga', 'glas', 'rorelse', 'kant'],
+  fx: ['skugga', 'rorelse', 'hovring', 'tryck', 'glas', 'kant', 'form'],
+  space: ['avstand', 'tathet', 'trycksyta', 'marginal', 'avdelare'],
+  icons: ['ikonbibliotek', 'ikonstil', 'ikonstorlek', 'ikonlinje'],
+  layout: ['layout', 'bottenmeny'],
+  vars: ['varianter'],
+  check: ['kontrast'],
+};
+const ADVICE_FOR = {
+  scale: 'textstorlek', lh: 'radavstand', font: 'typsnitt', card: 'form', control: 'form', margin: 'marginal',
+  hue: 'farg', sat: 'farg', light: 'farg', presets: 'farg', space: 'avstand', rowPad: 'avstand', sectionGap: 'avstand',
+  blockGap: 'avstand', chipGap: 'avstand', rowInner: 'avstand', hair: 'avdelare', touch: 'trycksyta', overlay: 'avstand',
+  iconSize: 'ikonstorlek', iconStroke: 'ikonlinje', 'icon-lib': 'ikonbibliotek', 'icon-style': 'ikonstil',
+};
+let adviceTopic = null;
+
+function adviceCard(id, open) {
+  const a = ADVICE[id];
+  const d = document.createElement('details');
+  d.open = open; d.dataset.topic = id;
+  const s = document.createElement('summary');
+  s.textContent = a.t;
+  d.append(s);
+  for (const [label, text] of [['Vad det är', a.what], ['Fördelar', a.pro], ['Nackdelar', a.con], ['Tumregel', a.rule]]) {
+    const p = document.createElement('p');
+    const b = document.createElement('b');
+    b.textContent = label + ': ';
+    p.append(b, text);
+    d.append(p);
+  }
+  return d;
+}
+function showAdvice(topic) {
+  if (topic) adviceTopic = topic;
+  const tab = document.querySelector('#tabs button.on')?.dataset.tab || 'all';
+  const ids = [...new Set([adviceTopic, ...(ADVICE_TABS[tab] || [])].filter(id => ADVICE[id]))];
+  const box = $('advice-list');
+  if (!box) return;
+  box.textContent = '';
+  ids.forEach((id, i) => box.append(adviceCard(id, id === adviceTopic || (!adviceTopic && i === 0))));
+}
+function wireAdvice() {
+  const panel = document.querySelector('.panel:not(.dock)');
+  const topicOf = el => {
+    for (let e = el; e && e !== panel; e = e.parentElement) if (ADVICE_FOR[e.id]) return ADVICE_FOR[e.id];
+    return null;
+  };
+  panel.addEventListener('focusin', e => { const t = topicOf(e.target); if (t) showAdvice(t); });
+  panel.addEventListener('pointerdown', e => { const t = topicOf(e.target); if (t) showAdvice(t); });
+  panel.addEventListener('mouseover', e => { const t = e.target.closest('[data-advice]')?.dataset.advice; if (t) showAdvice(t); });
+  $('tabs').addEventListener('click', () => { adviceTopic = null; showAdvice(); });
+  showAdvice();
+}

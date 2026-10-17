@@ -766,9 +766,16 @@
 </section>
 <section class="pane" data-pane="part"><div id="part"></div></section>
 <section class="pane" data-pane="fx">
-<h2>Effekter att prova</h2>
-<div class="chips" id="effects"></div>
+<h2>Gäller</h2>
+<select id="fx-target"></select>
+<p class="hint" id="fx-note"></p>
+<h2>Färdiga helheter</h2>
+<div class="chips fxlist" id="fx-combos"></div>
+<div id="fx-groups"></div>
 <label><input type="checkbox" id="pause"><span>Pausa animationer</span></label>
+<h2>Det som är ändrat nu</h2>
+<div id="fx-active"></div>
+<div class="row"><button class="ghost" id="fx-clear" type="button">Ta bort för det valda</button><button class="ghost" id="fx-reset" type="button">Släck allt</button></div>
 </section>
 <section class="pane" data-pane="space">
 <h2>Avstånd i hela appen</h2>
@@ -819,8 +826,9 @@
 </aside>
 <div class="stage">
 <h1>Designlabb: se ändringar direkt</h1>
-<p>Samma tre skärmar som i facit, ljust och mörkt. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
-<div class="screens" id="screens">
+<p>Samma tre skärmar som i facit. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
+<div class="viewbar" id="viewbar"><span>Visa</span><button type="button" data-view="light">Ljust</button><button type="button" data-view="dark">Mörkt</button><button type="button" data-view="both">Båda</button></div>
+<div class="screens only-light" id="screens">
 
 <!-- ===== 1. Mer (huvudflik) ===== -->
 <figure>
@@ -947,6 +955,11 @@
 <aside class="panel dock" id="dock" hidden>
 <div class="head"><h1>Claude</h1></div>
 <div class="panes">
+<div id="advice-box">
+<h2>Råd</h2>
+<p class="hint">Bakgrund och tumregler för det du justerar. Peka på eller ändra ett reglage, så öppnas rådet för det.</p>
+<div id="advice-list"></div>
+</div>
 <div id="chat-box" hidden>
 <h2>Fråga Claude</h2>
 <div id="chat-log"><p class="hint">Fråga om det du ser, eller be om en ändring: "gör knapparna rundare" eller "prova ett varmare tema". Claude kan ändra labbet, men inte appen.</p></div>
@@ -969,6 +982,8 @@
 <script src="designlabb-layout.js"></script>
 <script src="designlabb-core.js"></script>
 <script src="designlabb-parts.js"></script>
+<script src="designlabb-fx.js"></script>
+<script src="designlabb-advice.js"></script>
 <script src="designlabb-claude.js"></script>
 <script src="designlabb-ui.js"></script>
 </body>

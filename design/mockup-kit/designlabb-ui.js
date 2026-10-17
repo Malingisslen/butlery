@@ -26,6 +26,8 @@ const VARIANTS_KEY = 'butlery-designlabb-variants';
 assignLayoutIds();
 for (const fig of [...document.querySelectorAll('#screens > figure')]) {
   const dark = fig.cloneNode(true);
+  fig.classList.add('fig-light');
+  dark.classList.add('fig-dark');
   dark.querySelector('.phone').dataset.theme = 'dark';
   dark.querySelector('figcaption').textContent += ' (mörkt)';
   fig.after(dark);
@@ -354,6 +356,15 @@ $('copy').onclick = async () => {
 wireScreens();
 wireEffects();
 wireExtras();
+wireAdvice();
+for (const b of document.querySelectorAll('#viewbar button')) {
+  b.onclick = () => {
+    $('screens').className = `screens ${b.dataset.view === 'both' ? '' : 'only-' + b.dataset.view}`;
+    document.querySelectorAll('#viewbar button').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  };
+}
+document.querySelector('#viewbar [data-view="light"]').classList.add('on');
 renderVariants();
 if (location.hash.length > 1) {
   try { state = { ...defaults(), ...JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))) }; undoLog.stack[0] = JSON.stringify(state); } catch {}

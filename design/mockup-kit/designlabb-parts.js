@@ -212,33 +212,3 @@ function wireScreens() {
   });
   screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));
 }
-
-// Ready-made looks that touch many parts at once; each is still editable by clicking the part.
-const EFFECTS = {
-  'Skuggor på alla kort': [['.b-card', { shY: 6, shBlur: 18, shAlpha: 22 }]],
-  'Glas på ark och dialoger': [['.b-sheet', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }], ['.b-dialog', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }]],
-  'Knappar lyfter vid hovring': [['.b-btn', { hover: 'lift', press: 'sink' }]],
-  'Hjälteknappen pulserar': [['.b-btn.hero', { anim: 'pulse', dur: 1.6 }]],
-  'Glödande hjälteknapp': [['.b-btn.hero', { anim: 'glow', dur: 2 }]],
-  'Svävande kort': [['.b-card', { anim: 'float', dur: 3.5, shY: 10, shBlur: 24, shAlpha: 18 }]],
-  'Chips växer vid hovring': [['.b-chip', { hover: 'grow' }]],
-  'Rader tonar vid hovring': [['.b-row', { hover: 'dim' }]],
-  'Släck alla effekter': [],
-};
-function wireEffects() {
-  for (const [name, list] of Object.entries(EFFECTS)) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = name;
-    b.onclick = () => {
-      if (!list.length) state.parts = {};
-      for (const [sel, props] of list) {
-        const key = `both|${sel}`;
-        state.parts[key] = { sel, mode: 'both', props: { ...(state.parts[key]?.props || {}), ...props } };
-      }
-      clearSelection();
-      render();
-    };
-    $('effects').append(b);
-  }
-  $('pause').onchange = e => { state.pause = e.target.checked; render(); };
-}

@@ -79,3 +79,18 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel.dock { flex: 0 0 300px; }
 .panel.dock #chat-log { max-height: calc(100vh - 360px); min-height: 160px; }
 @media (max-width: 1250px) { .lab { flex-wrap: wrap; } .panel.dock { position: static; flex: 1 0 100%; max-height: none; } }
+
+.viewbar { display: flex; align-items: center; gap: 6px; margin: 10px 0 14px; font-size: 13px; }
+.viewbar button { border: 1px solid #ccd1c2; background: #fff; color: #17251d; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+.viewbar button.on { background: #17251d; color: #f5f4ed; border-color: #17251d; }
+.screens.only-light > .fig-dark, .screens.only-dark > .fig-light { display: none; }
+.fxlist { flex-direction: column; align-items: stretch; }
+.fxlist button { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 1px; border-radius: 10px; padding: 7px 12px; }
+.fxlist button small { font-weight: 400; opacity: .8; font-size: 11px; }
+.fx-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; }
+#fx-target { width: 100%; box-sizing: border-box; padding: 6px; border-radius: 6px; border: 1px solid #ccd1c2; font: inherit; }
+#advice-box details { border-top: 1px solid #e3e6d9; padding: 6px 0; font-size: 12.5px; line-height: 1.45; }
+#advice-box summary { font-weight: 700; cursor: pointer; }
+#advice-box details p { margin: 5px 0; }
+#advice-box details[open] summary { color: #8a4f0a; }
+#advice-list { max-height: 34vh; overflow: auto; }
