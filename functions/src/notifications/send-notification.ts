@@ -25,6 +25,10 @@ import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-
 import { buildNotificationPayload } from "../shared/notification-payload";
 import { evaluateSendGate } from "../shared/notification-gate";
 import { recordNotificationSendEvent } from "../shared/notification-send-events";
+import {
+  readRecipientLocale,
+  resolveText,
+} from "../shared/notification-locale";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -52,6 +56,8 @@ interface NotificationRequest {
   targetUserId: string;
   title?: string;
   body?: string;
+  /** The push in each supported language; the server picks the recipient's. */
+  localized?: unknown;
   data?: Record<string, string>;
   imageUrl?: string;
   silent?: boolean;
@@ -91,7 +97,7 @@ export const sendNotification = onCall(
     // leaves a `system_events` audit row.
     await enforceRateLimit(callerUid, "sendNotification");
 
-    const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
+    const { targetUserId, title, body, localized, data: payload, imageUrl, silent } = data;
 
     // Validate required fields
     if (!targetUserId) {
@@ -148,6 +154,7 @@ export const sendNotification = onCall(
         targetUserId,
         title,
         body,
+        localized,
         data: payload,
         imageUrl,
         silent,
@@ -204,6 +211,7 @@ export interface DispatchOptions {
   targetUserId: string;
   title?: string;
   body?: string;
+  localized?: unknown;
   data?: Record<string, string>;
   imageUrl?: string;
   silent?: boolean;
@@ -225,6 +233,8 @@ export interface DispatchOptions {
   gate?: typeof evaluateSendGate;
   /** Test seam: override the send-event recorder. */
   recordEvent?: typeof recordNotificationSendEvent;
+  /** Test seam: override the recipient-language lookup. */
+  getLocale?: typeof readRecipientLocale;
 }
 
 export async function dispatchNotification(
@@ -232,11 +242,13 @@ export async function dispatchNotification(
 ): Promise<NotificationResponse> {
   const {
     targetUserId,
-    title,
-    body,
+    title: sentTitle,
+    body: sentBody,
+    localized,
     data: payload,
     imageUrl,
     silent,
+    getLocale,
     preferenceAwareSend = sendPushToUserRespectingPreferences,
     silentSend = (msg) => admin.messaging().sendEachForMulticast(msg),
     getTokens = getActiveTokensForUser,
@@ -252,6 +264,16 @@ export async function dispatchNotification(
       getTokens,
     });
   }
+
+  // BUT-2385: chosen before the gate so a push held for quiet hours is queued
+  // in the recipient's language.
+  const { title, body } = await resolveText({
+    userId: targetUserId,
+    title: sentTitle,
+    body: sentBody,
+    localized,
+    getLocale,
+  });
 
   // BUT-647 + BUT-645: server-side pre-send gate. Drops if the type's RC
   // flag is off; drops or delays if the user is inside their quiet-hours
@@ -696,7 +718,7 @@ export const sendNotificationBatch = onCall(
 async function sendNotificationInternal(
   data: NotificationRequest
 ): Promise<NotificationResponse> {
-  const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
+  const { targetUserId, title, body, localized, data: payload, imageUrl, silent } = data;
 
   if (!targetUserId) {
     return {
@@ -712,6 +734,7 @@ async function sendNotificationInternal(
       targetUserId,
       title,
       body,
+      localized,
       data: payload,
       imageUrl,
       silent,

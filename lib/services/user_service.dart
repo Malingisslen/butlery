@@ -1,5 +1,7 @@
 /// User profile service with 30-min caching, social discovery, real-time auth sync, and privacy controls.
 
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
@@ -57,6 +59,7 @@ class UserService extends ChangeNotifier
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
+  String? _localeWritePending;
   final Map<String, UserProfile> _profileCache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
 
@@ -931,6 +934,37 @@ class UserService extends ChangeNotifier
     } catch (e) {
       AppLogger.error('❌ Failed to update FCM token', e);
       _setError(AppLocale.current.errorCouldNotUpdateNotificationToken);
+    }
+  }
+
+  /// Stores the app language where the server reads it, so a push is written
+  /// in the recipient's language. [onlyIfUnset] fills an account that has no
+  /// language yet and never replaces one, for the sync that runs without the
+  /// user having chosen anything. Failure is logged only.
+  Future<void> updatePreferredLocale(
+    String localeCode, {
+    bool onlyIfUnset = false,
+  }) async {
+    final userId = currentUserId;
+    final stored = _currentUserProfile?.preferredLocale;
+    if (userId == null || _currentUserProfile == null) return;
+    if (stored == localeCode || (onlyIfUnset && stored != null)) return;
+    if (_localeWritePending == localeCode) return;
+
+    _localeWritePending = localeCode;
+    try {
+      await _repository.updatePreferredLocale(userId, localeCode);
+      // The profile may have been replaced or signed out while the write was
+      // in flight; patch what is there now, never a copy taken before.
+      final current = _currentUserProfile;
+      if (current != null && current.uid == userId) {
+        _currentUserProfile = current.copyWith(preferredLocale: localeCode);
+        _cacheProfile(userId, _currentUserProfile!);
+      }
+    } catch (e) {
+      AppLogger.warning('Could not store the preferred locale: $e');
+    } finally {
+      _localeWritePending = null;
     }
   }
 

@@ -96,6 +96,7 @@
     "test:parse-tier-vocabulary": "ts-node src/__tests__/parse-tier-vocabulary.test.ts",
     "test:activity-digest": "ts-node src/__tests__/send-activity-digest.test.ts",
     "test:send-notification": "ts-node src/__tests__/send-notification.test.ts",
+    "test:notification-locale": "ts-node src/__tests__/notification-locale.test.ts",
     "test:ocr-retry": "ts-node src/__tests__/ocr-retry.test.ts",
     "test:kill-switch": "ts-node src/__tests__/llm-kill-switch.test.ts",
     "test:reset-scheduler-pause": "ts-node src/__tests__/reset-scheduler-pause.test.ts",

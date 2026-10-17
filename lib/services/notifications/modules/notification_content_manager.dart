@@ -2,9 +2,11 @@
 
 import 'package:clock/clock.dart';
 import 'dart:math';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 
 /// Specialized notification content generation and management module providing comprehensive message creation capabilities.
 /// This focused module implements sophisticated notification content generation following Single Responsibility Principle,
@@ -89,6 +91,7 @@ class NotificationContentManager {
   NotificationTemplate createNotificationContent({
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -96,6 +99,7 @@ class NotificationContentManager {
     return createTemplate(
       strategy: strategy,
       variables: variables,
+      variablesByLocale: variablesByLocale,
       additionalData: additionalData,
       imageUrl: imageUrl,
       actions: actions,
@@ -107,6 +111,7 @@ class NotificationContentManager {
   NotificationTemplate createTemplate({
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -143,6 +148,11 @@ class NotificationContentManager {
         data: data,
         imageUrl: imageUrl,
         actions: actions,
+        translations: translateStrategy(
+          strategy,
+          variables,
+          variablesByLocale: variablesByLocale,
+        ),
       );
 
       AppLogger.success('✅ Created notification template: "$title"');
@@ -218,9 +228,10 @@ class NotificationContentManager {
       final firstNotification = notifications.first;
       final category = firstNotification.data['category'] as String;
 
-      final batchContent = _generateBatchContent(
+      final batchContent = batchContentFor(
         category,
         notifications.length,
+        AppLocale.current,
       );
 
       final batchedTemplate = NotificationTemplate(
@@ -322,9 +333,12 @@ class NotificationContentManager {
     );
   }
 
-  /// Generate batch content based on category and count
-  Map<String, String> _generateBatchContent(String category, int count) {
-    final l = AppLocale.current;
+  /// Summary title and body for [count] batched notifications of [category].
+  static Map<String, String> batchContentFor(
+    String category,
+    int count,
+    AppLocalizations l,
+  ) {
     switch (category) {
       case 'recipes':
         return {

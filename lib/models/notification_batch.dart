@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
@@ -86,6 +87,8 @@ extension NotificationTemplateExtension on NotificationTemplate {
             },
           )
           .toList(),
+      if (translations != null)
+        'translations': translations!.map((k, v) => MapEntry(k, v.toMap())),
     };
   }
 }
@@ -112,6 +115,17 @@ class NotificationTemplateSerializer {
       data: SerializationUtils.safeMap(map, 'data'),
       imageUrl: SerializationUtils.safeNullableString(map, 'imageUrl'),
       actions: actions,
+      translations: _translationsFrom(map['translations']),
     );
+  }
+
+  static Map<String, NotificationText>? _translationsFrom(Object? raw) {
+    if (raw is! Map) return null;
+    final result = <String, NotificationText>{};
+    raw.forEach((code, value) {
+      final text = NotificationText.fromMap(value);
+      if (code is String && text != null) result[code] = text;
+    });
+    return result.isEmpty ? null : result;
   }
 }

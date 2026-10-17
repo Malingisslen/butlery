@@ -94,6 +94,7 @@ class _RecordingNotificationService extends Fake
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    Map<String, Map<String, String>>? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,

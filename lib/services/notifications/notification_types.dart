@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 
 /// Comprehensive notification type system defining intelligent delivery strategies and priority management for cooking-focused notifications.
 /// This system implements sophisticated notification categorization with intelligent delivery strategies based on user
@@ -365,12 +366,16 @@ class NotificationTemplate {
   final String? imageUrl;
   final List<NotificationAction>? actions;
 
+  /// The same push per language; null for a push built before this existed.
+  final Map<String, NotificationText>? translations;
+
   const NotificationTemplate({
     required this.title,
     required this.body,
     required this.data,
     this.imageUrl,
     this.actions,
+    this.translations,
   });
 
   /// Create from strategy with variable substitution
@@ -381,22 +386,8 @@ class NotificationTemplate {
     String? imageUrl,
     List<NotificationAction>? actions,
   }) {
-    // Use Swedish by default (app is primarily Swedish)
-    final titleTemplate =
-        strategy.localization['title_sv'] ??
-        AppLocale.current.notificationDefaultTitle;
-    final bodyTemplate =
-        strategy.localization['body_sv'] ??
-        AppLocale.current.notificationDefaultBody;
-
-    // Substitute variables in templates
-    String title = titleTemplate;
-    String body = bodyTemplate;
-
-    variables.forEach((key, value) {
-      title = title.replaceAll('{$key}', value);
-      body = body.replaceAll('{$key}', value);
-    });
+    final translations = translateStrategy(strategy, variables);
+    final sv = translations['sv']!;
 
     // Build data payload
     final data = <String, dynamic>{
@@ -408,11 +399,12 @@ class NotificationTemplate {
     };
 
     return NotificationTemplate(
-      title: title,
-      body: body,
+      title: sv.title,
+      body: sv.body,
       data: data,
       imageUrl: imageUrl,
       actions: actions,
+      translations: translations,
     );
   }
 }

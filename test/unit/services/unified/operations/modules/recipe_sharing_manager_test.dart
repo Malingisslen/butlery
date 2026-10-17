@@ -217,6 +217,7 @@ void main() {
 
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -258,6 +259,7 @@ void main() {
 
         verify(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: memberIds,
             strategy: NotificationStrategy.recipeShared,
             variables: any(named: 'variables'),
@@ -302,6 +304,7 @@ void main() {
           mockParentService.setCollaborativeState(shouldSucceed: true);
           when(
             () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
               targetUserIds: any(named: 'targetUserIds'),
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
@@ -368,6 +371,7 @@ void main() {
         mockParentService.setCollaborativeState(shouldSucceed: true);
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -405,6 +409,7 @@ void main() {
           mockParentService.setCollaborativeState(shouldSucceed: true);
           when(
             () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
               targetUserIds: any(named: 'targetUserIds'),
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
@@ -590,6 +595,7 @@ void main() {
 
           when(
             () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
               targetUserIds: any(named: 'targetUserIds'),
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
@@ -817,6 +823,7 @@ void main() {
           'row, so the group page finds it (BUT-2271)', () async {
         when(
           () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),

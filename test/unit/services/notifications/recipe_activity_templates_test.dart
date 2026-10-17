@@ -53,6 +53,7 @@ void main() {
 
     when(
       () => service.sendImmediateNotification(
+        variablesByLocale: any(named: 'variablesByLocale'),
         targetUserIds: any(named: 'targetUserIds'),
         strategy: any(named: 'strategy'),
         variables: any(named: 'variables'),

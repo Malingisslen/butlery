@@ -1535,6 +1535,111 @@ void main() {
       });
     });
 
+    group('Preferred language (BUT-2385)', () {
+      setUp(() async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockAuthRepository.authStateChanges()).thenAnswer(
+          (_) => Stream.value(mockUser),
+        );
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer((_) async {});
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => testProfile,
+        );
+        await userService.initialize();
+      });
+
+      test(
+        'stores a changed language once, and keeps it on the profile',
+        () async {
+          when(
+            () => mockUserRepository.updatePreferredLocale(
+              'test_user_123',
+              'en',
+            ),
+          ).thenAnswer((_) async {});
+
+          await userService.updatePreferredLocale('en');
+          await userService.updatePreferredLocale('en');
+
+          verify(
+            () => mockUserRepository.updatePreferredLocale(
+              'test_user_123',
+              'en',
+            ),
+          ).called(1);
+          expect(userService.currentUserProfile!.preferredLocale, 'en');
+        },
+      );
+
+      test('loading the profile writes no language by itself', () async {
+        verifyNever(
+          () => mockUserRepository.updatePreferredLocale(any(), any()),
+        );
+      });
+
+      test('fill-only never replaces a language the account has', () async {
+        when(
+          () => mockUserRepository.updatePreferredLocale(
+            'test_user_123',
+            any(),
+          ),
+        ).thenAnswer((_) async {});
+
+        await userService.updatePreferredLocale('sv');
+        await userService.updatePreferredLocale('en', onlyIfUnset: true);
+
+        verifyNever(
+          () => mockUserRepository.updatePreferredLocale(
+            'test_user_123',
+            'en',
+          ),
+        );
+        expect(userService.currentUserProfile!.preferredLocale, 'sv');
+      });
+
+      test('fill-only fills an account that has none', () async {
+        when(
+          () => mockUserRepository.updatePreferredLocale(
+            'test_user_123',
+            'en',
+          ),
+        ).thenAnswer((_) async {});
+
+        await userService.updatePreferredLocale('en', onlyIfUnset: true);
+
+        verify(
+          () => mockUserRepository.updatePreferredLocale(
+            'test_user_123',
+            'en',
+          ),
+        ).called(1);
+        expect(userService.currentUserProfile!.preferredLocale, 'en');
+      });
+
+      test(
+        'a failed write is logged, not shown, and leaves the profile',
+        () async {
+          when(
+            () => mockUserRepository.updatePreferredLocale(
+              'test_user_123',
+              'en',
+            ),
+          ).thenThrow(Exception('offline'));
+
+          await userService.updatePreferredLocale('en');
+
+          expect(userService.hasError, isFalse);
+          expect(userService.currentUserProfile!.preferredLocale, isNull);
+        },
+      );
+    });
+
     group('Allergen settings and the household share (BUT-2267, DPIA R4)', () {
       final share = HouseholdAllergenShare(
         householdId: 'hh-1',

@@ -2,11 +2,13 @@
 
 import 'package:intl/intl.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
 
@@ -30,6 +32,11 @@ class RatingNotifications {
     final ownerId = recipe.ownerUid;
 
     if (ownerId != null) {
+      String message(AppLocalizations l) =>
+          review?.isNotEmpty == true && review != null
+          ? '$raterName: ${_truncateReview(review)}'
+          : l.notificationRatingReceived(raterName, stars);
+
       await NotificationHelper.sendImmediateSafely(
         notificationService: notificationService,
         operationName: 'Send rating notification to recipe owner',
@@ -37,10 +44,11 @@ class RatingNotifications {
         strategy: RecipeActivityStrategies.ratingNotice,
         variables: {
           'recipeName': recipe.core.title,
-          'message': review?.isNotEmpty == true && review != null
-              ? '$raterName: ${_truncateReview(review)}'
-              : AppLocale.current.notificationRatingReceived(raterName, stars),
+          'message': message(AppLocale.current),
         },
+        variablesByLocale: localizedVariables(
+          (l) => {'message': message(l)},
+        ),
         additionalData: {
           'recipeId': recipe.id,
           'action': 'recipe_rated',
@@ -68,6 +76,7 @@ class RatingNotifications {
     // Check if this is a milestone worth celebrating
     final milestone = _getRatingMilestone(totalRatings, averageRating);
     if (milestone == null) return;
+    final message = milestone['message'] as String Function(AppLocalizations);
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
@@ -76,8 +85,9 @@ class RatingNotifications {
       strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
         'recipeName': recipe.core.title,
-        'message': milestone['message'] as String,
+        'message': message(AppLocale.current),
       },
+      variablesByLocale: localizedVariables((l) => {'message': message(l)}),
       additionalData: {
         'recipeId': recipe.id,
         'action': 'rating_milestone',
@@ -110,7 +120,8 @@ class RatingNotifications {
     final topRecipe = recipeRatingSummaries.firstWhere(
       (s) => (s['newRatings'] as int) > 0,
     );
-    final summary = _generateRatingSummaryText(recipeRatingSummaries, period);
+    String summary(AppLocalizations l) =>
+        _generateRatingSummaryText(l, recipeRatingSummaries, period);
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
@@ -119,8 +130,9 @@ class RatingNotifications {
       strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
         'recipeName': topRecipe['recipeName'] as String,
-        'message': summary,
+        'message': summary(AppLocale.current),
       },
+      variablesByLocale: localizedVariables((l) => {'message': summary(l)}),
       additionalData: {
         'action': 'rating_summary',
         'period': period,
@@ -145,12 +157,9 @@ class RatingNotifications {
     if (ownerId == null) return;
 
     final stars = '★' * rating.round();
-    final message = review?.isNotEmpty == true
-        ? AppLocale.current.notificationRatingFirstReview(
-            raterName,
-            _truncateReview(review!),
-          )
-        : AppLocale.current.notificationRatingFirstRating(raterName, stars);
+    String message(AppLocalizations l) => review?.isNotEmpty == true
+        ? l.notificationRatingFirstReview(raterName, _truncateReview(review!))
+        : l.notificationRatingFirstRating(raterName, stars);
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,
@@ -159,8 +168,9 @@ class RatingNotifications {
       strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
         'recipeName': recipe.core.title,
-        'message': message,
+        'message': message(AppLocale.current),
       },
+      variablesByLocale: localizedVariables((l) => {'message': message(l)}),
       additionalData: {
         'recipeId': recipe.id,
         'action': 'first_rating',
@@ -183,22 +193,26 @@ class RatingNotifications {
     if (totalRatings == 5) {
       return {
         'type': 'first_five_ratings',
-        'message': AppLocale.current.notificationRatingMilestoneCount(5),
+        'message': (AppLocalizations l) =>
+            l.notificationRatingMilestoneCount(5),
       };
     } else if (totalRatings == 10) {
       return {
         'type': 'ten_ratings',
-        'message': AppLocale.current.notificationRatingMilestoneCount(10),
+        'message': (AppLocalizations l) =>
+            l.notificationRatingMilestoneCount(10),
       };
     } else if (totalRatings == 25) {
       return {
         'type': 'twenty_five_ratings',
-        'message': AppLocale.current.notificationRatingMilestoneCount(25),
+        'message': (AppLocalizations l) =>
+            l.notificationRatingMilestoneCount(25),
       };
     } else if (totalRatings == 50) {
       return {
         'type': 'fifty_ratings',
-        'message': AppLocale.current.notificationRatingMilestoneCount(50),
+        'message': (AppLocalizations l) =>
+            l.notificationRatingMilestoneCount(50),
       };
     }
 
@@ -207,16 +221,18 @@ class RatingNotifications {
       if (averageRating >= 4.8) {
         return {
           'type': 'excellent_rating',
-          'message': AppLocale.current.notificationRatingMilestoneAverage(
-            _oneDecimal(averageRating),
-          ),
+          'message': (AppLocalizations l) =>
+              l.notificationRatingMilestoneAverage(
+                _oneDecimal(l, averageRating),
+              ),
         };
       } else if (averageRating >= 4.5) {
         return {
           'type': 'great_rating',
-          'message': AppLocale.current.notificationRatingMilestoneAverage(
-            _oneDecimal(averageRating),
-          ),
+          'message': (AppLocalizations l) =>
+              l.notificationRatingMilestoneAverage(
+                _oneDecimal(l, averageRating),
+              ),
         };
       }
     }
@@ -226,6 +242,7 @@ class RatingNotifications {
 
   /// Generate rating summary text
   static String _generateRatingSummaryText(
+    AppLocalizations l,
     List<Map<String, dynamic>> summaries,
     String period,
   ) {
@@ -238,7 +255,6 @@ class RatingNotifications {
         .where((s) => (s['newRatings'] as int) > 0)
         .length;
 
-    final l = AppLocale.current;
     if (recipesWithRatings == 1) {
       final recipe = summaries.firstWhere((s) => (s['newRatings'] as int) > 0);
       return l.notificationRatingSingle(
@@ -255,8 +271,8 @@ class RatingNotifications {
     }
   }
 
-  static String _oneDecimal(double value) =>
-      NumberFormat('0.0', AppLocale.current.localeName).format(value);
+  static String _oneDecimal(AppLocalizations l, double value) =>
+      NumberFormat('0.0', l.localeName).format(value);
 
   /// Truncate review text for notifications
   static String _truncateReview(String review, {int maxLength = 50}) {
@@ -325,9 +341,9 @@ class RatingNotifications {
         ratings.fold<double>(0.0, (sum, r) => sum + (r['rating'] as double)) /
         ratingCount.toDouble();
 
-    final message = AppLocale.current.notificationRatingBatch(
+    String message(AppLocalizations l) => l.notificationRatingBatch(
       ratingCount,
-      _oneDecimal(averageRating),
+      _oneDecimal(l, averageRating),
     );
 
     await NotificationHelper.sendImmediateSafely(
@@ -337,8 +353,9 @@ class RatingNotifications {
       strategy: RecipeActivityStrategies.ratingNotice,
       variables: {
         'recipeName': recipe.core.title,
-        'message': message,
+        'message': message(AppLocale.current),
       },
+      variablesByLocale: localizedVariables((l) => {'message': message(l)}),
       additionalData: {
         'recipeId': recipe.id,
         'action': 'batch_ratings',

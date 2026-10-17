@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/notification_history_entry.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
@@ -226,6 +227,7 @@ class NotificationService extends BaseService {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -275,6 +277,7 @@ class NotificationService extends BaseService {
             final template = _contentManager.createNotificationContent(
               strategy: strategy,
               variables: variables,
+              variablesByLocale: variablesByLocale,
               additionalData: additionalData,
               imageUrl: imageUrl,
               actions: actions,
@@ -315,6 +318,7 @@ class NotificationService extends BaseService {
           targetUserIds: targetUserIds,
           strategy: strategy,
           variables: variables,
+          variablesByLocale: variablesByLocale,
           additionalData: additionalData,
           imageUrl: imageUrl,
           actions: actions,
@@ -552,6 +556,10 @@ class NotificationService extends BaseService {
         'targetUserId': targetUserId,
         'title': template.title,
         'body': template.body,
+        if (template.translations != null)
+          'localized': template.translations!.map(
+            (code, text) => MapEntry(code, text.toMap()),
+          ),
         'data': {
           ...template.data.map((key, value) => MapEntry(key, value.toString())),
           'notificationId': notificationId,
@@ -617,6 +625,7 @@ class NotificationService extends BaseService {
       targetUserIds: notification.targetUserIds,
       strategy: notification.strategy,
       variables: notification.variables,
+      variablesByLocale: notification.variablesByLocale,
       additionalData: notification.additionalData,
       imageUrl: notification.imageUrl,
       actions: notification.actions,

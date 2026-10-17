@@ -78,6 +78,7 @@ void main() {
         final service = MockNotificationService();
         when(
           () => service.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
@@ -98,6 +99,7 @@ void main() {
         expect(result, isTrue);
         verify(
           () => service.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
             targetUserIds: ['u1', 'u2'],
             strategy: NotificationStrategy.recipeShared,
             variables: {'recipeName': 'Pizza'},
@@ -113,6 +115,7 @@ void main() {
       final service = MockNotificationService();
       when(
         () => service.sendImmediateNotification(
+          variablesByLocale: any(named: 'variablesByLocale'),
           targetUserIds: any(named: 'targetUserIds'),
           strategy: any(named: 'strategy'),
           variables: any(named: 'variables'),
