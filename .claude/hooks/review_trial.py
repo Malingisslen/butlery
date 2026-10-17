@@ -245,6 +245,16 @@ def self_test() -> int:
                                     "blocking": 1}) + "\n")
         assert "/review-trial" in (session_start(root) or ""), "ready trial must announce"
         assert session_start(root) is None, "a second session in the window stays quiet"
+        # The real path: the SubagentStop payload arrives as JSON on stdin of a fresh
+        # process, so a fail must survive main(), not just handle_hook().
+        (root / "b.dart").write_text("void other() {}\n", encoding="utf-8")
+        git(root, "add", "b.dart")
+        payload = {"hook_event_name": "SubagentStop", "agent_type": "integration-reviewer",
+                   "last_assistant_message": "findings\n\nREVIEW-VERDICT: fail (2 blocking)"}
+        subprocess.run([sys.executable, str(Path(__file__).resolve()), "hook"], cwd=root,
+                       input=json.dumps(payload), text=True, capture_output=True, check=True)
+        fails = [r for r in read_log(root) if r.get("gate") == "integration-reviewer"]
+        assert [(r["verdict"], r["blocking"]) for r in fails] == [("fail", 2)], fails
     print("review_trial self-test: ok")
     return 0
 
