@@ -60,6 +60,7 @@ function render() {
   }
   applyIcons();
   drawOverlay();
+  if (typeof drawHandles === 'function') drawHandles();
   shareNow();
   refreshAdvice();
   scheduleSnapshot();

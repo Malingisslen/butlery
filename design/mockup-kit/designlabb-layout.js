@@ -98,7 +98,7 @@ function pickAt(target) {
 }
 function boxAround(el) {
   let p = el.parentElement;
-  while (p && !p.classList.contains('phone') && (p.classList.contains('b-scroll') || p.parentElement?.children.length < 2)) p = p.parentElement;
+  while (p && p.classList.contains('b-scroll')) p = p.parentElement;
   return p && !p.classList.contains('phone') ? p : el;
 }
 function pickMoving(el) {
@@ -241,7 +241,7 @@ function showMoving() {
   if (!box) return;
   if (!moveMode) { box.textContent = 'Slå på Flytta delar för att välja något i skärmarna.'; }
   else if (!moving?.isConnected) box.textContent = 'Tryck på en del i en skärm för att välja den, och dra den dit du vill ha den. Tryck igen på samma del för att välja rutan runt.';
-  else box.textContent = `Vald: "${labelOf(moving)}"`;
+  else { const r = moving.getBoundingClientRect(); box.textContent = `Vald: "${labelOf(moving)}" (${Math.round(r.width)} × ${Math.round(r.height)} px)`; }
   for (const id of ['move-up', 'move-down', 'move-out']) $(id).disabled = !moveMode || !moving?.isConnected;
 }
 

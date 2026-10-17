@@ -65,6 +65,7 @@ function markMatches(sel, view) {
   return { n: light.length, views: new Set(light.map(n => n.closest('.phone').dataset.view)).size };
 }
 function clearSelection() {
+  document.querySelectorAll('.lab-handles').forEach(n => n.remove());
   document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   document.querySelectorAll('[data-lab-selected]').forEach(e => e.removeAttribute('data-lab-selected'));
   selected = null;
@@ -142,11 +143,13 @@ function showPart(variant = false) {
   const view = selected.onlyView ? +el.closest('.phone').dataset.view : null;
   const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}`;
   const part = state.parts[key] ||= { sel, mode: selected.mode, props: {}, ...(view != null ? { view } : {}) };
+  selected.part = part;
   const cs = getComputedStyle(el);
   const kid = q => el.querySelector(q);
   const now = {
     bg: toHex(cs.backgroundColor), color: toHex(cs.color), radius: parseFloat(cs.borderTopLeftRadius) || 0,
     size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
+    w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height),
   };
   const read = (q, map) => {
     const k = kid(q);
@@ -162,7 +165,7 @@ function showPart(variant = false) {
   box.textContent = '';
   const head = document.createElement('div');
   head.innerHTML = '<div class="path"></div>';
-  head.firstChild.textContent = sel;
+  head.firstChild.textContent = `${sel} · ${now.w} × ${now.h} px`;
   box.append(head);
   const seg = document.createElement('div');
   seg.className = 'seg';
@@ -225,6 +228,48 @@ function showPart(variant = false) {
   render();
 }
 
+// Word-style frame around the picked part: dragging a handle sets its width and height, for every like part.
+function drawHandles() {
+  document.querySelectorAll('.lab-handles').forEach(n => n.remove());
+  if (!selected?.el.isConnected || moveMode || typeof compare !== 'undefined' && compare) return;
+  const phone = selected.el.closest('.phone');
+  if (!phone) return;
+  const base = phone.getBoundingClientRect(), r = selected.el.getBoundingClientRect();
+  const box = document.createElement('div');
+  box.className = 'lab-handles';
+  box.style.cssText = `left:${r.left - base.left}px;top:${r.top - base.top}px;width:${r.width}px;height:${r.height}px`;
+  for (const h of ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
+    const d = document.createElement('i');
+    d.className = `lab-h lab-h-${h}`;
+    d.dataset.h = h;
+    box.append(d);
+  }
+  phone.append(box);
+}
+let resizing = null;
+function wireHandles() {
+  const screens = $('screens');
+  screens.addEventListener('pointerdown', e => {
+    const h = e.target.closest?.('.lab-h');
+    if (!h || !selected?.part) return;
+    e.preventDefault(); e.stopPropagation();
+    const r = selected.el.getBoundingClientRect();
+    resizing = { h: h.dataset.h, x: e.clientX, y: e.clientY, w: r.width, hh: r.height, part: selected.part };
+  }, true);
+  window.addEventListener('pointermove', e => {
+    if (!resizing) return;
+    const { h, part } = resizing, dx = e.clientX - resizing.x, dy = e.clientY - resizing.y;
+    const clamp = v => Math.max(8, Math.min(360, Math.round(v)));
+    if (h.includes('e')) part.props.w = clamp(resizing.w + dx);
+    if (h.includes('w')) part.props.w = clamp(resizing.w - dx);
+    if (h.includes('s')) part.props.h = clamp(resizing.hh + dy);
+    if (h.includes('n')) part.props.h = clamp(resizing.hh - dy);
+    render();
+  });
+  window.addEventListener('pointerup', () => { if (resizing) { resizing = null; showPart(false); } });
+  screens.addEventListener('scroll', () => drawHandles(), true);
+}
+
 function wireScreens() {
   const screens = $('screens');
   screens.addEventListener('click', e => {
@@ -245,5 +290,6 @@ function wireScreens() {
     screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
     componentOf(e.target)?.setAttribute('data-lab-hover', '');
   });
+  wireHandles();
   screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));
 }

@@ -259,3 +259,8 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 
 [data-lab-match]:not([data-lab-selected]) { outline: 1px dashed #e0457b; outline-offset: 1px; }
 .lab-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.phone .lab-handles { position: absolute; pointer-events: none; border: 1px solid #e0457b; z-index: 70; box-sizing: border-box; }
+.lab-h { position: absolute; width: 12px; height: 12px; background: #fff; border: 2px solid #e0457b; border-radius: 50%; pointer-events: auto; box-sizing: border-box; transform: translate(-50%, -50%); touch-action: none; }
+.lab-h-nw { left: 0; top: 0; cursor: nwse-resize; } .lab-h-n { left: 50%; top: 0; cursor: ns-resize; } .lab-h-ne { left: 100%; top: 0; cursor: nesw-resize; }
+.lab-h-e { left: 100%; top: 50%; cursor: ew-resize; } .lab-h-se { left: 100%; top: 100%; cursor: nwse-resize; } .lab-h-s { left: 50%; top: 100%; cursor: ns-resize; }
+.lab-h-sw { left: 0; top: 100%; cursor: nesw-resize; } .lab-h-w { left: 0; top: 50%; cursor: ew-resize; }
