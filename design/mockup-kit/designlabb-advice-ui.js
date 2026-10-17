@@ -5,8 +5,6 @@
 
 for (const [id, more] of Object.entries(ADVICE_MORE)) Object.assign(ADVICE[id], more);
 let adviceTopic = null;
-let adviceQuery = '';
-let adviceAll = false;
 
 const partsWith = test => Object.values(state.parts).filter(p => test(p.props));
 const px = (v, d = 0) => `${+v.toFixed(d)} px`;
@@ -57,6 +55,42 @@ function adviceText(id) {
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const LEVEL_WORD = { ok: 'ok', warn: 'se över', bad: 'åtgärda' };
 
+// What you can try for a topic: label and the lab values it sets.
+const ADVICE_TRY = {
+  trycksyta: [['48 px (Android)', { touch: 48 }], ['44 px (Apple)', { touch: 44 }], ['56 px (rymligt)', { touch: 56 }]],
+  textstorlek: [['100 % (original)', { scale: 100 }], ['110 %', { scale: 110 }], ['125 %', { scale: 125 }]],
+  radavstand: [['Original', { lh: 100 }], ['Luftigare', { lh: 112 }]],
+  marginal: [['16 px', { margin: 16 }], ['24 px (original)', { margin: 24 }], ['32 px', { margin: 32 }]],
+  avstand: [['Tätare', { space: 80 }], ['Original', { space: 100 }], ['Luftigare', { space: 125 }]],
+  form: [['Original', { card: 12, control: 8 }], ['Rundare', { card: 20, control: 14 }], ['Skarpare', { card: 6, control: 4 }]],
+  ikonstorlek: [['Original', { iconSize: 100 }], ['Större', { iconSize: 120 }], ['Mindre', { iconSize: 85 }]],
+  ikonlinje: [['Original', { iconStroke: 0 }], ['Tunnare', { iconStroke: 1.25 }], ['Tjockare', { iconStroke: 2.25 }]],
+  avdelare: [['1 px', { hair: 1 }], ['2 px', { hair: 2 }]],
+};
+// What the picked part is, which topics fit it, and what you can try on just that part.
+const bySize = (key, d) => el => ({ [key]: Math.round(parseFloat(getComputedStyle(el).fontSize) + d) });
+const PART_KINDS = {
+  icon: { name: 'Ikon', topics: ['ikonstorlek', 'ikonlinje', 'ikonstil'], tries: [['Mindre', { scale: 85 }], ['Större', { scale: 120 }], ['Dämpad', { opacity: 55 }]] },
+  button: { name: 'Knapp eller chip', topics: ['trycksyta', 'form', 'tryck'], tries: [['Rundare', { radius: 24 }], ['Skarpare', { radius: 6 }], ['Mjuk skugga', { shY: 2, shBlur: 8, shAlpha: 20 }], ['Högre', { padY: 14 }]] },
+  row: { name: 'Rad', topics: ['avstand', 'avdelare', 'trycksyta'], tries: [['Luftigare', { padY: 16 }], ['Tätare', { padY: 6 }]] },
+  card: { name: 'Kort', topics: ['form', 'skugga', 'kant'], tries: [['Rundare', { radius: 22 }], ['Mjuk skugga', { shY: 4, shBlur: 14, shAlpha: 18 }], ['Kantlinje', { bw: 1 }], ['Luftigare', { padY: 20, padX: 20 }]] },
+  nav: { name: 'Bottenmeny', topics: ['bottenmeny', 'ikonstorlek', 'trycksyta'], tries: [['Högre', { h: 72 }], ['Mjuk skugga', { shY: -2, shBlur: 10, shAlpha: 15 }]] },
+  field: { name: 'Fält', topics: ['form', 'trycksyta', 'kant'], tries: [['Rundare', { radius: 16 }], ['Kantlinje', { bw: 2 }], ['Högre', { h: 56 }]] },
+  text: { name: 'Text', topics: ['typsnitt', 'textstorlek', 'kontrast'], tries: [['Större', bySize('size', 2)], ['Mindre', bySize('size', -2)], ['Fetare', { weight: 700 }]] },
+  box: { name: 'Ruta', topics: ['avstand', 'form', 'layout'], tries: [['Luftigare', { padY: 16, padX: 16 }], ['Rundare', { radius: 20 }], ['Mitten', { alignX: 'center', alignY: 'center' }]] },
+};
+function partKind(e) {
+  if (e.tagName === 'svg' || e.closest('svg')) return 'icon';
+  if (e.matches('.b-bottomnav') || e.closest('.b-bottomnav') && e.matches('.tab,.add')) return 'nav';
+  if (e.matches('.b-btn,.b-chip,.b-iconbtn,button')) return 'button';
+  if (e.matches('.b-row')) return 'row';
+  if (e.matches('.b-input,.b-field')) return 'field';
+  if (e.matches('.b-card,.mr-card,.b-band,.b-section')) return 'card';
+  if (!e.children.length || [...e.children].every(c => ['SPAN', 'B', 'I'].includes(c.tagName))) return 'text';
+  return 'box';
+}
+
+let adviceCtx = null; // { text, tries: [[label, props | fn]], apply }
 function askAbout(text) {
   if (!claudeAi?.sample || !$('ask-text')) return;
   $('chat-box').hidden = false;
@@ -64,96 +98,134 @@ function askAbout(text) {
   $('chat-box').scrollIntoView({ block: 'nearest' });
   ask();
 }
-function adviceCard(id, open) {
-  const a = ADVICE[id];
-  const d = el('details');
-  d.open = open; d.dataset.topic = id;
-  const v = adviceVerdict(id);
-  const s = el('summary');
-  if (v) s.append(el('span', `dot ${v[0]}`));
-  s.append(a.t);
-  d.append(s);
-  if (v) d.append(el('p', `nowline ${v[0]}`, `I labbet nu (${LEVEL_WORD[v[0]]}): ${v[1]}`));
-  const para = (label, text) => { const p = el('p'); p.append(el('b', null, label + ': '), text); return p; };
-  d.append(para('Vad det är', a.what), para('Fördelar', a.pro), para('Nackdelar', a.con), para('Tumregel', a.rule));
-  if (a.nums) {
-    const t = el('div', 'nums');
-    for (const [k, val] of a.nums) t.append(el('span', null, k), el('b', null, val));
-    d.append(el('h4', null, 'Nyckeltal'), t);
+function labSet(changes) {
+  const n = askApplied.length;
+  applyChanges(changes);
+  askApplied.length = n;
+}
+function tryRow(label, tries, run) {
+  const row = el('div', 'try-row');
+  row.append(el('span', 'try-label', label));
+  for (const [name, what] of tries) {
+    const b = el('button', 'ghost', name);
+    b.type = 'button'; b.onclick = () => run(what);
+    row.append(b);
   }
-  if (a.mistakes) { const ul = el('ul'); for (const m of a.mistakes) ul.append(el('li', null, m)); d.append(el('h4', null, 'Vanliga misstag'), ul); }
-  if (a.src) d.append(el('p', 'src', `Källa: ${a.src}`));
+  return row;
+}
+function adviceCard(id) {
+  const a = ADVICE[id], v = adviceVerdict(id);
+  const card = el('div', 'advice-card');
+  card.dataset.topic = id;
+  card.append(el('h3', null, a.t));
+  if (v) card.append(el('p', `nowline ${v[0]}`, `Ditt val nu (${LEVEL_WORD[v[0]]}): ${v[1]}`));
+  card.append(el('p', 'what', a.what));
+  const cols = el('div', 'procon');
+  const pro = el('div', 'pro'), con = el('div', 'con');
+  pro.append(el('b', null, 'Fördelar'), el('span', null, a.pro));
+  con.append(el('b', null, 'Nackdelar'), el('span', null, a.con));
+  cols.append(pro, con);
+  card.append(cols);
+  const rule = el('p', 'rule'); rule.append(el('b', null, 'Tumregel: '), a.rule);
+  card.append(rule);
+  if (ADVICE_TRY[id]) card.append(tryRow('Prova:', ADVICE_TRY[id], changes => { labSet(changes); showAdvice(id); }));
+  if (a.nums || a.mistakes || a.src) {
+    const d = el('details');
+    d.append(el('summary', null, 'Mer om detta'));
+    if (a.nums) { const t = el('div', 'nums'); for (const [k, val] of a.nums) t.append(el('span', null, k), el('b', null, val)); d.append(t); }
+    if (a.mistakes) { const ul = el('ul'); for (const m of a.mistakes) ul.append(el('li', null, m)); d.append(el('h4', null, 'Vanliga misstag'), ul); }
+    if (a.src) d.append(el('p', 'src', `Källa: ${a.src}`));
+    card.append(d);
+  }
   if (claudeAi?.sample) {
-    const row = el('div', 'ask-row');
-    for (const [label, q] of [
-      ['Fråga Claude om detta', `Förklara rådet "${a.t}" för mig och säg vad det betyder för min app och mina nuvarande val i labbet.`],
-      ['Förklara enklare', `Förklara rådet "${a.t}" ännu enklare, som för någon som aldrig har designat.`],
-      ['Föreslå ändring', `Utifrån rådet "${a.t}" och hur labbet ser ut nu: föreslå en förbättring, förklara varför och gör den i labbet om du är säker.`],
-    ]) { const b = el('button', 'ghost', label); b.type = 'button'; b.onclick = () => askAbout(q); row.append(b); }
-    d.append(row);
+    const b = el('button', 'ghost ask', 'Fråga Claude om detta');
+    b.type = 'button';
+    b.onclick = () => askAbout(`Förklara rådet "${a.t}" för mig och säg vad det betyder för min app och mina nuvarande val i labbet. Föreslå en ändring om du ser en, och gör den bara om jag säger ja.`);
+    card.append(b);
   }
-  return d;
+  return card;
 }
-function adviceGlossary(q) {
-  const items = GLOSSARY.filter(([t, x]) => !q || `${t} ${x}`.toLowerCase().includes(q));
-  if (!items.length) return null;
-  const d = el('details'); d.open = !!q;
-  d.append(el('summary', null, 'Ordlista'));
-  for (const [t, x] of items) { const p = el('p'); p.append(el('b', null, t + ': '), x); d.append(p); }
-  return d;
-}
-function adviceSummary() {
-  const box = el('div', 'advice-sum');
+function adviceIdle(box) {
+  box.append(el('p', 'hint', 'Peka på ett reglage, eller klicka på något i en skärm, så får du råd om just det här: vad det gör, för- och nackdelar, och vad du kan prova.'));
   const all = adviceLevels();
   const bad = all.filter(x => x.level === 'bad'), warn = all.filter(x => x.level === 'warn');
-  box.append(el('p', bad.length ? 'bad' : warn.length ? 'warn' : 'ok',
-    bad.length || warn.length ? `${bad.length} att åtgärda, ${warn.length} att se över av ${all.length} kontroller.` : `Inga anmärkningar på ${all.length} kontroller.`));
-  for (const x of [...bad, ...warn]) {
-    const b = el('button', `link ${x.level}`, `${x.title}: ${x.text}`);
-    b.type = 'button'; b.onclick = () => showAdvice(x.id);
-    box.append(b);
-  }
+  if (bad.length || warn.length) {
+    const d = el('details', 'advice-sum');
+    d.append(el('summary', bad.length ? 'bad' : 'warn', `${bad.length + warn.length} av dina val kan behöva ses över`));
+    for (const x of [...bad, ...warn]) {
+      const b = el('button', `link ${x.level}`, `${x.title}: ${x.text}`);
+      b.type = 'button'; b.onclick = () => showAdvice(x.id);
+      d.append(b);
+    }
+    box.append(d);
+  } else box.append(el('p', 'ok-line', 'Inga anmärkningar på dina val just nu.'));
+  const pick = el('select');
+  pick.add(new Option('Läs ett råd ...', ''));
+  for (const id of Object.keys(ADVICE)) pick.add(new Option(ADVICE[id].t, id));
+  pick.onchange = () => pick.value && showAdvice(pick.value);
+  box.append(pick);
   if (claudeAi?.sample) {
-    const b = el('button', 'ghost', 'Låt Claude granska mina val');
+    const b = el('button', 'ghost ask', 'Låt Claude granska mina val');
     b.type = 'button';
     b.onclick = () => askAbout('Granska alla mina val i labbet mot råden. Ta det viktigaste först, förklara varför det spelar roll för en receptapp och föreslå vad jag bör ändra. Ändra ingenting utan att jag har sagt ja.');
     box.append(b);
   }
-  return box;
 }
-function showAdvice(topic) {
-  if (topic) { adviceTopic = topic; adviceQuery = ''; if ($('advice-q')) $('advice-q').value = ''; }
+// topic: a topic id, or null for the overview; ctx: what the advice is about ("Du rör: Textstorlek").
+function showAdvice(topic, ctx) {
   const box = $('advice-list');
   if (!box) return;
-  const tab = document.querySelector('#tabs button.on')?.dataset.tab || 'all';
-  const q = adviceQuery.trim().toLowerCase();
-  let ids;
-  if (q) ids = Object.keys(ADVICE).filter(id => `${ADVICE[id].t} ${ADVICE[id].what} ${ADVICE[id].rule}`.toLowerCase().includes(q));
-  else if (adviceAll) ids = Object.keys(ADVICE);
-  else ids = [...new Set([adviceTopic, ...(ADVICE_TABS[tab] || [])].filter(id => ADVICE[id]))];
-  const kept = new Set([...box.querySelectorAll('details[open]')].map(d => d.dataset.topic));
+  if (ctx !== undefined) adviceCtx = ctx;
+  if (topic === undefined) topic = adviceTopic;
+  adviceTopic = topic && ADVICE[topic] ? topic : null;
   box.textContent = '';
-  box.append(adviceSummary());
-  ids.forEach((id, i) => box.append(adviceCard(id, kept.has(id) || id === adviceTopic || (!adviceTopic && !q && i === 0 && !kept.size) || (!!q && ids.length === 1))));
-  const g = adviceGlossary(q);
-  if (g) box.append(g);
-  if (q && !ids.length && !g) box.append(el('p', 'hint', 'Inget råd matchar sökningen.'));
-  if (topic) box.querySelector(`details[data-topic="${topic}"]`)?.scrollIntoView({ block: 'nearest' });
-  $('advice-all').textContent = adviceAll ? 'Visa bara den här fliken' : 'Visa alla råd';
+  if (adviceCtx) {
+    box.append(el('p', 'ctx', adviceCtx.text));
+    if (adviceCtx.tries) box.append(tryRow('Prova på just den här delen:', adviceCtx.tries, adviceCtx.run));
+    if (adviceCtx.topics?.length > 1) {
+      const row = el('div', 'topic-row');
+      for (const id of adviceCtx.topics) {
+        const b = el('button', 'ghost' + (id === adviceTopic ? ' on' : ''), ADVICE[id].t);
+        b.type = 'button'; b.onclick = () => showAdvice(id);
+        row.append(b);
+      }
+      box.append(row);
+    }
+  }
+  if (adviceTopic) box.append(adviceCard(adviceTopic));
+  else adviceIdle(box);
+  if (adviceTopic || adviceCtx) {
+    const back = el('button', 'link', 'Visa översikten');
+    back.type = 'button'; back.onclick = () => { adviceCtx = null; showAdvice(null); };
+    box.append(back);
+  }
+}
+// A part was picked in a screen: advice for what it is, with things to try on it.
+function adviceForPart(e) {
+  if (!$('advice-list')) return;
+  const kind = PART_KINDS[partKind(e)];
+  showAdvice(kind.topics[0], {
+    text: `Du har valt: ${kind.name.toLowerCase()}.`,
+    topics: kind.topics,
+    tries: kind.tries.map(([n, w]) => [n, w]),
+    run: what => { applyPartProps(typeof what === 'function' ? what(selected.el) : what); },
+  });
 }
 function wireAdvice() {
   const panel = document.querySelector('.panel:not(.dock)');
+  const labelOfControl = elt => elt.closest('label')?.querySelector('span')?.textContent?.trim();
   const topicOf = elt => {
     for (let e = elt; e && e !== panel; e = e.parentElement) if (ADVICE_FOR[e.id]) return ADVICE_FOR[e.id];
     return null;
   };
-  panel.addEventListener('focusin', e => { const t = topicOf(e.target); if (t) showAdvice(t); });
-  panel.addEventListener('pointerdown', e => { const t = topicOf(e.target); if (t) showAdvice(t); });
-  panel.addEventListener('mouseover', e => { const t = e.target.closest('[data-advice]')?.dataset.advice; if (t) showAdvice(t); });
-  $('tabs').addEventListener('click', () => { adviceTopic = null; showAdvice(); });
-  $('advice-q').oninput = e => { adviceQuery = e.target.value; showAdvice(); };
-  $('advice-all').onclick = () => { adviceAll = !adviceAll; showAdvice(); };
-  showAdvice();
+  const open = elt => {
+    const t = topicOf(elt);
+    if (t) showAdvice(t, { text: `Du rör: ${(labelOfControl(elt) || ADVICE[t].t).toLowerCase()}.` });
+  };
+  panel.addEventListener('focusin', e => open(e.target));
+  panel.addEventListener('pointerdown', e => open(e.target));
+  panel.addEventListener('mouseover', e => { const t = e.target.closest('[data-advice]')?.dataset.advice; if (t) showAdvice(t, { text: ADVICE[t].t }); });
+  showAdvice(null, null);
 }
 
 // Called by render(): the verdicts follow every change, however it was made.

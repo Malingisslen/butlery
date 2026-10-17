@@ -52,6 +52,7 @@ function render() {
   lab.disabled = !!compare;
   lab.text = buildCss(state);
   $('out').value = summary(state);
+  renderModular();
   if (compare) {
     labA.text = buildCss(state, '.cmpA');
     labB.text = buildCss(compare.state, '.cmpB');
@@ -60,6 +61,11 @@ function render() {
   }
   applyIcons();
   drawOverlay();
+  applyViewTools();
+  markPresets();
+  markSliders();
+  drawPins();
+  if (typeof drawHandles === 'function') drawHandles();
   shareNow();
   refreshAdvice();
   scheduleSnapshot();
@@ -108,12 +114,14 @@ function contrast() {
 const fontSel = $('font');
 for (const f of Object.keys(FONTS)) fontSel.add(new Option(f, f));
 function loadFont() {
-  const q = FONTS[state.font];
-  if (q && !document.getElementById('gf-' + q)) {
-    const l = document.createElement('link');
-    l.id = 'gf-' + q; l.rel = 'stylesheet';
-    l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
-    document.head.append(l);
+  for (const name of [state.font, state.fontHead]) {
+    const q = FONTS[name];
+    if (q && !document.getElementById('gf-' + q)) {
+      const l = document.createElement('link');
+      l.id = 'gf-' + q; l.rel = 'stylesheet';
+      l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
+      document.head.append(l);
+    }
   }
 }
 fontSel.onchange = () => { state.font = fontSel.value; loadFont(); render(); };
@@ -122,7 +130,14 @@ function showValue(id) {
   $(id + '-v').textContent = id in ORIGINAL_AT && state[id] === ORIGINAL_AT[id] ? 'orig' : state[id] + SLIDERS[id];
 }
 for (const id of Object.keys(SLIDERS)) {
-  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); render(); };
+  $(id).oninput = () => { state[id] = +$(id).value; showValue(id); markSliders(); render(); };
+  const rst = document.createElement('button');
+  rst.type = 'button'; rst.className = 'rst'; rst.textContent = '↺'; rst.title = 'Återställ till original'; rst.hidden = true;
+  rst.onclick = () => { state[id] = defaults()[id]; $(id).value = state[id]; showValue(id); markSliders(); render(); };
+  $(id).closest('label').append(rst);
+}
+function markSliders() {
+  for (const id of Object.keys(SLIDERS)) $(id).closest('label').querySelector('.rst').hidden = state[id] === defaults()[id];
 }
 
 const roleInputs = [];
@@ -166,6 +181,10 @@ for (const { hex, uses, label } of colorRows) {
 // Push the state into every control, so presets, undo, variants and a shared link use one path.
 function syncUi() {
   fontSel.value = state.font;
+  syncRoles();
+  if (typeof renderNotes === 'function' && $('notes')) renderNotes();
+  $('font-head').value = state.fontHead || '';
+  $('type-ratio').value = state.typeRatio || '';
   for (const id of Object.keys(SLIDERS)) { $(id).value = state[id]; showValue(id); }
   for (const { role, size, weight } of roleInputs) {
     size.value = state.roles[role]?.size ?? sizes.get(role);
@@ -180,7 +199,7 @@ function syncUi() {
   $('icon-lib').value = state.iconLib;
   $('overlay').checked = state.overlay;
   replayLayout();
-  showMoves();
+  showMoves(); showMoving();
   loadFont();
   clearSelection();
   render();
@@ -193,6 +212,7 @@ function updateHistoryButtons() {
 for (const [name, patch] of Object.entries(PRESETS)) {
   const b = document.createElement('button');
   b.type = 'button'; b.textContent = name;
+  b.dataset.preset = name;
   b.onclick = () => { state = { ...defaults(), ...patch }; syncUi(); };
   $('presets').append(b);
 }
@@ -209,9 +229,32 @@ surprise.onclick = () => {
 };
 $('presets').append(surprise);
 
+// The preset whose values all match the current state is marked, so the panel shows which mood is on.
+function markPresets() {
+  for (const b of document.querySelectorAll('#presets button[data-preset]')) {
+    const patch = PRESETS[b.dataset.preset];
+    b.classList.toggle('on', Object.entries(patch).every(([k, v]) => JSON.stringify(state[k]) === JSON.stringify(v)));
+  }
+}
+
+// Each pane heading becomes a fold-out section; only the first one in a pane starts open.
+function foldSections() {
+  for (const pane of document.querySelectorAll('.pane[data-pane]')) {
+    if (pane.dataset.pane === 'part') continue;
+    let cur = null, n = 0;
+    for (const el of [...pane.children]) {
+      if (el.tagName === 'H2') {
+        cur = document.createElement('details'); cur.className = 'sec'; cur.open = n++ === 0;
+        const sm = document.createElement('summary'); pane.insertBefore(cur, el); sm.append(el); cur.append(sm);
+      } else if (cur) cur.append(el);
+    }
+  }
+}
+foldSections();
+
 // ---- Tabs and search ----
 function openTab(name) {
-  for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === name);
+  for (const b of document.querySelectorAll('#tabs button, #check-open')) b.classList.toggle('on', b.dataset.tab === name);
   for (const p of document.querySelectorAll('.pane')) p.hidden = !!$('search').value ? false : p.dataset.pane !== name;
 }
 function applySearch() {
@@ -221,19 +264,56 @@ function applySearch() {
     el.hidden = !hit;
     if (q && el.tagName === 'DETAILS' && hit) el.open = true;
   }
-  openTab(document.querySelector('#tabs button.on')?.dataset.tab || 'all');
+  openTab(document.querySelector('#tabs button.on, #check-open.on')?.dataset.tab || 'all');
 }
-for (const b of document.querySelectorAll('#tabs button')) b.onclick = () => { $('search').value = ''; applySearch(); openTab(b.dataset.tab); };
+for (const b of document.querySelectorAll('#tabs button, #check-open')) b.onclick = () => { $('search').value = ''; applySearch(); openTab(b.dataset.tab); };
 $('search').oninput = applySearch;
 
 // ---- Saved variants and compare ----
 let variants = [];
 try { variants = JSON.parse(localStorage.getItem(VARIANTS_KEY) || '[]'); } catch {}
+normalizeVariants();
+// Saved versions live in this browser and, when the page can reach the shared store, in the artifact's database too.
+const variantDb = () => (typeof claudeAi !== 'undefined' ? claudeAi.db : null);
+// The id is derived from the save time, so the same version saved in two places is recognised as one.
+function variantKey(v) { return `${v.name}|${JSON.stringify({ ...defaults(), ...v.state })}`; }
+function stableAt(v) {
+  let h = 7;
+  for (const c of variantKey(v)) h = (h * 31 + c.charCodeAt(0)) % 1000000007;
+  return h;
+}
+function normalizeVariants() {
+  const seen = new Set();
+  variants = variants.filter(v => {
+    v.state = { ...defaults(), ...v.state };
+    v.base ||= LAB_BASE;
+    v.orig = { ...defaults(), ...(v.orig || {}) };
+    v.at ||= stableAt(v);
+    v.id = 'v' + v.at;
+    const key = variantKey(v);
+    if (seen.has(v.id) || seen.has(key)) return false;
+    seen.add(v.id); seen.add(key);
+    return true;
+  });
+}
 function saveVariants() {
+  normalizeVariants();
   try { localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants)); } catch {}
+  const db = variantDb();
+  if (db) for (const v of variants) {
+    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at, base: v.base, json: JSON.stringify(v.state), orig: JSON.stringify(v.orig) }).catch(() => {});
+  }
   renderVariants();
 }
+function renderVariantSelect() {
+  const sel = $('ver-select');
+  sel.textContent = '';
+  sel.add(new Option(variants.length ? 'Öppna version …' : 'Inga sparade versioner än', ''));
+  variants.forEach((v, i) => sel.add(new Option(v.name + (v.at > 1e11 ? ' · ' + new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : ''), String(i))));
+  sel.disabled = !variants.length;
+}
 function renderVariants() {
+  renderVariantSelect();
   const box = $('variants');
   box.textContent = '';
   if (!variants.length) box.innerHTML = '<p class="hint">Inga sparade varianter än. Spara det du har nu, ändra vidare och jämför.</p>';
@@ -247,14 +327,15 @@ function renderVariants() {
     summaryEl.className = 'hint';
     const s = v.state;
     summaryEl.textContent = [s.font !== 'ButlerySans' && s.font, s.hue && `nyans ${s.hue}°`, s.sat !== 100 && `mättnad ${s.sat} %`,
-      s.card !== 12 && `kort ${s.card} px`, s.control !== 8 && `knappar ${s.control} px`, s.scale !== 100 && `text ${s.scale} %`, Object.keys(s.parts).length && `${Object.keys(s.parts).length} delar`, Object.keys(s.colors).length && `${Object.keys(s.colors).length} färger`]
+      s.card !== 12 && `kort ${s.card} px`, s.control !== 8 && `knappar ${s.control} px`, s.scale !== 100 && `text ${s.scale} %`, Object.keys(s.parts || {}).length && `${Object.keys(s.parts).length} delar`, Object.keys(s.colors).length && `${Object.keys(s.colors).length} färger`]
       .filter(Boolean).join(' · ') || 'originalet';
+    if (v.at > 1e11) summaryEl.textContent += ` · sparad ${new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`;
     const actions = document.createElement('div');
     actions.className = 'row';
     for (const [label, fn] of [
-      ['Använd', () => { state = { ...defaults(), ...clone(v.state) }; stopCompare(); syncUi(); }],
+      ['Använd', () => openVersion(v)],
       ['Jämför', () => startCompare(v)],
-      ['Ta bort', () => { variants.splice(i, 1); saveVariants(); }],
+      ['Ta bort', () => { const [gone] = variants.splice(i, 1); if (gone.id) variantDb()?.doc(`variants/${gone.id}`).delete().catch(() => {}); saveVariants(); }],
     ]) {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; actions.append(b);
@@ -263,10 +344,90 @@ function renderVariants() {
     box.append(row);
   });
 }
-$('save-variant').onclick = () => {
-  variants.push({ name: `Variant ${variants.length + 1}`, state: clone(state) });
+const FIELD_NAMES = { font: 'Typsnitt', fontHead: 'Rubrikfont', typeRatio: 'Textskala', scale: 'Textstorlek', lh: 'Radavstånd', card: 'Kort och ark', control: 'Knappar och fält', margin: 'Sidmarginal', hue: 'Nyans', sat: 'Mättnad', light: 'Ljushet', space: 'Avståndsskala', rowPad: 'Luft i rader', sectionGap: 'Mellan avsnitt', blockGap: 'Mellan block', chipGap: 'Mellan knappar och chips', rowInner: 'Ikon till text i rad', hair: 'Skiljelinjer', touch: 'Minsta träffyta', iconSize: 'Ikonstorlek', iconStroke: 'Linjetjocklek', iconStyle: 'Linjeändar', iconLib: 'Ikonbibliotek' };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// Opens a saved version on top of the CURRENT original: what the version did not change follows the original,
+// and a value the original has moved since the version was saved is not pulled back.
+function openVersion(v) {
+  const now = defaults();
+  const next = clone(now);
+  const skipped = [], lostColors = [];
+  const known = new Set(pickers.map(p => p.hex.toLowerCase()));
+  for (const [k, mine] of Object.entries(v.state)) {
+    const was = v.orig[k];
+    if (!(k in now) || same(mine, was)) continue;
+    if (k === 'colors') {
+      next.colors = {};
+      for (const [hex, to] of Object.entries(mine)) (known.has(hex.toLowerCase()) ? next.colors : lostColors)[hex] = to;
+      continue;
+    }
+    if (same(was, now[k])) next[k] = clone(mine);
+    else skipped.push({ k, mine, was, now: now[k] });
+  }
+  state = next;
+  stopCompare(); syncUi();
+  showVersionNote(v, skipped, Object.keys(lostColors));
+}
+function showVersionNote(v, skipped, lostColors) {
+  const box = $('ver-note');
+  box.textContent = '';
+  if (!skipped.length && !lostColors.length) { box.hidden = true; return; }
+  const p = document.createElement('div');
+  p.textContent = `"${v.name}" sparades mot ett äldre original. Det nya originalet behölls för:`;
+  const ul = document.createElement('ul');
+  for (const s of skipped) {
+    const li = document.createElement('li');
+    li.textContent = `${FIELD_NAMES[s.k] || s.k}: originalet är nu ${s.now}, din version ville ha ${s.mine}`;
+    ul.append(li);
+  }
+  for (const hex of lostColors) {
+    const li = document.createElement('li');
+    li.textContent = `Färgen ${hex} finns inte längre i appen, så den ändringen hoppades över`;
+    ul.append(li);
+  }
+  const row = document.createElement('div'); row.className = 'row';
+  if (skipped.length) {
+    const keep = document.createElement('button');
+    keep.type = 'button'; keep.className = 'ghost'; keep.textContent = 'Ta med mina värden ändå';
+    keep.onclick = () => { for (const s of skipped) state[s.k] = clone(s.mine); box.hidden = true; syncUi(); };
+    row.append(keep);
+  }
+  const ok = document.createElement('button');
+  ok.type = 'button'; ok.className = 'ghost'; ok.textContent = 'Stäng'; ok.onclick = () => { box.hidden = true; };
+  row.append(ok);
+  box.append(p, ul, row);
+  box.hidden = false;
+}
+function addVariant(btn) {
+  variants.push({ name: `Version ${variants.length + 1}`, at: Date.now(), base: LAB_BASE, orig: clone(defaults()), state: clone(state) });
   saveVariants();
+  if (btn) { const old = btn.textContent; btn.textContent = 'Sparad'; setTimeout(() => { btn.textContent = old; }, 1500); }
+}
+$('save-variant').onclick = e => addVariant(e.currentTarget);
+$('ver-save').onclick = e => addVariant(e.currentTarget);
+$('ver-select').onchange = e => {
+  const v = variants.find((x, i) => String(i) === e.target.value);
+  if (v) openVersion(v);
+  e.target.value = '';
 };
+// Called once the shared store is reachable: pulls in versions saved from other browsers.
+async function loadVariantsFromDb() {
+  const db = variantDb();
+  if (!db) return;
+  try {
+    const snap = await db.collection('variants').get();
+    for (const d of snap.docs) {
+      const data = typeof d.data === 'function' ? d.data() : d.data;
+      if (!data?.json) continue;
+      let incoming = { name: data.name, at: data.at, base: data.base, orig: data.orig ? JSON.parse(data.orig) : undefined, state: { ...defaults(), ...JSON.parse(data.json) } };
+      const twin = variants.find(v => v.at === data.at || variantKey(v) === variantKey(incoming));
+      if (twin) { if (twin.id !== d.id) db.doc(`variants/${d.id}`).delete().catch(() => {}); continue; }
+      variants.push(incoming);
+    }
+    variants.sort((a, b) => (a.at || 0) - (b.at || 0));
+    saveVariants();
+  } catch { /* the local list still works */ }
+}
 
 const cmpScreen = $('cmp-screen');
 function buildCompare() {
@@ -321,11 +482,11 @@ function wireExtras() {
     b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
-  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); };
-  $('clear-moves').onclick = () => { state.moves = []; replayLayout(); showMoves(); render(); };
+  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); showMoving(); };
+  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
   $('apply').onclick = async () => {
-    const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}`;
+    const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}\n\nByggregel: ${HANDOFF_RULE}`;
     try { await navigator.clipboard.writeText(text); } catch { $('out').value = text; $('out').select(); document.execCommand('copy'); }
     $('apply').textContent = 'Kopierat. Klistra in i tråden';
     setTimeout(() => { $('apply').textContent = 'Spara och för in i appen'; }, 3000);
@@ -343,7 +504,7 @@ document.addEventListener('keydown', e => {
     stepHistory(e.shiftKey ? 1 : -1);
   }
 });
-$('reset').onclick = () => { state = defaults(); stopCompare(); syncUi(); };
+$('reset').onclick = () => { state = defaults(); stopCompare(); clearSelection(); replayLayout(); syncUi(); showMoves(); };
 for (const [ev, off] of [['pointerdown', true], ['pointerup', false], ['pointerleave', false]]) {
   $('hold').addEventListener(ev, () => { lab.disabled = off && !compare; });
 }
@@ -353,7 +514,11 @@ $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(out.value); } catch { document.execCommand('copy'); }
 };
 
+wireNotes();
+wireRoles();
 wireScreens();
+wireViewTools();
+wireType();
 wireEffects();
 wireExtras();
 wireAdvice();

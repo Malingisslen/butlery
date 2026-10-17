@@ -58,8 +58,8 @@ class ParseEventsRepository {
         truncated: snapshot.docs.length >= _cap,
       );
     } catch (e) {
-      AppLogger.warning('ParseEventsRepository: failed for $domain: $e');
-      return ParseEventsPage.empty;
+      AppLogger.error('ParseEventsRepository: failed for $domain', e);
+      rethrow;
     }
   }
 }

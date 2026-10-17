@@ -1,9 +1,9 @@
-// Writes mockup-kit/designlabb-iconlibs.js: the glyphs of Lucide and Phosphor that the lab's
+// Writes mockup-kit/designlabb-iconlibs.js: the glyphs of Lucide, Phosphor, Tabler and Heroicons that the lab's
 // example screens use, fetched once from pinned package versions, so the published lab needs no
 // network. Run from design/: node tools/gen-lab-icons.mjs
 import { writeFileSync, readFileSync } from 'node:fs';
 
-const src = readFileSync('mockup-kit/designlabb-extra.js', 'utf8');
+const src = readFileSync('mockup-kit/designlabb-iconnames.js', 'utf8');
 const names = JSON.parse(/const ICON_NAMES = (\{[\s\S]*?\n\});/.exec(src)[1]
   .replace(/'/g, '"').replace(/([{,]\s*)([a-z-]+):/g, '$1"$2":').replace(/,(\s*\})/g, '$1'));
 const PH = 'https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/assets';
@@ -13,11 +13,14 @@ const libs = {
   'ph-bold': [1, n => `${PH}/bold/${n}-bold.svg`],
   'ph-duotone': [1, n => `${PH}/duotone/${n}-duotone.svg`],
   'ph-fill': [1, n => `${PH}/fill/${n}-fill.svg`],
+  tabler: [2, n => `https://cdn.jsdelivr.net/npm/@tabler/icons@3.26.0/icons/outline/${n}.svg`],
+  heroicons: [3, n => `https://cdn.jsdelivr.net/npm/heroicons@2.2.0/24/outline/${n}.svg`],
 };
 const out = {};
 for (const [lib, [idx, url]] of Object.entries(libs)) {
   out[lib] = {};
   for (const [glyph, pair] of Object.entries(names)) {
+    if (!pair[idx]) continue;
     const res = await fetch(url(pair[idx]));
     if (!res.ok) { console.error('missing', lib, glyph, res.status); continue; }
     const svg = await res.text();

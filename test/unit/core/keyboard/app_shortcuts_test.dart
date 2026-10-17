@@ -271,4 +271,53 @@ void _tabSwitchGuardTests() {
       expect(find.text('form'), findsOneWidget);
     });
   });
+
+  group('Tab shortcut on a clean stack', () {
+    final chords = <(LogicalKeyboardKey, int)>[
+      (LogicalKeyboardKey.digit1, 0),
+      (LogicalKeyboardKey.digit2, 1),
+      (LogicalKeyboardKey.digit3, 2),
+      (LogicalKeyboardKey.digit4, 3),
+    ];
+
+    for (final chord in chords) {
+      testWidgets('Ctrl+${chord.$1.keyLabel} pops every pushed route and '
+          'asks for tab ${chord.$2}', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorKey: appNavigatorKey,
+            builder: (context, child) => Shortcuts(
+              shortcuts: AppShortcuts.bindings,
+              child: Actions(
+                actions: AppActions.dispatch(),
+                child: Focus(autofocus: true, child: child!),
+              ),
+            ),
+            home: const Scaffold(body: Text('root')),
+          ),
+        );
+        // A tab other than the one asked for, so the assertion cannot pass on
+        // the notifier's starting value.
+        mainTabSwitchRequest.value = (chord.$2 + 1) % 4;
+        for (final name in ['one', 'two', 'three']) {
+          appNavigatorKey.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) => Scaffold(body: Text(name)),
+            ),
+          );
+        }
+        await tester.pumpAndSettle();
+        expect(find.text('three'), findsOneWidget);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+        await tester.sendKeyEvent(chord.$1);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+        await tester.pumpAndSettle();
+
+        expect(find.text('root'), findsOneWidget);
+        expect(appNavigatorKey.currentState!.canPop(), isFalse);
+        expect(mainTabSwitchRequest.value, chord.$2);
+      });
+    }
+  });
 }

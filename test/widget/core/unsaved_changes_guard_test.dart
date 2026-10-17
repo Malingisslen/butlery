@@ -46,4 +46,34 @@ void main() {
 
     expect(find.text('inne'), findsNothing);
   });
+
+  testWidgets('Confirming in the dialog leaves the page', (tester) async {
+    await tester.pumpWidget(app(hasUnsaved: true));
+    await tester.tap(find.text('öppna'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Avbryt utan att spara'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('inne'), findsNothing);
+    expect(find.text('Osparade ändringar'), findsNothing);
+  });
+
+  testWidgets('Cancelling in the dialog keeps the page and the input', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(hasUnsaved: true));
+    await tester.tap(find.text('öppna'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('inne'), findsOneWidget);
+    expect(find.text('Osparade ändringar'), findsNothing);
+  });
 }

@@ -48,10 +48,13 @@ const FONTS = {
   'Georgia': null,
   'system-ui': null,
 };
+// Names the original the lab shows. Bump it in the same change that moves the app (and so the lab's defaults) to new values;
+// saved versions remember the base they started from and are not allowed to pull the original back.
+const LAB_BASE = '2026-10-17.1';
 const defaults = () => ({
-  font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
+  font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], ...SPACE_DEFAULTS,
+  moves: [], free: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -132,7 +135,22 @@ function declsFor(st, p, base) {
   if (p.opacity != null) d.push(`opacity:${p.opacity / 100}`);
   if (p.blur) d.push(`backdrop-filter:blur(${p.blur}px);-webkit-backdrop-filter:blur(${p.blur}px)`);
   if (p.bw) d.push(`border:${p.bw}px solid ${p.bc ?? '#7d897c'};box-sizing:border-box`);
-  if (p.scale != null || p.rot != null) d.push(`transform:scale(${(p.scale ?? 100) / 100}) rotate(${p.rot ?? 0}deg)`);
+  if (p.w != null) d.push(`width:${p.w}px;min-width:${p.w}px;max-width:${p.w}px;flex:none`);
+  if (p.h != null) d.push(`height:${p.h}px;min-height:${p.h}px;max-height:${p.h}px`);
+  if (p.mY != null) d.push(`margin-top:${p.mY}px;margin-bottom:${p.mY}px`);
+  if (p.mX != null) d.push(`margin-left:${p.mX}px;margin-right:${p.mX}px`);
+  if (p.alignX || p.alignY) {
+    const flex = /flex|grid/.test(base?.display || '');
+    const col = base?.col;
+    if (!flex) d.push('display:flex');
+    if (col) d.push('flex-direction:column');
+    if (p.alignX) d.push(`${col ? 'align-items' : 'justify-content'}:${p.alignX}`);
+    if (p.alignY) d.push(`${col ? 'justify-content' : 'align-items'}:${p.alignY}`);
+  }
+  if (p.scale != null || p.rot != null || p.iRot || p.iFlip) {
+    d.push(`transform:scale(${(p.scale ?? 100) / 100}) rotate(${(p.rot ?? 0) + (p.iRot ?? 0)}deg)${p.iFlip ? ' scaleX(-1)' : ''}`);
+  }
+  if (p.iStroke != null) d.push(`--icon-stroke:${p.iStroke}`);
   if (p.tracking != null) d.push(`letter-spacing:${p.tracking}px`);
   if (p.caps) d.push('text-transform:uppercase');
   if (p.anim) d.push(`animation:lab-${p.anim} ${p.dur ?? 1.4}s ease-in-out infinite${st.pause ? ';animation-play-state:paused' : ''}`);
@@ -155,15 +173,24 @@ function childRules(target, p) {
 
 const partBase = {}; // part key -> the colours it had when first clicked
 
+const STATE_SELECTORS = {
+  hover: [':hover'], press: [':active'], focus: [':focus-visible', ':focus-within'],
+  disabled: [':disabled', '[aria-disabled="true"]'], selected: ['[aria-selected="true"]', '[aria-pressed="true"]'],
+  error: ['[aria-invalid="true"]', '.error'],
+};
+const STATE_LABELS = [['', 'Normal'], ['hover', 'Hovring'], ['press', 'Tryck'], ['focus', 'Fokus'], ['disabled', 'Inaktiv'], ['selected', 'Vald'], ['error', 'Fel']];
+
 function partsCss(st, scope) {
   let css = '';
-  for (const [key, { sel, mode, props }] of Object.entries(st.parts)) {
-    const target = scoped(sel === '.phone' ? MODE_SCOPE[mode] : `${MODE_SCOPE[mode]} ${sel}`, scope);
+  for (const [key, { sel, mode, props, view, state }] of Object.entries(st.parts)) {
+    const phone = view != null ? `${MODE_SCOPE[mode]}[data-view="${view}"]` : MODE_SCOPE[mode];
+    const base = scoped(sel === '.phone' ? phone : `${phone} ${sel}`, scope);
+    const targets = state ? [...STATE_SELECTORS[state].map(x => base + x), `${base}[data-lab-state="${state}"]`] : [base];
     const decls = declsFor(st, props, partBase[key]);
-    if (decls) css += `${target}{${important(decls)}}`;
-    if (props.hover) css += `${target}:hover{${important(HOVER_CSS[props.hover])}}`;
-    if (props.press) css += `${target}:active{${important(PRESS_CSS[props.press])}}`;
-    css += childRules(target, props);
+    if (decls) css += `${targets.join(',')}{${important(decls)}}`;
+    if (!state && props.hover) css += `${base}:hover{${important(HOVER_CSS[props.hover])}}`;
+    if (!state && props.press) css += `${base}:active{${important(PRESS_CSS[props.press])}}`;
+    for (const t of targets) css += childRules(t, props);
   }
   return css;
 }
@@ -192,12 +219,21 @@ function buildCss(st, scope = '') {
   }
   if (typeVars.length) css += `${scoped(':root', scope)}{${typeVars.join(';')}}`;
   if (st.font !== 'ButlerySans') css += `${scoped('.phone', scope)},${scoped('.phone *', scope)}{font-family:'${st.font}',sans-serif !important}`;
+  if (st.fontHead) css += `${scoped('.phone .t-display,.phone .t-display-compact,.phone .t-title,.phone .t-stat,.phone .t-card-title', scope)}{font-family:'${st.fontHead}',sans-serif !important}`;
   if (st.lh !== 100) css += `${scoped('.phone *', scope)}{line-height:${st.lh / 100} !important}`;
   if (st.margin !== 24) css += `${scoped('.phone', scope)}{--page-margin:${st.margin}px}`;
   for (const { selector, px } of radii) {
     css += `${scoped(selector, scope)}{border-radius:${px === '12px' ? st.card : st.control}px}`;
   }
-  return css + extraCss(st, scope) + partsCss(st, scope);
+  return css + roleCss(st, scope) + extraCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
+}
+// Free moves: a part's margins, so its neighbours make room for it and the spacing follows.
+function freeCss(st, scope) {
+  let css = '';
+  for (const [id, f] of Object.entries(st.free || {})) {
+    css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{margin-left:${f.ml}px !important;margin-top:${f.mt}px !important}`;
+  }
+  return css;
 }
 
 const PART_LABELS = { lab: 'rubrik/text', sub: 'underrubrik/värde', ico: 'ikon' };
@@ -212,6 +248,8 @@ function summary(st) {
   }
   if (Object.keys(colors).length) out.colors = colors;
   if (st.font !== 'ButlerySans') out.fontFamily = st.font;
+  if (st.fontHead) out.headingFont = st.fontHead;
+  if (st.typeRatio) out.typeScaleRatio = +st.typeRatio;
   if (st.scale !== 100) out.textScalePercent = st.scale;
   if (st.lh !== 100) out.lineHeight = st.lh / 100;
   const roles = {};
@@ -223,10 +261,14 @@ function summary(st) {
   if (st.card !== 12) out.radiusCard = st.card;
   if (st.control !== 8) out.radiusControl = st.control;
   if (st.margin !== 24) out.pageMargin = st.margin;
+  roleSummary(st, out);
   spaceSummary(st, out);
   layoutSummary(st, out);
+  modularitySummary(st, out);
+  const notes = (st.notes || []).filter(n => n.text.trim());
+  if (notes.length) out.anteckningar = notes.map(n => `${n.label}: ${n.text.trim()}`);
   const parts = Object.values(st.parts).filter(p => Object.keys(p.props).length);
-  if (parts.length) out.components = parts.map(p => ({ selector: p.sel, mode: p.mode, ...p.props }));
+  if (parts.length) out.components = parts.map(p => ({ selector: p.sel, mode: p.mode, ...(p.state && { state: p.state }), ...p.props }));
   return Object.keys(out).length ? JSON.stringify(out, null, 2) : '';
 }
 
