@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/anomaly_report.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
@@ -28,6 +29,7 @@ class AnomalyBanner extends StatefulWidget {
 
 class _AnomalyBannerState extends State<AnomalyBanner> {
   AnomalyReport _report = AnomalyReport.empty;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -36,12 +38,31 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
   }
 
   Future<void> _load() async {
-    final report = await ServiceLocator.get<AnomalyRepository>().getLatest();
-    if (mounted) setState(() => _report = report);
+    try {
+      final report = await ServiceLocator.get<AnomalyRepository>().getLatest();
+      if (mounted) {
+        setState(() {
+          _report = report;
+          _loadFailed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadFailed = true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loadFailed) {
+      return Padding(
+        padding: const EdgeInsets.all(AppDimensions.space8),
+        child: InlineError(
+          what: context.l10n.errorLoadingWithDetails(''),
+          actionLabel: context.l10n.commonRetry,
+          onAction: _load,
+        ),
+      );
+    }
     if (!_report.hasAnomalies ||
         AnomalyBanner._dismissed.contains(_report.date)) {
       return const SizedBox.shrink();

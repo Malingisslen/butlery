@@ -52,14 +52,33 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  Future<void> pump(WidgetTester tester) async {
+  /// [pushed] puts the view on a second route so a Back gesture has
+  /// somewhere to go.
+  Future<void> pump(WidgetTester tester, {bool pushed = false}) async {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
-        child: const MfaSettingsView(),
+        child: pushed
+            ? Builder(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const MfaSettingsView(),
+                      ),
+                    ),
+                    child: const Text('öppna'),
+                  ),
+                ),
+              )
+            : const MfaSettingsView(),
       ),
     );
     await tester.pumpAndSettle();
+    if (pushed) {
+      await tester.tap(find.text('öppna'));
+      await tester.pumpAndSettle();
+    }
   }
 
   testWidgets('Back names Konto & säkerhet', (tester) async {
@@ -199,8 +218,8 @@ void main() {
   }
 
   /// Gets to the step where the key is shown.
-  Future<void> reachKeyStep(WidgetTester tester) async {
-    await pump(tester);
+  Future<void> reachKeyStep(WidgetTester tester, {bool pushed = false}) async {
+    await pump(tester, pushed: pushed);
     await tapTurnOn(tester);
     await confirmPassword(tester);
     await acknowledgeCodes(tester);
@@ -303,6 +322,38 @@ void main() {
       verify(() => mfa.discardBackupCodes()).called(1);
       expect(find.text('Nyckeln kunde inte göras'), findsOneWidget);
       expect(find.byKey(const ValueKey('mfa.secretKey')), findsNothing);
+    });
+
+    testWidgets('Back at the key step asks before dropping the setup', (
+      tester,
+    ) async {
+      stubNoMfa();
+      stubStartEnrollment();
+      await reachKeyStep(tester, pushed: true);
+      expect(find.byKey(const ValueKey('mfa.secretKey')), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(AppLocalizationsSv().unsavedChangesTitle),
+        findsOneWidget,
+      );
+      expect(find.byType(MfaSettingsView), findsOneWidget);
+      verifyNever(() => mfa.completeMfaEnrollment(any(), any()));
+    });
+
+    testWidgets('Back before any enrollment starts leaves without asking', (
+      tester,
+    ) async {
+      stubNoMfa();
+      await pump(tester, pushed: true);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(AppLocalizationsSv().unsavedChangesTitle), findsNothing);
+      expect(find.byType(MfaSettingsView), findsNothing);
     });
 
     testWidgets('six digits and Bekräfta enroll with that code', (
