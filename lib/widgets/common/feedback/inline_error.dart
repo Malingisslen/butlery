@@ -126,6 +126,7 @@ class InlineError extends StatelessWidget {
                     container: true,
                     liveRegion: true,
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(

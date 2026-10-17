@@ -34,6 +34,7 @@ import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -54,6 +55,9 @@ const _emptyTitle = 'Inga delade recept än'; // l10n.sharedNoContentYet
 const _oldEmptyCta = 'Dela ett recept';
 const _findFriendsCta = 'Hitta vänner'; // l10n.socialFindFriends
 const _retryLabel = 'Försök igen'; // l10n.commonRetry
+
+class _MockSocialRecipeCoordinator extends Mock
+    implements SocialRecipeCoordinator {}
 
 void main() {
   late MockSharedContentCoordinatorViewModel coordinator;
@@ -497,6 +501,35 @@ void main() {
       await tester.tap(find.text('Avbryt'));
       await tester.pumpAndSettle();
 
+      expect(find.text('Sluta dela recept?'), findsNothing);
+    });
+
+    testWidgets('confirming Sluta dela unshares the recipe', (tester) async {
+      final recipeCoordinator = _MockSocialRecipeCoordinator();
+      when(
+        () => recipeCoordinator.unshareRecipe(any()),
+      ).thenAnswer((_) async => true);
+      TestServiceLocator.registerMock<SocialRecipeCoordinator>(
+        recipeCoordinator,
+      );
+      stubContent(recipeList: [recipe]);
+      await pumpView(tester);
+
+      await tester.longPress(find.text('Köttbullar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sluta dela'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.text('Sluta dela'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      verify(
+        () => recipeCoordinator.unshareRecipe(recipe.originalRecipeId),
+      ).called(1);
       expect(find.text('Sluta dela recept?'), findsNothing);
     });
 
