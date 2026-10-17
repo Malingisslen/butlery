@@ -1,5 +1,5 @@
 /// P8-U06: the 33 REQUIRED control states of
-/// design/fas2/block288-uxfrysning.json interaktion (INTERACTION_SET_HASH
+/// test/fixtures/design/block288-uxfrysning.json interaktion (INTERACTION_SET_HASH
 /// pinned), in light and dark, reached through real
 /// input.
 ///
@@ -634,7 +634,7 @@ Map<String, dynamic> _json(String path) =>
     jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
 
 void main() {
-  final fixture = _json('design/fas2/block288-uxfrysning.json');
+  final fixture = _json('test/fixtures/design/block288-uxfrysning.json');
   final all = (fixture['interaktion'] as List).cast<Map<String, dynamic>>();
   final rows = [
     for (final r in all)
@@ -649,7 +649,6 @@ void main() {
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();
 
   test('the frozen rows still hash to INTERACTION_SET_HASH', () {
-    // As design/tools/block288/uxfrysning.mjs computes it.
     final lines = all.map((r) => '${r['ROW_ID']}=${r['STATUS']}').join('\n');
     expect(sha256.convert(utf8.encode(lines)).toString(), _pinnedHash);
     expect((fixture['BINDNING'] as Map)['INTERACTION_SET_HASH'], _pinnedHash);

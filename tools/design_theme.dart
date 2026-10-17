@@ -1,8 +1,8 @@
 // BUT-2202: the one way the generated theme files reach lib/theme/.
 //
 // The colour and type generators live in design/tools/ and write their raw
-// output to design/lib/theme/, where the Block 289 freeze hashes it byte for
-// byte. The app compiles the dart-formatted text of those same files. This
+// output to design/lib/theme/. The app compiles the dart-formatted text of
+// those same files. This
 // tool runs the generators and writes the formatted result into lib/theme/;
 // with --check it writes nothing and exits 1 when either side has drifted,
 // which is what CI runs.

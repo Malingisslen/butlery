@@ -1,4 +1,4 @@
-// Guards for the design decisions B-56 to B-61 (design/beslutslogg.md). Each
+// Guards for the design decisions B-56 to B-61 (kept as test names). Each
 // test fails when a view drifts back to the pattern the decision retired, so a
 // decision cannot be undone by accident. They read source and tokens only.
 

@@ -1,9 +1,7 @@
-// More guards for the older decisions in design/beslutslogg.md. These cover
-// what decision_guards_b01_b55_test leaves out: type and icon sources, colour
-// token pairs, retired widgets, view modes, the sketch register and the
-// decisions that live in a token or an enum. Decisions about the spec
-// documents or the working process (B-20, B-21, B-24 to B-27, B-43, B-51)
-// have nothing in lib/ to scan and are not guarded here.
+// More guards for the older design decisions (B-nn names are kept as test
+// names). These cover what decision_guards_b01_b55_test leaves out: type and
+// icon sources, colour token pairs, retired widgets, view modes and the
+// decisions that live in a token or an enum.
 
 import 'dart:io';
 
@@ -329,28 +327,6 @@ void main() {
         );
       }
     });
-  });
-
-  test('B-53 de beslutade avvikelserna står kvar i skissregistret', () {
-    final views =
-        guardJson('design/screen-register.json')['views']
-            as Map<String, dynamic>;
-    for (final path in const [
-      'lib/views/smart_import_view.dart',
-      'lib/views/edit_recipe_view.dart',
-      'lib/views/messaging/conversations_list_view.dart',
-      'lib/views/more/more_view.dart',
-      'lib/views/more/account_area_view.dart',
-      'lib/views/more/privacy_area_view.dart',
-      'lib/views/more/app_settings_view.dart',
-      'lib/views/more/blocked_users_view.dart',
-    ]) {
-      expect(
-        (views[path] as Map)['status'],
-        'avviker-beslutad',
-        reason: 'B-53: $path',
-      );
-    }
   });
 
   test(
