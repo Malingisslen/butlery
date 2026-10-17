@@ -5,37 +5,45 @@
 // dark copy of a screen share element ids, so a move happens in both. Only the lab's own example
 // screens change; the app is not touched.
 
-const MOVE_KINDS = [
-  { item: '.b-row', into: '.b-section, .b-body' },
-  { item: '.b-section', into: '.b-body', handle: '.b-overline' },
-  { item: '.b-band', into: '.b-body' },
-  { item: '.b-btn', into: '.b-body, .b-btnrow' },
-  { item: '.b-chip', into: '.b-chips' },
-];
-const MOVABLE = MOVE_KINDS.map(k => k.item).join(',');
-const CONTAINERS = ['.b-body', '.b-section', '.b-chips', '.b-btnrow'].join(',');
+// Items that are picked as a whole when you press anywhere inside them.
+const MOVABLE = '.b-row,.b-section,.b-band,.b-btn,.b-chip,.b-card,.mr-card,.b-field,.b-input,.b-iconbtn,.tab,.add';
 let moveMode = false;
 let layoutBase = '';
 let layoutApplied = '[]';
-let drag = null; // { el, kind }
+let moving = null; // the picked element
+let drag = null; // { el, x, y, started, plan }
 
+const inSvg = el => !!el.parentElement?.closest('svg');
 // Called once, before the dark copies are cloned, so both copies get the same ids.
 function assignLayoutIds() {
+  const kinds = new Map();
   document.querySelectorAll('#screens > figure').forEach((fig, f) => {
-    fig.querySelectorAll(`${MOVABLE},${CONTAINERS}`).forEach((el, n) => { el.dataset.labId = `f${f}-${n}`; });
+    let n = 0;
+    fig.querySelector('.phone').dataset.view = f;
+    fig.querySelectorAll('.phone, .phone *').forEach(el => {
+      if (inSvg(el)) return;
+      el.dataset.labId = `f${f}-${n++}`;
+      // Parts that carry no class of their own are told apart by what they look like, so the same
+      // star box or icon is the same part in every screen.
+      if (el.tagName === 'svg') {
+        const use = el.querySelector('use');
+        if (use) el.dataset.glyph = use.getAttribute('href').replace('#i-', '');
+      } else if (!el.classList.length && !el.classList.contains('phone')) {
+        const sig = [el.tagName, el.getAttribute('style') || '', [...el.children].map(c => c.tagName + (c.querySelector?.('use')?.getAttribute('href') || '')).join(',')].join('|');
+        if (!kinds.has(sig)) kinds.set(sig, 'k' + kinds.size);
+        el.dataset.labKind = kinds.get(sig);
+      }
+    });
   });
   layoutBase = $('screens').innerHTML;
 }
 function snapshotLayoutBase() { layoutBase = $('screens').innerHTML; }
 
 function markDraggable() {
-  const screens = $('screens');
-  screens.classList.toggle('lab-move', moveMode);
-  screens.querySelectorAll(`${MOVABLE},.b-overline`).forEach(el => {
-    if (moveMode) el.setAttribute('draggable', 'true'); else el.removeAttribute('draggable');
-  });
+  $('screens').classList.toggle('lab-move', moveMode);
+  if (!moveMode) pickMoving(null);
 }
-function labelOf(el) { return (el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || el?.className || ''; }
+function labelOf(el) { return (el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || el?.className?.baseVal || el?.className || el?.tagName || ''; }
 
 function applyMove(m) {
   for (const fig of document.querySelectorAll('#screens > figure')) {
@@ -49,21 +57,64 @@ function applyMove(m) {
 function replayLayout(force) {
   const sig = JSON.stringify(state.moves || []);
   if (!force && sig === layoutApplied) return;
+  moving = null;
   $('screens').innerHTML = layoutBase;
   for (const m of state.moves || []) applyMove(m);
   layoutApplied = sig;
   markDraggable();
+  showMoving();
 }
 
-function dropPlan(e) {
+// The item to pick: the closest kit item around the pressed spot, else the smallest box that has
+// neighbours. A second press on the picked item picks the box around it.
+function pickAt(target) {
+  let e = target.closest?.('.phone') ? target : null;
+  if (!e) return null;
+  if (inSvg(e) || e.tagName === 'svg') e = e.closest('svg');
+  for (let p = e; p && !p.classList.contains('phone'); p = p.parentElement) {
+    if (p.matches(MOVABLE) && !p.classList.contains('b-scroll')) return p;
+  }
+  for (let p = e; p && !p.classList.contains('phone'); p = p.parentElement) {
+    if (p.parentElement && p.parentElement.children.length > 1 && !p.classList.contains('b-scroll')) return p;
+  }
+  return null;
+}
+function boxAround(el) {
+  let p = el.parentElement;
+  while (p && !p.classList.contains('phone') && (p.classList.contains('b-scroll') || p.parentElement?.children.length < 2)) p = p.parentElement;
+  return p && !p.classList.contains('phone') ? p : el;
+}
+function pickMoving(el) {
+  document.querySelectorAll('[data-lab-moving]').forEach(n => n.removeAttribute('data-lab-moving'));
+  moving = el;
+  el?.setAttribute('data-lab-moving', '');
+  showMoving();
+}
+const sameKind = (a, b) => a.tagName === b.tagName && a.classList[0] === b.classList[0];
+
+function dropPlan(x, y) {
   if (!drag) return null;
-  const container = e.target.closest?.(drag.kind.into);
-  if (!container || drag.el.contains(container) || container.closest('.phone') !== drag.el.closest('.phone')) return null;
-  const horizontal = container.matches('.b-chips,.b-btnrow');
-  const siblings = [...container.children].filter(c => c !== drag.el && c.matches(drag.kind.item));
+  drag.el.style.pointerEvents = 'none';
+  const t = document.elementFromPoint(x, y);
+  drag.el.style.pointerEvents = '';
+  if (!t || !t.closest?.('.phone') || t.closest('.phone') !== drag.el.closest('.phone')) return null;
+  let start = t.closest('svg') || t;
+  let container = null;
+  for (let c = start; c && !c.classList.contains('phone'); c = c.parentElement) {
+    if (drag.el.contains(c)) return null;
+    if ([...c.children].some(k => k !== drag.el && sameKind(k, drag.el))) { container = c; break; }
+  }
+  if (!container) {
+    const parent = drag.el.parentElement;
+    container = parent.contains(start) ? parent : start.closest('.b-body,.b-section,.phone') || null;
+  }
+  if (!container || container.classList.contains('phone') && !container.querySelector('.b-body')) return null;
+  const cs = getComputedStyle(container);
+  const horizontal = (cs.display === 'flex' || cs.display === 'inline-flex') && cs.flexDirection.startsWith('row');
+  const siblings = [...container.children].filter(c => c !== drag.el && !c.classList.contains('lab-drop') && !c.classList.contains('lab-gap'));
   const before = siblings.find(s => {
     const r = s.getBoundingClientRect();
-    return horizontal ? e.clientX < r.left + r.width / 2 : e.clientY < r.top + r.height / 2;
+    return horizontal ? x < r.left + r.width / 2 : y < r.top + r.height / 2;
   }) || null;
   return { container, before, siblings, horizontal };
 }
@@ -84,45 +135,78 @@ function showDropLine(plan) {
   }
   phone.append(line);
 }
+function recordMove(el, container, before) {
+  if (!el.dataset.labId || !container.dataset.labId) return;
+  const m = {
+    id: el.dataset.labId, to: container.dataset.labId, before: before?.dataset.labId ?? null,
+    label: labelOf(el), toLabel: labelOf(container.querySelector('.b-overline')) || container.className.baseVal || container.className.split(' ')[0] || container.tagName.toLowerCase(),
+    beforeLabel: before ? labelOf(before) : '',
+  };
+  (state.moves ||= []).push(m);
+  applyMove(m);
+  layoutApplied = JSON.stringify(state.moves);
+  showMoves();
+  render();
+  const again = document.querySelector(`#screens .fig-light [data-lab-id="${m.id}"]`) || document.querySelector(`#screens [data-lab-id="${m.id}"]`);
+  pickMoving(again);
+}
+// One step among the neighbours, for touch screens and for precise nudges.
+function nudge(dir) {
+  if (!moving) return;
+  const parent = moving.parentElement;
+  const sibs = [...parent.children].filter(c => !c.classList.contains('lab-drop') && !c.classList.contains('lab-gap'));
+  const i = sibs.indexOf(moving), j = i + dir;
+  if (j < 0 || j >= sibs.length) return;
+  recordMove(moving, parent, dir < 0 ? sibs[j] : sibs[j + 1] || null);
+}
 
 function wireLayout() {
   const screens = $('screens');
-  screens.addEventListener('dragstart', e => {
-    if (!moveMode) return;
-    const handle = e.target.closest?.('.b-overline');
-    const el = handle ? handle.closest('.b-section') : e.target.closest?.(MOVABLE);
-    const kind = el && MOVE_KINDS.find(k => el.matches(k.item));
-    if (!kind) { e.preventDefault(); return; }
-    drag = { el, kind };
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', el.dataset.labId || '');
-    el.classList.add('lab-dragging');
-  });
-  screens.addEventListener('dragover', e => {
-    const plan = dropPlan(e);
-    if (plan) e.preventDefault();
-    showDropLine(plan);
-  });
-  screens.addEventListener('drop', e => {
-    const plan = dropPlan(e);
-    if (!plan) return;
+  screens.addEventListener('pointerdown', e => {
+    if (!moveMode || e.button > 0) return;
+    let el = pickAt(e.target);
+    if (!el) return;
+    if (moving?.isConnected && moving.contains(e.target) && !drag) el = moving;
+    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, wasPicked: el === moving };
+    el.setAttribute('data-lab-moving', '');
+    if (e.pointerType === 'touch') e.preventDefault();
+  }, true);
+  window.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (!drag.started && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) {
+      drag.started = true;
+      drag.el.classList.add('lab-dragging');
+    }
+    if (!drag.started) return;
     e.preventDefault();
-    const m = {
-      id: drag.el.dataset.labId, to: plan.container.dataset.labId, before: plan.before?.dataset.labId ?? null,
-      label: labelOf(drag.el), toLabel: labelOf(plan.container.querySelector('.b-overline')) || plan.container.className.split(' ')[0],
-      beforeLabel: plan.before ? labelOf(plan.before) : '',
-    };
-    (state.moves ||= []).push(m);
-    applyMove(m);
-    layoutApplied = JSON.stringify(state.moves);
-    showMoves();
-    render();
-  });
-  screens.addEventListener('dragend', () => {
-    drag?.el.classList.remove('lab-dragging');
+    drag.plan = dropPlan(e.clientX, e.clientY);
+    showDropLine(drag.plan);
+  }, { passive: false });
+  window.addEventListener('pointerup', () => {
+    if (!drag) return;
+    const d = drag;
     drag = null;
+    d.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop').forEach(n => n.remove());
+    if (d.started) {
+      if (d.plan) recordMove(d.el, d.plan.container, d.plan.before);
+      else pickMoving(d.el);
+    } else if (d.wasPicked && moving === d.el) pickMoving(boxAround(d.el));
+    else pickMoving(d.el);
   });
+  screens.addEventListener('click', e => { if (moveMode) { e.preventDefault(); e.stopPropagation(); } }, true);
+  $('move-up').onclick = () => nudge(-1);
+  $('move-down').onclick = () => nudge(1);
+  $('move-out').onclick = () => { if (moving) pickMoving(boxAround(moving)); };
+}
+
+function showMoving() {
+  const box = $('moving');
+  if (!box) return;
+  if (!moveMode) { box.textContent = 'Slå på Flytta delar för att välja något i skärmarna.'; }
+  else if (!moving?.isConnected) box.textContent = 'Tryck på en del i en skärm för att välja den, och dra den dit du vill ha den. Tryck igen på samma del för att välja rutan runt.';
+  else box.textContent = `Vald: "${labelOf(moving)}"`;
+  for (const id of ['move-up', 'move-down', 'move-out']) $(id).disabled = !moveMode || !moving?.isConnected;
 }
 
 function showMoves() {

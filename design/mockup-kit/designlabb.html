@@ -804,8 +804,10 @@
 </section>
 <section class="pane" data-pane="layout">
 <h2>Flytta delar</h2>
-<label><input type="checkbox" id="move-mode"><span>Flytta delar (dra och släpp)</span></label>
-<p class="hint">Dra en rad, en knapp eller ett chip till ett annat ställe. Ett helt avsnitt flyttar du genom att dra i dess rubrik. Flytten sker i både ljust och mörkt. Det ändrar bara exempelskärmarna här, inte appen.</p>
+<label><input type="checkbox" id="move-mode"><span>Flytta delar</span></label>
+<p class="hint">Slå på, tryck på en del i en skärm och dra den till ett annat ställe, eller flytta den ett steg med knapparna. Det ändrar bara exempelskärmarna här, inte appen.</p>
+<p class="hint" id="moving"></p>
+<div class="row"><button class="ghost" id="move-up" type="button">Flytta upp/vänster</button><button class="ghost" id="move-down" type="button">Flytta ner/höger</button><button class="ghost" id="move-out" type="button">Välj rutan runt</button></div>
 <div id="moves"></div>
 <button class="ghost" id="clear-moves" type="button" style="width:100%">Nollställ layouten</button>
 </section>
@@ -1193,10 +1195,7 @@
 <div class="panes">
 <div id="advice-box">
 <h2>Råd</h2>
-<p class="hint">Bakgrund och tumregler för det du justerar. Peka på eller ändra ett reglage, så öppnas rådet för det, och du ser hur dina val står sig.</p>
-<input type="search" id="advice-q" placeholder="Sök i råden och ordlistan">
 <div id="advice-list"></div>
-<button class="ghost" id="advice-all" type="button">Visa alla råd</button>
 </div>
 <div id="chat-box" hidden>
 <h2>Fråga Claude</h2>

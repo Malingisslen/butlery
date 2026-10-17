@@ -132,6 +132,18 @@ function declsFor(st, p, base) {
   if (p.opacity != null) d.push(`opacity:${p.opacity / 100}`);
   if (p.blur) d.push(`backdrop-filter:blur(${p.blur}px);-webkit-backdrop-filter:blur(${p.blur}px)`);
   if (p.bw) d.push(`border:${p.bw}px solid ${p.bc ?? '#7d897c'};box-sizing:border-box`);
+  if (p.w != null) d.push(`width:${p.w}px;min-width:${p.w}px;max-width:${p.w}px;flex:none`);
+  if (p.h != null) d.push(`height:${p.h}px;min-height:${p.h}px;max-height:${p.h}px`);
+  if (p.mY != null) d.push(`margin-top:${p.mY}px;margin-bottom:${p.mY}px`);
+  if (p.mX != null) d.push(`margin-left:${p.mX}px;margin-right:${p.mX}px`);
+  if (p.alignX || p.alignY) {
+    const flex = /flex|grid/.test(base?.display || '');
+    const col = base?.col;
+    if (!flex) d.push('display:flex');
+    if (col) d.push('flex-direction:column');
+    if (p.alignX) d.push(`${col ? 'align-items' : 'justify-content'}:${p.alignX}`);
+    if (p.alignY) d.push(`${col ? 'justify-content' : 'align-items'}:${p.alignY}`);
+  }
   if (p.scale != null || p.rot != null) d.push(`transform:scale(${(p.scale ?? 100) / 100}) rotate(${p.rot ?? 0}deg)`);
   if (p.tracking != null) d.push(`letter-spacing:${p.tracking}px`);
   if (p.caps) d.push('text-transform:uppercase');
@@ -157,8 +169,9 @@ const partBase = {}; // part key -> the colours it had when first clicked
 
 function partsCss(st, scope) {
   let css = '';
-  for (const [key, { sel, mode, props }] of Object.entries(st.parts)) {
-    const target = scoped(sel === '.phone' ? MODE_SCOPE[mode] : `${MODE_SCOPE[mode]} ${sel}`, scope);
+  for (const [key, { sel, mode, props, view }] of Object.entries(st.parts)) {
+    const phone = view != null ? `${MODE_SCOPE[mode]}[data-view="${view}"]` : MODE_SCOPE[mode];
+    const target = scoped(sel === '.phone' ? phone : `${phone} ${sel}`, scope);
     const decls = declsFor(st, props, partBase[key]);
     if (decls) css += `${target}{${important(decls)}}`;
     if (props.hover) css += `${target}:hover{${important(HOVER_CSS[props.hover])}}`;

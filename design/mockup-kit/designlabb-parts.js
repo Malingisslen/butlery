@@ -7,6 +7,12 @@ const PART_GROUPS = [
   ['Färg', [
     ['bg', 'Bakgrund', 'color'], ['color', 'Textfärg', 'color'],
   ]],
+  ['Ruta: storlek och placering', [
+    ['w', 'Bredd', 'px', 8, 360, 48], ['h', 'Höjd', 'px', 8, 400, 48],
+    ['alignX', 'Innehållet vågrätt', 'sel', [['', 'Som nu'], ['flex-start', 'Vänster'], ['center', 'Mitten'], ['flex-end', 'Höger']]],
+    ['alignY', 'Innehållet lodrätt', 'sel', [['', 'Som nu'], ['flex-start', 'Upptill'], ['center', 'Mitten'], ['flex-end', 'Nedtill']]],
+    ['mY', 'Marginal upp/ner', 'px', -16, 48, 0], ['mX', 'Marginal sidor', 'px', -16, 48, 0],
+  ]],
   ['Form, text och luft', [
     ['radius', 'Rundning', 'px', 0, 40], ['size', 'Textstorlek', 'px', 8, 44],
     ['weight', 'Tyngd', 'sel', [[400, '400'], [600, '600'], [700, '700']]],
@@ -48,7 +54,18 @@ const toHex = c => {
   return '#' + m.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
 };
 let selected = null;
+function markMatches(sel, view) {
+  document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
+  if (sel === '.phone') return { n: 0, views: 0 };
+  let list = [];
+  try { list = [...document.querySelectorAll(`#screens .phone ${sel}`)]; } catch { /* a selector the browser refuses matches nothing */ }
+  if (view != null) list = list.filter(n => n.closest('.phone').dataset.view == view);
+  list.forEach(n => n.setAttribute('data-lab-match', ''));
+  const light = list.filter(n => n.closest('.phone').dataset.theme !== 'dark');
+  return { n: light.length, views: new Set(light.map(n => n.closest('.phone').dataset.view)).size };
+}
 function clearSelection() {
+  document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   document.querySelectorAll('[data-lab-selected]').forEach(e => e.removeAttribute('data-lab-selected'));
   selected = null;
   showPartHint();
@@ -63,11 +80,13 @@ function componentOf(el) {
 }
 function parentPart(el) {
   let p = el.parentElement;
-  while (p && p.closest('.phone') && (p.classList.contains('b-scroll') || (!p.classList.contains('phone') && !p.className))) p = p.parentElement;
+  while (p && p.closest('.phone') && (p.classList.contains('b-scroll') || (!p.classList.contains('phone') && !p.className && !p.getAttribute('style')))) p = p.parentElement;
   return p && p.closest('.phone') ? p : el;
 }
 function selectorFor(el, variant) {
   if (el.classList.contains('phone')) return '.phone';
+  if (el.dataset.glyph && !el.classList.contains('b-icon')) return `svg[data-glyph="${el.dataset.glyph}"]` + (variant ? [...el.classList].filter(c => !c.startsWith('lab-')).map(c => '.' + c).join('') : '');
+  if (el.dataset.labKind) return `[data-lab-kind="${el.dataset.labKind}"]`;
   const classes = [...el.classList].filter(c => !c.startsWith('lab-') && c !== 'lab-selected');
   const base = classes.find(c => c.startsWith('b-'));
   if (base) return '.' + base + (variant ? classes.filter(c => c !== base).map(c => '.' + c).join('') : '');
@@ -120,8 +139,9 @@ function showPart(variant = false) {
   const el = selected.el, box = $('part');
   const sel = selectorFor(el, variant), base = selectorFor(el, false);
   selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
-  const key = `${selected.mode}|${sel}`;
-  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {} };
+  const view = selected.onlyView ? +el.closest('.phone').dataset.view : null;
+  const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}`;
+  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {}, ...(view != null ? { view } : {}) };
   const cs = getComputedStyle(el);
   const kid = q => el.querySelector(q);
   const now = {
@@ -137,7 +157,7 @@ function showPart(variant = false) {
   read('.label,.title,.text', c => ({ labColor: toHex(c.color), labSize: parseFloat(c.fontSize), labWeight: +c.fontWeight }));
   read('.subtitle,.value', c => ({ subColor: toHex(c.color), subSize: parseFloat(c.fontSize) }));
   read('svg.i,.i', c => ({ icoColor: toHex(c.color), icoSize: parseFloat(c.width) || 24 }));
-  partBase[key] ||= { bg: now.bg };
+  partBase[key] ||= { bg: now.bg, display: cs.display, col: cs.flexDirection.startsWith('column') };
 
   box.textContent = '';
   const head = document.createElement('div');
@@ -153,6 +173,20 @@ function showPart(variant = false) {
     seg.append(b);
   }
   box.append(seg);
+  const found = markMatches(sel, view);
+  if (found.n) {
+    const info = document.createElement('p');
+    info.className = 'hint';
+    info.textContent = `Ändringen gäller ${found.n} likadana delar i ${found.views} ${found.views === 1 ? 'vy' : 'vyer'} (markerade med rosa ram).`;
+    box.append(info);
+  }
+  if (sel !== '.phone') {
+    const l = document.createElement('label');
+    const c = document.createElement('input');
+    c.type = 'checkbox'; c.checked = !!selected.onlyView; c.onchange = () => { selected.onlyView = c.checked; showPart(variant); };
+    const s = document.createElement('span'); s.textContent = 'Bara i den här vyn';
+    l.append(c, s); box.append(l);
+  }
   if (sel !== base) {
     const l = document.createElement('label');
     const c = document.createElement('input');
@@ -204,6 +238,7 @@ function wireScreens() {
     selected = { el, mode: null };
     openTab('part');
     showPart(false);
+    adviceForPart(el);
   }, true);
   screens.addEventListener('mouseover', e => {
     if (moveMode) return;

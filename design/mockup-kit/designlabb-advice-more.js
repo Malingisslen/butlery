@@ -130,20 +130,3 @@ const ADVICE_MORE = {
     src: 'A/B-tänk',
   },
 };
-
-const GLOSSARY = [
-  ['dp, sp, px, pt', 'Mått på skärm. dp är Androids och Flutters "logiska pixel" som ser lika stor ut på alla skärmar. sp är dp för text, och följer användarens textinställning. px är skärmens riktiga punkter. pt är Apples motsvarighet till dp.'],
-  ['Kontrastförhållande', 'Hur mycket ljusare den ena färgen är än den andra, som ett tal från 1:1 (samma färg) till 21:1 (svart mot vitt). 4,5:1 krävs för brödtext enligt WCAG AA.'],
-  ['WCAG', 'De internationella riktlinjerna för tillgänglig webb och appar. Nivåerna är A, AA och AAA. De flesta lagkrav och upphandlingar pekar på AA.'],
-  ['Trycksyta', 'Området som reagerar på ett tryck. Det får vara större än det man ser.'],
-  ['Tumzonen', 'Den del av skärmen en tumme når bekvämt med en hand: nedre delen. Därför ligger bottenmenyn där.'],
-  ['4- och 8-punktsrutnät', 'Alla avstånd och storlekar är multipler av 4 eller 8. Det gör att allt linjerar och att man slipper välja bland tusen mått.'],
-  ['Hierarki', 'Ordningen i vad som syns först, näst och sist. Skapas av storlek, tyngd, färg och placering.'],
-  ['Luft (white space)', 'Tomrum. Inte slöseri: det är det som gör att man ser vad som hör ihop.'],
-  ['Affordans', 'Att något ser ut att gå att använda: en knapp ser tryckbar ut, ett fält ser skrivbart ut.'],
-  ['Densitet', 'Hur tätt innehållet ligger. Luftigt eller tätt är ett val efter vad användaren gör.'],
-  ['Tokens', 'Namngivna designvärden (en färg, ett avstånd) som används överallt, så att en ändring på ett ställe slår igenom i hela appen. Labbets reglage ändrar tokens.'],
-  ['OLED', 'Skärmar där varje punkt lyser själv. Svarta punkter är släckta, så mörkt läge sparar batteri.'],
-  ['Elevation', 'Hur högt upp ett element "ligger". Visas med skugga, och i mörkt läge med en ljusare yta.'],
-  ['Affär mellan val', 'De flesta designval har ett pris: tydligare kostar plats, luftigare kostar scrollande, mer rörelse kostar lugn. Råden försöker säga vad priset är.'],
-];

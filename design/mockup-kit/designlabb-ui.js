@@ -180,7 +180,7 @@ function syncUi() {
   $('icon-lib').value = state.iconLib;
   $('overlay').checked = state.overlay;
   replayLayout();
-  showMoves();
+  showMoves(); showMoving();
   loadFont();
   clearSelection();
   render();
@@ -321,7 +321,7 @@ function wireExtras() {
     b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
-  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); };
+  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); showMoving(); };
   $('clear-moves').onclick = () => { state.moves = []; replayLayout(); showMoves(); render(); };
   wireLayout();
   $('apply').onclick = async () => {

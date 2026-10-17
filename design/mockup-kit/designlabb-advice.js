@@ -181,17 +181,7 @@ const ADVICE = {
   },
 };
 
-// Which topics belong to which tab, and which topic each control opens.
-const ADVICE_TABS = {
-  all: ['farg', 'kontrast', 'morkt', 'typsnitt', 'textstorlek', 'radavstand', 'form', 'marginal'],
-  part: ['kontrast', 'form', 'skugga', 'glas', 'rorelse', 'kant'],
-  fx: ['skugga', 'rorelse', 'hovring', 'tryck', 'glas', 'kant', 'form'],
-  space: ['avstand', 'tathet', 'trycksyta', 'marginal', 'avdelare'],
-  icons: ['ikonbibliotek', 'ikonstil', 'ikonstorlek', 'ikonlinje'],
-  layout: ['layout', 'bottenmeny'],
-  vars: ['varianter'],
-  check: ['kontrast'],
-};
+// Which topic each control opens.
 const ADVICE_FOR = {
   scale: 'textstorlek', lh: 'radavstand', font: 'typsnitt', card: 'form', control: 'form', margin: 'marginal',
   hue: 'farg', sat: 'farg', light: 'farg', presets: 'farg', space: 'avstand', rowPad: 'avstand', sectionGap: 'avstand',
