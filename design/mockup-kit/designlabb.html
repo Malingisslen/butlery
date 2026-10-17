@@ -745,6 +745,8 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel h2 { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; margin: 16px 0 8px; color: #627061; }
 .panel label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .panel label span { flex: 1; }
+.panel label > span:first-child { flex: 0 1 118px; }
+.panel input[type=range] { min-width: 0; }
 .panel input[type=color] { width: 36px; height: 28px; padding: 0; border: 1px solid #7d897c; border-radius: 6px; background: none; }
 .panel input[type=range] { flex: 1; }
 .panel .val { flex: 0 0 44px; text-align: right; color: #627061; }
@@ -789,6 +791,9 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 <p class="hint">Tips: klicka på en knapp, ett kort eller en rad i skärmarna för att justera just den delen.</p>
 <h2>Stämningar</h2>
 <div class="chips" id="presets"></div>
+<h2>Effekter att prova</h2>
+<div class="chips" id="effects"></div>
+<label><input type="checkbox" id="pause"><span>Pausa animationer</span></label>
 <h2>Typsnitt</h2>
 <label><span>Typsnitt</span><select id="font"></select></label>
 <label><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
@@ -990,7 +995,7 @@ const FONTS = {
 };
 const defaults = () => ({
   font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
-  hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {},
+  hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
 });
 let state = defaults();
 
@@ -1194,6 +1199,7 @@ function syncUi() {
     text.classList.toggle('changed', hex in state.colors);
   }
   loadFont();
+  $('pause').checked = state.pause;
   clearSelection();
   render();
 }
@@ -1231,20 +1237,89 @@ presets.append(surprise);
 
 
 // Clicking a part of a screen selects its component class and edits it on its own.
-const PART_CSS = {
-  bg: v => `background-color:${v}`, color: v => `color:${v}`, radius: v => `border-radius:${v}px`,
-  size: v => `font-size:${v}px`, weight: v => `font-weight:${v}`,
-  padY: v => `padding-top:${v}px;padding-bottom:${v}px`, padX: v => `padding-left:${v}px;padding-right:${v}px`,
+const KEYFRAMES = `
+@keyframes lab-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes lab-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes lab-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes lab-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(.8deg)}}
+@keyframes lab-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(206,124,30,0))}50%{filter:drop-shadow(0 0 12px rgba(206,124,30,.9))}}
+@keyframes lab-spin{to{transform:rotate(360deg)}}
+@keyframes lab-fade{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes lab-wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}`;
+const ANIMS = [['', 'Ingen'], ['pulse', 'Pulsera'], ['bounce', 'Studsa'], ['shake', 'Skaka'], ['float', 'Sväva'], ['glow', 'Glöda'], ['wiggle', 'Vicka'], ['fade', 'Blinka mjukt'], ['spin', 'Snurra']];
+const HOVERS = [['', 'Ingen'], ['lift', 'Lyft med skugga'], ['grow', 'Förstora'], ['glow', 'Glöd'], ['bright', 'Ljusna'], ['dim', 'Tona ner']];
+const PRESSES = [['', 'Ingen'], ['sink', 'Krymp'], ['dip', 'Tryck ner']];
+const HOVER_CSS = {
+  lift: 'transform:translateY(-3px);filter:drop-shadow(0 8px 14px rgba(23,37,29,.28))',
+  grow: 'transform:scale(1.06)', glow: 'filter:drop-shadow(0 0 10px rgba(206,124,30,.85))',
+  bright: 'filter:brightness(1.12)', dim: 'opacity:.7',
 };
+const PRESS_CSS = { sink: 'transform:scale(.95)', dip: 'transform:translateY(2px)' };
+// Control specs: [key, label, type, lo, hi, fallback, step].
+const PART_SPECS = [
+  ['bg', 'Bakgrund', 'color'], ['color', 'Textfärg', 'color'],
+  ['radius', 'Rundning', 'px', 0, 40], ['size', 'Textstorlek', 'px', 8, 44],
+  ['weight', 'Tyngd', 'sel', [[400, '400'], [600, '600'], [700, '700']]],
+  ['padY', 'Luft upp/ner', 'px', 0, 40], ['padX', 'Luft sidor', 'px', 0, 40],
+  'Skugga',
+  ['shY', 'Höjd', 'px', -12, 32, 4], ['shBlur', 'Mjukhet', 'px', 0, 60, 12],
+  ['shAlpha', 'Styrka', '%', 0, 80, 25], ['shColor', 'Färg', 'color', 0, 0, '#17251d'],
+  'Genomskinlighet',
+  ['opacity', 'Hela delen', '%', 10, 100, 100], ['bgAlpha', 'Bakgrunden', '%', 0, 100, 100],
+  ['blur', 'Sudda bakom (glas)', 'px', 0, 30, 0],
+  'Kant, toning och form',
+  ['bw', 'Kantlinje', 'px', 0, 6, 0], ['bc', 'Kantfärg', 'color', 0, 0, '#7d897c'],
+  ['grad', 'Toning till', 'color', 0, 0, '#ce7c1e'], ['gradAngle', 'Toningens vinkel', '°', 0, 360, 135],
+  ['scale', 'Storlek', '%', 70, 140, 100], ['rot', 'Lutning', '°', -15, 15, 0],
+  ['tracking', 'Teckenavstånd', 'px', -1, 6, 0], ['caps', 'Versaler', 'check'],
+  'Rörelse',
+  ['anim', 'Animation', 'sel', ANIMS], ['dur', 'Animationstid', 's', 0.3, 4, 1.4, 0.1],
+  ['hover', 'Vid hovring', 'sel', HOVERS], ['press', 'Vid tryck', 'sel', PRESSES],
+];
 const SCOPE = { light: '.phone:not([data-theme="dark"])', dark: '.phone[data-theme="dark"]', both: '.phone' };
+const partBase = {};
+const rgba = (hex, a) => {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  return `rgba(${r},${g},${b},${a})`;
+};
+function declsFor(p, base) {
+  const d = [];
+  const bg = p.bg ?? base?.bg;
+  if (p.bg || p.bgAlpha != null || p.grad) {
+    if (bg) {
+      const a = (p.bgAlpha ?? 100) / 100;
+      if (p.grad) d.push(`background-color:transparent;background-image:linear-gradient(${p.gradAngle ?? 135}deg,${rgba(bg, a)},${rgba(p.grad, a)})`);
+      else d.push(`background-color:${rgba(bg, a)}`);
+    }
+  }
+  if (p.color) d.push(`color:${p.color}`);
+  if (p.radius != null) d.push(`border-radius:${p.radius}px`);
+  if (p.size != null) d.push(`font-size:${p.size}px`);
+  if (p.weight != null) d.push(`font-weight:${p.weight}`);
+  if (p.padY != null) d.push(`padding-top:${p.padY}px;padding-bottom:${p.padY}px`);
+  if (p.padX != null) d.push(`padding-left:${p.padX}px;padding-right:${p.padX}px`);
+  if (p.shY != null || p.shBlur != null || p.shAlpha != null || p.shColor) {
+    d.push(`filter:drop-shadow(0 ${p.shY ?? 4}px ${p.shBlur ?? 12}px ${rgba(p.shColor ?? '#17251d', (p.shAlpha ?? 25) / 100)})`);
+  }
+  if (p.opacity != null) d.push(`opacity:${p.opacity / 100}`);
+  if (p.blur) d.push(`backdrop-filter:blur(${p.blur}px);-webkit-backdrop-filter:blur(${p.blur}px)`);
+  if (p.bw) d.push(`border:${p.bw}px solid ${p.bc ?? '#7d897c'};box-sizing:border-box`);
+  if (p.scale != null || p.rot != null) d.push(`transform:scale(${(p.scale ?? 100) / 100}) rotate(${p.rot ?? 0}deg)`);
+  if (p.tracking != null) d.push(`letter-spacing:${p.tracking}px`);
+  if (p.caps) d.push('text-transform:uppercase');
+  if (p.anim) d.push(`animation:lab-${p.anim} ${p.dur ?? 1.4}s ease-in-out infinite${state.pause ? ';animation-play-state:paused' : ''}`);
+  if (p.hover || p.press) d.push('transition:transform .18s ease,filter .18s ease,opacity .18s ease');
+  return d.join(';');
+}
+const important = css => css.split(';').filter(Boolean).map(x => x + ' !important').join(';');
 function partsCss() {
-  let css = '';
-  for (const { sel, mode, props } of Object.values(state.parts)) {
-    const decls = Object.entries(props).map(([k, v]) => PART_CSS[k](v)).join(';');
-    if (!decls) continue;
-    const important = decls.split(';').map(d => d + ' !important').join(';');
+  let css = KEYFRAMES;
+  for (const [key, { sel, mode, props }] of Object.entries(state.parts)) {
     const target = sel === '.phone' ? SCOPE[mode] : `${SCOPE[mode]} ${sel}`;
-    css += `${target}{${important}}`;
+    const decls = declsFor(props, partBase[key]);
+    if (decls) css += `${target}{${important(decls)}}`;
+    if (props.hover) css += `${target}:hover{${important(HOVER_CSS[props.hover])}}`;
+    if (props.press) css += `${target}:active{${important(PRESS_CSS[props.press])}}`;
   }
   return css;
 }
@@ -1284,6 +1359,7 @@ function showPart(variant = false) {
     bg: toHex(cs.backgroundColor), color: toHex(cs.color), radius: parseFloat(cs.borderTopLeftRadius) || 0,
     size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
   };
+  partBase[key] ||= { bg: now.bg };
   box.textContent = '';
   box.hidden = false;
   const add = (tag, text, cls) => { const n = document.createElement(tag); n.textContent = text; if (cls) n.className = cls; box.append(n); return n; };
@@ -1305,28 +1381,40 @@ function showPart(variant = false) {
     const s = document.createElement('span'); s.textContent = 'Bara just den här varianten';
     l.append(c, s); box.append(l);
   }
-  const set = (k, v) => { part.props[k] = v; render(); };
-  const row = (label, input) => { const l = document.createElement('label'); const s = document.createElement('span'); s.textContent = label; l.append(s, input); box.append(l); };
-  for (const [k, label] of [['bg', 'Bakgrund'], ['color', 'Textfärg']]) {
-    if (!now[k] && !part.props[k]) continue;
-    const i = document.createElement('input');
-    i.type = 'color'; i.value = part.props[k] ?? now[k];
-    i.oninput = () => set(k, i.value);
-    row(label, i);
+  const set = (k, v) => { if (v === '' || v === false) delete part.props[k]; else part.props[k] = v; render(); };
+  for (const spec of PART_SPECS) {
+    if (typeof spec === 'string') { add('h2', spec); continue; }
+    const [k, label, type, lo, hi, fallback, step] = spec;
+    const l = document.createElement('label');
+    const s = document.createElement('span'); s.textContent = label;
+    const cur = part.props[k] ?? now[k] ?? fallback;
+    let input;
+    if (type === 'color') {
+      if (!cur) continue;
+      input = document.createElement('input');
+      input.type = 'color'; input.value = cur;
+      input.oninput = () => set(k, input.value);
+      l.append(s, input);
+    } else if (type === 'sel') {
+      input = document.createElement('select');
+      for (const o of lo) input.add(Array.isArray(o) ? new Option(o[1], o[0]) : new Option(o, o));
+      input.value = part.props[k] ?? now[k] ?? '';
+      input.onchange = () => set(k, isNaN(+input.value) || input.value === '' ? input.value : +input.value);
+      l.append(s, input);
+    } else if (type === 'check') {
+      input = document.createElement('input');
+      input.type = 'checkbox'; input.checked = !!part.props[k];
+      input.onchange = () => set(k, input.checked);
+      l.append(input, s);
+    } else {
+      input = document.createElement('input');
+      input.type = 'range'; input.min = lo; input.max = hi; input.step = step ?? 1; input.value = cur;
+      const v = document.createElement('span'); v.className = 'val'; v.textContent = `${cur} ${type}`;
+      input.oninput = () => { v.textContent = `${input.value} ${type}`; set(k, +input.value); };
+      l.append(s, input, v);
+    }
+    box.append(l);
   }
-  for (const [k, label, lo, hi] of [['radius', 'Rundning', 0, 40], ['size', 'Textstorlek', 8, 44], ['padY', 'Luft upp/ner', 0, 40], ['padX', 'Luft sidor', 0, 40]]) {
-    const i = document.createElement('input');
-    i.type = 'range'; i.min = lo; i.max = hi; i.step = 1; i.value = part.props[k] ?? now[k];
-    const v = document.createElement('span'); v.className = 'val'; v.textContent = i.value + ' px';
-    i.oninput = () => { v.textContent = i.value + ' px'; set(k, +i.value); };
-    const l = document.createElement('label'); const s = document.createElement('span'); s.textContent = label;
-    l.append(s, i, v); box.append(l);
-  }
-  const w = document.createElement('select');
-  for (const x of [400, 600, 700]) w.add(new Option(x, x));
-  w.value = part.props.weight ?? now.weight;
-  w.onchange = () => set('weight', +w.value);
-  row('Tyngd', w);
   const r = document.createElement('div');
   r.className = 'row';
   for (const [label, fn] of [['Nollställ delen', () => { delete state.parts[key]; render(); showPart(variant); }], ['Stäng', clearSelection]]) {
@@ -1334,9 +1422,39 @@ function showPart(variant = false) {
     b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
   }
   box.append(r);
-  box.insertAdjacentHTML('beforeend', '<p style="margin:8px 0 0;font-size:11px">Färger gäller delens egen bakgrund och text; mörkt och ljust är skilda om du inte väljer Båda.</p>');
+  add('p', 'Skuggor, glas och rörelse är nya uttryck som inte finns i appens regler idag; med minskad rörelse ska appen visa dem stilla.').style.cssText = 'margin:8px 0 0;font-size:11px';
   render();
 }
+
+// Ready-made looks that touch many parts at once; each is still editable by clicking the part.
+const EFFECTS = {
+  'Skuggor på alla kort': [['.b-card', { shY: 6, shBlur: 18, shAlpha: 22 }]],
+  'Glas på ark och dialoger': [['.b-sheet', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }], ['.b-dialog', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }]],
+  'Knappar lyfter vid hovring': [['.b-btn', { hover: 'lift', press: 'sink' }]],
+  'Hjälteknappen pulserar': [['.b-btn.hero', { anim: 'pulse', dur: 1.6 }]],
+  'Svävande kort': [['.b-card', { anim: 'float', dur: 3.5, shY: 10, shBlur: 24, shAlpha: 18 }]],
+  'Chips växer vid hovring': [['.b-chip', { hover: 'grow' }]],
+  'Rader tonar vid hovring': [['.b-row', { hover: 'dim' }]],
+  'Glödande hjälteknapp': [['.b-btn.hero', { anim: 'glow', dur: 2 }]],
+  'Släck alla effekter': [],
+};
+const effects = $('effects');
+for (const [name, list] of Object.entries(EFFECTS)) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = name;
+  b.onclick = () => {
+    if (!list.length) state.parts = {};
+    for (const [sel, props] of list) {
+      const key = `both|${sel}`;
+      state.parts[key] = { sel, mode: 'both', props: { ...(state.parts[key]?.props || {}), ...props } };
+    }
+    clearSelection();
+    render();
+  };
+  effects.append(b);
+}
+$('pause').onchange = e => { state.pause = e.target.checked; render(); };
+
 const screens = $('screens');
 screens.addEventListener('click', e => {
   const el = componentOf(e.target);
