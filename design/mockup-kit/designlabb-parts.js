@@ -360,6 +360,17 @@ function showPart(variant = false) {
     size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
     w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height),
   };
+  const alpha = (cs.backgroundColor.match(/[\d.]+/g) || []).map(Number)[3];
+  const shadow = cs.filter.match(/drop-shadow\((.*)\)/)?.[1] || '';
+  const [, sx, sy, sblur] = shadow.match(/\)\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/) || [];
+  Object.assign(now, {
+    mY: parseFloat(cs.marginTop) || 0, mX: parseFloat(cs.marginLeft) || 0, tracking: parseFloat(cs.letterSpacing) || 0,
+    opacity: Math.round(+cs.opacity * 100), bgAlpha: alpha == null ? 100 : Math.round(alpha * 100),
+    blur: parseFloat(cs.backdropFilter?.match(/blur\(([\d.]+)px\)/)?.[1]) || 0,
+    bw: parseFloat(cs.borderTopWidth) || 0, shY: +sy || 0, shBlur: +sblur || 0,
+    shAlpha: shadow ? Math.round(((shadow.match(/[\d.]+/g) || []).map(Number)[3] ?? 1) * 100) : 0,
+  });
+  if (now.bw) now.bc = toHex(cs.borderTopColor) || now.bc;
   if (el.matches('svg.i')) {
     const set = cs.getPropertyValue('--icon-stroke').trim();
     const g = document.getElementById(el.querySelector('use')?.getAttribute('href')?.slice(1))?.firstElementChild;
