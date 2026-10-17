@@ -299,7 +299,7 @@ function placeBox() {
     exactInputs = { x: ix, y: iy };
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ghost'; b.textContent = 'Nollställ'; b.title = 'Ställ tillbaka delen på sin plats';
-    b.onclick = () => { const f = state.free?.[selected.el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[selected.el.dataset.labId]; } showMoves(); render(); refreshExact(); };
+    b.onclick = () => { freeClear(selected.el); showMoves(); render(); refreshExact(); };
     row.append(lx, ly, b);
     hint.textContent = 'Dra korset eller använd piltangenterna (Skift: 10 px). Hjälplinjer fäster mot andra delar, Alt stänger av det. Delete tar bort delen.';
     refreshExact();

@@ -156,13 +156,40 @@ function recordMove(el, container, before, beside, side) {
 // Free placement is an exact offset in whole pixels (CSS translate), so what is set is what shows;
 // margins would shift a centred neighbour by half and break the alignment.
 const freeOffset = el => { const f = state.free?.[el.dataset.labId]; return { ox: f?.ox ?? 0, oy: f?.oy ?? 0 }; };
-function freeSet(el, ox, oy) {
-  const id = el.dataset.labId;
-  if (!id) return;
-  const f = (state.free ||= {})[id] ||= {};
-  f.label = labelOf(el); f.ox = ox; f.oy = oy;
-  if (!ox && !oy && f.ml == null) delete state.free[id];
+// A move follows the like part in the other views (same rule as sizes and colours) unless "bara den
+// här" / "bara i den här vyn" is ticked. Within a view only the picked part moves, and with two like
+// parts picked together each moves on its own.
+function likeTargets(el) {
+  const picked = selected?.el.isConnected ? pickedEls() : [];
+  const own = el.closest('.phone'), sel = selectorFor(el, false);
+  if (!picked.includes(el) || selected.onlyThis || selected.onlyView || own.dataset.theme === 'dark') return [el];
+  if (sel === '.phone' || sel.includes(':nth-child') || picked.some(o => o !== el && selectorFor(o, false) === sel)) return [el];
+  const idx = [...own.querySelectorAll(sel)].indexOf(el);
+  const targets = [el];
+  for (const ph of document.querySelectorAll('#screens .phone')) {
+    if (ph === own || ph.dataset.theme === 'dark') continue;
+    const hit = [...ph.querySelectorAll(sel)].filter(n => n.dataset.labId)[idx];
+    if (hit) targets.push(hit);
+  }
+  return targets;
 }
+function freeSet(el, ox, oy) {
+  if (!el.dataset.labId) return;
+  const targets = likeTargets(el), grp = targets.length > 1 ? `${selectorFor(el, false)}|${selected.onlyView ? el.closest('.phone').dataset.view : ''}` : null;
+  for (const t of targets) {
+    const id = t.dataset.labId;
+    const f = (state.free ||= {})[id] ||= {};
+    f.label = el.dataset.glyph ? `ikonen ${el.dataset.glyph}` : labelOf(el); f.ox = ox; f.oy = oy;
+    if (grp) { f.grp = grp; f.n = targets.length; } else { delete f.grp; delete f.n; }
+    if (!ox && !oy && f.ml == null) delete state.free[id];
+  }
+}
+function freeClear(el) {
+  const f = state.free?.[el.dataset.labId];
+  if (!f) return;
+  for (const [id, g] of Object.entries(state.free)) if (id === el.dataset.labId || f.grp && g.grp === f.grp) { delete g.ox; delete g.oy; if (g.ml == null) delete state.free[id]; }
+}
+const freeGroups = list => { const seen = new Set(); return list.filter(f => !f.grp || (!seen.has(f.grp) && seen.add(f.grp))); };
 // Smart guides: the dragged part snaps to the edges and centres of the other parts and of the
 // screen when it comes within 4 px (Alt turns the snapping off), and pink lines show what lines up.
 const SNAP_PX = 4;
@@ -314,7 +341,7 @@ function wireLayout() {
 function showMoves() {
   const box = $('moves');
   box.textContent = '';
-  const moves = state.moves || [], free = Object.values(state.free || {}), removed = Object.entries(state.removed || {}), extra = [...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
+  const moves = state.moves || [], free = freeGroups(Object.values(state.free || {})), removed = Object.entries(state.removed || {}), extra = [...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
   if (!moves.length && !free.length && !removed.length && !extra.length) {
     box.innerHTML = '<p class="hint">Inga flyttar än. Välj en del i en skärm och dra den med pilkorset vid hörnet till ett annat ställe.</p>';
     return;
@@ -349,10 +376,10 @@ function showMoves() {
   }
 }
 const freeText = f => (f.ox != null
-  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)`
+  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)${f.grp ? `, gäller samma del i ${f.n} vyer` : ''}`
   : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
-  const free = Object.values(st.free || {}), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {});
+  const free = freeGroups(Object.values(st.free || {})), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {});
   if (!st.moves?.length && !free.length && !removed.length && !copies.length && !texts.length) return;
   out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`), ...copies.map(c => `"${c.label}" kopierad (ny del direkt efter originalet)`), ...texts.map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
 }
