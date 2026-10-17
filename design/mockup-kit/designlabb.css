@@ -287,7 +287,10 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .color-pop .cp-sw small { font-size: 9px; letter-spacing: .2px; }
 .color-pop .cp-app { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; color: inherit; font: inherit; }
 .color-pop .cp-app:hover { background: #eef1ea; }
-.color-pop .cp-app i { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); }
+.color-pop .cp-app i { flex: none; width: 44px; height: 44px; border-radius: 10px; border: 1px solid rgba(0, 0, 0, .25); display: flex; align-items: center; justify-content: center; font: 700 14px system-ui, sans-serif; }
+.color-pop .cp-where { color: #3f5145; }
+.color-pop details { margin-top: 10px; }
+.color-pop summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #627061; }
 .color-pop .cp-app span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .color-pop .cp-app small { color: #627061; font-size: 11px; }
 .color-pop .cp-mini { flex: none; min-width: 34px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 12px; }
