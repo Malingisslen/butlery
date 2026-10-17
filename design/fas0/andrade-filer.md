@@ -612,7 +612,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `mockup-kit/README.md` | `8c8ca0dddc6183e6a79a0a1e8bf88d6b33a75cb04cd8ec473991a594e5b5e773` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb.html` | `f9b9e57147b0344f6a550ddf234e9454859d99bf11a950053f66dc5b744d1d23` |
+| `mockup-kit/designlabb.html` | `44ac7fef5f03a5012e21ae5925bf6d8f71c1cdfd8388d8e8e1f896cf8b427edb` |
 | `mockup-kit/examples.html` | `817d9f524862f4382216b505df39e4d815ff2a42398628fb8c9718b4f2df1e8a` |
 | `mockup-kit/kit.html` | `d7cc5fc6f136d3759f955298805fb2d51648c6de73b0ce7c90380baabd4b3c63` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |

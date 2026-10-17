@@ -763,6 +763,14 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel .chips button { flex: none; padding: 6px 10px; font-size: 12px; }
 .panel .contrast { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 12px; }
 .panel .ok { color: #2f6b3f; } .panel .bad { color: #9c3b23; font-weight: 700; }
+.panel #part { border: 2px solid #ce7c1e; border-radius: 10px; padding: 8px 12px; margin: 0 0 12px; background: #fffaf2; }
+.panel #part h2 { margin-top: 4px; }
+.panel #part .path { font: 11px monospace; color: #627061; word-break: break-all; }
+.panel .seg { display: flex; gap: 4px; margin: 6px 0; }
+.panel .seg button { padding: 4px 8px; font-size: 12px; }
+.panel .seg button.on { background: #ce7c1e; border-color: #ce7c1e; }
+.phone [data-lab-hover] { outline: 1px dashed #ce7c1e; outline-offset: 1px; }
+.phone [data-lab-selected], .phone[data-lab-selected] { outline: 2px solid #e0457b !important; outline-offset: 2px; }
 .stage { flex: 1; min-width: 0; }
 .stage h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.6px; }
 .stage > p { margin: 0 0 24px; color: var(--butlery-text-secondary); max-width: 72ch; }
@@ -777,6 +785,8 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 <aside class="panel" id="panel">
 <h1>Designlabb</h1>
 <p>Dra i reglagen så ändras skärmarna direkt. Inget sparas i appen: när du är nöjd kopierar du ändringarna och ger dem till Claude. Adressen i webbläsaren innehåller dina val, så du kan spara eller dela länken.</p>
+<div id="part" hidden></div>
+<p class="hint">Tips: klicka på en knapp, ett kort eller en rad i skärmarna för att justera just den delen.</p>
 <h2>Stämningar</h2>
 <div class="chips" id="presets"></div>
 <h2>Typsnitt</h2>
@@ -980,7 +990,7 @@ const FONTS = {
 };
 const defaults = () => ({
   font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
-  hue: 0, sat: 100, light: 100, colors: {}, roles: {},
+  hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {},
 });
 let state = defaults();
 
@@ -1036,6 +1046,7 @@ function render() {
   for (const { selector, px } of radii) {
     css += `${selector}{border-radius:${px === '12px' ? state.card : state.control}px}`;
   }
+  css += partsCss();
   lab.textContent = css;
   document.getElementById('out').value = summary();
   contrast();
@@ -1064,6 +1075,8 @@ function summary() {
   if (state.card !== 12) out.radiusCard = state.card;
   if (state.control !== 8) out.radiusControl = state.control;
   if (state.margin !== 24) out.pageMargin = state.margin;
+  const parts = Object.values(state.parts).filter(p => Object.keys(p.props).length);
+  if (parts.length) out.components = parts.map(p => ({ selector: p.sel, mode: p.mode, ...p.props }));
   return Object.keys(out).length ? JSON.stringify(out, null, 2) : '';
 }
 
@@ -1181,6 +1194,7 @@ function syncUi() {
     text.classList.toggle('changed', hex in state.colors);
   }
   loadFont();
+  clearSelection();
   render();
 }
 
@@ -1214,6 +1228,132 @@ surprise.onclick = () => {
   syncUi();
 };
 presets.append(surprise);
+
+
+// Clicking a part of a screen selects its component class and edits it on its own.
+const PART_CSS = {
+  bg: v => `background-color:${v}`, color: v => `color:${v}`, radius: v => `border-radius:${v}px`,
+  size: v => `font-size:${v}px`, weight: v => `font-weight:${v}`,
+  padY: v => `padding-top:${v}px;padding-bottom:${v}px`, padX: v => `padding-left:${v}px;padding-right:${v}px`,
+};
+const SCOPE = { light: '.phone:not([data-theme="dark"])', dark: '.phone[data-theme="dark"]', both: '.phone' };
+function partsCss() {
+  let css = '';
+  for (const { sel, mode, props } of Object.values(state.parts)) {
+    const decls = Object.entries(props).map(([k, v]) => PART_CSS[k](v)).join(';');
+    if (!decls) continue;
+    const important = decls.split(';').map(d => d + ' !important').join(';');
+    const target = sel === '.phone' ? SCOPE[mode] : `${SCOPE[mode]} ${sel}`;
+    css += `${target}{${important}}`;
+  }
+  return css;
+}
+const toHex = c => {
+  const m = c.match(/[\d.]+/g)?.map(Number);
+  if (!m || m.length < 3 || (m.length > 3 && m[3] === 0)) return null;
+  return '#' + m.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+};
+let selected = null;
+function clearSelection() {
+  document.querySelectorAll('[data-lab-selected]').forEach(e => e.removeAttribute('data-lab-selected'));
+  selected = null;
+  $('part').hidden = true;
+}
+function componentOf(el) {
+  for (let e = el; e && e.closest('.phone'); e = e.parentElement) {
+    if ([...e.classList].some(c => c.startsWith('b-') && c !== 'b-scroll')) return e;
+    if (e.classList.contains('phone')) return e;
+  }
+  return null;
+}
+function selectorFor(el, variant) {
+  if (el.classList.contains('phone')) return '.phone';
+  const classes = [...el.classList];
+  const base = classes.find(c => c.startsWith('b-'));
+  const rest = classes.filter(c => c !== base && !c.startsWith('lab-'));
+  return '.' + base + (variant ? rest.map(c => '.' + c).join('') : '');
+}
+function showPart(variant = false) {
+  const el = selected.el, box = $('part');
+  const sel = selectorFor(el, variant), base = selectorFor(el, false);
+  selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
+  const key = `${selected.mode}|${sel}`;
+  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {} };
+  const cs = getComputedStyle(el);
+  const now = {
+    bg: toHex(cs.backgroundColor), color: toHex(cs.color), radius: parseFloat(cs.borderTopLeftRadius) || 0,
+    size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
+  };
+  box.textContent = '';
+  box.hidden = false;
+  const add = (tag, text, cls) => { const n = document.createElement(tag); n.textContent = text; if (cls) n.className = cls; box.append(n); return n; };
+  add('h2', 'Vald del');
+  add('div', sel, 'path');
+  const seg = document.createElement('div');
+  seg.className = 'seg';
+  for (const [m, label] of [['light', 'Ljust'], ['dark', 'Mörkt'], ['both', 'Båda']]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.className = 'ghost' + (selected.mode === m ? ' on' : '');
+    b.onclick = () => { selected.mode = m; showPart(variant); };
+    seg.append(b);
+  }
+  box.append(seg);
+  if (sel !== base) {
+    const l = document.createElement('label');
+    const c = document.createElement('input');
+    c.type = 'checkbox'; c.checked = variant; c.onchange = () => showPart(c.checked);
+    const s = document.createElement('span'); s.textContent = 'Bara just den här varianten';
+    l.append(c, s); box.append(l);
+  }
+  const set = (k, v) => { part.props[k] = v; render(); };
+  const row = (label, input) => { const l = document.createElement('label'); const s = document.createElement('span'); s.textContent = label; l.append(s, input); box.append(l); };
+  for (const [k, label] of [['bg', 'Bakgrund'], ['color', 'Textfärg']]) {
+    if (!now[k] && !part.props[k]) continue;
+    const i = document.createElement('input');
+    i.type = 'color'; i.value = part.props[k] ?? now[k];
+    i.oninput = () => set(k, i.value);
+    row(label, i);
+  }
+  for (const [k, label, lo, hi] of [['radius', 'Rundning', 0, 40], ['size', 'Textstorlek', 8, 44], ['padY', 'Luft upp/ner', 0, 40], ['padX', 'Luft sidor', 0, 40]]) {
+    const i = document.createElement('input');
+    i.type = 'range'; i.min = lo; i.max = hi; i.step = 1; i.value = part.props[k] ?? now[k];
+    const v = document.createElement('span'); v.className = 'val'; v.textContent = i.value + ' px';
+    i.oninput = () => { v.textContent = i.value + ' px'; set(k, +i.value); };
+    const l = document.createElement('label'); const s = document.createElement('span'); s.textContent = label;
+    l.append(s, i, v); box.append(l);
+  }
+  const w = document.createElement('select');
+  for (const x of [400, 600, 700]) w.add(new Option(x, x));
+  w.value = part.props.weight ?? now.weight;
+  w.onchange = () => set('weight', +w.value);
+  row('Tyngd', w);
+  const r = document.createElement('div');
+  r.className = 'row';
+  for (const [label, fn] of [['Nollställ delen', () => { delete state.parts[key]; render(); showPart(variant); }], ['Stäng', clearSelection]]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
+  }
+  box.append(r);
+  box.insertAdjacentHTML('beforeend', '<p style="margin:8px 0 0;font-size:11px">Färger gäller delens egen bakgrund och text; mörkt och ljust är skilda om du inte väljer Båda.</p>');
+  render();
+}
+const screens = $('screens');
+screens.addEventListener('click', e => {
+  const el = componentOf(e.target);
+  if (!el) return;
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+  el.setAttribute('data-lab-selected', '');
+  selected = { el, mode: null };
+  showPart(false);
+  $('part').scrollIntoView({ block: 'nearest' });
+}, true);
+screens.addEventListener('mouseover', e => {
+  screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
+  componentOf(e.target)?.setAttribute('data-lab-hover', '');
+});
+screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') clearSelection(); });
 
 $('reset').onclick = () => { state = defaults(); syncUi(); };
 const hold = $('hold');
