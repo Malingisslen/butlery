@@ -40,6 +40,32 @@ function assignLayoutIds() {
         }
       }
     });
+    // Text that sits loose between other parts ("35 min · 4 port · 4,0") gets a part of its own per
+    // piece, so each can be picked. Done after the numbering so saved ids keep their numbers.
+    let t = 0;
+    fig.querySelectorAll('.phone, .phone *').forEach(el => {
+      if (inSvg(el) || el.tagName === 'svg' || !el.children.length) return;
+      // In a flex or grid row every piece would become its own item with its own gap, so the text stays one piece.
+      const lay = /flex|grid/.test(getComputedStyle(el).display);
+      for (const node of [...el.childNodes].filter(n => n.nodeType === 3)) {
+        for (const piece of lay ? [node.textContent] : node.textContent.split(/(\s*·\s*)/)) {
+          const core = piece.trim();
+          if (!core || core === '·') { node.before(piece); continue; }
+          const lead = piece.slice(0, piece.indexOf(core)), trail = piece.slice(lead.length + core.length);
+          const span = document.createElement('span');
+          span.textContent = core;
+          span.dataset.labId = `f${f}-t${t++}`;
+          const sig = ['SPAN', '', ''].join('|');
+          if (!kinds.has(sig)) kinds.set(sig, 'k' + kinds.size);
+          span.dataset.labKind = kinds.get(sig);
+          const loose = ['SPAN', '', '', core.slice(0, 24)].join('|');
+          if (!kinds.has(loose)) kinds.set(loose, 'l' + kinds.size);
+          span.dataset.labKindLoose = kinds.get(loose);
+          node.before(lead, span, trail);
+        }
+        node.remove();
+      }
+    });
   });
   layoutBase = $('screens').innerHTML;
 }
