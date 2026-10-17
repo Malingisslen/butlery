@@ -59,7 +59,7 @@ function render() {
   refreshAdvice();
   scheduleSnapshot();
   try {
-    window.history.replaceState(null, '', summary(state) ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search);
+    window.history.replaceState(null, '', summary(state) ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state, (k, v) => (k === 'src' ? undefined : v))))) : location.pathname + location.search);
   } catch {}
 }
 

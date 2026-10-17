@@ -212,9 +212,6 @@ function recordMove(el, container, before, beside, side) {
 // Free placement is an exact offset in whole pixels (CSS translate), so what is set is what shows;
 // margins would shift a centred neighbour by half and break the alignment.
 const freeOffset = el => { const f = state.free?.[el.dataset.labId]; return { ox: f?.ox ?? 0, oy: f?.oy ?? 0 }; };
-// A move follows the like part in the other views (same rule as sizes and colours) unless "bara den
-// här" / "bara i den här vyn" is ticked. Within a view only the picked part moves, and with two like
-// parts picked together each moves on its own.
 // When the part has no match by type in another view, the same words in the same kind of element
 // are the same part (a title or a button that is built differently in two views).
 const textKey = (n, withClasses) => {
@@ -233,29 +230,35 @@ function sameByText(el, own, ph) {
   }
   return null;
 }
+// A move reaches what the pink frame shows (the same rule as sizes and colours): every like part in
+// all views, in this view too, unless "bara vald del" / "bara i den här vyn" is ticked. With two like
+// parts picked together each moves on its own.
 function likeTargets(el) {
   const picked = selected?.el.isConnected ? pickedEls() : [];
   const own = el.closest('.phone'), sel = selectorFor(el, false);
-  if (!picked.includes(el) || selected.onlyThis || selected.onlyView || own.dataset.theme === 'dark') return [el];
+  if (!picked.includes(el) || selected.onlyThis || own.dataset.theme === 'dark') return [el];
   if (sel === '.phone' || sel.includes(':nth-child') || picked.some(o => o !== el && selectorFor(o, false) === sel)) return [el];
-  const idx = [...own.querySelectorAll(sel)].indexOf(el);
-  const targets = [el];
+  const targets = new Set([el]);
   for (const ph of document.querySelectorAll('#screens .phone')) {
-    if (ph === own || ph.dataset.theme === 'dark') continue;
-    const hit = [...ph.querySelectorAll(sel)].filter(n => n.dataset.labId)[idx] || sameByText(el, own, ph);
-    if (hit && !targets.includes(hit)) targets.push(hit);
+    if (ph.dataset.theme === 'dark' || (selected.onlyView && ph !== own)) continue;
+    let hits = [];
+    try { hits = [...ph.querySelectorAll(sel.replace(/^\.phone /, ''))].filter(n => n.dataset.labId); } catch { /* a selector the browser refuses matches nothing */ }
+    if (!hits.length && ph !== own) { const t = sameByText(el, own, ph); if (t) hits = [t]; }
+    hits.forEach(n => targets.add(n));
   }
-  return targets;
+  return [...targets];
 }
 function freeSet(el, ox, oy) {
   if (!el.dataset.labId) return;
   const targets = likeTargets(el), grp = targets.length > 1 ? `${selectorFor(el, false)}|${selected.onlyView ? el.closest('.phone').dataset.view : ''}` : null;
+  // The picked part lands exactly on (ox, oy); the like parts move by the same step from where each is.
+  const own = freeOffset(el), dx = ox - own.ox, dy = oy - own.oy;
   for (const t of targets) {
-    const id = t.dataset.labId;
+    const id = t.dataset.labId, at = t === el ? { ox, oy } : (() => { const o = freeOffset(t); return { ox: o.ox + dx, oy: o.oy + dy }; })();
     const f = (state.free ||= {})[id] ||= {};
-    f.label = el.dataset.glyph ? `ikonen ${el.dataset.glyph}` : labelOf(el); f.ox = ox; f.oy = oy;
+    f.label = el.dataset.glyph ? `ikonen ${el.dataset.glyph}` : labelOf(el); f.ox = at.ox; f.oy = at.oy;
     if (grp) { f.grp = grp; f.n = targets.length; } else { delete f.grp; delete f.n; }
-    if (!ox && !oy && f.ml == null) delete state.free[id];
+    if (!f.ox && !f.oy && f.ml == null) delete state.free[id];
   }
 }
 function freeClear(el) {
@@ -450,7 +453,7 @@ function showMoves() {
   }
 }
 const freeText = f => (f.ox != null
-  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)${f.grp ? `, gäller samma del i ${f.n} vyer` : ''}`
+  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)${f.grp ? `, gäller ${f.n} likadana delar` : ''}`
   : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
   const free = freeGroups(Object.values(st.free || {})), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {}), adds = st.adds || [];

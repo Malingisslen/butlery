@@ -136,20 +136,8 @@ function placeAt(domId, at) {
 const addText = (ref, replace, at) => commitAdd({ kind: 'text', text: 'Ny text' }, addSpot(ref), replace, at);
 const addIcon = (ref, replace, at) => commitAdd({ kind: 'icon', glyph: 'star' }, addSpot(ref), replace, at);
 const addImage = (ref, replace, at) => imageAdd(addSpot(ref), replace, at);
-// Converting reaches what the pink frame shows: every like part (the same selector as sizes and
-// colours) in all views, unless "bara vald del" / "bara i den här vyn" is ticked.
-function convertTargets(el) {
-  const sel = selectorFor(el, false);
-  const own = el.closest('.phone');
-  if (selected?.onlyThis || sel === '.phone' || sel.includes(':nth-child')) return [el];
-  const out = new Set([el]);
-  for (const ph of document.querySelectorAll('#screens .phone')) {
-    if (ph.dataset.theme === 'dark' || (selected?.onlyView && ph !== own)) continue;
-    try { ph.querySelectorAll(sel.replace(/^\.phone /, '')).forEach(n => { if (idOf(n) && idOf(n.parentElement)) out.add(n); }); } catch { /* a selector the browser refuses matches nothing */ }
-  }
-  if (!selected?.onlyView) likeTargets(el).forEach(n => out.add(n));
-  return [...out];
-}
+// Converting reaches the same like parts as a move, what the pink frame shows.
+const convertTargets = el => likeTargets(el);
 async function convertTo(kind, el) {
   const make = { text: () => ({ kind: 'text', text: 'Ny text' }), icon: () => ({ kind: 'icon', glyph: 'star' }) };
   let img = null;
