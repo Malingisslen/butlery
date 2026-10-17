@@ -4715,12 +4715,6 @@ Trigger: Testgenomgången för Malin. Täckningsspärren låg som ett jobb i `te
 Rule: Innan du säger att en spärr håller, läs dess senaste FÄRDIGA körning (inte den senaste körningen) och räkna hur många körningar som avbröts. Ett långt jobb som ska vakta main behöver en egen avbrytningsgrupp utan `cancel-in-progress`.
 Example: 2026-10-10 — PR #680 flyttade jobbet till `coverage.yml`; Malin satte golvet till 48 %.
 
-### Ett förslag om hur en vy ska se ut utgår från skissens ram, inte från kitet eller appen (2026-10-11)
-Date: 2026-10-11
-Trigger: Skiss mot app. Förslagsbilderna ritades med mockup-kitet, och nästan hälften av skillnaderna fick "Behåll" med skälet att appen eller kitet redan gör något liknande. Malin: "Generellt vill jag att dina rekommendationer hamnar mycket närmare skisserna. Du missar viktiga nyanser i designkänslan."
-Rule: Skissen är utgångsläget. Rita förslaget genom att redigera skissramens egen HTML i `design/Butlery Skarmar v12*.dc.html` och ändra bara där Malin har beslutat annat. "Behåll" kräver ett namngivet beslut, en funktion som byggts med avsikt eller en testartefakt; att kitet eller appen redan liknar skissen är inget skäl.
-Example: 2026-10-11 — förslagen gjordes om från skissramarna i granskningsbordet "Skissgranskning".
-
 ### Hämta main före mätning, och en ny host synliggör gamla fel (2026-10-17)
 Date: 2026-10-17
 Trigger: Granskningen av vyer utan skiss (BUT-2395). Bilderna renderades först på en utcheckning som låg 34 incheckningar efter origin/main, och när 24 vyer fick en host i golden-harnessen blev 13 textskalafall röda i CI.

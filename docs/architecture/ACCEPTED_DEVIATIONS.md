@@ -49,6 +49,8 @@ of the allergen badges and shows `tagResultNoAllergens` ("Inga allergener att vi
 is left to show (`allergen_status_badge.dart` cites a 2026-08-18 call for the filter). Code that
 still hides UNKNOWN is what the decision retires, not a deviation to protect.
 
+**2026-10-17:** `design/beslutslogg.md` was removed (PR #885); the B-160 decision above stands as written here.
+
 ### [Privacy/GDPR] notification_delivery counterparty is exported, not anonymised (BUT-1450)
 The GDPR data export (`DataExportService`) includes the `notification_delivery` records' raw
 counterparty identifier (`senderId` / `targetUserId`) **without anonymisation or redaction**.

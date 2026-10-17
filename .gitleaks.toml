@@ -20,5 +20,5 @@ paths = [
   '''\.claude/agents/.*\.knowledge(\.archive)?\.md''',
   # Frozen design measurements (BUT-2202): sha256 bindings and CSS token names
   # such as --ikon-fristaende-d1 match the generic-api-key shape.
-  '''design/fas2/.*\.json''',
+  '''test/fixtures/design/block288-uxfrysning\.json''',
 ]

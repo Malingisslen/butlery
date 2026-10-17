@@ -1,4 +1,4 @@
-// Guards for design decisions that had no test naming them (design/beslutslogg.md):
+// Guards for design decisions that had no test naming them (B-nn kept as names):
 // B-120 opacity ladder, B-121 and B-125 dark text on raised surfaces, B-161
 // legal text language, B-162 save in the footer of "Skriv nytt recept", B-167
 // no confirm dialog on deleting an own comment. See decision_guards_b62_b65.

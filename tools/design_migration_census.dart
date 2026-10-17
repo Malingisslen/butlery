@@ -72,7 +72,7 @@ const retired = 'RETIRED';
 const unparsed = 'UNPARSED';
 
 const _transitionFixture = 'test/fixtures/design/transition_census.json';
-const _transitionSource = 'design/fas2/block288-uxfrysning.json';
+const _transitionSource = 'test/fixtures/design/block288-uxfrysning.json';
 const _statesFixture = 'test/fixtures/design/ux-beteende-53.json';
 const _stateFindings = 'test/views/design_states/known_state_findings.dart';
 const _a11yFindings = 'test/views/design_states/known_a11y_findings.dart';

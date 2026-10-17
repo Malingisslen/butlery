@@ -1,4 +1,4 @@
-// Guards for the older design decisions (design/beslutslogg.md, B-03 to B-54)
+// Guards for the older design decisions (B-03 to B-54, kept as test names)
 // that nothing else in test/ pins. Each fails when code drifts back to what
 // the decision retired. Newer decisions live in decision_guards_b56_b61_test.
 

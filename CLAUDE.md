@@ -68,9 +68,6 @@ auto-merge (squash) and end the turn — don't sit waiting for CI. The `main: CI
 green` ruleset still holds a red PR back. Never turn it on while commits remain to push:
 the PR merges as soon as the commit already there goes green, without the rest.
 - Push once, when the work is done: every push cancels and restarts the ~17 min CI run.
-- A PR touching `lib/views/` fills in the template's `Skiss mot app:` line (the
-  `<…>` placeholder fails the check). If it carries a sketch image, Malin approves it
-  before you turn on auto-merge.
 - Don't regenerate `docs/design-migration/census.md` in a PR; the nightly job does.
 
 ## Stop hook response
