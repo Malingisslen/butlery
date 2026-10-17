@@ -24,13 +24,10 @@ class FieldErrorLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 1),
-          child: ButleryIcon(
-            ButleryIcons.info,
-            size: AppDimensions.iconSizeXs,
-            color: cs.error,
-          ),
+        ButleryIcon(
+          ButleryIcons.info,
+          size: AppDimensions.iconSizeXs,
+          color: cs.error,
         ),
         const SizedBox(width: AppDimensions.space4),
         Flexible(child: Text(message, style: style)),

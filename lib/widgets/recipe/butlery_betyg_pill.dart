@@ -56,7 +56,7 @@ class ButleryBetygPill extends StatelessWidget {
               size: AppDimensions.iconSizeXs,
               color: context.modeColors.starGold,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               '$avg · ${context.l10n.butleryBetygCount(stats.count)}',
               style: AppTextStyles.badge.copyWith(

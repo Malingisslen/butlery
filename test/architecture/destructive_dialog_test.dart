@@ -9,21 +9,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Raw dialogs still allowed a red button, with how many and why. The list
-/// may only shrink.
-const _allowed = <String, ({int count, String why})>{
-  // Signing out with unsynced changes is a choice between waiting and
-  // discarding, not a delete confirmation: waiting is drawn as the answer.
-  'lib/widgets/common/profile/dialogs/profile_dialogs.dart': (
-    count: 1,
-    why: 'sign-out with unsynced changes',
-  ),
-  // Multi-choice dialogs, not confirmations: the red text button is one
-  // choice among several, as drawn in #dialogosparat.
-  'lib/widgets/common/dialogs/draft_recovery_dialog.dart': (
-    count: 1,
-    why: 'discard-all choice among the drafts',
-  ),
-};
+/// may only shrink, and it is empty.
+const _allowed = <String, ({int count, String why})>{};
 
 final _redButton = RegExp(
   r'(backgroundColor|foregroundColor)\s*:\s*[^,\n]*\berror\b'

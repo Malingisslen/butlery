@@ -373,7 +373,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               size: AppDimensions.iconSizeXs,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               formatRatingComma(avg),
               style: AppTextStyles.badge.copyWith(

@@ -201,7 +201,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             vertical: AppDimensions.space16,
           ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
+            constraints: const BoxConstraints(
+              maxWidth: AppDimensions.adminSignInMaxWidth,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,

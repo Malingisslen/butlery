@@ -320,6 +320,8 @@ class ResponsiveStaggeredGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final columnCount = _getColumnCount(context);
     final gridSpacing = spacing ?? AppDimensions.responsiveGridSpacing(context);
+    final halfGap = gridSpacing / 2;
+    final lastColumn = columnCount - 1;
 
     // Distribute children into columns
     final columns = List.generate(columnCount, (_) => <Widget>[]);
@@ -338,8 +340,8 @@ class ResponsiveStaggeredGrid extends StatelessWidget {
           (index) => Expanded(
             child: Padding(
               padding: EdgeInsetsDirectional.only(
-                start: index == 0 ? 0 : gridSpacing / 2,
-                end: index == columnCount - 1 ? 0 : gridSpacing / 2,
+                start: index == 0 ? 0 : halfGap,
+                end: index == lastColumn ? 0 : halfGap,
               ),
               child: Column(
                 children: columns[index]

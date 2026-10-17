@@ -28,7 +28,7 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
-import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/widgets/common/state/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';

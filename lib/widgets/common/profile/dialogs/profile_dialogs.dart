@@ -8,7 +8,9 @@ import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/input/labeled_field.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -45,11 +47,9 @@ class ProfileDialogs {
     final choice = await showDialog<PendingChangesChoice>(
       context: context,
       builder: (dialogContext) {
-        final cs = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
+        return ButleryDialog(
           key: const ValueKey('signOut.pendingChanges'),
-          scrollable: true,
-          title: Text(l10n.signOutPendingTitle(pending.total)),
+          title: l10n.signOutPendingTitle(pending.total),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,14 +61,14 @@ class ProfileDialogs {
           ),
           actionsOverflowDirection: VerticalDirection.down,
           actions: [
-            TextButton(
+            ButleryTextButton(
               key: const ValueKey('signOut.pendingChanges.discard'),
+              tone: ButleryTextButtonTone.danger,
               onPressed: () => Navigator.pop(
                 dialogContext,
                 PendingChangesChoice.discardAndSignOut,
               ),
-              style: TextButton.styleFrom(foregroundColor: cs.error),
-              child: Text(l10n.signOutPendingDiscard),
+              label: l10n.signOutPendingDiscard,
             ),
             // The view's one primary action, so waiting is the obvious answer
             // (Komponentark v1:843-844).

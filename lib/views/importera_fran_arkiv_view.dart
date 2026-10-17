@@ -237,11 +237,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       );
     }
 
+    final sideInset =
+        AppDimensions.responsiveContentPadding(context).horizontal / 2;
     return ListView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal:
-            AppDimensions.responsiveContentPadding(context).horizontal / 2,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: sideInset),
       itemCount: recipes.length,
       itemBuilder: (context, index) {
         final recipe = recipes[index];

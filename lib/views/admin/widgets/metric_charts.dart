@@ -74,7 +74,7 @@ class MetricBarChart extends StatelessWidget {
                       return const SizedBox.shrink();
                     }
                     return Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.only(top: AppDimensions.space4),
                       child: Text(
                         _shortLabel(rows[i].label),
                         style: AppTextStyles.bodySmall,

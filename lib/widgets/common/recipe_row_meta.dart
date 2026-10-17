@@ -38,7 +38,7 @@ class RecipeRowMeta extends StatelessWidget {
               size: AppDimensions.iconSizeXs,
               color: context.modeColors.starGold,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: AppDimensions.space4),
             Text(formatRatingComma(rating!)),
           ],
         ),

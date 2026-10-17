@@ -8,6 +8,7 @@
 /// same style, so callers can use it unconditionally.
 library;
 
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -102,7 +103,7 @@ class InlineTimerText extends StatelessWidget {
   // Semi-bold in parentheses, so the cook can tell what Butlery added.
   TextSpan _quantitySpan(String label) => TextSpan(
     text: ' ($label)',
-    style: const TextStyle(fontWeight: FontWeight.w600),
+    style: SpanStyles.semibold,
   );
 
   WidgetSpan _timerChip(BuildContext context, DurationMatch match) {
@@ -143,11 +144,9 @@ class InlineTimerText extends StatelessWidget {
                 const SizedBox(width: AppDimensions.space4),
                 Text(
                   phrase,
-                  style: (style ?? const TextStyle()).copyWith(
-                    color: onChip,
-                    fontWeight: FontWeight.w600,
-                    height: 1.0,
-                  ),
+                  style: (style ?? DefaultTextStyle.of(context).style)
+                      .merge(SpanStyles.semibold)
+                      .copyWith(color: onChip, height: 1.0),
                 ),
               ],
             ),

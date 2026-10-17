@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
+import 'package:butlery/widgets/common/buttons/toggle_button_style.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -318,25 +319,9 @@ class PortionScalerUI {
                       : context.l10n.scalerConvertAmericanUnits,
                   style: AppTextStyles.labelMedium,
                 ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: convertToSwedish
-                      ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.onSurface,
-                  // Selected is the raised surface with a 1.5 px text.primary
-                  // border (B83-1).
-                  side: BorderSide(
-                    color: convertToSwedish
-                        ? Theme.of(context).colorScheme.onSurface
-                        : Theme.of(context).colorScheme.outline,
-                    width: convertToSwedish ? 1.5 : 1,
-                  ),
-                  backgroundColor: convertToSwedish
-                      ? Theme.of(context).colorScheme.surfaceContainerHighest
-                      : null,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.space4,
-                    vertical: AppDimensions.space4,
-                  ),
+                style: toggleOutlinedButtonStyle(
+                  Theme.of(context).colorScheme,
+                  selected: convertToSwedish,
                 ),
               ),
             ),

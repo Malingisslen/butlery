@@ -6,6 +6,7 @@
 // list both draw it; neither sets its own box, type or rule.
 library;
 
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
@@ -211,8 +212,8 @@ class _ShoppingRowState extends State<ShoppingRow>
                                     if (amount != null && amount.isNotEmpty)
                                       TextSpan(
                                         text: ' $amount',
-                                        style: TextStyle(
-                                          color: cs.onSurfaceVariant,
+                                        style: SpanStyles.colour(
+                                          cs.onSurfaceVariant,
                                         ),
                                       ),
                                   ],

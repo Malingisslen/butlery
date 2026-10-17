@@ -1,4 +1,4 @@
-// lib/views/hem/hem_empty_state.dart
+// lib/widgets/common/state/hem_empty_state.dart
 //
 // HEM-HERO: Hem with no recipes, Skarmar v12 del 4 #hemtom (:587-615) and
 // produktregler.md:284-288 (§ 6.4): "Beskriver läget, inte problemet, och har

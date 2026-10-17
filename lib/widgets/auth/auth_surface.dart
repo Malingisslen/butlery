@@ -18,11 +18,16 @@ class AuthWordmarkHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 56, 28, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.space24 + AppDimensions.space4,
+        AppDimensions.space32 + AppDimensions.space24,
+        AppDimensions.space24 + AppDimensions.space4,
+        0,
+      ),
       child: Column(
         children: [
           const ButleryLockup(),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             subtitle,
             textAlign: TextAlign.center,

@@ -116,7 +116,6 @@ class _VisibilityOptionTile extends StatelessWidget {
                     Container(
                       width: 18,
                       height: 18,
-                      margin: const EdgeInsets.only(top: 1),
                       decoration: BoxDecoration(
                         color: selected ? cs.primary : null,
                         border: selected
@@ -139,7 +138,9 @@ class _VisibilityOptionTile extends StatelessWidget {
                           Text(title, style: AppTextStyles.bodyMedium),
                           if (subtitle != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 2),
+                              padding: const EdgeInsets.only(
+                                top: AppDimensions.space4,
+                              ),
                               child: Text(
                                 subtitle!,
                                 style: AppTextStyles.bodySmall.copyWith(
