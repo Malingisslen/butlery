@@ -181,7 +181,6 @@ function showAdvice(topic, ctx) {
   box.textContent = '';
   if (adviceCtx) {
     box.append(el('p', 'ctx', adviceCtx.text));
-    if (adviceCtx.tries) box.append(tryRow('Prova på just den här delen:', adviceCtx.tries, adviceCtx.run));
     if (adviceCtx.topics?.length > 1) {
       const row = el('div', 'topic-row');
       for (const id of adviceCtx.topics) {

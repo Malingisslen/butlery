@@ -613,7 +613,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/README.md` | `773d8263ac0c32b855b253af372ac456affe10a6d8462dee2219ba6d55852565` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
 | `mockup-kit/designlabb-advice-more.js` | `9944a655910e29e421eda3ad6ef1fb3064b6e76bb2f7feac8bd1392dde068a7f` |
-| `mockup-kit/designlabb-advice-ui.js` | `900f92edf0fe52372105c8a0ff41e0f3058f66780087b9922c682b5c84fc2607` |
+| `mockup-kit/designlabb-advice-ui.js` | `14ede940ca12c9b3d3291e701ea2c88a7b3eda1d11d51d1b8363b653fcfeba42` |
 | `mockup-kit/designlabb-advice.js` | `855bca67bcd43622d4dc2bacda20bc593b5b711edbad3102ddeea1916f6a68f4` |
 | `mockup-kit/designlabb-claude.js` | `015dbbf1a78745faa69fc953b3011a2f5b0dc4eba8668dbb695fc89032e8e22c` |
 | `mockup-kit/designlabb-core.js` | `14aec118b51081b2c703bbbaeeee715d98859aacaa722dc093f01654d3db1d24` |
