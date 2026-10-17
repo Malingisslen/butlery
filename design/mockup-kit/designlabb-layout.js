@@ -6,6 +6,7 @@
 // with the cross at its corner (the move handle). Only the lab's own example
 // screens change; the app is not touched.
 
+const labInline = new Set();
 let layoutBase = '';
 let layoutApplied = '[]';
 let freeMode = true; // exact pixels is the default; Shift while dragging does the other kind
@@ -30,10 +31,64 @@ function assignLayoutIds() {
         const sig = [el.tagName, el.getAttribute('style') || '', [...el.children].map(c => c.tagName + (c.querySelector?.('use')?.getAttribute('href') || '')).join(',')].join('|');
         if (!kinds.has(sig)) kinds.set(sig, 'k' + kinds.size);
         el.dataset.labKind = kinds.get(sig);
+        // A part with text is also the same part when only an icon inside it differs (a list or a grid
+        // toggle in the header row), so the like part in the other views is found by this one.
+        const text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (text) {
+          const loose = [el.tagName, el.getAttribute('style') || '', [...el.children].map(c => c.tagName).join(','), text].join('|');
+          if (!kinds.has(loose)) kinds.set(loose, 'l' + kinds.size);
+          el.dataset.labKindLoose = kinds.get(loose);
+        }
+      }
+    });
+    // Text that sits loose between other parts ("35 min · 4 port · 4,0") gets a part of its own per
+    // piece, so each can be picked. Done after the numbering so saved ids keep their numbers.
+    let t = 0;
+    fig.querySelectorAll('.phone, .phone *').forEach(el => {
+      if (inSvg(el) || el.tagName === 'svg' || !el.children.length) return;
+      // In a flex or grid row every piece would become its own item with its own gap, so the text stays one piece.
+      const lay = /flex|grid/.test(getComputedStyle(el).display);
+      for (const node of [...el.childNodes].filter(n => n.nodeType === 3)) {
+        for (const piece of lay ? [node.textContent] : node.textContent.split(/(\s*·\s*)/)) {
+          const core = piece.trim();
+          if (!core || core === '·') { node.before(piece); continue; }
+          const lead = piece.slice(0, piece.indexOf(core)), trail = piece.slice(lead.length + core.length);
+          const span = document.createElement('span');
+          span.textContent = core;
+          span.dataset.labId = `f${f}-t${t++}`;
+          const sig = ['SPAN', '', ''].join('|');
+          if (!kinds.has(sig)) kinds.set(sig, 'k' + kinds.size);
+          span.dataset.labKind = kinds.get(sig);
+          const loose = ['SPAN', '', '', core.slice(0, 24)].join('|');
+          if (!kinds.has(loose)) kinds.set(loose, 'l' + kinds.size);
+          span.dataset.labKindLoose = kinds.get(loose);
+          node.before(lead, span, trail);
+        }
+        node.remove();
       }
     });
   });
+  markSymbols();
+  // A translate does nothing to an inline box, so a part that is inline is made inline-block when it is moved.
+  document.querySelectorAll('#screens .phone, #screens .phone *').forEach(el => {
+    if (el.dataset.labId && !el.closest('svg') && getComputedStyle(el).display === 'inline') labInline.add(el.dataset.labId);
+  });
   layoutBase = $('screens').innerHTML;
+}
+// A bullet or a slash is its own part even when it shares a class with the numbers next to it
+// ("• 4,5"), so picking it does not pick the numbers, and the numbers leave the symbols out.
+function markSymbols() {
+  const leaf = el => !el.children.length && el.closest('.phone') && !el.closest('svg') && el.textContent.trim();
+  const keyOf = el => el.tagName + '.' + [...el.classList].filter(c => !c.startsWith('lab-')).join('.');
+  const syms = new Set();
+  const all = [...document.querySelectorAll('#screens .phone *')].filter(leaf);
+  for (const el of all) {
+    if (!/^[^\p{L}\p{N}]+$/u.test(el.textContent.trim()) || !el.classList.length) continue;
+    el.dataset.labSym = '';
+    el.dataset.labKindLoose ||= 'y' + el.textContent.trim().codePointAt(0);
+    syms.add(keyOf(el));
+  }
+  for (const el of all) if (!('labSym' in el.dataset) && syms.has(keyOf(el))) el.dataset.labSibsym = '';
 }
 function snapshotLayoutBase() { layoutBase = $('screens').innerHTML; }
 
@@ -65,11 +120,12 @@ function applyMove(m) {
 const moveText = m => m.beside ? `"${m.label}" till ${m.side === 'left' ? 'vänster' : 'höger'} om "${m.besideLabel}"`
   : `"${m.label}" ${m.beforeLabel ? `före "${m.beforeLabel}"` : 'sist'} i ${m.toLabel}`;
 // Rebuild the screens from the pristine copy and replay the moves, unless nothing changed.
-const layoutSig = () => JSON.stringify([state.moves || [], state.copies || [], state.texts || {}]);
+const layoutSig = () => JSON.stringify([state.moves || [], state.copies || [], state.texts || {}, state.adds || []]);
 function replayLayout(force) {
   const sig = layoutSig();
   if (!force && sig === layoutApplied) return;
   $('screens').innerHTML = layoutBase;
+  for (const a of state.adds || []) applyAdd(a);
   for (const c of state.copies || []) applyCopy(c);
   for (const m of state.moves || []) applyMove(m);
   applyTexts();
@@ -156,13 +212,61 @@ function recordMove(el, container, before, beside, side) {
 // Free placement is an exact offset in whole pixels (CSS translate), so what is set is what shows;
 // margins would shift a centred neighbour by half and break the alignment.
 const freeOffset = el => { const f = state.free?.[el.dataset.labId]; return { ox: f?.ox ?? 0, oy: f?.oy ?? 0 }; };
-function freeSet(el, ox, oy) {
-  const id = el.dataset.labId;
-  if (!id) return;
-  const f = (state.free ||= {})[id] ||= {};
-  f.label = labelOf(el); f.ox = ox; f.oy = oy;
-  if (!ox && !oy && f.ml == null) delete state.free[id];
+// When the part has no match by type in another view, the same words in the same kind of element
+// are the same part (a title or a button that is built differently in two views).
+const textKey = (n, withClasses) => {
+  const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+  const cls = withClasses ? [...n.classList].filter(c => !c.startsWith('lab-')).sort().join('.') : '';
+  return t.length >= (withClasses ? 3 : 8) && !n.closest('svg') ? `${n.tagName}|${cls}|${t}` : '';
+};
+function sameByText(el, own, ph) {
+  for (const withClasses of [true, false]) {
+    const key = textKey(el, withClasses);
+    if (!key) continue;
+    const mine = [...own.querySelectorAll(el.tagName)].filter(n => textKey(n, withClasses) === key);
+    const theirs = [...ph.querySelectorAll(el.tagName)].filter(n => n.dataset.labId && textKey(n, withClasses) === key);
+    const hit = theirs[mine.indexOf(el)];
+    if (hit) return hit;
+  }
+  return null;
 }
+// A move reaches what the pink frame shows (the same rule as sizes and colours): every like part in
+// all views, in this view too, unless "bara vald del" / "bara i den här vyn" is ticked. With two like
+// parts picked together each moves on its own.
+function likeTargets(el) {
+  const picked = selected?.el.isConnected ? pickedEls() : [];
+  const own = el.closest('.phone'), sel = selectorFor(el, false);
+  if (!picked.includes(el) || selected.onlyThis || own.dataset.theme === 'dark') return [el];
+  if (sel === '.phone' || sel.includes(':nth-child') || picked.some(o => o !== el && selectorFor(o, false) === sel)) return [el];
+  const targets = new Set([el]);
+  for (const ph of document.querySelectorAll('#screens .phone')) {
+    if (ph.dataset.theme === 'dark' || (selected.onlyView && ph !== own)) continue;
+    let hits = [];
+    try { hits = [...ph.querySelectorAll(sel.replace(/^\.phone /, ''))].filter(n => n.dataset.labId); } catch { /* a selector the browser refuses matches nothing */ }
+    if (!hits.length && ph !== own) { const t = sameByText(el, own, ph); if (t) hits = [t]; }
+    hits.forEach(n => targets.add(n));
+  }
+  return [...targets];
+}
+function freeSet(el, ox, oy) {
+  if (!el.dataset.labId) return;
+  const targets = likeTargets(el), grp = targets.length > 1 ? `${selectorFor(el, false)}|${selected.onlyView ? el.closest('.phone').dataset.view : ''}` : null;
+  // The picked part lands exactly on (ox, oy); the like parts move by the same step from where each is.
+  const own = freeOffset(el), dx = ox - own.ox, dy = oy - own.oy;
+  for (const t of targets) {
+    const id = t.dataset.labId, at = t === el ? { ox, oy } : (() => { const o = freeOffset(t); return { ox: o.ox + dx, oy: o.oy + dy }; })();
+    const f = (state.free ||= {})[id] ||= {};
+    f.label = el.dataset.glyph ? `ikonen ${el.dataset.glyph}` : labelOf(el); f.ox = at.ox; f.oy = at.oy;
+    if (grp) { f.grp = grp; f.n = targets.length; } else { delete f.grp; delete f.n; }
+    if (!f.ox && !f.oy && f.ml == null) delete state.free[id];
+  }
+}
+function freeClear(el) {
+  const f = state.free?.[el.dataset.labId];
+  if (!f) return;
+  for (const [id, g] of Object.entries(state.free)) if (id === el.dataset.labId || f.grp && g.grp === f.grp) { delete g.ox; delete g.oy; if (g.ml == null) delete state.free[id]; }
+}
+const freeGroups = list => { const seen = new Set(); return list.filter(f => !f.grp || (!seen.has(f.grp) && seen.add(f.grp))); };
 // Smart guides: the dragged part snaps to the edges and centres of the other parts and of the
 // screen when it comes within 4 px (Alt turns the snapping off), and pink lines show what lines up.
 const SNAP_PX = 4;
@@ -314,7 +418,7 @@ function wireLayout() {
 function showMoves() {
   const box = $('moves');
   box.textContent = '';
-  const moves = state.moves || [], free = Object.values(state.free || {}), removed = Object.entries(state.removed || {}), extra = [...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
+  const moves = state.moves || [], free = freeGroups(Object.values(state.free || {})), removed = Object.entries(state.removed || {}), extra = [...(state.adds || []).map(addLine), ...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
   if (!moves.length && !free.length && !removed.length && !extra.length) {
     box.innerHTML = '<p class="hint">Inga flyttar än. Välj en del i en skärm och dra den med pilkorset vid hörnet till ett annat ställe.</p>';
     return;
@@ -349,12 +453,12 @@ function showMoves() {
   }
 }
 const freeText = f => (f.ox != null
-  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)`
+  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)${f.grp ? `, gäller ${f.n} likadana delar` : ''}`
   : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
-  const free = Object.values(st.free || {}), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {});
-  if (!st.moves?.length && !free.length && !removed.length && !copies.length && !texts.length) return;
-  out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`), ...copies.map(c => `"${c.label}" kopierad (ny del direkt efter originalet)`), ...texts.map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
+  const free = freeGroups(Object.values(st.free || {})), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {}), adds = st.adds || [];
+  if (!st.moves?.length && !free.length && !removed.length && !copies.length && !texts.length && !adds.length) return;
+  out.layoutMoves = [...adds.map(addLine), ...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`), ...copies.map(c => `"${c.label}" kopierad (ny del direkt efter originalet)`), ...texts.map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
 }
 
 // Swap two parts: each goes to the other's place (moves are recorded, so both themes and undo follow).

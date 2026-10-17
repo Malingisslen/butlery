@@ -76,7 +76,7 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel { color-scheme: light; }
 .panel input[type=search], .panel input[type=text], .panel select, .panel textarea { background: #fff; color: #24382c; }
 .panel.dock { flex: 0 0 300px; }
-.panel.dock #chat-log { max-height: calc(100vh - 360px); min-height: 160px; }
+.panel.dock #chat-log { max-height: calc(100vh - 360px); }
 @media (max-width: 1250px) { .lab { flex-wrap: wrap; } .panel.dock { position: static; flex: 1 0 100%; max-height: none; } }
 
 .viewbar { display: flex; align-items: center; gap: 6px; margin: 10px 0 14px; font-size: 13px; }
@@ -416,3 +416,10 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-menu small { color: #627061; }
 .lab-measure-tag { position: absolute; transform: translateX(-50%); padding: 2px 7px; border-radius: 4px; background: #1f2937; color: #fff; font: 600 11px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 60; }
 .phone .vm-grid, .phone .vg-body { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.lab-handles.small .lab-h { width: 8px; height: 8px; border-width: 1.5px; }
+.phone img.ad-img { width: 40px; height: 40px; object-fit: contain; flex: none; display: block; }
+.lab-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1f3a2d; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 99; font-size: 13px; }
+/* Parts are picked, not typed in: the arrow stays an arrow over text, and the text cursor only shows while a text is being rewritten. */
+:where(#screens .phone, #screens .phone *) { cursor: default; user-select: none; }
+#screens .phone [contenteditable="true"] { cursor: text; user-select: text; }
+.phone span.ad-text, .phone span[class*="ad-a"] { display: inline-block; }

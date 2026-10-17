@@ -143,10 +143,18 @@ String _symbol(File file) {
   final stroke = attr('stroke');
   final paint = StringBuffer('fill="${attr('fill')}" stroke="$stroke"');
   if (stroke != 'none') {
+    // --icon-stroke is always in 24 px terms, so a glyph drawn on a larger
+    // grid (the 160 px nav icons) scales it to its own units.
+    final box = double.tryParse(attr('viewBox').split(' ').last) ?? 24;
+    final k = box / 24;
+    final base = double.parse(attr('stroke-width'));
+    final width = k == 1
+        ? 'var(--icon-stroke,${attr('stroke-width')})'
+        : 'calc(var(--icon-stroke,${(base / k).toStringAsFixed(2)})*${k.toStringAsFixed(4)})';
     paint.write(
       ' stroke-linecap="${attr('stroke-linecap')}"'
       ' stroke-linejoin="${attr('stroke-linejoin')}"'
-      ' style="stroke-width:var(--icon-stroke,${attr('stroke-width')})"',
+      ' style="stroke-width:$width"',
     );
   }
   return '<symbol id="i-$name" viewBox="${attr('viewBox')}">'

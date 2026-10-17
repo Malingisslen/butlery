@@ -63,7 +63,7 @@ function markMatches(sel, view, keep) {
   if (!keep) document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   if (sel === '.phone') return { n: 0, views: 0 };
   let list = [];
-  try { list = [...document.querySelectorAll(`#screens .phone ${sel}`)]; } catch { /* a selector the browser refuses matches nothing */ }
+  try { list = [...document.querySelectorAll(`#screens .phone ${sel.replace(/^\.phone /, '')}`)]; } catch { /* a selector the browser refuses matches nothing */ }
   if (view != null) list = list.filter(n => n.closest('.phone').dataset.view == view);
   list.forEach(n => n.setAttribute('data-lab-match', ''));
   const light = list.filter(n => n.closest('.phone').dataset.theme !== 'dark');
@@ -96,9 +96,17 @@ function parentPart(el) {
   while (p && p.closest('.phone') && (p.classList.contains('b-scroll') || (!p.classList.contains('phone') && !p.className && !p.getAttribute('style')))) p = p.parentElement;
   return p && p.closest('.phone') ? p : el;
 }
+// The recipe list is a grid in one Hem view and a list in the other: the same part in two layouts.
+const SAME_PART = { 'mr-grid': ':is(.mr-grid,.mr-list)', 'mr-list': ':is(.mr-grid,.mr-list)' };
 function selectorFor(el, variant) {
+  if ('labSym' in el.dataset) return `[data-lab-kind-loose="${el.dataset.labKindLoose}"]`;
+  return selectorBase(el, variant) + ('labSibsym' in el.dataset ? ':not([data-lab-sym])' : '');
+}
+function selectorBase(el, variant) {
+  for (const c of el.classList) if (SAME_PART[c]) return `.phone ${SAME_PART[c]}`;
   if (el.classList.contains('phone')) return '.phone';
   if (el.dataset.glyph && !el.classList.contains('b-icon')) return `svg[data-glyph="${el.dataset.glyph}"]` + (variant ? [...el.classList].filter(c => !c.startsWith('lab-')).map(c => '.' + c).join('') : '');
+  if (el.dataset.labKindLoose) return `[data-lab-kind-loose="${el.dataset.labKindLoose}"]`;
   if (el.dataset.labKind) return `[data-lab-kind="${el.dataset.labKind}"]`;
   const classes = [...el.classList].filter(c => !c.startsWith('lab-') && c !== 'lab-selected');
   const base = classes.find(c => c.startsWith('b-'));
@@ -112,6 +120,7 @@ function selectorFor(el, variant) {
 }
 function showPartHint() {
   $('part').innerHTML = '<p class="hint">Klicka på vad som helst i skärmarna, till exempel en flik, en ikon, en text eller en knapp, så kan du justera just den delen här. Klicka igen på samma del för att välja delen runt omkring. Håll in Ctrl eller Skift när du klickar för att välja flera delar på en gång.</p>';
+  addButtons($('part'));
 }
 
 function control(part, spec, now, keyword, onSet) {
@@ -278,7 +287,7 @@ function numberField(label, value, onSet) {
   l.append(t, i);
   return [l, i];
 }
-function pickedEls() { return [selected.el, ...(selected.extras || [])].filter(x => x.isConnected && x.dataset.labId); }
+function pickedEls() { return [selected?.el, ...(selected?.extras || [])].filter(x => x?.isConnected && x.dataset.labId); }
 // One small box on top: the offset of the picked part, or, with two or more parts picked, the gaps
 // between them (edge to edge, only those parts move).
 function placeBox() {
@@ -299,7 +308,7 @@ function placeBox() {
     exactInputs = { x: ix, y: iy };
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ghost'; b.textContent = 'Nollställ'; b.title = 'Ställ tillbaka delen på sin plats';
-    b.onclick = () => { const f = state.free?.[selected.el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[selected.el.dataset.labId]; } showMoves(); render(); refreshExact(); };
+    b.onclick = () => { freeClear(selected.el); showMoves(); render(); refreshExact(); };
     row.append(lx, ly, b);
     hint.textContent = 'Dra korset eller använd piltangenterna (Skift: 10 px). Hjälplinjer fäster mot andra delar, Alt stänger av det. Delete tar bort delen.';
     refreshExact();
@@ -360,6 +369,23 @@ function showPart(variant = false) {
     size: parseFloat(cs.fontSize), weight: +cs.fontWeight, padY: parseFloat(cs.paddingTop), padX: parseFloat(cs.paddingLeft),
     w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height),
   };
+  const alpha = (cs.backgroundColor.match(/[\d.]+/g) || []).map(Number)[3];
+  const shadow = cs.filter.match(/drop-shadow\((.*)\)/)?.[1] || '';
+  const [, sx, sy, sblur] = shadow.match(/\)\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/) || [];
+  Object.assign(now, {
+    mY: parseFloat(cs.marginTop) || 0, mX: parseFloat(cs.marginLeft) || 0, tracking: parseFloat(cs.letterSpacing) || 0,
+    opacity: Math.round(+cs.opacity * 100), bgAlpha: alpha == null ? 100 : Math.round(alpha * 100),
+    blur: parseFloat(cs.backdropFilter?.match(/blur\(([\d.]+)px\)/)?.[1]) || 0,
+    bw: parseFloat(cs.borderTopWidth) || 0, shY: +sy || 0, shBlur: +sblur || 0,
+    shAlpha: shadow ? Math.round(((shadow.match(/[\d.]+/g) || []).map(Number)[3] ?? 1) * 100) : 0,
+  });
+  if (now.bw) now.bc = toHex(cs.borderTopColor) || now.bc;
+  if (el.matches('svg.i')) {
+    const set = cs.getPropertyValue('--icon-stroke').trim();
+    const g = document.getElementById(el.querySelector('use')?.getAttribute('href')?.slice(1))?.firstElementChild;
+    const base = g?.getAttribute('style')?.match(/var\(--icon-stroke,([\d.]+)\)/)?.[1];
+    if (set || base) now.iStroke = +(set || base);
+  }
   const read = (q, map) => {
     const k = kid(q);
     if (!k) return;
@@ -454,6 +480,8 @@ function showPart(variant = false) {
   const onSet = (k, v) => {
     for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
     if (COLOR_KEYS.has(k) && v !== '' && v !== false && part.mode !== 'both' && selected.follow?.[k] === undefined) selected.ask = k;
+    // "Båda" speaks for both themes, so an older light-only or dark-only value of the same kind must not outlive it.
+    if (part.mode === 'both') for (const key of selected.keys || []) for (const m of ['light', 'dark']) { const twin = state.parts[m + key.slice(4)]; if (twin) { delete twin.props[k]; if (!Object.keys(twin.props).length) delete state.parts[m + key.slice(4)]; } }
     render();
     drawAsk();
     refreshPartWarn(() => showPart(variant));
@@ -501,7 +529,9 @@ function drawHandles() {
   const box = document.createElement('div');
   box.className = 'lab-handles';
   box.style.cssText = `left:${r.left - base.left}px;top:${r.top - base.top}px;width:${r.width}px;height:${r.height}px`;
-  for (const h of ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
+  const small = Math.min(r.width, r.height) < 56;
+  if (small) box.classList.add('small');
+  for (const h of small ? ['nw', 'ne', 'se', 'sw'] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
     const d = document.createElement('i');
     d.className = `lab-h lab-h-${h}`;
     d.dataset.h = h;

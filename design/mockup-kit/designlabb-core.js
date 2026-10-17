@@ -54,7 +54,7 @@ const LAB_BASE = '2026-10-17.1';
 const defaults = () => ({
   font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], free: {}, removed: {}, copies: [], texts: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
+  moves: [], free: {}, removed: {}, copies: [], adds: [], texts: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -235,6 +235,7 @@ function freeCss(st, scope) {
     const decls = [];
     if (f.ml != null) decls.push(`margin-left:${f.ml}px !important;margin-top:${f.mt}px !important`);
     if (f.ox != null) decls.push(`translate:${f.ox}px ${f.oy}px !important`);
+    if (f.ox != null && labInline.has(id.split('~')[0].split('+')[0])) decls.push('display:inline-block !important');
     if (decls.length) css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{${decls.join(';')}}`;
   }
   return css;

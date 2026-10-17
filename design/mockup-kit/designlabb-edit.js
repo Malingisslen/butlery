@@ -143,10 +143,16 @@ function openLabMenu(x, y, target) {
     ['Duplicera', 'Ctrl+D', dupPicked],
     ['Kopiera', 'Ctrl+C', copyPicked],
     ['Klistra in', 'Ctrl+V', pastePicked, !labClip.length],
+    ['Lägg till text', '', () => addText(target, null, { x, y })],
+    ['Lägg till ikon', '', () => addIcon(target, null, { x, y })],
+    ['Lägg till egen bild…', '', () => addImage(target, null, { x, y })],
+    ['Gör om till ikon', '', () => convertTo('icon', els[0]), els.length !== 1 || !canConvert(els[0])],
+    ['Gör om till text', '', () => convertTo('text', els[0]), els.length !== 1 || !canConvert(els[0])],
+    ['Byt mot egen bild…', '', () => convertTo('img', els[0]), els.length !== 1 || !canConvert(els[0])],
     ['Redigera text', 'Dubbelklick', () => editText(target), !textHost(target)],
     ['Byt plats på delarna', '', () => { if (els.length === 2 && swapParts(els[0], els[1])) showPart(false); }, els.length !== 2],
     ['Ta bort', 'Delete', () => deletePicked(), !els.length],
-    ['Nollställ flytten', '', () => { for (const el of els) { const f = state.free?.[el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[el.dataset.labId]; } } showMoves(); render(); refreshExact(); }, !els.length],
+    ['Nollställ flytten', '', () => { for (const el of els) freeClear(el); showMoves(); render(); refreshExact(); }, !els.length],
     ['Markera allt', 'Ctrl+A', () => selectAllIn(target?.closest('.phone'))],
   ];
   const menu = document.createElement('div');

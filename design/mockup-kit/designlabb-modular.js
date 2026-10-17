@@ -47,7 +47,7 @@ function modularParts(st) {
 }
 function modularitySummary(st, out) {
   const g = modularParts(st);
-  const moved = (st.moves?.length || 0) + Object.keys(st.free || {}).length;
+  const moved = (st.moves?.length || 0) + freeGroups(Object.values(st.free || {})).length;
   const shared = g.delad.map(p => ({ p, m: moduleOf(p.sel) })).filter(x => x.m);
   const delade = shared.filter(x => x.m.mod).map(x => `${x.p.sel} -> ${x.m.mod[0]} (${x.m.mod[1]})`);
   const utanModul = shared.filter(x => !x.m.mod).map(x => x.p.sel);
@@ -68,7 +68,7 @@ function renderModular() {
   const box = document.getElementById('modular');
   if (!box) return;
   const g = modularParts(state);
-  const moved = (state.moves?.length || 0) + Object.keys(state.free || {}).length;
+  const moved = (state.moves?.length || 0) + freeGroups(Object.values(state.free || {})).length;
   const rows = [];
   const add = (tone, text) => rows.push([tone, text]);
   if (g.delad.length) add('ok', `${g.delad.length} ändringar gäller alla likadana delar. De förs in i den delade komponenten eller som token.`);
