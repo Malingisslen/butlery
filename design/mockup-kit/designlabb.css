@@ -56,7 +56,7 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 figure { margin: 0; }
 figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--butlery-text-secondary); }
 @media (max-width: 900px) { .lab { flex-direction: column; } .panel { position: static; flex: none; width: 100%; box-sizing: border-box; max-height: none; } }
-.panel .foot + .foot { border-top: 0; padding-top: 0; }
+.panel .foot + .foot { border-top: 0; padding-top: 8px; }
 .panel .foot #apply { background: #d68523; border-color: #d68523; color: #17251d; }
 .panel #moves .hint { margin: 2px 0; }
 .phone .lab-gap { position: absolute; z-index: 50; pointer-events: none; display: flex; align-items: center; justify-content: center; font: 700 10px system-ui, sans-serif; color: #fff; }
@@ -348,7 +348,6 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel .checkrow { padding: 8px 16px 0; border-top: 1px solid #ccd1c2; }
 .panel .checkrow button { width: 100%; }
 .panel .checkrow button.on { background: #24382c; color: #f5f4ed; }
-.panel .foot { border-top: 0; padding-top: 8px; }
 .panel .head .ghost { color: #24382c; border-color: #24382c; }
 .panel .head .ghost:disabled { color: #9aa597; border-color: #ccd1c2; cursor: default; }
 .panel button.rst { flex: none; width: 24px; padding: 2px 0; border: 0; background: none; color: #9c3b23; font-size: 15px; }
@@ -367,3 +366,17 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel .verrow { display: flex; gap: 8px; padding: 0 16px 8px; }
 .panel .verrow select { flex: 1; min-width: 0; padding: 8px 6px; border-radius: 8px; border: 1px solid #24382c; background: #fff; font-weight: 600; }
 .panel .verrow button { flex: none; padding: 8px 12px; }
+
+/* One rhythm for the panel: 16 px at the sides, 10 px between rows. */
+.panel .head { padding: 14px 16px 0; }
+.panel .verrow { padding: 10px 16px 0; margin: 0; }
+.panel .clearrow { padding: 10px 16px 0; }
+.panel #search { margin: 10px 16px 0; }
+.panel .tabs { margin-top: 10px; padding: 0 16px; }
+.panel .panes { padding: 6px 16px 12px; }
+.panel details.sec { margin: 0; }
+.panel details.sec > summary { padding: 8px 0; }
+.panel .checkrow { padding: 10px 16px 0; }
+.panel .foot { padding: 10px 16px 0; border-top: 0; }
+.panel .foot:last-child { padding-bottom: 14px; }
+.panel .verrow select { font-size: 12px; }

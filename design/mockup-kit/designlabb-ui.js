@@ -286,7 +286,7 @@ function saveVariants() {
 function renderVariantSelect() {
   const sel = $('ver-select');
   sel.textContent = '';
-  sel.add(new Option(variants.length ? 'Öppna en sparad version …' : 'Inga sparade versioner än', ''));
+  sel.add(new Option(variants.length ? 'Öppna version …' : 'Inga sparade versioner än', ''));
   variants.forEach((v, i) => sel.add(new Option(v.name + (v.at ? ' · ' + new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : ''), String(i))));
   sel.disabled = !variants.length;
 }
