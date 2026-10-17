@@ -6,7 +6,7 @@
 
 const CHAT_RULES = `Du är Claude och sitter i Butlerys designlabb, en webbsida där Malin (som inte kodar) provar färger, typsnitt, avstånd, ikoner och layout på tre exempelskärmar. Svara på svenska, kort och utan fackspråk.
 Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart och resetLab. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i rutan Claude, så bygger sessionen som jobbar med appen det.
-Läs alltid färglistan med getColors innan du ändrar en färg, gissa aldrig hexkoder, och kontrollera i svaret från setLabState att det du lovar Malin är det som hände. Beskriv bara det som faktiskt ändrades.
+Läs alltid färglistan med getColors innan du ändrar en färg, gissa aldrig hexkoder, och kontrollera i svaret från setLabState (applied och lightScreenNow, den ljusa skärmens verkliga bakgrund) att det du lovar Malin är det som hände. Beskriv bara det som faktiskt ändrades.
 Brödtext ska ha minst 4,5:1 i kontrast. Säg ifrån om en ändring bryter mot det. Inga emoji.`;
 const claudeAi = { sample: null, db: null };
 const chatTurns = [];
@@ -45,6 +45,7 @@ function resolveColor(key) {
 }
 
 // The same ranges the sliders have, so Claude cannot set a value the panel cannot show.
+let askApplied = [];
 function applyChanges(changes) {
   const applied = [], refused = [];
   for (const [k, v] of Object.entries(changes || {})) {
@@ -70,7 +71,10 @@ function applyChanges(changes) {
     selected = keep;
     keep.el.setAttribute('data-lab-selected', '');
   }
-  return { applied, refused, now: summary(state) ? JSON.parse(summary(state)) : {} };
+  askApplied.push(...applied);
+  const phone = document.querySelector('#screens .phone:not([data-theme="dark"])');
+  const lightScreenNow = phone ? toHex(getComputedStyle(phone).backgroundColor) : null;
+  return { applied, refused, lightScreenNow, now: summary(state) ? JSON.parse(summary(state)) : {} };
 }
 function applyPartProps(props) {
   if (!selected) throw new Error('Ingen del är vald i skärmarna. Be Malin klicka på en del.');
@@ -136,6 +140,7 @@ async function ask() {
   chatTurns.push({ role: 'user', content: text });
   bubble('me', text);
   const answer = bubble('claude', 'Tänker ...');
+  askApplied = [];
   chatCtl = new AbortController();
   $('ask-stop').hidden = false; $('ask-go').disabled = true;
   try {
@@ -145,6 +150,7 @@ async function ask() {
       { cache: false, signal: chatCtl.signal, modelTier: 'quick', tools: hasTools ? chatTools() : undefined, onText: ({ text: t }) => { answer.textContent = t; } },
     );
     chatTurns.push({ role: 'assistant', content: reply });
+    bubble('note', askApplied.length ? `Ändrat i labbet: ${askApplied.join(', ')}.` : 'Inget ändrades i labbet av det här svaret.');
   } catch (e) {
     if (e.text) { answer.textContent = e.text; chatTurns.push({ role: 'assistant', content: e.text }); } else answer.remove();
     if (e.code !== 'cancelled') bubble('note', ASK_ERRORS[e.code] || 'Det gick inte att fråga just nu.');

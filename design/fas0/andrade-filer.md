@@ -612,7 +612,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `mockup-kit/README.md` | `64b94850cec8e4fb9f54713774157c84f8b1b319306408a03bc0d0ccdcfcac4f` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb-claude.js` | `abf36d9cc0c142a412e553d78dfa116fcaa94196b52aad1daba4f6c86d7c2eff` |
+| `mockup-kit/designlabb-claude.js` | `9cec641682b783d3cf437438abe6e03ab0f4edfafca5a185ccc26e9de862c2e1` |
 | `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
 | `mockup-kit/designlabb-extra.js` | `a55c5cb412de283f93d3fbbe133ab517549ddf6b4f8c2628f0c2be2cf0928be2` |
 | `mockup-kit/designlabb-iconlibs.js` | `e972e1063603e483c13bf41467b08d8717fba718ac5f4c1f06d060532ec90e46` |
