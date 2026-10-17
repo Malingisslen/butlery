@@ -802,14 +802,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           if (child == null) return const SizedBox.shrink();
           // BUT-800: clamp `textScaler` once at the MaterialApp root so every
           // descendant widget inherits the clamped MediaQuery automatically.
-          // Without this, users with extreme accessibility text-scale settings
-          // (200%+) clip fixed-height surfaces. 1.4× preserves readability
-          // gains while keeping our layouts intact.
-          //
-          // Per-scaffold `AccessibilityUtils.clampTextScaling` wrappers in
-          // `adaptive_navigation.dart` and
-          // `unified_badge.dart` become redundant but harmless — a clamp
-          // applied twice still resolves to the tighter bound.
           final mq = MediaQuery.of(context);
           final clampedChild = MediaQuery(
             data: mq.copyWith(
