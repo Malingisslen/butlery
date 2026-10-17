@@ -50,6 +50,7 @@ function render() {
   }
   applyIcons();
   drawOverlay();
+  shareNow();
   scheduleSnapshot();
   try {
     window.history.replaceState(null, '', summary(state) ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search);
@@ -350,3 +351,4 @@ if (location.hash.length > 1) {
 }
 openTab('all');
 syncUi();
+initClaude();

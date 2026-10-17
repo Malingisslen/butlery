@@ -68,3 +68,9 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-move .phone [draggable=true]:hover { outline: 1px dashed #e0457b; outline-offset: -1px; }
 .lab-move .phone .lab-dragging { opacity: .35; }
 .phone .lab-drop { position: absolute; z-index: 60; background: #e0457b; border-radius: 2px; pointer-events: none; }
+.panel #chat-log { max-height: 280px; overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.panel .chat-msg { padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
+.panel .chat-msg.me { align-self: flex-end; background: #24382c; color: #f5f4ed; }
+.panel .chat-msg.claude { align-self: flex-start; background: #eef0e4; }
+.panel .chat-msg.note { align-self: center; color: #627061; font-size: 12px; }
+.panel #ask-text, .panel #req-text { width: 100%; box-sizing: border-box; height: auto; font: inherit; padding: 8px; border: 1px solid #7d897c; border-radius: 8px; margin-top: 0; }
