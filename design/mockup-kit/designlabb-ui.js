@@ -286,6 +286,8 @@ function normalizeVariants() {
   const seen = new Set();
   variants = variants.filter(v => {
     v.state = { ...defaults(), ...v.state };
+    v.base ||= LAB_BASE;
+    v.orig = { ...defaults(), ...(v.orig || {}) };
     v.at ||= stableAt(v);
     v.id = 'v' + v.at;
     const key = variantKey(v);
@@ -299,7 +301,7 @@ function saveVariants() {
   try { localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants)); } catch {}
   const db = variantDb();
   if (db) for (const v of variants) {
-    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at, json: JSON.stringify(v.state) }).catch(() => {});
+    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at, base: v.base, json: JSON.stringify(v.state), orig: JSON.stringify(v.orig) }).catch(() => {});
   }
   renderVariants();
 }
@@ -331,7 +333,7 @@ function renderVariants() {
     const actions = document.createElement('div');
     actions.className = 'row';
     for (const [label, fn] of [
-      ['Använd', () => { state = { ...defaults(), ...clone(v.state) }; stopCompare(); syncUi(); }],
+      ['Använd', () => openVersion(v)],
       ['Jämför', () => startCompare(v)],
       ['Ta bort', () => { const [gone] = variants.splice(i, 1); if (gone.id) variantDb()?.doc(`variants/${gone.id}`).delete().catch(() => {}); saveVariants(); }],
     ]) {
@@ -342,8 +344,62 @@ function renderVariants() {
     box.append(row);
   });
 }
+const FIELD_NAMES = { font: 'Typsnitt', fontHead: 'Rubrikfont', typeRatio: 'Textskala', scale: 'Textstorlek', lh: 'Radavstånd', card: 'Kort och ark', control: 'Knappar och fält', margin: 'Sidmarginal', hue: 'Nyans', sat: 'Mättnad', light: 'Ljushet', space: 'Avståndsskala', rowPad: 'Luft i rader', sectionGap: 'Mellan avsnitt', blockGap: 'Mellan block', chipGap: 'Mellan knappar och chips', rowInner: 'Ikon till text i rad', hair: 'Skiljelinjer', touch: 'Minsta träffyta', iconSize: 'Ikonstorlek', iconStroke: 'Linjetjocklek', iconStyle: 'Linjeändar', iconLib: 'Ikonbibliotek' };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// Opens a saved version on top of the CURRENT original: what the version did not change follows the original,
+// and a value the original has moved since the version was saved is not pulled back.
+function openVersion(v) {
+  const now = defaults();
+  const next = clone(now);
+  const skipped = [], lostColors = [];
+  const known = new Set(pickers.map(p => p.hex.toLowerCase()));
+  for (const [k, mine] of Object.entries(v.state)) {
+    const was = v.orig[k];
+    if (!(k in now) || same(mine, was)) continue;
+    if (k === 'colors') {
+      next.colors = {};
+      for (const [hex, to] of Object.entries(mine)) (known.has(hex.toLowerCase()) ? next.colors : lostColors)[hex] = to;
+      continue;
+    }
+    if (same(was, now[k])) next[k] = clone(mine);
+    else skipped.push({ k, mine, was, now: now[k] });
+  }
+  state = next;
+  stopCompare(); syncUi();
+  showVersionNote(v, skipped, Object.keys(lostColors));
+}
+function showVersionNote(v, skipped, lostColors) {
+  const box = $('ver-note');
+  box.textContent = '';
+  if (!skipped.length && !lostColors.length) { box.hidden = true; return; }
+  const p = document.createElement('div');
+  p.textContent = `"${v.name}" sparades mot ett äldre original. Det nya originalet behölls för:`;
+  const ul = document.createElement('ul');
+  for (const s of skipped) {
+    const li = document.createElement('li');
+    li.textContent = `${FIELD_NAMES[s.k] || s.k}: originalet är nu ${s.now}, din version ville ha ${s.mine}`;
+    ul.append(li);
+  }
+  for (const hex of lostColors) {
+    const li = document.createElement('li');
+    li.textContent = `Färgen ${hex} finns inte längre i appen, så den ändringen hoppades över`;
+    ul.append(li);
+  }
+  const row = document.createElement('div'); row.className = 'row';
+  if (skipped.length) {
+    const keep = document.createElement('button');
+    keep.type = 'button'; keep.className = 'ghost'; keep.textContent = 'Ta med mina värden ändå';
+    keep.onclick = () => { for (const s of skipped) state[s.k] = clone(s.mine); box.hidden = true; syncUi(); };
+    row.append(keep);
+  }
+  const ok = document.createElement('button');
+  ok.type = 'button'; ok.className = 'ghost'; ok.textContent = 'Stäng'; ok.onclick = () => { box.hidden = true; };
+  row.append(ok);
+  box.append(p, ul, row);
+  box.hidden = false;
+}
 function addVariant(btn) {
-  variants.push({ name: `Version ${variants.length + 1}`, at: Date.now(), state: clone(state) });
+  variants.push({ name: `Version ${variants.length + 1}`, at: Date.now(), base: LAB_BASE, orig: clone(defaults()), state: clone(state) });
   saveVariants();
   if (btn) { const old = btn.textContent; btn.textContent = 'Sparad'; setTimeout(() => { btn.textContent = old; }, 1500); }
 }
@@ -351,7 +407,7 @@ $('save-variant').onclick = e => addVariant(e.currentTarget);
 $('ver-save').onclick = e => addVariant(e.currentTarget);
 $('ver-select').onchange = e => {
   const v = variants.find((x, i) => String(i) === e.target.value);
-  if (v) { state = { ...defaults(), ...clone(v.state) }; stopCompare(); syncUi(); }
+  if (v) openVersion(v);
   e.target.value = '';
 };
 // Called once the shared store is reachable: pulls in versions saved from other browsers.
@@ -363,10 +419,10 @@ async function loadVariantsFromDb() {
     for (const d of snap.docs) {
       const data = typeof d.data === 'function' ? d.data() : d.data;
       if (!data?.json) continue;
-      let incoming = { name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } };
+      let incoming = { name: data.name, at: data.at, base: data.base, orig: data.orig ? JSON.parse(data.orig) : undefined, state: { ...defaults(), ...JSON.parse(data.json) } };
       const twin = variants.find(v => v.at === data.at || variantKey(v) === variantKey(incoming));
       if (twin) { if (twin.id !== d.id) db.doc(`variants/${d.id}`).delete().catch(() => {}); continue; }
-      variants.push({ name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } });
+      variants.push(incoming);
     }
     variants.sort((a, b) => (a.at || 0) - (b.at || 0));
     saveVariants();

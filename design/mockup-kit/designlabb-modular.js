@@ -105,5 +105,6 @@ const HANDOFF_RULE = [
   'Rendera labbets exakta bilder från "state" (öppna designlabb.html med state, ta före- och efterbilder av berörda vyer, ljust och mörkt) och bifoga dem till Malin i tråden.',
   'Bygg så nära dessa bilder som modulariteten tillåter: ändra token eller den delade komponenten, aldrig en enskild vy.',
   'Där bilden inte kan nås utan en ny modul eller en ny variant av en befintlig, bygg inte en lösning i vyn. Säg till Malin vilken modul som saknas och vad den skulle ge, och vänta på hennes svar.',
+  'När bygget är klart och mergat: flytta labbets original till de nya värdena (labbets defaults och LAB_BASE i designlabb-core.js, kör mockup_kit) och publicera artefakten på nytt, så att nya versioner utgår från det nya originalet.',
   'Redovisa efteråt vad som landade exakt, vad som landade nära och vad som väntar på hennes beslut.',
 ].join(' ');

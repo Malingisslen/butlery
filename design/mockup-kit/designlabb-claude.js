@@ -187,7 +187,7 @@ async function sendRequest() {
   note.textContent = 'Skickar ...';
   try {
     await claudeAi.db.doc(`requests/${at.replace(/[:.]/g, '-')}`).set({
-      at, status: 'new', text, handoff: HANDOFF_RULE, summary: summary(state), state: JSON.stringify(state), selection: selectionInfo(), chat: chatTurns.slice(-6),
+      at, status: 'new', text, labBase: LAB_BASE, handoff: HANDOFF_RULE, summary: summary(state), state: JSON.stringify(state), selection: selectionInfo(), chat: chatTurns.slice(-6),
     });
     $('req-text').value = '';
     note.textContent = 'Skickat. Skriv "skickat" i tråden hos Claude, så läser Claude det direkt.';
