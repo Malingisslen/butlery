@@ -335,7 +335,7 @@ function wireExtras() {
   $('clear-moves').onclick = () => { state.moves = []; state.free = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
   $('apply').onclick = async () => {
-    const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}`;
+    const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}\n\nByggregel: ${HANDOFF_RULE}`;
     try { await navigator.clipboard.writeText(text); } catch { $('out').value = text; $('out').select(); document.execCommand('copy'); }
     $('apply').textContent = 'Kopierat. Klistra in i tråden';
     setTimeout(() => { $('apply').textContent = 'Spara och för in i appen'; }, 3000);

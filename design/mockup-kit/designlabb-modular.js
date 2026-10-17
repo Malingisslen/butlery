@@ -59,3 +59,11 @@ function renderModular() {
   rule.textContent = 'Ingenting enstaka hårdkodas i appen utan ditt ja. Det som gäller flera likadana delar går via den delade komponenten.';
   box.append(rule);
 }
+
+// Travels with every request to Claude, so the build rule does not depend on anyone remembering it.
+const HANDOFF_RULE = [
+  'Rendera labbets exakta bilder från "state" (öppna designlabb.html med state, ta före- och efterbilder av berörda vyer, ljust och mörkt) och bifoga dem till Malin i tråden.',
+  'Bygg så nära dessa bilder som modulariteten tillåter: ändra token eller den delade komponenten, aldrig en enskild vy.',
+  'Där bilden inte kan nås utan en ny modul eller en ny variant av en befintlig, bygg inte en lösning i vyn. Säg till Malin vilken modul som saknas och vad den skulle ge, och vänta på hennes svar.',
+  'Redovisa efteråt vad som landade exakt, vad som landade nära och vad som väntar på hennes beslut.',
+].join(' ');
