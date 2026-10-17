@@ -250,7 +250,7 @@ function wireLayout() {
     }
     if (!drag.started) return;
     e.preventDefault();
-    drag.free = freeMode !== e.shiftKey;
+    drag.free = true;
     if (drag.free) { freeMove(e); return; }
     drag.plan = dropPlan(e.clientX, e.clientY);
     showDropLine(drag.plan);
