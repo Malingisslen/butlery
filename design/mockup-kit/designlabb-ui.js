@@ -4,17 +4,6 @@
 // editor in designlabb-parts.js.
 
 const $ = id => document.getElementById(id);
-const PRESETS = {
-  'Original': {},
-  'Varmare': { hue: 12, sat: 112, light: 104 },
-  'Kallare': { hue: -35, sat: 95 },
-  'Mjukt och runt': { card: 24, control: 16, margin: 28, lh: 150 },
-  'Kantigt': { card: 0, control: 0 },
-  'Stort och tydligt': { scale: 120, lh: 150, margin: 20 },
-  'Dämpat': { sat: 55, light: 104 },
-  'Högmättat': { sat: 160 },
-  'Serif': { font: 'Lora' },
-};
 const SLIDERS = {
   scale: ' %', lh: '', card: ' px', control: ' px', margin: ' px', hue: '°', sat: ' %', light: ' %',
   space: ' %', rowPad: ' px', sectionGap: ' px', blockGap: ' px', chipGap: ' px', rowInner: ' px', hair: ' px', touch: ' px', iconSize: ' %', iconStroke: '',
@@ -63,7 +52,6 @@ function render() {
   applyIcons();
   drawOverlay();
   applyViewTools();
-  markPresets();
   markSliders();
   drawPins();
   if (typeof drawHandles === 'function') drawHandles();
@@ -210,33 +198,6 @@ function updateHistoryButtons() {
   $('redo').disabled = undoLog.i >= undoLog.stack.length - 1;
 }
 
-for (const [name, patch] of Object.entries(PRESETS)) {
-  const b = document.createElement('button');
-  b.type = 'button'; b.textContent = name;
-  b.dataset.preset = name;
-  b.onclick = () => { state = { ...defaults(), ...patch }; syncUi(); };
-  $('presets').append(b);
-}
-const surprise = document.createElement('button');
-surprise.type = 'button'; surprise.textContent = 'Överraska mig';
-surprise.onclick = () => {
-  const pick = (a, b) => Math.round(a + Math.random() * (b - a));
-  const fonts = Object.keys(FONTS);
-  state = {
-    ...defaults(), hue: pick(-180, 180), sat: pick(60, 150), light: pick(90, 110),
-    card: pick(0, 26), control: pick(0, 18), font: fonts[pick(0, fonts.length - 1)],
-  };
-  syncUi();
-};
-$('presets').append(surprise);
-
-// The preset whose values all match the current state is marked, so the panel shows which mood is on.
-function markPresets() {
-  for (const b of document.querySelectorAll('#presets button[data-preset]')) {
-    const patch = PRESETS[b.dataset.preset];
-    b.classList.toggle('on', Object.entries(patch).every(([k, v]) => JSON.stringify(state[k]) === JSON.stringify(v)));
-  }
-}
 
 // Each pane heading becomes a fold-out section; only the first one in a pane starts open.
 function foldSections() {

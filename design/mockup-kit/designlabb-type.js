@@ -7,10 +7,6 @@ const TYPE_TIERS = {
 };
 const TYPE_RATIOS = [['', 'Appens egna'], ['1.125', 'Liten steg (1,125)'], ['1.2', 'Mjuk (1,2)'], ['1.25', 'Tydlig (1,25)'], ['1.333', 'Stark (1,333)'], ['1.5', 'Dramatisk (1,5)']];
 const HEAD_FONTS = { 'Fraunces': 1, 'Playfair Display': 1, 'Lora': 1, 'Poppins': 1, 'DM Sans': 1, 'Nunito': 1, 'Georgia': 1, 'Inter': 1 };
-const FONT_PAIRS = [
-  ['Klassiskt kök', 'Fraunces', 'Inter'], ['Tidningslikt', 'Playfair Display', 'Lora'], ['Modernt och rent', 'Poppins', 'Inter'],
-  ['Mjukt och vänligt', 'Nunito', 'Nunito'], ['Skarpt', 'DM Sans', 'Inter'],
-];
 
 function applyTypeScale(ratio) {
   state.typeRatio = ratio;
@@ -32,11 +28,4 @@ function wireType() {
   head.add(new Option('Samma som brödtext', ''));
   for (const f of Object.keys(HEAD_FONTS)) head.add(new Option(f, f));
   head.onchange = () => { state.fontHead = head.value; loadFont(); render(); };
-  const box = document.getElementById('font-pairs');
-  for (const [name, h, b] of FONT_PAIRS) {
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.textContent = `${name}: ${h} + ${b}`;
-    btn.onclick = () => { state.fontHead = h; state.font = b; loadFont(); syncUi(); };
-    box.append(btn);
-  }
 }
