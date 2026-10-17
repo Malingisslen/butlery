@@ -167,6 +167,24 @@ const freeOffset = el => { const f = state.free?.[el.dataset.labId]; return { ox
 // A move follows the like part in the other views (same rule as sizes and colours) unless "bara den
 // här" / "bara i den här vyn" is ticked. Within a view only the picked part moves, and with two like
 // parts picked together each moves on its own.
+// When the part has no match by type in another view, the same words in the same kind of element
+// are the same part (a title or a button that is built differently in two views).
+const textKey = (n, withClasses) => {
+  const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+  const cls = withClasses ? [...n.classList].filter(c => !c.startsWith('lab-')).sort().join('.') : '';
+  return t.length >= (withClasses ? 3 : 8) && !n.closest('svg') ? `${n.tagName}|${cls}|${t}` : '';
+};
+function sameByText(el, own, ph) {
+  for (const withClasses of [true, false]) {
+    const key = textKey(el, withClasses);
+    if (!key) continue;
+    const mine = [...own.querySelectorAll(el.tagName)].filter(n => textKey(n, withClasses) === key);
+    const theirs = [...ph.querySelectorAll(el.tagName)].filter(n => n.dataset.labId && textKey(n, withClasses) === key);
+    const hit = theirs[mine.indexOf(el)];
+    if (hit) return hit;
+  }
+  return null;
+}
 function likeTargets(el) {
   const picked = selected?.el.isConnected ? pickedEls() : [];
   const own = el.closest('.phone'), sel = selectorFor(el, false);
@@ -176,8 +194,8 @@ function likeTargets(el) {
   const targets = [el];
   for (const ph of document.querySelectorAll('#screens .phone')) {
     if (ph === own || ph.dataset.theme === 'dark') continue;
-    const hit = [...ph.querySelectorAll(sel)].filter(n => n.dataset.labId)[idx];
-    if (hit) targets.push(hit);
+    const hit = [...ph.querySelectorAll(sel)].filter(n => n.dataset.labId)[idx] || sameByText(el, own, ph);
+    if (hit && !targets.includes(hit)) targets.push(hit);
   }
   return targets;
 }
