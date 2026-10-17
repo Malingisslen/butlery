@@ -63,7 +63,7 @@ function markMatches(sel, view, keep) {
   if (!keep) document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   if (sel === '.phone') return { n: 0, views: 0 };
   let list = [];
-  try { list = [...document.querySelectorAll(`#screens .phone ${sel}`)]; } catch { /* a selector the browser refuses matches nothing */ }
+  try { list = [...document.querySelectorAll(`#screens .phone ${sel.replace(/^\.phone /, '')}`)]; } catch { /* a selector the browser refuses matches nothing */ }
   if (view != null) list = list.filter(n => n.closest('.phone').dataset.view == view);
   list.forEach(n => n.setAttribute('data-lab-match', ''));
   const light = list.filter(n => n.closest('.phone').dataset.theme !== 'dark');
