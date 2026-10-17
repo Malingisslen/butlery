@@ -826,7 +826,7 @@
 </aside>
 <div class="stage">
 <h1>Designlabb: se ändringar direkt</h1>
-<p>Samma tre skärmar som i facit. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
+<p>Samma sex skärmar som i facit. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
 <div class="viewbar" id="viewbar"><span>Visa</span><button type="button" data-view="light">Ljust</button><button type="button" data-view="dark">Mörkt</button><button type="button" data-view="both">Båda</button></div>
 <div class="screens only-light" id="screens">
 
@@ -946,9 +946,119 @@
 <figcaption>Ett recept: en hjälteknapp, en primärknapp</figcaption>
 </figure>
 
+<figure>
+<div class="phone">
+  <div class="b-statusbar"><span>9:41</span><span></span></div>
+  <div class="b-topbar-root">
+    <div style="flex:1"><div class="title">Inköp</div><div class="sub">Veckans inköp · 2 av 7 klara</div></div>
+    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="b-tabs"><div class="tab active"><span>Inköpslistor</span></div><div class="tab"><span>Skafferiet</span></div></div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:16px">
+    <div class="b-input"><svg class="i"><use href="#i-plus"/></svg><span class="hint">Lägg till vara</span></div>
+    <section class="b-section"><div class="b-overline">Frukt och grönt</div>
+      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Gul lök</div><div class="subtitle">2 st</div></div></div>
+      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Broccoli</div><div class="subtitle">1 huvud</div></div></div>
+      <div class="b-row"><span class="b-checkbox on"><svg class="i"><use href="#i-check"/></svg></span><div class="text"><div class="label" style="text-decoration:line-through;color:var(--cs-on-surface-variant)">Färsk koriander</div><div class="subtitle">1 knippe</div></div></div>
+
+    </section>
+    <section class="b-section"><div class="b-overline">Mejeri</div>
+      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Kokosmjölk</div><div class="subtitle">2 burkar</div></div></div>
+      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Havredryck</div><div class="subtitle">1 liter</div></div></div>
+      <div class="b-row"><span class="b-checkbox on"><svg class="i"><use href="#i-check"/></svg></span><div class="text"><div class="label" style="text-decoration:line-through;color:var(--cs-on-surface-variant)">Smör</div><div class="subtitle">1 paket</div></div></div>
+      <div class="b-row"><span class="b-checkbox"></span><div class="text"><div class="label">Parmesan</div><div class="subtitle">100 g</div></div></div>
+
+    </section>
+  </div></div>
+  <nav class="b-bottomnav">
+    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
+    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
+    <div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
+  </nav>
+</div>
+<figcaption>Inköpslista: kryssrutor, avsnitt och ett inmatningsfält</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-statusbar"><span>9:41</span><span></span></div>
+  <div class="b-topbar-root">
+    <div style="flex:1"><div class="title">Inköp</div><div class="sub">Skafferiet · 24 varor</div></div>
+    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="b-tabs"><div class="tab"><span>Inköpslistor</span></div><div class="tab active"><span>Skafferiet</span></div></div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:16px">
+    <div class="b-input search"><span class="hint">Sök i skafferiet</span><button class="b-iconbtn"><svg class="i"><use href="#i-search"/></svg></button></div>
+    <div class="b-chips" style="margin-top:12px"><span class="b-chip selected">Alla</span><span class="b-chip">Kyl</span><span class="b-chip">Frys</span><span class="b-chip">Torrvaror</span></div>
+    <section class="b-section"><div class="b-overline">Kyl</div>
+      <div class="b-row"><div class="text"><div class="label">Mjölk</div><div class="subtitle">Bäst före 24 okt</div></div><span class="value">1 l</span></div>
+      <div class="b-row"><div class="text"><div class="label">Gräddfil</div><div class="subtitle">Går ut om 2 dagar</div></div><span class="b-pill warning">Snart</span><span class="value">1 dl</span></div>
+      <div class="b-row"><div class="text"><div class="label">Ägg</div><div class="subtitle">Bäst före 30 okt</div></div><span class="value">6 st</span></div>
+
+    </section>
+    <section class="b-section"><div class="b-overline">Torrvaror</div>
+      <div class="b-row"><div class="text"><div class="label">Röda linser</div><div class="subtitle"></div></div><span class="value">500 g</span></div>
+      <div class="b-row"><div class="text"><div class="label">Basmatiris</div><div class="subtitle"></div></div><span class="value">2 kg</span></div>
+      <div class="b-row"><div class="text"><div class="label">Havregryn</div><div class="subtitle"></div></div><span class="value">1 kg</span></div>
+
+    </section>
+  </div></div>
+  <nav class="b-bottomnav">
+    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
+    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
+    <div class="tab active"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
+  </nav>
+</div>
+<figcaption>Skafferiet: sök, chips, rader med datum och en statuspiller</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="b-statusbar"><span>9:41</span><span></span></div>
+  <div class="b-topbar-root">
+    <div style="flex:1"><div class="title">Meny</div><div class="sub">Vecka 43 · 20–26 okt</div></div>
+    <div class="actions"><button class="b-iconbtn"><svg class="i"><use href="#i-calendar"/></svg></button><button class="b-iconbtn"><svg class="i"><use href="#i-more-vertical"/></svg></button></div>
+  </div>
+  <div class="b-scroll"><div class="b-body" style="padding-top:8px">
+    <section class="b-section"><div class="b-overline">Måndag 20 okt</div>
+      <div class="b-row"><div class="text"><div class="label">Linsgryta med kokos och koriander</div><div class="subtitle">Middag · 30 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+
+    </section>
+    <section class="b-section"><div class="b-overline">Tisdag 21 okt</div>
+      <div class="b-row"><div class="text"><div class="label">Krämig svamppasta med timjan</div><div class="subtitle">Middag · 25 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+      <div class="b-row"><div class="text"><div class="label">Havregrynsgröt med äpple</div><div class="subtitle">Frukost · 10 min · 2 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+
+    </section>
+    <section class="b-section"><div class="b-overline">Onsdag 22 okt</div>
+      <div class="b-row"><svg class="i"><use href="#i-plus"/></svg><div class="text"><div class="label">Lägg till måltid</div></div></div>
+    </section>
+    <section class="b-section"><div class="b-overline">Torsdag 23 okt</div>
+      <div class="b-row"><div class="text"><div class="label">Ugnsbakad torsk med citron</div><div class="subtitle">Middag · 35 min · 4 port.</div></div><svg class="i chevron"><use href="#i-chevron-right"/></svg></div>
+
+    </section>
+  </div></div>
+  <div style="padding:12px 12px 8px;display:grid;gap:8px;flex:none;border-top:1px solid var(--cs-outline-variant)">
+    <button class="b-btn hero">Generera meny</button>
+    <button class="b-btn">Skapa inköpslista av veckan</button>
+  </div>
+  <nav class="b-bottomnav">
+    <div class="tab"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
+    <div class="tab active"><svg class="i"><use href="#i-nav-week"/></svg><div class="label-wrap">Meny<span class="marker"></span></div></div>
+    <div class="add"><span><svg class="i"><use href="#i-nav-add"/></svg></span></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-shopping"/></svg><div class="label-wrap">Inköp<span class="marker"></span></div></div>
+    <div class="tab"><svg class="i"><use href="#i-nav-more"/></svg><div class="label-wrap">Mer<span class="marker"></span></div></div>
+  </nav>
+</div>
+<figcaption>Veckomeny: dagar med måltider, en tom dag och två knappar</figcaption>
+</figure>
+
 </div>
 <div id="compare" hidden>
-<div class="compare-bar"><span>Jämför på skärm:</span><select id="cmp-screen"><option value="0">Mer</option><option value="1">Appinställningar</option><option value="2">Recept</option></select><select id="cmp-mode"><option value="0">Ljust</option><option value="1">Mörkt</option></select><button id="cmp-close" type="button">Stäng jämförelsen</button></div>
+<div class="compare-bar"><span>Jämför på skärm:</span><select id="cmp-screen"><option value="0">Mer</option><option value="1">Appinställningar</option><option value="2">Recept</option><option value="3">Inköpslista</option><option value="4">Skafferiet</option><option value="5">Veckomeny</option></select><select id="cmp-mode"><option value="0">Ljust</option><option value="1">Mörkt</option></select><button id="cmp-close" type="button">Stäng jämförelsen</button></div>
 <div id="compare-grid"></div>
 </div>
 </div>
