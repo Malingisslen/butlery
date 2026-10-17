@@ -102,16 +102,18 @@ function openColorPopover(anchor, current, onPick) {
     b.onclick = () => pick(hex);
     return b;
   };
+  const all = [...scanAppColors()].sort((a, b) => [...b[1].uses.values()].reduce((s, u) => s + u.n, 0) - [...a[1].uses.values()].reduce((s, u) => s + u.n, 0));
   if (current) {
     const now = document.createElement('div'); now.className = 'cp-now';
+    const hit = all.find(([hex]) => hex.toLowerCase() === String(current).toLowerCase());
     now.innerHTML = `<i style="background:${current}"></i><span>Nu: <b>${current}</b></span>`;
+    if (hit) { const nm = document.createElement('span'); nm.className = 'cp-nowname'; nm.textContent = '= ' + svName(hit[1].names[0] || hit[0]) + ' (appens färg)'; now.append(nm); }
     pop.append(now);
   }
-  const all = [...scanAppColors()].sort((a, b) => [...b[1].uses.values()].reduce((s, u) => s + u.n, 0) - [...a[1].uses.values()].reduce((s, u) => s + u.n, 0));
   const list = document.createElement('div'); list.className = 'cp-list';
   for (const [hex, info] of all) {
     const row = document.createElement('button');
-    row.type = 'button'; row.className = 'cp-app';
+    row.type = 'button'; row.className = 'cp-app' + (String(current).toLowerCase() === hex.toLowerCase() ? ' cp-cur' : '');
     const dot = document.createElement('i'); dot.style.background = hex; dot.style.color = textOn(hex); dot.textContent = 'Aa';
     const txt = document.createElement('span');
     const name = document.createElement('b'); name.textContent = svName(info.names[0] || hex);

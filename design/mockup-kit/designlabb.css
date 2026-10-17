@@ -326,3 +326,6 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .color-pop .cp-app small { font-size: 10.5px; }
 .color-pop .cp-app b { font-size: 12.5px; }
 .color-pop .cp-sw { width: 56px; height: 38px; }
+.cp-nowname { margin-left: 6px; font-weight: 600; }
+.cp-app.cp-cur { outline: 2px solid currentColor; outline-offset: -2px; }
+.cp-app.cp-cur b::after { content: ' (används nu)'; font-weight: 400; }

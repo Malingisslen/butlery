@@ -160,7 +160,7 @@ function partFor(el, variant) {
 // Every glyph of the app, searchable, to swap the picked icon (and its like) for another.
 function glyphPicker(parts, part, done) {
   const wrap = document.createElement('details');
-  wrap.open = true;
+  wrap.open = false;
   const sm = document.createElement('summary'); sm.textContent = 'Byt ikon';
   const search = document.createElement('input');
   search.type = 'search'; search.placeholder = 'Sök ikon, till exempel stjärna';
