@@ -24,8 +24,8 @@ const _flowStarts = <String>{
 
 // Friend-request and friend-profile buttons that the sketch draws in saffron
 // under B-75 (Acceptera on every request row) and B-76 (one saffron action on
-// the friend profile). B-158 is the later and more general rule, so these wait
-// for Malin's call on which one governs; the pins keep the list from growing.
+// the friend profile). B-169 keeps them saffron as drawn; the pins keep the
+// list from growing.
 const _friendButtons = <String, int>{
   'lib/views/social/friend_profile_view.dart': 1,
   'lib/views/social/friend_requests/friend_request_card.dart': 1,
