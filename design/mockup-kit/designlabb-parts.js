@@ -501,7 +501,9 @@ function drawHandles() {
   const box = document.createElement('div');
   box.className = 'lab-handles';
   box.style.cssText = `left:${r.left - base.left}px;top:${r.top - base.top}px;width:${r.width}px;height:${r.height}px`;
-  for (const h of ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
+  const small = Math.min(r.width, r.height) < 56;
+  if (small) box.classList.add('small');
+  for (const h of small ? ['nw', 'ne', 'se', 'sw'] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
     const d = document.createElement('i');
     d.className = `lab-h lab-h-${h}`;
     d.dataset.h = h;

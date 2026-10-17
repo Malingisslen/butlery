@@ -416,3 +416,4 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-menu small { color: #627061; }
 .lab-measure-tag { position: absolute; transform: translateX(-50%); padding: 2px 7px; border-radius: 4px; background: #1f2937; color: #fff; font: 600 11px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 60; }
 .phone .vm-grid, .phone .vg-body { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.lab-handles.small .lab-h { width: 8px; height: 8px; border-width: 1.5px; }
