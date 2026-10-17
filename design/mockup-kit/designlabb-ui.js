@@ -32,19 +32,28 @@ for (const fig of [...document.querySelectorAll('#screens > figure')]) {
 }
 snapshotLayoutBase();
 
-const lab = document.createElement('style');
-const labA = document.createElement('style');
-const labB = document.createElement('style');
-document.head.append(lab, labA, labB);
+// A script-made <style> element can be refused by a page policy that only trusts the page's own
+// inline styles; a constructed stylesheet is set through the CSSOM and is not checked that way.
+function labSheet() {
+  if (document.adoptedStyleSheets && window.CSSStyleSheet?.prototype.replaceSync) {
+    const sheet = new CSSStyleSheet();
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    return { set text(css) { sheet.replaceSync(css); }, set disabled(v) { sheet.disabled = v; } };
+  }
+  const el = document.createElement('style');
+  document.head.append(el);
+  return { set text(css) { el.textContent = css; }, set disabled(v) { el.disabled = v; } };
+}
+const lab = labSheet(), labA = labSheet(), labB = labSheet();
 let compare = null; // { name, state } while two states are shown side by side
 
 function render() {
   lab.disabled = !!compare;
-  lab.textContent = buildCss(state);
+  lab.text = buildCss(state);
   $('out').value = summary(state);
   if (compare) {
-    labA.textContent = buildCss(state, '.cmpA');
-    labB.textContent = buildCss(compare.state, '.cmpB');
+    labA.text = buildCss(state, '.cmpA');
+    labB.text = buildCss(compare.state, '.cmpB');
   } else {
     contrast();
   }
