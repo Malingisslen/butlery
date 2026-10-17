@@ -19,18 +19,18 @@ dependencies:
   meta: ^1.16.0                # @visibleForTesting etc. — pure-Dart annotations, safe under the Dart VM (used by lib/services/rating/canonical_pool_key.dart, which is imported by the dart-run tools/ harness, so it must NOT depend on Flutter)
 
   # ==================== FIREBASE & BACKEND ====================
-  firebase_core: ^4.7.0        # Updated for CVE-2025-0838 fix
-  firebase_core_web: ^3.9.0    # Local test mode wires the Auth emulator through its service registry (lib/core/bootstrap/emulator/auth_emulator_web.dart)
-  firebase_auth: ^6.4.0        # Updated for security patches
-  cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
-  firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
-  firebase_storage: ^13.3.0    # Updated for bug fixes
-  firebase_analytics: ^12.3.0  # Updated for tracking improvements
-  firebase_app_check: 0.4.5        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`. 0.4.3→0.4.5 reviewed BUT-1367 (2026-06-30): deliberate bump to free firebase_core_platform_interface 7.x for the within-major suite refresh; enforcement not yet flipped on (BUT-760) so no live attestation gate affected.
-  firebase_messaging: ^16.2.0  # Updated for FCM improvements
-  firebase_performance: ^0.11.3  # For performance monitoring
-  firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
-  firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
+  firebase_core: ^4.15.0        # Updated for CVE-2025-0838 fix
+  firebase_core_web: ^3.12.0    # Local test mode wires the Auth emulator through its service registry (lib/core/bootstrap/emulator/auth_emulator_web.dart)
+  firebase_auth: ^6.7.0        # Updated for security patches
+  cloud_firestore: ^6.10.0      # Updated for CVE-2024-7254 fix
+  firebase_database: ^12.6.0   # Realtime Database for presence onDisconnect
+  firebase_storage: ^13.6.0    # Updated for bug fixes
+  firebase_analytics: ^12.6.0  # Updated for tracking improvements
+  firebase_app_check: 0.4.8        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`. 0.4.3→0.4.5 reviewed BUT-1367 (2026-06-30): deliberate bump to free firebase_core_platform_interface 7.x for the within-major suite refresh; enforcement not yet flipped on (BUT-760) so no live attestation gate affected.
+  firebase_messaging: ^16.7.0  # Updated for FCM improvements
+  firebase_performance: ^0.11.6  # For performance monitoring
+  firebase_crashlytics: ^5.4.0  # Updated for reporting improvements
+  firebase_remote_config: ^6.7.0  # Feature flags and A/B testing
   flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
   timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
@@ -109,7 +109,7 @@ dependencies:
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1
   app_links: ^6.4.1          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop).
-  cloud_functions: ^6.2.0
+  cloud_functions: ^6.5.0
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
   algoliasearch: ^1.46.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
@@ -169,7 +169,7 @@ dev_dependencies:
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).
   plugin_platform_interface: ^2.1.8
-  firebase_core_platform_interface: ^7.0.0  # BUT-1367: bumped 6→7 (with firebase_app_check 0.4.5) so the within-major firebase_* suite refresh resolves
+  firebase_core_platform_interface: ^8.1.1  # BUT-1367: bumped 6→7 (with firebase_app_check 0.4.5) so the within-major firebase_* suite refresh resolves
   # Mocked directly to assert tapped links call launchUrl without opening a
   # browser (linkified_text + markdown_body link tests, BUT-1446).
   url_launcher_platform_interface: ^2.3.2
