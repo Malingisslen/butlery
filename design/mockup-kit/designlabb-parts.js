@@ -301,7 +301,7 @@ function placeBox() {
     b.type = 'button'; b.className = 'ghost'; b.textContent = 'Nollställ'; b.title = 'Ställ tillbaka delen på sin plats';
     b.onclick = () => { const f = state.free?.[selected.el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[selected.el.dataset.labId]; } showMoves(); render(); refreshExact(); };
     row.append(lx, ly, b);
-    hint.textContent = 'Dra korset eller använd piltangenterna (Skift: 10 px). Hjälplinjer fäster mot andra delar, Alt stänger av det. Skift och dra byter plats.';
+    hint.textContent = 'Dra korset eller använd piltangenterna (Skift: 10 px). Hjälplinjer fäster mot andra delar, Alt stänger av det. Delete tar bort delen.';
     refreshExact();
   } else {
     exactInputs = null;
@@ -324,6 +324,12 @@ function placeBox() {
       row.append(l);
     }
     hint.textContent = 'Avstånd mellan de valda delarna, kant mot kant.';
+    if (els.length === 2) {
+      const sw = document.createElement('button');
+      sw.type = 'button'; sw.className = 'ghost'; sw.textContent = 'Byt plats på delarna';
+      sw.onclick = () => { if (swapParts(els[0], els[1])) showPart(false); else hint.textContent = 'De här delarna går inte att byta plats på.'; };
+      d.append(sw);
+    }
   }
   d.append(row, hint);
   return d;

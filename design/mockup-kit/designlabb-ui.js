@@ -483,7 +483,7 @@ function wireExtras() {
     b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
-  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; replayLayout(); showMoves(); render(); };
+  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; state.removed = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
   $('apply').onclick = async () => {
     const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}\n\nByggregel: ${HANDOFF_RULE}`;

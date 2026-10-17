@@ -141,7 +141,7 @@ function recordMove(el, container, before, beside, side) {
   if (!el.dataset.labId || !container.dataset.labId) return;
   const m = beside ? { id: el.dataset.labId, beside: beside.dataset.labId, side, label: labelOf(el), besideLabel: labelOf(beside) } : {
     id: el.dataset.labId, to: container.dataset.labId, before: before?.dataset.labId ?? null,
-    label: labelOf(el), toLabel: labelOf(container.querySelector('.b-overline')) || container.className.baseVal || container.className.split(' ')[0] || container.tagName.toLowerCase(),
+    label: labelOf(el), toLabel: (container.querySelector('.b-overline') && labelOf(container.querySelector('.b-overline'))) || container.className.baseVal || container.className.split(' ')[0] || container.tagName.toLowerCase(),
     beforeLabel: before ? labelOf(before) : '',
   };
   (state.moves ||= []).push(m);
@@ -266,6 +266,14 @@ function wireLayout() {
     drawHandles();
   });
   window.addEventListener('keydown', e => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selected?.el.isConnected && !e.target.closest?.('input,select,textarea,summary,.panel,[contenteditable]')) {
+      const els = [selected.el, ...(selected.extras || [])].filter(x => x.dataset.labId && !x.classList.contains('phone'));
+      if (!els.length) return;
+      e.preventDefault();
+      for (const el of els) (state.removed ||= {})[el.dataset.labId] = labelOf(el);
+      clearSelection(); showMoves(); render();
+      return;
+    }
     const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
     if (!d || !selected?.el.isConnected || e.target.closest?.('input,select,textarea,summary,.panel,[contenteditable]')) return;
     e.preventDefault();
@@ -279,8 +287,8 @@ function wireLayout() {
 function showMoves() {
   const box = $('moves');
   box.textContent = '';
-  const moves = state.moves || [], free = Object.values(state.free || {});
-  if (!moves.length && !free.length) {
+  const moves = state.moves || [], free = Object.values(state.free || {}), removed = Object.entries(state.removed || {});
+  if (!moves.length && !free.length && !removed.length) {
     box.innerHTML = '<p class="hint">Inga flyttar än. Välj en del i en skärm och dra den med pilkorset vid hörnet till ett annat ställe.</p>';
     return;
   }
@@ -296,12 +304,34 @@ function showMoves() {
     p.textContent = freeText(f);
     box.append(p);
   }
+  for (const [id, label] of removed) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = `"${label}" borttagen `;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ghost'; b.textContent = 'Ta tillbaka';
+    b.onclick = () => { delete state.removed[id]; showMoves(); render(); };
+    p.append(b);
+    box.append(p);
+  }
 }
 const freeText = f => (f.ox != null
   ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)`
   : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
-  const free = Object.values(st.free || {});
-  if (!st.moves?.length && !free.length) return;
-  out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText)];
+  const free = Object.values(st.free || {}), removed = Object.values(st.removed || {});
+  if (!st.moves?.length && !free.length && !removed.length) return;
+  out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`)];
+}
+
+// Swap two parts: each goes to the other's place (moves are recorded, so both themes and undo follow).
+function swapParts(a, b) {
+  const kids = el => [...el.parentElement.children].filter(c => !(c.getAttribute('class') || '').split(' ').some(k => k.startsWith('lab-') && k !== 'lab-row'));
+  const next = el => { const k = kids(el), i = k.indexOf(el); return k[i + 1] || null; };
+  const pa = a.parentElement, pb = b.parentElement, aNext = next(a), bNext = next(b);
+  if (!pa?.dataset.labId || !pb?.dataset.labId) return false;
+  recordMove(a, pb, bNext === a ? null : bNext);
+  if (aNext === b) return true;
+  recordMove(b, pa, aNext);
+  return true;
 }
