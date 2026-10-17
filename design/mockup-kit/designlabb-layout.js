@@ -266,8 +266,6 @@ function wireLayout() {
   });
   screens.addEventListener('click', e => { if (moveMode) { e.preventDefault(); e.stopPropagation(); } }, true);
   $('move-style').onchange = e => { freeMode = e.target.value === 'free'; showMoving(); };
-  $('move-up').onclick = () => nudge(-1);
-  $('move-down').onclick = () => nudge(1);
   $('move-out').onclick = () => { if (moving) pickMoving(boxAround(moving)); };
 }
 
@@ -277,7 +275,7 @@ function showMoving() {
   if (!moveMode) { box.textContent = 'Slå på Flytta delar för att välja något i skärmarna.'; }
   else if (!moving?.isConnected) box.textContent = 'Tryck på en del i en skärm för att välja den, och dra den dit du vill ha den. Tryck igen på samma del för att välja rutan runt.';
   else { const r = moving.getBoundingClientRect(); box.textContent = `Vald: "${labelOf(moving)}" (${Math.round(r.width)} × ${Math.round(r.height)} px)`; }
-  for (const id of ['move-up', 'move-down', 'move-out']) $(id).disabled = !moveMode || !moving?.isConnected;
+  for (const id of ['move-out']) $(id).disabled = !moveMode || !moving?.isConnected;
 }
 
 function showMoves() {

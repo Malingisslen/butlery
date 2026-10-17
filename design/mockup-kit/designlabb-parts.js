@@ -54,8 +54,8 @@ const toHex = c => {
   return '#' + m.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
 };
 let selected = null;
-function markMatches(sel, view) {
-  document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
+function markMatches(sel, view, keep) {
+  if (!keep) document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   if (sel === '.phone') return { n: 0, views: 0 };
   let list = [];
   try { list = [...document.querySelectorAll(`#screens .phone ${sel}`)]; } catch { /* a selector the browser refuses matches nothing */ }
@@ -99,7 +99,7 @@ function selectorFor(el, variant) {
   return `${prefix} ${tag}.${classes[0]}` + (variant ? classes.slice(1).map(c => '.' + c).join('') : '');
 }
 function showPartHint() {
-  $('part').innerHTML = '<p class="hint">Klicka på vad som helst i skärmarna, till exempel en flik, en ikon, en text eller en knapp, så kan du justera just den delen här. Klicka igen på samma del för att välja delen runt omkring.</p>';
+  $('part').innerHTML = '<p class="hint">Klicka på vad som helst i skärmarna, till exempel en flik, en ikon, en text eller en knapp, så kan du justera just den delen här. Klicka igen på samma del för att välja delen runt omkring. Håll in Ctrl eller Skift när du klickar för att välja flera delar på en gång.</p>';
 }
 
 function control(part, spec, now, keyword, onSet) {
@@ -136,15 +136,22 @@ function control(part, spec, now, keyword, onSet) {
   return l;
 }
 
-function showPart(variant = false) {
-  const el = selected.el, box = $('part');
+function partFor(el, variant) {
   let sel = selectorFor(el, variant), base = selectorFor(el, false);
   if (selected.onlyThis && el.dataset.labId && sel !== '.phone') sel = base = `[data-lab-id="${el.dataset.labId}"]`;
-  selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
   const view = selected.onlyView ? +el.closest('.phone').dataset.view : null;
   const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}`;
   const part = state.parts[key] ||= { sel, mode: selected.mode, props: {}, ...(view != null ? { view } : {}) };
+  return { el, sel, base, view, key, part };
+}
+function showPart(variant = false) {
+  const el = selected.el, box = $('part');
+  selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
+  selected.extras = (selected.extras || []).filter(x => x.isConnected);
+  const targets = [el, ...selected.extras].map(x => partFor(x, variant));
+  const { sel, base, view, key, part } = targets[0];
   selected.part = part;
+  selected.parts = targets.map(t => t.part);
   const cs = getComputedStyle(el);
   const kid = q => el.querySelector(q);
   const now = {
@@ -161,7 +168,10 @@ function showPart(variant = false) {
   read('.label,.title,.text', c => ({ labColor: toHex(c.color), labSize: parseFloat(c.fontSize), labWeight: +c.fontWeight }));
   read('.subtitle,.value', c => ({ subColor: toHex(c.color), subSize: parseFloat(c.fontSize) }));
   read('svg.i,.i', c => ({ icoColor: toHex(c.color), icoSize: parseFloat(c.width) || 24 }));
-  partBase[key] ||= { bg: now.bg, display: cs.display, col: cs.flexDirection.startsWith('column') };
+  for (const t of targets) {
+    const c = getComputedStyle(t.el);
+    partBase[t.key] ||= { bg: toHex(c.backgroundColor), display: c.display, col: c.flexDirection.startsWith('column') };
+  }
 
   box.textContent = '';
   const head = document.createElement('div');
@@ -177,7 +187,17 @@ function showPart(variant = false) {
     seg.append(b);
   }
   box.append(seg);
-  const found = markMatches(sel, view);
+  let found = { n: 0, views: 0 };
+  targets.forEach((t, i) => {
+    const f = markMatches(t.sel, t.view, i > 0);
+    found = { n: found.n + f.n, views: Math.max(found.views, f.views) };
+  });
+  if (targets.length > 1) {
+    const info = document.createElement('p');
+    info.className = 'hint';
+    info.textContent = `${targets.length} delar är valda och ändras tillsammans. Håll in Ctrl eller Skift och klicka på en vald del för att ta bort den ur urvalet.`;
+    box.append(info);
+  }
   if (found.n) {
     const info = document.createElement('p');
     info.className = 'hint';
@@ -206,7 +226,7 @@ function showPart(variant = false) {
     l.append(c, s); box.append(l);
   }
   const onSet = (k, v) => {
-    if (v === '' || v === false) delete part.props[k]; else part.props[k] = v;
+    for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
     render();
   };
   PART_GROUPS.forEach(([title, specs, childQuery], i) => {
@@ -223,7 +243,7 @@ function showPart(variant = false) {
   });
   const r = document.createElement('div');
   r.className = 'row';
-  for (const [label, fn] of [['Nollställ delen', () => { delete state.parts[key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
+  for (const [label, fn] of [['Nollställ delen', () => { for (const t of targets) delete state.parts[t.key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
   }
@@ -268,10 +288,12 @@ function wireHandles() {
     if (!resizing) return;
     const { h, part } = resizing, dx = e.clientX - resizing.x, dy = e.clientY - resizing.y;
     const clamp = v => Math.max(8, Math.min(360, Math.round(v)));
-    if (h.includes('e')) part.props.w = clamp(resizing.w + dx);
-    if (h.includes('w')) part.props.w = clamp(resizing.w - dx);
-    if (h.includes('s')) part.props.h = clamp(resizing.hh + dy);
-    if (h.includes('n')) part.props.h = clamp(resizing.hh - dy);
+    for (const p of selected.parts || [part]) {
+      if (h.includes('e')) p.props.w = clamp(resizing.w + dx);
+      if (h.includes('w')) p.props.w = clamp(resizing.w - dx);
+      if (h.includes('s')) p.props.h = clamp(resizing.hh + dy);
+      if (h.includes('n')) p.props.h = clamp(resizing.hh - dy);
+    }
     render();
   });
   window.addEventListener('pointerup', () => { if (resizing) { resizing = null; showPart(false); } });
@@ -284,8 +306,24 @@ function wireScreens() {
     if (moveMode) return;
     let el = componentOf(e.target);
     if (!el) return;
-    if (selected?.el.isConnected && selected.el.contains(e.target)) el = parentPart(selected.el);
     e.preventDefault(); e.stopPropagation();
+    if ((e.ctrlKey || e.shiftKey || e.metaKey) && selected?.el.isConnected) {
+      if (el === selected.el) {
+        if (selected.extras?.length) {
+          el.removeAttribute('data-lab-selected');
+          selected.el = selected.extras.shift();
+        }
+      } else if (selected.extras?.includes(el)) {
+        selected.extras = selected.extras.filter(x => x !== el);
+        el.removeAttribute('data-lab-selected');
+      } else {
+        (selected.extras ||= []).push(el);
+        el.setAttribute('data-lab-selected', '');
+      }
+      showPart(false);
+      return;
+    }
+    if (selected?.el.isConnected && selected.el.contains(e.target)) el = parentPart(selected.el);
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     el.setAttribute('data-lab-selected', '');
     selected = { el, mode: null };
