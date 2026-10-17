@@ -802,7 +802,9 @@ void main() {
     ).called(1);
   });
 
-  testWidgets('an untouched amount saves no amount, not 1', (tester) async {
+  testWidgets('B-165: an untouched amount saves no amount, not 1', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildSheet());
 
     await tester.enterText(
