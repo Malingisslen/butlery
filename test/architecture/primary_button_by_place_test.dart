@@ -15,6 +15,7 @@ const _flowStarts = <String>{
   'lib/views/auth/guest_start_view.dart',
   'lib/views/auth/mfa_challenge_view.dart',
   'lib/views/recipe_detail/recipe_detail_hero_buttons.dart',
+  'lib/views/recipe_detail/recipe_action_bar.dart',
   'lib/views/recipe_detail_view.dart',
   // Dark focus mode: the sketch draws a saffron "Nästa steg" on the ink surface,
   // where the ink form button would disappear.

@@ -28,8 +28,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/recipe/unsaved_changes_dialog.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
-import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 
 import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -304,29 +304,6 @@ class _SkrivSjalvReceptViewContentState
         (viewModel.sourceUrl?.isNotEmpty ?? false);
   }
 
-  // Show confirmation dialog for unsaved changes
-  Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
-    return showButleryDialog<bool>(
-      context: context,
-      builder: (context) => ButleryDialog(
-        title: context.l10n.recipeUnsavedChangesTitle,
-        message: context.l10n.confirmUnsavedChanges,
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.recipeContinueEditing,
-            onPressed: () => Navigator.of(context).pop(false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.recipeLeaveWithoutSaving,
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
@@ -362,7 +339,7 @@ class _SkrivSjalvReceptViewContentState
           }
 
           if (_hasUnsavedChanges(viewModel)) {
-            final shouldPop = await _showUnsavedChangesDialog(context) ?? false;
+            final shouldPop = await showUnsavedChangesDialog(context) ?? false;
 
             // CRITICAL FIX: Re-check save state after dialog to prevent race conditions
             if (shouldPop &&
@@ -395,7 +372,7 @@ class _SkrivSjalvReceptViewContentState
             : context.l10n.recipeWriteNew,
         backTo: viewModel.isEditing ? null : context.l10n.addRecipeTitle,
         showTabBar: false,
-        width: PageWidth.wide,
+        width: PageWidth.text,
         actions: [
           DraftSaveIndicator(
             isSaving: viewModel.isAutoSaving,
