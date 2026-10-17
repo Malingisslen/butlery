@@ -1,4 +1,4 @@
-// BUT-2149: saffron (colorScheme.secondary, #CE7C1E) is a fill, an edge, a
+// BUT-2149: saffron (colorScheme.secondary, #D68523) is a fill, an edge, a
 // marker, never a text colour.
 // Accent text takes text.accent, which is bound to its
 // surface (modeColors.textAccent on surface.base, modeColors.onWarningContainer

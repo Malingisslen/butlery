@@ -176,7 +176,7 @@ void main() {
             expect(fg, const Color(0xFF17251D));
             expect(
               tester.widget<Material>(_buttonMaterial()).color,
-              const Color(0xFFCE7C1E),
+              const Color(0xFFD68523),
             );
           }
         });

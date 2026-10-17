@@ -376,8 +376,8 @@ class ButtonThemes {
   /// other primary stays ink. Views choose their hero in package 4; nothing
   /// uses this style yet.
   ///
-  /// Rest: action.primary behind text.onActionPrimary, #CE7C1E / #17251D,
-  /// 4.96:1. Pressed: action.primaryPressed behind text.onActionPrimaryPressed,
+  /// Rest: action.primary behind text.onActionPrimary, #D68523 / #17251D.
+  /// Pressed: action.primaryPressed behind text.onActionPrimaryPressed,
   /// #9A5C14 / #F5F4ED, 4.84:1 (Komponentark v1:370-371; tokens.json:81-91,
   /// :137-144; contrast pairs tokens.json:657-666). Paper on pressed saffron,
   /// never ink: ink there is 2.97:1 (beslutslogg B-14). The same values in

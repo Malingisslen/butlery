@@ -191,7 +191,7 @@ void main() {
         final material = tester.widget<Material>(_plusMaterial);
         // action.primary and text.onActionPrimary are the same in both
         // modes (tokens.json semantic).
-        expect(material.color, const Color(0xFFCE7C1E));
+        expect(material.color, const Color(0xFFD68523));
         final icon = tester.widget<Icon>(
           find.descendant(
             of: find.byKey(ButleryAddButton.buttonKey),
@@ -211,7 +211,7 @@ void main() {
     const ink = Color(0xFF24382C);
     const paper = Color(0xFFF5F4ED);
     const sage = Color(0xFFA9B2A0);
-    const saffron = Color(0xFFCE7C1E);
+    const saffron = Color(0xFFD68523);
 
     Color? textColor(WidgetTester tester, String label) =>
         tester.widget<Text>(find.text(label)).style?.color;

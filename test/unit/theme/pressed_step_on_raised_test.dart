@@ -219,7 +219,7 @@ void main() {
       );
       Color? fill() => tester.widget<Material>(surface).color;
       Color? ink() => tester.widget<Icon>(glyph).color;
-      expect(fill(), const Color(0xFFCE7C1E));
+      expect(fill(), const Color(0xFFD68523));
       expect(ink(), const Color(0xFF17251D));
 
       final gesture = await holdPress(tester, glyph);
@@ -229,7 +229,7 @@ void main() {
       expect(paintsInkFill(tester, glyph, theme.highlightColor), isFalse);
       await gesture.up();
       await tester.pumpAndSettle();
-      expect(fill(), const Color(0xFFCE7C1E));
+      expect(fill(), const Color(0xFFD68523));
       expect(ink(), const Color(0xFF17251D));
 
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);

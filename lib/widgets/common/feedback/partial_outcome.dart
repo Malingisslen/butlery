@@ -11,9 +11,8 @@
 /// - surface `surface.raised` (tokens.json: #E6EAD9 light, #2F4437 dark),
 ///   read as `ColorScheme.surfaceContainerHighest`, which carries that token
 ///   in both schemes;
-/// - a 3 px edge on the leading side only, #CE7C1E in both themes of the
-///   drawing, read as `ColorScheme.secondary` (action.primary, #CE7C1E light
-///   and dark);
+/// - a 3 px edge on the leading side only, read as `ColorScheme.secondary`
+///   (action.primary, #D68523 light and dark);
 /// - the square leading edge and 8 px trailing corners
 ///   (`border-radius:0 8px 8px 0`), 14 px padding;
 /// - an info glyph in text.accent.onRaised (#8A5212 light, #DCA968 dark,

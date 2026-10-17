@@ -252,7 +252,7 @@ class FeedbackThemes {
 
   /// Progress indicator theme
   ///
-  /// The indicator is progressIndicator, saffron #CE7C1E, on progressTrack
+  /// The indicator is progressIndicator, saffron #D68523, on progressTrack
   /// (#E6EAD9 light, paper 18 % dark), the same members PlateLine draws.
   static ProgressIndicatorThemeData progressIndicatorTheme(ColorScheme cs) {
     final colors = ModeColors.of(cs.brightness);

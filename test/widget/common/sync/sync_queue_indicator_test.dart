@@ -96,7 +96,7 @@ void main() {
       expect(find.byKey(SyncQueueIndicator.buttonKey), findsOneWidget);
       final badge = tester.widget<Badge>(find.byType(Badge));
       // action.primary behind text.onActionPrimary in both modes.
-      expect(badge.backgroundColor, const Color(0xFFCE7C1E));
+      expect(badge.backgroundColor, const Color(0xFFD68523));
       expect(badge.textColor, const Color(0xFF17251D));
       expect(find.text('1'), findsOneWidget);
       expect(

@@ -151,7 +151,7 @@ class _PlateLineState extends State<PlateLine>
     final value = widget.value;
     final Widget bar;
     if (value != null) {
-      // Bestämd: token progressIndicator, #CE7C1E i båda lägena
+      // Bestämd: token progressIndicator, #D68523 i båda lägena
       // (tokens.json semantic progressIndicator).
       final linje = colors.progressIndicator;
       bar = ClipRRect(

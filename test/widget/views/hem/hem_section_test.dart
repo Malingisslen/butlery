@@ -43,7 +43,7 @@ final _now = DateTime(2026, 7, 9, 18);
 
 const _ink = Color(0xFF24382C);
 const _paper = Color(0xFFF5F4ED);
-const _saffron = Color(0xFFCE7C1E);
+const _saffron = Color(0xFFD68523);
 
 Recipe _recipe() {
   final r =
