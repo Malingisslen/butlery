@@ -49,6 +49,7 @@ const lab = labSheet(), labA = labSheet(), labB = labSheet();
 let compare = null; // { name, state } while two states are shown side by side
 
 function render() {
+  if (typeof mirrorThemes === 'function') mirrorThemes();
   lab.disabled = !!compare;
   lab.text = buildCss(state);
   $('out').value = summary(state);
@@ -199,7 +200,7 @@ function syncUi() {
   $('icon-lib').value = state.iconLib;
   $('overlay').checked = state.overlay;
   replayLayout();
-  showMoves(); showMoving();
+  showMoves();
   loadFont();
   clearSelection();
   render();
@@ -482,9 +483,9 @@ function wireExtras() {
     b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
-  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); showMoving(); };
-  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; replayLayout(); showMoves(); render(); };
+  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; state.removed = {}; state.copies = []; state.texts = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
+  wireEdit();
   $('apply').onclick = async () => {
     const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}\n\nByggregel: ${HANDOFF_RULE}`;
     try { await navigator.clipboard.writeText(text); } catch { $('out').value = text; $('out').select(); document.execCommand('copy'); }

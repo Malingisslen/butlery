@@ -188,6 +188,160 @@ function glyphPicker(parts, part, done) {
   wrap.append(sm, search, grid, reset);
   return wrap;
 }
+// Light and dark are kept together: everything but colours is copied to the same part in the
+// other theme as soon as it changes; a colour is copied only after the user said yes (selected.follow).
+const COLOR_KEYS = new Set(PART_GROUPS.flatMap(g => g[1]).filter(sp => sp[2] === 'color').map(sp => sp[0]));
+const otherMode = m => (m === 'light' ? 'dark' : 'light');
+const modeWord = m => (m === 'light' ? 'ljust' : 'mörkt');
+function twinEl(el, mode) {
+  const id = el.dataset.labId;
+  if (!id) return null;
+  return [...document.querySelectorAll(`#screens [data-lab-id="${id}"]`)].find(n => (n.closest('.phone')?.dataset.theme === 'dark') === (mode === 'dark')) || null;
+}
+function mirrorThemes() {
+  if (!selected?.keys) return;
+  selected.keys.forEach((key, i) => {
+    const part = selected.parts[i];
+    if (!part || state.parts[key] !== part || part.mode === 'both') return;
+    const carry = k => !COLOR_KEYS.has(k) || selected.follow?.[k];
+    const next = Object.fromEntries(Object.entries(part.props).filter(([k]) => carry(k)));
+    const sig = JSON.stringify(next);
+    selected.sigs ||= {};
+    if (selected.sigs[key] === sig) return;
+    selected.sigs[key] = sig;
+    const other = otherMode(part.mode), key2 = other + key.slice(part.mode.length);
+    let twin = state.parts[key2];
+    if (!twin) {
+      if (!Object.keys(next).length) return;
+      twin = state.parts[key2] = { ...part, mode: other, props: {} };
+    }
+    for (const k of Object.keys(twin.props)) if (carry(k) && !(k in next)) delete twin.props[k];
+    Object.assign(twin.props, next);
+    if (!Object.keys(twin.props).length) delete state.parts[key2];
+    else if (!partBase[key2]) {
+      const t = twinEl(selected.el, other);
+      if (t) { const c = getComputedStyle(t); partBase[key2] = { bg: toHex(c.backgroundColor), display: c.display, col: c.flexDirection.startsWith('column') }; }
+    }
+  });
+}
+function clearTwins(keys) {
+  for (const key of keys) {
+    const mode = key.split('|')[0];
+    if (mode === 'both') continue;
+    const twin = state.parts[otherMode(mode) + key.slice(mode.length)];
+    if (!twin) continue;
+    for (const k of Object.keys(twin.props)) if (!COLOR_KEYS.has(k)) delete twin.props[k];
+    if (!Object.keys(twin.props).length) delete state.parts[otherMode(mode) + key.slice(mode.length)];
+  }
+}
+function drawAsk() {
+  const box = $('theme-ask');
+  if (!box) return;
+  box.textContent = '';
+  box.className = '';
+  const k = selected?.ask, mode = selected?.part?.mode;
+  if (!k || !mode || mode === 'both') return;
+  const other = otherMode(mode);
+  const p = document.createElement('p');
+  p.textContent = `Du ändrade en färg i ${modeWord(mode)} läge. Ska motsvarande färg ändras i ${modeWord(other)} läge också?`;
+  const row = document.createElement('div'); row.className = 'row';
+  const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; row.append(b); };
+  const close = follow => { (selected.follow ||= {})[k] = follow; selected.ask = null; };
+  btn('Ja, samma färg', () => { close(true); render(); drawAsk(); });
+  btn(`Ja, välj själv i ${modeWord(other)}`, () => {
+    close(false);
+    const t = twinEl(selected.el, other);
+    if (!t) { drawAsk(); return; }
+    document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+    t.setAttribute('data-lab-selected', '');
+    selected.el = t; selected.extras = []; selected.mode = other;
+    showPart(false);
+  });
+  btn(`Nej, bara ${modeWord(mode)}`, () => { close(false); drawAsk(); });
+  box.className = 'themeask';
+  box.append(p, row);
+}
+// Exact placement: whole-pixel offset fields (arrow keys nudge 1 px, Shift 10 px) and, with two or
+// more parts picked, the gaps between those parts only.
+let exactInputs = null;
+function refreshExact() {
+  if (!exactInputs || !selected?.el.isConnected) return;
+  const o = freeOffset(selected.el);
+  exactInputs.x.value = o.ox; exactInputs.y.value = o.oy;
+}
+function numberField(label, value, onSet) {
+  const l = document.createElement('label');
+  const t = document.createElement('span'); t.textContent = label;
+  const i = document.createElement('input');
+  i.type = 'number'; i.step = 1; i.value = value;
+  i.onchange = () => onSet(Math.round(+i.value || 0));
+  l.append(t, i);
+  return [l, i];
+}
+function pickedEls() { return [selected.el, ...(selected.extras || [])].filter(x => x.isConnected && x.dataset.labId); }
+// One small box on top: the offset of the picked part, or, with two or more parts picked, the gaps
+// between them (edge to edge, only those parts move).
+function placeBox() {
+  const els = pickedEls();
+  if (!els.length || selected.el.classList.contains('phone')) return null;
+  const d = document.createElement('div');
+  d.className = 'placebox';
+  const row = document.createElement('div'); row.className = 'prow';
+  const hint = document.createElement('p'); hint.className = 'hint';
+  if (els.length < 2) {
+    const set = (axis, v) => {
+      const o = freeOffset(selected.el);
+      freeSet(selected.el, axis === 'x' ? v : o.ox, axis === 'y' ? v : o.oy);
+      showMoves(); render(); refreshExact();
+    };
+    const [lx, ix] = numberField('Höger px', 0, v => set('x', v));
+    const [ly, iy] = numberField('Ner px', 0, v => set('y', v));
+    exactInputs = { x: ix, y: iy };
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ghost'; b.textContent = 'Nollställ'; b.title = 'Ställ tillbaka delen på sin plats';
+    b.onclick = () => { const f = state.free?.[selected.el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[selected.el.dataset.labId]; } showMoves(); render(); refreshExact(); };
+    row.append(lx, ly, b);
+    hint.textContent = 'Dra korset eller använd piltangenterna (Skift: 10 px). Hjälplinjer fäster mot andra delar, Alt stänger av det. Delete tar bort delen.';
+    refreshExact();
+  } else {
+    exactInputs = null;
+    const sorted = axis => [...els].sort((a, b) => a.getBoundingClientRect()[axis === 'y' ? 'top' : 'left'] - b.getBoundingClientRect()[axis === 'y' ? 'top' : 'left']);
+    const gapOf = (list, i, axis) => { const a = list[i - 1].getBoundingClientRect(), b = list[i].getBoundingClientRect(); return Math.round(axis === 'y' ? b.top - a.bottom : b.left - a.right); };
+    const apply = (axis, v) => {
+      const list = sorted(axis);
+      for (let i = 1; i < list.length; i++) {
+        const delta = v - gapOf(list, i, axis), o = freeOffset(list[i]);
+        freeSet(list[i], o.ox + (axis === 'x' ? delta : 0), o.oy + (axis === 'y' ? delta : 0));
+        render();
+      }
+      showMoves();
+    };
+    const fields = {};
+    const axes = [['y', 'Lodrätt px'], ['x', 'Sidled px']].filter(([a], _, all) => gapOf(sorted(a), 1, a) >= 0 || all.every(([k]) => gapOf(sorted(k), 1, k) < 0));
+    for (const [axis, label] of axes) {
+      const [l, i] = numberField(label, gapOf(sorted(axis), 1, axis), v => { apply(axis, v); for (const k of Object.keys(fields)) fields[k].value = gapOf(sorted(k), 1, k); });
+      fields[axis] = i;
+      row.append(l);
+    }
+    hint.textContent = 'Avstånd mellan de valda delarna, kant mot kant.';
+    const ar = document.createElement('div'); ar.className = 'alignrow';
+    for (const [k, label, title] of [['left', '⇤', 'Vänsterkanter'], ['centerX', '↔', 'Mitten sidled'], ['right', '⇥', 'Högerkanter'], ['top', '⤒', 'Överkanter'], ['centerY', '↕', 'Mitten lodrätt'], ['bottom', '⤓', 'Underkanter'], ...(els.length > 2 ? [['spreadX', '⋯', 'Fördela jämnt sidled'], ['spreadY', '⋮', 'Fördela jämnt lodrätt']] : [])]) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title);
+      b.onclick = () => alignParts(k);
+      ar.append(b);
+    }
+    d.append(ar);
+    if (els.length === 2) {
+      const sw = document.createElement('button');
+      sw.type = 'button'; sw.className = 'ghost'; sw.textContent = 'Byt plats på delarna';
+      sw.onclick = () => { if (swapParts(els[0], els[1])) showPart(false); else hint.textContent = 'De här delarna går inte att byta plats på.'; };
+      d.append(sw);
+    }
+  }
+  d.append(row, hint);
+  return d;
+}
 function showPart(variant = false) {
   const el = selected.el, box = $('part');
   selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
@@ -196,6 +350,9 @@ function showPart(variant = false) {
   const { sel, base, view, key, part } = targets[0];
   selected.part = part;
   selected.parts = targets.map(t => t.part);
+  selected.keys = targets.map(t => t.key);
+  selected.sigs ||= {};
+  for (const t of targets) selected.sigs[t.key] ??= JSON.stringify(Object.fromEntries(Object.entries(t.part.props).filter(([k]) => !COLOR_KEYS.has(k) || selected.follow?.[k])));
   const cs = getComputedStyle(el);
   const kid = q => el.querySelector(q);
   const now = {
@@ -222,6 +379,7 @@ function showPart(variant = false) {
   head.innerHTML = '<div class="path"></div>';
   head.firstChild.textContent = `${sel} · ${now.w} × ${now.h} px`;
   box.append(head);
+  { const pb = placeBox(); if (pb) box.append(pb); }
   const seg = document.createElement('div');
   seg.className = 'seg';
   for (const [m, label] of [['light', 'Ljust'], ['dark', 'Mörkt'], ['both', 'Båda']]) {
@@ -231,6 +389,11 @@ function showPart(variant = false) {
     seg.append(b);
   }
   box.append(seg);
+  const askBox = document.createElement('div'); askBox.id = 'theme-ask';
+  box.append(askBox);
+  const tnote = document.createElement('p'); tnote.className = 'hint';
+  tnote.textContent = 'Färger gäller bara läget du står i, allt annat ändras i båda.';
+  box.append(tnote);
   const stateRow = document.createElement('label');
   const stateName = document.createElement('span'); stateName.textContent = 'Tillstånd';
   const stateSel = document.createElement('select');
@@ -290,7 +453,9 @@ function showPart(variant = false) {
   box.append(warn);
   const onSet = (k, v) => {
     for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
+    if (COLOR_KEYS.has(k) && v !== '' && v !== false && part.mode !== 'both' && selected.follow?.[k] === undefined) selected.ask = k;
     render();
+    drawAsk();
     refreshPartWarn(() => showPart(variant));
   };
   if (el.matches('svg.i')) box.append(glyphPicker(selected.parts, part, () => { render(); showPart(variant); }));
@@ -309,7 +474,7 @@ function showPart(variant = false) {
   });
   const r = document.createElement('div');
   r.className = 'row';
-  for (const [label, fn] of [['Nollställ delen', () => { for (const t of targets) delete state.parts[t.key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
+  for (const [label, fn] of [['Nollställ delen', () => { clearTwins(targets.map(t => t.key)); for (const t of targets) delete state.parts[t.key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
   }
@@ -319,6 +484,7 @@ function showPart(variant = false) {
   note.textContent = 'Skuggor, glas och rörelse finns inte i appens regler idag; med minskad rörelse ska appen visa dem stilla.';
   box.append(note);
   applySearch();
+  drawAsk();
   render();
   refreshPartWarn(() => showPart(variant));
   forceState(selected.state);
@@ -327,18 +493,28 @@ function showPart(variant = false) {
 // Word-style frame around the picked part: dragging a handle sets its width and height, for every like part.
 function drawHandles() {
   document.querySelectorAll('.lab-handles').forEach(n => n.remove());
-  if (!selected?.el.isConnected || moveMode || typeof compare !== 'undefined' && compare) return;
+  if (!selected?.el.isConnected || drag?.started || typeof compare !== 'undefined' && compare) return;
   const phone = selected.el.closest('.phone');
   if (!phone) return;
-  const base = phone.getBoundingClientRect(), r = selected.el.getBoundingClientRect();
+  const group = pickedEls();
+  const base = phone.getBoundingClientRect(), r = group.length > 1 ? unionRect(group) : selected.el.getBoundingClientRect();
   const box = document.createElement('div');
   box.className = 'lab-handles';
   box.style.cssText = `left:${r.left - base.left}px;top:${r.top - base.top}px;width:${r.width}px;height:${r.height}px`;
-  for (const h of ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
+  for (const h of group.length > 1 ? [] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
     const d = document.createElement('i');
     d.className = `lab-h lab-h-${h}`;
     d.dataset.h = h;
     box.append(d);
+  }
+  if (selected.el.dataset.labId && !selected.el.classList.contains('phone')) {
+    const x = document.createElement('i');
+    x.className = 'lab-cross';
+    x.title = 'Dra för att flytta delen';
+    x.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2l3.5 3.5h-2.5v5.5h5.5v-2.5l3.5 3.5-3.5 3.5v-2.5h-5.5v5.5h2.5l-3.5 3.5-3.5-3.5h2.5v-5.5h-5.5v2.5l-3.5-3.5 3.5-3.5v2.5h5.5v-5.5h-2.5z"/></svg>';
+    const left = r.left - base.left, top = r.top - base.top;
+    x.style.cssText = `left:${Math.max(2, left - 26) - left}px;top:${Math.max(2, top - 26) - top}px`;
+    box.append(x);
   }
   phone.append(box);
 }
@@ -368,13 +544,70 @@ function wireHandles() {
   screens.addEventListener('scroll', () => drawHandles(), true);
 }
 
+// Drag a box over empty space to pick everything it touches, as one group (like a marquee in Figma).
+const isEmptySpot = t => {
+  if (!t?.classList || !t.closest('.phone') || isLab(t)) return false;
+  if (t.classList.contains('phone') || t.classList.contains('b-body') || t.classList.contains('b-scroll')) return true;
+  if (t.classList.length || !t.children.length || [...t.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return false;
+  const cs = getComputedStyle(t);
+  return !toHex(cs.backgroundColor) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none';
+};
+function marqueeContainer(t) {
+  const kids = c => [...c.children].filter(k => k.dataset.labId && !isLab(k));
+  let c = t.classList.contains('phone') ? t.querySelector('.b-body') || t : t;
+  // Scroll areas and single wrappers only pass the content on, so go down to where the parts sit side by side.
+  for (let n = 0; n < 6 && kids(c).length === 1; n++) c = kids(c)[0];
+  return c;
+}
+let marquee = null;
+function wireMarquee(screens) {
+  screens.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest?.('.lab-h,.lab-cross') || !isEmptySpot(e.target)) return;
+    marquee = { x: e.clientX, y: e.clientY, phone: e.target.closest('.phone'), container: marqueeContainer(e.target), box: null };
+    e.preventDefault();
+  }, true);
+  window.addEventListener('pointermove', e => {
+    if (!marquee) return;
+    if (!marquee.box && Math.hypot(e.clientX - marquee.x, e.clientY - marquee.y) < 5) return;
+    const base = marquee.phone.getBoundingClientRect();
+    if (!marquee.box) { marquee.box = document.createElement('div'); marquee.box.className = 'lab-marquee'; marquee.phone.append(marquee.box); }
+    const l = Math.min(e.clientX, marquee.x), t = Math.min(e.clientY, marquee.y), w = Math.abs(e.clientX - marquee.x), h = Math.abs(e.clientY - marquee.y);
+    marquee.rect = { left: l, top: t, right: l + w, bottom: t + h };
+    marquee.box.style.cssText = `left:${l - base.left}px;top:${t - base.top}px;width:${w}px;height:${h}px`;
+  });
+  window.addEventListener('pointerup', () => {
+    const m = marquee;
+    marquee = null;
+    if (!m?.box) return;
+    m.box.remove();
+    marqueeDone = true;
+    setTimeout(() => { marqueeDone = false; }, 0);
+    const hit = [...m.container.children].filter(k => k.dataset.labId && !isLab(k) && !k.classList.contains('b-scroll')).filter(k => {
+      const r = k.getBoundingClientRect();
+      return r.width && r.height && r.left < m.rect.right && r.right > m.rect.left && r.top < m.rect.bottom && r.bottom > m.rect.top;
+    });
+    document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+    if (!hit.length) { clearSelection(); return; }
+    hit.forEach(n => n.setAttribute('data-lab-selected', ''));
+    selected = { el: hit[0], extras: hit.slice(1), mode: null };
+    openTab('part');
+    showPart(false);
+  });
+  screens.addEventListener('click', e => { if (marqueeDone) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+}
+let marqueeDone = false;
+
 function wireScreens() {
   const screens = $('screens');
+  wireMarquee(screens);
   screens.addEventListener('click', e => {
-    if (moveMode) return;
+    if (e.target.isContentEditable) return;
     let el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
+    if (e.detail > 1) return;
+    // Empty space (inside a plain wrapper that only holds parts) is the screen's background.
+    if (el === e.target && isEmptySpot(el) && !(e.ctrlKey || e.shiftKey || e.metaKey)) el = el.closest('.phone');
     if ((e.ctrlKey || e.shiftKey || e.metaKey) && selected?.el.isConnected) {
       if (el === selected.el) {
         if (selected.extras?.length) {
@@ -391,7 +624,7 @@ function wireScreens() {
       showPart(false);
       return;
     }
-    if (selected?.el.isConnected && selected.el.contains(e.target)) el = parentPart(selected.el);
+    if (selected?.el.isConnected && selected.el.contains(e.target) && !selected.el.classList.contains('phone')) el = parentPart(selected.el);
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     el.setAttribute('data-lab-selected', '');
     selected = { el, mode: null };
@@ -400,9 +633,9 @@ function wireScreens() {
     adviceForPart(el);
   }, true);
   screens.addEventListener('mouseover', e => {
-    if (moveMode) return;
     screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
-    componentOf(e.target)?.setAttribute('data-lab-hover', '');
+    const over = componentOf(e.target);
+    if (over && !(over === e.target && isEmptySpot(over) && !over.classList.contains('phone'))) over.setAttribute('data-lab-hover', '');
   });
   wireHandles();
   screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));

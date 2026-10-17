@@ -54,7 +54,7 @@ const LAB_BASE = '2026-10-17.1';
 const defaults = () => ({
   font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], free: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
+  moves: [], free: {}, removed: {}, copies: [], texts: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -227,11 +227,15 @@ function buildCss(st, scope = '') {
   }
   return css + roleCss(st, scope) + extraCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
 }
-// Free moves: a part's margins, so its neighbours make room for it and the spacing follows.
+// Free moves: an exact pixel offset (older saved ones are margins).
 function freeCss(st, scope) {
   let css = '';
+  for (const id of Object.keys(st.removed || {})) css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{display:none !important}`;
   for (const [id, f] of Object.entries(st.free || {})) {
-    css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{margin-left:${f.ml}px !important;margin-top:${f.mt}px !important}`;
+    const decls = [];
+    if (f.ml != null) decls.push(`margin-left:${f.ml}px !important;margin-top:${f.mt}px !important`);
+    if (f.ox != null) decls.push(`translate:${f.ox}px ${f.oy}px !important`);
+    if (decls.length) css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{${decls.join(';')}}`;
   }
   return css;
 }
