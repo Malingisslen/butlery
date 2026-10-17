@@ -272,14 +272,26 @@ $('search').oninput = applySearch;
 // ---- Saved variants and compare ----
 let variants = [];
 try { variants = JSON.parse(localStorage.getItem(VARIANTS_KEY) || '[]'); } catch {}
+normalizeVariants();
 // Saved versions live in this browser and, when the page can reach the shared store, in the artifact's database too.
 const variantDb = () => (typeof claudeAi !== 'undefined' ? claudeAi.db : null);
+// The id is derived from the save time, so the same version saved in two places is recognised as one.
+function normalizeVariants() {
+  const seen = new Set();
+  variants = variants.filter(v => {
+    v.at ||= Date.now();
+    v.id = 'v' + v.at;
+    if (seen.has(v.id)) return false;
+    seen.add(v.id);
+    return true;
+  });
+}
 function saveVariants() {
+  normalizeVariants();
   try { localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants)); } catch {}
   const db = variantDb();
   if (db) for (const v of variants) {
-    v.id ||= 'v' + (v.at || Date.now()) + Math.random().toString(36).slice(2, 6);
-    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at || 0, json: JSON.stringify(v.state) }).catch(() => {});
+    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at, json: JSON.stringify(v.state) }).catch(() => {});
   }
   renderVariants();
 }
@@ -342,8 +354,11 @@ async function loadVariantsFromDb() {
     const snap = await db.collection('variants').get();
     for (const d of snap.docs) {
       const data = typeof d.data === 'function' ? d.data() : d.data;
-      if (!data?.json || variants.some(v => v.id === d.id)) continue;
-      variants.push({ id: d.id, name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } });
+      if (!data?.json) continue;
+      const canonical = 'v' + data.at;
+      if (d.id !== canonical) db.doc(`variants/${d.id}`).delete().catch(() => {});
+      if (variants.some(v => v.at === data.at)) continue;
+      variants.push({ name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } });
     }
     variants.sort((a, b) => (a.at || 0) - (b.at || 0));
     saveVariants();

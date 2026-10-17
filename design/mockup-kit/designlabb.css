@@ -380,3 +380,7 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel .foot { padding: 10px 16px 0; border-top: 0; }
 .panel .foot:last-child { padding-bottom: 14px; }
 .panel .verrow select { font-size: 12px; }
+
+.panel .head { gap: 6px; }
+.panel .head h1 { font-size: 16px; white-space: nowrap; }
+.panel .head button { border-radius: 999px; padding: 6px 9px; }

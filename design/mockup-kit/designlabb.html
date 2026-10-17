@@ -741,9 +741,8 @@
 <body>
 <div class="lab">
 <aside class="panel" id="panel">
-<div class="head"><h1>Designlabb</h1><button class="ghost" id="undo" type="button" disabled>Ångra</button><button class="ghost" id="redo" type="button" disabled>Gör om</button></div>
+<div class="head"><h1>Designlabb</h1><button class="ghost" id="undo" type="button" disabled>Ångra</button><button class="ghost" id="redo" type="button" disabled>Gör om</button><button class="ghost" id="reset" type="button" title="Rensa alla ändringar">Rensa</button></div>
 <div class="verrow"><select id="ver-select" aria-label="Mina versioner"></select><button class="ghost" id="ver-save" type="button">Spara version</button></div>
-<div class="clearrow"><button class="ghost" id="reset" type="button">Rensa alla ändringar</button></div>
 <input id="search" type="search" placeholder="Sök reglage: skugga, rundning, färg ...">
 <nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button><button data-tab="layout" type="button">Layout</button></nav>
 <div class="panes">
@@ -835,7 +834,7 @@
 <div class="contrast" id="contrast"></div>
 </section>
 </div>
-<div class="checkrow"><button class="ghost" id="check-open" data-tab="check" type="button">Granska och spara</button></div>
+<div class="checkrow"><button class="ghost" id="check-open" data-tab="check" type="button">Granska ändringar</button></div>
 <div class="foot"><button id="apply" type="button" title="Skickar dina val till Claude, som bygger in dem i appen">Spara och för in i appen</button></div>
 <div class="foot"><button class="ghost" id="hold" type="button">Original</button><button id="copy" type="button">Kopiera</button></div>
 </aside>
