@@ -1,6 +1,6 @@
 /// Tests for AnomalyRepository — reads the latest `analytics/anomalies/daily/
 /// {date}` doc for the banner. Must return the newest report, parse the
-/// anomalies list, and degrade to empty on no-data / error.
+/// anomalies list, and return empty on no-data and rethrow on a failed read.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -66,11 +66,10 @@ void main() {
     expect(report.hasAnomalies, isFalse);
   });
 
-  test('a failed read still returns the empty report, never throws', () async {
-    final report = await AnomalyRepository(
-      firestore: FailingFirestore(),
-    ).getLatest();
-    expect(report.hasAnomalies, isFalse);
-    expect(report.anomalies, isEmpty);
+  test('a failed read throws so the banner can show an error', () async {
+    expect(
+      AnomalyRepository(firestore: FailingFirestore()).getLatest(),
+      throwsFirestoreFailure,
+    );
   });
 }

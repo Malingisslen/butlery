@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/parse_event.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -37,15 +38,16 @@ class _ParseEventsSheet extends StatefulWidget {
 }
 
 class _ParseEventsSheetState extends State<_ParseEventsSheet> {
-  late final Future<ParseEventsPage> _future;
+  late Future<ParseEventsPage> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = ServiceLocator.get<ParseEventsRepository>().getByDomain(
-      widget.domain,
-    );
+    _future = _fetch();
   }
+
+  Future<ParseEventsPage> _fetch() =>
+      ServiceLocator.get<ParseEventsRepository>().getByDomain(widget.domain);
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +66,17 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
               return Center(
                 child: PlateLineMessage(
                   message: context.l10n.loadingParseEvents,
+                ),
+              );
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: InlineError(
+                  what: l10n.errorLoadingWithDetails(''),
+                  actionLabel: l10n.commonRetry,
+                  onAction: () => setState(() {
+                    _future = _fetch();
+                  }),
                 ),
               );
             }

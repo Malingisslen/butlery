@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart' show ValueKey;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -102,6 +102,46 @@ void main() {
       expect(find.text('1 markerad'), findsNothing);
     },
   );
+
+  testWidgets('Back while choosing cancels the selection and stays', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const NotificationsView(),
+                ),
+              ),
+              child: const Text('öppna'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('öppna'));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text('Första'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 markerad'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 markerad'), findsNothing);
+    expect(find.byType(NotificationsView), findsOneWidget);
+    expect(find.text('Första'), findsOneWidget);
+    verifyNever(() => service.deleteHistoryNotifications(any()));
+
+    // Nothing is selected now, so the next Back leaves the page.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(NotificationsView), findsNothing);
+  });
 
   testWidgets('dismiss hides the row at once and deletes nothing yet', (
     tester,

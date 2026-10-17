@@ -494,6 +494,61 @@ void main() {
       expect(sendButton(tester).onPressed, isNull);
     });
 
+    Future<void> openFormPushed(WidgetTester tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => form(AppealRole.owner),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Back asks before throwing a typed appeal away', (
+      tester,
+    ) async {
+      await openFormPushed(tester);
+      await tester.enterText(find.byType(TextField), 'Receptet är mitt eget');
+      await tester.pump();
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(_sv.unsavedChangesTitle), findsOneWidget);
+      expect(find.byType(AppealFormView), findsOneWidget);
+      verifyNever(
+        () => appeals.submitAppeal(
+          reportId: any(named: 'reportId'),
+          role: any(named: 'role'),
+          text: any(named: 'text'),
+        ),
+      );
+    });
+
+    testWidgets('Back from an empty appeal leaves without asking', (
+      tester,
+    ) async {
+      await openFormPushed(tester);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(_sv.unsavedChangesTitle), findsNothing);
+      expect(find.byType(AppealFormView), findsNothing);
+    });
+
     testWidgets('the owner is told the reporter does not see the text', (
       tester,
     ) async {
