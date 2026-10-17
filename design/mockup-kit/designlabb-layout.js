@@ -213,7 +213,7 @@ function wireLayout() {
     drag = null;
     d.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop,.lab-gap').forEach(n => n.remove());
-    if (d.started && d.free) showMoves();
+    if (d.started && d.free) { showMoves(); refreshExact(); }
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
     drawHandles();
   });
@@ -225,7 +225,6 @@ function wireLayout() {
     for (const el of [selected.el, ...(selected.extras || [])]) { const o = freeOffset(el); freeSet(el, o.ox + d[0] * step, o.oy + d[1] * step); }
     showMoves(); render(); refreshExact();
   });
-  $('move-style').onchange = e => { freeMode = e.target.value === 'free'; };
 }
 
 function showMoves() {
