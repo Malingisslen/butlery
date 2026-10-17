@@ -137,6 +137,43 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     return tokens;
   }
 
+  InlineSpan _link(
+    _Token t,
+    TextStyle base,
+    Color linkColor,
+    BuildContext at,
+    double width,
+  ) {
+    final style = base.copyWith(
+      color: linkColor,
+      decoration: TextDecoration.underline,
+    );
+    // The paragraph scales the span's child, which is laid out unscaled in
+    // 1/scale of the width.
+    final paragraphScale = MediaQuery.textScalerOf(at).scale(1);
+    return inlineWidgetSpan(
+      child: ButleryLink(
+        semanticLabel: t.text,
+        onTap: () => _launch(t.url!),
+        child: Builder(
+          builder: (inner) {
+            final fit = wordFitScale(
+              inner,
+              t.text,
+              style,
+              width / paragraphScale,
+            );
+            return Text(
+              t.text,
+              style: style,
+              textScaler: fit == null ? null : TextScaler.linear(fit),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _launch(String url) async {
     try {
       final uri = Uri.parse(url);
@@ -148,10 +185,31 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     }
   }
 
+  // A link is one widget, so the paragraph's whole-word fit cannot reach its
+  // text: a URL wider than the column is scaled down here instead.
+  Widget _flow(List<_Token> tokens, TextStyle style, Color linkColor) {
+    return LayoutBuilder(
+      builder: (context, constraints) => WholeWordText.rich(
+        TextSpan(
+          children: _spans(
+            tokens,
+            style,
+            linkColor,
+            context,
+            constraints.maxWidth,
+          ),
+        ),
+        style: style,
+      ),
+    );
+  }
+
   List<InlineSpan> _spans(
     List<_Token> tokens,
     TextStyle base,
     Color linkColor,
+    BuildContext at,
+    double width,
   ) {
     return [
       for (final t in tokens)
@@ -169,19 +227,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           // announce the legal-doc link with a role and name. Replaces the
           // inline TapGestureRecognizer (no link role, audit-invisible) and
           // removes the per-link recognizer-disposal bookkeeping.
-          _TokenKind.link => inlineWidgetSpan(
-            child: ButleryLink(
-              semanticLabel: t.text,
-              onTap: () => _launch(t.url!),
-              child: Text(
-                t.text,
-                style: base.copyWith(
-                  color: linkColor,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ),
+          _TokenKind.link => _link(t, base, linkColor, at, width),
         },
     ];
   }
@@ -277,12 +323,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
                 children: [
                   Text('•  ', style: bodyStyle),
                   Expanded(
-                    child: WholeWordText.rich(
-                      TextSpan(
-                        children: _spans(block.tokens, bodyStyle, linkColor),
-                      ),
-                      style: bodyStyle,
-                    ),
+                    child: _flow(block.tokens, bodyStyle, linkColor),
                   ),
                 ],
               ),
@@ -314,10 +355,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   }) {
     return Padding(
       padding: EdgeInsets.only(top: top, bottom: AppDimensions.space4),
-      child: WholeWordText.rich(
-        TextSpan(children: _spans(tokens, style, linkColor)),
-        style: style,
-      ),
+      child: _flow(tokens, style, linkColor),
     );
   }
 }

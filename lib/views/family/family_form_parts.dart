@@ -9,6 +9,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/choice_option.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -60,7 +61,7 @@ class FormSection extends StatelessWidget {
             Expanded(
               child: Semantics(
                 header: true,
-                child: Text(
+                child: WholeWordText(
                   title,
                   style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                 ),
@@ -259,8 +260,9 @@ class FormTabs<T> extends StatelessWidget {
                           ),
                         ),
                         child: Center(
-                          child: Text(
+                          child: WholeWordText(
                             labelOf(value),
+                            textAlign: TextAlign.center,
                             style:
                                 (value == selected
                                         ? AppTextStyles.bodyBold

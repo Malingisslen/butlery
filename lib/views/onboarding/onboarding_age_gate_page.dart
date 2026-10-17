@@ -17,30 +17,32 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        OnboardingIntro(
-          title: context.l10n.onboardingAgeGateTitle,
-          description: context.l10n.onboardingAgeGateSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.space24),
-        // The wizard keeps `Next` disabled until a year is picked (see
-        // OnboardingViewModel).
-        BirthYearDropdown(
-          dropdownKey: const Key('onboarding_age_gate_birth_year_dropdown'),
-          selected: viewModel.selectedBirthYear,
-          onChanged: viewModel.setBirthYear,
-        ),
-        const SizedBox(height: AppDimensions.space16),
-        Text(
-          context.l10n.onboardingAgeGatePrivacyNote,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurfaceVariant,
-            height: 1.5,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          OnboardingIntro(
+            title: context.l10n.onboardingAgeGateTitle,
+            description: context.l10n.onboardingAgeGateSubtitle,
           ),
-        ),
-      ],
+          const SizedBox(height: AppDimensions.space24),
+          // The wizard keeps `Next` disabled until a year is picked (see
+          // OnboardingViewModel).
+          BirthYearDropdown(
+            dropdownKey: const Key('onboarding_age_gate_birth_year_dropdown'),
+            selected: viewModel.selectedBirthYear,
+            onChanged: viewModel.setBirthYear,
+          ),
+          const SizedBox(height: AppDimensions.space16),
+          Text(
+            context.l10n.onboardingAgeGatePrivacyNote,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

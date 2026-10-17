@@ -62,14 +62,6 @@ void main() {
     final exceptions = run.capture.exceptions;
     final breaks = words ? findMidWordBreaks(tester) : const <String>[];
     await finishState(tester, run);
-    if (_knownFindings.contains(name)) {
-      expect(
-        [...overflows, ...exceptions.map((e) => e.toString()), ...breaks],
-        isNotEmpty,
-        reason: '$name passes now: remove it from _knownFindings',
-      );
-      return;
-    }
     expect(overflows, isEmpty, reason: 'overflow');
     expect(exceptions, isEmpty, reason: 'exception');
     if (words) expect(breaks, isEmpty);
@@ -111,21 +103,3 @@ void main() {
     });
   }
 }
-
-/// Cases that fail today and are tracked in BUT-2396; the case turns red when
-/// it passes, so the entry has to go with the fix.
-const _knownFindings = <String>{
-  'OnboardingView at 200 % text wraps between words',
-  'OnboardingView fits a screen on its side',
-  'OnboardingAgeGateBlockedView at 200 % text wraps between words',
-  'OnboardingAgeGateBlockedView fits a screen on its side',
-  'PrivacyPolicyView at 200 % text wraps between words',
-  'TermsOfServiceView at 200 % text wraps between words',
-  'AccountAreaView at 200 % text wraps between words',
-  'AccountSignInMethodsView at 200 % text wraps between words',
-  'CollectionStatsView at 200 % text wraps between words',
-  'NotificationPreferencesView at 200 % text wraps between words',
-  'FamilyMemberFormView at 200 % text wraps between words',
-  'CollaborativeShoppingView at 200 % text wraps between words',
-  'CollaborativeShoppingView fits a screen on its side',
-};

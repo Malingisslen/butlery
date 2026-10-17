@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/butlery_switch.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
@@ -282,6 +283,8 @@ class ButleryListRow extends StatelessWidget {
     final toggle = _kind == _RowKind.toggle;
     final info = _kind == _RowKind.info;
     final mutedText = cs.onSurfaceVariant;
+    // Under large text a value beside the label would starve it of width.
+    final stackValue = isLargeText(context);
     final labelColor = !enabled
         ? AppModeColors.textDisabled(cs.brightness)
         : danger
@@ -316,6 +319,25 @@ class ButleryListRow extends StatelessWidget {
       );
     }
 
+    final valueStyle = strongValue
+        ? AppTextStyles.bodyBold.copyWith(
+            color: cs.onSurface,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          )
+        : AppTextStyles.captionBase.copyWith(
+            color: mutedText,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          );
+    Widget valueText() => stackValue
+        ? WholeWordText(value!, style: valueStyle)
+        : Text(
+            value!,
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: valueStyle,
+          );
+
     Widget rowContent(double rowWidth) => ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: AppDimensions.minTouchTarget,
@@ -336,7 +358,7 @@ class ButleryListRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  WholeWordText(
                     label,
                     style:
                         (emphasis
@@ -345,36 +367,23 @@ class ButleryListRow extends StatelessWidget {
                             .copyWith(color: labelColor),
                   ),
                   if (subtitle != null)
-                    Text(
+                    WholeWordText(
                       subtitle!,
                       style: AppTextStyles.captionBase.copyWith(
                         color: mutedText,
                       ),
                     ),
+                  if (value != null && stackValue) valueText(),
                 ],
               ),
             ),
-            if (value != null) ...[
+            if (value != null && !stackValue) ...[
               const SizedBox(width: AppDimensions.space12),
               // At most 45 % of the row, so the label keeps its room and
               // every chevron stays at the end.
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: rowWidth * 0.45),
-                child: Text(
-                  value!,
-                  textAlign: TextAlign.end,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: strongValue
-                      ? AppTextStyles.bodyBold.copyWith(
-                          color: cs.onSurface,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        )
-                      : AppTextStyles.captionBase.copyWith(
-                          color: mutedText,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                ),
+                child: valueText(),
               ),
             ],
             if (trailing != null) ...[

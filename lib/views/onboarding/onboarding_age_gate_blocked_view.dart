@@ -65,51 +65,61 @@ class _OnboardingAgeGateBlockedViewState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // The same row the skip link has on the other steps, so the
-                  // mark stands where it does there.
-                  const SizedBox(height: AppDimensions.minTouchTarget),
-                  const Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: ButleryClocheMark(),
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-                  const OnboardingPlateRule(),
-                  const SizedBox(height: AppDimensions.space24),
-                  OnboardingIntro(
-                    title: l10n.onboardingAgeGateTooYoungTitle,
-                    description: l10n.onboardingAgeGateTooYoungBody,
-                  ),
-                  const SizedBox(height: AppDimensions.space16),
-                  Container(
-                    padding: const EdgeInsets.all(AppDimensions.space16),
-                    color: cs.surfaceContainerHighest,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.onboardingAgeGateParentTitle,
-                          style: AppTextStyles.bodyBold.copyWith(
-                            color: cs.onSurface,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // The same row the skip link has on the other steps, so the
+                          // mark stands where it does there.
+                          const SizedBox(height: AppDimensions.minTouchTarget),
+                          const Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: ButleryClocheMark(),
                           ),
-                        ),
-                        const SizedBox(height: AppDimensions.space4),
-                        Text(
-                          l10n.onboardingAgeGateParentBody,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: cs.onSurface,
+                          const SizedBox(height: AppDimensions.space16),
+                          const OnboardingPlateRule(),
+                          const SizedBox(height: AppDimensions.space24),
+                          OnboardingIntro(
+                            title: l10n.onboardingAgeGateTooYoungTitle,
+                            description: l10n.onboardingAgeGateTooYoungBody,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: AppDimensions.space16),
+                          Container(
+                            padding: const EdgeInsets.all(
+                              AppDimensions.space16,
+                            ),
+                            color: cs.surfaceContainerHighest,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.onboardingAgeGateParentTitle,
+                                  style: AppTextStyles.bodyBold.copyWith(
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.space4),
+                                Text(
+                                  l10n.onboardingAgeGateParentBody,
+                                  style: AppTextStyles.bodyLarge.copyWith(
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.space16),
+                          Text(
+                            l10n.onboardingAgeGateNothingSaved,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.space16),
-                  Text(
-                    l10n.onboardingAgeGateNothingSaved,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
                   // Signing out keeps the name and draws the plate line
                   // (Komponentark v1:365, :372), never a spinner in its place.
                   OnboardingNavButtons(
