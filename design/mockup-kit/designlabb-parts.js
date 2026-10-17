@@ -536,21 +536,68 @@ function wireHandles() {
   screens.addEventListener('scroll', () => drawHandles(), true);
 }
 
+// Drag a box over empty space to pick everything it touches, as one group (like a marquee in Figma).
+const isEmptySpot = t => {
+  if (!t?.classList || !t.closest('.phone') || isLab(t)) return false;
+  if (t.classList.contains('phone') || t.classList.contains('b-body') || t.classList.contains('b-scroll')) return true;
+  if (t.classList.length || !t.children.length || [...t.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return false;
+  const cs = getComputedStyle(t);
+  return !toHex(cs.backgroundColor) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none';
+};
+function marqueeContainer(t) {
+  const kids = c => [...c.children].filter(k => k.dataset.labId && !isLab(k));
+  let c = t.classList.contains('phone') ? t.querySelector('.b-body') || t : t;
+  // Scroll areas and single wrappers only pass the content on, so go down to where the parts sit side by side.
+  for (let n = 0; n < 6 && kids(c).length === 1; n++) c = kids(c)[0];
+  return c;
+}
+let marquee = null;
+function wireMarquee(screens) {
+  screens.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest?.('.lab-h,.lab-cross') || !isEmptySpot(e.target)) return;
+    marquee = { x: e.clientX, y: e.clientY, phone: e.target.closest('.phone'), container: marqueeContainer(e.target), box: null };
+    e.preventDefault();
+  }, true);
+  window.addEventListener('pointermove', e => {
+    if (!marquee) return;
+    if (!marquee.box && Math.hypot(e.clientX - marquee.x, e.clientY - marquee.y) < 5) return;
+    const base = marquee.phone.getBoundingClientRect();
+    if (!marquee.box) { marquee.box = document.createElement('div'); marquee.box.className = 'lab-marquee'; marquee.phone.append(marquee.box); }
+    const l = Math.min(e.clientX, marquee.x), t = Math.min(e.clientY, marquee.y), w = Math.abs(e.clientX - marquee.x), h = Math.abs(e.clientY - marquee.y);
+    marquee.rect = { left: l, top: t, right: l + w, bottom: t + h };
+    marquee.box.style.cssText = `left:${l - base.left}px;top:${t - base.top}px;width:${w}px;height:${h}px`;
+  });
+  window.addEventListener('pointerup', () => {
+    const m = marquee;
+    marquee = null;
+    if (!m?.box) return;
+    m.box.remove();
+    marqueeDone = true;
+    setTimeout(() => { marqueeDone = false; }, 0);
+    const hit = [...m.container.children].filter(k => k.dataset.labId && !isLab(k) && !k.classList.contains('b-scroll')).filter(k => {
+      const r = k.getBoundingClientRect();
+      return r.width && r.height && r.left < m.rect.right && r.right > m.rect.left && r.top < m.rect.bottom && r.bottom > m.rect.top;
+    });
+    document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+    if (!hit.length) { clearSelection(); return; }
+    hit.forEach(n => n.setAttribute('data-lab-selected', ''));
+    selected = { el: hit[0], extras: hit.slice(1), mode: null };
+    openTab('part');
+    showPart(false);
+  });
+  screens.addEventListener('click', e => { if (marqueeDone) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+}
+let marqueeDone = false;
+
 function wireScreens() {
   const screens = $('screens');
+  wireMarquee(screens);
   screens.addEventListener('click', e => {
     let el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
-    // Empty space inside a plain wrapper (a row that only holds buttons) is not a part: it deselects.
-    if (el === e.target && !el.classList.length && !el.classList.contains('phone') && el.children.length && !(e.ctrlKey || e.shiftKey || e.metaKey)) {
-      const cs = getComputedStyle(el);
-      if (!toHex(cs.backgroundColor) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none' && ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) {
-        document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
-        clearSelection();
-        return;
-      }
-    }
+    // Empty space (inside a plain wrapper that only holds parts) is the screen's background.
+    if (el === e.target && isEmptySpot(el) && !(e.ctrlKey || e.shiftKey || e.metaKey)) el = el.closest('.phone');
     if ((e.ctrlKey || e.shiftKey || e.metaKey) && selected?.el.isConnected) {
       if (el === selected.el) {
         if (selected.extras?.length) {
@@ -577,7 +624,8 @@ function wireScreens() {
   }, true);
   screens.addEventListener('mouseover', e => {
     screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
-    componentOf(e.target)?.setAttribute('data-lab-hover', '');
+    const over = componentOf(e.target);
+    if (over && !(over === e.target && isEmptySpot(over) && !over.classList.contains('phone'))) over.setAttribute('data-lab-hover', '');
   });
   wireHandles();
   screens.addEventListener('mouseleave', () => screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover')));
