@@ -116,8 +116,9 @@ Widget _row(
 }) {
   final rowCount = _rowCount(itemCount, columns);
   final firstIndex = rowIndex * columns;
+  final isLastRow = rowIndex == rowCount - 1;
   return Padding(
-    padding: EdgeInsets.only(bottom: rowIndex == rowCount - 1 ? 0 : spacing),
+    padding: EdgeInsets.only(bottom: isLastRow ? 0 : spacing),
     child: IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,

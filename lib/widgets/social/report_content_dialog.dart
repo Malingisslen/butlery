@@ -1,3 +1,4 @@
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/list/butlery_radio_row.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
@@ -219,7 +220,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.space8),
           RadioGroup<ReportReason>(
             groupValue: _selectedReason,
             onChanged: (value) => setState(() => _selectedReason = value),
@@ -236,7 +237,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
             ),
           ),
           if (isOther) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: _descriptionController,
               autofocus: true,
@@ -251,7 +252,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
               helperText: l10n.reportDescriptionRequiredHelper,
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.space12),
           // "Vi bedömer mot våra riktlinjer — den version du ser nu är
           // den vi dömer efter." (#fbanmal; produktregler.md).
           _GuidelinesNote(

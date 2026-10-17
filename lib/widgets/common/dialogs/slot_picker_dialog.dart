@@ -427,7 +427,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppDimensions.space4),
                       Expanded(
                         child: isOccupied
                             ? Text(

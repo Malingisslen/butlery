@@ -483,10 +483,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final instruction = instructions[index];
     final isCompleted = _completedSteps.contains(index);
 
+    final isLast = index == instructions.length - 1;
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: index < instructions.length - 1 ? AppDimensions.space16 : 0,
-      ),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : AppDimensions.space16),
       child: Semantics(
         label: context.l10n.a11yToggleStepDone,
         button: true,

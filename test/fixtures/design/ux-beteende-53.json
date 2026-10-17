@@ -238,10 +238,10 @@
    "RITNING": "PRESENT",
    "BEVIS": "lib/views/mina_recept/empty_state_widgets.dart",
    "HOST": "HemEmptyState",
-   "HOST_FILE": "lib/views/hem/hem_empty_state.dart",
+   "HOST_FILE": "lib/widgets/common/state/hem_empty_state.dart",
    "HOST_NOTE": "Stacked as mina_recept_view.dart:420-460 and :693: HemSection with an empty library over HemEmptyState.",
    "BLOCK288_KATEGORI": "ALREADY_SATISFIED",
-   "AGARE_NU": "lib/views/hem/hem_empty_state.dart"
+   "AGARE_NU": "lib/widgets/common/state/hem_empty_state.dart"
   },
   {
    "VY": "hem",

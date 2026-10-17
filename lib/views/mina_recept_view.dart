@@ -42,7 +42,7 @@ import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_shelf.dart';
 import 'package:butlery/views/mina_recept/library_switch.dart';
-import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/widgets/common/state/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';

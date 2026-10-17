@@ -104,7 +104,9 @@ class OnboardingStepDashes extends StatelessWidget {
           children: [
             for (var i = 0; i < count; i++)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.space4,
+                ),
                 child: AnimatedContainer(
                   duration: AnimationUtils.getDuration(
                     context,

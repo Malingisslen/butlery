@@ -275,14 +275,11 @@ void main() {
         // Skelettet visas först efter 300 ms (produktregler.md:304).
         await tester.pump(const Duration(milliseconds: 301));
 
+        // The skeleton rests on the theme's card surface, as the card it
+        // stands in for does.
         final card = tester.widget<Card>(find.byType(Card));
-        expect(card.elevation, equals(2));
-
-        final shape = card.shape as RoundedRectangleBorder;
-        expect(
-          shape.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.radiusControl)),
-        );
+        expect(card.elevation, isNull);
+        expect(card.shape, isNull);
       });
 
       testWidgets('should have padding inside card', (

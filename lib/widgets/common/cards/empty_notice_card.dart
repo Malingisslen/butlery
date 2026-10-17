@@ -28,7 +28,7 @@ class EmptyNoticeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16 + AppDimensions.space4,
-        vertical: AppDimensions.space24 - AppDimensions.space4 / 2,
+        vertical: AppDimensions.space24,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: cs.outlineVariant),

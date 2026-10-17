@@ -286,7 +286,10 @@ class _PhotoCountBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final ink = Theme.of(context).colorScheme.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.space4,
+        vertical: AppDimensions.space4,
+      ),
       color: context.modeColors.overlayPaperCard,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -296,7 +299,7 @@ class _PhotoCountBadge extends StatelessWidget {
             size: AppDimensions.iconSizeXs,
             color: ink,
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             '$count',
             style: AppTextStyles.labelSmall.copyWith(

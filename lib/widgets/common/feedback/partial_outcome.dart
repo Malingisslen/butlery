@@ -150,13 +150,10 @@ class PartialOutcome extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ExcludeSemantics(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: ButleryIcon(
-                    ButleryIcons.info,
-                    size: AppDimensions.iconSizeM,
-                    color: cs.onSecondaryContainer,
-                  ),
+                child: ButleryIcon(
+                  ButleryIcons.info,
+                  size: AppDimensions.iconSizeM,
+                  color: cs.onSecondaryContainer,
                 ),
               ),
               const SizedBox(width: AppDimensions.space8),

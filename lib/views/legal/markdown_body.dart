@@ -1,5 +1,6 @@
 // lib/views/legal/markdown_body.dart
 
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -217,7 +218,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           _TokenKind.text => TextSpan(text: t.text, style: base),
           _TokenKind.bold => TextSpan(
             text: t.text,
-            style: base.copyWith(fontWeight: FontWeight.bold),
+            style: base.merge(SpanStyles.bold),
           ),
           // Offline: an inactive web link is plain text, so it neither looks
           // nor announces as something to tap (Grafisk manual v6:665).

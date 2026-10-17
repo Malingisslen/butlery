@@ -245,6 +245,18 @@ class AppDimensions {
   /// Large dialog max width (700px)
   static const double dialogMaxWidthLarge = 700.0;
 
+  /// Widest the admin sign-in column grows.
+  static const double adminSignInMaxWidth = 360.0;
+
+  /// Widest the "heard" caption of the voice assistant grows.
+  static const double voiceHeardChipMaxWidth = 220.0;
+
+  /// Widest a photo or recipe attachment grows inside a chat message.
+  static const double messageAttachmentMaxWidth = 250.0;
+
+  /// Widest a poll grows inside a chat message.
+  static const double messagePollMaxWidth = 280.0;
+
   /// Small dialog max height (400px)
   static const double dialogMaxHeightSmall = 400.0;
 

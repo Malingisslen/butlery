@@ -119,7 +119,7 @@ class _FamilyRowContent extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.space8 + 2,
+          vertical: AppDimensions.space8,
         ),
         child: Row(
           children: [

@@ -464,7 +464,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(AppDimensions.space8),
           color: context.modeColors.heroPaleGreen,
           child: Row(
             children: [
@@ -473,7 +473,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                 size: AppDimensions.iconSize18,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Text(
                   '${l10n.familyConsentGivenPrefix} $date · ${consent.consentVersion}',

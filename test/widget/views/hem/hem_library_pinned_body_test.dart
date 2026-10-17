@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/widgets/common/state/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 
 void main() {

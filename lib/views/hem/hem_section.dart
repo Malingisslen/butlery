@@ -320,7 +320,7 @@ class HemTonightCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ButleryDisc(size: 7, color: cs.secondary),
-                    const SizedBox(width: 7),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Text(
                         meta.toUpperCase(),

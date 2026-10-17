@@ -1,3 +1,4 @@
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -296,7 +297,7 @@ class RecipeCard extends StatelessWidget {
                 children: [
                   _buildTitle(context),
                   if (showMetadata && _hasAnyMetadata) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppDimensions.space4),
                     _buildMetadataRow(context),
                   ],
                   // BUT-1869: the spacer and the row are gated on what the row WILL
@@ -439,7 +440,7 @@ class RecipeCard extends StatelessWidget {
             if (parts.isNotEmpty) const TextSpan(text: ' · '),
             TextSpan(
               text: '★ ${rating.value}',
-              style: TextStyle(color: accent),
+              style: SpanStyles.colour(accent),
               semanticsLabel: rating.semantics,
             ),
           ],
