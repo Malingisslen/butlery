@@ -59,20 +59,20 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery ceremonier rorelsereferens.dc.html` | `19cc633fbbfb4f1526430099e077557e8a6b0281e10fa2b1b02f51dc8a3aff9b` |
 | `Butlery tillganglighetshandoff.dc.html` | `ebfdfaafe7af38aa66a47ef7fd1cc73de35ba9b6320db952817bd2e16dd596f8` |
 | `Butlery utestaende beslut.dc.html` | `066129b1110c3f0112efe5a90a28fcb0567a14eabfc6e62ca9ff0eaf4f92d0d5` |
-| `Butlery-app-icon-gradde-platta-R4-6.svg` | `5003745e69f7fb491a5dd5487f1f4a2e98a803d691efc9e826d05d8e1a3d78cf` |
-| `Butlery-app-icon-monoline-R4-6.svg` | `09b3a6e2548ee1b906b81f2c5a22bb5f304fa09158dac1a6fc7544c1cb6dd377` |
-| `Butlery-app-icon-negativ-R4-6.svg` | `4e4a7e673550dbd3c2c55d9c2757099d60d9c34101822d84d5cfc63995f82ffd` |
-| `Butlery-app-icon-solid-R4-6.svg` | `f5e6739bfdf1fb110f630097a5733844d3bd2be23d3e19798f3e66f105e050d9` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-light-L4-3-outlined.svg` | `d9b104c2dfff040e4e4087a7c4e8b2690be2bc39dc1dacf75763e0bd4de6a041` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-L4-3-outlined.svg` | `cc0f3ec358ff15ebe01584b74b40c97054c88b7242fc02e7665b51142a4f25f6` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-transparent-L4-3-outlined.svg` | `76059538af72a05151e241caf80c4197207ef1f486f35a933e14f06b15ac3e6d` |
+| `Butlery-app-icon-gradde-platta-R4-6.svg` | `be75da9821e21ad3c568ddff25db631858f50f686437d558d05550fb7ce596e1` |
+| `Butlery-app-icon-monoline-R4-6.svg` | `8cd19b24295a51a32d100d65214a71c7ca667915bddb4617252198732d48b334` |
+| `Butlery-app-icon-negativ-R4-6.svg` | `e8ed500fb7f3cdde0549999102291b2bb889e5ded6f2c388f777652d694d4cd8` |
+| `Butlery-app-icon-solid-R4-6.svg` | `3e13954fed66be1a71caa98c6f8d94471550cff06a3d57a8752cf6d3afc0218b` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-light-L4-3-outlined.svg` | `e343fb9525f5de0355e98ea587387123c0cccb8b98f434cf7ef4a7ce33112e39` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-L4-3-outlined.svg` | `7da8971e3bd6aeae77e60cfdb71415c5ac2e112ce6b2efa22998aa9be9e7f8ac` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-transparent-L4-3-outlined.svg` | `0a0f3e629d4d86da3be2588301949381248766a313cae885c67568613e63de2b` |
 | `Butlery-lockup-family-L4-3/Butlery-logo-monoline-light-L4-3-outlined.svg` | `29a566475250a5e0ae2b337240219c0f6d73915959b58c7741afe550f5d28cb8` |
 | `Butlery-lockup-family-L4-3/Butlery-logo-monoline-reversed-L4-3-outlined.svg` | `be58af273c3581228b760f579d5f066c411363facdf06cc8f8616e5974c036b5` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-light-L4-3-outlined.svg` | `348a46c4f1bdded79aaa5bf76d81081cc28892c8f0136dd9048a7463d1203b13` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-L4-3-outlined.svg` | `5f07a457af7a9ffeab4f6d3a3d02ebb6ce92413fb7de70e8b5057f904397459f` |
-| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-transparent-L4-3-outlined.svg` | `2c91d8d75c8acacf0c60601891169c168f3aed9fd0fbbb89e502dd8cf3e234c1` |
-| `Butlery-lockup-family-L4-3/Butlery-mark-micro-light-L4-3.svg` | `c63d56b4bd9a35effc1dc7aeed8e263bbff2b814b946f6ee98772b282df8f8b2` |
-| `Butlery-lockup-family-L4-3/Butlery-mark-micro-reversed-L4-3.svg` | `ad833989b42eab78b823087e662c9451ac9f6665408a9810a32b3cbce7e76d09` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-light-L4-3-outlined.svg` | `9158088e66fc8d1d5505a5cbce38c32bbbb05fc750619e2fa864a7471c7e27b9` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-L4-3-outlined.svg` | `33c9bde8db6329b1bf5191cea28c1342114334a34426e01ff3e2da91e6ece4a6` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-transparent-L4-3-outlined.svg` | `ddc92b46e28f349116cb6e4ecc8264103d95751c709683589e19988107b00abe` |
+| `Butlery-lockup-family-L4-3/Butlery-mark-micro-light-L4-3.svg` | `5cf070fd617011b36a171387ee38212bea88d8bc182d9f0beae3d18d47e73792` |
+| `Butlery-lockup-family-L4-3/Butlery-mark-micro-reversed-L4-3.svg` | `2100426d3491121569cb3bd0730cb8856db5655c595d0a1362864d278b28c32f` |
 | `Butlery-lockup-family-L4-3/Butlery-wordmark-light-L4-3-outlined.svg` | `bc107250280d4aa21d69e5d9269bce78b18a4e81b1282d12827fc2e808087746` |
 | `Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg` | `f490e61aa99d9be40b17682446167037ba153f21e0049fd164e2ab9bb91edb6b` |
 | `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
@@ -244,10 +244,10 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `content-style-guide.md` | `ce7bdc93b2f8649a5908ea8b1e9b19ca23ffd18b24da960a8a855934160ecd82` |
 | `evidensmatris.md` | `23d7409ec7f175779be756228785cbb433cf9d6e7f6ee653415985b56669715f` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
-| `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
+| `exports/android/ic_launcher_foreground.svg` | `d333760acfa22da29ab32d73ab244c661274738fcd0f2b8cf2a27044f7c40820` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
 | `exports/ios/AppIcon-1024.png` | `2bce7e0b683b3054285607fb19d3a58706b483a69ade344c1e90fcfed74b036a` |
-| `exports/ios/AppIcon-1024.svg` | `671dbabd32d82447548055e7215ccaf4a98f3b64259cad8cb91c227954734264` |
+| `exports/ios/AppIcon-1024.svg` | `d112949abe93a4a4b18921520099ed8d24e22f7c1f19cbc0d8235c79e153d375` |
 | `fas0/LAS-MIG.md` | `5e99d40df92c4b5c68024570ce15d38bbd9037bb05978b7b71b61f28c18fde82` |
 | `fas0/artefaktforslag.md` | `f69520ede848fac35caaa5f743d5d73b5a2e4f24b131b6b1fc64389555fbbcf4` |
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
