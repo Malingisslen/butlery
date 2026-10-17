@@ -1,11 +1,11 @@
 'use strict';
 // Talking to Claude from the published lab: a chat that can read and change the lab, a switch that
 // lets Claude see what is selected and changed, and a button that leaves a build request for the
-// session that works on the app. It needs window.claude, so the Claude tab stays hidden when the
+// session that works on the app. It needs window.claude, so the Claude column stays hidden when the
 // file is opened outside a published page.
 
 const CHAT_RULES = `Du är Claude och sitter i Butlerys designlabb, en webbsida där Malin (som inte kodar) provar färger, typsnitt, avstånd, ikoner och layout på tre exempelskärmar. Svara på svenska, kort och utan fackspråk.
-Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart och resetLab. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i fliken, så bygger sessionen som jobbar med appen det.
+Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart och resetLab. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i rutan Claude, så bygger sessionen som jobbar med appen det.
 Brödtext ska ha minst 4,5:1 i kontrast. Säg ifrån om en ändring bryter mot det. Inga emoji.`;
 const claudeAi = { sample: null, db: null };
 const chatTurns = [];
@@ -159,7 +159,7 @@ async function initClaude() {
     [claudeAi.sample, claudeAi.db] = await Promise.all([claude.use('sample'), claude.use('db')]);
   } catch { return; }
   if (!claudeAi.sample && !claudeAi.db) return;
-  document.querySelector('#tabs [data-tab="claude"]').hidden = false;
+  $('dock').hidden = false;
   $('chat-box').hidden = !claudeAi.sample;
   $('send-box').hidden = !claudeAi.db;
   $('ask-go').onclick = ask;

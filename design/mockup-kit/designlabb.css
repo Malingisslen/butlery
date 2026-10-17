@@ -76,3 +76,6 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel #ask-text, .panel #req-text { width: 100%; box-sizing: border-box; height: auto; font: inherit; padding: 8px; border: 1px solid #7d897c; border-radius: 8px; margin-top: 0; }
 .panel { color-scheme: light; }
 .panel input[type=search], .panel input[type=text], .panel select, .panel textarea { background: #fff; color: #24382c; }
+.panel.dock { flex: 0 0 300px; }
+.panel.dock #chat-log { max-height: calc(100vh - 360px); min-height: 160px; }
+@media (max-width: 1250px) { .lab { flex-wrap: wrap; } .panel.dock { position: static; flex: 1 0 100%; max-height: none; } }
