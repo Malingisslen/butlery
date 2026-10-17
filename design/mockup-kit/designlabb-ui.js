@@ -29,7 +29,6 @@ for (const fig of [...document.querySelectorAll('#screens > figure')]) {
   fig.classList.add('fig-light');
   dark.classList.add('fig-dark');
   dark.querySelector('.phone').dataset.theme = 'dark';
-  dark.querySelector('figcaption').textContent += ' (mörkt)';
   fig.after(dark);
 }
 snapshotLayoutBase();
