@@ -74,7 +74,6 @@ that only bind in app, Cloud Functions or Firestore code.
 ## UI/UX
 
 - Anchor every "what this product IS" sentence in the doc/code on EVERY run, never in the prior episode ([Workflow], 2026-08-25)
-- Ett förslag om hur en vy ska se ut utgår från skissens ram, inte från kitet eller appen; "Behåll" kräver ett namngivet beslut (2026-10-11)
 - Heuristic/LLM-derived visible content (headings, tags, parsed amounts) ships WITH its correction UI in the MVP
 
 ## Language and Firebase gotchas

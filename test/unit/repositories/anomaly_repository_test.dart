@@ -1,11 +1,13 @@
 /// Tests for AnomalyRepository — reads the latest `analytics/anomalies/daily/
 /// {date}` doc for the banner. Must return the newest report, parse the
-/// anomalies list, and degrade to empty on no-data / error.
+/// anomalies list, and return empty on no-data and rethrow on a failed read.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/admin/anomaly_report.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -66,11 +68,33 @@ void main() {
     expect(report.hasAnomalies, isFalse);
   });
 
-  test('a failed read still returns the empty report, never throws', () async {
-    final report = await AnomalyRepository(
-      firestore: FailingFirestore(),
-    ).getLatest();
-    expect(report.hasAnomalies, isFalse);
-    expect(report.anomalies, isEmpty);
+  test('a failed read throws so the banner can show an error', () async {
+    expect(
+      AnomalyRepository(firestore: FailingFirestore()).getLatest(),
+      throwsFirestoreFailure,
+    );
   });
+
+  test(
+    'a failed read leaves no empty report behind that reads as "clean"',
+    () async {
+      final failing = AnomalyRepository(firestore: FailingFirestore());
+      AnomalyReport? report;
+      Object? error;
+      try {
+        report = await failing.getLatest();
+      } catch (e) {
+        error = e;
+      }
+      expect(report, isNull);
+      expect(error, isA<FirebaseException>());
+
+      // The same query against a healthy store still answers, so the throw
+      // above came from the read and not from the query itself.
+      final db = FakeFirebaseFirestore();
+      await _seed(db, '2026-06-20', []);
+      final healthy = await AnomalyRepository(firestore: db).getLatest();
+      expect(healthy.date, '2026-06-20');
+    },
+  );
 }

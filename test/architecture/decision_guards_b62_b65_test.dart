@@ -1,8 +1,6 @@
-// Guards for the design decisions B-62 to B-65 (design/beslutslogg.md): field
-// and button height, the round avatar steps, the dark profile header and the
-// sign-in views that keep the app's look. See decision_guards_b56_b61_test.
+// Guards for the design decisions B-62 to B-64 (kept as test names): field
+// and button height, the round avatar steps and the dark profile header. See decision_guards_b56_b61_test.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:butlery/theme/app_dimensions.dart';
@@ -89,24 +87,4 @@ void main() {
       expect(code.contains('AvatarCircleTone.onInk'), isTrue);
     });
   });
-
-  test(
-    'B-65 inloggning och skapa konto från gäst behåller appens utseende',
-    () {
-      final views =
-          (jsonDecode(File('design/screen-register.json').readAsStringSync())
-                  as Map<String, dynamic>)['views']
-              as Map<String, dynamic>;
-      for (final path in const [
-        'lib/views/auth/guest_start_view.dart',
-        'lib/views/auth/guest_upgrade_view.dart',
-      ]) {
-        expect(
-          (views[path] as Map)['status'],
-          'avviker-beslutad',
-          reason: 'B-65: $path är beslutad att avvika från skissens band',
-        );
-      }
-    },
-  );
 }

@@ -1,13 +1,12 @@
 /// P8-U03: the census of the 81 REQUIRED flow transitions stays true.
 ///
-/// Sources: design/fas2/block288-uxfrysning.json overgangar and its
+/// Sources: test/fixtures/design/block288-uxfrysning.json overgangar and its
 /// BINDNING.TRANSITION_SET_HASH, flows-roles-budget.md flows 01-08, and
 /// fas2/ux-beslut.json D-03 and D-04. The census is
 /// test/fixtures/design/transition_census.json.
 ///
 /// It checks:
-/// 0. the rows still hash to the pinned TRANSITION_SET_HASH, as
-///    design/tools/block288/uxfrysning.mjs computes it;
+/// 0. the rows still hash to the pinned TRANSITION_SET_HASH;
 /// 1. the census ids are exactly the REQUIRED set, 81, per flow 10/4/8/6/6/
 ///    22/8/17;
 /// 2. every test the census cites exists and still carries that name (and
@@ -58,7 +57,7 @@ String _names(String source) => source
     .replaceAll(r"\'", "'");
 
 void main() {
-  final fixture = _json('design/fas2/block288-uxfrysning.json');
+  final fixture = _json('test/fixtures/design/block288-uxfrysning.json');
   final rows = (fixture['overgangar'] as List).cast<Map<String, dynamic>>();
   final census = _json('test/fixtures/design/transition_census.json');
   final entries = (census['entries'] as List).cast<Map<String, dynamic>>();

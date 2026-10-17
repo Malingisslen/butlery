@@ -1,6 +1,6 @@
 /// Tests for ParseEventsRepository — the import-health drill-down source. It
 /// must filter parse events by domain, sort newest-first, optionally keep only
-/// failures, and degrade to empty on error. A bug here would show the wrong
+/// failures, and rethrow on error. A bug here would show the wrong
 /// domain's attempts or the wrong order behind a tapped row.
 library;
 
@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/failing_firestore.dart';
 
 Future<void> _seed(
   FakeFirebaseFirestore db,
@@ -74,5 +75,12 @@ void main() {
     ).getByDomain('koket.se');
     expect(page.events, isEmpty);
     expect(page.truncated, isFalse);
+  });
+
+  test('a failed read throws so the drill-down can show an error', () async {
+    expect(
+      ParseEventsRepository(firestore: FailingFirestore()).getByDomain('a.se'),
+      throwsFirestoreFailure,
+    );
   });
 }

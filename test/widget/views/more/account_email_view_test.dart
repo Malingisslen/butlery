@@ -356,4 +356,50 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  group('Back with a half-typed address', () {
+    Future<void> openPushed(WidgetTester tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AccountEmailView(),
+                  ),
+                ),
+                child: const Text('öppna'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('öppna'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('asks before throwing the typed address away', (tester) async {
+      await openPushed(tester);
+      await enterEmailChange(tester, '', 'ny@example.com');
+      await tester.pump();
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.unsavedChangesTitle), findsOneWidget);
+      expect(find.byType(AccountEmailView), findsOneWidget);
+    });
+
+    testWidgets('an untouched form goes back without asking', (tester) async {
+      await openPushed(tester);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.unsavedChangesTitle), findsNothing);
+      expect(find.byType(AccountEmailView), findsNothing);
+    });
+  });
 }
