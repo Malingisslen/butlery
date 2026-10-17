@@ -73,8 +73,11 @@ class AvatarStack extends StatelessWidget {
         // The paper ring keeps neighbours apart where they overlap.
         border: Border.all(color: cs.surface, width: _ring),
       ),
+      // The disc is a fixed size and decorative, so its letters stay at
+      // the base size instead of spilling over the neighbouring disc.
       child: Text(
         text,
+        textScaler: TextScaler.noScaling,
         style: AppTextStyles.labelSmall.copyWith(color: _legible(cs, bg, fg)),
       ),
     );

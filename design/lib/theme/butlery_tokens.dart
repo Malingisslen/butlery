@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:447d8d4596bfbc86727aa00c8502703dad8cae16a854fa8502b92725e04fd7a7 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:f54fd82036ae725d6c25dc70409ceeedc737787c80d28fde26d728b542650552 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
@@ -58,8 +58,8 @@ class ButleryColors {
   static const borderControlDark = Color(0x66F5F4ED);
   static const borderStatusWarning = Color(0xFFD8B784);
   static const borderStatusWarningDark = Color(0xFFDCA968);
-  static const actionPrimary = Color(0xFFCE7C1E);
-  static const actionPrimaryDark = Color(0xFFCE7C1E);
+  static const actionPrimary = Color(0xFFD68523);
+  static const actionPrimaryDark = Color(0xFFD68523);
   static const actionPrimaryPressed = Color(0xFF9A5C14);
   static const actionPrimaryPressedDark = Color(0xFF9A5C14);
   static const actionDanger = Color(0xFF9C3B23);
@@ -76,8 +76,8 @@ class ButleryColors {
   static const focusRingDark = Color(0xFFF5F4ED);
   static const progressTrack = Color(0xFFE6EAD9);
   static const progressTrackDark = Color(0x2EF5F4ED);
-  static const progressIndicator = Color(0xFFCE7C1E);
-  static const progressIndicatorDark = Color(0xFFCE7C1E);
+  static const progressIndicator = Color(0xFFD68523);
+  static const progressIndicatorDark = Color(0xFFD68523);
   static const scrim = Color(0x6624382C);
   static const scrimDark = Color(0x99000000);
   static const textBodyMuted = Color(0xFF37453A);
@@ -134,7 +134,7 @@ class ButleryColors {
   static const avatar4OnFill = Color(0xFF17251D);
   static const avatar5Fill = Color(0xFFB4BFA6);
   static const avatar5OnFill = Color(0xFF17251D);
-  static const avatarSelfRing = Color(0xFFCE7C1E);
+  static const avatarSelfRing = Color(0xFFD68523);
   static const avatarFills = <Color>[Color(0xFF4A5C43), Color(0xFF3F6B4F), Color(0xFF627061), Color(0xFF93A48D), Color(0xFFB4BFA6)];
   static const avatarOnFills = <Color>[Color(0xFFF5F4ED), Color(0xFFF5F4ED), Color(0xFFF5F4ED), Color(0xFF17251D), Color(0xFF17251D)];
 }
@@ -258,7 +258,7 @@ class ButleryTheme {
     scaffoldBackgroundColor: Color(0xFFF5F4ED),
     colorScheme: ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xFFCE7C1E),
+      primary: Color(0xFFD68523),
       onPrimary: Color(0xFF17251D),
       secondary: Color(0xFF24382C),
       onSecondary: Color(0xFFF5F4ED),
@@ -280,7 +280,7 @@ class ButleryTheme {
     scaffoldBackgroundColor: Color(0xFF17251D),
     colorScheme: ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFFCE7C1E),
+      primary: Color(0xFFD68523),
       onPrimary: Color(0xFF17251D),
       secondary: Color(0xFF24382C),
       onSecondary: Color(0xFFF5F4ED),

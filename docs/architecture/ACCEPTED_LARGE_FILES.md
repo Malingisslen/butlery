@@ -184,7 +184,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `personal_tag_rule_dialog.dart` | 834 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |
-| `recipe_detail_view.dart` | 1,694 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
+| `recipe_detail_view.dart` | 1339 | Recipe detail screen (source-artefact sheet in recipe_detail/recipe_source_artefact_sheet.dart, sticky action bar in recipe_detail/recipe_action_bar.dart) |
 | `weekly_menu_plan_viewmodel.dart` | 1652 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
 | `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
 | `recipe_detail_content.dart` | 947 | Body content widget for recipe detail |

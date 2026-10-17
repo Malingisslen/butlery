@@ -183,6 +183,7 @@ function showPart(variant = false) {
 function wireScreens() {
   const screens = $('screens');
   screens.addEventListener('click', e => {
+    if (moveMode) return;
     const el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
@@ -193,6 +194,7 @@ function wireScreens() {
     showPart(false);
   }, true);
   screens.addEventListener('mouseover', e => {
+    if (moveMode) return;
     screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
     componentOf(e.target)?.setAttribute('data-lab-hover', '');
   });

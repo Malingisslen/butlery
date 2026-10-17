@@ -191,8 +191,8 @@ void main() {
       for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
         final tabs = theme.tabBarTheme;
         final indicator = tabs.indicator! as UnderlineTabIndicator;
-        // tokens.json:165-168 progressIndicator, #CE7C1E in both modes.
-        expect(indicator.borderSide.color, const Color(0xFFCE7C1E));
+        // progressIndicator, #D68523 in both modes.
+        expect(indicator.borderSide.color, const Color(0xFFD68523));
         expect(indicator.borderSide.width, 3);
         expect(tabs.indicatorSize, TabBarIndicatorSize.label);
         expect(tabs.labelColor, theme.colorScheme.onSurface);
@@ -235,6 +235,7 @@ const _package7Components = {'lib/widgets/common/indicators/plate_line.dart'};
 /// start cooking versus save a copy of someone else's recipe, and two
 /// different empty states in one file.
 const _exclusiveHeroFiles = [
+  'lib/views/recipe_detail/recipe_action_bar.dart',
   'lib/views/recipe_detail_view.dart',
   'lib/views/mina_recept/empty_state_widgets.dart',
 ];

@@ -43,7 +43,7 @@ final _now = DateTime(2026, 7, 9, 18);
 
 const _ink = Color(0xFF24382C);
 const _paper = Color(0xFFF5F4ED);
-const _saffron = Color(0xFFCE7C1E);
+const _saffron = Color(0xFFD68523);
 
 Recipe _recipe() {
   final r =
@@ -363,6 +363,18 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('route ${Routes.photoImport}'), findsOneWidget);
+    });
+
+    testWidgets('the allergy link opens the allergen settings', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(const Scaffold(body: HemEmptyState())));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(HemEmptyState.allergyLinkKey));
+      await tester.pumpAndSettle();
+
+      expect(find.text('route ${Routes.settingsAllergens}'), findsOneWidget);
     });
   });
 

@@ -40,6 +40,20 @@ double widestWord(
   return widest;
 }
 
+/// The width of [text] on one line, drawn in [style] at the text scale in
+/// force.
+double singleLineWidth(BuildContext context, String text, TextStyle style) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textScaler: MediaQuery.textScalerOf(context),
+    textDirection: Directionality.of(context),
+    maxLines: 1,
+  )..layout();
+  final width = painter.width;
+  painter.dispose();
+  return width;
+}
+
 /// The text scale at which the widest word of [text] fits [available], or
 /// null when it already fits at the scale in force. The result can be below
 /// 1, when even the unscaled word is too wide.

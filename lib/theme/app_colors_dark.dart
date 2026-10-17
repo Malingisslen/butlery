@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme-dark.mjs v1.0
-// källfingeravtryck sha256:52b86c169c8b16a1f0ba15b070fd4f5371ec0b083dec3cc3b8ee0417dd9c2bef (5 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:094f53b859fec87d471925dfe1afddbf66bb3430cb1a900b4afa2ee8955646fe (5 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // MÖRKA kanoniska färger. Samma medlemsnamn som i AppColors, men det
@@ -144,7 +144,7 @@ class AppColorsDark {
   static const Color progressTrack = Color(0x2EF5F4ED);
 
   /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator (dark)
-  static const Color progressIndicator = Color(0xFFCE7C1E);
+  static const Color progressIndicator = Color(0xFFD68523);
 
   /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled (dark)
   static const Color surfaceDisabled = Color(0xFF4A5C50);
@@ -156,7 +156,7 @@ class AppColorsDark {
   static const Color focusRing = Color(0xFFF5F4ED);
 
   /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary (dark)
-  static const Color actionPrimary = Color(0xFFCE7C1E);
+  static const Color actionPrimary = Color(0xFFD68523);
 
   /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed (dark)
   static const Color actionPrimaryPressed = Color(0xFF9A5C14);

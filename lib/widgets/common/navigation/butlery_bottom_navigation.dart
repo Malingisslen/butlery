@@ -82,7 +82,7 @@ Widget navigationTabList({required Widget child}) => Semantics(
 ///   chosen tab's glyph and label (Komponentark v1:663, `color:#F5F4ED`).
 /// * [unselected]: #A9B2A0, text.secondary (dark) (tokens.json); the
 ///   other tabs (Komponentark v1:663-666, `color:#93a48d`).
-/// * [marker]: action.primary saffron #CE7C1E, colorScheme.secondary in both
+/// * [marker]: action.primary saffron #D68523, colorScheme.secondary in both
 ///   schemes; the plate line under the chosen label (Komponentark v1:663).
 /// * [divider]: paper at the ladder's on-ink 0.18 step (tokens.json:40-53).
 ///   Interpretation: #bredskal draws border.onInk #3F5145
@@ -351,7 +351,7 @@ class NavBadgedIcon extends StatelessWidget {
 /// The round saffron "Lägg till": an action, never a destination
 /// (produktregler.md:1056).
 ///
-/// action.primary saffron (colorScheme.secondary, #CE7C1E in both modes) with
+/// action.primary saffron (colorScheme.secondary, #D68523 in both modes) with
 /// the glyph in text.onActionPrimary (colorScheme.onSecondary, #17251D in both
 /// modes), as drawn (Komponentark v1:665). The ring is paper
 /// (colorScheme.onPrimary, #F5F4ED in both modes), drawn 3 px outside the

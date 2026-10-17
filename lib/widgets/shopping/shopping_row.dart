@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -203,7 +204,7 @@ class _ShoppingRowState extends State<ShoppingRow>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text.rich(
+                              WholeWordText.rich(
                                 TextSpan(
                                   children: [
                                     TextSpan(text: widget.name),
@@ -223,9 +224,6 @@ class _ShoppingRowState extends State<ShoppingRow>
                                 // BUT-2193 (Malin, 2026-10-03): a row may cut a
                                 // long name at the normal text size.
                                 maxLines: largeText ? null : 2,
-                                overflow: largeText
-                                    ? null
-                                    : TextOverflow.ellipsis,
                               ),
                               if (widget.note?.isNotEmpty == true) ...[
                                 const SizedBox(height: AppDimensions.space4),

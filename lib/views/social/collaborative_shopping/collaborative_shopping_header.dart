@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/layout/word_fit.dart';
 
 /// Focused widget for collaborative shopping list header
 /// This widget handles ONLY header display responsibilities:
@@ -57,23 +58,39 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   Widget _buildPeopleSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final avatars = AvatarStack(
+      names: viewModel.participantNames,
+      extra: viewModel.participantsWithoutName,
+    );
+    final summary = Text(
+      '${viewModel.memberCountText} · ${viewModel.activitySummary}',
+      style: AppTextStyles.labelMedium.copyWith(color: cs.onSurfaceVariant),
+      maxLines: isLargeText(context) ? null : 2,
+      overflow: isLargeText(context) ? null : TextOverflow.ellipsis,
+    );
+    // The summary beside the avatars and the badge is left with a word's
+    // width at large text, so it takes its own line there.
+    if (isLargeText(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              avatars,
+              const Spacer(),
+              _buildStatusBadge(context),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.space4),
+          summary,
+        ],
+      );
+    }
     return Row(
       children: [
-        AvatarStack(
-          names: viewModel.participantNames,
-          extra: viewModel.participantsWithoutName,
-        ),
+        avatars,
         const SizedBox(width: AppDimensions.space8),
-        Expanded(
-          child: Text(
-            '${viewModel.memberCountText} · ${viewModel.activitySummary}',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Expanded(child: summary),
         const SizedBox(width: AppDimensions.space8),
         _buildStatusBadge(context),
       ],

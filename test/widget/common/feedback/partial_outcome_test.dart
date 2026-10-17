@@ -5,7 +5,7 @@
 /// globala tillstand och flerval.dc.html:390-393.
 ///
 /// Pins, in light AND dark: the surface is surface.raised (#E6EAD9 / #2F4437,
-/// tokens.json), the edge is 3 px #CE7C1E on the leading side only. Also the public API P5-T4 reads: items keyed by id,
+/// tokens.json), the edge is 3 px #D68523 on the leading side only. Also the public API P5-T4 reads: items keyed by id,
 /// reasons shown, actions rendered, the title a live region.
 library;
 
@@ -67,7 +67,7 @@ void main() {
       const Color(0xFFF5F4ED),
     ),
   ]) {
-    testWidgets('surface.raised with a 3 px #CE7C1E leading edge ($mode)', (
+    testWidgets('surface.raised with a 3 px #D68523 leading edge ($mode)', (
       tester,
     ) async {
       await tester.pumpWidget(_app(theme, _outcome()));
@@ -78,7 +78,7 @@ void main() {
       final decoration = box.decoration as BoxDecoration;
       expect(decoration.color, raised);
       final border = decoration.border! as Border;
-      expect(border.left.color, const Color(0xFFCE7C1E));
+      expect(border.left.color, const Color(0xFFD68523));
       expect(border.left.width, PartialOutcome.edgeWidth);
       expect(border.top, BorderSide.none);
       expect(border.right, BorderSide.none);

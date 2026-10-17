@@ -2,10 +2,10 @@
 <svg width="600" height="245" viewBox="0 0 600 245" version="1.1" id="svg16" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
   <defs id="defs20"></defs>
   <g transform="matrix(0.88461538,0,0,0.88461538,229.23077,1.5384615)" id="g12">
-    <path d="m 37,104 c 2,-25 18.92,-43 43,-43 24.08,0 41,18 43,43 z" fill="#CE7C1E" id="path4"></path>
+    <path d="m 37,104 c 2,-25 18.92,-43 43,-43 24.08,0 41,18 43,43 z" fill="#D68523" id="path4"></path>
     <path d="M 28,113 H 132" stroke="#f5f4ed" stroke-width="7" stroke-linecap="round" id="path6"></path>
-    <path d="m 80,55 v 5" stroke="#CE7C1E" stroke-width="3.5" stroke-linecap="round" id="path8"></path>
-    <path id="rect10" style="fill:#CE7C1E" d="m 76,48 h 8 c 2.216,0 4,1.784 4,4 0,2.216 -1.784,4 -4,4 h -8 c -2.216,0 -4,-1.784 -4,-4 0,-2.216 1.784,-4 4,-4 z"></path>
+    <path d="m 80,55 v 5" stroke="#D68523" stroke-width="3.5" stroke-linecap="round" id="path8"></path>
+    <path id="rect10" style="fill:#D68523" d="m 76,48 h 8 c 2.216,0 4,1.784 4,4 0,2.216 -1.784,4 -4,4 h -8 c -2.216,0 -4,-1.784 -4,-4 0,-2.216 1.784,-4 4,-4 z"></path>
   </g>
   <g aria-label="Butlery" id="text14" style="font-weight:600;font-size:92px;font-family:&#39;Butlery Sans&#39;;letter-spacing:-1.35;text-anchor:middle;fill:#f5f4ed">
     <path d="m 146.68414,180 v -67.068 h 33.396 c 13.708,0 20.7,6.808 20.7,17.204 0,7.36 -3.956,12.972 -11.5,14.812 v 0.552 c 9.016,1.472 13.34,7.636 13.34,15.548 0,12.328 -8.832,18.952 -23.736,18.952 z m 12.236,-9.476 h 18.4 c 8.832,0 12.604,-4.14 12.604,-10.304 0,-6.624 -4.324,-9.936 -11.776,-9.936 h -20.424 v -9.2 h 19.872 c 7.36,0 10.764,-3.588 10.764,-9.292 0,-6.256 -4.508,-9.384 -11.408,-9.384 h -18.032 z" id="path23"></path>

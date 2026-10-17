@@ -13,7 +13,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/components/button_themes.dart';
 
-const _saffron = Color(0xFFCE7C1E);
+const _saffron = Color(0xFFD68523);
 const _saffronPressed = Color(0xFF9A5C14);
 const _inkDeep = Color(0xFF17251D);
 const _paper = Color(0xFFF5F4ED);

@@ -14,7 +14,7 @@
   --butlery-action-danger: #9C3B23;
   --butlery-action-fill: #24382C;
   --butlery-action-primary-pressed: #9A5C14;
-  --butlery-action-primary: #CE7C1E;
+  --butlery-action-primary: #D68523;
   --butlery-avatar-1-fill: #4A5C43;
   --butlery-avatar-1-on-fill: #F5F4ED;
   --butlery-avatar-2-fill: #3F6B4F;
@@ -25,7 +25,7 @@
   --butlery-avatar-4-on-fill: #17251D;
   --butlery-avatar-5-fill: #B4BFA6;
   --butlery-avatar-5-on-fill: #17251D;
-  --butlery-avatar-self-ring: #CE7C1E;
+  --butlery-avatar-self-ring: #D68523;
   --butlery-border-card-edge: #24382C;
   --butlery-border-control: #7D897C;
   --butlery-border-on-ink: #3F5145;
@@ -73,7 +73,7 @@
   --butlery-palette-saffron-link: #A15A0A;
   --butlery-palette-saffron-pale: #DCA968;
   --butlery-palette-saffron-pressed: #9A5C14;
-  --butlery-palette-saffron: #CE7C1E;
+  --butlery-palette-saffron: #D68523;
   --butlery-palette-sage-deep: #627061;
   --butlery-palette-sage-muted: #A9B2A0;
   --butlery-palette-sage-pale: #B4BFA6;
@@ -81,7 +81,7 @@
   --butlery-palette-secondary-on-raised-dark: #A9B2A0;
   --butlery-palette-secondary-on-raised: #5B6959;
   --butlery-palette-wheat: #D8B784;
-  --butlery-progress-indicator: #CE7C1E;
+  --butlery-progress-indicator: #D68523;
   --butlery-progress-track: #E6EAD9;
   --butlery-radius-card: 12px;
   --butlery-radius-control: 8px;
@@ -181,7 +181,7 @@
   --butlery-action-danger: #DE9078;
   --butlery-action-fill: #8FB89A;
   --butlery-action-primary-pressed: #9A5C14;
-  --butlery-action-primary: #CE7C1E;
+  --butlery-action-primary: #D68523;
   --butlery-border-card-edge: #A9B2A0;
   --butlery-border-control: rgba(245,244,237,0.4);
   --butlery-border-on-ink: #3F5145;
@@ -197,7 +197,7 @@
   --butlery-overlay-ink-subtle: rgba(23,37,29,0.10);
   --butlery-overlay-paper-card: rgba(245,244,237,0.54);
   --butlery-overlay-paper-wash: rgba(245,244,237,0.40);
-  --butlery-progress-indicator: #CE7C1E;
+  --butlery-progress-indicator: #D68523;
   --butlery-progress-track: rgba(245,244,237,0.18);
   --butlery-scrim: rgba(0,0,0,0.60);
   --butlery-surface-base: #17251D;
@@ -743,7 +743,7 @@
 <aside class="panel" id="panel">
 <div class="head"><h1>Designlabb</h1><button class="ghost" id="undo" type="button" disabled>Ångra</button><button class="ghost" id="redo" type="button" disabled>Gör om</button></div>
 <input id="search" type="search" placeholder="Sök reglage: skugga, rundning, färg ...">
-<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="vars" type="button">Varianter</button><button data-tab="check" type="button">Kontroll</button></nav>
+<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button><button data-tab="layout" type="button">Layout</button><button data-tab="vars" type="button">Varianter</button><button data-tab="check" type="button">Kontroll</button></nav>
 <div class="panes">
 <section class="pane" data-pane="all">
 <h2>Stämningar</h2>
@@ -770,6 +770,38 @@
 <div class="chips" id="effects"></div>
 <label><input type="checkbox" id="pause"><span>Pausa animationer</span></label>
 </section>
+<section class="pane" data-pane="space">
+<h2>Avstånd i hela appen</h2>
+<div class="chips" id="space-presets"></div>
+<label><span>Avståndsskala</span><input type="range" id="space" min="50" max="200" value="100"><span class="val" id="space-v">100 %</span></label>
+<label><span>Luft i rader</span><input type="range" id="rowPad" min="0" max="24" value="10"><span class="val" id="rowPad-v">10 px</span></label>
+<label><span>Mellan avsnitt</span><input type="range" id="sectionGap" min="0" max="48" value="16"><span class="val" id="sectionGap-v">16 px</span></label>
+<label><span>Mellan block</span><input type="range" id="blockGap" min="0" max="40" value="0"><span class="val" id="blockGap-v">orig</span></label>
+<label><span>Mellan knappar och chips</span><input type="range" id="chipGap" min="0" max="24" value="8"><span class="val" id="chipGap-v">8 px</span></label>
+<label><span>Ikon till text i rad</span><input type="range" id="rowInner" min="4" max="28" value="12"><span class="val" id="rowInner-v">12 px</span></label>
+<p class="hint">Skalan ändrar alla avstånd som du inte ställt in själv. Sidmarginalen finns under Hela appen.</p>
+<h2>Linjer och träffyta</h2>
+<label><span>Skiljelinjer</span><input type="range" id="hair" min="1" max="4" value="1"><span class="val" id="hair-v">1 px</span></label>
+<label><span>Minsta träffyta</span><input type="range" id="touch" min="40" max="64" value="48"><span class="val" id="touch-v">48 px</span></label>
+<h2>Visa avstånden</h2>
+<label><input type="checkbox" id="overlay"><span>Rita ut avstånd och marginaler i px</span></label>
+</section>
+<section class="pane" data-pane="icons">
+<h2>Ikonbibliotek</h2>
+<label><span>Bibliotek</span><select id="icon-lib"></select></label>
+<p class="hint">Lucide och Phosphor hämtas från nätet när du väljer dem. Ikoner som saknar motsvarighet behåller Butlerys egen. Jämför-läget visar alltid Butlerys egna linjeändar.</p>
+<h2>Stil</h2>
+<label><span>Linjeändar</span><select id="icon-style"></select></label>
+<label><span>Linjetjocklek</span><input type="range" id="iconStroke" min="0" max="3" step="0.25" value="0"><span class="val" id="iconStroke-v">orig</span></label>
+<label><span>Ikonstorlek</span><input type="range" id="iconSize" min="60" max="160" value="100"><span class="val" id="iconSize-v">100 %</span></label>
+</section>
+<section class="pane" data-pane="layout">
+<h2>Flytta delar</h2>
+<label><input type="checkbox" id="move-mode"><span>Flytta delar (dra och släpp)</span></label>
+<p class="hint">Dra en rad, en knapp eller ett chip till ett annat ställe. Ett helt avsnitt flyttar du genom att dra i dess rubrik. Flytten sker i både ljust och mörkt. Det ändrar bara exempelskärmarna här, inte appen.</p>
+<div id="moves"></div>
+<button class="ghost" id="clear-moves" type="button" style="width:100%">Nollställ layouten</button>
+</section>
 <section class="pane" data-pane="vars">
 <h2>Sparade varianter</h2>
 <button class="ghost" id="save-variant" type="button" style="width:100%">Spara nuvarande som variant</button>
@@ -782,6 +814,7 @@
 <textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
 </section>
 </div>
+<div class="foot"><button id="apply" type="button">Spara och för in i appen</button></div>
 <div class="foot"><button class="ghost" id="hold" type="button">Original</button><button class="ghost" id="reset" type="button">Återställ</button><button id="copy" type="button">Kopiera</button></div>
 </aside>
 <div class="stage">
@@ -912,6 +945,8 @@
 </div>
 </div>
 </div>
+<script src="designlabb-extra.js"></script>
+<script src="designlabb-layout.js"></script>
 <script src="designlabb-core.js"></script>
 <script src="designlabb-parts.js"></script>
 <script src="designlabb-ui.js"></script>

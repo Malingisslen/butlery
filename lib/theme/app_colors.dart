@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:156ad0b5b861a3bd6a932f5e45235f6ef7be4873d30bbc3b00e1480829532ebc (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:3999d19a3953b3add5c9923c8a233f6c8558f26a524671fedbb216a6c1c2a330 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -28,7 +28,7 @@ class AppColors {
   static const Color forestGreenLight = Color(0xFF8FB89A);
 
   /// Dekorativ accent · palette.saffron
-  static const Color rust = Color(0xFFCE7C1E);
+  static const Color rust = Color(0xFFD68523);
 
   /// Kortens underkant · semantic.border.statusWarning
   static const Color rustLight = Color(0xFFD8B784);
@@ -121,7 +121,7 @@ class AppColors {
   static const Color sectionHeader = Color(0xFF37453A);
 
   /// palette.saffron
-  static const Color starGold = Color(0xFFCE7C1E);
+  static const Color starGold = Color(0xFFD68523);
 
   /// palette.wheat
   static const Color categoryDairy = Color(0xFFD8B784);
@@ -151,7 +151,7 @@ class AppColors {
   static const Color illustrationBrown = Color(0xFF8A5212);
 
   /// palette.saffron
-  static const Color illustrationOrange = Color(0xFFCE7C1E);
+  static const Color illustrationOrange = Color(0xFFD68523);
 
   /// palette.clay
   static const Color illustrationPurpleRed = Color(0xFF9C3B23);
@@ -205,7 +205,7 @@ class AppColors {
   static const Color progressTrack = Color(0xFFE6EAD9);
 
   /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator
-  static const Color progressIndicator = Color(0xFFCE7C1E);
+  static const Color progressIndicator = Color(0xFFD68523);
 
   /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled
   static const Color surfaceDisabled = Color(0xFFA9B2A0);
@@ -217,7 +217,7 @@ class AppColors {
   static const Color focusRing = Color(0xFF24382C);
 
   /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary
-  static const Color actionPrimary = Color(0xFFCE7C1E);
+  static const Color actionPrimary = Color(0xFFD68523);
 
   /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed
   static const Color actionPrimaryPressed = Color(0xFF9A5C14);
@@ -350,7 +350,7 @@ class AppColors {
     onPrimary: Color(0xFFF5F4ED),
     primaryContainer: Color(0xFFE6EAD9),
     onPrimaryContainer: Color(0xFF24382C),
-    secondary: Color(0xFFCE7C1E),
+    secondary: Color(0xFFD68523),
     onSecondary: Color(0xFF17251D),
     secondaryContainer: Color(0xFFE6EAD9),
     onSecondaryContainer: Color(0xFF8A5212),
@@ -386,7 +386,7 @@ class AppColors {
     onPrimary: Color(0xFFF5F4ED),
     primaryContainer: Color(0xFF2F4437),
     onPrimaryContainer: Color(0xFFF5F4ED),
-    secondary: Color(0xFFCE7C1E),
+    secondary: Color(0xFFD68523),
     onSecondary: Color(0xFF17251D),
     secondaryContainer: Color(0xFF2F4437),
     onSecondaryContainer: Color(0xFFDCA968),

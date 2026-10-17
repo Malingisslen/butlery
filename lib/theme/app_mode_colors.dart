@@ -52,7 +52,7 @@ abstract final class AppModeColors {
   static Color focusRing(Brightness brightness) =>
       _isDark(brightness) ? AppColorsDark.focusRing : AppColors.focusRing;
 
-  /// semantic action.primary: saffron #CE7C1E in both modes
+  /// semantic action.primary: saffron #D68523 in both modes
   /// (tokens.json:137-140). The view's single hero action, never text.
   static Color actionPrimary(Brightness brightness) => _isDark(brightness)
       ? AppColorsDark.actionPrimary
