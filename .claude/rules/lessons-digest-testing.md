@@ -78,3 +78,6 @@ they simply do not load in sessions that never open a test file.
 
 - I en motor där FÖRSTA TRÄFF VINNER är en fixturs dödsmängd en egenskap hos regelkedjan, inte hos ordet: spåra vilken regel som faktiskt svarar på strängen innan provet krediteras en gräns — fixturen måste NÅ regeln den påstås vakta, och varje ordningspåstående i en kommentar behöver en fixtur som byter svar när blocket flyttas (BUT-1890, 2026-09-20)
 - A string another file cites VERBATIM (census, fixture, registry) binds two files: change both sides in one commit and run the test that compares them before pushing (BUT-2157, 2026-10-09)
+- Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)
+- A comment explaining WHY a test or guard is shaped as it is asserts what it CATCHES … Write such a clause only after mutation-probing what it describes (BUT-1929, 2026-08-27)
+- En utforskares fil:rad för ett matrisfynd är en gissning — läs fyndets egen mätning (SemanticsNode-rekt/tooltip i resultat-JSON:en, `BoxConstraints` ur felet) innan koden ändras (BUT-2194, BUT-2190, 2026-09-30)

@@ -53,7 +53,6 @@ that only bind in app, Cloud Functions or Firestore code.
 - Moving a rule into a SHARED place raises three cross-file questions no single-file reviewer can answer … Run a whole-diff pass ([Workflow], 2026-08-20)
 - A check run correctly against the WRONG OBJECT is indistinguishable from a clean bill of health (BUT-1921, 2026-08-26)
 - A repo RULE file is an untested assertion too … Assert against the artefact (`tester.getSemantics`), correct the rule (BUT-1904)
-- A comment explaining WHY a test or guard is shaped as it is asserts what it CATCHES … Write such a clause only after mutation-probing what it describes (BUT-1929, 2026-08-27)
 - A pipeline that has NEVER run hides every fault at once and fails serially — check `gh run list` before calling a failure a regression (BUT-1904)
 - `git status` codes and `git diff` are the INDEX's cached view, not a measurement (BUT-1951, 2026-09-05)
 - A correction is written in the state least suited to writing one … sweep the PREMISE, not the phrase (BUT-2028, 2026-09-06)
@@ -64,11 +63,8 @@ that only bind in app, Cloud Functions or Firestore code.
 - En vakt kan vara bredare än sin raderare genom TIMING … Fråga alltid var raderaren körs i förhållande till sonden. (BUT-2044, 2026-09-08)
 - En rättelse på en grinds fynd är den redigering som oftast blir kvar OSTAGAD … Staga i ett EGET anrop direkt efter varje rättelse (BUT-2016, 2026-09-10)
 - En prissättning som går till Malin har högre bevisbörda än en kodkommentar … Mät varje prisuppgift i koden samma dag som frågan ställs, aldrig ur en post (BUT-1917, BUT-2018, 2026-09-09)
-- En hårdkodad REGION (eller bucket, plats, prefix) är en handlista ett steg upp … Uppräkna dimensionen som avgör VAR man letar (BUT-2036, 2026-09-10)
 - Ett ärendes ord för felet är inte en enum … Mät vilket status den verkliga populationen producerar innan fixen designas kring ett (BUT-2076, 2026-09-11)
 - En mening vars HUVUD du redigerar ÅTERUTGER sin svans som ditt påstående … Kör `git show HEAD:<fil>` på den överlevande meningen efter varje strykning (ADR-002, BUT-1718, 2026-09-12)
-- En skärpt regel är bara så sann som skrivar-inventeringen: räkna upp skrivare via SKRIVVERBEN i varje fil som nämner samlingen (ADR-0020, 2026-09-14)
-- En sanerare som PRÖVAR en sträng och SPARAR en annan har ett hål i avståndet … kör kontrollen på det RETURNERADE värdet efter varje omskrivning (BUT-1819, 2026-09-15)
 - Commit-gate coverage is recorded PER RUN with the verdict that run ended on … budget ONE full-file-list pass per gate ending on a pass verdict (BUT-1693, 2026-09-16)
 - A JUSTIFICATION is a claim about the code path you did NOT open … open Y's source before the sentence exists (BUT-1954, 2026-09-16)
 - En statisk sida i ett befintligt hosting-mål publicerar ALLT målet bär — mät vad målet publicerar och vem som når det; olanserat innehåll får en egen sajt med egen grind, och statiska filer behöver ingen build (BUT-890, 2026-10-05)
@@ -78,18 +74,16 @@ that only bind in app, Cloud Functions or Firestore code.
 ## UI/UX
 
 - Anchor every "what this product IS" sentence in the doc/code on EVERY run, never in the prior episode ([Workflow], 2026-08-25)
-- A proposal for how a view should look starts FROM the sketch frame, not the kit or the app; "Behåll" needs a named decision (2026-10-11)
+- Ett förslag om hur en vy ska se ut utgår från skissens ram, inte från kitet eller appen; "Behåll" kräver ett namngivet beslut (2026-10-11)
 - Heuristic/LLM-derived visible content (headings, tags, parsed amounts) ships WITH its correction UI in the MVP
 
 ## Language and Firebase gotchas
 
-- A boundary/heuristic/attribution bug usually has a TWIN CLASS — grep sibling classes by NAME (not path) (BUT-1691, BUT-1697)
 - A harness picking between two on-disk shapes for the same fact must choose on the property that decides TRUTH (2026-08-05, [Workflow])
 - "Affected users" is a CLAIM WITH A TIMESTAMP … Date the window at both ends and check live status before any sentence about who is affected (BUT-1846)
 - A claim can be true per verb, caller, purpose or fixture and false universally (BUT-1838)
 - A config artefact in the wrong SHAPE is dead SILENTLY and forever … Existence is not liveness (2026-08-22)
 - Read the first three lines of any config/data file before editing it … Fix the SOURCE, re-run the generator ([Workflow], 2026-08-22)
-- A guard that stops a bulk sync undoing one kind of human decision is evidence you saw the hazard … Name both directions in the same edit (BUT-1856)
 - Strike the numeral instead of re-counting, sweep the WHOLE file (BUT-1856)
 - A count that describes a file you are still editing cannot be TYPED … Recompute it from `wc -l` in the SAME call that stages and commits (BUT-1911)
 - A CLI's output format is a PLATFORM variable … Reproduce a tool's output on the TARGET platform before parsing it (BUT-1894)
@@ -105,7 +99,6 @@ that only bind in app, Cloud Functions or Firestore code.
 - Commit-gate review coverage is keyed on BYTES … Batch every fix, re-stage ONCE, then resume the SAME agent with exactly what changed (BUT-2032, 2026-09-08)
 - En delta till en ÅTERUPPTAGEN granskare räknas från mottagarens senaste läsning, inte från ditt senaste meddelande (BUT-2046, 2026-09-09)
 - En STRYKNING kan göra en mening falsk genom att ta bort satsen som avgränsade den … Läs den ÖVERLEVANDE meningen ensam efter varje strykning (BUT-1943, BUT-2025, BUT-2015, 2026-09-09)
-- Att KOPPLA UR ett anrop faller hjälparens EGNA dokument … grepa HJÄLPARENS fil, inte bara anroparen (BUT-2060, BUT-2005, 2026-09-10)
 - En GRANSKARE SOM HÅLLER MED är inte en mätning … fråga vad vakten dyrast MÖTER, inte vad den snabbast avvisar (BUT-2037, BUT-2034, 2026-09-10)
 - En HÄNGD granskningsagent ser exakt ut som en tänkande, och `running` säger ingenting (BUT-2068, BUT-2022, 2026-09-10)
 - En STRYKNING som lägger till text är inte en strykning … Andra underkännandet av en mening = radera satsen (BUT-2062, BUT-2067, 2026-09-10)
@@ -113,11 +106,9 @@ that only bind in app, Cloud Functions or Firestore code.
 
 - Ett API-svars ORDNING är ett påstående, inte en garanti … en artefakt som SKRIVS OM av sin egen automatik kan inte dateras av `createdAt` (2026-08-28, 2026-09-17)
 - En mening i en användarvänd JURIDISK artefakt om vad som HÄNDER MED DATA är ett påstående om en SKRIVARE, aldrig om en avvikelsepost (BUT-1838, 2026-09-17, [Workflow])
-- Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)
 - En "är detta aktuellt?"-fråga mäts först mot ärendets EGEN historik (`git log --all --grep=<ID>` + grep på ID:t), sedan mot koden — ett beslut kan vara fattat i ett annat ärendes ändring utan att statusfältet ändrats (BUT-2094, 2026-09-20)
 - En granskares VERDIKTRAD registreras separat från dess läsningar — be om den som ETT EGET meddelande och verifiera i liggaren, aldrig i rapporten (2026-09-20)
 - Ett upprepat UTFALL är inte en mekanism: öppna hooken/skriptet innan du skriver ned VARFÖR, annars bekräftar varje lyckad körning vanan och ingenting testar förklaringen (2026-09-20)
 - En strykning måste mäta BÅDA satserna i meningen den skär i — den flaggade satsen är inte automatiskt den falska, och sessionens egen utdata har ofta redan mätt det; samma mening fel två gånger = radera hela påståendet (BUT-1890, 2026-09-20)
 - Backticks (och `$(…)`, `&&`, `;`) i en heredoc-KROPP parsas av commit-grinden som ett muterande steg före commiten, oavsett om anropet är en riktig commit — skriv texten till en fil och kör med `-F <fil>` som ensamt anrop (2026-09-20)
 - En RÄTTELSE mäts om innan den medges: den ärver auktoritet av att komma sist och kullkastade här något tre granskare bekräftat, fast det var rättelsen som var fel — en förekomstkontroll är ordningsblind, så ett avgränsarPAR kräver att stängaren söks FRÅN öppnarens position; och granskare som ärvt samma brief mäter briefen, inte koden (BUT-2033, 2026-09-21)
-- En utforskares fil:rad för ett matrisfynd är en gissning — läs fyndets egen mätning (SemanticsNode-rekt/tooltip i resultat-JSON:en, `BoxConstraints` ur felet) innan koden ändras (BUT-2194, BUT-2190, 2026-09-30)
