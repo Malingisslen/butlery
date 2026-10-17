@@ -117,6 +117,11 @@ jobs:
     - name: Forbid raw favourite/bookmark glyphs outside the semantic aliases
       run: bash tools/check_icon_convention.sh
 
+    # Ratchet: fails when duplicated lines or unreachable lib files GROW past
+    # tools/code_hygiene_baseline.json; the existing backlog never fails a build.
+    - name: Forbid growth in duplicated or unreachable code
+      run: node tools/code_hygiene.mjs --check
+
     # BUT-1746: a literal null in a Firestore `.where()` builds NO condition —
     # the call compiles, reads as a filter, and degrades the query into an
     # unfiltered read of the whole collection. Four such sites shipped. The
