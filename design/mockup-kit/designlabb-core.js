@@ -51,7 +51,7 @@ const FONTS = {
 const defaults = () => ({
   font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], ...SPACE_DEFAULTS,
+  moves: [], free: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -210,7 +210,15 @@ function buildCss(st, scope = '') {
   for (const { selector, px } of radii) {
     css += `${scoped(selector, scope)}{border-radius:${px === '12px' ? st.card : st.control}px}`;
   }
-  return css + extraCss(st, scope) + partsCss(st, scope);
+  return css + extraCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
+}
+// Free moves: a part's margins, so its neighbours make room for it and the spacing follows.
+function freeCss(st, scope) {
+  let css = '';
+  for (const [id, f] of Object.entries(st.free || {})) {
+    css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{margin-left:${f.ml}px !important;margin-top:${f.mt}px !important}`;
+  }
+  return css;
 }
 
 const PART_LABELS = { lab: 'rubrik/text', sub: 'underrubrik/värde', ico: 'ikon' };

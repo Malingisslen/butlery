@@ -323,7 +323,7 @@ function wireExtras() {
     $('space-presets').append(b);
   }
   $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); showMoving(); };
-  $('clear-moves').onclick = () => { state.moves = []; replayLayout(); showMoves(); render(); };
+  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
   $('apply').onclick = async () => {
     const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}`;

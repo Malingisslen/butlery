@@ -11,6 +11,7 @@ let moveMode = false;
 let layoutBase = '';
 let layoutApplied = '[]';
 let moving = null; // the picked element
+let freeMode = false;
 let drag = null; // { el, x, y, started, plan }
 
 const inSvg = el => !!el.parentElement?.closest('svg');
@@ -196,6 +197,35 @@ function nudge(dir) {
   recordMove(moving, parent, dir < 0 ? sibs[j] : sibs[j + 1] || null);
 }
 
+const snap4 = (v, off) => off ? v : Math.round(v / 4) * 4;
+// Free drag: the part keeps its place in the flow but its margins follow the pointer (snapped to
+// 4 px, Alt for exact), so what is around it moves over and the gaps stay true.
+function freeMove(e) {
+  const { el } = drag, id = el.dataset.labId;
+  if (!id) return;
+  const dx = snap4(e.clientX - drag.x, e.altKey), dy = snap4(e.clientY - drag.y, e.altKey);
+  (state.free ||= {})[id] = { ml: drag.ml + dx, mt: drag.mt + dy, dx, dy, label: labelOf(el) };
+  render();
+  showFreeGaps(el);
+}
+function showFreeGaps(el) {
+  document.querySelectorAll('.lab-gap').forEach(n => n.remove());
+  const phone = el.closest('.phone'), base = phone.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const tag = (x, y, w, h, text) => {
+    const d = document.createElement('div');
+    d.className = 'lab-gap between';
+    d.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${Math.max(w, 1)}px;height:${Math.max(h, 1)}px`;
+    d.textContent = text;
+    phone.append(d);
+  };
+  const prev = el.previousElementSibling, next = el.nextElementSibling, par = el.parentElement.getBoundingClientRect();
+  if (prev && !prev.classList.contains('lab-gap')) { const p = prev.getBoundingClientRect(); const g = Math.round(r.top - p.bottom); if (g > 0) tag(r.left, p.bottom, r.width, g, g); }
+  if (next && !next.classList.contains('lab-gap')) { const n = next.getBoundingClientRect(); const g = Math.round(n.top - r.bottom); if (g > 0) tag(r.left, r.bottom, r.width, g, g); }
+  const left = Math.round(r.left - par.left), right = Math.round(par.right - r.right);
+  if (left > 0) tag(par.left, r.top, left, r.height, left);
+  if (right > 0) tag(r.right, r.top, right, r.height, right);
+}
+
 function wireLayout() {
   const screens = $('screens');
   screens.addEventListener('pointerdown', e => {
@@ -203,7 +233,9 @@ function wireLayout() {
     let el = pickAt(e.target);
     if (!el) return;
     if (moving?.isConnected && moving.contains(e.target) && !drag) el = moving;
-    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, wasPicked: el === moving };
+    const ms = getComputedStyle(el), had = state.free?.[el.dataset.labId];
+    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, wasPicked: el === moving,
+      ml: had ? had.ml - had.dx : parseFloat(ms.marginLeft) || 0, mt: had ? had.mt - had.dy : parseFloat(ms.marginTop) || 0 };
     el.setAttribute('data-lab-moving', '');
     if (e.pointerType === 'touch') e.preventDefault();
   }, true);
@@ -215,6 +247,7 @@ function wireLayout() {
     }
     if (!drag.started) return;
     e.preventDefault();
+    if (freeMode) { freeMove(e); return; }
     drag.plan = dropPlan(e.clientX, e.clientY);
     showDropLine(drag.plan);
   }, { passive: false });
@@ -224,13 +257,15 @@ function wireLayout() {
     drag = null;
     d.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop').forEach(n => n.remove());
-    if (d.started) {
+    if (d.started && freeMode) { document.querySelectorAll('.lab-gap').forEach(n => n.remove()); showMoves(); pickMoving(d.el); }
+    else if (d.started) {
       if (d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
       else pickMoving(d.el);
     } else if (d.wasPicked && moving === d.el) pickMoving(boxAround(d.el));
     else pickMoving(d.el);
   });
   screens.addEventListener('click', e => { if (moveMode) { e.preventDefault(); e.stopPropagation(); } }, true);
+  $('move-style').onchange = e => { freeMode = e.target.value === 'free'; showMoving(); };
   $('move-up').onclick = () => nudge(-1);
   $('move-down').onclick = () => nudge(1);
   $('move-out').onclick = () => { if (moving) pickMoving(boxAround(moving)); };
@@ -248,8 +283,8 @@ function showMoving() {
 function showMoves() {
   const box = $('moves');
   box.textContent = '';
-  const moves = state.moves || [];
-  if (!moves.length) {
+  const moves = state.moves || [], free = Object.values(state.free || {});
+  if (!moves.length && !free.length) {
     box.innerHTML = '<p class="hint">Inga flyttar än. Slå på Flytta delar och dra en rad, ett avsnitt eller en knapp till ett annat ställe.</p>';
     return;
   }
@@ -259,8 +294,16 @@ function showMoves() {
     p.textContent = `${i + 1}. ${moveText(m)}`;
     box.append(p);
   });
+  for (const f of free) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = freeText(f);
+    box.append(p);
+  }
 }
+const freeText = f => `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`;
 function layoutSummary(st, out) {
-  if (!st.moves?.length) return;
-  out.layoutMoves = st.moves.map(moveText);
+  const free = Object.values(st.free || {});
+  if (!st.moves?.length && !free.length) return;
+  out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText)];
 }

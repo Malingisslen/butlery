@@ -138,7 +138,8 @@ function control(part, spec, now, keyword, onSet) {
 
 function showPart(variant = false) {
   const el = selected.el, box = $('part');
-  const sel = selectorFor(el, variant), base = selectorFor(el, false);
+  let sel = selectorFor(el, variant), base = selectorFor(el, false);
+  if (selected.onlyThis && el.dataset.labId && sel !== '.phone') sel = base = `[data-lab-id="${el.dataset.labId}"]`;
   selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
   const view = selected.onlyView ? +el.closest('.phone').dataset.view : null;
   const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}`;
@@ -183,7 +184,14 @@ function showPart(variant = false) {
     info.textContent = `Ändringen gäller ${found.n} likadana delar i ${found.views} ${found.views === 1 ? 'vy' : 'vyer'} (markerade med rosa ram).`;
     box.append(info);
   }
-  if (sel !== '.phone') {
+  if (el.dataset.labId && !el.classList.contains('phone')) {
+    const l = document.createElement('label');
+    const c = document.createElement('input');
+    c.type = 'checkbox'; c.checked = !!selected.onlyThis; c.onchange = () => { selected.onlyThis = c.checked; showPart(variant); };
+    const s = document.createElement('span'); s.textContent = 'Bara vald del (inte de likadana)';
+    l.append(c, s); box.append(l);
+  }
+  if (sel !== '.phone' && !selected.onlyThis) {
     const l = document.createElement('label');
     const c = document.createElement('input');
     c.type = 'checkbox'; c.checked = !!selected.onlyView; c.onchange = () => { selected.onlyView = c.checked; showPart(variant); };
