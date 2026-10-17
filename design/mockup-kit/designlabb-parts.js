@@ -261,6 +261,83 @@ function drawAsk() {
   box.className = 'themeask';
   box.append(p, row);
 }
+// Exact placement: whole-pixel offset fields (arrow keys nudge 1 px, Shift 10 px) and, with two or
+// more parts picked, the gaps between those parts only.
+let exactInputs = null;
+function refreshExact() {
+  if (!exactInputs || !selected?.el.isConnected) return;
+  const o = freeOffset(selected.el);
+  exactInputs.x.value = o.ox; exactInputs.y.value = o.oy;
+}
+function numberField(label, value, onSet) {
+  const l = document.createElement('label');
+  const t = document.createElement('span'); t.textContent = label;
+  const i = document.createElement('input');
+  i.type = 'number'; i.step = 1; i.value = value;
+  i.onchange = () => onSet(Math.round(+i.value || 0));
+  l.append(t, i);
+  return [l, i];
+}
+function pickedEls() { return [selected.el, ...(selected.extras || [])].filter(x => x.isConnected && x.dataset.labId); }
+function exactBox() {
+  const d = document.createElement('details');
+  d.open = !!state.free?.[selected.el.dataset.labId];
+  const sm = document.createElement('summary'); sm.textContent = 'Flytta exakt (pixlar)';
+  d.append(sm);
+  const set = (axis, v) => {
+    for (const el of pickedEls()) { const o = freeOffset(el); freeSet(el, axis === 'x' ? v : o.ox, axis === 'y' ? v : o.oy); }
+    showMoves(); render(); refreshExact();
+  };
+  const [lx, ix] = numberField('Åt höger (px)', 0, v => set('x', v));
+  const [ly, iy] = numberField('Nedåt (px)', 0, v => set('y', v));
+  exactInputs = { x: ix, y: iy };
+  const hint = document.createElement('p'); hint.className = 'hint';
+  hint.textContent = 'Piltangenterna flyttar den valda delen 1 px (Skift: 10 px). Grannarna ligger kvar där de är.';
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'ghost'; b.textContent = 'Nollställ flytten';
+  b.onclick = () => { for (const el of pickedEls()) { const f = state.free?.[el.dataset.labId]; if (f) { delete f.ox; delete f.oy; if (f.ml == null) delete state.free[el.dataset.labId]; } } showMoves(); render(); refreshExact(); };
+  d.append(lx, ly, hint, b);
+  refreshExact();
+  return d;
+}
+// Gap between neighbours in the picked set, measured edge to edge along one axis.
+function gapBox() {
+  const els = pickedEls();
+  if (els.length < 2) return null;
+  const d = document.createElement('details');
+  d.open = true;
+  const sm = document.createElement('summary'); sm.textContent = 'Avstånd mellan de valda delarna';
+  d.append(sm);
+  const sorted = axis => [...els].sort((a, b) => a.getBoundingClientRect()[axis === 'y' ? 'top' : 'left'] - b.getBoundingClientRect()[axis === 'y' ? 'top' : 'left']);
+  const gaps = axis => {
+    const list = sorted(axis), out = [];
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1].getBoundingClientRect(), b = list[i].getBoundingClientRect();
+      out.push(Math.round(axis === 'y' ? b.top - a.bottom : b.left - a.right));
+    }
+    return out;
+  };
+  const apply = (axis, v) => {
+    const list = sorted(axis);
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1].getBoundingClientRect(), b = list[i].getBoundingClientRect();
+      const cur = Math.round(axis === 'y' ? b.top - a.bottom : b.left - a.right), o = freeOffset(list[i]), delta = v - cur;
+      freeSet(list[i], o.ox + (axis === 'x' ? delta : 0), o.oy + (axis === 'y' ? delta : 0));
+      render();
+    }
+    showMoves(); refreshExact();
+  };
+  const fields = {};
+  for (const [axis, label] of [['y', 'Lodrätt avstånd (px)'], ['x', 'Sidled avstånd (px)']]) {
+    const [l, i] = numberField(label, gaps(axis)[0], v => { apply(axis, v); for (const k of ['y', 'x']) fields[k].value = gaps(k)[0]; });
+    fields[axis] = i;
+    d.append(l);
+  }
+  const hint = document.createElement('p'); hint.className = 'hint';
+  hint.textContent = 'Avståndet mäts från kant till kant mellan delarna i den ordning de ligger. Det är bara de valda delarna som flyttar sig, inte hela vyn.';
+  d.append(hint);
+  return d;
+}
 function showPart(variant = false) {
   const el = selected.el, box = $('part');
   selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
@@ -363,6 +440,8 @@ function showPart(variant = false) {
     const s = document.createElement('span'); s.textContent = 'Bara just den här varianten';
     l.append(c, s); box.append(l);
   }
+  { const g = gapBox(); if (g) box.append(g); }
+  if (el.dataset.labId && !el.classList.contains('phone')) box.append(exactBox());
   const warn = document.createElement('details');
   warn.open = true;
   const wsum = document.createElement('summary'); wsum.textContent = 'Kontroll av det du valt';
@@ -483,7 +562,7 @@ function wireScreens() {
       showPart(false);
       return;
     }
-    if (selected?.el.isConnected && selected.el.contains(e.target)) el = parentPart(selected.el);
+    if (selected?.el.isConnected && selected.el.contains(e.target) && !selected.el.classList.contains('phone')) el = parentPart(selected.el);
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     el.setAttribute('data-lab-selected', '');
     selected = { el, mode: null };

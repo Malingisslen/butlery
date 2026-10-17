@@ -227,11 +227,14 @@ function buildCss(st, scope = '') {
   }
   return css + roleCss(st, scope) + extraCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
 }
-// Free moves: a part's margins, so its neighbours make room for it and the spacing follows.
+// Free moves: an exact pixel offset (older saved ones are margins).
 function freeCss(st, scope) {
   let css = '';
   for (const [id, f] of Object.entries(st.free || {})) {
-    css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{margin-left:${f.ml}px !important;margin-top:${f.mt}px !important}`;
+    const decls = [];
+    if (f.ml != null) decls.push(`margin-left:${f.ml}px !important;margin-top:${f.mt}px !important`);
+    if (f.ox != null) decls.push(`translate:${f.ox}px ${f.oy}px !important`);
+    if (decls.length) css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{${decls.join(';')}}`;
   }
   return css;
 }

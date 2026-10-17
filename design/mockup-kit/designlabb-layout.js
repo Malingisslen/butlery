@@ -150,14 +150,20 @@ function recordMove(el, container, before, beside, side) {
   showMoves();
   render();
 }
-const snap4 = (v, off) => { const g = (typeof SEE !== 'undefined' && SEE.grid) || 4; return off ? v : Math.round(v / g) * g; };
-// Free drag: the part keeps its place in the flow but its margins follow the pointer (snapped to
-// 4 px, Alt for exact), so what is around it moves over and the gaps stay true.
-function freeMove(e) {
-  const { el } = drag, id = el.dataset.labId;
+// Free placement is an exact offset in whole pixels (CSS translate), so what is set is what shows;
+// margins would shift a centred neighbour by half and break the alignment.
+const freeOffset = el => { const f = state.free?.[el.dataset.labId]; return { ox: f?.ox ?? 0, oy: f?.oy ?? 0 }; };
+function freeSet(el, ox, oy) {
+  const id = el.dataset.labId;
   if (!id) return;
-  const dx = snap4(e.clientX - drag.x, e.altKey), dy = snap4(e.clientY - drag.y, e.altKey);
-  (state.free ||= {})[id] = { ml: drag.ml + dx, mt: drag.mt + dy, dx, dy, label: labelOf(el) };
+  const f = (state.free ||= {})[id] ||= {};
+  f.label = labelOf(el); f.ox = ox; f.oy = oy;
+  if (!ox && !oy && f.ml == null) delete state.free[id];
+}
+function freeMove(e) {
+  const { el } = drag;
+  if (!el.dataset.labId) return;
+  freeSet(el, drag.ox + Math.round(e.clientX - drag.x), drag.oy + Math.round(e.clientY - drag.y));
   render();
   showFreeGaps(el);
 }
@@ -183,9 +189,8 @@ function wireLayout() {
   const screens = $('screens');
   screens.addEventListener('pointerdown', e => {
     if (e.button > 0 || !e.target.closest?.('.lab-cross') || !selected?.el.isConnected) return;
-    const el = selected.el, ms = getComputedStyle(el), had = state.free?.[el.dataset.labId];
-    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null,
-      ml: had ? had.ml - had.dx : parseFloat(ms.marginLeft) || 0, mt: had ? had.mt - had.dy : parseFloat(ms.marginTop) || 0 };
+    const el = selected.el;
+    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, ...freeOffset(el) };
     e.preventDefault(); e.stopPropagation();
   }, true);
   window.addEventListener('pointermove', e => {
@@ -211,6 +216,14 @@ function wireLayout() {
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
     drawHandles();
   });
+  window.addEventListener('keydown', e => {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d || !selected?.el.isConnected || e.target.closest?.('input,select,textarea,summary,.panel,[contenteditable]')) return;
+    e.preventDefault();
+    const step = e.shiftKey ? 10 : 1;
+    for (const el of [selected.el, ...(selected.extras || [])]) { const o = freeOffset(el); freeSet(el, o.ox + d[0] * step, o.oy + d[1] * step); }
+    showMoves(); render(); refreshExact();
+  });
   $('move-style').onchange = e => { freeMode = e.target.value === 'free'; };
 }
 
@@ -235,7 +248,9 @@ function showMoves() {
     box.append(p);
   }
 }
-const freeText = f => `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`;
+const freeText = f => (f.ox != null
+  ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)`
+  : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
   const free = Object.values(st.free || {});
   if (!st.moves?.length && !free.length) return;
