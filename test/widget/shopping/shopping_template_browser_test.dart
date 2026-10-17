@@ -116,4 +116,63 @@ void main() {
     expect(find.text(_sv.commonUnknownError), findsOneWidget);
     expect(find.text('Fredagsmys'), findsOneWidget);
   });
+
+  group('showShoppingTemplateBrowser', () {
+    Future<List<String>> openBrowser(WidgetTester tester) async {
+      setStateSurface(tester);
+      final picked = <String>[];
+      await tester.pumpWidget(
+        stateApp(
+          mode: Brightness.light,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showShoppingTemplateBrowser(
+                  context,
+                  onTemplateSelected: (id) async => picked.add(id),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      return picked;
+    }
+
+    testWidgets('the close button dismisses the dialog', (tester) async {
+      await openBrowser(tester);
+      expect(find.text('Fredagsmys'), findsOneWidget);
+
+      await tester.tap(find.byTooltip(_sv.commonClose));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fredagsmys'), findsNothing);
+    });
+
+    testWidgets('picking a template closes the dialog and reports its id', (
+      tester,
+    ) async {
+      final picked = await openBrowser(tester);
+
+      final row = find.ancestor(
+        of: find.text('Veckohandling'),
+        matching: find.byType(ButleryItemRow),
+      );
+      await tester.tap(
+        find.descendant(
+          of: row,
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_sv.shoppingTemplateUse).last);
+      await tester.pumpAndSettle();
+
+      expect(picked, ['t2']);
+      expect(find.text('Veckohandling'), findsNothing);
+    });
+  });
 }

@@ -386,6 +386,64 @@ void main() {
       expect(fakeVm.deleteUnusedCalls, 1);
     });
 
+    testWidgets('a tap on an unused tag opens that tag\'s page', (
+      tester,
+    ) async {
+      final unused = PersonalTag.create(name: 'Glömd');
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Fika'),
+          unused,
+        ],
+        usageCounts: {'Fika': 2},
+      );
+      await pumpView(tester);
+
+      await tester.tap(find.byKey(ValueKey(unused.id)));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<TagDetailView>(find.byType(TagDetailView)).tagId,
+        unused.id,
+      );
+    });
+
+    testWidgets('Slå ihop keeps the tag chosen and merges the others into '
+        'it', (tester) async {
+      final first = PersonalTag.create(name: 'Snabbt');
+      final second = PersonalTag.create(name: 'Vardag');
+      fakeVm.setState(
+        tags: [first, second],
+        usageCounts: {'Snabbt': 1, 'Vardag': 3},
+      );
+      await pumpView(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey('personal-tags-select-enter')),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Snabbt'));
+      await tester.tap(find.text('Vardag'));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Slå ihop'));
+      await tester.pumpAndSettle();
+      expect(find.text('Slå ihop taggar'), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('merge-keep-${second.id}')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.ancestor(
+          of: find.text('Slå ihop').last,
+          matching: find.bySubtype<FilledButton>(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(fakeVm.merges, hasLength(1));
+      expect(fakeVm.merges.single.$1, second.id);
+      expect(fakeVm.merges.single.$2, [first.id]);
+    });
+
     testWidgets('a tap on a tag opens that tag\'s page', (tester) async {
       final tag = PersonalTag.create(name: 'Snabbt');
       fakeVm.setState(tags: [tag], usageCounts: {'Snabbt': 1});
@@ -474,6 +532,13 @@ void main() {
 
 class _RecordingTagVm extends FakePersonalTagViewModel {
   int deleteUnusedCalls = 0;
+  final merges = <(String, List<String>)>[];
+
+  @override
+  Future<int> mergeTagsInto(String targetId, List<String> sourceIds) async {
+    merges.add((targetId, sourceIds));
+    return sourceIds.length;
+  }
 
   @override
   Future<int> deleteUnusedTags() async {

@@ -1,6 +1,9 @@
 // lib/widgets/shopping/shopping_template_browser.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog_frame.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -13,6 +16,40 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+
+/// Opens the template browser in a scrollable dialog with a close button.
+/// The dialog closes before [onTemplateSelected] runs.
+Future<void> showShoppingTemplateBrowser(
+  BuildContext context, {
+  required Future<void> Function(String templateId) onTemplateSelected,
+}) {
+  return showButleryDialog<void>(
+    context: context,
+    builder: (dialogContext) => ButleryDialogFrame(
+      maxHeight: AppDimensions.dialogMaxHeightMedium,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.space12),
+            child: ButlerySheetHeader(
+              title: dialogContext.l10n.shoppingTemplates,
+              closeLabel: dialogContext.l10n.commonClose,
+            ),
+          ),
+          Expanded(
+            child: ShoppingTemplateBrowser(
+              onTemplateSelected: (templateId) {
+                Navigator.pop(dialogContext);
+                onTemplateSelected(templateId);
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 /// Displays saved shopping list templates for selection or management.
 /// Follows the same pattern as MenuTemplateBrowser.

@@ -708,38 +708,28 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         choices: [
           // Loading a saved menu would replace the shared one on screen.
           if (widget.realtimeMenuId == null)
-            _rootItem(
-              _VeckomenyRootAction.load,
-              ButleryIcons.folder,
-              context.l10n.menuLoadSaved,
+            ButleryMenuChoice<_VeckomenyRootAction>(
+              value: _VeckomenyRootAction.load,
+              icon: ButleryIcons.folder,
+              label: context.l10n.menuLoadSaved,
             ),
           if (viewModel.hasMenu)
-            _rootItem(
-              _VeckomenyRootAction.save,
-              ButleryIcons.save,
-              context.l10n.menuSave,
+            ButleryMenuChoice<_VeckomenyRootAction>(
+              value: _VeckomenyRootAction.save,
+              icon: ButleryIcons.save,
+              label: context.l10n.menuSave,
             ),
           // A clear would empty the menu for everyone it is shared with.
           if (viewModel.hasMenu && widget.realtimeMenuId == null)
-            _rootItem(
-              _VeckomenyRootAction.clear,
-              ButleryIcons.x,
-              context.l10n.menuClear,
+            ButleryMenuChoice<_VeckomenyRootAction>(
+              value: _VeckomenyRootAction.clear,
+              icon: ButleryIcons.x,
+              label: context.l10n.menuClear,
             ),
         ],
       ),
     ];
   }
-
-  ButleryMenuChoice<_VeckomenyRootAction> _rootItem(
-    _VeckomenyRootAction value,
-    IconData icon,
-    String label,
-  ) => ButleryMenuChoice<_VeckomenyRootAction>(
-    value: value,
-    label: label,
-    icon: icon,
-  );
 
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
     // At large text on a short phone the top of the page took the whole
