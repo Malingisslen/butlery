@@ -1,5 +1,6 @@
 // The incoming group invitation in the friends list: Avböj and Acceptera call
-// the invitation operations, side by side at normal text and stacked at 200 %.
+// the invitation operations, side by side at normal text. The stacking at
+// 200 % is pinned through the friends list view (friends_list_view_test).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,14 +41,14 @@ void main() {
     when(() => ops.rejectGroupInvitation(any())).thenAnswer((_) async => true);
   });
 
-  Future<void> pumpCard(WidgetTester tester, {double textScale = 1}) {
+  Future<void> pumpCard(WidgetTester tester) {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     return tester.pumpWidget(
       createLocalizedTestApp(
         child: MediaQuery(
-          data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+          data: const MediaQueryData(),
           child: Builder(
             builder: (context) =>
                 GroupInvitationCard.build(context, invitation, service),
@@ -79,19 +80,5 @@ void main() {
       tester.getCenter(find.text('Avböj')).dy,
       tester.getCenter(find.text('Acceptera')).dy,
     );
-  });
-
-  testWidgets('at 200 % the buttons stack and both stay tappable', (
-    tester,
-  ) async {
-    await pumpCard(tester, textScale: 2);
-
-    expect(
-      tester.getCenter(find.text('Avböj')).dy,
-      lessThan(tester.getCenter(find.text('Acceptera')).dy),
-    );
-    await tester.tap(find.text('Acceptera'));
-    await tester.pump();
-    verify(() => ops.acceptGroupInvitation('inv-1')).called(1);
   });
 }
