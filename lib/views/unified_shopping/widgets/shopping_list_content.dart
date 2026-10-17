@@ -238,7 +238,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       // the copy must say "list is empty", not "no list to derive from".
       //
       // Skarmar v12 del 2 #tominkop: "Inget att handla", a line on sending
-      // the week's dishes here, "Från veckomenyn" as the one primary action
+      // the week's dishes here, "Från veckomenyn" as the one saffron action
       // and an outlined "Lägg till vara" beside it (Komponentark v1:843-844).
       return StateWidget(
         type: StateType.empty,
@@ -249,7 +249,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           spacing: AppDimensions.space8,
           runSpacing: AppDimensions.space8,
           children: [
-            FormButton(
+            HeroButton(
               key: const ValueKey('shopping-empty-from-week-menu'),
               label: context.l10n.shoppingFromWeekMenu,
               // Opens the Meny tab in the shell the user is already in (the

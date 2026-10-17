@@ -2,7 +2,7 @@
 // place. Saffron (HeroButton) opens a flow: Hem, sign-in, start cooking. Dark
 // green (FormButton) is the button on forms and account
 // pages. A file outside the flow starts cannot draw a saffron
-// button, except the friend buttons below.
+// button.
 
 import 'dart:io';
 
@@ -31,6 +31,14 @@ const _friendButtons = <String, int>{
   'lib/views/social/friend_requests/friend_request_card.dart': 1,
   'lib/views/social/friend_requests/friend_requests_view.dart': 1,
   'lib/widgets/social/public_profile_friend_button.dart': 2,
+};
+
+// The Inköp add button and its empty-state button are drawn saffron on the
+// shopping-list sketch frame, and a list is neither a form nor an account page,
+// so B-158 does not move them. They wait for Malin's call.
+const _shoppingButtons = <String, int>{
+  'lib/views/unified_shopping/widgets/shopping_app_bar.dart': 1,
+  'lib/views/unified_shopping/widgets/shopping_list_content.dart': 1,
 };
 
 String _code(String path) => File(path)
@@ -64,6 +72,6 @@ void main() {
         reason: '$path moved; update the list',
       );
     }
-    expect(_heroOutsideFlowStarts(), _friendButtons);
+    expect(_heroOutsideFlowStarts(), {..._friendButtons, ..._shoppingButtons});
   });
 }

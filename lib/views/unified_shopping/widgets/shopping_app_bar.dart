@@ -150,12 +150,13 @@ class ShoppingAppBar {
     // BUT-403: `btn-add-shopping-item` identifier for browser a11y queries.
     return Semantics(
       identifier: 'btn-add-shopping-item',
-      // The list's one primary action (Komponentark v1:843-844).
+      // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
+      // add button in saffron; Komponentark v1:843-844).
       // The hero fills what its slot offers, so the margins are set here.
       child: LayoutBuilder(
         builder: (context, constraints) => SizedBox(
           width: constraints.maxWidth - 2 * AppDimensions.space16,
-          child: FormButton(
+          child: HeroButton(
             key: const ValueKey('test-shopping-list-add'),
             onPressed: onAddItem,
             icon: ButleryIcons.plus,

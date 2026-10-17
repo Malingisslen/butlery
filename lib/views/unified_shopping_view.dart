@@ -201,7 +201,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
     // BUT-948: the add FAB gives way to the bulk-action bar while
     // selecting.
-    // "Lägg till vara" is the list's one primary action. An empty
+    // "Lägg till vara" is the list's one saffron action. An empty
     // list carries its own actions in the body, with "Från
     // veckomenyn" as the hero, so the button steps aside there
     // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
