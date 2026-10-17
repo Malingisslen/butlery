@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=935-->
+<!--manifest:files=936-->
 
 ## Reporoten
 
@@ -610,8 +610,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `9af40f6d9a42c1f5d3c1818c0514c191f0e0e98678924d0a86d986a8c2485e2b` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `60d900666e7dd6b66831666ebd27e2feb40522d80bc848ff551389c6e42499a6` |
+| `mockup-kit/README.md` | `8c8ca0dddc6183e6a79a0a1e8bf88d6b33a75cb04cd8ec473991a594e5b5e773` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
+| `mockup-kit/designlabb.html` | `3d16089b399136337e67cfbcf9e81553fdb7ad9c5d5a2a82d93cb7dd9909b730` |
 | `mockup-kit/examples.html` | `817d9f524862f4382216b505df39e4d815ff2a42398628fb8c9718b4f2df1e8a` |
 | `mockup-kit/kit.html` | `d7cc5fc6f136d3759f955298805fb2d51648c6de73b0ce7c90380baabd4b3c63` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
