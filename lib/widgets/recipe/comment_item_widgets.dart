@@ -11,7 +11,6 @@ import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
-import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/common/butlery_tap_target.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
@@ -19,6 +18,7 @@ import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 
 /// Widgets for displaying comment items in recipe detail view.
 class CommentItemWidgets {
@@ -155,10 +155,10 @@ class CommentItemWidgets {
                 return ButleryItemRow(
                   key: ValueKey(userId),
                   padded: false,
-                  leading: AvatarWidgets.avatar(
+                  leading: AvatarCircle(
                     displayName: displayName,
                     imageUrl: avatarUrl,
-                    size: ImageSize.small,
+                    announceName: true,
                   ),
                   title: displayName,
                 );
@@ -302,10 +302,11 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                 // Comment header
                 Row(
                   children: [
-                    AvatarWidgets.avatar(
+                    AvatarCircle(
                       displayName: widget.authorDisplayName,
                       imageUrl: widget.authorAvatarUrl,
-                      size: ImageSize.small,
+                      size: AvatarCircleSize.inline,
+                      announceName: true,
                     ),
                     const SizedBox(width: AppDimensions.space8),
                     Expanded(

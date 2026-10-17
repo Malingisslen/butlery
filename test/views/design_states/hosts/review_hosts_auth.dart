@@ -1,6 +1,7 @@
 /// Hosts for the sign-in, guest and legal views the register had not compared.
 library;
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -68,7 +69,11 @@ final reviewAuthHosts = <String, StateHost>{
     },
   ),
   'CommunityGuidelinesView': StateHost(
-    build: (ctx) async => const CommunityGuidelinesView(),
+    build: (ctx) async {
+      // The asset future is cached from the light run's fake-async zone.
+      rootBundle.evict('assets/legal/community_guidelines_sv.md');
+      return const CommunityGuidelinesView();
+    },
     reach: (tester, ctx) =>
         _letAssetsLoad(tester, sv.loadingCommunityGuidelines),
   ),

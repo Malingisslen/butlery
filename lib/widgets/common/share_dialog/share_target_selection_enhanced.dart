@@ -10,8 +10,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 
 enum ShareTargetType { friends, groups }
 
@@ -236,11 +236,9 @@ class ShareTargetSelectionEnhanced {
           contentPadding: EdgeInsets.zero,
           enabled:
               !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
-          leading: UserDisplayWidgets.avatar(
+          leading: AvatarCircle(
             imageUrl: friend.avatarUrl,
             displayName: friend.displayName,
-            size: ImageSize.small,
-            announceName: false,
           ),
           title: Text(
             friend.displayName,

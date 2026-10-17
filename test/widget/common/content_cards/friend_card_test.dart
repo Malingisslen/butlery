@@ -6,9 +6,9 @@
 ///     subtitle/trailing/metadata slots show up, and tap + long-press
 ///     callbacks fire on the InkWell.
 ///
-/// Avatars are exercised via UserProfile.avatarUrl == null so the underlying
-/// AvatarWidgets falls back to its initials placeholder (no network
-/// fetch needed in the test harness).
+/// Avatars are exercised via UserProfile.avatarUrl == null so the avatar
+/// falls back to its initials placeholder (no network fetch needed in the
+/// test harness).
 library;
 
 import 'dart:ui' show SemanticsAction;
@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -121,6 +123,70 @@ void main() {
       );
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
+  });
+
+  group('FriendCard - online dot', () {
+    Finder dot(Color success) => find.byWidgetPredicate(
+      (w) => w is ButleryDisc && w.color == success,
+    );
+
+    Future<Color> pump(
+      WidgetTester tester, {
+      required bool online,
+      required bool showOnlineStatus,
+      required FriendCardStyle style,
+    }) async {
+      late Color success;
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              success = context.modeColors.success;
+              return FriendCard(
+                user: _user(isOnline: online),
+                style: style,
+                showOnlineStatus: showOnlineStatus,
+              );
+            },
+          ),
+        ),
+      );
+      return success;
+    }
+
+    for (final style in FriendCardStyle.values) {
+      testWidgets('${style.name}: an online friend gets the dot when asked', (
+        tester,
+      ) async {
+        final success = await pump(
+          tester,
+          online: true,
+          showOnlineStatus: true,
+          style: style,
+        );
+        expect(dot(success), findsOneWidget);
+      });
+
+      testWidgets('${style.name}: no dot when offline or not asked for', (
+        tester,
+      ) async {
+        var success = await pump(
+          tester,
+          online: false,
+          showOnlineStatus: true,
+          style: style,
+        );
+        expect(dot(success), findsNothing);
+
+        success = await pump(
+          tester,
+          online: true,
+          showOnlineStatus: false,
+          style: style,
+        );
+        expect(dot(success), findsNothing);
+      });
+    }
   });
 
   group('FriendCard - interaction', () {

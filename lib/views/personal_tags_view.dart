@@ -21,6 +21,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
@@ -161,6 +162,14 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       leading: page.leading,
       titleStyle: page.titleStyle,
       actions: page.actions,
+      floatingActionButton: selecting
+          ? null
+          : FloatingActionButtonWidget(
+              key: const ValueKey('personal-tags-create'),
+              semanticLabel: context.l10n.commonCreate,
+              onPressed: () => _showCreateSheet(context),
+              child: const ButleryIcon(ButleryIcons.plus),
+            ),
       body: FocusTraversalGroup(
         child: Column(
           children: [
@@ -222,12 +231,6 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             context,
             onSort: () => _pickSortOrder(context),
           ),
-        ),
-        AppIconButton(
-          key: const ValueKey('personal-tags-create'),
-          icon: ButleryIcons.plus,
-          semanticLabel: context.l10n.commonCreate,
-          onPressed: () => _showCreateSheet(context),
         ),
       ],
     );
@@ -353,7 +356,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         padding: EdgeInsetsDirectional.only(
           start: margin,
           end: margin,
-          bottom: AppDimensions.space24,
+          bottom: AppDimensions.fabClearance,
         ),
         children: [
           ?_buildPartialDelete(context, viewModel),

@@ -235,6 +235,31 @@ void main() {
       );
       expect(delete.onPressed, isNull);
     });
+
+    testWidgets('the create button floats outside the bar and is gone while '
+        'selecting', (tester) async {
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Snabbt'),
+          PersonalTag.create(name: 'Vardag'),
+        ],
+        isLoading: false,
+      );
+      await pumpView(tester);
+      final create = find.byKey(const ValueKey('personal-tags-create'));
+
+      expect(create, findsOneWidget);
+      expect(
+        find.descendant(of: find.byType(ButleryTopBar), matching: create),
+        findsNothing,
+      );
+
+      await tester.tap(enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('0 valda'), findsOneWidget);
+      expect(create, findsNothing);
+    });
   });
 
   group('Mer, omtänkt', () {
@@ -281,7 +306,7 @@ void main() {
       expect(find.text('Glömd'), findsOneWidget);
     });
 
-    testWidgets('the plus in the bar opens a Skapa sheet with both rows', (
+    testWidgets('the plus opens a Skapa sheet with both rows', (
       tester,
     ) async {
       fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);

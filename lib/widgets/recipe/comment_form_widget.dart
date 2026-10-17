@@ -25,8 +25,9 @@ import 'package:butlery/widgets/common/buttons/butlery_close_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
-import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -268,6 +269,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
   @override
   Widget build(BuildContext context) {
     final socialViewModel = widget.socialViewModel;
+    final viewerName = (socialViewModel.currentUser?.displayName).orEmpty();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -306,10 +308,13 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AvatarWidgets.avatar(
-              user: socialViewModel.currentUser,
-              displayName: context.l10n.commentYou,
-              size: ImageSize.small,
+            AvatarCircle(
+              imageUrl: socialViewModel.currentUser?.avatarUrl,
+              displayName: viewerName.isNotEmpty
+                  ? viewerName
+                  : context.l10n.commentYou,
+              size: AvatarCircleSize.inline,
+              announceName: true,
             ),
             const SizedBox(width: AppDimensions.space4),
             Expanded(

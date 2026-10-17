@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/viewmodels/auth/provider_terms_viewmodel.dart';
 import 'package:butlery/views/auth/provider_terms_view.dart';
 
@@ -81,7 +82,12 @@ void main() {
     expect(field.controller.text, 'Malin');
     expect(createButton(tester).onPressed, isNull);
 
-    await tester.tap(find.byKey(const ValueKey('providerTerms.accept')));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('providerTerms.accept')),
+        matching: find.byType(ButleryCheckbox),
+      ),
+    );
     await tester.pump();
     expect(createButton(tester).onPressed, isNotNull);
   });
@@ -93,7 +99,12 @@ void main() {
       find.byKey(const ValueKey('providerTerms.name')),
       '  Malin G  ',
     );
-    await tester.tap(find.byKey(const ValueKey('providerTerms.accept')));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('providerTerms.accept')),
+        matching: find.byType(ButleryCheckbox),
+      ),
+    );
     await tester.pump();
     await tester.ensureVisible(create());
     await tester.tap(create());
@@ -107,7 +118,12 @@ void main() {
   ) async {
     await pump(tester, _Auth());
 
-    await tester.tap(find.byKey(const ValueKey('providerTerms.accept')));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('providerTerms.accept')),
+        matching: find.byType(ButleryCheckbox),
+      ),
+    );
     await tester.pump();
     await tester.ensureVisible(create());
     await tester.tap(create());
@@ -128,7 +144,12 @@ void main() {
     ).thenReturn('Kontot kunde inte skapas. Försök igen.');
     await pump(tester, _Auth(firstName: 'Malin'));
 
-    await tester.tap(find.byKey(const ValueKey('providerTerms.accept')));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('providerTerms.accept')),
+        matching: find.byType(ButleryCheckbox),
+      ),
+    );
     await tester.pump();
     await tester.ensureVisible(create());
     await tester.tap(create());

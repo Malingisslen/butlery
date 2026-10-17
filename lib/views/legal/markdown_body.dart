@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
-import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/layout/inline_widget_span.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
@@ -22,7 +21,7 @@ import 'package:butlery/widgets/common/layout/word_fit.dart';
 ///
 /// Drawn as the sketch reads (Skärmar v12 #juridik): the top `#` title is the
 /// page bar's job and is not repeated, the lines up to the first `---` are
-/// the document's date and version in secondary text over the saffron rule,
+/// the document's date and version in secondary text,
 /// and the headings are bold ink.
 class MarkdownBody extends StatefulWidget {
   final String data;
@@ -229,7 +228,6 @@ class _MarkdownBodyState extends State<MarkdownBody> {
         case _BlockType.rule:
           if (beforeFirstRule) {
             beforeFirstRule = false;
-            children.add(const AccentRule.inline());
             if (widget.afterIntro != null) children.add(widget.afterIntro!);
           } else {
             children.add(const ButleryDivider(spacing: AppDimensions.space32));

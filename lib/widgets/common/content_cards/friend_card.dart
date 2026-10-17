@@ -6,7 +6,9 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
-import 'package:butlery/widgets/social/avatar/avatar_widgets.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/cards/styled_card.dart';
 
 /// Focused module for friend card components
@@ -89,7 +91,7 @@ class FriendCard extends StatelessWidget {
         Row(
           children: [
             if (showAvatar) ...[
-              _buildUserAvatar(context, size: 50),
+              _buildUserAvatar(context, size: AvatarCircleSize.header),
               const SizedBox(width: AppDimensions.space8),
             ],
             Expanded(
@@ -115,7 +117,7 @@ class FriendCard extends StatelessWidget {
     return Row(
       children: [
         if (showAvatar) ...[
-          _buildUserAvatar(context, size: 40),
+          _buildUserAvatar(context, size: AvatarCircleSize.row),
           const SizedBox(width: AppDimensions.space8),
         ],
         Expanded(
@@ -129,25 +131,39 @@ class FriendCard extends StatelessWidget {
   Widget _buildListContent(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: showAvatar ? _buildUserAvatar(context, size: 40) : null,
+      leading: showAvatar
+          ? _buildUserAvatar(context, size: AvatarCircleSize.row)
+          : null,
       title: _buildUserName(context),
       subtitle: subtitle != null ? _buildSubtitle(context) : null,
       trailing: trailing,
     );
   }
 
-  Widget _buildUserAvatar(BuildContext context, {required double size}) {
-    // Map size to ImageSize enum - 50+ is large, 40+ is medium, default small
-    final imageSize = size >= 50
-        ? ImageSize.large
-        : (size >= 40 ? ImageSize.medium : ImageSize.small);
-
-    return AvatarWidgets.avatar(
-      announceName: false,
-      user: user,
-      size: imageSize,
-      showStatus: showOnlineStatus,
-      isOnline: user.isOnline == true,
+  Widget _buildUserAvatar(
+    BuildContext context, {
+    required AvatarCircleSize size,
+  }) {
+    final avatar = AvatarCircle(
+      imageUrl: user.avatarUrl,
+      displayName: user.displayName,
+      size: size,
+    );
+    if (!showOnlineStatus || user.isOnline != true) return avatar;
+    return Stack(
+      children: [
+        avatar,
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: ButleryDisc(
+            size: AppDimensions.space12,
+            color: context.modeColors.success,
+            borderColor: Theme.of(context).colorScheme.surface,
+            borderWidth: 2,
+          ),
+        ),
+      ],
     );
   }
 
