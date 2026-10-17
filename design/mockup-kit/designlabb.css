@@ -8,8 +8,8 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel .head button { flex: none; padding: 6px 10px; font-size: 12px; }
 .panel button:disabled { opacity: .4; cursor: default; }
 .panel #search { margin: 8px 16px 0; padding: 8px; border: 1px solid #7d897c; border-radius: 8px; font: inherit; }
-.panel .tabs { display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid #ccd1c2; }
-.panel .tabs button { flex: 1; padding: 8px 4px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: #627061; font-weight: 600; font-size: 12px; cursor: pointer; }
+.panel .tabs { flex-wrap: wrap; display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid #ccd1c2; }
+.panel .tabs button { flex: 1 0 auto; padding: 8px 4px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: #627061; font-weight: 600; font-size: 12px; cursor: pointer; }
 .panel .tabs button.on { color: #24382c; border-bottom-color: #ce7c1e; }
 .panel .panes { flex: 1; overflow: auto; padding: 4px 16px 12px; }
 .panel .foot { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid #ccd1c2; }
@@ -56,3 +56,15 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 figure { margin: 0; }
 figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--butlery-text-secondary); }
 @media (max-width: 900px) { .lab { flex-direction: column; } .panel { position: static; flex: none; width: 100%; box-sizing: border-box; max-height: none; } }
+.panel .foot + .foot { border-top: 0; padding-top: 0; }
+.panel .foot #apply { background: #d68523; border-color: #d68523; color: #17251d; }
+.panel #moves .hint { margin: 2px 0; }
+.phone .lab-gap { position: absolute; z-index: 50; pointer-events: none; display: flex; align-items: center; justify-content: center; font: 700 10px system-ui, sans-serif; color: #fff; }
+.phone .lab-gap.between { background: rgba(224, 69, 123, .55); }
+.phone .lab-gap.side { background: rgba(36, 120, 200, .55); }
+.lab-overlay .phone .b-row, .lab-overlay .phone .b-btn, .lab-overlay .phone .b-band { outline: 1px solid rgba(224, 69, 123, .7); outline-offset: -1px; }
+.lab-overlay .phone .b-section { outline: 1px dashed rgba(36, 120, 200, .8); outline-offset: -1px; }
+.lab-move .phone [draggable=true] { cursor: grab; }
+.lab-move .phone [draggable=true]:hover { outline: 1px dashed #e0457b; outline-offset: -1px; }
+.lab-move .phone .lab-dragging { opacity: .35; }
+.phone .lab-drop { position: absolute; z-index: 60; background: #e0457b; border-radius: 2px; pointer-events: none; }

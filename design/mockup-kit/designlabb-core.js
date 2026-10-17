@@ -51,6 +51,7 @@ const FONTS = {
 const defaults = () => ({
   font: 'ButlerySans', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
+  moves: [], ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -196,7 +197,7 @@ function buildCss(st, scope = '') {
   for (const { selector, px } of radii) {
     css += `${scoped(selector, scope)}{border-radius:${px === '12px' ? st.card : st.control}px}`;
   }
-  return css + partsCss(st, scope);
+  return css + extraCss(st, scope) + partsCss(st, scope);
 }
 
 const PART_LABELS = { lab: 'rubrik/text', sub: 'underrubrik/värde', ico: 'ikon' };
@@ -222,6 +223,8 @@ function summary(st) {
   if (st.card !== 12) out.radiusCard = st.card;
   if (st.control !== 8) out.radiusControl = st.control;
   if (st.margin !== 24) out.pageMargin = st.margin;
+  spaceSummary(st, out);
+  layoutSummary(st, out);
   const parts = Object.values(st.parts).filter(p => Object.keys(p.props).length);
   if (parts.length) out.components = parts.map(p => ({ selector: p.sel, mode: p.mode, ...p.props }));
   return Object.keys(out).length ? JSON.stringify(out, null, 2) : '';
