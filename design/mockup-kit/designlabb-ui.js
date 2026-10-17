@@ -391,6 +391,23 @@ async function loadVariantsFromDb() {
   } catch { /* the local list still works */ }
 }
 
+// The saved version's own structure (added, copied, moved and rewritten parts), built on the pristine
+// screens and put back at once, so Jämför shows the version and not today's layout under its colours.
+function layoutFigureFor(st, index) {
+  const live = $('screens').innerHTML, liveState = state;
+  try {
+    $('screens').innerHTML = layoutBase;
+    state = { ...state, texts: st.texts || {} };
+    for (const a of st.adds || []) applyAdd(a);
+    for (const c of st.copies || []) applyCopy(c);
+    for (const m of st.moves || []) applyMove(m);
+    applyTexts();
+    return $('screens').children[index]?.cloneNode(true) || null;
+  } finally {
+    $('screens').innerHTML = live;
+    state = liveState;
+  }
+}
 const cmpScreen = $('cmp-screen');
 function buildCompare() {
   const wrap = $('compare-grid');
@@ -405,7 +422,7 @@ function buildCompare() {
     col.append(h);
     const row = document.createElement('div');
     row.className = 'screens';
-    for (const f of [figs[i + +$('cmp-mode').value]]) {
+    for (const f of [scope === 'cmpB' ? layoutFigureFor(compare.state, i + +$('cmp-mode').value) || figs[i + +$('cmp-mode').value] : figs[i + +$('cmp-mode').value]]) {
       const c = f.cloneNode(true);
       c.querySelectorAll('[data-lab-selected],[data-lab-hover]').forEach(n => { n.removeAttribute('data-lab-selected'); n.removeAttribute('data-lab-hover'); });
       row.append(c);

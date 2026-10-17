@@ -480,6 +480,8 @@ function showPart(variant = false) {
   const onSet = (k, v) => {
     for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
     if (COLOR_KEYS.has(k) && v !== '' && v !== false && part.mode !== 'both' && selected.follow?.[k] === undefined) selected.ask = k;
+    // "Båda" speaks for both themes, so an older light-only or dark-only value of the same kind must not outlive it.
+    if (part.mode === 'both') for (const key of selected.keys || []) for (const m of ['light', 'dark']) { const twin = state.parts[m + key.slice(4)]; if (twin) { delete twin.props[k]; if (!Object.keys(twin.props).length) delete state.parts[m + key.slice(4)]; } }
     render();
     drawAsk();
     refreshPartWarn(() => showPart(variant));
