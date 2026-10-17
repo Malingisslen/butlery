@@ -283,7 +283,7 @@ function numberField(label, value, onSet) {
   l.append(t, i);
   return [l, i];
 }
-function pickedEls() { return [selected.el, ...(selected.extras || [])].filter(x => x.isConnected && x.dataset.labId); }
+function pickedEls() { return [selected?.el, ...(selected?.extras || [])].filter(x => x?.isConnected && x.dataset.labId); }
 // One small box on top: the offset of the picked part, or, with two or more parts picked, the gaps
 // between them (edge to edge, only those parts move).
 function placeBox() {

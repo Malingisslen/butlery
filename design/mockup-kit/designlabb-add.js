@@ -100,13 +100,13 @@ function toast(msg) {
   document.body.append(note);
   setTimeout(() => note.remove(), 4000);
 }
-async function imageAdd(spot, replace) {
+async function imageAdd(spot, replace, at) {
   const f = await pickImageFile();
   if (!f) return;
   if (f.src.length > ADD_IMG_BYTES) { toast('Bilden är för stor. Välj en mindre bild eller en SVG.'); return; }
-  commitAdd({ kind: 'img', src: f.src, name: f.name }, spot, replace);
+  commitAdd({ kind: 'img', src: f.src, name: f.name }, spot, replace, at);
 }
-function commitAdd(a, spot, replace) {
+function commitAdd(a, spot, replace, at) {
   if (!spot) return;
   a.to = spot.to; a.before = spot.before;
   a.label = a.kind === 'text' ? a.text : a.kind === 'icon' ? `ikonen ${a.glyph}` : `bilden ${a.name}`;
@@ -119,11 +119,37 @@ function commitAdd(a, spot, replace) {
     a.to = idOf(replace.parentElement);
   }
   recordAdd(a);
+  if (at && !replace) placeAt(addDomId(a), at);
+}
+// A part added from the right-click menu lands under the pointer, as an exact offset from where the
+// flow put it, so the neighbours stay where they are.
+function placeAt(domId, at) {
+  const el = [...document.querySelectorAll(`#screens [data-lab-id="${domId}"]`)].find(n => n.closest('.phone')?.dataset.theme !== 'dark');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const o = freeOffset(el);
+  freeSet(el, o.ox + Math.round(at.x - (r.left + r.width / 2)), o.oy + Math.round(at.y - (r.top + r.height / 2)));
+  showMoves();
+  render();
 }
 
-const addText = (ref, replace) => commitAdd({ kind: 'text', text: 'Ny text' }, addSpot(ref), replace);
-const addIcon = (ref, replace) => commitAdd({ kind: 'icon', glyph: 'star' }, addSpot(ref), replace);
-const addImage = (ref, replace) => imageAdd(addSpot(ref), replace);
+const addText = (ref, replace, at) => commitAdd({ kind: 'text', text: 'Ny text' }, addSpot(ref), replace, at);
+const addIcon = (ref, replace, at) => commitAdd({ kind: 'icon', glyph: 'star' }, addSpot(ref), replace, at);
+const addImage = (ref, replace, at) => imageAdd(addSpot(ref), replace, at);
+// Converting follows the same rule as moves: the like part in the other views, unless "bara vald del"
+// / "bara i den här vyn" is ticked; within a view only the picked part changes.
+async function convertTo(kind, el) {
+  const make = { text: () => ({ kind: 'text', text: 'Ny text' }), icon: () => ({ kind: 'icon', glyph: 'star' }) };
+  let img = null;
+  if (kind === 'img') {
+    img = await pickImageFile();
+    if (!img) return;
+    if (img.src.length > ADD_IMG_BYTES) { toast('Bilden är för stor. Välj en mindre bild eller en SVG.'); return; }
+  }
+  const targets = likeTargets(el);
+  for (const t of targets) commitAdd(img ? { kind: 'img', src: img.src, name: img.name } : make[kind](), addSpot(t), t);
+  if (targets.length > 1) toast(`Gjorde om samma del i ${targets.length} vyer. Kryssa i "Bara vald del" först om bara en ska ändras.`);
+}
 // "Make it ..." works on one picked part, which stays where it is as the new part's neighbour.
 const canConvert = el => !!el && !el.classList.contains('phone') && !!idOf(el.parentElement);
 
