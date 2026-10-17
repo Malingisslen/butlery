@@ -209,4 +209,43 @@ void main() {
       expect(find.textContaining('Flyttade till'), findsNothing);
     });
   });
+
+  group('the empty list', () {
+    testWidgets('"Lägg till vara" in the empty state adds an item', (
+      tester,
+    ) async {
+      final vm = _MockVm();
+      when(() => vm.isLoading).thenReturn(false);
+      when(() => vm.hasError).thenReturn(false);
+      when(() => vm.activeList).thenReturn(
+        ShoppingListFactory.build(
+          id: 'list',
+          items: const [],
+          createdAt: DateTime(2026, 10, 5),
+          updatedAt: DateTime(2026, 10, 5),
+        ),
+      );
+      when(() => vm.hasItems).thenReturn(false);
+      var added = 0;
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: ShoppingListContentWidget(
+            viewModel: vm,
+            onItemTap: (_) {},
+            onEditItem: (_) {},
+            onDeleteItem: (_) {},
+            onCreateList: () {},
+            onAddItem: () => added++,
+            onClearCompleted: () {},
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('shopping-empty-add-item')));
+      await tester.pump();
+
+      expect(added, 1);
+    });
+  });
 }

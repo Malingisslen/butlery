@@ -6,6 +6,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_swatch.dart';
 
 /// Bottom sheet for picking a category when moving a shopping item.
 class CategoryPickerSheet extends StatelessWidget {
@@ -57,16 +58,7 @@ class CategoryPickerSheet extends StatelessWidget {
                 );
 
                 return ButleryItemRow(
-                  leading: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                  ),
+                  leading: ButlerySwatch(color: color),
                   title: ShoppingCategory.displayName(category),
                   selected: isSelected,
                   showCheck: true,

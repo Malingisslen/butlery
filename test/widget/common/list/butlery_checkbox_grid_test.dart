@@ -74,4 +74,50 @@ void main() {
 
     expect(toggled, ['c', 'b']);
   });
+
+  group('columns', () {
+    Future<void> pumpWords(
+      WidgetTester tester, {
+      required double width,
+      double textScale = 1,
+    }) {
+      return tester.pumpWidget(
+        createLocalizedTestApp(
+          child: MediaQuery(
+            data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+            child: Center(
+              child: SizedBox(
+                width: width,
+                child: ButleryCheckboxGrid(
+                  options: const {'a': 'Kosheranpassad', 'b': 'Ägg'},
+                  isSelected: (_) => false,
+                  onToggle: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('two columns while the longest word fits one', (tester) async {
+      await pumpWords(tester, width: 700);
+
+      expect(
+        tester.getTopLeft(find.text('Kosheranpassad')).dy,
+        tester.getTopLeft(find.text('Ägg')).dy,
+      );
+    });
+
+    testWidgets('one column once the longest word would be broken', (
+      tester,
+    ) async {
+      await pumpWords(tester, width: 300, textScale: 2);
+
+      expect(
+        tester.getTopLeft(find.text('Kosheranpassad')).dy,
+        lessThan(tester.getTopLeft(find.text('Ägg')).dy),
+      );
+    });
+  });
 }

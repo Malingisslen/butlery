@@ -150,7 +150,7 @@ void main() {
     final week = code('lib/views/veckomeny_view.dart');
     final weekHeader = week.substring(
       week.indexOf('List<Widget> _buildHeaderActions('),
-      week.indexOf('ButleryMenuChoice<_VeckomenyRootAction> _rootItem('),
+      week.indexOf('Widget _buildBody('),
     );
     expect(RegExp(r'ButleryMenu<').allMatches(weekHeader).length, 1);
     expect(RegExp(r'[^\w]IconButton\(').hasMatch(weekHeader), isFalse);

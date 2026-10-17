@@ -82,66 +82,56 @@ class ShoppingAppBar {
           }
         },
         choices: [
-          _choice(
-            _ShoppingRootAction.newList,
-            ButleryIcons.plus,
-            context.l10n.shoppingNewList,
+          ButleryMenuChoice<_ShoppingRootAction>(
+            value: _ShoppingRootAction.newList,
+            icon: ButleryIcons.plus,
+            label: context.l10n.shoppingNewList,
           ),
           if (onBrowseTemplates != null)
-            _choice(
-              _ShoppingRootAction.templates,
-              ButleryIcons.list,
-              context.l10n.shoppingTemplateBrowse,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.templates,
+              icon: ButleryIcons.list,
+              label: context.l10n.shoppingTemplateBrowse,
             ),
           if (hasActiveList && onSortCategories != null)
-            _choice(
-              _ShoppingRootAction.sortCategories,
-              ButleryIcons.arrowUpDown,
-              context.l10n.shoppingSortCategories,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.sortCategories,
+              icon: ButleryIcons.arrowUpDown,
+              label: context.l10n.shoppingSortCategories,
             ),
           if (hasBoughtItems && onUncheckAll != null)
-            _choice(
-              _ShoppingRootAction.uncheckAll,
-              ButleryIcons.square,
-              context.l10n.shoppingUncheckAll,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.uncheckAll,
+              icon: ButleryIcons.square,
+              label: context.l10n.shoppingUncheckAll,
             ),
           if (canRestore)
-            _choice(
-              _ShoppingRootAction.restoreItems,
-              ButleryIcons.history,
-              context.l10n.shoppingRestoreItems,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.restoreItems,
+              icon: ButleryIcons.history,
+              label: context.l10n.shoppingRestoreItems,
             ),
           if (canShare)
-            _choice(
-              _ShoppingRootAction.shareWithFriends,
-              ButleryIcons.users,
-              context.l10n.shoppingShareWithFriends,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.shareWithFriends,
+              icon: ButleryIcons.users,
+              label: context.l10n.shoppingShareWithFriends,
             ),
           if (canShare)
-            _choice(
-              _ShoppingRootAction.shareExternally,
-              ButleryIcons.share2,
-              context.l10n.shoppingShareExternally,
+            ButleryMenuChoice<_ShoppingRootAction>(
+              value: _ShoppingRootAction.shareExternally,
+              icon: ButleryIcons.share2,
+              label: context.l10n.shoppingShareExternally,
             ),
-          _choice(
-            _ShoppingRootAction.sharingStatus,
-            _getSharingStatusIcon(viewModel),
-            _getSharingStatusTooltip(context, viewModel),
+          ButleryMenuChoice<_ShoppingRootAction>(
+            value: _ShoppingRootAction.sharingStatus,
+            icon: _getSharingStatusIcon(viewModel),
+            label: _getSharingStatusTooltip(context, viewModel),
           ),
         ],
       ),
     ];
   }
-
-  static ButleryMenuChoice<_ShoppingRootAction> _choice(
-    _ShoppingRootAction value,
-    IconData icon,
-    String label,
-  ) => ButleryMenuChoice<_ShoppingRootAction>(
-    value: value,
-    label: label,
-    icon: icon,
-  );
 
   static Widget buildFloatingActionButton(
     BuildContext context,
