@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_item_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/social/content_type.dart';
@@ -126,47 +127,40 @@ class CommentItemWidgets {
     required String Function(String userId) getDisplayName,
     required String? Function(String userId) getAvatarUrl,
   }) {
-    return Container(
-      padding: AppDimensions.paddingAll16,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Padding(
-            padding: AppDimensions.paddingOnlyBottom12,
-            child: Text(
-              context.l10n.socialLikesHeader(likeCount),
-              style: AppTextStyles.headlineSmall,
-            ),
-          ),
-          // Divider
-          const ButleryDivider(),
-          // List of users who liked
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: likedByUserIds.length,
-              itemBuilder: (context, index) {
-                final userId = likedByUserIds[index];
-                final displayName = getDisplayName(userId);
-                final avatarUrl = getAvatarUrl(userId);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ButlerySheetHeader(
+          title: context.l10n.socialLikesHeader(likeCount),
+          closeLabel: context.l10n.commonClose,
+        ),
+        const SizedBox(height: AppDimensions.space8),
+        const ButleryDivider(),
+        Flexible(
+          child: ListView.builder(
+            shrinkWrap: true,
+            padding: AppDimensions.paddingAll16,
+            itemCount: likedByUserIds.length,
+            itemBuilder: (context, index) {
+              final userId = likedByUserIds[index];
+              final displayName = getDisplayName(userId);
+              final avatarUrl = getAvatarUrl(userId);
 
-                return ButleryItemRow(
-                  key: ValueKey(userId),
-                  padded: false,
-                  leading: AvatarCircle(
-                    displayName: displayName,
-                    imageUrl: avatarUrl,
-                    announceName: true,
-                  ),
-                  title: displayName,
-                );
-              },
-            ),
+              return ButleryItemRow(
+                key: ValueKey(userId),
+                padded: false,
+                leading: AvatarCircle(
+                  displayName: displayName,
+                  imageUrl: avatarUrl,
+                  announceName: true,
+                ),
+                title: displayName,
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
