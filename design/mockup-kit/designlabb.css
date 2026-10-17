@@ -64,9 +64,8 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .phone .lab-gap.side { background: rgba(36, 120, 200, .55); }
 .lab-overlay .phone .b-row, .lab-overlay .phone .b-btn, .lab-overlay .phone .b-band { outline: 1px solid rgba(224, 69, 123, .7); outline-offset: -1px; }
 .lab-overlay .phone .b-section { outline: 1px dashed rgba(36, 120, 200, .8); outline-offset: -1px; }
-.lab-move .phone { cursor: grab; user-select: none; }
-.lab-move .phone [data-lab-moving] { outline: 2px solid #e0457b; outline-offset: -2px; touch-action: none; }
-.lab-move .phone .lab-dragging { opacity: .35; }
+/* the cross handle lives with .lab-h below */
+.phone .lab-dragging { opacity: .35; }
 .phone .lab-drop { position: absolute; z-index: 60; background: #e0457b; border-radius: 2px; pointer-events: none; }
 .panel #chat-log { max-height: 280px; overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .panel .chat-msg { padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
@@ -391,3 +390,10 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .panel .vernote button { padding: 5px 10px; font-size: 12px; }
 
 .phone .b-row .chevron { width: 16px; height: 16px; }
+
+.lab-cross { position: absolute; width: 24px; height: 24px; background: #fff; border: 2px solid #e0457b; border-radius: 6px; pointer-events: auto; cursor: move; touch-action: none; box-sizing: border-box; display: grid; place-items: center; }
+.lab-cross svg { width: 16px; height: 16px; fill: #e0457b; }
+.panel .movestyle { margin-bottom: 8px; }
+.themeask { border: 1px solid #e0457b; border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+.themeask p { margin: 0 0 6px; font-size: 12px; }
+.themeask .row { flex-wrap: wrap; }

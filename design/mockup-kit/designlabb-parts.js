@@ -188,6 +188,79 @@ function glyphPicker(parts, part, done) {
   wrap.append(sm, search, grid, reset);
   return wrap;
 }
+// Light and dark are kept together: everything but colours is copied to the same part in the
+// other theme as soon as it changes; a colour is copied only after the user said yes (selected.follow).
+const COLOR_KEYS = new Set(PART_GROUPS.flatMap(g => g[1]).filter(sp => sp[2] === 'color').map(sp => sp[0]));
+const otherMode = m => (m === 'light' ? 'dark' : 'light');
+const modeWord = m => (m === 'light' ? 'ljust' : 'mörkt');
+function twinEl(el, mode) {
+  const id = el.dataset.labId;
+  if (!id) return null;
+  return [...document.querySelectorAll(`#screens [data-lab-id="${id}"]`)].find(n => (n.closest('.phone')?.dataset.theme === 'dark') === (mode === 'dark')) || null;
+}
+function mirrorThemes() {
+  if (!selected?.keys) return;
+  selected.keys.forEach((key, i) => {
+    const part = selected.parts[i];
+    if (!part || state.parts[key] !== part || part.mode === 'both') return;
+    const carry = k => !COLOR_KEYS.has(k) || selected.follow?.[k];
+    const next = Object.fromEntries(Object.entries(part.props).filter(([k]) => carry(k)));
+    const sig = JSON.stringify(next);
+    selected.sigs ||= {};
+    if (selected.sigs[key] === sig) return;
+    selected.sigs[key] = sig;
+    const other = otherMode(part.mode), key2 = other + key.slice(part.mode.length);
+    let twin = state.parts[key2];
+    if (!twin) {
+      if (!Object.keys(next).length) return;
+      twin = state.parts[key2] = { ...part, mode: other, props: {} };
+    }
+    for (const k of Object.keys(twin.props)) if (carry(k) && !(k in next)) delete twin.props[k];
+    Object.assign(twin.props, next);
+    if (!Object.keys(twin.props).length) delete state.parts[key2];
+    else if (!partBase[key2]) {
+      const t = twinEl(selected.el, other);
+      if (t) { const c = getComputedStyle(t); partBase[key2] = { bg: toHex(c.backgroundColor), display: c.display, col: c.flexDirection.startsWith('column') }; }
+    }
+  });
+}
+function clearTwins(keys) {
+  for (const key of keys) {
+    const mode = key.split('|')[0];
+    if (mode === 'both') continue;
+    const twin = state.parts[otherMode(mode) + key.slice(mode.length)];
+    if (!twin) continue;
+    for (const k of Object.keys(twin.props)) if (!COLOR_KEYS.has(k)) delete twin.props[k];
+    if (!Object.keys(twin.props).length) delete state.parts[otherMode(mode) + key.slice(mode.length)];
+  }
+}
+function drawAsk() {
+  const box = $('theme-ask');
+  if (!box) return;
+  box.textContent = '';
+  box.className = '';
+  const k = selected?.ask, mode = selected?.part?.mode;
+  if (!k || !mode || mode === 'both') return;
+  const other = otherMode(mode);
+  const p = document.createElement('p');
+  p.textContent = `Du ändrade en färg i ${modeWord(mode)} läge. Ska motsvarande färg ändras i ${modeWord(other)} läge också?`;
+  const row = document.createElement('div'); row.className = 'row';
+  const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; row.append(b); };
+  const close = follow => { (selected.follow ||= {})[k] = follow; selected.ask = null; };
+  btn('Ja, samma färg', () => { close(true); render(); drawAsk(); });
+  btn(`Ja, välj själv i ${modeWord(other)}`, () => {
+    close(false);
+    const t = twinEl(selected.el, other);
+    if (!t) { drawAsk(); return; }
+    document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+    t.setAttribute('data-lab-selected', '');
+    selected.el = t; selected.extras = []; selected.mode = other;
+    showPart(false);
+  });
+  btn(`Nej, bara ${modeWord(mode)}`, () => { close(false); drawAsk(); });
+  box.className = 'themeask';
+  box.append(p, row);
+}
 function showPart(variant = false) {
   const el = selected.el, box = $('part');
   selected.mode ||= el.closest('.phone').dataset.theme === 'dark' ? 'dark' : 'light';
@@ -196,6 +269,9 @@ function showPart(variant = false) {
   const { sel, base, view, key, part } = targets[0];
   selected.part = part;
   selected.parts = targets.map(t => t.part);
+  selected.keys = targets.map(t => t.key);
+  selected.sigs ||= {};
+  for (const t of targets) selected.sigs[t.key] ??= JSON.stringify(Object.fromEntries(Object.entries(t.part.props).filter(([k]) => !COLOR_KEYS.has(k) || selected.follow?.[k])));
   const cs = getComputedStyle(el);
   const kid = q => el.querySelector(q);
   const now = {
@@ -231,6 +307,11 @@ function showPart(variant = false) {
     seg.append(b);
   }
   box.append(seg);
+  const askBox = document.createElement('div'); askBox.id = 'theme-ask';
+  box.append(askBox);
+  const tnote = document.createElement('p'); tnote.className = 'hint';
+  tnote.textContent = 'Allt utom färger ändras i både ljust och mörkt. Färger gäller bara läget du står i, och du får en fråga om det andra.';
+  box.append(tnote);
   const stateRow = document.createElement('label');
   const stateName = document.createElement('span'); stateName.textContent = 'Tillstånd';
   const stateSel = document.createElement('select');
@@ -290,7 +371,9 @@ function showPart(variant = false) {
   box.append(warn);
   const onSet = (k, v) => {
     for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
+    if (COLOR_KEYS.has(k) && v !== '' && v !== false && part.mode !== 'both' && selected.follow?.[k] === undefined) selected.ask = k;
     render();
+    drawAsk();
     refreshPartWarn(() => showPart(variant));
   };
   if (el.matches('svg.i')) box.append(glyphPicker(selected.parts, part, () => { render(); showPart(variant); }));
@@ -309,7 +392,7 @@ function showPart(variant = false) {
   });
   const r = document.createElement('div');
   r.className = 'row';
-  for (const [label, fn] of [['Nollställ delen', () => { for (const t of targets) delete state.parts[t.key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
+  for (const [label, fn] of [['Nollställ delen', () => { clearTwins(targets.map(t => t.key)); for (const t of targets) delete state.parts[t.key]; render(); showPart(variant); }], ['Avmarkera', clearSelection]]) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; r.append(b);
   }
@@ -319,6 +402,7 @@ function showPart(variant = false) {
   note.textContent = 'Skuggor, glas och rörelse finns inte i appens regler idag; med minskad rörelse ska appen visa dem stilla.';
   box.append(note);
   applySearch();
+  drawAsk();
   render();
   refreshPartWarn(() => showPart(variant));
   forceState(selected.state);
@@ -327,7 +411,7 @@ function showPart(variant = false) {
 // Word-style frame around the picked part: dragging a handle sets its width and height, for every like part.
 function drawHandles() {
   document.querySelectorAll('.lab-handles').forEach(n => n.remove());
-  if (!selected?.el.isConnected || moveMode || typeof compare !== 'undefined' && compare) return;
+  if (!selected?.el.isConnected || drag?.started || typeof compare !== 'undefined' && compare) return;
   const phone = selected.el.closest('.phone');
   if (!phone) return;
   const base = phone.getBoundingClientRect(), r = selected.el.getBoundingClientRect();
@@ -339,6 +423,15 @@ function drawHandles() {
     d.className = `lab-h lab-h-${h}`;
     d.dataset.h = h;
     box.append(d);
+  }
+  if (selected.el.dataset.labId && !selected.el.classList.contains('phone')) {
+    const x = document.createElement('i');
+    x.className = 'lab-cross';
+    x.title = 'Dra för att flytta delen';
+    x.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2l3.5 3.5h-2.5v5.5h5.5v-2.5l3.5 3.5-3.5 3.5v-2.5h-5.5v5.5h2.5l-3.5 3.5-3.5-3.5h2.5v-5.5h-5.5v2.5l-3.5-3.5 3.5-3.5v2.5h5.5v-5.5h-2.5z"/></svg>';
+    const left = r.left - base.left, top = r.top - base.top;
+    x.style.cssText = `left:${Math.max(2, left - 26) - left}px;top:${Math.max(2, top - 26) - top}px`;
+    box.append(x);
   }
   phone.append(box);
 }
@@ -371,7 +464,6 @@ function wireHandles() {
 function wireScreens() {
   const screens = $('screens');
   screens.addEventListener('click', e => {
-    if (moveMode) return;
     let el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
@@ -400,7 +492,6 @@ function wireScreens() {
     adviceForPart(el);
   }, true);
   screens.addEventListener('mouseover', e => {
-    if (moveMode) return;
     screens.querySelectorAll('[data-lab-hover]').forEach(n => n.removeAttribute('data-lab-hover'));
     componentOf(e.target)?.setAttribute('data-lab-hover', '');
   });

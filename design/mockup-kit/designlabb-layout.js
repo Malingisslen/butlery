@@ -2,15 +2,12 @@
 // Drag and drop in the example screens: rows, sections, bands, buttons and chips can be moved
 // to another place. A move is a record in state.moves, replayed on a pristine copy of the
 // screens, so undo, saved variants and the shared link all carry the layout. The light and the
-// dark copy of a screen share element ids, so a move happens in both. Only the lab's own example
+// dark copy of a screen share element ids, so a move happens in both. The picked part is moved
+// with the cross at its corner (the move handle). Only the lab's own example
 // screens change; the app is not touched.
 
-// Items that are picked as a whole when you press anywhere inside them.
-const MOVABLE = '.b-row,.b-section,.b-band,.b-btn,.b-chip,.b-card,.mr-card,.b-field,.b-input,.b-iconbtn,.tab,.add';
-let moveMode = false;
 let layoutBase = '';
 let layoutApplied = '[]';
-let moving = null; // the picked element
 let freeMode = false;
 let drag = null; // { el, x, y, started, plan }
 
@@ -40,10 +37,6 @@ function assignLayoutIds() {
 }
 function snapshotLayoutBase() { layoutBase = $('screens').innerHTML; }
 
-function markDraggable() {
-  $('screens').classList.toggle('lab-move', moveMode);
-  if (!moveMode) pickMoving(null);
-}
 function labelOf(el) { return (el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || el?.className?.baseVal || el?.className || el?.tagName || ''; }
 
 function applyMove(m) {
@@ -75,39 +68,11 @@ const moveText = m => m.beside ? `"${m.label}" till ${m.side === 'left' ? 'väns
 function replayLayout(force) {
   const sig = JSON.stringify(state.moves || []);
   if (!force && sig === layoutApplied) return;
-  moving = null;
   $('screens').innerHTML = layoutBase;
   for (const m of state.moves || []) applyMove(m);
   layoutApplied = sig;
-  markDraggable();
-  showMoving();
 }
 
-// The item to pick: the closest kit item around the pressed spot, else the smallest box that has
-// neighbours. A second press on the picked item picks the box around it.
-function pickAt(target) {
-  let e = target.closest?.('.phone') ? target : null;
-  if (!e) return null;
-  if (inSvg(e) || e.tagName === 'svg') e = e.closest('svg');
-  for (let p = e; p && !p.classList.contains('phone'); p = p.parentElement) {
-    if (p.matches(MOVABLE) && !p.classList.contains('b-scroll')) return p;
-  }
-  for (let p = e; p && !p.classList.contains('phone'); p = p.parentElement) {
-    if (p.parentElement && p.parentElement.children.length > 1 && !p.classList.contains('b-scroll')) return p;
-  }
-  return null;
-}
-function boxAround(el) {
-  let p = el.parentElement;
-  while (p && p.classList.contains('b-scroll')) p = p.parentElement;
-  return p && !p.classList.contains('phone') ? p : el;
-}
-function pickMoving(el) {
-  document.querySelectorAll('[data-lab-moving]').forEach(n => n.removeAttribute('data-lab-moving'));
-  moving = el;
-  el?.setAttribute('data-lab-moving', '');
-  showMoving();
-}
 const sameKind = (a, b) => a.tagName === b.tagName && a.classList[0] === b.classList[0];
 
 function dropPlan(x, y) {
@@ -184,19 +149,7 @@ function recordMove(el, container, before, beside, side) {
   layoutApplied = JSON.stringify(state.moves);
   showMoves();
   render();
-  const again = document.querySelector(`#screens .fig-light [data-lab-id="${m.id}"]`) || document.querySelector(`#screens [data-lab-id="${m.id}"]`);
-  pickMoving(again);
 }
-// One step among the neighbours, for touch screens and for precise nudges.
-function nudge(dir) {
-  if (!moving) return;
-  const parent = moving.parentElement;
-  const sibs = [...parent.children].filter(c => !c.classList.contains('lab-drop') && !c.classList.contains('lab-gap'));
-  const i = sibs.indexOf(moving), j = i + dir;
-  if (j < 0 || j >= sibs.length) return;
-  recordMove(moving, parent, dir < 0 ? sibs[j] : sibs[j + 1] || null);
-}
-
 const snap4 = (v, off) => { const g = (typeof SEE !== 'undefined' && SEE.grid) || 4; return off ? v : Math.round(v / g) * g; };
 // Free drag: the part keeps its place in the flow but its margins follow the pointer (snapped to
 // 4 px, Alt for exact), so what is around it moves over and the gaps stay true.
@@ -229,21 +182,18 @@ function showFreeGaps(el, kind = '') {
 function wireLayout() {
   const screens = $('screens');
   screens.addEventListener('pointerdown', e => {
-    if (!moveMode || e.button > 0) return;
-    let el = pickAt(e.target);
-    if (!el) return;
-    if (moving?.isConnected && moving.contains(e.target) && !drag) el = moving;
-    const ms = getComputedStyle(el), had = state.free?.[el.dataset.labId];
-    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, wasPicked: el === moving,
+    if (e.button > 0 || !e.target.closest?.('.lab-cross') || !selected?.el.isConnected) return;
+    const el = selected.el, ms = getComputedStyle(el), had = state.free?.[el.dataset.labId];
+    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null,
       ml: had ? had.ml - had.dx : parseFloat(ms.marginLeft) || 0, mt: had ? had.mt - had.dy : parseFloat(ms.marginTop) || 0 };
-    el.setAttribute('data-lab-moving', '');
-    if (e.pointerType === 'touch') e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
   }, true);
   window.addEventListener('pointermove', e => {
     if (!drag) return;
     if (!drag.started && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) {
       drag.started = true;
       drag.el.classList.add('lab-dragging');
+      document.querySelectorAll('.lab-handles').forEach(n => { n.style.visibility = 'hidden'; });
     }
     if (!drag.started) return;
     e.preventDefault();
@@ -256,26 +206,12 @@ function wireLayout() {
     const d = drag;
     drag = null;
     d.el.classList.remove('lab-dragging');
-    document.querySelectorAll('.lab-drop').forEach(n => n.remove());
-    if (d.started && freeMode) { document.querySelectorAll('.lab-gap').forEach(n => n.remove()); showMoves(); pickMoving(d.el); }
-    else if (d.started) {
-      if (d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
-      else pickMoving(d.el);
-    } else if (d.wasPicked && moving === d.el) pickMoving(boxAround(d.el));
-    else pickMoving(d.el);
+    document.querySelectorAll('.lab-drop,.lab-gap').forEach(n => n.remove());
+    if (d.started && freeMode) showMoves();
+    else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
+    drawHandles();
   });
-  screens.addEventListener('click', e => { if (moveMode) { e.preventDefault(); e.stopPropagation(); } }, true);
-  $('move-style').onchange = e => { freeMode = e.target.value === 'free'; showMoving(); };
-  $('move-out').onclick = () => { if (moving) pickMoving(boxAround(moving)); };
-}
-
-function showMoving() {
-  const box = $('moving');
-  if (!box) return;
-  if (!moveMode) { box.textContent = 'Slå på Flytta delar för att välja något i skärmarna.'; }
-  else if (!moving?.isConnected) box.textContent = 'Tryck på en del i en skärm för att välja den, och dra den dit du vill ha den. Tryck igen på samma del för att välja rutan runt.';
-  else { const r = moving.getBoundingClientRect(); box.textContent = `Vald: "${labelOf(moving)}" (${Math.round(r.width)} × ${Math.round(r.height)} px)`; }
-  for (const id of ['move-out']) $(id).disabled = !moveMode || !moving?.isConnected;
+  $('move-style').onchange = e => { freeMode = e.target.value === 'free'; };
 }
 
 function showMoves() {
@@ -283,7 +219,7 @@ function showMoves() {
   box.textContent = '';
   const moves = state.moves || [], free = Object.values(state.free || {});
   if (!moves.length && !free.length) {
-    box.innerHTML = '<p class="hint">Inga flyttar än. Slå på Flytta delar och dra en rad, ett avsnitt eller en knapp till ett annat ställe.</p>';
+    box.innerHTML = '<p class="hint">Inga flyttar än. Välj en del i en skärm och dra den med pilkorset vid hörnet till ett annat ställe.</p>';
     return;
   }
   moves.forEach((m, i) => {

@@ -745,7 +745,7 @@
 <div class="verrow"><select id="ver-select" aria-label="Mina versioner"></select><button class="ghost" id="ver-save" type="button">Spara version</button></div>
 <div class="vernote" id="ver-note" hidden></div>
 <input id="search" type="search" placeholder="Sök reglage: skugga, rundning, färg ...">
-<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button><button data-tab="layout" type="button">Layout</button></nav>
+<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button></nav>
 <div class="panes">
 <section class="pane" data-pane="all">
 <h2>Stämningar</h2>
@@ -772,7 +772,9 @@
 <h2>Enskilda färger</h2>
 <div id="colors"></div>
 </section>
-<section class="pane" data-pane="part"><div id="part"></div></section>
+<section class="pane" data-pane="part">
+<label class="movestyle"><span>Flytta så här</span><select id="move-style"><option value="order">Byt plats (släpp före, efter eller bredvid)</option><option value="free">Fritt (dra var som helst, avstånden följer)</option></select></label>
+<div id="part"></div></section>
 <section class="pane" data-pane="fx">
 <h2>Gäller</h2>
 <select id="fx-target"></select>
@@ -810,17 +812,10 @@
 <label><span>Linjetjocklek</span><input type="range" id="iconStroke" min="0" max="3" step="0.25" value="0"><span class="val" id="iconStroke-v">orig</span></label>
 <label><span>Ikonstorlek</span><input type="range" id="iconSize" min="60" max="160" value="100"><span class="val" id="iconSize-v">100 %</span></label>
 </section>
-<section class="pane" data-pane="layout">
-<h2>Flytta delar</h2>
-<label><input type="checkbox" id="move-mode"><span>Flytta delar</span></label>
-<label><span>Så flyttar du</span><select id="move-style"><option value="order">Byt plats (släpp före, efter eller bredvid)</option><option value="free">Fritt (dra var som helst, avstånden följer)</option></select></label>
-<p class="hint">Slå på, tryck på en del i en skärm och dra den till ett annat ställe, eller flytta den ett steg med knapparna. Det ändrar bara exempelskärmarna här, inte appen.</p>
-<p class="hint" id="moving"></p>
-<div class="row"><button class="ghost" id="move-out" type="button">Välj rutan runt</button></div>
-<div id="moves"></div>
-<button class="ghost" id="clear-moves" type="button" style="width:100%">Nollställ layouten</button>
-</section>
 <section class="pane" data-pane="check">
+<h2>Flyttar i exempelvyerna</h2>
+<div id="moves"></div>
+<button class="ghost" id="clear-moves" type="button" style="width:100%">Nollställ flyttarna</button>
 <h2>Dina ändringar som text</h2>
 <textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
 <h2>Anteckningar till utvecklaren</h2>
