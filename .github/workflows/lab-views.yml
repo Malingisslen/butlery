@@ -1,0 +1,26 @@
+name: Lab views
+
+# The Designlabb example screens copy app views by hand. This only warns: it points at a view that changed
+# without the lab being checked. See design/tools/lab-views-check.mjs.
+
+on:
+  pull_request:
+    paths:
+      - 'lib/views/**'
+      - 'design/mockup-kit/**'
+      - 'design/tools/lab-views-check.mjs'
+      - '.github/workflows/lab-views.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lab-views:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: The lab's example screens are in step with the views they copy
+        working-directory: design
+        run: node tools/lab-views-check.mjs

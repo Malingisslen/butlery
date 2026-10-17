@@ -7,7 +7,7 @@ Claude-sessioner som ritar nya funktioner innan de byggs.
 |---|---|
 | `kit.html` | Alla tokens, typsnitt, ikoner och komponenter, i ljust och mörkt läge, med en kopieringsknapp per komponent. |
 | `examples.html` | Facit: Mer, Appinställningar och ett recept i 360 × 800, ljust och mörkt. |
-| `designlabb.html` | Reglage för typsnitt, textstorlek, rundning, avstånd, linjer, ikoner (egna, Lucide, Phosphor) och varje färg, samt dra-och-släpp av delar i exempelskärmarna: skärmarna ändras direkt. Effekter kan läggas på en vald del eller en sorts del, och en Råd-ruta förklarar fördelar, nackdelar och tumregler för valen, kontrollerar dem mot dina inställningar och kan skickas till Claude; de tolv exempelvyerna är ritade efter appens goldenbilder (test/views/golden_linux/goldens); skärmarna visas ljust, mörkt eller båda. Som publicerad sida (Artifact) finns en Claude-kolumn till höger om skärmarna med en chatt som kan läsa och ändra labbet, en delningsruta och "Skicka till Claude". "Spara och för in i appen" kopierar ändringarna som text som ges till Claude, som för in dem i `tokens.json`. |
+| `designlabb.html` | Reglage för typsnitt, textstorlek, rundning, avstånd, linjer, ikoner (egna, Lucide, Phosphor) och varje färg, samt dra-och-släpp av delar i exempelskärmarna: skärmarna ändras direkt. Effekter kan läggas på en vald del eller en sorts del, och en Råd-ruta förklarar fördelar, nackdelar och tumregler för valen, visar råd för det du pekar på eller klickar på, med saker att prova, och kan skickas till Claude; delar flyttas med drag eller knappar; de tolv exempelvyerna är ritade efter appens goldenbilder (test/views/golden_linux/goldens); skärmarna visas ljust, mörkt eller båda. Som publicerad sida (Artifact) finns en Claude-kolumn till höger om skärmarna med en chatt som kan läsa och ändra labbet, en delningsruta och "Skicka till Claude". "Spara och för in i appen" kopierar ändringarna som text som ges till Claude, som för in dem i `tokens.json`. Dessutom: färgroller (en token per roll), koppling från kitets klasser till appens moduler, ikonbyte per ikon med sju bibliotek, flerval med Ctrl/Skift, tillstånd per del, appens egna färger och harmoni som färgval, "Se som" (färgblindhet, systemtext 200 %, skärmstorlek, rutnät), varningar vid reglagen, anteckningsnålar och en modularitetskontroll som sorterar ändringar efter hur långt de når. |
 | `components.css` | Komponenternas CSS. Ändra en komponent här, inte i sidorna. |
 
 ## Så gör du en mockup
@@ -99,3 +99,8 @@ dart run tools/mockup_kit.dart
 CI-jobbet Design system kör `dart run tools/mockup_kit.dart --check` och blir rött när
 kitet inte längre stämmer med tokens, ikoner eller `components.css`. Ändras en
 komponent i appen ändras `components.css` i samma PR.
+
+
+## Designlabbets exempelvyer
+
+Varje `<figure data-views="...">` i `designlabb.html` namnger de appfiler skärmen är en handbyggd kopia av. `design/mockup-kit/lab-views.json` håller en hash av dem från dagen skärmen senast stämdes av. Ändras en vy i appen varnar workflowen Lab views (bara en varning). Uppdatera skärmen, kör sedan `cd design && node tools/lab-views-check.mjs --stamp`.

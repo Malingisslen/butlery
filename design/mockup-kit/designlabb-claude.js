@@ -187,7 +187,7 @@ async function sendRequest() {
   note.textContent = 'Skickar ...';
   try {
     await claudeAi.db.doc(`requests/${at.replace(/[:.]/g, '-')}`).set({
-      at, status: 'new', text, summary: summary(state), state: JSON.stringify(state), selection: selectionInfo(), chat: chatTurns.slice(-6),
+      at, status: 'new', text, labBase: LAB_BASE, handoff: HANDOFF_RULE, summary: summary(state), state: JSON.stringify(state), selection: selectionInfo(), chat: chatTurns.slice(-6),
     });
     $('req-text').value = '';
     note.textContent = 'Skickat. Skriv "skickat" i tråden hos Claude, så läser Claude det direkt.';
@@ -210,6 +210,7 @@ async function initClaude() {
     [claudeAi.sample, claudeAi.db] = await Promise.all([claude.use('sample'), claude.use('db')]);
   } catch { return; }
   if (!claudeAi.sample && !claudeAi.db) return;
+  if (typeof loadVariantsFromDb === 'function') loadVariantsFromDb();
   $('dock').hidden = false;
   $('chat-box').hidden = !claudeAi.sample;
   $('send-box').hidden = !claudeAi.db;

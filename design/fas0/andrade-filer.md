@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=950-->
+<!--manifest:files=960-->
 
 ## Reporoten
 
@@ -610,23 +610,32 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `0f4cd0b86fdfb9822d3071087548398c117994922d4a28e5eaa71d54a26da655` |
+| `mockup-kit/README.md` | `773d8263ac0c32b855b253af372ac456affe10a6d8462dee2219ba6d55852565` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb-advice-more.js` | `9643967603b2366a53691621a08c91f7cd6d7959a971e64022f8f0a09496c204` |
-| `mockup-kit/designlabb-advice-ui.js` | `c6bf7073cb7139748254dca1cca00ced737356131acb0d3203f18a2134e63683` |
-| `mockup-kit/designlabb-advice.js` | `132df41a4dd8287086251bcacf999b5f66b33f7c5de9a3aca19b37f1c09ef0cd` |
-| `mockup-kit/designlabb-claude.js` | `61924c7af4de73918b9b85cfee8c8d8c51f4a3a83d28e970a293d26682c637cc` |
-| `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
-| `mockup-kit/designlabb-extra.js` | `a55c5cb412de283f93d3fbbe133ab517549ddf6b4f8c2628f0c2be2cf0928be2` |
+| `mockup-kit/designlabb-advice-more.js` | `9944a655910e29e421eda3ad6ef1fb3064b6e76bb2f7feac8bd1392dde068a7f` |
+| `mockup-kit/designlabb-advice-ui.js` | `900f92edf0fe52372105c8a0ff41e0f3058f66780087b9922c682b5c84fc2607` |
+| `mockup-kit/designlabb-advice.js` | `855bca67bcd43622d4dc2bacda20bc593b5b711edbad3102ddeea1916f6a68f4` |
+| `mockup-kit/designlabb-claude.js` | `015dbbf1a78745faa69fc953b3011a2f5b0dc4eba8668dbb695fc89032e8e22c` |
+| `mockup-kit/designlabb-core.js` | `14aec118b51081b2c703bbbaeeee715d98859aacaa722dc093f01654d3db1d24` |
+| `mockup-kit/designlabb-extra.js` | `e4bdaaf313f013db3525bd157a0892390876c4af97be34af673dc18023d51770` |
 | `mockup-kit/designlabb-fx.js` | `c36f834bc056848471735a1f90093cb87facb447557019b4c02c921d917d67a7` |
-| `mockup-kit/designlabb-iconlibs.js` | `e972e1063603e483c13bf41467b08d8717fba718ac5f4c1f06d060532ec90e46` |
-| `mockup-kit/designlabb-layout.js` | `b32c26ee3cdca82ecab6a6e78f97ee88811cc5cf5f81fb56d5e8c6a376de9913` |
-| `mockup-kit/designlabb-parts.js` | `2077083ea7f94e528cbe1c195652fab37c99dac14fb8cac378a77e87c4dc7a61` |
-| `mockup-kit/designlabb-ui.js` | `d8a2c74873f6bc4706afb0a72940921e4f91dac2fa11ba7a58a33641c5197ae6` |
-| `mockup-kit/designlabb.css` | `8ffdd0f63f2d4b634206f024e6926d24b6a1f76a0e94a187b3ea84577d200348` |
-| `mockup-kit/designlabb.html` | `be134ef26e2d7846fa529d3f0fcdedc3937bfff7e3f68520a1b2c6f91994dcb4` |
+| `mockup-kit/designlabb-iconlibs.js` | `b0b57d7b79d44962a9b8d842744f78395b69e44542b3f83de298295d4c931f6b` |
+| `mockup-kit/designlabb-iconnames.js` | `184a1aa16d5030cb594e90591e971352b3b02ea0a1b02591f6a26ffc1f94d8c4` |
+| `mockup-kit/designlabb-layout.js` | `9670cbaeceaa978f0700bbeb9412e816e308404b8b23d5d8c60b6f5dd89d7a95` |
+| `mockup-kit/designlabb-modular.js` | `105c4398ff1a4ad7085acb001adf7430fedb89eb3a585d858aeb8cabd5604a69` |
+| `mockup-kit/designlabb-notes.js` | `9276d462981c59e21029295ee50408129b99582c6309e186b7e044400747d013` |
+| `mockup-kit/designlabb-palette.js` | `dd6684dcc3dbcf17fcd1e22cd72d757f2520cbc9aa0049679d8c41537c5c049f` |
+| `mockup-kit/designlabb-parts.js` | `6c61a3ba730f1c0fa289250ed7de68d4cfd51b1ba6b01810b4d85ac480defaa3` |
+| `mockup-kit/designlabb-roles.js` | `f8b0b63c9066a05e49186b2563193da2dea5a78556872fac0e1e0f690c767ccf` |
+| `mockup-kit/designlabb-type.js` | `0cc90b2423816b1238ecf932f49c8ead8951c267e2aeb35d93f00fac6fd65893` |
+| `mockup-kit/designlabb-ui.js` | `ba4b8d89c94e91df32a14823bcf1566f0e38bab03501330d192eb900d9563023` |
+| `mockup-kit/designlabb-viewtools.js` | `381e6d2d3192dcee87ed753fd9e77451fd332b12994f71455a46a99523a9b07b` |
+| `mockup-kit/designlabb-warn.js` | `1ec15683907cbad7bbcb86250f6725d70a1982156f453f11c69f6c9f75663f49` |
+| `mockup-kit/designlabb.css` | `8300af86417109d10952064e39259476597ed29a415b87e3fc67045397956d34` |
+| `mockup-kit/designlabb.html` | `e02e62ecf4bcffbd576d9557d085880b1fe3aee074581f6001f55ade643ce88a` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
+| `mockup-kit/lab-views.json` | `5165b0c9f2effa4f72bc7600d8b38252fd0a02f2e65d146e39d18ac76b18e994` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `2eab8547a2d825a42d7117b31990009991eb1c7d2e151a2dc457e1e2968eb0a8` |
@@ -853,7 +862,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-flutter.mjs` | `442f5f4d550acf2b27b9c38da03fb105e76fcf971e080f247010d11fbc9c6e3f` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
-| `tools/gen-lab-icons.mjs` | `f515fe210a7dd611846adee5dd489b97c1d2fa134ceeea5f869bac809d1ff370` |
+| `tools/gen-lab-icons.mjs` | `bc9550dc33eaffea94da34a15bd28939653dddba32d59417dfc938ac1407df06` |
 | `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
@@ -873,6 +882,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/identity-audit.mjs` | `7207bf9d5259982f3c957a4d2e58b2428eb69eb9343c2fee4f05b7f1ddb8e7e3` |
 | `tools/identity-fixtures.mjs` | `86c012427679bf2b61c584d77b5e9960b4a6c2bec2aa11d50a4bbf2a57abc15c` |
 | `tools/identity-v2.mjs` | `9137bc7cf0a69dac41a768e6c12e4feaeaf8f49bdd2fa8d2971a0abaff1055d4` |
+| `tools/lab-views-check.mjs` | `0f7583b0a4cea6c38713069f33d5a2977f10079974b55b73f6d103304ab0aefe` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/low-contrast-planner-fixtures.mjs` | `33026e3536e6582e41c448e7f267179574e6f5bfcb38feaff47c412e98d5c848` |

@@ -13,17 +13,6 @@ const SPACE_PRESETS = {
 const ICON_STYLES = [['', 'Original'], ['round', 'Runda ändar'], ['square', 'Kantiga ändar'], ['duo', 'Dubbeltoning']];
 const ICON_SIZES = { '.i': 24, '.i-xs': 12, '.i-s': 16, '.i-m': 20, '.i-xl': 32 };
 
-// [lucide, phosphor] names for the glyphs the example screens use (tools/gen-lab-icons.mjs reads
-// this table); a glyph that is not here
-// keeps the app's own drawing in every library.
-const ICON_NAMES = {
-  bell: ['bell', 'bell'], 'chevron-left': ['chevron-left', 'caret-left'], 'chevron-right': ['chevron-right', 'caret-right'],
-  clock: ['clock', 'clock'], export: ['share', 'export'], heart: ['heart', 'heart'], 'log-out': ['log-out', 'sign-out'],
-  minus: ['minus', 'minus'], 'more-vertical': ['ellipsis-vertical', 'dots-three-vertical'], 'nav-add': ['plus', 'plus'],
-  'nav-home': ['house', 'house'], 'nav-more': ['ellipsis', 'dots-three'], 'nav-shopping': ['shopping-basket', 'basket'],
-  'nav-week': ['calendar-days', 'calendar-blank'], plus: ['plus', 'plus'], 'refresh-cw': ['refresh-cw', 'arrows-clockwise'],
-  search: ['search', 'magnifying-glass'], user: ['user', 'user'], users: ['users', 'users'],
-};
 const ICON_LIBS = {
   butlery: { label: 'Butlerys egna' },
   lucide: {
@@ -34,6 +23,14 @@ const ICON_LIBS = {
   'ph-bold': { label: 'Phosphor, fet', wrap: ['fill', 'currentColor'] },
   'ph-duotone': { label: 'Phosphor, dubbeltoning', wrap: ['fill', 'currentColor'] },
   'ph-fill': { label: 'Phosphor, fylld', wrap: ['fill', 'currentColor'] },
+  tabler: {
+    label: 'Tabler',
+    wrap: ['fill', 'none', 'stroke', 'currentColor', 'stroke-linecap', 'round', 'stroke-linejoin', 'round'], stroke: 2,
+  },
+  heroicons: {
+    label: 'Heroicons',
+    wrap: ['fill', 'none', 'stroke', 'currentColor', 'stroke-linecap', 'round', 'stroke-linejoin', 'round'], stroke: 1.5,
+  },
 };
 
 function extraCss(st, scope) {
@@ -102,12 +99,32 @@ function ensureSymbol(libKey, glyph) {
   document.getElementById('butlery-icons').append(sym);
   return id;
 }
+// A part can swap its own icon or library; the part's selector and scope decide which icons it reaches.
+function iconOverrides() {
+  const map = new Map();
+  for (const part of Object.values(state.parts)) {
+    if (!part.props.glyph && !part.props.lib) continue;
+    for (const phone of document.querySelectorAll('#screens .phone, #compare-grid .phone')) {
+      const dark = phone.dataset.theme === 'dark';
+      if (part.mode === 'light' && dark || part.mode === 'dark' && !dark) continue;
+      if (part.view != null && phone.dataset.view != part.view) continue;
+      let hits = [];
+      try { hits = [...phone.querySelectorAll(part.sel)]; } catch { /* a selector the browser refuses matches nothing */ }
+      for (const svg of hits) if (svg.matches('svg.i')) map.set(svg, { ...map.get(svg), ...(part.props.glyph && { glyph: part.props.glyph }), ...(part.props.lib && { lib: part.props.lib }) });
+    }
+  }
+  return map;
+}
 function applyIcons() {
+  const over = iconOverrides();
   for (const use of document.querySelectorAll('#screens svg.i > use, #compare-grid svg.i > use')) {
     use.dataset.orig ||= use.getAttribute('href');
-    const glyph = use.dataset.orig.replace('#i-', '');
-    const want = state.iconLib === 'butlery' ? use.dataset.orig : '#' + (ensureSymbol(state.iconLib, glyph) || '');
-    const target = want === '#' ? use.dataset.orig : want;
+    const o = over.get(use.parentNode);
+    const glyph = o?.glyph || use.dataset.orig.replace('#i-', '');
+    const lib = o?.lib || state.iconLib;
+    const own = o?.glyph ? '#i-' + glyph : use.dataset.orig;
+    const want = lib === 'butlery' ? own : '#' + (ensureSymbol(lib, glyph) || '');
+    const target = want === '#' ? own : want;
     if (use.getAttribute('href') !== target) use.setAttribute('href', target);
   }
 }
