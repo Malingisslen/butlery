@@ -508,6 +508,35 @@ void main() {
       expect(find.text(_createGroup), findsOneWidget);
     });
 
+    testWidgets(
+      'a pending invitation stacks Avböj above Acceptera at 2x text',
+      (
+        tester,
+      ) async {
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        when(() => invitationsOps.isLoading).thenReturn(false);
+        when(() => invitationsOps.pendingReceivedInvitations).thenReturn([
+          GroupInvitation(
+            id: 'i1',
+            groupId: 'g9',
+            groupName: 'Söndagsmiddag',
+            groupEmoji: '🍲',
+            fromUserId: 'erik',
+            fromUserName: 'Erik',
+            toUserId: 'me',
+          ),
+        ]);
+        await pumpView(tester);
+        await tester.tap(find.text(_tabGroups));
+        await tester.pumpAndSettle();
+
+        final decline = tester.getTopLeft(find.text('Avböj'));
+        final accept = tester.getTopLeft(find.text('Acceptera'));
+        expect(accept.dy, greaterThan(decline.dy));
+      },
+    );
+
     testWidgets('an empty Groups tab has no Skapa grupp row; the empty state '
         'keeps its own button', (tester) async {
       await pumpView(tester);
