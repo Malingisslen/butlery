@@ -631,11 +631,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/designlabb-ui.js` | `ba4b8d89c94e91df32a14823bcf1566f0e38bab03501330d192eb900d9563023` |
 | `mockup-kit/designlabb-viewtools.js` | `381e6d2d3192dcee87ed753fd9e77451fd332b12994f71455a46a99523a9b07b` |
 | `mockup-kit/designlabb-warn.js` | `1ec15683907cbad7bbcb86250f6725d70a1982156f453f11c69f6c9f75663f49` |
-| `mockup-kit/designlabb.css` | `8300af86417109d10952064e39259476597ed29a415b87e3fc67045397956d34` |
-| `mockup-kit/designlabb.html` | `e02e62ecf4bcffbd576d9557d085880b1fe3aee074581f6001f55ade643ce88a` |
+| `mockup-kit/designlabb.css` | `99e21e4ae78760d7ed12c57a00971a087f052ef5e89c46f0a7a070a6d39d7fd2` |
+| `mockup-kit/designlabb.html` | `a602cc9c807bfc972f01fa35be852b0ed09a903cbaa6857020d2947f3d03ad97` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
-| `mockup-kit/lab-views.json` | `5165b0c9f2effa4f72bc7600d8b38252fd0a02f2e65d146e39d18ac76b18e994` |
+| `mockup-kit/lab-views.json` | `e94b44120cc5651c86ab8a018566d00f28d5d26c5cc44174ff9799f979800404` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `2eab8547a2d825a42d7117b31990009991eb1c7d2e151a2dc457e1e2968eb0a8` |

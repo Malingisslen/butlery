@@ -1,7 +1,11 @@
 {
+  "lib/views/auth": "85cfa6fb9b87",
   "lib/views/auth_view.dart": "95278031d364",
+  "lib/views/cooking_mode": "a2a25bb0e4d1",
+  "lib/views/cooking_mode_view.dart": "62a9f92df539",
   "lib/views/edit_recipe_view.dart": "7f17023513fc",
   "lib/views/hem": "19d56a7ef214",
+  "lib/views/mina_recept": "2bee7c3793ac",
   "lib/views/mina_recept_view.dart": "f9bf8c368a4f",
   "lib/views/more/app_settings_view.dart": "b9a1b7b867a4",
   "lib/views/more/more_view.dart": "fce9ece04fad",
