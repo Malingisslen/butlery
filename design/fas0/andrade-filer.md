@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=940-->
+<!--manifest:files=941-->
 
 ## Reporoten
 
@@ -746,6 +746,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/app-theme-map.schema.json` | `5e969b14c2ef2ec84a18ab8b227da07f5eb3869890f6a9597ffae0a9dd71cdf8` |
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |
+| `tools/apply-lab-export.mjs` | `2efc0c1d8b7eac17945be4fb1fc274912230b4a143ca5d4c970731ee30b06bd5` |
 | `tools/artifact-contract.mjs` | `04b506fe6cb2f281de72bf389fa7382fbf68063dabb971f8ce84fe93363e7712` |
 | `tools/authored-theme.mjs` | `1ae4bfdeac249a0b043c1bae4ccb7fe1fd67f1f546cf4fde1c8a6ca8570ef71f` |
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
