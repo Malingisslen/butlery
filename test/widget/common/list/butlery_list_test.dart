@@ -257,6 +257,75 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('at 200 % text the value stacks under the label, whole', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await _pump(
+        tester,
+        Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: ButleryListRow(
+              label: 'E-post och lösenord',
+              value: 'Påslaget',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        tester.getTopLeft(find.text('Påslaget')).dy,
+        greaterThanOrEqualTo(
+          tester.getBottomLeft(find.text('E-post och lösenord')).dy,
+        ),
+      );
+      final value = tester.widget<Text>(find.text('Påslaget'));
+      expect(value.maxLines, isNull);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('at 200 % text a short value stays beside its label, a wide '
+        'one stacks and is not cut', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      Future<void> pumpRow(String value) => _pump(
+        tester,
+        Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: ButleryListRow(label: 'Konto', value: value, onTap: () {}),
+          ),
+        ),
+      );
+
+      await pumpRow('4');
+      expect(
+        tester.getTopLeft(find.text('4')).dx,
+        greaterThan(tester.getTopRight(find.text('Konto')).dx),
+      );
+
+      await pumpRow('E-post, Google och Apple');
+      expect(
+        tester.getTopLeft(find.text('E-post, Google och Apple')).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(find.text('Konto')).dy),
+      );
+      expect(
+        tester.widget<Text>(find.text('E-post, Google och Apple')).maxLines,
+        isNull,
+      );
+    });
+
     testWidgets('an info row shows its value and is not a button', (
       tester,
     ) async {

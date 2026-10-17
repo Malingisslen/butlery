@@ -283,8 +283,6 @@ class ButleryListRow extends StatelessWidget {
     final toggle = _kind == _RowKind.toggle;
     final info = _kind == _RowKind.info;
     final mutedText = cs.onSurfaceVariant;
-    // Under large text a value beside the label would starve it of width.
-    final stackValue = isLargeText(context);
     final labelColor = !enabled
         ? AppModeColors.textDisabled(cs.brightness)
         : danger
@@ -328,7 +326,33 @@ class ButleryListRow extends StatelessWidget {
             color: mutedText,
             fontFeatures: const [FontFeature.tabularFigures()],
           );
-    Widget valueText() => stackValue
+    final labelStyle = emphasis
+        ? AppTextStyles.bodyBold
+        : AppTextStyles.bodyMedium;
+    // Under large text a value that does not fit beside the label's widest
+    // word goes under the label.
+    bool stacks(double rowWidth) {
+      if (value == null || !isLargeText(context)) return false;
+      final painter = TextPainter(
+        text: TextSpan(text: value, style: valueStyle),
+        textScaler: MediaQuery.textScalerOf(context),
+        textDirection: Directionality.of(context),
+        maxLines: 1,
+      )..layout();
+      final valueWidth = painter.width;
+      painter.dispose();
+      final chrome =
+          AppDimensions.space12 * 2 +
+          AppDimensions.minTouchTarget +
+          (leading != null ? AppDimensions.minTouchTarget : 0) +
+          (trailing != null ? AppDimensions.minTouchTarget : 0) +
+          (count > 0 ? AppDimensions.minTouchTarget : 0);
+      return valueWidth > rowWidth * 0.45 ||
+          widestWord(context, [label], labelStyle) + valueWidth + chrome >
+              rowWidth;
+    }
+
+    Widget valueText(bool stackValue) => stackValue
         ? WholeWordText(value!, style: valueStyle)
         : Text(
             value!,
@@ -338,79 +362,82 @@ class ButleryListRow extends StatelessWidget {
             style: valueStyle,
           );
 
-    Widget rowContent(double rowWidth) => ConstrainedBox(
-      constraints: const BoxConstraints(
-        minHeight: AppDimensions.minTouchTarget,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.space8 + 2,
+    Widget rowContent(double rowWidth) {
+      final stackValue = stacks(rowWidth);
+      return ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: AppDimensions.minTouchTarget,
         ),
-        child: Row(
-          children: [
-            if (leading != null) ...[
-              ExcludeSemantics(
-                child: ButleryIcon(leading!, color: leadingColor ?? mutedText),
-              ),
-              const SizedBox(width: AppDimensions.space12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  WholeWordText(
-                    label,
-                    style:
-                        (emphasis
-                                ? AppTextStyles.bodyBold
-                                : AppTextStyles.bodyMedium)
-                            .copyWith(color: labelColor),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.space8 + 2,
+          ),
+          child: Row(
+            children: [
+              if (leading != null) ...[
+                ExcludeSemantics(
+                  child: ButleryIcon(
+                    leading!,
+                    color: leadingColor ?? mutedText,
                   ),
-                  if (subtitle != null)
+                ),
+                const SizedBox(width: AppDimensions.space12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     WholeWordText(
-                      subtitle!,
-                      style: AppTextStyles.captionBase.copyWith(
-                        color: mutedText,
-                      ),
+                      label,
+                      style: labelStyle.copyWith(color: labelColor),
                     ),
-                  if (value != null && stackValue) valueText(),
-                ],
-              ),
-            ),
-            if (value != null && !stackValue) ...[
-              const SizedBox(width: AppDimensions.space12),
-              // At most 45 % of the row, so the label keeps its room and
-              // every chevron stays at the end.
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: rowWidth * 0.45),
-                child: valueText(),
-              ),
-            ],
-            if (trailing != null) ...[
-              const SizedBox(width: AppDimensions.space8),
-              ExcludeSemantics(child: trailing!),
-            ],
-            if (count > 0) ...[
-              const SizedBox(width: AppDimensions.space8),
-              ExcludeSemantics(child: SaffronCount(count: count)),
-            ],
-            if (toggle) ...[
-              const SizedBox(width: AppDimensions.space12),
-              // The row carries the switch's meaning; the switch is drawn.
-              ExcludeSemantics(
-                child: ButlerySwitch(
-                  value: checked,
-                  onChanged: enabled ? onChanged : null,
+                    if (subtitle != null)
+                      WholeWordText(
+                        subtitle!,
+                        style: AppTextStyles.captionBase.copyWith(
+                          color: mutedText,
+                        ),
+                      ),
+                    if (value != null && stackValue) valueText(true),
+                  ],
                 ),
               ),
-            ] else if (!info) ...[
-              const SizedBox(width: AppDimensions.space8),
-              const ButleryChevron(),
+              if (value != null && !stackValue) ...[
+                const SizedBox(width: AppDimensions.space12),
+                // At most 45 % of the row, so the label keeps its room and
+                // every chevron stays at the end.
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: rowWidth * 0.45),
+                  child: valueText(false),
+                ),
+              ],
+              if (trailing != null) ...[
+                const SizedBox(width: AppDimensions.space8),
+                ExcludeSemantics(child: trailing!),
+              ],
+              if (count > 0) ...[
+                const SizedBox(width: AppDimensions.space8),
+                ExcludeSemantics(child: SaffronCount(count: count)),
+              ],
+              if (toggle) ...[
+                const SizedBox(width: AppDimensions.space12),
+                // The row carries the switch's meaning; the switch is drawn.
+                ExcludeSemantics(
+                  child: ButlerySwitch(
+                    value: checked,
+                    onChanged: enabled ? onChanged : null,
+                  ),
+                ),
+              ] else if (!info) ...[
+                const SizedBox(width: AppDimensions.space8),
+                const ButleryChevron(),
+              ],
             ],
-          ],
+          ),
         ),
-      ),
-    );
+      );
+    }
+
     final content = LayoutBuilder(
       builder: (context, constraints) => rowContent(constraints.maxWidth),
     );

@@ -55,25 +55,40 @@ class FormSection extends StatelessWidget {
       children: [
         const ButleryDivider(),
         const SizedBox(height: AppDimensions.space16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: WholeWordText(
-                  title,
-                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppDimensions.space8),
-            UnifiedBadge.status(label: badge),
-          ],
-        ),
+        _heading(context, cs),
         const SizedBox(height: AppDimensions.space8),
         ...children,
         const SizedBox(height: AppDimensions.space24),
+      ],
+    );
+  }
+
+  // At large text the badge would leave the title a word's width, so it goes
+  // under the title.
+  Widget _heading(BuildContext context, ColorScheme cs) {
+    final heading = Semantics(
+      header: true,
+      child: WholeWordText(
+        title,
+        style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
+      ),
+    );
+    final badgeChip = UnifiedBadge.status(label: badge);
+    if (isLargeText(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          heading,
+          const SizedBox(height: AppDimensions.space4),
+          badgeChip,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: heading),
+        const SizedBox(width: AppDimensions.space8),
+        badgeChip,
       ],
     );
   }
@@ -231,56 +246,76 @@ class FormTabs<T> extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
-      child: Row(
-        children: [
-          for (final value in values)
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: value == selected,
-                label: labelOf(value),
-                excludeSemantics: true,
-                child: PressFill(
-                  surface: PressSurface.base,
-                  child: InkWell(
-                    onTap: () => onSelected(value),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: AppDimensions.minTouchTarget,
-                      ),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: value == selected
-                                  ? cs.primary
-                                  : Colors.transparent,
-                              width: AppDimensions.borderWidthThick,
-                            ),
-                          ),
-                        ),
-                        child: Center(
-                          child: WholeWordText(
-                            labelOf(value),
-                            textAlign: TextAlign.center,
-                            style:
-                                (value == selected
-                                        ? AppTextStyles.bodyBold
-                                        : AppTextStyles.bodyMedium)
-                                    .copyWith(
-                                      color: value == selected
-                                          ? cs.onSurface
-                                          : cs.onSurfaceVariant,
-                                    ),
-                          ),
-                        ),
-                      ),
-                    ),
+      child: isLargeText(context)
+          // Tabs keep one size each and scroll, so no label has to shrink.
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final value in values)
+                    _tab(context, cs, value, scaled: false),
+                ],
+              ),
+            )
+          : Row(
+              children: [
+                for (final value in values)
+                  Expanded(child: _tab(context, cs, value, scaled: true)),
+              ],
+            ),
+    );
+  }
+
+  Widget _tab(
+    BuildContext context,
+    ColorScheme cs,
+    T value, {
+    required bool scaled,
+  }) {
+    final style =
+        (value == selected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
+            .copyWith(
+              color: value == selected ? cs.onSurface : cs.onSurfaceVariant,
+            );
+    return Semantics(
+      button: true,
+      selected: value == selected,
+      label: labelOf(value),
+      excludeSemantics: true,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: () => onSelected(value),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
+            ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: value == selected ? cs.primary : Colors.transparent,
+                    width: AppDimensions.borderWidthThick,
                   ),
                 ),
               ),
+              child: Center(
+                child: scaled
+                    ? WholeWordText(
+                        labelOf(value),
+                        textAlign: TextAlign.center,
+                        style: style,
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.space16,
+                        ),
+                        child: Text(labelOf(value), style: style),
+                      ),
+              ),
             ),
-        ],
+          ),
+        ),
       ),
     );
   }
