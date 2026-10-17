@@ -542,6 +542,15 @@ function wireScreens() {
     let el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
+    // Empty space inside a plain wrapper (a row that only holds buttons) is not a part: it deselects.
+    if (el === e.target && !el.classList.length && !el.classList.contains('phone') && el.children.length && !(e.ctrlKey || e.shiftKey || e.metaKey)) {
+      const cs = getComputedStyle(el);
+      if (!toHex(cs.backgroundColor) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none' && ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) {
+        document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
+        clearSelection();
+        return;
+      }
+    }
     if ((e.ctrlKey || e.shiftKey || e.metaKey) && selected?.el.isConnected) {
       if (el === selected.el) {
         if (selected.extras?.length) {
