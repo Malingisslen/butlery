@@ -444,7 +444,7 @@ function wireExtras() {
     b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
-  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; state.removed = {}; state.copies = []; state.texts = {}; replayLayout(); showMoves(); render(); };
+  $('clear-moves').onclick = () => { state.moves = []; state.free = {}; state.removed = {}; state.copies = []; state.adds = []; state.texts = {}; replayLayout(); showMoves(); render(); };
   wireLayout();
   wireEdit();
   $('apply').onclick = async () => {

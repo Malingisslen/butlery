@@ -116,6 +116,7 @@ function selectorFor(el, variant) {
 }
 function showPartHint() {
   $('part').innerHTML = '<p class="hint">Klicka på vad som helst i skärmarna, till exempel en flik, en ikon, en text eller en knapp, så kan du justera just den delen här. Klicka igen på samma del för att välja delen runt omkring. Håll in Ctrl eller Skift när du klickar för att välja flera delar på en gång.</p>';
+  addButtons($('part'));
 }
 
 function control(part, spec, now, keyword, onSet) {

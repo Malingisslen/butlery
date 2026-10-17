@@ -417,3 +417,5 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-measure-tag { position: absolute; transform: translateX(-50%); padding: 2px 7px; border-radius: 4px; background: #1f2937; color: #fff; font: 600 11px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 60; }
 .phone .vm-grid, .phone .vg-body { flex: 1 1 0; min-height: 0; overflow: hidden; }
 .lab-handles.small .lab-h { width: 8px; height: 8px; border-width: 1.5px; }
+.phone img.ad-img { width: 40px; height: 40px; object-fit: contain; flex: none; display: block; }
+.lab-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1f3a2d; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 99; font-size: 13px; }

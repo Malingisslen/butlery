@@ -73,11 +73,12 @@ function applyMove(m) {
 const moveText = m => m.beside ? `"${m.label}" till ${m.side === 'left' ? 'vänster' : 'höger'} om "${m.besideLabel}"`
   : `"${m.label}" ${m.beforeLabel ? `före "${m.beforeLabel}"` : 'sist'} i ${m.toLabel}`;
 // Rebuild the screens from the pristine copy and replay the moves, unless nothing changed.
-const layoutSig = () => JSON.stringify([state.moves || [], state.copies || [], state.texts || {}]);
+const layoutSig = () => JSON.stringify([state.moves || [], state.copies || [], state.texts || {}, state.adds || []]);
 function replayLayout(force) {
   const sig = layoutSig();
   if (!force && sig === layoutApplied) return;
   $('screens').innerHTML = layoutBase;
+  for (const a of state.adds || []) applyAdd(a);
   for (const c of state.copies || []) applyCopy(c);
   for (const m of state.moves || []) applyMove(m);
   applyTexts();
@@ -367,7 +368,7 @@ function wireLayout() {
 function showMoves() {
   const box = $('moves');
   box.textContent = '';
-  const moves = state.moves || [], free = freeGroups(Object.values(state.free || {})), removed = Object.entries(state.removed || {}), extra = [...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
+  const moves = state.moves || [], free = freeGroups(Object.values(state.free || {})), removed = Object.entries(state.removed || {}), extra = [...(state.adds || []).map(addLine), ...(state.copies || []).map(c => `"${c.label}" kopierad`), ...Object.values(state.texts || {}).map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
   if (!moves.length && !free.length && !removed.length && !extra.length) {
     box.innerHTML = '<p class="hint">Inga flyttar än. Välj en del i en skärm och dra den med pilkorset vid hörnet till ett annat ställe.</p>';
     return;
@@ -405,9 +406,9 @@ const freeText = f => (f.ox != null
   ? `"${f.label}" flyttad exakt ${f.ox} px åt höger och ${f.oy} px nedåt (förskjutning, grannarna ligger kvar)${f.grp ? `, gäller samma del i ${f.n} vyer` : ''}`
   : `"${f.label}" flyttad fritt ${f.dx} px åt höger och ${f.dy} px nedåt (marginalerna ${f.ml} och ${f.mt} px)`);
 function layoutSummary(st, out) {
-  const free = freeGroups(Object.values(st.free || {})), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {});
-  if (!st.moves?.length && !free.length && !removed.length && !copies.length && !texts.length) return;
-  out.layoutMoves = [...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`), ...copies.map(c => `"${c.label}" kopierad (ny del direkt efter originalet)`), ...texts.map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
+  const free = freeGroups(Object.values(st.free || {})), removed = Object.values(st.removed || {}), copies = st.copies || [], texts = Object.values(st.texts || {}), adds = st.adds || [];
+  if (!st.moves?.length && !free.length && !removed.length && !copies.length && !texts.length && !adds.length) return;
+  out.layoutMoves = [...adds.map(addLine), ...(st.moves || []).map(moveText), ...free.map(freeText), ...removed.map(l => `"${l}" borttagen`), ...copies.map(c => `"${c.label}" kopierad (ny del direkt efter originalet)`), ...texts.map(t => `Texten "${t.from}" ändrad till "${t.to}"`)];
 }
 
 // Swap two parts: each goes to the other's place (moves are recorded, so both themes and undo follow).
