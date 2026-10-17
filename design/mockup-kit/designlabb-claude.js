@@ -210,6 +210,7 @@ async function initClaude() {
     [claudeAi.sample, claudeAi.db] = await Promise.all([claude.use('sample'), claude.use('db')]);
   } catch { return; }
   if (!claudeAi.sample && !claudeAi.db) return;
+  if (typeof loadVariantsFromDb === 'function') loadVariantsFromDb();
   $('dock').hidden = false;
   $('chat-box').hidden = !claudeAi.sample;
   $('send-box').hidden = !claudeAi.db;

@@ -615,7 +615,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/designlabb-advice-more.js` | `9944a655910e29e421eda3ad6ef1fb3064b6e76bb2f7feac8bd1392dde068a7f` |
 | `mockup-kit/designlabb-advice-ui.js` | `900f92edf0fe52372105c8a0ff41e0f3058f66780087b9922c682b5c84fc2607` |
 | `mockup-kit/designlabb-advice.js` | `855bca67bcd43622d4dc2bacda20bc593b5b711edbad3102ddeea1916f6a68f4` |
-| `mockup-kit/designlabb-claude.js` | `db4c89c0fc282856f59d7431ab1c35a6855998fbc64673fd7430917ad04490ce` |
+| `mockup-kit/designlabb-claude.js` | `a6111af6e0a4786aced10df400db8cb57d1b5d3d01573e377416cd710d44aac3` |
 | `mockup-kit/designlabb-core.js` | `428db425567c418265d065eb03763554f5d9d05f0ac466e087f926adce2ab2dd` |
 | `mockup-kit/designlabb-extra.js` | `e4bdaaf313f013db3525bd157a0892390876c4af97be34af673dc18023d51770` |
 | `mockup-kit/designlabb-fx.js` | `c36f834bc056848471735a1f90093cb87facb447557019b4c02c921d917d67a7` |
@@ -628,11 +628,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/designlabb-parts.js` | `6c61a3ba730f1c0fa289250ed7de68d4cfd51b1ba6b01810b4d85ac480defaa3` |
 | `mockup-kit/designlabb-roles.js` | `f8b0b63c9066a05e49186b2563193da2dea5a78556872fac0e1e0f690c767ccf` |
 | `mockup-kit/designlabb-type.js` | `0cc90b2423816b1238ecf932f49c8ead8951c267e2aeb35d93f00fac6fd65893` |
-| `mockup-kit/designlabb-ui.js` | `0c9fb62f91e58f5434cca79f4fe1431091534b197b3466b0163f21dcc2d1e247` |
+| `mockup-kit/designlabb-ui.js` | `cb6462074b67b6b6a9af9996b190e7bb91906179b2241b29171625b6306d9ffb` |
 | `mockup-kit/designlabb-viewtools.js` | `381e6d2d3192dcee87ed753fd9e77451fd332b12994f71455a46a99523a9b07b` |
 | `mockup-kit/designlabb-warn.js` | `1ec15683907cbad7bbcb86250f6725d70a1982156f453f11c69f6c9f75663f49` |
-| `mockup-kit/designlabb.css` | `181a891653b04cd4656c12ef34ef9ac577da78e7ae32886dbb8a45b00553c224` |
-| `mockup-kit/designlabb.html` | `4ae200df7870bd01fe768d81d38067d03386b8d097dc55c1e34a42e6519047c3` |
+| `mockup-kit/designlabb.css` | `292b5015c1afb5fd1d24b8a72fad3ca63ce9a6d52e5520a46caa144c55817f0e` |
+| `mockup-kit/designlabb.html` | `5f130d2104e6c452195daa8bba8b1fbe5bd2c2e9c2053ea6d0de8d560fea060f` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |

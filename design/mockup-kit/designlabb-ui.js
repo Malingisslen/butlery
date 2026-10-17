@@ -272,11 +272,26 @@ $('search').oninput = applySearch;
 // ---- Saved variants and compare ----
 let variants = [];
 try { variants = JSON.parse(localStorage.getItem(VARIANTS_KEY) || '[]'); } catch {}
+// Saved versions live in this browser and, when the page can reach the shared store, in the artifact's database too.
+const variantDb = () => (typeof claudeAi !== 'undefined' ? claudeAi.db : null);
 function saveVariants() {
   try { localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants)); } catch {}
+  const db = variantDb();
+  if (db) for (const v of variants) {
+    v.id ||= 'v' + (v.at || Date.now()) + Math.random().toString(36).slice(2, 6);
+    db.doc(`variants/${v.id}`).set({ name: v.name, at: v.at || 0, json: JSON.stringify(v.state) }).catch(() => {});
+  }
   renderVariants();
 }
+function renderVariantSelect() {
+  const sel = $('ver-select');
+  sel.textContent = '';
+  sel.add(new Option(variants.length ? 'Öppna en sparad version …' : 'Inga sparade versioner än', ''));
+  variants.forEach((v, i) => sel.add(new Option(v.name + (v.at ? ' · ' + new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : ''), String(i))));
+  sel.disabled = !variants.length;
+}
 function renderVariants() {
+  renderVariantSelect();
   const box = $('variants');
   box.textContent = '';
   if (!variants.length) box.innerHTML = '<p class="hint">Inga sparade varianter än. Spara det du har nu, ändra vidare och jämför.</p>';
@@ -298,7 +313,7 @@ function renderVariants() {
     for (const [label, fn] of [
       ['Använd', () => { state = { ...defaults(), ...clone(v.state) }; stopCompare(); syncUi(); }],
       ['Jämför', () => startCompare(v)],
-      ['Ta bort', () => { variants.splice(i, 1); saveVariants(); }],
+      ['Ta bort', () => { const [gone] = variants.splice(i, 1); if (gone.id) variantDb()?.doc(`variants/${gone.id}`).delete().catch(() => {}); saveVariants(); }],
     ]) {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.onclick = fn; actions.append(b);
@@ -307,10 +322,33 @@ function renderVariants() {
     box.append(row);
   });
 }
-$('save-variant').onclick = () => {
-  variants.push({ name: `Variant ${variants.length + 1}`, at: Date.now(), state: clone(state) });
+function addVariant(btn) {
+  variants.push({ name: `Version ${variants.length + 1}`, at: Date.now(), state: clone(state) });
   saveVariants();
+  if (btn) { const old = btn.textContent; btn.textContent = 'Sparad'; setTimeout(() => { btn.textContent = old; }, 1500); }
+}
+$('save-variant').onclick = e => addVariant(e.currentTarget);
+$('ver-save').onclick = e => addVariant(e.currentTarget);
+$('ver-select').onchange = e => {
+  const v = variants.find((x, i) => String(i) === e.target.value);
+  if (v) { state = { ...defaults(), ...clone(v.state) }; stopCompare(); syncUi(); }
+  e.target.value = '';
 };
+// Called once the shared store is reachable: pulls in versions saved from other browsers.
+async function loadVariantsFromDb() {
+  const db = variantDb();
+  if (!db) return;
+  try {
+    const snap = await db.collection('variants').get();
+    for (const d of snap.docs) {
+      const data = typeof d.data === 'function' ? d.data() : d.data;
+      if (!data?.json || variants.some(v => v.id === d.id)) continue;
+      variants.push({ id: d.id, name: data.name, at: data.at, state: { ...defaults(), ...JSON.parse(data.json) } });
+    }
+    variants.sort((a, b) => (a.at || 0) - (b.at || 0));
+    saveVariants();
+  } catch { /* the local list still works */ }
+}
 
 const cmpScreen = $('cmp-screen');
 function buildCompare() {
