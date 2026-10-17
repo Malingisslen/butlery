@@ -96,9 +96,13 @@ function parentPart(el) {
   while (p && p.closest('.phone') && (p.classList.contains('b-scroll') || (!p.classList.contains('phone') && !p.className && !p.getAttribute('style')))) p = p.parentElement;
   return p && p.closest('.phone') ? p : el;
 }
+// The recipe list is a grid in one Hem view and a list in the other: the same part in two layouts.
+const SAME_PART = { 'mr-grid': ':is(.mr-grid,.mr-list)', 'mr-list': ':is(.mr-grid,.mr-list)' };
 function selectorFor(el, variant) {
+  for (const c of el.classList) if (SAME_PART[c]) return `.phone ${SAME_PART[c]}`;
   if (el.classList.contains('phone')) return '.phone';
   if (el.dataset.glyph && !el.classList.contains('b-icon')) return `svg[data-glyph="${el.dataset.glyph}"]` + (variant ? [...el.classList].filter(c => !c.startsWith('lab-')).map(c => '.' + c).join('') : '');
+  if (el.dataset.labKindLoose) return `[data-lab-kind-loose="${el.dataset.labKindLoose}"]`;
   if (el.dataset.labKind) return `[data-lab-kind="${el.dataset.labKind}"]`;
   const classes = [...el.classList].filter(c => !c.startsWith('lab-') && c !== 'lab-selected');
   const base = classes.find(c => c.startsWith('b-'));

@@ -30,6 +30,14 @@ function assignLayoutIds() {
         const sig = [el.tagName, el.getAttribute('style') || '', [...el.children].map(c => c.tagName + (c.querySelector?.('use')?.getAttribute('href') || '')).join(',')].join('|');
         if (!kinds.has(sig)) kinds.set(sig, 'k' + kinds.size);
         el.dataset.labKind = kinds.get(sig);
+        // A part with text is also the same part when only an icon inside it differs (a list or a grid
+        // toggle in the header row), so the like part in the other views is found by this one.
+        const text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (text) {
+          const loose = [el.tagName, el.getAttribute('style') || '', [...el.children].map(c => c.tagName).join(','), text].join('|');
+          if (!kinds.has(loose)) kinds.set(loose, 'l' + kinds.size);
+          el.dataset.labKindLoose = kinds.get(loose);
+        }
       }
     });
   });
