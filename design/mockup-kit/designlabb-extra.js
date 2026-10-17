@@ -13,7 +13,8 @@ const SPACE_PRESETS = {
 const ICON_STYLES = [['', 'Original'], ['round', 'Runda ändar'], ['square', 'Kantiga ändar'], ['duo', 'Dubbeltoning']];
 const ICON_SIZES = { '.i': 24, '.i-xs': 12, '.i-s': 16, '.i-m': 20, '.i-xl': 32 };
 
-// [lucide, phosphor] names for the glyphs the example screens use; a glyph that is not here
+// [lucide, phosphor] names for the glyphs the example screens use (tools/gen-lab-icons.mjs reads
+// this table); a glyph that is not here
 // keeps the app's own drawing in every library.
 const ICON_NAMES = {
   bell: ['bell', 'bell'], 'chevron-left': ['chevron-left', 'caret-left'], 'chevron-right': ['chevron-right', 'caret-right'],
@@ -23,17 +24,16 @@ const ICON_NAMES = {
   'nav-week': ['calendar-days', 'calendar-blank'], plus: ['plus', 'plus'], 'refresh-cw': ['refresh-cw', 'arrows-clockwise'],
   search: ['search', 'magnifying-glass'], user: ['user', 'user'], users: ['users', 'users'],
 };
-const PH = 'https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/assets';
 const ICON_LIBS = {
   butlery: { label: 'Butlerys egna' },
   lucide: {
-    label: 'Lucide', idx: 0, url: n => `https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/${n}.svg`,
+    label: 'Lucide',
     wrap: ['fill', 'none', 'stroke', 'currentColor', 'stroke-linecap', 'round', 'stroke-linejoin', 'round'], stroke: 2,
   },
-  'ph-regular': { label: 'Phosphor, vanlig', idx: 1, url: n => `${PH}/regular/${n}.svg`, wrap: ['fill', 'currentColor'] },
-  'ph-bold': { label: 'Phosphor, fet', idx: 1, url: n => `${PH}/bold/${n}-bold.svg`, wrap: ['fill', 'currentColor'] },
-  'ph-duotone': { label: 'Phosphor, dubbeltoning', idx: 1, url: n => `${PH}/duotone/${n}-duotone.svg`, wrap: ['fill', 'currentColor'] },
-  'ph-fill': { label: 'Phosphor, fylld', idx: 1, url: n => `${PH}/fill/${n}-fill.svg`, wrap: ['fill', 'currentColor'] },
+  'ph-regular': { label: 'Phosphor, vanlig', wrap: ['fill', 'currentColor'] },
+  'ph-bold': { label: 'Phosphor, fet', wrap: ['fill', 'currentColor'] },
+  'ph-duotone': { label: 'Phosphor, dubbeltoning', wrap: ['fill', 'currentColor'] },
+  'ph-fill': { label: 'Phosphor, fylld', wrap: ['fill', 'currentColor'] },
 };
 
 function extraCss(st, scope) {
@@ -83,35 +83,24 @@ function spaceSummary(st, out) {
 }
 
 // ---- Icon libraries ----
-const iconCache = new Map(); // symbol id -> 'pending' | 'ok' | 'missing'
+// The glyphs come from designlabb-iconlibs.js, so the lab needs no network.
 function ensureSymbol(libKey, glyph) {
-  const lib = ICON_LIBS[libKey], names = ICON_NAMES[glyph];
-  if (!lib?.url || !names) return null;
+  const lib = ICON_LIBS[libKey], data = ICON_LIB_DATA[libKey]?.[glyph];
+  if (!lib?.wrap || !data) return null;
   const id = `lib-${libKey}-${glyph}`;
-  const status = iconCache.get(id);
-  if (status === 'ok') return id;
-  if (status) return null;
-  iconCache.set(id, 'pending');
-  fetch(lib.url(names[lib.idx])).then(r => (r.ok ? r.text() : Promise.reject(new Error(String(r.status))))).then(text => {
-    const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-    const root = doc.documentElement;
-    if (root.nodeName !== 'svg') throw new Error('not svg');
-    const NS = 'http://www.w3.org/2000/svg';
-    const sym = document.createElementNS(NS, 'symbol');
-    sym.id = id;
-    sym.setAttribute('viewBox', root.getAttribute('viewBox') || '0 0 24 24');
-    const g = document.createElementNS(NS, 'g');
-    for (let i = 0; i < lib.wrap.length; i += 2) g.setAttribute(lib.wrap[i], lib.wrap[i + 1]);
-    if (lib.stroke) g.setAttribute('style', `stroke-width:var(--icon-stroke,${lib.stroke})`);
-    for (const child of root.children) {
-      if (child.nodeName !== 'script') g.append(document.importNode(child, true));
-    }
-    sym.append(g);
-    document.getElementById('butlery-icons').append(sym);
-    iconCache.set(id, 'ok');
-    applyIcons();
-  }).catch(() => iconCache.set(id, 'missing'));
-  return null;
+  if (document.getElementById(id)) return id;
+  const doc = new DOMParser().parseFromString(`<svg xmlns="http://www.w3.org/2000/svg">${data[1]}</svg>`, 'image/svg+xml');
+  const NS = 'http://www.w3.org/2000/svg';
+  const sym = document.createElementNS(NS, 'symbol');
+  sym.id = id;
+  sym.setAttribute('viewBox', data[0]);
+  const g = document.createElementNS(NS, 'g');
+  for (let i = 0; i < lib.wrap.length; i += 2) g.setAttribute(lib.wrap[i], lib.wrap[i + 1]);
+  if (lib.stroke) g.setAttribute('style', `stroke-width:var(--icon-stroke,${lib.stroke})`);
+  for (const child of doc.documentElement.children) g.append(document.importNode(child, true));
+  sym.append(g);
+  document.getElementById('butlery-icons').append(sym);
+  return id;
 }
 function applyIcons() {
   for (const use of document.querySelectorAll('#screens svg.i > use, #compare-grid svg.i > use')) {

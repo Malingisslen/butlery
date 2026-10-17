@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=944-->
+<!--manifest:files=946-->
 
 ## Reporoten
 
@@ -614,12 +614,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
 | `mockup-kit/designlabb-claude.js` | `bf55e4fea2fbfcda67b6f9358ce113e9947fe91286c7fc9ca173639bc37eea82` |
 | `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
-| `mockup-kit/designlabb-extra.js` | `d7885bcb8d1de8a768a0ce01f357103f9cbfa152207551ad13218c6f0b22af46` |
+| `mockup-kit/designlabb-extra.js` | `a55c5cb412de283f93d3fbbe133ab517549ddf6b4f8c2628f0c2be2cf0928be2` |
+| `mockup-kit/designlabb-iconlibs.js` | `e972e1063603e483c13bf41467b08d8717fba718ac5f4c1f06d060532ec90e46` |
 | `mockup-kit/designlabb-layout.js` | `b32c26ee3cdca82ecab6a6e78f97ee88811cc5cf5f81fb56d5e8c6a376de9913` |
 | `mockup-kit/designlabb-parts.js` | `96595df826b3f133ee300f6506b3c5958ab492616e52393e6cb82f6584df44ff` |
 | `mockup-kit/designlabb-ui.js` | `f9f493c0d2ae04ee4e04b71404a613720da9e5efaaae4f001920142fc6194280` |
 | `mockup-kit/designlabb.css` | `41df5a2f1b60371ac0f9238c9680810aa7226ace454d530c54ee06f73392d086` |
-| `mockup-kit/designlabb.html` | `cf8a55fdaecd8fa9d7173e18e3ae3f9a9b3b90e7b9416f3b7ca43ad7fa44cda4` |
+| `mockup-kit/designlabb.html` | `41ed8caf131a83fa4f746c82a502bf9c2a895d31ae5dff575be715541c5f6bd2` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
@@ -848,6 +849,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-flutter.mjs` | `442f5f4d550acf2b27b9c38da03fb105e76fcf971e080f247010d11fbc9c6e3f` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
+| `tools/gen-lab-icons.mjs` | `f515fe210a7dd611846adee5dd489b97c1d2fa134ceeea5f869bac809d1ff370` |
 | `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
