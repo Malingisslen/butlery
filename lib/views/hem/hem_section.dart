@@ -165,7 +165,7 @@ class HemSection extends StatelessWidget {
         if (hero == null) return const [];
         final fetchedAt = viewModel.fetchedAt;
         return [
-          const SizedBox(height: AppDimensions.space12),
+          const SizedBox(height: AppDimensions.space8),
           HemTonightCard(
             hero: hero,
             onStartCooking: onStartCooking,
