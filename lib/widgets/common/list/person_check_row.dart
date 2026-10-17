@@ -12,8 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/user_avatar.dart';
-import 'package:butlery/widgets/user/user_display_models.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 
 class PersonCheckRow extends StatelessWidget {
   const PersonCheckRow({
@@ -60,12 +59,7 @@ class PersonCheckRow extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    UserAvatar(
-                      imageUrl: avatarUrl,
-                      displayName: name,
-                      size: ImageSize.small,
-                      announceName: false,
-                    ),
+                    AvatarCircle(imageUrl: avatarUrl, displayName: name),
                     const SizedBox(width: AppDimensions.space12),
                     Expanded(
                       child: Text.rich(

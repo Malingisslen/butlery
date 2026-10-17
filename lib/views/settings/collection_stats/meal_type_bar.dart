@@ -53,11 +53,11 @@ class MealTypeBar extends StatelessWidget {
                       child: ColoredBox(
                         color:
                             Color.lerp(
-                              cs.primary,
+                              cs.onSurface,
                               cs.surface,
                               ranks > 1 ? 0.55 * rank / (ranks - 1) : 0,
                             ) ??
-                            cs.primary,
+                            cs.onSurface,
                       ),
                     ),
                   ),

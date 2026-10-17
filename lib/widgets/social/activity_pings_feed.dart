@@ -18,8 +18,8 @@ import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/avatar_circle.dart';
 
 const int _kMaxItems = 5;
 const Duration _kActivityRefreshInterval = Duration(minutes: 2);
@@ -328,11 +328,9 @@ class _FeedRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          UserAvatarWidgets.avatar(
+          AvatarCircle(
             imageUrl: profile?.avatarUrl,
             displayName: profile?.displayName ?? actorName,
-            explicitSize: 32.0,
-            announceName: false,
           ),
           const SizedBox(width: AppDimensions.space8),
           Expanded(

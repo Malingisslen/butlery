@@ -44,6 +44,17 @@ class _Allowed {
 
 const _allowed = <_Allowed>[
   _Allowed(
+    'lib/widgets/recipe/comment_form_widget.dart',
+    'currentUser?.avatarUrl',
+    'the viewer\'s own avatar beside the comment box, display only; the '
+        'comment writer takes name and photo from AttributionSource',
+  ),
+  _Allowed(
+    'lib/widgets/recipe/comment_form_widget.dart',
+    'currentUser?.displayName ??',
+    'display-only label for the viewer\'s own avatar; not written anywhere',
+  ),
+  _Allowed(
     'lib/services/auth/provider_sign_in_service.dart',
     '_repo.currentUser?.displayName',
     'prefills the editable name field on the terms step (BUT-916); the '

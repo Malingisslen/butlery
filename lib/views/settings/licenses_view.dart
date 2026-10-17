@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/page_rule.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
@@ -131,7 +130,6 @@ class _LicensesViewState extends State<LicensesView> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const AccentRule.inline(),
           for (var i = 0; i < texts.length; i++) ...[
             if (i > 0) const SizedBox(height: AppDimensions.space24),
             _document('${i + 1} · ${headings[i]}', texts[i]),

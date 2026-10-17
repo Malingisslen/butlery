@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/common/layout/page_rule.dart';
 
 /// Simple FAQ page with Swedish Q&A content in expandable tiles. The first
 /// answer stands open, as the sketch draws it.
@@ -29,7 +28,6 @@ class FaqView extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const AccentRule(),
           Expanded(
             child: ListView(
               padding: ButleryPageBody.margin(

@@ -3,7 +3,10 @@
 library;
 
 import '../state_host.dart';
+import 'review_hosts_a.dart';
 import 'review_hosts_account.dart';
+import 'review_hosts_b.dart';
+import 'review_hosts_c.dart';
 import 'review_hosts_admin.dart';
 import 'review_hosts_auth.dart';
 import 'review_hosts_import.dart';
@@ -14,6 +17,9 @@ import 'review_hosts_social.dart';
 import 'review_hosts_social2.dart';
 
 final Map<String, StateHost> reviewHosts = {
+  ...reviewAHosts,
+  ...reviewBHosts,
+  ...reviewCHosts,
   ...reviewAccountHosts,
   ...reviewAdminHosts,
   ...reviewAuthHosts,
