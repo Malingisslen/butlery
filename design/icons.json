@@ -25,7 +25,7 @@
   "nav_family": [
     {
       "name": "nav-home",
-      "grid": "160×160, stroke 7",
+      "grid": "160×160, stroke 8",
       "master_svg": "assets/icons/nav-home.svg",
       "status": "levererad",
       "usages": 12
@@ -39,7 +39,7 @@
     },
     {
       "name": "nav-add",
-      "grid": "160×160, stroke 7",
+      "grid": "160×160, stroke 9",
       "note": "central knapp, ej tab",
       "master_svg": "assets/icons/nav-add.svg",
       "status": "levererad",

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_segment_switch.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -191,6 +192,41 @@ void main() {
       expect(other.role, SemanticsRole.tab);
       expect(other.flagsCollection.isSelected, Tristate.isFalse);
       handle.dispose();
+    });
+
+    testWidgets('a tab is laid out 48 dp tall and drawn 42', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Column(
+            children: [
+              UnderlineTabs<String>(
+                values: const ['a', 'b'],
+                labelOf: (v) => 'Flik $v',
+                selected: 'a',
+                onChanged: (_) {},
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final tab = find.ancestor(
+        of: find.text('Flik a'),
+        matching: find.byType(InkWell),
+      );
+      expect(
+        tester.getSize(tab).height,
+        AppDimensions.minTouchTarget,
+        reason: 'B-03: the tap target stays 48 dp',
+      );
+      final drawn = find.ancestor(
+        of: find.text('Flik a'),
+        matching: find.byType(Container),
+      );
+      expect(
+        tester.getSize(drawn.first).height,
+        AppDimensions.underlineTabHeight,
+      );
     });
 
     testWidgets('ButlerySegmentSwitch is a radio group', (tester) async {
