@@ -148,7 +148,7 @@ function openColorPopover(anchor, current, onPick) {
   }
   document.body.append(pop);
   const r = anchor.getBoundingClientRect();
-  pop.style.top = Math.max(8, Math.min(r.bottom + 6, innerHeight - 440)) + 'px';
+  pop.style.top = Math.max(8, Math.min(r.bottom + 6, innerHeight - Math.min(innerHeight * 0.78, 640) - 8)) + 'px';
   pop.style.left = Math.max(8, Math.min(r.left, innerWidth - 336)) + 'px';
   colorPop = pop;
 }
