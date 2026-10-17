@@ -742,14 +742,18 @@
 <div class="lab">
 <aside class="panel" id="panel">
 <div class="head"><h1>Designlabb</h1><button class="ghost" id="undo" type="button" disabled>Ångra</button><button class="ghost" id="redo" type="button" disabled>Gör om</button></div>
+<div class="clearrow"><button class="ghost" id="reset" type="button">Rensa alla ändringar</button></div>
 <input id="search" type="search" placeholder="Sök reglage: skugga, rundning, färg ...">
-<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button><button data-tab="layout" type="button">Layout</button><button data-tab="vars" type="button">Varianter</button><button data-tab="check" type="button">Kontroll</button></nav>
+<nav class="tabs" id="tabs"><button data-tab="all" type="button">Hela appen</button><button data-tab="part" type="button">Vald del</button><button data-tab="fx" type="button">Effekter</button><button data-tab="space" type="button">Avstånd</button><button data-tab="icons" type="button">Ikoner</button><button data-tab="layout" type="button">Layout</button><button data-tab="check" type="button">Granska och spara</button></nav>
 <div class="panes">
 <section class="pane" data-pane="all">
 <h2>Stämningar</h2>
 <div class="chips" id="presets"></div>
 <h2>Typsnitt</h2>
 <label><span>Typsnitt</span><select id="font"></select></label>
+<label><span>Rubrikfont</span><select id="font-head"></select></label>
+<div class="chips" id="font-pairs"></div>
+<label><span>Textskala</span><select id="type-ratio"></select></label>
 <label><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
 <label><span>Radavstånd</span><input type="range" id="lh" min="100" max="170" value="100"><span class="val" id="lh-v">orig</span></label>
 <details><summary>Storlek och tyngd per textroll</summary><div id="roles"></div></details>
@@ -812,25 +816,30 @@
 <div id="moves"></div>
 <button class="ghost" id="clear-moves" type="button" style="width:100%">Nollställ layouten</button>
 </section>
-<section class="pane" data-pane="vars">
+<section class="pane" data-pane="check">
+<h2>Dina ändringar som text</h2>
+<textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
+<h2>Anteckningar till utvecklaren</h2>
+<button class="ghost" id="note-add" type="button" style="width:100%">Sätt en nål: klicka på en del i en skärm</button>
+<div id="notes"></div>
+<h2>Modularitet: hur det förs in</h2>
+<div id="modular"></div>
 <h2>Sparade varianter</h2>
 <button class="ghost" id="save-variant" type="button" style="width:100%">Spara nuvarande som variant</button>
 <div id="variants"></div>
-</section>
-<section class="pane" data-pane="check">
 <h2>Kontroll av läsbarhet</h2>
 <div class="contrast" id="contrast"></div>
-<h2>Dina ändringar som text</h2>
-<textarea id="out" readonly placeholder="Dina ändringar visas här som text."></textarea>
 </section>
 </div>
 <div class="foot"><button id="apply" type="button">Spara och för in i appen</button></div>
-<div class="foot"><button class="ghost" id="hold" type="button">Original</button><button class="ghost" id="reset" type="button">Återställ</button><button id="copy" type="button">Kopiera</button></div>
+<div class="foot"><button class="ghost" id="hold" type="button">Original</button><button id="copy" type="button">Kopiera</button></div>
 </aside>
 <div class="stage">
 <h1>Designlabb: se ändringar direkt</h1>
 <p>Samma skärmar som i appens goldenbilder. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
 <div class="viewbar" id="viewbar"><span>Visa</span><button type="button" data-view="light">Ljust</button><button type="button" data-view="dark">Mörkt</button><button type="button" data-view="both">Båda</button></div>
+<div class="viewbar" id="seebar"><span>Se som</span><select id="see-vision"></select><select id="see-text"></select><select id="see-device"></select><select id="see-grid"></select><label class="chk"><input type="checkbox" id="see-motion"><span>Minska rörelse</span></label><label class="chk"><input type="checkbox" id="see-safe"><span>Säkra zoner</span></label><button type="button" id="see-reset">Vanlig vy</button></div>
+<p class="hint" id="see-note"></p>
 <div class="screens only-light" id="screens">
 <figure>
 <div class="phone">
@@ -1216,9 +1225,16 @@
 </aside>
 </div>
 <script src="designlabb-iconlibs.js"></script>
+<script src="designlabb-iconnames.js"></script>
 <script src="designlabb-extra.js"></script>
 <script src="designlabb-layout.js"></script>
+<script src="designlabb-modular.js"></script>
+<script src="designlabb-viewtools.js"></script>
+<script src="designlabb-type.js"></script>
+<script src="designlabb-notes.js"></script>
 <script src="designlabb-core.js"></script>
+<script src="designlabb-palette.js"></script>
+<script src="designlabb-warn.js"></script>
 <script src="designlabb-parts.js"></script>
 <script src="designlabb-fx.js"></script>
 <script src="designlabb-advice.js"></script>

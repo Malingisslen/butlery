@@ -43,6 +43,11 @@ const PART_GROUPS = [
   ['Underrubrik och värde', [
     ['subColor', 'Färg', 'color', 0, 0, '#627061'], ['subSize', 'Storlek', 'px', 8, 30, 12],
   ], '.subtitle,.value'],
+  ['Den här ikonen', [
+    ['iStroke', 'Linjetjocklek', 'px', 0.5, 3.5, 1.75, 0.25], ['iRot', 'Vrid', '°', 0, 345, 0, 15],
+    ['iFlip', 'Spegelvänd', 'check'],
+    ['lib', 'Bibliotek för just den här', 'sel', [['', 'Följ Ikoner-fliken'], ...ICON_LIB_OPTIONS]],
+  ], null, 'svg.i'],
   ['Ikoner inne i delen', [
     ['icoColor', 'Färg', 'color', 0, 0, '#24382c'], ['icoSize', 'Storlek', 'px', 12, 48, 24],
   ], 'svg.i,.i'],
@@ -64,7 +69,14 @@ function markMatches(sel, view, keep) {
   const light = list.filter(n => n.closest('.phone').dataset.theme !== 'dark');
   return { n: light.length, views: new Set(light.map(n => n.closest('.phone').dataset.view)).size };
 }
+// Shows the picked state on the picked parts, so a state that never occurs in the examples can still be seen.
+function forceState(st) {
+  document.querySelectorAll('[data-lab-state]').forEach(n => n.removeAttribute('data-lab-state'));
+  if (!st) return;
+  document.querySelectorAll('[data-lab-match],[data-lab-selected]').forEach(n => n.setAttribute('data-lab-state', st));
+}
 function clearSelection() {
+  document.querySelectorAll('[data-lab-state]').forEach(n => n.removeAttribute('data-lab-state'));
   document.querySelectorAll('.lab-handles').forEach(n => n.remove());
   document.querySelectorAll('[data-lab-match]').forEach(n => n.removeAttribute('data-lab-match'));
   document.querySelectorAll('[data-lab-selected]').forEach(e => e.removeAttribute('data-lab-selected'));
@@ -114,7 +126,7 @@ function control(part, spec, now, keyword, onSet) {
     input = document.createElement('input');
     input.type = 'color'; input.value = cur;
     input.oninput = () => onSet(k, input.value);
-    l.append(s, input);
+    l.append(s, input, paletteButton(input, v => onSet(k, v)));
   } else if (type === 'sel') {
     input = document.createElement('select');
     for (const o of lo) input.add(Array.isArray(o) ? new Option(o[1], o[0]) : new Option(o, o));
@@ -140,9 +152,41 @@ function partFor(el, variant) {
   let sel = selectorFor(el, variant), base = selectorFor(el, false);
   if (selected.onlyThis && el.dataset.labId && sel !== '.phone') sel = base = `[data-lab-id="${el.dataset.labId}"]`;
   const view = selected.onlyView ? +el.closest('.phone').dataset.view : null;
-  const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}`;
-  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {}, ...(view != null ? { view } : {}) };
+  const st = selected.state || '';
+  const key = `${selected.mode}|${view != null ? `v${view}|` : ''}${sel}${st ? `|@${st}` : ''}`;
+  const part = state.parts[key] ||= { sel, mode: selected.mode, props: {}, ...(view != null ? { view } : {}), ...(st ? { state: st } : {}) };
   return { el, sel, base, view, key, part };
+}
+// Every glyph of the app, searchable, to swap the picked icon (and its like) for another.
+function glyphPicker(parts, part, done) {
+  const wrap = document.createElement('details');
+  wrap.open = true;
+  const sm = document.createElement('summary'); sm.textContent = 'Byt ikon';
+  const search = document.createElement('input');
+  search.type = 'search'; search.placeholder = 'Sök ikon, till exempel stjärna';
+  const grid = document.createElement('div');
+  grid.className = 'glyph-grid';
+  const names = [...document.querySelectorAll('#butlery-icons symbol')].map(s => s.id.replace('i-', ''));
+  const fill = () => {
+    grid.textContent = '';
+    const q = search.value.trim().toLowerCase();
+    const list = names.filter(n => !q || n.includes(q) || (ICON_WORDS[n] || '').includes(q));
+    for (const n of list) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.title = n; b.className = 'ghost' + (part.props.glyph === n ? ' on' : '');
+      b.innerHTML = `<svg class="i"><use href="#i-${n}"></use></svg>`;
+      b.onclick = () => { for (const p of parts) p.props.glyph = n; done(); };
+      grid.append(b);
+    }
+    if (!list.length) grid.textContent = 'Ingen ikon hittades.';
+  };
+  search.oninput = fill;
+  fill();
+  const reset = document.createElement('button');
+  reset.type = 'button'; reset.className = 'ghost'; reset.textContent = 'Tillbaka till originalikonen';
+  reset.onclick = () => { for (const p of parts) delete p.props.glyph; done(); };
+  wrap.append(sm, search, grid, reset);
+  return wrap;
 }
 function showPart(variant = false) {
   const el = selected.el, box = $('part');
@@ -187,6 +231,19 @@ function showPart(variant = false) {
     seg.append(b);
   }
   box.append(seg);
+  const stateRow = document.createElement('label');
+  const stateName = document.createElement('span'); stateName.textContent = 'Tillstånd';
+  const stateSel = document.createElement('select');
+  for (const [v, l] of STATE_LABELS) stateSel.add(new Option(l, v));
+  stateSel.value = selected.state || '';
+  stateSel.onchange = () => { selected.state = stateSel.value; showPart(variant); };
+  stateRow.append(stateName, stateSel);
+  box.append(stateRow);
+  if (selected.state) {
+    const hint = document.createElement('p'); hint.className = 'hint';
+    hint.textContent = 'Det du ändrar nu gäller bara när delen är i det här tillståndet. Delarna visas i tillståndet så länge du står här.';
+    box.append(hint);
+  }
   let found = { n: 0, views: 0 };
   targets.forEach((t, i) => {
     const f = markMatches(t.sel, t.view, i > 0);
@@ -225,14 +282,23 @@ function showPart(variant = false) {
     const s = document.createElement('span'); s.textContent = 'Bara just den här varianten';
     l.append(c, s); box.append(l);
   }
+  const warn = document.createElement('details');
+  warn.open = true;
+  const wsum = document.createElement('summary'); wsum.textContent = 'Kontroll av det du valt';
+  const wbox = document.createElement('div'); wbox.id = 'part-warn';
+  warn.append(wsum, wbox);
+  box.append(warn);
   const onSet = (k, v) => {
     for (const p of selected.parts) if (v === '' || v === false) delete p.props[k]; else p.props[k] = v;
     render();
+    refreshPartWarn(() => showPart(variant));
   };
-  PART_GROUPS.forEach(([title, specs, childQuery], i) => {
+  if (el.matches('svg.i')) box.append(glyphPicker(selected.parts, part, () => { render(); showPart(variant); }));
+  PART_GROUPS.forEach(([title, specs, childQuery, selfQuery], i) => {
     if (childQuery && !kid(childQuery)) return;
+    if (selfQuery && !el.matches(selfQuery)) return;
     const d = document.createElement('details');
-    d.open = i < 2 || specs.some(s => part.props[s[0]] != null);
+    d.open = i < 2 || !!selfQuery || specs.some(s => part.props[s[0]] != null);
     const sm = document.createElement('summary'); sm.textContent = title;
     d.append(sm);
     for (const spec of specs) {
@@ -254,6 +320,8 @@ function showPart(variant = false) {
   box.append(note);
   applySearch();
   render();
+  refreshPartWarn(() => showPart(variant));
+  forceState(selected.state);
 }
 
 // Word-style frame around the picked part: dragging a handle sets its width and height, for every like part.

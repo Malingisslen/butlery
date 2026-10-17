@@ -52,6 +52,7 @@ function render() {
   lab.disabled = !!compare;
   lab.text = buildCss(state);
   $('out').value = summary(state);
+  renderModular();
   if (compare) {
     labA.text = buildCss(state, '.cmpA');
     labB.text = buildCss(compare.state, '.cmpB');
@@ -60,6 +61,8 @@ function render() {
   }
   applyIcons();
   drawOverlay();
+  applyViewTools();
+  drawPins();
   if (typeof drawHandles === 'function') drawHandles();
   shareNow();
   refreshAdvice();
@@ -109,12 +112,14 @@ function contrast() {
 const fontSel = $('font');
 for (const f of Object.keys(FONTS)) fontSel.add(new Option(f, f));
 function loadFont() {
-  const q = FONTS[state.font];
-  if (q && !document.getElementById('gf-' + q)) {
-    const l = document.createElement('link');
-    l.id = 'gf-' + q; l.rel = 'stylesheet';
-    l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
-    document.head.append(l);
+  for (const name of [state.font, state.fontHead]) {
+    const q = FONTS[name];
+    if (q && !document.getElementById('gf-' + q)) {
+      const l = document.createElement('link');
+      l.id = 'gf-' + q; l.rel = 'stylesheet';
+      l.href = `https://fonts.googleapis.com/css2?family=${q}&display=swap`;
+      document.head.append(l);
+    }
   }
 }
 fontSel.onchange = () => { state.font = fontSel.value; loadFont(); render(); };
@@ -167,6 +172,9 @@ for (const { hex, uses, label } of colorRows) {
 // Push the state into every control, so presets, undo, variants and a shared link use one path.
 function syncUi() {
   fontSel.value = state.font;
+  if (typeof renderNotes === 'function' && $('notes')) renderNotes();
+  $('font-head').value = state.fontHead || '';
+  $('type-ratio').value = state.typeRatio || '';
   for (const id of Object.keys(SLIDERS)) { $(id).value = state[id]; showValue(id); }
   for (const { role, size, weight } of roleInputs) {
     size.value = state.roles[role]?.size ?? sizes.get(role);
@@ -250,6 +258,7 @@ function renderVariants() {
     summaryEl.textContent = [s.font !== 'ButlerySans' && s.font, s.hue && `nyans ${s.hue}°`, s.sat !== 100 && `mättnad ${s.sat} %`,
       s.card !== 12 && `kort ${s.card} px`, s.control !== 8 && `knappar ${s.control} px`, s.scale !== 100 && `text ${s.scale} %`, Object.keys(s.parts).length && `${Object.keys(s.parts).length} delar`, Object.keys(s.colors).length && `${Object.keys(s.colors).length} färger`]
       .filter(Boolean).join(' · ') || 'originalet';
+    if (v.at) summaryEl.textContent += ` · sparad ${new Date(v.at).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`;
     const actions = document.createElement('div');
     actions.className = 'row';
     for (const [label, fn] of [
@@ -265,7 +274,7 @@ function renderVariants() {
   });
 }
 $('save-variant').onclick = () => {
-  variants.push({ name: `Variant ${variants.length + 1}`, state: clone(state) });
+  variants.push({ name: `Variant ${variants.length + 1}`, at: Date.now(), state: clone(state) });
   saveVariants();
 };
 
@@ -344,7 +353,7 @@ document.addEventListener('keydown', e => {
     stepHistory(e.shiftKey ? 1 : -1);
   }
 });
-$('reset').onclick = () => { state = defaults(); stopCompare(); syncUi(); };
+$('reset').onclick = () => { state = defaults(); stopCompare(); clearSelection(); replayLayout(); syncUi(); showMoves(); };
 for (const [ev, off] of [['pointerdown', true], ['pointerup', false], ['pointerleave', false]]) {
   $('hold').addEventListener(ev, () => { lab.disabled = off && !compare; });
 }
@@ -354,7 +363,10 @@ $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(out.value); } catch { document.execCommand('copy'); }
 };
 
+wireNotes();
 wireScreens();
+wireViewTools();
+wireType();
 wireEffects();
 wireExtras();
 wireAdvice();

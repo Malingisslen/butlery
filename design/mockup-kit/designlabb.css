@@ -264,3 +264,47 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-h-nw { left: 0; top: 0; cursor: nwse-resize; } .lab-h-n { left: 50%; top: 0; cursor: ns-resize; } .lab-h-ne { left: 100%; top: 0; cursor: nesw-resize; }
 .lab-h-e { left: 100%; top: 50%; cursor: ew-resize; } .lab-h-se { left: 100%; top: 100%; cursor: nwse-resize; } .lab-h-s { left: 50%; top: 100%; cursor: ns-resize; }
 .lab-h-sw { left: 0; top: 100%; cursor: nesw-resize; } .lab-h-w { left: 0; top: 50%; cursor: ew-resize; }
+
+.panel .clearrow { padding: 8px 16px 0; }
+.panel .clearrow button { width: 100%; padding: 6px 10px; font-size: 12px; }
+.hint.mod-warn { color: var(--lab-warn, #8a5a12); }
+.hint.mod-ok { color: var(--lab-ok, #2f6a43); }
+.glyph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px; max-height: 190px; overflow-y: auto; margin: 6px 0; }
+.glyph-grid button { padding: 6px; display: flex; align-items: center; justify-content: center; }
+.glyph-grid button.on { outline: 2px solid var(--lab-accent, #ce7c1e); }
+.glyph-grid .i { width: 20px; height: 20px; }
+.color-pop { position: fixed; z-index: 9999; width: 320px; max-height: 430px; overflow-y: auto; background: #fff; color: #17251d; border: 1px solid #c9d2c6; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 37, 29, .28); padding: 10px; font: 13px system-ui, sans-serif; }
+.color-pop .cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.color-pop h3 { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; margin: 10px 0 4px; color: #627061; }
+.color-pop .cp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; }
+.color-pop .cp-sws { display: flex; gap: 4px; }
+.color-pop .cp-sw { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .25); padding: 0; cursor: pointer; }
+.color-pop .cp-app { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; color: inherit; font: inherit; }
+.color-pop .cp-app:hover { background: #eef1ea; }
+.color-pop .cp-app i { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); }
+.color-pop .cp-app span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.color-pop .cp-app small { color: #627061; font-size: 11px; }
+.color-pop .cp-mini { flex: none; min-width: 34px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 12px; }
+.color-pop .cp-mini svg { width: 18px; height: 18px; }
+.color-pop button.ghost { padding: 4px 8px; font-size: 12px; }
+.panel label .cp-open { margin-left: 6px; padding: 3px 7px; font-size: 11px; flex: none; }
+#seebar { flex-wrap: wrap; row-gap: 6px; }
+#seebar select { padding: 5px 8px; font-size: 12px; max-width: 190px; }
+#seebar .chk { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+#seebar button { padding: 5px 10px; font-size: 12px; }
+#see-note { margin: 4px 0 8px; min-height: 0; }
+.phone .lab-grid { position: absolute; inset: 0; z-index: 40; pointer-events: none; background-image: linear-gradient(to right, rgba(36, 120, 200, .25) 1px, transparent 1px), linear-gradient(to bottom, rgba(36, 120, 200, .25) 1px, transparent 1px); }
+.phone .lab-safe { position: absolute; left: 0; right: 0; z-index: 41; pointer-events: none; background: repeating-linear-gradient(45deg, rgba(200, 40, 40, .25) 0 6px, rgba(200, 40, 40, .08) 6px 12px); }
+.phone .lab-safe.top { top: 0; }
+.phone .lab-safe.bottom { bottom: 0; }
+.phone [data-lab-clip] { outline: 2px solid #d02020 !important; outline-offset: 1px; }
+.phone .lab-gap.measure { background: rgba(36, 120, 200, .6); }
+.warn-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; margin: 4px 0; border-radius: 8px; font-size: 12px; }
+.warn-row span { flex: 1; }
+.warn-row.ok { background: #e6f0e4; color: #2f6a43; }
+.warn-row.bad { background: #fbeadb; color: #7a4310; }
+.warn-row button { flex: none; padding: 3px 8px; font-size: 11px; }
+.phone .lab-pin { position: absolute; z-index: 70; width: 18px; height: 18px; border-radius: 50%; background: #e0457b; color: #fff; font: 700 11px/18px system-ui, sans-serif; text-align: center; pointer-events: none; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); }
+.lab-noting .phone { cursor: crosshair; }
+.note-row { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
+.note-row button { align-self: flex-start; padding: 3px 8px; font-size: 11px; }

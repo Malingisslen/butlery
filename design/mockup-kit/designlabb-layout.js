@@ -197,7 +197,7 @@ function nudge(dir) {
   recordMove(moving, parent, dir < 0 ? sibs[j] : sibs[j + 1] || null);
 }
 
-const snap4 = (v, off) => off ? v : Math.round(v / 4) * 4;
+const snap4 = (v, off) => { const g = (typeof SEE !== 'undefined' && SEE.grid) || 4; return off ? v : Math.round(v / g) * g; };
 // Free drag: the part keeps its place in the flow but its margins follow the pointer (snapped to
 // 4 px, Alt for exact), so what is around it moves over and the gaps stay true.
 function freeMove(e) {
@@ -208,12 +208,12 @@ function freeMove(e) {
   render();
   showFreeGaps(el);
 }
-function showFreeGaps(el) {
-  document.querySelectorAll('.lab-gap').forEach(n => n.remove());
+function showFreeGaps(el, kind = '') {
+  document.querySelectorAll(kind ? '.lab-gap.measure' : '.lab-gap:not(.measure)').forEach(n => n.remove());
   const phone = el.closest('.phone'), base = phone.getBoundingClientRect(), r = el.getBoundingClientRect();
   const tag = (x, y, w, h, text) => {
     const d = document.createElement('div');
-    d.className = 'lab-gap between';
+    d.className = `lab-gap between ${kind}`.trim();
     d.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${Math.max(w, 1)}px;height:${Math.max(h, 1)}px`;
     d.textContent = text;
     phone.append(d);
