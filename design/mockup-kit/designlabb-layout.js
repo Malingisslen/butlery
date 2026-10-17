@@ -47,12 +47,29 @@ function labelOf(el) { return (el?.textContent || '').replace(/\s+/g, ' ').trim(
 
 function applyMove(m) {
   for (const fig of document.querySelectorAll('#screens > figure')) {
-    const el = fig.querySelector(`[data-lab-id="${m.id}"]`), to = fig.querySelector(`[data-lab-id="${m.to}"]`);
+    const el = fig.querySelector(`[data-lab-id="${m.id}"]`);
+    if (m.beside) {
+      const tgt = fig.querySelector(`[data-lab-id="${m.beside}"]`);
+      if (!el || !tgt || el.contains(tgt) || tgt.contains(el)) continue;
+      let row = tgt.parentElement;
+      if (!row.classList.contains('lab-row')) {
+        row = document.createElement('div');
+        row.className = 'lab-row';
+        row.dataset.labId = `w-${m.beside}`;
+        tgt.before(row);
+        row.append(tgt);
+      }
+      if (m.side === 'left') row.insertBefore(el, tgt); else tgt.after(el);
+      continue;
+    }
+    const to = fig.querySelector(`[data-lab-id="${m.to}"]`);
     if (!el || !to || el.contains(to)) continue;
     const before = m.before ? fig.querySelector(`[data-lab-id="${m.before}"]`) : null;
     to.insertBefore(el, before && before.parentElement === to ? before : null);
   }
 }
+const moveText = m => m.beside ? `"${m.label}" till ${m.side === 'left' ? 'vänster' : 'höger'} om "${m.besideLabel}"`
+  : `"${m.label}" ${m.beforeLabel ? `före "${m.beforeLabel}"` : 'sist'} i ${m.toLabel}`;
 // Rebuild the screens from the pristine copy and replay the moves, unless nothing changed.
 function replayLayout(force) {
   const sig = JSON.stringify(state.moves || []);
@@ -112,6 +129,17 @@ function dropPlan(x, y) {
   const cs = getComputedStyle(container);
   const horizontal = (cs.display === 'flex' || cs.display === 'inline-flex') && cs.flexDirection.startsWith('row');
   const siblings = [...container.children].filter(c => c !== drag.el && !c.classList.contains('lab-drop') && !c.classList.contains('lab-gap'));
+  if (!horizontal) {
+    const cw = container.getBoundingClientRect().width;
+    for (const s of siblings) {
+      const r = s.getBoundingClientRect();
+      if (y < r.top || y > r.bottom) continue;
+      const narrow = r.width < cw * 0.9;
+      const side = x > r.right - Math.min(r.width * 0.3, 60) && (narrow || x > r.right) ? 'right'
+        : x < r.left + Math.min(r.width * 0.3, 60) && (narrow || x < r.left) ? 'left' : null;
+      if (side) return { container, beside: s, side, siblings, horizontal };
+    }
+  }
   const before = siblings.find(s => {
     const r = s.getBoundingClientRect();
     return horizontal ? x < r.left + r.width / 2 : y < r.top + r.height / 2;
@@ -122,6 +150,14 @@ function showDropLine(plan) {
   document.querySelectorAll('.lab-drop').forEach(n => n.remove());
   if (!plan) return;
   const phone = plan.container.closest('.phone'), base = phone.getBoundingClientRect();
+  if (plan.beside) {
+    const r = plan.beside.getBoundingClientRect(), edge = plan.side === 'left' ? r.left : r.right;
+    const bar = document.createElement('div');
+    bar.className = 'lab-drop';
+    bar.style.cssText = `left:${edge - base.left - 1}px;top:${r.top - base.top}px;width:3px;height:${r.height}px`;
+    phone.append(bar);
+    return;
+  }
   const ref = plan.before || plan.siblings[plan.siblings.length - 1];
   const line = document.createElement('div');
   line.className = 'lab-drop';
@@ -135,9 +171,9 @@ function showDropLine(plan) {
   }
   phone.append(line);
 }
-function recordMove(el, container, before) {
+function recordMove(el, container, before, beside, side) {
   if (!el.dataset.labId || !container.dataset.labId) return;
-  const m = {
+  const m = beside ? { id: el.dataset.labId, beside: beside.dataset.labId, side, label: labelOf(el), besideLabel: labelOf(beside) } : {
     id: el.dataset.labId, to: container.dataset.labId, before: before?.dataset.labId ?? null,
     label: labelOf(el), toLabel: labelOf(container.querySelector('.b-overline')) || container.className.baseVal || container.className.split(' ')[0] || container.tagName.toLowerCase(),
     beforeLabel: before ? labelOf(before) : '',
@@ -189,7 +225,7 @@ function wireLayout() {
     d.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop').forEach(n => n.remove());
     if (d.started) {
-      if (d.plan) recordMove(d.el, d.plan.container, d.plan.before);
+      if (d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
       else pickMoving(d.el);
     } else if (d.wasPicked && moving === d.el) pickMoving(boxAround(d.el));
     else pickMoving(d.el);
@@ -220,11 +256,11 @@ function showMoves() {
   moves.forEach((m, i) => {
     const p = document.createElement('p');
     p.className = 'hint';
-    p.textContent = `${i + 1}. "${m.label}" till ${m.beforeLabel ? `före "${m.beforeLabel}"` : 'sist'} i ${m.toLabel}`;
+    p.textContent = `${i + 1}. ${moveText(m)}`;
     box.append(p);
   });
 }
 function layoutSummary(st, out) {
   if (!st.moves?.length) return;
-  out.layoutMoves = st.moves.map(m => `"${m.label}" ${m.beforeLabel ? `före "${m.beforeLabel}"` : 'sist'} i ${m.toLabel}`);
+  out.layoutMoves = st.moves.map(moveText);
 }
