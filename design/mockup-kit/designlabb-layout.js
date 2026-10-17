@@ -8,7 +8,7 @@
 
 let layoutBase = '';
 let layoutApplied = '[]';
-let freeMode = false;
+let freeMode = true; // exact pixels is the default; Shift while dragging does the other kind
 let drag = null; // { el, x, y, started, plan }
 
 const inSvg = el => !!el.parentElement?.closest('svg');
@@ -202,7 +202,8 @@ function wireLayout() {
     }
     if (!drag.started) return;
     e.preventDefault();
-    if (freeMode) { freeMove(e); return; }
+    drag.free = freeMode !== e.shiftKey;
+    if (drag.free) { freeMove(e); return; }
     drag.plan = dropPlan(e.clientX, e.clientY);
     showDropLine(drag.plan);
   }, { passive: false });
@@ -212,7 +213,7 @@ function wireLayout() {
     drag = null;
     d.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop,.lab-gap').forEach(n => n.remove());
-    if (d.started && freeMode) showMoves();
+    if (d.started && d.free) showMoves();
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
     drawHandles();
   });
