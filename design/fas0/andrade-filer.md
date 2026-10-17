@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=957-->
+<!--manifest:files=958-->
 
 ## Reporoten
 
@@ -610,28 +610,29 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `36b9b6df8b4a58f3023734c3d65378cb66cf8daf7b1692308190a10b71e99e8b` |
+| `mockup-kit/README.md` | `f64e446dc561119ba0a1ce343c34046400e6b2986af0afe4e0f2f44c64d5b3d1` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
 | `mockup-kit/designlabb-advice-more.js` | `9944a655910e29e421eda3ad6ef1fb3064b6e76bb2f7feac8bd1392dde068a7f` |
 | `mockup-kit/designlabb-advice-ui.js` | `900f92edf0fe52372105c8a0ff41e0f3058f66780087b9922c682b5c84fc2607` |
 | `mockup-kit/designlabb-advice.js` | `855bca67bcd43622d4dc2bacda20bc593b5b711edbad3102ddeea1916f6a68f4` |
 | `mockup-kit/designlabb-claude.js` | `db4c89c0fc282856f59d7431ab1c35a6855998fbc64673fd7430917ad04490ce` |
-| `mockup-kit/designlabb-core.js` | `9f88e4e8b27d3920adf1983fb8ac57ce4a6dacff3dc7d436956d8c87f306a6c2` |
+| `mockup-kit/designlabb-core.js` | `428db425567c418265d065eb03763554f5d9d05f0ac466e087f926adce2ab2dd` |
 | `mockup-kit/designlabb-extra.js` | `e4bdaaf313f013db3525bd157a0892390876c4af97be34af673dc18023d51770` |
 | `mockup-kit/designlabb-fx.js` | `c36f834bc056848471735a1f90093cb87facb447557019b4c02c921d917d67a7` |
 | `mockup-kit/designlabb-iconlibs.js` | `b0b57d7b79d44962a9b8d842744f78395b69e44542b3f83de298295d4c931f6b` |
 | `mockup-kit/designlabb-iconnames.js` | `184a1aa16d5030cb594e90591e971352b3b02ea0a1b02591f6a26ffc1f94d8c4` |
 | `mockup-kit/designlabb-layout.js` | `9670cbaeceaa978f0700bbeb9412e816e308404b8b23d5d8c60b6f5dd89d7a95` |
-| `mockup-kit/designlabb-modular.js` | `9a8c135defc8d8b5d64fa5f248ad5480ba8c8733f91608de51a234d55e425c73` |
+| `mockup-kit/designlabb-modular.js` | `c1b0ca962480da04bad8a204e9f82b1147959c615bff88b57496eac84a5ff319` |
 | `mockup-kit/designlabb-notes.js` | `9276d462981c59e21029295ee50408129b99582c6309e186b7e044400747d013` |
 | `mockup-kit/designlabb-palette.js` | `c3f934b15720d0cbac2e8f46608f234e2cb33229f0db20b5b68fbb227c6afdb6` |
 | `mockup-kit/designlabb-parts.js` | `9523b0aadae1213f73c891575df48fbb3c5c12a63ac753c5ff1d8a0c31296b59` |
+| `mockup-kit/designlabb-roles.js` | `f8b0b63c9066a05e49186b2563193da2dea5a78556872fac0e1e0f690c767ccf` |
 | `mockup-kit/designlabb-type.js` | `0cc90b2423816b1238ecf932f49c8ead8951c267e2aeb35d93f00fac6fd65893` |
-| `mockup-kit/designlabb-ui.js` | `53926e8f56bfb905e25baa9031206f0885da4f7680e92e8f168a8d9e4e5bd166` |
+| `mockup-kit/designlabb-ui.js` | `0518e2c2654c140a8ab40ab6463fd47d985dc6a7748bc3cfb2f4d9a3c14bf933` |
 | `mockup-kit/designlabb-viewtools.js` | `7e8ba02805a27ae8068dee7d4fc7980a5e188766b0fe8427800ce4cd1f08c1fb` |
 | `mockup-kit/designlabb-warn.js` | `1ec15683907cbad7bbcb86250f6725d70a1982156f453f11c69f6c9f75663f49` |
-| `mockup-kit/designlabb.css` | `c62bb87524889eacf545aad1ce323ade81d7f06a3dd0e51d3a2b29773c830cb7` |
-| `mockup-kit/designlabb.html` | `62e04bfc84c5947651dfcfbf681184f38d5453fae066b21f42a3614ebde30a8b` |
+| `mockup-kit/designlabb.css` | `e471268d3ef684d7ad4940102e4c77b18b783c68f1a69b7df12192b23e4a9023` |
+| `mockup-kit/designlabb.html` | `aabc81110a8a098da47e55117366e4eb2513dc47dbad6067f6c770b3f2e8f927` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |

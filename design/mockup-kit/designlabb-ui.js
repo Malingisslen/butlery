@@ -172,6 +172,7 @@ for (const { hex, uses, label } of colorRows) {
 // Push the state into every control, so presets, undo, variants and a shared link use one path.
 function syncUi() {
   fontSel.value = state.font;
+  syncRoles();
   if (typeof renderNotes === 'function' && $('notes')) renderNotes();
   $('font-head').value = state.fontHead || '';
   $('type-ratio').value = state.typeRatio || '';
@@ -364,6 +365,7 @@ $('copy').onclick = async () => {
 };
 
 wireNotes();
+wireRoles();
 wireScreens();
 wireViewTools();
 wireType();

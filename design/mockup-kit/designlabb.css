@@ -308,3 +308,8 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .lab-noting .phone { cursor: crosshair; }
 .note-row { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
 .note-row button { align-self: flex-start; padding: 3px 8px; font-size: 11px; }
+.role-row { border-top: 1px solid #e1e5d8; padding: 6px 0; }
+.role-head { display: flex; flex-direction: column; }
+.role-head small { color: #627061; font-size: 11px; }
+.role-pickers { display: flex; gap: 10px; flex-wrap: wrap; }
+.role-pickers label { margin: 4px 0; }
