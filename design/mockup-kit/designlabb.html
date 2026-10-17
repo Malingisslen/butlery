@@ -841,7 +841,7 @@
 <h1>Designlabb: se ändringar direkt</h1>
 <p>Samma skärmar som i appens goldenbilder. Dra i reglagen, eller klicka på en del av en skärm för att justera just den. Adressen innehåller dina val, så du kan spara eller dela länken.</p>
 <div class="viewbar" id="viewbar"><span>Visa</span><button type="button" data-view="light">Ljust</button><button type="button" data-view="dark">Mörkt</button><button type="button" data-view="both">Båda</button></div>
-<div class="viewbar" id="seebar"><span>Se som</span><select id="see-vision"></select><select id="see-text"></select><select id="see-device"></select><select id="see-grid"></select><label class="chk"><input type="checkbox" id="see-motion"><span>Minska rörelse</span></label><label class="chk"><input type="checkbox" id="see-safe"><span>Säkra zoner</span></label><button type="button" id="see-reset">Vanlig vy</button></div>
+<details class="seewrap" id="seewrap"><summary>Se som <span id="see-sum">vanlig vy</span></summary><div class="viewbar" id="seebar"><span>Se som</span><select id="see-vision"></select><select id="see-text"></select><select id="see-device"></select><select id="see-grid"></select><label class="chk"><input type="checkbox" id="see-motion"><span>Minska rörelse</span></label><label class="chk"><input type="checkbox" id="see-safe"><span>Säkra zoner</span></label><button type="button" id="see-reset">Vanlig vy</button></div></details>
 <p class="hint" id="see-note"></p>
 <div class="screens only-light" id="screens">
 <figure>
@@ -858,6 +858,7 @@
   </div>
   <div class="b-scroll"><div class="b-body" style="padding-top:28px">
     <div class="b-overline muted" style="color:var(--cs-on-surface-variant)">Dina recept · 1</div>
+    <div class="mr-grid" style="margin-top:18px"><div class="mr-card"><div class="top"><span class="tile">K</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port.</div></div></div>
   </div></div>
 </div>
 </figure>

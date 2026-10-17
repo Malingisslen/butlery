@@ -62,6 +62,7 @@ function render() {
   applyIcons();
   drawOverlay();
   applyViewTools();
+  markPresets();
   drawPins();
   if (typeof drawHandles === 'function') drawHandles();
   shareNow();
@@ -203,6 +204,7 @@ function updateHistoryButtons() {
 for (const [name, patch] of Object.entries(PRESETS)) {
   const b = document.createElement('button');
   b.type = 'button'; b.textContent = name;
+  b.dataset.preset = name;
   b.onclick = () => { state = { ...defaults(), ...patch }; syncUi(); };
   $('presets').append(b);
 }
@@ -218,6 +220,29 @@ surprise.onclick = () => {
   syncUi();
 };
 $('presets').append(surprise);
+
+// The preset whose values all match the current state is marked, so the panel shows which mood is on.
+function markPresets() {
+  for (const b of document.querySelectorAll('#presets button[data-preset]')) {
+    const patch = PRESETS[b.dataset.preset];
+    b.classList.toggle('on', Object.entries(patch).every(([k, v]) => JSON.stringify(state[k]) === JSON.stringify(v)));
+  }
+}
+
+// Each pane heading becomes a fold-out section; only the first one in a pane starts open.
+function foldSections() {
+  for (const pane of document.querySelectorAll('.pane[data-pane]')) {
+    if (pane.dataset.pane === 'part') continue;
+    let cur = null, n = 0;
+    for (const el of [...pane.children]) {
+      if (el.tagName === 'H2') {
+        cur = document.createElement('details'); cur.className = 'sec'; cur.open = n++ === 0;
+        const sm = document.createElement('summary'); pane.insertBefore(cur, el); sm.append(el); cur.append(sm);
+      } else if (cur) cur.append(el);
+    }
+  }
+}
+foldSections();
 
 // ---- Tabs and search ----
 function openTab(name) {

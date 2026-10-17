@@ -8,8 +8,8 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel .head button { flex: none; padding: 6px 10px; font-size: 12px; }
 .panel button:disabled { opacity: .4; cursor: default; }
 .panel #search { margin: 8px 16px 0; padding: 8px; border: 1px solid #7d897c; border-radius: 8px; font: inherit; }
-.panel .tabs { flex-wrap: wrap; display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid #ccd1c2; }
-.panel .tabs button { flex: 1 0 auto; padding: 8px 4px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: #627061; font-weight: 600; font-size: 12px; cursor: pointer; }
+.panel .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid #ccd1c2; }
+.panel .tabs button {  padding: 8px 4px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: #627061; font-weight: 600; font-size: 12px; cursor: pointer; }
 .panel .tabs button.on { color: #24382c; border-bottom-color: #ce7c1e; }
 .panel .panes { flex: 1; overflow: auto; padding: 4px 16px 12px; }
 .panel .foot { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid #ccd1c2; }
@@ -329,3 +329,19 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .cp-nowname { margin-left: 6px; font-weight: 600; }
 .cp-app.cp-cur { outline: 2px solid currentColor; outline-offset: -2px; }
 .cp-app.cp-cur b::after { content: ' (används nu)'; font-weight: 400; }
+
+.panel .tabs button[data-tab=check] { grid-column: span 2; }
+.panel .chips button:not(.on) { background: #fff; color: #24382c; border-color: #ccd1c2; }
+.panel .chips button.on { background: #24382c; color: #f5f4ed; }
+.panel details.sec { border-top: 1px solid #e6eada; margin: 0; padding: 4px 0; }
+.panel details.sec > summary { cursor: pointer; margin: 0; padding: 6px 0; list-style-position: outside; }
+.panel details.sec > summary h2 { display: inline; margin: 0; }
+.panel details.sec[open] > summary { margin-bottom: 4px; }
+.stage > h1 { font-size: 20px; margin: 0 0 2px; }
+.stage > p { font-size: 12px; margin: 0 0 8px; }
+.viewbar { margin: 6px 0 8px; }
+.seewrap { margin: 0 0 8px; font-size: 13px; }
+.seewrap > summary { cursor: pointer; font-weight: 600; }
+.seewrap > summary span { font-weight: 400; color: #627061; }
+.seewrap.active > summary span { color: #9c3b23; font-weight: 700; }
+.seewrap .viewbar { flex-wrap: wrap; margin-top: 8px; }

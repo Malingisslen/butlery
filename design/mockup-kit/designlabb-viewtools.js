@@ -84,6 +84,16 @@ function applyViewTools() {
   labView.text = viewCss();
   drawGrid();
   requestAnimationFrame(markClipped);
+  const sum = [];
+  if (SEE.vision) sum.push(VISION.find(v => v[0] === SEE.vision)?.[1]);
+  if (SEE.text !== 100) sum.push(`text ${SEE.text} %`);
+  if (SEE.device !== '360x800') sum.push(DEVICES.find(d => d[0] === SEE.device)?.[1]);
+  if (SEE.grid) sum.push(`rutnät ${SEE.grid} px`);
+  if (SEE.motion) sum.push('minskad rörelse');
+  if (SEE.safe) sum.push('säkra zoner');
+  const label = document.getElementById('see-sum'), wrap = document.getElementById('seewrap');
+  if (label) label.textContent = sum.length ? sum.join(', ') : 'vanlig vy';
+  if (wrap) wrap.classList.toggle('active', sum.length > 0);
 }
 
 function wireViewTools() {
