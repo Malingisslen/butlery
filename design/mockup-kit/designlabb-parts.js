@@ -488,11 +488,12 @@ function drawHandles() {
   if (!selected?.el.isConnected || drag?.started || typeof compare !== 'undefined' && compare) return;
   const phone = selected.el.closest('.phone');
   if (!phone) return;
-  const base = phone.getBoundingClientRect(), r = selected.el.getBoundingClientRect();
+  const group = pickedEls();
+  const base = phone.getBoundingClientRect(), r = group.length > 1 ? unionRect(group) : selected.el.getBoundingClientRect();
   const box = document.createElement('div');
   box.className = 'lab-handles';
   box.style.cssText = `left:${r.left - base.left}px;top:${r.top - base.top}px;width:${r.width}px;height:${r.height}px`;
-  for (const h of ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
+  for (const h of group.length > 1 ? [] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']) {
     const d = document.createElement('i');
     d.className = `lab-h lab-h-${h}`;
     d.dataset.h = h;

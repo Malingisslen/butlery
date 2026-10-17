@@ -163,11 +163,17 @@ function freeSet(el, ox, oy) {
 // Smart guides: the dragged part snaps to the edges and centres of the other parts and of the
 // screen when it comes within 4 px (Alt turns the snapping off), and pink lines show what lines up.
 const SNAP_PX = 4;
-function guideTargets(el) {
-  const phone = el.closest('.phone'), pr = phone.getBoundingClientRect();
+// A picked group moves as one: its box is the union of the parts' boxes.
+function unionRect(els) {
+  const rs = els.map(e => e.getBoundingClientRect());
+  const left = Math.min(...rs.map(r => r.left)), top = Math.min(...rs.map(r => r.top)), right = Math.max(...rs.map(r => r.right)), bottom = Math.max(...rs.map(r => r.bottom));
+  return { left, top, right, bottom, width: right - left, height: bottom - top };
+}
+function guideTargets(els) {
+  const phone = els[0].closest('.phone'), pr = phone.getBoundingClientRect();
   const out = [{ r: pr, screen: true }];
   for (const n of phone.querySelectorAll('[data-lab-id]')) {
-    if (n === el || n === phone || n.contains(el) || el.contains(n) || n.closest('.lab-handles') || n.classList.contains('b-scroll')) continue;
+    if (n === phone || els.some(el => n === el || n.contains(el) || el.contains(n)) || n.closest('.lab-handles') || n.classList.contains('b-scroll')) continue;
     const r = n.getBoundingClientRect();
     if (r.width < 3 || r.height < 3 || r.bottom < pr.top || r.top > pr.bottom || r.right < pr.left || r.left > pr.right) continue;
     out.push({ r });
@@ -175,8 +181,8 @@ function guideTargets(el) {
   return out;
 }
 const lines = r => ({ x: [r.left, (r.left + r.right) / 2, r.right], y: [r.top, (r.top + r.bottom) / 2, r.bottom] });
-function snapDelta(el, targets) {
-  const m = lines(el.getBoundingClientRect());
+function snapDelta(rect, targets) {
+  const m = lines(rect);
   let dx = null, dy = null;
   for (const t of targets) {
     const o = lines(t.r);
@@ -185,16 +191,16 @@ function snapDelta(el, targets) {
   }
   return { dx: dx === null ? 0 : Math.round(dx), dy: dy === null ? 0 : Math.round(dy) };
 }
-function drawGuides(el) {
+function drawGuides(els) {
   document.querySelectorAll('.lab-guide').forEach(n => n.remove());
-  const phone = el.closest('.phone'), base = phone.getBoundingClientRect(), r = el.getBoundingClientRect(), m = lines(r);
+  const phone = els[0].closest('.phone'), base = phone.getBoundingClientRect(), r = unionRect(els), m = lines(r);
   const add = (x, y, w, h) => {
     const d = document.createElement('div');
     d.className = 'lab-guide';
     d.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${Math.max(w, 1)}px;height:${Math.max(h, 1)}px`;
     phone.append(d);
   };
-  for (const t of guideTargets(el)) {
+  for (const t of guideTargets(els)) {
     const o = lines(t.r);
     // Lines only span the two parts they connect (the screen only draws its centre), so a guide never
     // reads as a frame around something.
@@ -204,18 +210,17 @@ function drawGuides(el) {
   }
 }
 function freeMove(e) {
-  const { el } = drag;
-  if (!el.dataset.labId) return;
-  const ox = drag.ox + Math.round(e.clientX - drag.x), oy = drag.oy + Math.round(e.clientY - drag.y);
-  freeSet(el, ox, oy);
-  render();
+  const dx = Math.round(e.clientX - drag.x), dy = Math.round(e.clientY - drag.y);
+  const place = (sx, sy) => { for (const st of drag.starts) freeSet(st.el, st.ox + dx + sx, st.oy + dy + sy); render(); };
+  place(0, 0);
+  const els = drag.starts.map(st => st.el);
   if (!e.altKey) {
-    drag.targets ||= guideTargets(el);
-    const s = snapDelta(el, drag.targets);
-    if (s.dx || s.dy) { freeSet(el, ox + s.dx, oy + s.dy); render(); }
+    drag.targets ||= guideTargets(els);
+    const s = snapDelta(unionRect(els), drag.targets);
+    if (s.dx || s.dy) place(s.dx, s.dy);
   }
-  drawGuides(el);
-  showFreeGaps(el);
+  drawGuides(els);
+  showFreeGaps(drag.el);
 }
 function showFreeGaps(el, kind = '') {
   document.querySelectorAll(kind ? '.lab-gap.measure' : '.lab-gap:not(.measure)').forEach(n => n.remove());
@@ -240,14 +245,14 @@ function wireLayout() {
   screens.addEventListener('pointerdown', e => {
     if (e.button > 0 || !e.target.closest?.('.lab-cross') || !selected?.el.isConnected) return;
     const el = selected.el;
-    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, ...freeOffset(el) };
+    drag = { el, x: e.clientX, y: e.clientY, started: false, plan: null, starts: pickedEls().map(x => ({ el: x, ...freeOffset(x) })) };
     e.preventDefault(); e.stopPropagation();
   }, true);
   window.addEventListener('pointermove', e => {
     if (!drag) return;
     if (!drag.started && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) {
       drag.started = true;
-      drag.el.classList.add('lab-dragging');
+      for (const st of drag.starts) st.el.classList.add('lab-dragging');
       document.querySelectorAll('.lab-handles').forEach(n => { n.style.visibility = 'hidden'; });
     }
     if (!drag.started) return;
@@ -261,7 +266,7 @@ function wireLayout() {
     if (!drag) return;
     const d = drag;
     drag = null;
-    d.el.classList.remove('lab-dragging');
+    for (const st of d.starts) st.el.classList.remove('lab-dragging');
     document.querySelectorAll('.lab-drop,.lab-gap,.lab-guide').forEach(n => n.remove());
     if (d.started && d.free) { showMoves(); refreshExact(); }
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
@@ -281,7 +286,7 @@ function wireLayout() {
     e.preventDefault();
     const step = e.shiftKey ? 10 : 1;
     for (const el of [selected.el, ...(selected.extras || [])]) { const o = freeOffset(el); freeSet(el, o.ox + d[0] * step, o.oy + d[1] * step); }
-    showMoves(); render(); refreshExact(); drawGuides(selected.el);
+    showMoves(); render(); refreshExact(); drawGuides(pickedEls());
   });
   window.addEventListener('keyup', e => { if (e.key.startsWith('Arrow')) document.querySelectorAll('.lab-guide').forEach(n => n.remove()); });
 }
