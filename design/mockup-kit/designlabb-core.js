@@ -235,6 +235,7 @@ function freeCss(st, scope) {
     const decls = [];
     if (f.ml != null) decls.push(`margin-left:${f.ml}px !important;margin-top:${f.mt}px !important`);
     if (f.ox != null) decls.push(`translate:${f.ox}px ${f.oy}px !important`);
+    if (f.ox != null && labInline.has(id.split('~')[0].split('+')[0])) decls.push('display:inline-block !important');
     if (decls.length) css += `${scoped(`.phone [data-lab-id="${id}"]`, scope)}{${decls.join(';')}}`;
   }
   return css;

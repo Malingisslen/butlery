@@ -422,3 +422,4 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 /* Parts are picked, not typed in: the arrow stays an arrow over text, and the text cursor only shows while a text is being rewritten. */
 :where(#screens .phone, #screens .phone *) { cursor: default; user-select: none; }
 #screens .phone [contenteditable="true"] { cursor: text; user-select: text; }
+.phone span.ad-text, .phone span[class*="ad-a"] { display: inline-block; }

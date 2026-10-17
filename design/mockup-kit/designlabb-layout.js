@@ -6,6 +6,7 @@
 // with the cross at its corner (the move handle). Only the lab's own example
 // screens change; the app is not touched.
 
+const labInline = new Set();
 let layoutBase = '';
 let layoutApplied = '[]';
 let freeMode = true; // exact pixels is the default; Shift while dragging does the other kind
@@ -68,6 +69,10 @@ function assignLayoutIds() {
     });
   });
   markSymbols();
+  // A translate does nothing to an inline box, so a part that is inline is made inline-block when it is moved.
+  document.querySelectorAll('#screens .phone, #screens .phone *').forEach(el => {
+    if (el.dataset.labId && !el.closest('svg') && getComputedStyle(el).display === 'inline') labInline.add(el.dataset.labId);
+  });
   layoutBase = $('screens').innerHTML;
 }
 // A bullet or a slash is its own part even when it shares a class with the numbers next to it
