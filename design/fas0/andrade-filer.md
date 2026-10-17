@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=935-->
+<!--manifest:files=941-->
 
 ## Reporoten
 
@@ -610,8 +610,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `43b4daeaf329d18a37ebc97d251c2820f786e5aa7d06b77813d7a5b2aed20f18` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `60d900666e7dd6b66831666ebd27e2feb40522d80bc848ff551389c6e42499a6` |
+| `mockup-kit/README.md` | `8c8ca0dddc6183e6a79a0a1e8bf88d6b33a75cb04cd8ec473991a594e5b5e773` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
+| `mockup-kit/designlabb-core.js` | `702120ccc60ab6599200a024a5f28c85fe86118313acb0e22b2d8d7d180f0afe` |
+| `mockup-kit/designlabb-parts.js` | `27bcd16e10dbd0396ffd7539fa627cabed6692858813dd1d7d3f502f593ae35b` |
+| `mockup-kit/designlabb-ui.js` | `a04bdd5929a616327e3ad9b9220fc8cab5d1d36207cfbb412092ae26895d1ef5` |
+| `mockup-kit/designlabb.css` | `743c64c9d1f09e0dd4d2b1951f64181b88d0a546475aef874eee48c4f04b017d` |
+| `mockup-kit/designlabb.html` | `8f77bade90469a17138c30be844348a03ef40cfa5551410d2c110be96df2e82f` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
@@ -741,6 +746,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/app-theme-map.schema.json` | `5e969b14c2ef2ec84a18ab8b227da07f5eb3869890f6a9597ffae0a9dd71cdf8` |
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |
+| `tools/apply-lab-export.mjs` | `2efc0c1d8b7eac17945be4fb1fc274912230b4a143ca5d4c970731ee30b06bd5` |
 | `tools/artifact-contract.mjs` | `04b506fe6cb2f281de72bf389fa7382fbf68063dabb971f8ce84fe93363e7712` |
 | `tools/authored-theme.mjs` | `1ae4bfdeac249a0b043c1bae4ccb7fe1fd67f1f546cf4fde1c8a6ca8570ef71f` |
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
