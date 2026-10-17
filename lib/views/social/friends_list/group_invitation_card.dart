@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/button_row.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -86,36 +87,31 @@ class GroupInvitationCard {
             const SizedBox(
               height: (AppDimensions.space8 + AppDimensions.space4),
             ),
-            Row(
+            ButtonRow(
               children: [
-                Expanded(
-                  child: ActionButtons.outlinedButton(
-                    context,
-                    isExpanded: true,
-                    label: context.l10n.commonDecline,
-                    onPressed: service.invitations.isLoading
-                        ? null
-                        : () => _rejectInvitation(
-                            context,
-                            invitation.id,
-                            service,
-                          ),
-                  ),
+                ActionButtons.outlinedButton(
+                  context,
+                  isExpanded: true,
+                  label: context.l10n.commonDecline,
+                  onPressed: service.invitations.isLoading
+                      ? null
+                      : () => _rejectInvitation(
+                          context,
+                          invitation.id,
+                          service,
+                        ),
                 ),
-                const SizedBox(width: AppDimensions.space8),
-                Expanded(
-                  child: ActionButtons.primaryButton(
-                    context,
-                    isExpanded: true,
-                    label: context.l10n.commonAccept,
-                    onPressed: service.invitations.isLoading
-                        ? null
-                        : () => _acceptInvitation(
-                            context,
-                            invitation.id,
-                            service,
-                          ),
-                  ),
+                ActionButtons.primaryButton(
+                  context,
+                  isExpanded: true,
+                  label: context.l10n.commonAccept,
+                  onPressed: service.invitations.isLoading
+                      ? null
+                      : () => _acceptInvitation(
+                          context,
+                          invitation.id,
+                          service,
+                        ),
                 ),
               ],
             ),

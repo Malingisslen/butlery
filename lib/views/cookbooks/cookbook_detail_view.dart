@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/recipe_thumb_row.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/stat_row.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// One cookbook opened (BUT-1325): its key figures, description, and its
 /// recipes in the book's order, each with the book's own note.
@@ -264,11 +265,11 @@ class _Toolbar extends StatelessWidget {
           ),
         ),
     ];
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: accent, width: AppDimensions.borderWidthThick),
-        ),
+    return ButleryOutlinedBox(
+      paintOnly: true,
+      radius: AppDimensions.radiusSharp,
+      border: Border(
+        top: BorderSide(color: accent, width: AppDimensions.borderWidthThick),
       ),
       child: isLargeText(context)
           // Large text: the hint keeps the whole width and the actions sit

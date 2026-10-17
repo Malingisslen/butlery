@@ -19,6 +19,7 @@ import 'package:butlery/widgets/cookbooks/cookbook_cover.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
+import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 
 /// Makes [tag] a cookbook, or edits it when it already is one. True when
 /// something was saved.
@@ -343,17 +344,14 @@ class _RecipePhotoPicker extends StatelessWidget {
                       surface: PressSurface.base,
                       child: InkWell(
                         onTap: () => onSelected(r.id),
-                        child: Container(
+                        child: ButleryOutlinedBox(
                           width: thumbSize,
                           height: thumbSize,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: r.id == selectedId
-                                  ? cs.primary
-                                  : cs.outlineVariant,
-                              width: r.id == selectedId ? 3 : 1,
-                            ),
-                          ),
+                          radius: AppDimensions.radiusSharp,
+                          borderColor: r.id == selectedId
+                              ? cs.primary
+                              : cs.outlineVariant,
+                          borderWidth: r.id == selectedId ? 3 : 1,
                           child: NetworkImageWidget(
                             imageUrl: CookbookViewModel.recipePhoto(r)!,
                             enableHapticFeedback: false,

@@ -167,4 +167,47 @@ void main() {
     final args = editor.arguments! as Map<String, Object?>;
     expect(args[ManualEntryRoute.importedWithoutIngredientsKey], isTrue);
   });
+
+  testWidgets('a video without text offers photo import and goes there', (
+    tester,
+  ) async {
+    when(
+      () =>
+          importManager.autoImport(link, onProgress: any(named: 'onProgress')),
+    ).thenAnswer(
+      (_) async => ImportManagerResult.assistance(
+        extractedText: '',
+        sourceUrl: link,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
+        home: const SmartImportView(initialUrl: link),
+        onGenerateRoute: (settings) {
+          pushed.add(settings);
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const Scaffold(body: Text('photo import')),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('test-smart-import-url')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Videon saknar text'), findsOneWidget);
+
+    await tester.tap(find.text('Fotoimport'));
+    await tester.pumpAndSettle();
+
+    expect(pushed.single.name, Routes.photoImport);
+    expect(find.text('photo import'), findsOneWidget);
+  });
 }
