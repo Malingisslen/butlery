@@ -6,6 +6,7 @@
 
 const CHAT_RULES = `Du är Claude och sitter i Butlerys designlabb, en webbsida där Malin (som inte kodar) provar färger, typsnitt, avstånd, ikoner och layout på tre exempelskärmar. Svara på svenska, kort och utan fackspråk.
 Du har verktyg som läser och ändrar labbet: getLabState, setLabState, setSelectedPart och resetLab. Använd dem när hon ber om en ändring, och säg vad du ändrade. Du kan INTE ändra själva appen härifrån. När hon vill ha något i appen, be henne trycka på "Skicka till Claude" längst ned i rutan Claude, så bygger sessionen som jobbar med appen det.
+Läs alltid färglistan med getColors innan du ändrar en färg, gissa aldrig hexkoder, och kontrollera i svaret från setLabState att det du lovar Malin är det som hände. Beskriv bara det som faktiskt ändrades.
 Brödtext ska ha minst 4,5:1 i kontrast. Säg ifrån om en ändring bryter mot det. Inga emoji.`;
 const claudeAi = { sample: null, db: null };
 const chatTurns = [];
@@ -23,6 +24,26 @@ function labContext() {
   return JSON.stringify({ openTab: tab, changes: summary(state) ? JSON.parse(summary(state)) : {}, selectedPart: selectionInfo() }, null, 1);
 }
 
+function colorNames(hex) {
+  const names = (paletteNames.get(hex) || []).map(n => `palette-${n}`);
+  for (const u of used.get(hex) || []) {
+    const n = u.name.replace('--butlery-', '');
+    if (!n.startsWith('palette-') && !names.includes(n)) names.push(n);
+  }
+  return names;
+}
+function colorList() {
+  return [...used.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, 45)
+    .map(([hex, uses]) => ({ hex, now: finalColor(state, hex), usedBy: colorNames(hex).slice(0, 6), uses: uses.length }));
+}
+// A color is named by its original hex or by any of the names colorList shows.
+function resolveColor(key) {
+  const k = key.toLowerCase();
+  if (used.has(k)) return k;
+  for (const hex of used.keys()) if (colorNames(hex).includes(k.replace(/^--butlery-/, ''))) return hex;
+  return null;
+}
+
 // The same ranges the sliders have, so Claude cannot set a value the panel cannot show.
 function applyChanges(changes) {
   const applied = [], refused = [];
@@ -37,8 +58,9 @@ function applyChanges(changes) {
     else if (k === 'overlay' && typeof v === 'boolean') { state.overlay = v; applied.push(k); }
     else if (k === 'colors' && v && typeof v === 'object') {
       for (const [from, to] of Object.entries(v)) {
-        if (used.has(from.toLowerCase()) && HEX.test(to)) { state.colors[from.toLowerCase()] = to.toLowerCase(); applied.push(`färg ${from}`); }
-        else refused.push(`färg ${from}: finns inte, eller ogiltig färg`);
+        const hex = resolveColor(from);
+        if (hex && HEX.test(to)) { state.colors[hex] = to.toLowerCase(); applied.push(`färg ${from} (${hex}) -> ${to}`); }
+        else refused.push(`färg ${from}: finns inte i getColors, eller ogiltig färg`);
       }
     } else refused.push(`${k}: okänt reglage`);
   }
@@ -72,10 +94,15 @@ function applyPartProps(props) {
 }
 // Built on use: SLIDERS is defined in designlabb-ui.js, which loads after this file.
 const chatTools = () => [
+  {
+    name: 'getColors',
+    description: 'Listar labbets färger: hex (original), now (nuvarande), usedBy (vilka roller och namn den bär, till exempel surface-base för skärmens bakgrund) och uses. Anropa den före varje färgändring.',
+    execute: () => colorList(),
+  },
   { name: 'getLabState', description: 'Returnerar labbets nuvarande ändringar och vilken del Malin har markerat.', execute: () => JSON.parse(labContext()) },
   {
     name: 'setLabState',
-    description: `Ändrar hela labbet. changes är ett objekt: reglage som ${Object.keys(SLIDERS).join(', ')} (tal inom reglagets gränser), font (${Object.keys(FONTS).join(', ')}), iconLib (${Object.keys(ICON_LIBS).join(', ')}), iconStyle ('', round, square, duo), overlay (true/false) och colors ({"#ce7c1e":"#d68523"}, gammal färg till ny). Returnerar vad som tillämpades och vad som nekades.`,
+    description: `Ändrar hela labbet. changes är ett objekt: reglage som ${Object.keys(SLIDERS).join(', ')} (tal inom reglagets gränser), font (${Object.keys(FONTS).join(', ')}), iconLib (${Object.keys(ICON_LIBS).join(', ')}), iconStyle ('', round, square, duo), overlay (true/false) och colors ({"surface-base":"#ffffff"}, där nyckeln är originalhex eller ett namn från getColors och värdet den nya färgen). Returnerar vad som tillämpades och vad som nekades.`,
     inputSchema: { type: 'object', properties: { changes: { type: 'object' } }, required: ['changes'] },
     execute: input => applyChanges(input.changes),
   },
