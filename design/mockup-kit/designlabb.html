@@ -365,6 +365,8 @@
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; font-size: 11px; font-weight: 700; line-height: 1.45;
 }
+.b-bottomnav .tab > .i { width: 24px; height: 24px; margin: 2px 0; }
+.b-bottomnav .tab > .i:has(use[href="#i-nav-home"]) { width: 27px; height: 27px; margin: 0.5px 0; }
 .b-bottomnav .tab .marker { height: 3px; border-radius: 2px; width: 100%; }
 .b-bottomnav .tab .label-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .b-bottomnav .tab.active { color: var(--cs-on-ink); }
@@ -433,7 +435,7 @@
 
 /* ---------- Buttons ---------- */
 .b-btn {
-  min-height: 48px; width: 100%; padding: 12px 24px; border-radius: 8px; border: 0;
+  min-height: 40px; width: 100%; padding: 10px 24px; border-radius: 8px; border: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; cursor: pointer;
   background: var(--cs-ink); color: var(--cs-on-ink);
@@ -445,9 +447,9 @@
 .b-btn.outlined { background: transparent; color: var(--cs-on-surface); box-shadow: inset 0 0 0 1.5px var(--cs-on-surface); }
 [data-theme="dark"] .b-btn.outlined { box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
 .b-btn.on-ink { background: transparent; color: var(--cs-on-ink); box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
-.b-btn.secondary { background: var(--cs-raised); color: var(--cs-on-surface); padding: 12px 16px; box-shadow: inset 0 0 0 1.5px var(--cs-on-surface); }
+.b-btn.secondary { background: var(--cs-raised); color: var(--cs-on-surface); padding: 10px 16px; box-shadow: inset 0 0 0 1.5px var(--cs-on-surface); }
 [data-theme="dark"] .b-btn.secondary { box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
-.b-btn.text { width: auto; background: transparent; color: var(--cs-on-surface); padding: 12px 16px; }
+.b-btn.text { width: auto; background: transparent; color: var(--cs-on-surface); padding: 10px 16px; }
 .b-btn.danger { background: var(--butlery-action-danger); color: var(--cs-on-error); padding: 12px 16px; }
 .b-btn.delete { background: transparent; color: var(--cs-error); box-shadow: inset 0 0 0 1.5px var(--cs-error); }
 .b-btn:disabled, .b-btn.disabled { background: var(--cs-disabled-fill); color: var(--cs-on-surface); box-shadow: none; cursor: default; }
@@ -520,7 +522,7 @@
 /* ---------- Tabs ---------- */
 .b-tabs { display: flex; border-bottom: 1px solid var(--cs-outline-variant); }
 .b-tabs .tab {
-  flex: 1; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  flex: 1; min-height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--cs-on-surface-variant);
 }
 .b-tabs .tab span { padding: 0 5px 6px; border-bottom: 3px solid transparent; border-radius: 0 0 2px 2px; }
@@ -843,14 +845,14 @@
     <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 24 september</div>
     <div class="t-display-compact" style="margin-top:6px">God kväll</div>
   </div>
-  <div class="b-heroband" style="margin-top:11px;padding-top:15px;padding-bottom:12px;flex:none">
+  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:12px;flex:none">
     <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
     <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
-    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:12px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:12px 0;font-size:15px">Byt rätt</button></div>
+    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:9px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:9px 0;font-size:15px">Byt rätt</button></div>
   </div>
-  <div class="b-scroll"><div style="padding:8px 0 0">
-    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
-    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:8px;height:48px">
+  <div class="b-scroll"><div style="padding:0">
+    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:7px 5px 11px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:4px;height:48px">
       <div class="b-overline" style="flex:1;padding:0;color:var(--cs-on-surface-variant)">Dina recept · 4</div>
       <span style="font-size:14px;font-weight:600;padding:0 8px">Välj</span>
       <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-refrigerator"/></svg></button>
@@ -860,10 +862,10 @@
     <div class="mr-chips" style="margin-top:20px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
     <div class="b-band mr-tip" style="margin-top:18px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:500">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-m"><use href="#i-x"/></svg></div>
     <div class="mr-grid" style="margin-top:26px">
-      <div class="mr-card"><div class="top"><span class="tile">K</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <span class="rate">•</span> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
-      <div class="mr-card"><div class="top"><span class="tile">L</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <span class="rate">•</span> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
-      <div class="mr-card"><div class="top"><span class="tile">C</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <span class="rate">•</span> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
-      <div class="mr-card"><div class="top"><span class="tile">R</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <span class="rate">•</span> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">K</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">L</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">C</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
+      <div class="mr-card"><div class="top"><span class="tile">R</span><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div>
     </div>
   </div></div>
   <nav class="b-bottomnav">
@@ -882,14 +884,14 @@
     <div class="muted" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">Torsdag 24 september</div>
     <div class="t-display-compact" style="margin-top:6px">God kväll</div>
   </div>
-  <div class="b-heroband" style="margin-top:11px;padding-top:15px;padding-bottom:12px;flex:none">
+  <div class="b-heroband" style="margin-top:7px;padding-top:15px;padding-bottom:12px;flex:none">
     <div class="overline" style="display:flex;align-items:center;gap:7px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:var(--cs-saffron)"></span>Ikväll · 45 min · 4 port.</div>
     <div class="title" style="margin:3px 0 12px">Krämig svamppasta med timjan</div>
-    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:12px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:12px 0;font-size:15px">Byt rätt</button></div>
+    <div style="display:flex;gap:8px"><button class="b-btn hero hug" style="width:118px;padding:9px 0;font-size:15px;font-weight:600">Börja laga</button><button class="b-btn on-ink hug" style="width:106px;padding:9px 0;font-size:15px">Byt rätt</button></div>
   </div>
-  <div class="b-scroll"><div style="padding:8px 0 0">
-    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
-    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:8px;height:48px">
+  <div class="b-scroll"><div style="padding:0">
+    <div class="b-tabs" style="margin:0 24px"><div class="tab active"><span style="display:block;width:100%;text-align:center;padding:7px 5px 11px;font-size:15px">Alla recept</span></div><div class="tab"><span style="display:block;width:100%;text-align:center;padding:8px 5px 12px;font-size:14px">Kökböcker</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 24px;margin-top:4px;height:48px">
       <div class="b-overline" style="flex:1;padding:0;color:var(--cs-on-surface-variant)">Dina recept · 4</div>
       <span style="font-size:14px;font-weight:600;padding:0 8px">Välj</span>
       <button class="b-iconbtn" style="color:var(--cs-on-surface)"><svg class="i"><use href="#i-refrigerator"/></svg></button>
@@ -898,7 +900,7 @@
     <div class="b-input search" style="margin:10px 12px 0 16px;min-height:48px"><svg class="i" style="color:var(--cs-on-surface-variant)"><use href="#i-search"/></svg><span class="hint" style="margin-left:-4px">Sök bland recepten ...</span><svg class="i i-m" style="color:var(--cs-on-surface);margin-right:8px"><use href="#i-mic"/></svg><svg class="i i-m" style="color:var(--cs-on-surface-variant);margin-right:12px"><use href="#i-filter"/></svg></div>
     <div class="mr-chips" style="margin-top:20px"><span class="b-chip selected">Alla</span><span class="b-chip">Favoriter</span><span class="b-chip">Under 30 min</span><span class="b-chip">Vegetariskt</span></div>
     <div class="b-band mr-tip" style="margin-top:18px"><svg class="i i-m"><use href="#i-hand"/></svg><span class="text" style="font-weight:500">Tips: svep åt höger för att redigera, åt vänster för att radera</span><svg class="i i-m"><use href="#i-x"/></svg></div>
-    <div class="mr-list" style="margin-top:26px"><div class="mr-item"><span class="tile">K</span><div class="txt"><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <span class="rate">•</span> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">L</span><div class="txt"><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <span class="rate">•</span> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">C</span><div class="txt"><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <span class="rate">•</span> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">R</span><div class="txt"><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <span class="rate">•</span> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div></div>
+    <div class="mr-list" style="margin-top:26px"><div class="mr-item"><span class="tile">K</span><div class="txt"><div class="name">Krämig svamppasta med timjan</div><div class="meta">45 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">L</span><div class="txt"><div class="name">Linsgryta med kokos</div><div class="meta">35 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,0</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">C</span><div class="txt"><div class="name">Citronrisotto</div><div class="meta">30 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">4,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div><div class="mr-item"><span class="tile">R</span><div class="txt"><div class="name">Rårakor med lingon</div><div class="meta">25 min · 4 port · <svg class="i rate-star"><use href="#i-star"/></svg> <span class="rate">3,5</span></div><span class="unchecked"><svg class="i i-s"><use href="#i-info"/></svg>Ej kontrollerat</span></div><svg class="i more"><use href="#i-more-vertical"/></svg></div></div>
   </div></div>
   <nav class="b-bottomnav">
     <div class="tab active"><svg class="i"><use href="#i-nav-home"/></svg><div class="label-wrap">Hem<span class="marker"></span></div></div>
