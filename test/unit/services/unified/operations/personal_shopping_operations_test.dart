@@ -860,6 +860,40 @@ Inhandlat:
         },
       );
 
+      test(
+        'should skip footer lines and headers in either app language',
+        () async {
+          when(
+            () => mockParent.updateList(any()),
+          ).thenAnswer((_) async => true);
+
+          const text = '''
+Weekly shop
+===========
+
+Remaining to buy:
+☐ Mjölk
+
+Inhandlat:
+☑ Smör
+
+Skapad: 2026-10-01
+Updated: 2026-10-02
+''';
+
+          await operations.importItemsFromText(
+            listId: 'test-list-1',
+            text: text,
+            clearExisting: true,
+          );
+
+          final captured =
+              verify(() => mockParent.updateList(captureAny())).captured.single
+                  as UnifiedShoppingList;
+          expect(captured.items.map((i) => i.name), equals(['Mjölk', 'Smör']));
+        },
+      );
+
       test('should clear existing items when clearExisting is true', () async {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);

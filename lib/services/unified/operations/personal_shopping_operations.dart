@@ -4,6 +4,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations_en.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:clock/clock.dart';
 
 /// Personal shopping operations interface providing individual shopping list management.
@@ -499,10 +501,24 @@ class PersonalShoppingOperations {
       // Lists exported before the pictograms were dropped; written as escapes
       // so the source itself stays free of them (B-44).
       const legacyHeaderLeads = ['\u{1F4CB}', '\u{1F4DD}', '\u2705'];
+      // An export made in the other app language must read as headers too.
+      final exportLabels = [
+        AppLocale.current,
+        AppLocalizationsSv(),
+        AppLocalizationsEn(),
+      ];
       final sectionHeaders = {
-        AppLocale.current.shoppingRemainingToBuy,
-        AppLocale.current.shoppingAlreadyBought,
+        for (final l in exportLabels) ...[
+          l.shoppingRemainingToBuy,
+          l.shoppingAlreadyBought,
+        ],
       };
+      final footerLabels = [
+        for (final l in exportLabels) ...[
+          l.shoppingCreatedLabel,
+          l.shoppingUpdatedLabel,
+        ],
+      ];
 
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i];
@@ -512,6 +528,7 @@ class PersonalShoppingOperations {
         if (line.startsWith('=') ||
             isTitle ||
             sectionHeaders.contains(line) ||
+            footerLabels.any(line.startsWith) ||
             legacyHeaderLeads.any(line.startsWith)) {
           continue;
         }
