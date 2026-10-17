@@ -252,7 +252,7 @@ class HemGreeting extends StatelessWidget {
 ///   (tokens.json:112-115);
 /// * eyebrow: context.modeColors.accentOnInk (#hemrecept :134 draws #e09d50
 ///   light, #dca968 dark);
-/// * the dot and "Börja laga": action.primary saffron #CE7C1E with
+/// * the dot and "Börja laga": action.primary saffron #D68523 with
 ///   text.onActionPrimary #17251D (tokens.json:137-140, :81-85);
 /// * title and "Byt rätt": paper #F5F4ED, colorScheme.onPrimary;
 /// * "Byt rätt" outline: paper at the on-ink 0.35 step (tokens.json:40-53),

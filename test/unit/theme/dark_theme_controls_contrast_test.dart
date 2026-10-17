@@ -28,7 +28,7 @@ const _darkRaised = Color(0xFF2F4437);
 const _ink = Color(0xFF24382C);
 const _greenLight = Color(0xFF8FB89A);
 const _paper = Color(0xFFF5F4ED);
-const _saffron = Color(0xFFCE7C1E);
+const _saffron = Color(0xFFD68523);
 
 const _selected = <WidgetState>{WidgetState.selected};
 
@@ -212,12 +212,11 @@ void main() {
       expect(p.color, _saffron);
       expect(p.linearTrackColor, const Color(0x2EF5F4ED));
       expect(_contrast(p.color!, _darkBase), greaterThanOrEqualTo(3.0));
-      // Saffron on the paper 18 % track is 2.86:1, the drawn and tokened
-      // pair (Komponentark v1:545; tokens.json:161-168). It is pinned here
-      // so a change is seen; whether it needs 3:1 is left open.
+      // Saffron on the paper 18 % track is 3.17:1, pinned here so a change
+      // is seen.
       expect(
         _contrast(p.color!, Color.alphaBlend(p.linearTrackColor!, _darkBase)),
-        closeTo(2.86, 0.01),
+        closeTo(3.17, 0.01),
       );
     });
 

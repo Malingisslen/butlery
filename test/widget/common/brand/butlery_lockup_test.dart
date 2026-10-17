@@ -53,14 +53,14 @@ void main() {
         'inheritance', () {
       final light = ButleryLockupDrawing.parse(kButleryLockupLightSvg);
       // The first group's paths: an attribute fill, an attribute stroke, and
-      // a style-only fill (the "rect8" path uses style="fill:#CE7C1E").
+      // a style-only fill (the "rect8" path uses style="fill:#D68523").
       final glyphShapes = light.shapes.take(4).toList();
       expect(glyphShapes[0].fillColor, const Color(0xFF24382C));
       expect(glyphShapes[0].strokeColor, isNull);
-      expect(glyphShapes[1].strokeColor, const Color(0xFFCE7C1E));
+      expect(glyphShapes[1].strokeColor, const Color(0xFFD68523));
       expect(glyphShapes[1].strokeWidth, 7);
       expect(glyphShapes[1].cap, StrokeCap.round);
-      expect(glyphShapes[3].fillColor, const Color(0xFFCE7C1E));
+      expect(glyphShapes[3].fillColor, const Color(0xFFD68523));
 
       // The second group carries fill only on the <g style="...">, and every
       // child path inherits it.
@@ -86,7 +86,7 @@ void main() {
 
     test('the dark master swaps the glyph and word colours', () {
       final dark = ButleryLockupDrawing.parse(kButleryLockupDarkSvg);
-      expect(dark.shapes.first.fillColor, const Color(0xFFCE7C1E));
+      expect(dark.shapes.first.fillColor, const Color(0xFFD68523));
       expect(dark.shapes.skip(4).first.fillColor, const Color(0xFFF5F4ED));
     });
   });
@@ -146,7 +146,7 @@ void main() {
               as ButleryLockupPainter;
       expect(
         painter.drawing.shapes.first.fillColor,
-        const Color(0xFFCE7C1E),
+        const Color(0xFFD68523),
         reason: 'the dark master paints the glyph in the saffron colour',
       );
     });

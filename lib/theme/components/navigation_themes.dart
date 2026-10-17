@@ -66,8 +66,8 @@ class NavigationThemes {
   /// Tab bar theme
   ///
   /// The selected tab carries the plate line under its word, saffron in both
-  /// modes: token progressIndicator #CE7C1E (tokens.json:165-168; drawn as
-  /// `background:#ce7c1e` in Komponentark v1:112). It used to be cs.primary,
+  /// modes: token progressIndicator #D68523 (the drawing, Komponentark v1,
+  /// has `background:#ce7c1e`). It used to be cs.primary,
   /// which is surface.ink in both schemes and vanished on the dark page
   /// (#17251D).
   ///

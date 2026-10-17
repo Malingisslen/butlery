@@ -219,13 +219,13 @@ void main() {
           label.center.dx,
           bar.bottom - NavigationThemes.tabPlateLineHeight / 2,
         );
-        expect(await _pixel(tester, at), const Color(0xFFCE7C1E));
+        expect(await _pixel(tester, at), const Color(0xFFD68523));
         // And 5 px past the word's edge (Komponentark v1:106).
         final edge = Offset(
           label.left - NavigationThemes.tabPlateLineOverhang + 1.5,
           at.dy,
         );
-        expect(await _pixel(tester, edge), const Color(0xFFCE7C1E));
+        expect(await _pixel(tester, edge), const Color(0xFFD68523));
       });
     }
   });

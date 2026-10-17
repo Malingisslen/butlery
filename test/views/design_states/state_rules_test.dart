@@ -36,8 +36,8 @@ void main() {
       expect(dark.allows(const Color(0xFF37453A)), isFalse);
       expect(dark.allows(const Color(0xFFF5F4ED)), isTrue);
       // palette.saffron passes because a dark semantic token carries it
-      // (tokens.json:137-140 action.primary, dark #CE7C1E).
-      expect(dark.allows(const Color(0xFFCE7C1E)), isTrue);
+      // (action.primary, dark #D68523).
+      expect(dark.allows(const Color(0xFFD68523)), isTrue);
       // palette.saffronDeep is text.link in light only (#8A5212); no dark
       // token carries it, so the palette tag alone does not let it pass.
       expect(dark.allows(const Color(0xFF8A5212)), isFalse);
@@ -143,7 +143,7 @@ void main() {
     }
 
     testWidgets('two saffron buttons are counted', (tester) async {
-      const saffron = Color(0xFFCE7C1E);
+      const saffron = Color(0xFFD68523);
       final style = FilledButton.styleFrom(backgroundColor: saffron);
       await tester.pumpWidget(
         _page(

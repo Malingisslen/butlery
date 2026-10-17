@@ -118,7 +118,7 @@ void main() {
       expect(decoration.color, raised);
       expect(
         (decoration.border! as Border).left.color,
-        const Color(0xFFCE7C1E),
+        const Color(0xFFD68523),
       );
     });
   }

@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:156ad0b5b861a3bd6a932f5e45235f6ef7be4873d30bbc3b00e1480829532ebc (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:505becb00d57db4856479d481f5e84a5deb164b852e387dd860caf61ae8f6555 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
@@ -25,7 +25,7 @@ class AppColors {
   /// Ljus variant · palette.greenLight
   static const Color forestGreenLight = Color(0xFF8FB89A);
   /// Dekorativ accent · palette.saffron
-  static const Color rust = Color(0xFFCE7C1E);
+  static const Color rust = Color(0xFFD68523);
   /// Kortens underkant · semantic.border.statusWarning
   static const Color rustLight = Color(0xFFD8B784);
   /// semantic.surface.base
@@ -87,7 +87,7 @@ class AppColors {
   /// semantic.text.body
   static const Color sectionHeader = Color(0xFF37453A);
   /// palette.saffron
-  static const Color starGold = Color(0xFFCE7C1E);
+  static const Color starGold = Color(0xFFD68523);
   /// palette.wheat
   static const Color categoryDairy = Color(0xFFD8B784);
   /// palette.green
@@ -107,7 +107,7 @@ class AppColors {
   /// palette.saffronDeep
   static const Color illustrationBrown = Color(0xFF8A5212);
   /// palette.saffron
-  static const Color illustrationOrange = Color(0xFFCE7C1E);
+  static const Color illustrationOrange = Color(0xFFD68523);
   /// palette.clay
   static const Color illustrationPurpleRed = Color(0xFF9C3B23);
   /// semantic.scrim
@@ -143,7 +143,7 @@ class AppColors {
   /// Tallrikslinjens ranna · semantic.progressTrack
   static const Color progressTrack = Color(0xFFE6EAD9);
   /// Tallrikslinjen sjalv - appens enda laddningsindikator (beslut B-18) · semantic.progressIndicator
-  static const Color progressIndicator = Color(0xFFCE7C1E);
+  static const Color progressIndicator = Color(0xFFD68523);
   /// Avstangd kontrollyta, avstangd kontur och avstangd reglageknopp (Komponentark 164, 174). Aldrig via opacitet. Yta, inte text: contrastPolicy undantar den. · semantic.surface.disabled
   static const Color surfaceDisabled = Color(0xFFA9B2A0);
   /// Avstangd text. Ytsakert varde: text.disabled #7D897C ger 2,985:1 pa surface.raised och underkanns av det egna 3:1-golvet, och i morkt 2,0:1. .onRaised klarar papper och upphojd yta i bada lagen. · semantic.text.disabled.onRaised
@@ -151,7 +151,7 @@ class AppColors {
   /// Fokusringen: 2 px med 3 px avstand (tokens focusRing.width/offset). Ink pa ljust, papper pa morkt, aldrig saffran. · semantic.focusRing
   static const Color focusRing = Color(0xFF24382C);
   /// Saffran - vyns enda hjaltehandling, exakt en per vy (Komponentark 843). Aldrig textfarg. · semantic.action.primary
-  static const Color actionPrimary = Color(0xFFCE7C1E);
+  static const Color actionPrimary = Color(0xFFD68523);
   /// Nedtryckt hjaltehandling. Byts alltid i par med onActionPrimaryPressed. · semantic.action.primaryPressed
   static const Color actionPrimaryPressed = Color(0xFF9A5C14);
   /// Text pa saffran. Star bara pa actionPrimary. · semantic.text.onActionPrimary
@@ -256,7 +256,7 @@ class AppColors {
     onPrimary: Color(0xFFF5F4ED),
     primaryContainer: Color(0xFFE6EAD9),
     onPrimaryContainer: Color(0xFF24382C),
-    secondary: Color(0xFFCE7C1E),
+    secondary: Color(0xFFD68523),
     onSecondary: Color(0xFF17251D),
     secondaryContainer: Color(0xFFE6EAD9),
     onSecondaryContainer: Color(0xFF8A5212),
@@ -292,7 +292,7 @@ class AppColors {
     onPrimary: Color(0xFFF5F4ED),
     primaryContainer: Color(0xFF2F4437),
     onPrimaryContainer: Color(0xFFF5F4ED),
-    secondary: Color(0xFFCE7C1E),
+    secondary: Color(0xFFD68523),
     onSecondary: Color(0xFF17251D),
     secondaryContainer: Color(0xFF2F4437),
     onSecondaryContainer: Color(0xFFDCA968),
