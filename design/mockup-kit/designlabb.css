@@ -402,3 +402,4 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .placebox .prow label { display: grid; gap: 2px; font-size: 11px; flex: 1; min-width: 0; }
 .placebox .prow input { width: 100%; box-sizing: border-box; }
 .placebox .hint { margin: 6px 0 0; }
+.phone .lab-guide { position: absolute; z-index: 65; background: #ff2d8f; pointer-events: none; }

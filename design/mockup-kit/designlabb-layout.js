@@ -160,11 +160,59 @@ function freeSet(el, ox, oy) {
   f.label = labelOf(el); f.ox = ox; f.oy = oy;
   if (!ox && !oy && f.ml == null) delete state.free[id];
 }
+// Smart guides: the dragged part snaps to the edges and centres of the other parts and of the
+// screen when it comes within 4 px (Alt turns the snapping off), and pink lines show what lines up.
+const SNAP_PX = 4;
+function guideTargets(el) {
+  const phone = el.closest('.phone'), pr = phone.getBoundingClientRect();
+  const out = [{ r: pr, screen: true }];
+  for (const n of phone.querySelectorAll('[data-lab-id]')) {
+    if (n === el || n === phone || n.contains(el) || el.contains(n) || n.closest('.lab-handles') || n.classList.contains('b-scroll')) continue;
+    const r = n.getBoundingClientRect();
+    if (r.width < 3 || r.height < 3 || r.bottom < pr.top || r.top > pr.bottom || r.right < pr.left || r.left > pr.right) continue;
+    out.push({ r });
+  }
+  return out;
+}
+const lines = r => ({ x: [r.left, (r.left + r.right) / 2, r.right], y: [r.top, (r.top + r.bottom) / 2, r.bottom] });
+function snapDelta(el, targets) {
+  const m = lines(el.getBoundingClientRect());
+  let dx = null, dy = null;
+  for (const t of targets) {
+    const o = lines(t.r);
+    for (const a of m.x) for (const b of o.x) if (Math.abs(b - a) <= SNAP_PX && (dx === null || Math.abs(b - a) < Math.abs(dx))) dx = b - a;
+    for (const a of m.y) for (const b of o.y) if (Math.abs(b - a) <= SNAP_PX && (dy === null || Math.abs(b - a) < Math.abs(dy))) dy = b - a;
+  }
+  return { dx: dx === null ? 0 : Math.round(dx), dy: dy === null ? 0 : Math.round(dy) };
+}
+function drawGuides(el) {
+  document.querySelectorAll('.lab-guide').forEach(n => n.remove());
+  const phone = el.closest('.phone'), base = phone.getBoundingClientRect(), r = el.getBoundingClientRect(), m = lines(r);
+  const add = (x, y, w, h) => {
+    const d = document.createElement('div');
+    d.className = 'lab-guide';
+    d.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${Math.max(w, 1)}px;height:${Math.max(h, 1)}px`;
+    phone.append(d);
+  };
+  for (const t of guideTargets(el)) {
+    const o = lines(t.r);
+    const top = Math.min(r.top, t.r.top), bottom = Math.max(r.bottom, t.r.bottom), left = Math.min(r.left, t.r.left), right = Math.max(r.right, t.r.right);
+    for (const a of m.x) if (o.x.some(b => Math.abs(a - b) < 0.6)) add(a, t.screen ? base.top : top, 1, t.screen ? base.height : bottom - top);
+    for (const a of m.y) if (o.y.some(b => Math.abs(a - b) < 0.6)) add(t.screen ? base.left : left, a, t.screen ? base.width : right - left, 1);
+  }
+}
 function freeMove(e) {
   const { el } = drag;
   if (!el.dataset.labId) return;
-  freeSet(el, drag.ox + Math.round(e.clientX - drag.x), drag.oy + Math.round(e.clientY - drag.y));
+  const ox = drag.ox + Math.round(e.clientX - drag.x), oy = drag.oy + Math.round(e.clientY - drag.y);
+  freeSet(el, ox, oy);
   render();
+  if (!e.altKey) {
+    drag.targets ||= guideTargets(el);
+    const s = snapDelta(el, drag.targets);
+    if (s.dx || s.dy) { freeSet(el, ox + s.dx, oy + s.dy); render(); }
+  }
+  drawGuides(el);
   showFreeGaps(el);
 }
 function showFreeGaps(el, kind = '') {
@@ -212,7 +260,7 @@ function wireLayout() {
     const d = drag;
     drag = null;
     d.el.classList.remove('lab-dragging');
-    document.querySelectorAll('.lab-drop,.lab-gap').forEach(n => n.remove());
+    document.querySelectorAll('.lab-drop,.lab-gap,.lab-guide').forEach(n => n.remove());
     if (d.started && d.free) { showMoves(); refreshExact(); }
     else if (d.started && d.plan) recordMove(d.el, d.plan.container, d.plan.before, d.plan.beside, d.plan.side);
     drawHandles();
@@ -223,8 +271,9 @@ function wireLayout() {
     e.preventDefault();
     const step = e.shiftKey ? 10 : 1;
     for (const el of [selected.el, ...(selected.extras || [])]) { const o = freeOffset(el); freeSet(el, o.ox + d[0] * step, o.oy + d[1] * step); }
-    showMoves(); render(); refreshExact();
+    showMoves(); render(); refreshExact(); drawGuides(selected.el);
   });
+  window.addEventListener('keyup', e => { if (e.key.startsWith('Arrow')) document.querySelectorAll('.lab-guide').forEach(n => n.remove()); });
 }
 
 function showMoves() {
