@@ -324,6 +324,14 @@ function placeBox() {
       row.append(l);
     }
     hint.textContent = 'Avstånd mellan de valda delarna, kant mot kant.';
+    const ar = document.createElement('div'); ar.className = 'alignrow';
+    for (const [k, label, title] of [['left', '⇤', 'Vänsterkanter'], ['centerX', '↔', 'Mitten sidled'], ['right', '⇥', 'Högerkanter'], ['top', '⤒', 'Överkanter'], ['centerY', '↕', 'Mitten lodrätt'], ['bottom', '⤓', 'Underkanter'], ...(els.length > 2 ? [['spreadX', '⋯', 'Fördela jämnt sidled'], ['spreadY', '⋮', 'Fördela jämnt lodrätt']] : [])]) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ghost'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title);
+      b.onclick = () => alignParts(k);
+      ar.append(b);
+    }
+    d.append(ar);
     if (els.length === 2) {
       const sw = document.createElement('button');
       sw.type = 'button'; sw.className = 'ghost'; sw.textContent = 'Byt plats på delarna';
@@ -593,9 +601,11 @@ function wireScreens() {
   const screens = $('screens');
   wireMarquee(screens);
   screens.addEventListener('click', e => {
+    if (e.target.isContentEditable) return;
     let el = componentOf(e.target);
     if (!el) return;
     e.preventDefault(); e.stopPropagation();
+    if (e.detail > 1) return;
     // Empty space (inside a plain wrapper that only holds parts) is the screen's background.
     if (el === e.target && isEmptySpot(el) && !(e.ctrlKey || e.shiftKey || e.metaKey)) el = el.closest('.phone');
     if ((e.ctrlKey || e.shiftKey || e.metaKey) && selected?.el.isConnected) {

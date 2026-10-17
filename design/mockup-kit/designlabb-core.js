@@ -54,7 +54,7 @@ const LAB_BASE = '2026-10-17.1';
 const defaults = () => ({
   font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], free: {}, removed: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
+  moves: [], free: {}, removed: {}, copies: [], texts: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));

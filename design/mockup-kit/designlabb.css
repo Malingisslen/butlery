@@ -406,3 +406,11 @@ figcaption { font-size: 12.5px; font-weight: 600; margin-top: 8px; color: var(--
 .phone .lab-gap.between:not(.measure) { background: rgba(255, 45, 143, .10); border: 1px dashed rgba(255, 45, 143, .7); box-sizing: border-box; color: #c2185b; }
 .phone .lab-dragging { opacity: .6; }
 .phone .lab-marquee { position: absolute; z-index: 80; border: 1px dashed #ff2d8f; background: rgba(255, 45, 143, .08); pointer-events: none; }
+
+.placebox .alignrow { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.placebox .alignrow button { min-width: 34px; padding: 4px 8px; }
+.lab-menu { position: fixed; z-index: 1000; background: #fff; color: #17251d; border: 1px solid #cfd6c8; border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); padding: 4px; display: grid; min-width: 210px; }
+.lab-menu button { display: flex; justify-content: space-between; gap: 16px; border: 0; background: none; padding: 7px 10px; border-radius: 6px; font: 13px system-ui, sans-serif; color: inherit; cursor: pointer; text-align: left; }
+.lab-menu button:hover:not(:disabled) { background: #eef2ea; }
+.lab-menu button:disabled { opacity: .4; cursor: default; }
+.lab-menu small { color: #627061; }
