@@ -58,21 +58,21 @@ void main() {
       size: size,
       textScale: textScale,
     );
-    final problems = [
-      ...run.capture.overflows,
-      ...run.capture.exceptions.map((e) => '$e'),
-      if (words) ...findMidWordBreaks(tester),
-    ];
+    final overflows = run.capture.overflows;
+    final exceptions = run.capture.exceptions;
+    final breaks = words ? findMidWordBreaks(tester) : const <String>[];
     await finishState(tester, run);
     if (_knownFindings.contains(name)) {
       expect(
-        problems,
+        [...overflows, ...exceptions.map((e) => e.toString()), ...breaks],
         isNotEmpty,
         reason: '$name passes now: remove it from _knownFindings',
       );
-    } else {
-      expect(problems, isEmpty);
+      return;
     }
+    expect(overflows, isEmpty, reason: 'overflow');
+    expect(exceptions, isEmpty, reason: 'exception');
+    if (words) expect(breaks, isEmpty);
   }
 
   for (final e in screens.entries) {

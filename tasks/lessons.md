@@ -4720,3 +4720,9 @@ Date: 2026-10-11
 Trigger: Skiss mot app. Förslagsbilderna ritades med mockup-kitet, och nästan hälften av skillnaderna fick "Behåll" med skälet att appen eller kitet redan gör något liknande. Malin: "Generellt vill jag att dina rekommendationer hamnar mycket närmare skisserna. Du missar viktiga nyanser i designkänslan."
 Rule: Skissen är utgångsläget. Rita förslaget genom att redigera skissramens egen HTML i `design/Butlery Skarmar v12*.dc.html` och ändra bara där Malin har beslutat annat. "Behåll" kräver ett namngivet beslut, en funktion som byggts med avsikt eller en testartefakt; att kitet eller appen redan liknar skissen är inget skäl.
 Example: 2026-10-11 — förslagen gjordes om från skissramarna i granskningsbordet "Skissgranskning".
+
+### Hämta main före mätning, och en ny host synliggör gamla fel (2026-10-17)
+Date: 2026-10-17
+Trigger: Granskningen av vyer utan skiss (BUT-2395). Bilderna renderades först på en utcheckning som låg 34 incheckningar efter origin/main, och när 24 vyer fick en host i golden-harnessen blev 13 textskalafall röda i CI.
+Rule: Kör `git fetch origin main` innan du mäter eller renderar. En ny host körs av varje svit som loopar över `reviewHosts` (textskala, tillgänglighetsmatris), så kör `text_scale_all_views_test.dart` innan push; fynd som är verkliga får ett ärende och en pinnad post, aldrig en borttagen kontroll.
+Example: 2026-10-17 — PR #868, BUT-2396.
