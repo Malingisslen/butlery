@@ -15,16 +15,22 @@ const PRESETS = {
   'Högmättat': { sat: 160 },
   'Serif': { font: 'Lora' },
 };
-const SLIDERS = { scale: ' %', lh: '', card: ' px', control: ' px', margin: ' px', hue: '°', sat: ' %', light: ' %' };
+const SLIDERS = {
+  scale: ' %', lh: '', card: ' px', control: ' px', margin: ' px', hue: '°', sat: ' %', light: ' %',
+  space: ' %', rowPad: ' px', sectionGap: ' px', blockGap: ' px', chipGap: ' px', rowInner: ' px', hair: ' px', touch: ' px', iconSize: ' %', iconStroke: '',
+};
+const ORIGINAL_AT = { lh: 100, blockGap: 0, iconStroke: 0 };
 const VARIANTS_KEY = 'butlery-designlabb-variants';
 
 // Each screen is written once; its dark copy is cloned next to it.
+assignLayoutIds();
 for (const fig of [...document.querySelectorAll('#screens > figure')]) {
   const dark = fig.cloneNode(true);
   dark.querySelector('.phone').dataset.theme = 'dark';
   dark.querySelector('figcaption').textContent += ' (mörkt)';
   fig.after(dark);
 }
+snapshotLayoutBase();
 
 const lab = document.createElement('style');
 const labA = document.createElement('style');
@@ -42,6 +48,8 @@ function render() {
   } else {
     contrast();
   }
+  applyIcons();
+  drawOverlay();
   scheduleSnapshot();
   try {
     window.history.replaceState(null, '', summary(state) ? '#' + btoa(unescape(encodeURIComponent(JSON.stringify(state)))) : location.pathname + location.search);
@@ -99,7 +107,7 @@ function loadFont() {
 fontSel.onchange = () => { state.font = fontSel.value; loadFont(); render(); };
 
 function showValue(id) {
-  $(id + '-v').textContent = id === 'lh' && state.lh === 100 ? 'orig' : state[id] + SLIDERS[id];
+  $(id + '-v').textContent = id in ORIGINAL_AT && state[id] === ORIGINAL_AT[id] ? 'orig' : state[id] + SLIDERS[id];
 }
 for (const id of Object.keys(SLIDERS)) {
   $(id).oninput = () => { state[id] = +$(id).value; showValue(id); render(); };
@@ -156,6 +164,11 @@ function syncUi() {
     text.classList.toggle('changed', hex in state.colors);
   }
   $('pause').checked = state.pause;
+  $('icon-style').value = state.iconStyle;
+  $('icon-lib').value = state.iconLib;
+  $('overlay').checked = state.overlay;
+  replayLayout();
+  showMoves();
   loadFont();
   clearSelection();
   render();
@@ -283,6 +296,30 @@ $('cmp-mode').onchange = () => compare && buildCompare();
 cmpScreen.onchange = () => compare && buildCompare() || render();
 $('cmp-close').onclick = stopCompare;
 
+// ---- Spacing, icons and layout tabs, and the hand-off to the app ----
+function wireExtras() {
+  for (const [v, l] of ICON_STYLES) $('icon-style').add(new Option(l, v));
+  for (const [key, lib] of Object.entries(ICON_LIBS)) $('icon-lib').add(new Option(lib.label, key));
+  $('icon-style').onchange = () => { state.iconStyle = $('icon-style').value; render(); };
+  $('icon-lib').onchange = () => { state.iconLib = $('icon-lib').value; render(); };
+  $('overlay').onchange = () => { state.overlay = $('overlay').checked; render(); };
+  for (const [name, patch] of Object.entries(SPACE_PRESETS)) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = name;
+    b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
+    $('space-presets').append(b);
+  }
+  $('move-mode').onchange = e => { moveMode = e.target.checked; if (moveMode) clearSelection(); markDraggable(); };
+  $('clear-moves').onclick = () => { state.moves = []; replayLayout(); showMoves(); render(); };
+  wireLayout();
+  $('apply').onclick = async () => {
+    const text = `Lägg in detta i appen (från designlabbet). Länk till labbet: ${location.href}\n\n${summary(state) || '(inga ändringar)'}`;
+    try { await navigator.clipboard.writeText(text); } catch { $('out').value = text; $('out').select(); document.execCommand('copy'); }
+    $('apply').textContent = 'Kopierat. Klistra in i tråden';
+    setTimeout(() => { $('apply').textContent = 'Spara och för in i appen'; }, 3000);
+  };
+}
+
 // ---- Footer and history ----
 $('undo').onclick = () => stepHistory(-1);
 $('redo').onclick = () => stepHistory(1);
@@ -306,6 +343,7 @@ $('copy').onclick = async () => {
 
 wireScreens();
 wireEffects();
+wireExtras();
 renderVariants();
 if (location.hash.length > 1) {
   try { state = { ...defaults(), ...JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))) }; undoLog.stack[0] = JSON.stringify(state); } catch {}

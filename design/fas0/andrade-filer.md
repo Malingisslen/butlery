@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=941-->
+<!--manifest:files=943-->
 
 ## Reporoten
 
@@ -103,7 +103,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
 | `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
 | `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `c72f0b7c5fc672f6a706b1e5a3811900cf55de5457664363160fdb5ffeae3a3d` |
+| `assets/generated/tokens.css` | `3f030569fef3ff808db73014946d13b7c68078246080e9bc04181c18ab0df0cb` |
 | `assets/icons/activity.svg` | `3b7c324df2d719b1fd949a47f4f3c58702576c5c89ecd788b935caa0ae595466` |
 | `assets/icons/archive.svg` | `cf161abb7df09faed9bccb69e17efc0c85b134b4a522d6654c45201e3706467c` |
 | `assets/icons/arrow-down.svg` | `33137ab2d024ba075abba489752df8b44189862491996ffd37375d094fac070d` |
@@ -604,19 +604,21 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `64d490eaa09569ae2746c0b05ea81f77f59ecb2a88abc3a8dd5ba64112284d6e` |
-| `lib/theme/app_colors_dark.dart` | `3f49eb6ebca09b66a1c6b6839ce997b095fe587a56ff74f9ee656f349eb2cab9` |
-| `lib/theme/app_text_styles.dart` | `a20701d67d5df4c1ff5865bcd0d5b3ba3f73a46fe4729d234c1e68275413689c` |
-| `lib/theme/butlery_tokens.dart` | `43b4daeaf329d18a37ebc97d251c2820f786e5aa7d06b77813d7a5b2aed20f18` |
+| `lib/theme/app_colors.dart` | `fa2e784c7a3f9ebaa5563bf1e5ab2029e0cff48b1b9484ece2bc3f4ee36ca68c` |
+| `lib/theme/app_colors_dark.dart` | `aafa863197dfc00bdc9afa20a9d91249c40038fd19966c185f12baed041fddb2` |
+| `lib/theme/app_text_styles.dart` | `5d288d4295b82f1c0759eccb3366a9130d1f73a3809ea3acc6f3d0533c9a8219` |
+| `lib/theme/butlery_tokens.dart` | `f3dcaf54c8bcdf6ef4d4d9bc3c08307bbcd994c6b523d460f04d8303377fa698` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `mockup-kit/README.md` | `8c8ca0dddc6183e6a79a0a1e8bf88d6b33a75cb04cd8ec473991a594e5b5e773` |
+| `mockup-kit/README.md` | `0570a80ee482b98ad6c6f7ae6ec793218519cf804cc6ca84cff910a1141a377d` |
 | `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
-| `mockup-kit/designlabb-core.js` | `702120ccc60ab6599200a024a5f28c85fe86118313acb0e22b2d8d7d180f0afe` |
-| `mockup-kit/designlabb-parts.js` | `27bcd16e10dbd0396ffd7539fa627cabed6692858813dd1d7d3f502f593ae35b` |
-| `mockup-kit/designlabb-ui.js` | `a04bdd5929a616327e3ad9b9220fc8cab5d1d36207cfbb412092ae26895d1ef5` |
-| `mockup-kit/designlabb.css` | `743c64c9d1f09e0dd4d2b1951f64181b88d0a546475aef874eee48c4f04b017d` |
-| `mockup-kit/designlabb.html` | `8f77bade90469a17138c30be844348a03ef40cfa5551410d2c110be96df2e82f` |
+| `mockup-kit/designlabb-core.js` | `94e261b8c556a499298c2c58e43311bee4a8dbf5d474aaf62de8cababce2abfd` |
+| `mockup-kit/designlabb-extra.js` | `d7885bcb8d1de8a768a0ce01f357103f9cbfa152207551ad13218c6f0b22af46` |
+| `mockup-kit/designlabb-layout.js` | `b32c26ee3cdca82ecab6a6e78f97ee88811cc5cf5f81fb56d5e8c6a376de9913` |
+| `mockup-kit/designlabb-parts.js` | `96595df826b3f133ee300f6506b3c5958ab492616e52393e6cb82f6584df44ff` |
+| `mockup-kit/designlabb-ui.js` | `b8212669555cb0f88c1ed9ff5bac35a0c295d331b97743baa6b9de78b7bebd80` |
+| `mockup-kit/designlabb.css` | `caf98b27f57e2f90a6e3b3ca8760c239170e9fa4798a7e155cc682f6498ac5e0` |
+| `mockup-kit/designlabb.html` | `08360d4bad80790c4509931fafe0522d11a2446c5766d508d833badb1db23dd1` |
 | `mockup-kit/examples.html` | `44813980eda0e272933e2a28645adad1672ac5d941f375889b100f30ffee80cc` |
 | `mockup-kit/kit.html` | `8742cf91ff6a78f4c8a5ac88031d03e4ea701a74e2f37d8dc46f4af0ad599dad` |
 | `ordlista.json` | `fdf08d0a70ff002557e6e11683bb30aaefd26614bd24f54ffa349cc0a0c0da78` |
@@ -735,7 +737,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `500482a1bc58f40494369ca94f9a703dd66ba9315756388511617877b953eeeb` |
-| `tokens.json` | `5ff01c84dc27153688c078fb3f7ea97442921cf87d607c49bd9cbee34ae3c598` |
+| `tokens.json` | `d34ee818cbb50404438800c03cb018e4efa1737184e3fe4d02f29f88007b4115` |
 | `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/adjudication-guards-fixtures.mjs` | `e435e8b5df13f07ecfd17ea2baf18a1796b24081d89dcef6352e8584c0c29d37` |
 | `tools/adjudication-pilot-fixtures.mjs` | `91adf41c78e92605e577f4c7f85511d9ccd1226e5b795977b9104e4193604c1f` |

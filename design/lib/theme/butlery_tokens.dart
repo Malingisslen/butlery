@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-flutter.mjs v1.4
-// källfingeravtryck sha256:02c68f276a6aaeb05c69bb7e54e632567ad687485143daac741c3aa33e248d56 (4 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:f54fd82036ae725d6c25dc70409ceeedc737787c80d28fde26d728b542650552 (4 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
