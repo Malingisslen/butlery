@@ -9,12 +9,16 @@ class FilterOption {
   final String id;
   final String label;
   final IconData? icon;
+
+  /// Drawn after the label, as in "4+ ★" with a drawn star.
+  final IconData? trailingIcon;
   final dynamic value;
 
   const FilterOption({
     required this.id,
     required this.label,
     this.icon,
+    this.trailingIcon,
     this.value,
   });
 }
@@ -83,12 +87,14 @@ class RecipeFilters {
   static const List<FilterOption> ratingFilters = [
     FilterOption(
       id: 'high_rated',
-      label: '4+ ★',
+      label: '4+',
+      trailingIcon: ButleryIcons.star,
       value: 4.0,
     ),
     FilterOption(
       id: 'top_rated',
-      label: '5 ★',
+      label: '5',
+      trailingIcon: ButleryIcons.star,
       value: 5.0,
     ),
   ];

@@ -633,6 +633,42 @@ void main() {
       });
     });
 
+    group('Trailing icon', () {
+      testWidgets('draws the icon after the label and names the group', (
+        WidgetTester tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FilterChipsWidget(
+                title: 'Betyg',
+                options: const [
+                  FilterOption(
+                    id: 'high_rated',
+                    label: '4+',
+                    trailingIcon: ButleryIcons.star,
+                  ),
+                ],
+                activeFilters: const <String>{},
+                onToggle: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(ButleryIcons.star), findsOneWidget);
+        expect(
+          tester.getTopLeft(find.byIcon(ButleryIcons.star)).dx,
+          greaterThan(tester.getTopLeft(find.text('4+')).dx),
+        );
+        expect(find.bySemanticsLabel(RegExp('Betyg 4\\+')), findsOneWidget);
+        handle.dispose();
+      });
+    });
+
     group('Icon Layout Issue', () {
       testWidgets('should fix horizontal spacing for icon in Row', (
         WidgetTester tester,

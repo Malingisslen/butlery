@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
@@ -48,7 +49,11 @@ class FilterChipsWidget extends StatelessWidget {
               final isSelected = activeFilters.contains(option.id);
 
               return Semantics(
-                label: context.l10n.a11yFilterTag(option.label),
+                label: context.l10n.a11yFilterTag(
+                  option.trailingIcon != null
+                      ? '$title ${option.label}'
+                      : option.label,
+                ),
                 selected: isSelected,
                 button: true,
                 // The shared grip: ring around the chip's 48 dp target and
@@ -68,6 +73,14 @@ class FilterChipsWidget extends StatelessWidget {
                             const SizedBox(height: AppDimensions.space4),
                           ],
                           Text(option.label),
+                          if (option.trailingIcon != null) ...[
+                            const SizedBox(width: AppDimensions.space4),
+                            ButleryIcon(
+                              option.trailingIcon,
+                              size: AppDimensions.iconSize14,
+                              color: context.modeColors.starGold,
+                            ),
+                          ],
                         ],
                       ),
                       selected: isSelected,
