@@ -107,7 +107,28 @@ const ADVICE = {
     what: 'Element som pulserar, studsar eller sveper in.',
     pro: 'Rörelse leder blicken, ger feedback och får appen att kännas levande.',
     con: 'Rörelse som aldrig slutar stör läsningen och kan ge illamående hos vissa. Den kostar batteri.',
-    rule: 'Korta övergångar, 150–300 ms. Loopande animationer bara på något som ska fånga blicken en kort stund. Respektera systeminställningen "minska rörelse" (WCAG kräver att rörelse som pågår över 5 sekunder går att pausa).',
+    rule: 'Håll rörelser i gränssnittet under 300 ms: små reaktioner 100–150 ms, tooltips och menyer 150–250 ms, dialoger och lådor 200–300 ms, sidbyten 300–400 ms. Loopande animationer bara på något som ska fånga blicken en kort stund. Respektera systeminställningen "minska rörelse" (WCAG kräver att rörelse som pågår över 5 sekunder går att pausa).',
+  },
+  rorelsekurva: {
+    t: 'Kurva och fjädrar för rörelse',
+    what: 'Hur en rörelse tar fart och bromsar: ease-out, ease-in-out eller en fjäder.',
+    pro: 'Rätt kurva får appen att kännas snabbare utan att den är det. Ease-out (snabb start, mjuk landning) gör att det som kommer in eller går ut känns direkt.',
+    con: 'Linjär rörelse känns mekanisk. Fjädrar är roliga men kan bli för mjuka och sega på funktionella saker som dialoger.',
+    rule: 'Ease-out för det som kommer in eller går ut, ease-in-out för det som flyttar sig på skärmen, fjäder för dekor och för det som följer fingret eller musen. Byt fjädern mot ease-out om en dialog känns abrupt, och ge dialogen och mörkläggningen bakom samma tid. Känns något fel trots rätt tid och kurva kan ett par pixlar sudd dölja skavankerna.',
+  },
+  rorelsefrekvens: {
+    t: 'När rörelse inte hör hemma',
+    what: 'Hur ofta man ser en rörelse avgör om den ska finnas.',
+    pro: 'Att hoppa över rörelse på det som används hela tiden gör appen snabb och lugn.',
+    con: 'Utan rörelse kan en ovanlig händelse kännas torr.',
+    rule: 'Fråga hur ofta rörelsen syns. Över 100 gånger om dagen: ingen rörelse eller mycket mindre. Då och då: vanlig rörelse. Sällan eller första gången: här får det gärna vara lite glädje. Animera inte det man gör med tangentbordet, för det gör det segt. Ibland är den bästa animationen ingen animation.',
+  },
+  rorelsestart: {
+    t: 'Starten på en in-animation',
+    what: 'Var något börjar när det animeras in: storlek, genomskinlighet och varifrån det växer.',
+    pro: 'Ett mjukt startläge och rätt ursprung får rörelsen att kännas naturlig och visar var något kommer ifrån.',
+    con: 'Start från noll (skala 0) ser ryckig ut, och en meny som växer från mitten ser ut att dyka upp från ingenstans.',
+    rule: 'Börja aldrig från skala 0: börja på 0,9 eller högre. Låt menyer och popovers växa fram från det de hör till (ursprunget vid knappen), inte från mitten. Ju större något är och ju längre det färdas, desto längre tid ska det få ta.',
   },
   hovring: {
     t: 'Hovringseffekter',
@@ -121,7 +142,7 @@ const ADVICE = {
     what: 'Hur ett element reagerar medan man trycker på det: krymper, mörknar eller sjunker.',
     pro: 'Direkt feedback visar att trycket gick fram. Det känns snabbare och mer fysiskt.',
     con: 'För kraftig effekt (stor krympning) ser ryckig ut.',
-    rule: 'Reagera inom cirka 100 ms. Små förändringar räcker: 3–6 % krympning eller en lätt mörkare ton.',
+    rule: 'Reagera inom cirka 100 ms. Små förändringar räcker: ungefär 2–3 % krympning (skala 0,97–0,98) på cirka 150 ms, eller en lätt mörkare ton.',
   },
   kant: {
     t: 'Kantlinjer',
@@ -186,5 +207,5 @@ const ADVICE_FOR = {
   scale: 'textstorlek', lh: 'radavstand', font: 'typsnitt', card: 'form', control: 'form', margin: 'marginal',
   hue: 'farg', sat: 'farg', light: 'farg', presets: 'farg', space: 'avstand', rowPad: 'avstand', sectionGap: 'avstand',
   blockGap: 'avstand', chipGap: 'avstand', rowInner: 'avstand', hair: 'avdelare', touch: 'trycksyta', overlay: 'avstand',
-  iconSize: 'ikonstorlek', iconStroke: 'ikonlinje', 'icon-lib': 'ikonbibliotek', 'icon-style': 'ikonstil',
+  pause: 'rorelse', iconSize: 'ikonstorlek', iconStroke: 'ikonlinje', 'icon-lib': 'ikonbibliotek', 'icon-style': 'ikonstil',
 };

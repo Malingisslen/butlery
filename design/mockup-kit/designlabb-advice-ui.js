@@ -210,6 +210,8 @@ function adviceForPart(e) {
     run: what => { applyPartProps(typeof what === 'function' ? what(selected.el) : what); },
   });
 }
+// Topics that read best together: opening one offers the others as buttons.
+const ADVICE_RELATED = { rorelse: ['rorelse', 'rorelsekurva', 'rorelsefrekvens', 'rorelsestart'], rorelsekurva: ['rorelse', 'rorelsekurva', 'rorelsefrekvens', 'rorelsestart'] };
 function wireAdvice() {
   const panel = document.querySelector('.panel:not(.dock)');
   const labelOfControl = elt => elt.closest('label')?.querySelector('span')?.textContent?.trim();
@@ -219,7 +221,7 @@ function wireAdvice() {
   };
   const open = elt => {
     const t = topicOf(elt);
-    if (t) showAdvice(t, { text: `Du rör: ${(labelOfControl(elt) || ADVICE[t].t).toLowerCase()}.` });
+    if (t) showAdvice(t, { text: `Du rör: ${(labelOfControl(elt) || ADVICE[t].t).toLowerCase()}.`, ...(ADVICE_RELATED[t] && { topics: ADVICE_RELATED[t] }) });
   };
   panel.addEventListener('focusin', e => open(e.target));
   panel.addEventListener('pointerdown', e => open(e.target));
