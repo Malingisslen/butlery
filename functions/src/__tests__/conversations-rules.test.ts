@@ -773,7 +773,9 @@ test("conversations: participant can update other fields while creatorId is unch
     ctx
       .firestore()
       .doc(`conversations/${TAKEOVER_GROUP}`)
-      .update({ lastMessage: { content: "hej", senderId: STRANGER_UID } })
+      .update({
+        lastMessage: { content: "hej", senderId: STRANGER_UID, sentAt: new Date() },
+      })
   );
 });
 
@@ -2501,7 +2503,10 @@ function writePreview(convId: string, writerId: string): Promise<void> {
     .authenticatedContext(writerId, B_CLAIMS)
     .firestore()
     .doc(`conversations/${convId}`)
-    .set({ lastMessage: { content: "förhandsvisning", senderId: writerId } }, { merge: true });
+    .set(
+      { lastMessage: { content: "förhandsvisning", senderId: writerId, sentAt: new Date() } },
+      { merge: true }
+    );
 }
 
 // L1: DENY — DM, block row stands, no mirror: measures the exact `blocks` read.
@@ -2734,6 +2739,207 @@ test("BUT-2246: the blocker can still edit their own message (one-directional)",
     await deleteMirror(B_BLOCKED);
     await deleteBlockRow(B_BLOCKER, B_BLOCKED);
   }
+});
+
+// ============================================================================
+// CONVERSATIONS — preview and list-order stamps (BUT-1918)
+// ============================================================================
+//
+// The chat list orders on `updatedAt` and the preview's time and unread dot
+// read `lastMessage.sentAt`; both are client-written. They carry the messages
+// create bound (`notAheadOfServer`, one hour). The rolling offsets follow
+// M15/M16.
+
+const S_WRITER = `b1918-writer-${RUN}`;
+const S_OTHER = `b1918-other-${RUN}`;
+const MINUTE = 60 * 1000;
+
+function stampRoom(tag: string): string {
+  return `b1918-${tag}-${RUN}`;
+}
+
+function sendPayload(sentAt: Date, updatedAt: Date): Record<string, unknown> {
+  return conversationDtoPayload(null, {
+    participantIds: [S_WRITER, S_OTHER, B_BYSTANDER],
+    participantDisplayNames: { [S_WRITER]: "Skrivare" },
+    participantAvatarUrls: { [S_WRITER]: null },
+    lastMessage: {
+      id: `m-${RUN}`,
+      conversationId: "",
+      senderId: S_WRITER,
+      senderDisplayName: "Skrivare",
+      senderAvatarUrl: null,
+      content: "hej",
+      type: "text",
+      status: "sending",
+      sentAt,
+      deliveredAt: null,
+      readAt: null,
+      metadata: null,
+      replyToMessageId: null,
+      isEdited: false,
+      editedAt: null,
+    },
+    lastReadTimestamps: { [S_WRITER]: new Date() },
+    createdAt: FIXTURE_CREATED_AT,
+    updatedAt,
+  });
+}
+
+async function seedStampRoom(convId: string): Promise<void> {
+  await seedRoom(convId, [S_WRITER, S_OTHER, B_BYSTANDER]);
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`conversations/${convId}`).set(
+      { metadata: null, createdAt: FIXTURE_CREATED_AT },
+      { merge: true }
+    );
+  });
+}
+
+function writeAs(uid: string, convId: string, data: Record<string, unknown>): Promise<void> {
+  return env
+    .authenticatedContext(uid, B_CLAIMS)
+    .firestore()
+    .doc(`conversations/${convId}`)
+    .set(data, { merge: true });
+}
+
+// S1: DENY — a preview stamped just past the hour.
+test("BUT-1918: a preview stamped more than an hour ahead is refused", async () => {
+  const room = stampRoom("s1");
+  await seedStampRoom(room);
+  const now = Date.now();
+  await assertFails(
+    writeAs(S_WRITER, room, sendPayload(new Date(now + 61 * MINUTE), new Date(now)))
+  );
+});
+
+// S2: ALLOW (control for S1 and S3) — both stamps inside the hour.
+test("BUT-1918: a preview and list order inside the hour are allowed (control)", async () => {
+  const room = stampRoom("s2");
+  await seedStampRoom(room);
+  const now = Date.now();
+  await assertSucceeds(
+    writeAs(S_WRITER, room, sendPayload(new Date(now + 55 * MINUTE), new Date(now + 55 * MINUTE)))
+  );
+});
+
+// S3: DENY — the list-order stamp just past the hour, preview untouched in time.
+test("BUT-1918: a list-order stamp more than an hour ahead is refused", async () => {
+  const room = stampRoom("s3");
+  await seedStampRoom(room);
+  const now = Date.now();
+  await assertFails(
+    writeAs(S_WRITER, room, sendPayload(new Date(now), new Date(now + 61 * MINUTE)))
+  );
+});
+
+// S4: DENY — a preview with no stamp at all; S2 is its control.
+test("BUT-1918: a preview without sentAt is refused", async () => {
+  const room = stampRoom("s4");
+  await seedStampRoom(room);
+  const payload = sendPayload(new Date(), new Date());
+  delete (payload.lastMessage as Record<string, unknown>).sentAt;
+  await assertFails(writeAs(S_WRITER, room, payload));
+});
+
+// S5: ALLOW — the status flip MessageMutationModule makes after a send, a
+// dotted update that leaves the stored stamp as it was.
+test("BUT-1918: the sent-status update on a stored preview is allowed", async () => {
+  const room = stampRoom("s5");
+  await seedStampRoom(room);
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`conversations/${room}`).set(
+      { lastMessage: { content: "hej", senderId: S_WRITER, sentAt: new Date(), status: "sending" } },
+      { merge: true }
+    );
+  });
+  await assertSucceeds(
+    env
+      .authenticatedContext(S_WRITER, B_CLAIMS)
+      .firestore()
+      .doc(`conversations/${room}`)
+      .update({ "lastMessage.status": "sent" })
+  );
+});
+
+// S6: ALLOW — the read marker's shape: its own read stamp plus `updatedAt`.
+test("BUT-1918: the read marker is allowed", async () => {
+  const room = stampRoom("s6");
+  await seedStampRoom(room);
+  const now = new Date();
+  await assertSucceeds(
+    env
+      .authenticatedContext(S_WRITER, B_CLAIMS)
+      .firestore()
+      .doc(`conversations/${room}`)
+      .update({ [`lastReadTimestamps.${S_WRITER}`]: now, updatedAt: now })
+  );
+});
+
+// S7/S8: the create limb carries the same bound. S8 is S7 with the stamp
+// moved inside the hour; ids and stamps are distinct per test.
+test("BUT-1918: a chat created with a list-order stamp more than an hour ahead is refused", async () => {
+  const actor = peer(`s7-actor-${RUN}`);
+  const other = peer(`s7-${RUN}`);
+  await assertFails(
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+        updatedAt: new Date(Date.now() + 61 * MINUTE),
+      })
+    )
+  );
+});
+
+test("BUT-1918: a chat created with a list-order stamp inside the hour is allowed (control)", async () => {
+  const actor = peer(`s8-actor-${RUN}`);
+  const other = peer(`s8-${RUN}`);
+  await assertSucceeds(
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+        updatedAt: new Date(Date.now() + 55 * MINUTE),
+      })
+    )
+  );
+});
+
+// S9/S10: the same pair for a preview carried on the create.
+test("BUT-1918: a chat created with a preview more than an hour ahead is refused", async () => {
+  const actor = peer(`s9-actor-${RUN}`);
+  const other = peer(`s9-${RUN}`);
+  await assertFails(
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+        updatedAt: new Date(),
+        lastMessage: { content: "hej", senderId: actor, sentAt: new Date(Date.now() + 61 * MINUTE) },
+      })
+    )
+  );
+});
+
+test("BUT-1918: a chat created with a preview inside the hour is allowed (control)", async () => {
+  const actor = peer(`s10-actor-${RUN}`);
+  const other = peer(`s10-${RUN}`);
+  await assertSucceeds(
+    createConversation(
+      actor,
+      directId(actor, other),
+      convBody([actor, other], {
+        metadata: { creatorId: actor },
+        updatedAt: new Date(),
+        lastMessage: { content: "hej", senderId: actor, sentAt: new Date(Date.now() + 55 * MINUTE) },
+      })
+    )
+  );
 });
 
 async function run(): Promise<void> {
