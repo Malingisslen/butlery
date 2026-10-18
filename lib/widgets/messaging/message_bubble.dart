@@ -1,5 +1,6 @@
 // lib/widgets/messaging/message_bubble.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
@@ -264,12 +265,16 @@ class _MessageBubbleState extends State<MessageBubble> {
     );
   }
 
+  String get _senderName => storedNameOr(
+    widget.message.senderDisplayName,
+    context.l10n.displayUnknownUser,
+  );
+
   Widget _buildAvatarFallback() {
     return Center(
       child: Text(
-        widget.message.senderDisplayName.isNotEmpty
-            ? widget.message.senderDisplayName[0].toUpperCase()
-            : '?',
+        knownStoredName(widget.message.senderDisplayName)?[0].toUpperCase() ??
+            '?',
         style: AppTextStyles.labelMedium.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
         ),
@@ -284,7 +289,7 @@ class _MessageBubbleState extends State<MessageBubble> {
         bottom: AppDimensions.space4,
       ),
       child: Text(
-        widget.message.senderDisplayName,
+        _senderName,
         style: AppTextStyles.labelSmall.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
@@ -357,7 +362,10 @@ class _MessageBubbleState extends State<MessageBubble> {
     // marks it a moment later. Only the sender can see it, since the target is filtered
     // out of everyone else's list.
     return ReplyPreviewWidget(
-      senderName: replyTo.senderDisplayName,
+      senderName: storedNameOr(
+        replyTo.senderDisplayName,
+        context.l10n.displayUnknownUser,
+      ),
       content: replyTo.type == MessageType.duplicateBlocked
           ? context.l10n.chatDuplicateBlocked
           : replyTo.displayContent,

@@ -12,6 +12,7 @@ import 'package:butlery/services/unified/operations/modules/comment_crud_operati
 import 'package:butlery/services/unified/operations/modules/comment_likes_system.dart';
 import 'package:butlery/services/unified/operations/modules/comment_notifications.dart';
 import 'package:butlery/services/unified/operations/modules/comment_utilities.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Clean facade for recipe comment system using focused modules
 /// This facade provides a unified API that delegates to focused modules:
@@ -44,7 +45,7 @@ class RecipeCommentsManager {
     _crudOperations = CommentCrudOperations();
   }
   String? get currentUserId => _getCurrentUserId();
-  String get currentUserDisplayName => _getCurrentUserDisplayName() ?? '?';
+  String get currentUserDisplayName => _getCurrentUserDisplayName().orEmpty();
   List<Recipe> get recipes => _getRecipes();
 
   Recipe? _getRecipe(String recipeId) {

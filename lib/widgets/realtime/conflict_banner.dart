@@ -17,6 +17,8 @@
 /// there. The infrastructure ships in this sprint; per-surface wiring is the
 /// BUT-1031 follow-up.
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -172,7 +174,9 @@ class _ConflictBannerState extends State<ConflictBanner> {
     if (event.origin == ConflictOrigin.queue) {
       return context.l10n.conflictBannerBodyOtherDevice;
     }
-    final name = event.remoteValue.lastEditedByDisplayName.trim();
+    final name = knownStoredName(
+      event.remoteValue.lastEditedByDisplayName,
+    ).orEmpty();
     if (_isSuggestion(event)) {
       // Q6-12 = B: the member is told when the edit replaced the suggestion
       // that was waiting.

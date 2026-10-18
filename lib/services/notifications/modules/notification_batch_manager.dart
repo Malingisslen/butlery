@@ -54,6 +54,7 @@ class NotificationBatchManager {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
@@ -89,6 +90,7 @@ class NotificationBatchManager {
         final template = NotificationTemplate.fromStrategy(
           strategy,
           variables,
+          variablesByLocale: variablesByLocale,
           additionalData: additionalData,
           imageUrl: imageUrl,
           actions: actions,

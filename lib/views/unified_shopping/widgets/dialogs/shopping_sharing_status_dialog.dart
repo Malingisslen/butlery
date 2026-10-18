@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
@@ -134,7 +135,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             // `isNotEmpty` and renders the same blank row it is meant to stop.
             _buildInfoRow(
               context.l10n.shoppingCreator,
-              _knownNameOrNull(list.ownerDisplayName) ??
+              knownStoredName(list.ownerDisplayName) ??
                   context.l10n.displayUnknownUser,
             ),
           ],
@@ -286,7 +287,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     // a placeholder (BUT-1697), so `?? unknown` never fired for it — the member
     // rendered as a blank line under a '?' avatar. Absent, empty and
     // whitespace-only are the same fact here: we do not know who this is.
-    final String? knownName = _knownNameOrNull(userDisplayNames[userId]);
+    final String? knownName = knownStoredName(userDisplayNames[userId]);
     final String displayName = knownName ?? context.l10n.shoppingUnknownUser;
 
     String permissionLabel;
@@ -402,7 +403,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             // `!= null` check renders a nameless attribution row, and so does
             // a bare `isNotEmpty` once the stamped name is whitespace-only
             // (BUT-1705).
-            if (_knownNameOrNull(list.lastActivityByDisplayName) case final by?)
+            if (knownStoredName(list.lastActivityByDisplayName) case final by?)
               _buildInfoRow(context.l10n.shoppingBy, by),
             if (list.lastActivityAt != null)
               _buildInfoRow(
@@ -413,17 +414,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// BUT-1705: the one place that decides whether a stored name identifies
-  /// anybody. Three writers can land here — an unresolved profile stamps EMPTY
-  /// (BUT-1697), an erased account nulls the field, and a profile whose display
-  /// name is whitespace passes both of those guards while rendering as nothing.
-  /// Every attribution row in this dialog goes through it so they cannot drift
-  /// apart again.
-  static String? _knownNameOrNull(String? storedName) {
-    final trimmed = storedName?.trim();
-    return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
   }
 
   Widget _buildInfoRow(String label, String value) {

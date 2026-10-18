@@ -1,5 +1,6 @@
 // lib/services/realtime/realtime_menu_service.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -69,11 +70,10 @@ class RealtimeMenuService extends ChangeNotifier
   /// every durable field; an Auth-sourced one would be reachable by neither.
   ///
   /// `tryGet` keeps a service built before/without the service graph working;
-  /// an unresolved name stamps the localized unknown-user label, never an
-  /// Auth-sourced one.
+  /// an unresolved name stamps empty (readers show their own "unknown" label),
+  /// never an Auth-sourced one.
   String get _currentUserDisplayName =>
-      ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
-      AppLocale.current.displayUnknownUser;
+      (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
 
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];

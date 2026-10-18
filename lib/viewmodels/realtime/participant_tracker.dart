@@ -1,5 +1,6 @@
 // lib/viewmodels/realtime/participant_tracker.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
@@ -89,7 +90,10 @@ class ParticipantTracker {
 
   /// Get display name for participant
   String getDisplayName(String userId) {
-    return _participantNames[userId] ?? AppLocale.current.displayUnknownUser;
+    return storedNameOr(
+      _participantNames[userId],
+      AppLocale.current.displayUnknownUser,
+    );
   }
 
   /// Kontrollera om deltagare var aktiv nyligen

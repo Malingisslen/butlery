@@ -1,6 +1,7 @@
 // lib/views/social/menu_preview_view.dart
 // Preview of shared menus with all recipes
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
@@ -76,8 +77,12 @@ class MenuPreviewView extends StatelessWidget {
 
   Widget _buildMenuHeader(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final line = context.l10n.menuPreviewSharedLine(
+    final sharedBy = storedNameOr(
       sharedMenu.sharedByDisplayName,
+      context.l10n.displayUnknownUser,
+    );
+    final line = context.l10n.menuPreviewSharedLine(
+      sharedBy,
       sharedMenu.menuTitle,
     );
     final bold = AppTextStyles.bodyBold.copyWith(color: cs.onSurface);
@@ -92,7 +97,7 @@ class MenuPreviewView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 AvatarCircle(
-                  displayName: sharedMenu.sharedByDisplayName,
+                  displayName: sharedBy,
                 ),
                 const SizedBox(width: AppDimensions.space12),
                 Expanded(
@@ -102,7 +107,7 @@ class MenuPreviewView extends StatelessWidget {
                         color: cs.onSurface,
                       ),
                       children: boldNameSpans(line, [
-                        sharedMenu.sharedByDisplayName,
+                        sharedBy,
                         sharedMenu.menuTitle,
                       ], bold),
                     ),
@@ -235,7 +240,10 @@ class MenuPreviewView extends StatelessWidget {
       title: context.l10n.menuHideMenu,
       message: context.l10n.menuHideConfirm(
         sharedMenu.menuTitle,
-        sharedMenu.sharedByDisplayName,
+        storedNameOr(
+          sharedMenu.sharedByDisplayName,
+          context.l10n.displayUnknownUser,
+        ),
       ),
       confirmText: context.l10n.commonHide,
       icon: ButleryIcons.eyeOff,

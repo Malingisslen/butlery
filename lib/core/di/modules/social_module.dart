@@ -1,12 +1,12 @@
 library;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -222,8 +222,7 @@ class SocialModule implements DIModule {
         getCacheHelper: () => app<JsonCacheHelper>(),
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ??
-            AppLocale.current.displayUnknownUser,
+            (userService.currentUserProfile?.displayName).orEmpty(),
         setError: (error) =>
             AppLogger.error('SocialRecipeCoordinator error: $error'),
         notifyListeners: () {},
@@ -241,8 +240,7 @@ class SocialModule implements DIModule {
       return SocialMenuCoordinator(
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ??
-            AppLocale.current.displayUnknownUser,
+            (userService.currentUserProfile?.displayName).orEmpty(),
         setError: (error) =>
             AppLogger.error('SocialMenuCoordinator error: $error'),
         notifyListeners: () {},
@@ -250,9 +248,8 @@ class SocialModule implements DIModule {
         saveMenu: (Map<String, List<Recipe>> menu) async {
           try {
             final userId = authRepo.currentUserId;
-            final displayName =
-                userService.currentUserProfile?.displayName ??
-                AppLocale.current.displayUnknownUser;
+            final displayName = (userService.currentUserProfile?.displayName)
+                .orEmpty();
             if (userId == null) return null;
             final sharedMenu = SharedMenu.create(
               sharedByUserId: userId,
@@ -283,8 +280,7 @@ class SocialModule implements DIModule {
       return SocialShoppingCoordinator(
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ??
-            AppLocale.current.displayUnknownUser,
+            (userService.currentUserProfile?.displayName).orEmpty(),
         setError: (error) =>
             AppLogger.error('SocialShoppingCoordinator error: $error'),
         notifyListeners: () {},

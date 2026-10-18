@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// Compose the primary presence line from one or more [names] cooking a
 /// single [recipe].
@@ -76,7 +77,9 @@ class CookingSessionCard extends StatelessWidget {
     final peers = sessions
         .where((s) => s.recipeId == primary.recipeId)
         .toList(growable: false);
-    final names = peers.map((s) => s.userName).toList(growable: false);
+    final names = peers
+        .map((s) => storedNameOr(s.userName, l10n.displayUnknownUser))
+        .toList(growable: false);
 
     final primaryLine = _composeCookingLine(
       l10n,

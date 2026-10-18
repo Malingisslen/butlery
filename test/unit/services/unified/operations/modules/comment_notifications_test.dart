@@ -93,6 +93,131 @@ void main() {
       // Cleanup if needed
     });
 
+    group('Nameless author', () {
+      test(
+        'names the commenter per language slot, nothing persisted',
+        () async {
+          when(
+            () => mockNotificationService.sendBatchableNotification(
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              variablesByLocale: any(named: 'variablesByLocale'),
+              additionalData: any(named: 'additionalData'),
+            ),
+          ).thenAnswer((_) async {});
+
+          await CommentNotifications.sendCommentNotifications(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            comment: RecipeComment(
+              id: 'comment_1',
+              recipeId: 'recipe_1',
+              authorId: 'user_456',
+              authorDisplayName: '',
+              text: 'Hej',
+              createdAt: DateTime.now(),
+            ),
+          );
+
+          final captured = verify(
+            () => mockNotificationService.sendBatchableNotification(
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: captureAny(named: 'variables'),
+              variablesByLocale: captureAny(named: 'variablesByLocale'),
+              additionalData: any(named: 'additionalData'),
+            ),
+          ).captured;
+          final variables = captured[0] as Map<String, String>;
+          final byLocale = captured[1] as Map<String, Map<String, String>>;
+          expect(variables['commenterName'], '');
+          expect(byLocale['sv']!['commenterName'], 'Okänd användare');
+          expect(byLocale['en']!['commenterName'], 'Unknown user');
+        },
+      );
+
+      Future<List<dynamic>> captureSend(
+        Future<void> Function() act,
+      ) async {
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
+        await act();
+        return verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: captureAny(named: 'variables'),
+            variablesByLocale: captureAny(named: 'variablesByLocale'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).captured;
+      }
+
+      RecipeComment authored(String name, {String? parent}) => RecipeComment(
+        id: 'c_nameless',
+        recipeId: 'recipe_1',
+        parentCommentId: parent,
+        authorId: 'user_789',
+        authorDisplayName: name,
+        text: 'Hej',
+        createdAt: DateTime.now(),
+      );
+
+      test('names the replier per language slot', () async {
+        final captured = await captureSend(
+          () => CommentNotifications.sendReplyNotifications(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            reply: authored('', parent: 'comment_1'),
+            parentComment: testComment,
+          ),
+        );
+        final byLocale = captured[1] as Map<String, Map<String, String>>;
+        expect((captured[0] as Map)['replierName'], '');
+        expect(byLocale['sv']!['replierName'], 'Okänd användare');
+        expect(byLocale['en']!['replierName'], 'Unknown user');
+      });
+
+      test('names the mentioner per language slot', () async {
+        final captured = await captureSend(
+          () => CommentNotifications.sendMentionNotifications(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            comment: authored(''),
+            mentionedUserIds: ['user_111'],
+          ),
+        );
+        final byLocale = captured[1] as Map<String, Map<String, String>>;
+        expect((captured[0] as Map)['mentionerName'], '');
+        expect(byLocale['sv']!['mentionerName'], 'Okänd användare');
+        expect(byLocale['en']!['mentionerName'], 'Unknown user');
+      });
+
+      test(
+        'a stored legacy label is not sent as the sender-language name',
+        () async {
+          final captured = await captureSend(
+            () => CommentNotifications.sendCommentNotifications(
+              notificationService: mockNotificationService,
+              recipe: testRecipe,
+              comment: authored('Okänd användare'),
+            ),
+          );
+          final byLocale = captured[1] as Map<String, Map<String, String>>;
+          expect((captured[0] as Map)['commenterName'], '');
+          expect(byLocale['en']!['commenterName'], 'Unknown user');
+        },
+      );
+    });
+
     group('Comment Notifications', () {
       test('should send notifications to recipe members', () async {
         // Arrange
@@ -101,6 +226,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenAnswer((_) async {});
@@ -126,6 +252,7 @@ void main() {
               'recipeName': 'Test Recipe',
               'commentPreview': 'Great recipe! @user_999 you should try this.',
             },
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: {
               'recipeId': 'recipe_1',
               'commentId': 'comment_1',
@@ -143,6 +270,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenAnswer((_) async {});
@@ -169,6 +297,7 @@ void main() {
             ),
             strategy: NotificationStrategy.recipeComment,
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).called(1);
@@ -188,6 +317,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         );
@@ -200,6 +330,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenThrow(Exception('Notification error'));
@@ -221,6 +352,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenAnswer((_) async {});
@@ -243,6 +375,7 @@ void main() {
               'recipeName': 'Test Recipe',
               'replyPreview': 'I agree with you!',
             },
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: {
               'recipeId': 'recipe_1',
               'commentId': 'reply_1',
@@ -280,6 +413,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         );
@@ -294,6 +428,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenAnswer((_) async {});
@@ -324,6 +459,7 @@ void main() {
                     v.containsKey('commentPreview'),
               ),
             ),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: {
               'recipeId': 'recipe_1',
               'commentId': 'comment_1',
@@ -360,6 +496,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         );
@@ -374,6 +511,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: any(named: 'strategy'),
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).thenAnswer((_) async {});
@@ -405,6 +543,7 @@ void main() {
             targetUserIds: any(named: 'targetUserIds'),
             strategy: NotificationStrategy.recipeComment,
             variables: any(named: 'variables'),
+            variablesByLocale: any(named: 'variablesByLocale'),
             additionalData: any(named: 'additionalData'),
           ),
         ).called(3);

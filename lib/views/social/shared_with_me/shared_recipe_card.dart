@@ -1,5 +1,7 @@
 // lib/views/social/shared_with_me/shared_recipe_card.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -33,7 +35,13 @@ class SharedRecipeCard {
       title: sharedRecipe.recipeTitle,
       subtitle: byFriend
           ? null
-          : l10n.sharedFromNameAgo(sharedRecipe.sharedByDisplayName, ago),
+          : l10n.sharedFromNameAgo(
+              storedNameOr(
+                sharedRecipe.sharedByDisplayName,
+                l10n.displayUnknownUser,
+              ),
+              ago,
+            ),
       meta: byFriend
           ? RecipeRowMeta(
               lead: l10n.sharedSharedAgo(ago),
@@ -59,7 +67,10 @@ class SharedRecipeCard {
         onReply: () => SharedContentActions.replyToSender(
           context,
           userId: sharedRecipe.sharedByUserId,
-          displayName: sharedRecipe.sharedByDisplayName,
+          // Persisted on the conversation, so no display label.
+          displayName: knownStoredName(
+            sharedRecipe.sharedByDisplayName,
+          ).orEmpty(),
         ),
         onDismiss: () => SharedContentActions.dismissRecipe(
           context,

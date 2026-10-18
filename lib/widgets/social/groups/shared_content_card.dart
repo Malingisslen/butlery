@@ -1,5 +1,6 @@
 // lib/widgets/social/groups/shared_content_card.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -71,6 +72,10 @@ class SharedContentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final iconColor = _getColorForType(context, item.type);
+    final sharedBy = storedNameOr(
+      item.sharedByDisplayName,
+      context.l10n.displayUnknownUser,
+    );
 
     return StyledCard(
       margin: const EdgeInsets.only(bottom: AppDimensions.space8),
@@ -132,14 +137,14 @@ class SharedContentCard extends StatelessWidget {
                   children: [
                     AvatarCircle(
                       imageUrl: item.sharedByAvatarUrl,
-                      displayName: item.sharedByDisplayName,
+                      displayName: sharedBy,
                       size: AvatarCircleSize.inline,
                       tone: AvatarCircleTone.paper,
                     ),
                     const SizedBox(width: AppDimensions.space4),
                     Expanded(
                       child: Text(
-                        context.l10n.groupSharedBy(item.sharedByDisplayName),
+                        context.l10n.groupSharedBy(sharedBy),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: cs.onSurfaceVariant,
                         ),

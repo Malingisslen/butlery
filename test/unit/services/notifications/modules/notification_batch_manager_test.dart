@@ -171,6 +171,41 @@ void main() {
         ).called(2); // Called for each user
       });
 
+      test(
+        'queues each language slot with its own value for a nameless sender (BUT-2351)',
+        () async {
+          final added = await batchManager.addToBatch(
+            targetUserIds: ['user1'],
+            strategy: NotificationStrategy.recipeComment,
+            variables: {
+              'commenterName': '',
+              'recipeName': 'Soppa',
+              'commentPreview': 'Gott',
+            },
+            variablesByLocale: {
+              'sv': {'commenterName': 'Okänd användare'},
+              'en': {'commenterName': 'Unknown user'},
+            },
+          );
+
+          expect(added, isTrue);
+          final template =
+              verify(
+                    () => mockRepository.addToBatch(
+                      batchKey: any(named: 'batchKey'),
+                      notification: captureAny(named: 'notification'),
+                      batchWindow: any(named: 'batchWindow'),
+                    ),
+                  ).captured.single
+                  as NotificationTemplate;
+          expect(
+            template.translations!['sv']!.body,
+            contains('Okänd användare'),
+          );
+          expect(template.translations!['en']!.body, contains('Unknown user'));
+        },
+      );
+
       test('should reject non-batchable notifications', () async {
         // Arrange
         final strategy = createTestStrategy(type: NotificationType.immediate);

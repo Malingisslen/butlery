@@ -51,11 +51,16 @@ class NotificationTemplate {
   factory NotificationTemplate.fromStrategy(
     NotificationStrategy strategy,
     Map<String, String> variables, {
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
     List<NotificationAction>? actions,
   }) {
-    final translations = translateStrategy(strategy, variables);
+    final translations = translateStrategy(
+      strategy,
+      variables,
+      variablesByLocale: variablesByLocale,
+    );
     final sv = translations['sv']!;
 
     // Build data payload

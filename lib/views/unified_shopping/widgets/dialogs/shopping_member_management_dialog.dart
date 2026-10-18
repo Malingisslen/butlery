@@ -1,5 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'dart:math' as math;
 
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
@@ -158,8 +159,10 @@ class _ShoppingMemberManagementDialogState
           SnackBarUtils.showSuccess(
             context,
             context.l10n.shoppingPermissionUpdated(
-              widget.userDisplayNames[userId] ??
-                  context.l10n.shoppingUnknownUser,
+              storedNameOr(
+                widget.userDisplayNames[userId],
+                context.l10n.shoppingUnknownUser,
+              ),
             ),
           );
         }
@@ -330,13 +333,14 @@ class _ShoppingMemberManagementDialogState
     }
   }
 
-  String _nameOf(String userId) =>
-      widget.userDisplayNames[userId] ??
-      widget.availableFriends
-          .where((f) => f.uid == userId)
-          .map((f) => f.displayName)
-          .firstOrNull ??
-      context.l10n.shoppingUnknownUser;
+  String _nameOf(String userId) => storedNameOr(
+    knownStoredName(widget.userDisplayNames[userId]) ??
+        widget.availableFriends
+            .where((f) => f.uid == userId)
+            .map((f) => f.displayName)
+            .firstOrNull,
+    context.l10n.shoppingUnknownUser,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -375,9 +379,10 @@ class _ShoppingMemberManagementDialogState
                     final userId = entry.key;
                     final permission = entry.value;
                     final isOwner = userId == widget.list.ownerId;
-                    final userName =
-                        widget.userDisplayNames[userId] ??
-                        context.l10n.shoppingUnknownUser;
+                    final userName = storedNameOr(
+                      widget.userDisplayNames[userId],
+                      context.l10n.shoppingUnknownUser,
+                    );
 
                     return _buildMemberListTile(
                       userId,
@@ -558,15 +563,19 @@ class _ShoppingMemberManagementDialogState
     final cs = Theme.of(context).colorScheme;
     final isSelected = _selectedFriends.contains(friend.uid);
     final invited = _pendingInvitees.contains(friend.uid);
+    final shownName = storedNameOr(
+      friend.displayName,
+      context.l10n.shoppingUnknownUser,
+    );
 
     return ButleryCheckboxTile(
       secondary: AvatarCircle(
         imageUrl: friend.avatarUrl,
-        displayName: friend.displayName,
+        displayName: shownName,
         tone: AvatarCircleTone.paper,
       ),
       title: Text(
-        friend.displayName,
+        shownName,
         style: AppTextStyles.contentTitle,
       ),
       subtitle: invited

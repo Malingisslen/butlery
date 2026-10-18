@@ -20,6 +20,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// ViewModel for group conversation detail view with member management.
 /// Manages complete group detail display and management workflow including real-time
@@ -454,7 +455,9 @@ class GroupDetailViewModel extends ChangeNotifier
 
   /// Get member display name by ID
   String getMemberDisplayName(String memberId) {
-    return _conversation?.participantDisplayNames[memberId] ?? '?';
+    final stored = _conversation?.participantDisplayNames[memberId];
+    if (stored == null) return '?';
+    return storedNameOr(stored, AppLocale.current.displayUnknownUser);
   }
 
   /// Get member avatar URL by ID

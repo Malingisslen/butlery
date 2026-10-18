@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -68,9 +69,14 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool allowCollaboration = false,
     String? realtimeMenuId,
   }) {
+    // The title is stored, so an unknown sharer gets a name-free title rather
+    // than a label in the sender's language.
+    final knownName = knownStoredName(sharedByDisplayName);
     final title =
         menuTitle ??
-        AppLocale.current.sharedMenuTitlePattern(sharedByDisplayName);
+        (knownName == null
+            ? AppLocale.current.menuCardSharedMenu
+            : AppLocale.current.sharedMenuTitlePattern(knownName));
 
     return SharedMenu(
       id: const Uuid().v4(),
@@ -189,7 +195,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     menuSnapshot.forEach((category, recipes) {
       importedMenu[category] = recipes.map((recipe) {
         final attribution =
-            '\n\n${AppLocale.current.importedFromMenu(sharedByDisplayName, menuTitle)}';
+            '\n\n${AppLocale.current.importedFromMenu(
+              storedNameOr(
+                sharedByDisplayName,
+                AppLocale.current.displayUnknownUser,
+              ),
+              menuTitle,
+            )}';
         final newDescription = recipe.description.isNotEmpty
             ? '${recipe.description}$attribution'
             : '${AppLocale.current.importedRecipeLabel}$attribution';

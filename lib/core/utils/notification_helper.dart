@@ -127,6 +127,7 @@ class NotificationHelper {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
   }) async {
@@ -137,6 +138,7 @@ class NotificationHelper {
         targetUserIds: targetUserIds,
         strategy: strategy,
         variables: variables,
+        variablesByLocale: variablesByLocale,
         additionalData: additionalData,
         imageUrl: imageUrl,
       ),

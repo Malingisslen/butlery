@@ -56,6 +56,7 @@
 
 // lib/models/messaging/conversation.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -389,7 +390,9 @@ class Conversation {
       orElse: () => currentUserId,
     );
 
-    return participantDisplayNames[otherParticipantId] ?? '?';
+    final stored = participantDisplayNames[otherParticipantId];
+    if (stored == null) return '?';
+    return storedNameOr(stored, AppLocale.current.displayUnknownUser);
   }
 
   /// Gets the appropriate avatar URL for conversation display based on type and current user.

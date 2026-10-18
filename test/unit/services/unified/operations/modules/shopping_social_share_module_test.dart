@@ -152,7 +152,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
@@ -669,13 +668,12 @@ void main() {
     });
 
     /// The fallback half of BUT-1775, and the reason `tryGet` is used rather
-    /// than `get`: with no service graph the module must stamp the localized
-    /// unknown-user label. What it must NEVER do is quietly reach for
+    /// than `get`: with no service graph the module must stamp an empty name. What it must NEVER do is quietly reach for
     /// `PermissionService.currentUser.displayName` — the Auth-sourced name —
     /// as the "sensible default", because that is the exact value the whole
     /// fix exists to keep out of other people's documents.
     test(
-      'BUT-1775: with no UserService the label is the localized unknown user, '
+      'BUT-1775: with no UserService the name is empty, '
       'never the Auth handle',
       () async {
         ServiceLocator.reset();
@@ -691,7 +689,7 @@ void main() {
         final sharedData = (await _allShared(firestore)).first.data();
         expect(
           sharedData['sharedByDisplayName'],
-          AppLocale.current.displayUnknownUser,
+          '',
         );
         expect(
           sharedData['sharedByDisplayName'],

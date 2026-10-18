@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -20,6 +21,8 @@ import 'package:butlery/services/unified/operations/modules/recipe_share_grants.
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 
 typedef CreateCollaborativeRecipeFn =
     Future<String?> Function({
@@ -399,7 +402,7 @@ class RecipeSharingManager {
 
     // Get current user display name for notification
     final currentUserId = _getCurrentUserId();
-    final currentUserName = _getCurrentUserDisplayName() ?? '?';
+    final currentUserName = _getCurrentUserDisplayName();
 
     // Send notifications to all invited members using safe helper
     await NotificationHelper.sendImmediateSafely(
@@ -408,9 +411,14 @@ class RecipeSharingManager {
       targetUserIds: memberIds,
       strategy: NotificationStrategy.recipeShared,
       variables: {
-        'senderName': currentUserName,
+        'senderName': knownStoredName(currentUserName).orEmpty(),
         'recipeName': recipeTitle,
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'senderName': storedNameOr(currentUserName, l.displayUnknownUser),
+        },
+      ),
       additionalData: {
         'collaborativeRecipeId': collaborativeRecipeId,
         'action': 'recipe_shared',
@@ -428,7 +436,7 @@ class RecipeSharingManager {
     required String recipeTitle,
     required List<String> memberIds,
   }) async {
-    final currentUserName = _getCurrentUserDisplayName() ?? '?';
+    final currentUserName = _getCurrentUserDisplayName();
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,
@@ -436,9 +444,14 @@ class RecipeSharingManager {
       targetUserIds: memberIds,
       strategy: NotificationStrategy.collaborationEnabled,
       variables: {
-        'enablerName': currentUserName,
+        'enablerName': knownStoredName(currentUserName).orEmpty(),
         'recipeTitle': recipeTitle,
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'enablerName': storedNameOr(currentUserName, l.displayUnknownUser),
+        },
+      ),
       additionalData: {
         'recipeId': recipeId,
         'action': 'collaboration_enabled',
@@ -763,11 +776,11 @@ class RecipeSharingManager {
         // Auth-sourced stamp would be both unconsented and un-erasable.
         //
         // `tryGet` keeps the module working before/without the service
-        // graph; an unresolved name stamps the localized unknown-user
-        // label, never an Auth-sourced one.
+        // graph; an unresolved name stamps empty (readers show their own
+        // "unknown" label), never an Auth-sourced one.
         'sharedByDisplayName':
-            ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
-            AppLocale.current.displayUnknownUser,
+            (ServiceLocator.tryGet<UserService>()?.profileDisplayName)
+                .orEmpty(),
         'sharedByAvatarUrl':
             ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
         // The single membership field. `firestore.rules` grants

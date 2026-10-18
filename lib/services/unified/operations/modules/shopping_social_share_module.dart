@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/shopping_social_share_module.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'dart:math' show min;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -57,11 +58,10 @@ class ShoppingSocialShareModule {
       // bundle — while `on-profile-updated.ts` only propagates the PROFILE name
       // and account deletion only scrubs that one, so an Auth-sourced stamp is
       // both unconsented and un-erasable. `tryGet` keeps the module working
-      // before/without the service graph; an unresolved name stamps the
-      // localized unknown-user label, never an Auth-sourced one.
+      // before/without the service graph; an unresolved name stamps empty
+      // (readers show their own "unknown" label), never an Auth-sourced one.
       final sharedByDisplayName =
-          ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
-          AppLocale.current.displayUnknownUser;
+          (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
 
       // Get shopping list data from user's personal lists
       final listDoc = await _firestore
@@ -319,12 +319,9 @@ class ShoppingSocialShareModule {
             'id': sharedListId,
             // BUT-1109: localized fallback for missing title — was literal '?'.
             'title': listData['title'] ?? AppLocale.current.unnamedSharedList,
-            // BUT-1109: reuse the existing shoppingUnknownUser key (Swedish:
-            // "Okänd användare") for a missing displayName — semantically a
-            // person, not a list, so unnamedSharedList would be wrong here.
-            'sharedByDisplayName':
-                listData['sharedByDisplayName'] ??
-                AppLocale.current.shoppingUnknownUser,
+            // Left as stored; the reader resolves a missing or empty name.
+            'sharedByDisplayName': (listData['sharedByDisplayName'] as String?)
+                .orEmpty(),
             'sharedByAvatarUrl': listData['sharedByAvatarUrl'],
             'sharedAt': receivedData['sharedAt'],
             'description': listData['description'],

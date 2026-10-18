@@ -159,7 +159,7 @@ class FriendsInvitationsOperations {
         message: customMessage,
       );
       final sentAt = clock.now();
-      final senderName = _getCurrentUserDisplayName() ?? 'Unknown';
+      final senderName = _getCurrentUserDisplayName().orEmpty();
       for (final MapEntry(key: userId, value: invitationId) in sent.entries) {
         _addSentInvitationInternal(
           GroupInvitation(

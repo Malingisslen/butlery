@@ -12,6 +12,8 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
@@ -187,7 +189,7 @@ class FriendsManagementOperations extends BaseService {
       unawaited(
         _sendFriendRequestNotification(
           request,
-          currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
+          currentUserDisplayName,
           recipientDisplayName,
         ),
       );
@@ -248,7 +250,7 @@ class FriendsManagementOperations extends BaseService {
       unawaited(
         _sendFriendRequestAcceptedNotification(
           request,
-          _getCurrentUserDisplayName() ?? AppLocale.current.displayUnknownUser,
+          _getCurrentUserDisplayName(),
         ),
       );
 
@@ -716,7 +718,7 @@ class FriendsManagementOperations extends BaseService {
 
   Future<void> _sendFriendRequestNotification(
     FriendRequest request,
-    String senderDisplayName,
+    String? senderDisplayName,
     String recipientDisplayName,
   ) async {
     if (_notificationService == null) {
@@ -730,7 +732,14 @@ class FriendsManagementOperations extends BaseService {
       await _notificationService!.sendImmediateNotification(
         targetUserIds: [request.toUserId],
         strategy: NotificationStrategy.friendRequest,
-        variables: {'senderName': senderDisplayName},
+        variables: {'senderName': knownStoredName(senderDisplayName).orEmpty()},
+        // The recipient's language is unknown here, so each slot names the
+        // unknown sender in its own language (BUT-2351).
+        variablesByLocale: localizedVariables(
+          (l) => {
+            'senderName': storedNameOr(senderDisplayName, l.displayUnknownUser),
+          },
+        ),
         additionalData: {
           'senderUserId': request.fromUserId,
           'requestId': request.id,
@@ -748,7 +757,7 @@ class FriendsManagementOperations extends BaseService {
 
   Future<void> _sendFriendRequestAcceptedNotification(
     FriendRequest request,
-    String acceptorDisplayName,
+    String? acceptorDisplayName,
   ) async {
     if (_notificationService == null) {
       AppLogger.debug(
@@ -761,7 +770,17 @@ class FriendsManagementOperations extends BaseService {
       await _notificationService!.sendImmediateNotification(
         targetUserIds: [request.fromUserId],
         strategy: NotificationStrategy.friendRequestAccepted,
-        variables: {'acceptorName': acceptorDisplayName},
+        variables: {
+          'acceptorName': knownStoredName(acceptorDisplayName).orEmpty(),
+        },
+        variablesByLocale: localizedVariables(
+          (l) => {
+            'acceptorName': storedNameOr(
+              acceptorDisplayName,
+              l.displayUnknownUser,
+            ),
+          },
+        ),
         additionalData: {
           'acceptorUserId': request.toUserId,
           'requestId': request.id,

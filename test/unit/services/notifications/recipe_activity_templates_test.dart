@@ -67,6 +67,7 @@ void main() {
         targetUserIds: any(named: 'targetUserIds'),
         strategy: any(named: 'strategy'),
         variables: any(named: 'variables'),
+        variablesByLocale: any(named: 'variablesByLocale'),
         additionalData: any(named: 'additionalData'),
         imageUrl: any(named: 'imageUrl'),
       ),

@@ -1,5 +1,7 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:uuid/uuid.dart';
@@ -129,9 +131,9 @@ class SharedShoppingList
       itemCount: itemCount,
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
       originalOwnerDisplayName:
-          data['originalOwnerDisplayName'] ??
-          data['sharedByDisplayName'] ??
-          AppLocale.current.displayUnknownUser,
+          ((data['originalOwnerDisplayName'] ?? data['sharedByDisplayName'])
+                  as String?)
+              .orEmpty(),
       shoppingListId: data['shoppingListId'] as String?,
     );
   }
@@ -181,7 +183,7 @@ class SharedShoppingList
         defaultValue: SerializationUtils.safeString(
           data,
           'sharedByDisplayName',
-          defaultValue: AppLocale.current.displayUnknownUser,
+          defaultValue: '',
         ),
       ),
       shoppingListId: SerializationUtils.safeNullableString(
@@ -271,11 +273,17 @@ class SharedShoppingList
     return ContextualTimeFormatter.standard(sharedAt);
   }
 
-  String get sharingContextText =>
-      AppLocale.current.shoppingListSharedBy(sharedByDisplayName);
+  String get sharingContextText => AppLocale.current.shoppingListSharedBy(
+    storedNameOr(sharedByDisplayName, AppLocale.current.shoppingUnknownUser),
+  );
 
-  String get attributionText => AppLocale.current
-      .shoppingListOriginallySharedBy(originalOwnerDisplayName);
+  String get attributionText =>
+      AppLocale.current.shoppingListOriginallySharedBy(
+        storedNameOr(
+          originalOwnerDisplayName,
+          AppLocale.current.shoppingUnknownUser,
+        ),
+      );
 
   SharedShoppingList copyWith({
     String? id,

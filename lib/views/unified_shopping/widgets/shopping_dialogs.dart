@@ -1,5 +1,7 @@
 // lib/views/unified_shopping/widgets/shopping_dialogs.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -198,7 +200,7 @@ class ShoppingDialogs {
       // member row, which is the same defect an empty name causes — and this
       // map is handed on to the member-management dialog too, so filtering it
       // here fixes both consumers rather than one.
-      final ownerName = activeList.ownerDisplayName.trim();
+      final ownerName = knownStoredName(activeList.ownerDisplayName).orEmpty();
       try {
         final userService = ServiceLocator.get<UserService>();
         final allUserIds = <String>{
@@ -208,7 +210,7 @@ class ShoppingDialogs {
 
         final result = await userService.getUserProfiles(allUserIds);
         for (final profile in result.profiles) {
-          final name = profile.displayName.trim();
+          final name = knownStoredName(profile.displayName).orEmpty();
           if (name.isNotEmpty) userDisplayNames[profile.uid] = name;
         }
         // This dialog shows who a list is shared with, not a decision

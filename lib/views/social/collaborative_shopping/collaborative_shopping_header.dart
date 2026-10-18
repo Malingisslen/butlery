@@ -7,10 +7,10 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/widgets/common/layout/word_fit.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// Focused widget for collaborative shopping list header
 /// This widget handles ONLY header display responsibilities:
@@ -114,7 +114,10 @@ class CollaborativeShoppingHeader extends StatelessWidget {
               const SizedBox(width: AppDimensions.space4),
               Text(
                 context.l10n.handlarNu(
-                  (shopper['displayName'] as String?).orEmpty(),
+                  storedNameOr(
+                    shopper['displayName'] as String?,
+                    context.l10n.shoppingUnknownUser,
+                  ),
                 ),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,

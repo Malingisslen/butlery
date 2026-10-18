@@ -1,5 +1,6 @@
 // lib/views/social/shared_with_me/shared_shopping_list_card.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -29,7 +30,10 @@ class SharedShoppingListCard {
       leading: const SharedKindThumb(icon: ButleryIcons.shoppingCart),
       title: sharedShoppingList.listName,
       subtitle: l10n.sharedFromNameAgo(
-        sharedShoppingList.sharedByDisplayName,
+        storedNameOr(
+          sharedShoppingList.sharedByDisplayName,
+          l10n.displayUnknownUser,
+        ),
         sharedShoppingList.timeAgoText,
       ),
       message: sharedShoppingList.shareMessage,

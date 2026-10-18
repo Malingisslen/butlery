@@ -1,5 +1,6 @@
 // lib/views/social/shared_with_me/shared_menu_card.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -66,7 +67,7 @@ class SharedMenuCard {
     final isCollaborative =
         sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
     final fromAgo = l10n.sharedFromNameAgo(
-      sharedMenu.sharedByDisplayName,
+      storedNameOr(sharedMenu.sharedByDisplayName, l10n.displayUnknownUser),
       ContextualTimeFormatter.standard(
         sharedMenu.sharedAt,
         localeName: Localizations.localeOf(context).toString(),

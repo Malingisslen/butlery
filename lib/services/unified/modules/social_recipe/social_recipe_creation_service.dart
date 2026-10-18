@@ -6,7 +6,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -81,8 +80,7 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         instructions: instructions,
         mealType: 'Middag', // Default meal type
         ownerId: currentUserId,
-        ownerDisplayName:
-            currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
+        ownerDisplayName: currentUserDisplayName.orEmpty(),
         description: description.orEmpty(),
         portions: portions,
         timeMinutes: cookingTime,

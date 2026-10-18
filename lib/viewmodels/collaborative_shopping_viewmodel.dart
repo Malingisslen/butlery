@@ -2,6 +2,7 @@
 
 // lib/viewmodels/collaborative_shopping_viewmodel.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 
@@ -145,9 +146,9 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     // rule) — this compares who acted, not their profile.
     if (activityUserId == currentUserId) return;
 
-    final name = updated.lastActivityByDisplayName;
+    final name = knownStoredName(updated.lastActivityByDisplayName);
     final l = AppLocale.current;
-    if (name == null || name.isEmpty) {
+    if (name == null) {
       _updatedByNotice = l.shoppingListUpdatedByUnknown;
       return;
     }
@@ -230,11 +231,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   /// item is claimed by. The list holds no profile for a member who has
   /// claimed nothing, so the header adds the rest as a count.
   List<String> get participantNames {
-    final owner = _currentList?.ownerDisplayName;
-    final names = <String>{if (owner != null && owner.isNotEmpty) owner};
+    final owner = knownStoredName(_currentList?.ownerDisplayName);
+    final names = <String>{?owner};
     for (final i in [...activeItems, ...completedItemsList]) {
-      final name = i.assignedToDisplayName;
-      if (name != null && name.isNotEmpty) names.add(name);
+      final name = knownStoredName(i.assignedToDisplayName);
+      if (name != null) names.add(name);
     }
     return names.toList();
   }

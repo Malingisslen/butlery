@@ -5,7 +5,6 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -38,7 +37,7 @@ void main() {
     () {
       UserService? current;
       final source = AttributionSource(userService: () => current);
-      expect(source.displayName, AppLocale.current.displayUnknownUser);
+      expect(source.displayName, isEmpty);
 
       final arrived = MockUserService();
       when(() => arrived.attributionDisplayName).thenReturn('Kommer senare');
@@ -49,12 +48,11 @@ void main() {
   );
 
   test(
-    'with no service the name is the unknown-user label and the avatar null',
+    'with no service the name is empty and the avatar null',
     () {
       final source = AttributionSource(userService: () => null);
 
-      expect(source.displayName, AppLocale.current.displayUnknownUser);
-      expect(source.displayName, isNotEmpty);
+      expect(source.displayName, isEmpty);
       expect(source.avatarUrl, isNull);
     },
   );

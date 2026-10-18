@@ -16,6 +16,7 @@
 /// cache. The split keeps app-singleton lifecycle (this class) separate from
 /// per-user lifecycle (token manager).
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -594,10 +595,10 @@ class FCMService extends BaseService {
   /// here, in the recipient's own language.
   @visibleForTesting
   static String shareRequestSenderName(Map<String, dynamic> data) {
-    final sentName = data['fromUserName'] as String?;
-    return (sentName == null || sentName.isEmpty)
-        ? AppLocale.current.displayUnknownUser
-        : sentName;
+    return storedNameOr(
+      data['fromUserName'] as String?,
+      AppLocale.current.displayUnknownUser,
+    );
   }
 
   /// Opens the owner's own recipe with a one-tap share-back banner.

@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/operations/modules/recipe_rating_system
 import 'package:butlery/services/unified/operations/modules/social_engagement_metrics.dart';
 import 'package:butlery/services/unified/operations/modules/rating_statistics.dart';
 import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Clean facade for recipe social statistics using focused modules
 /// This facade provides a unified API that delegates to focused modules:
@@ -46,7 +47,7 @@ class RecipeSocialStats {
     _ratingSystem = RecipeRatingSystem();
   }
   String? get currentUserId => _getCurrentUserId();
-  String get currentUserDisplayName => _getCurrentUserDisplayName() ?? '?';
+  String get currentUserDisplayName => _getCurrentUserDisplayName().orEmpty();
   List<Recipe> get recipes => _getRecipes();
 
   Recipe? _getRecipe(String recipeId) {

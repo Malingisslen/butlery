@@ -18,7 +18,6 @@ import 'package:butlery/repositories/interfaces/household_allergen_share_reposit
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -1345,14 +1344,14 @@ void main() {
         'no profile at all': null,
       }.entries) {
         test(
-          'with ${entry.key} attributionDisplayName is the unknown-user label, '
+          'with ${entry.key} attributionDisplayName is empty, '
           'never the Auth name',
           () async {
             await signInWithProfile(entry.value);
 
             expect(
               userService.attributionDisplayName,
-              AppLocale.current.displayUnknownUser,
+              isEmpty,
             );
             expect(
               userService.attributionDisplayName,

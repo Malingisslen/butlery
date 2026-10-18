@@ -1,5 +1,6 @@
 /// Manager handling user profile operations for social interactions.
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -35,12 +36,18 @@ class SocialProfileManager extends ChangeNotifier {
 
   String getAuthorDisplayName(String authorId) {
     if (authorId == _currentUser?.uid) {
-      return _currentUser?.displayName ?? AppLocale.current.labelYou;
+      return storedNameOr(
+        _currentUser?.displayName,
+        AppLocale.current.labelYou,
+      );
     }
 
     try {
       final friend = _friends.firstWhere((f) => f.uid == authorId);
-      return friend.displayName;
+      return storedNameOr(
+        friend.displayName,
+        AppLocale.current.displayUnknownUser,
+      );
     } catch (e) {
       return '?';
     }
