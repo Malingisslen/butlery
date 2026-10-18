@@ -417,6 +417,32 @@ void main() {
     });
 
     group('Delete Comment', () {
+      test(
+        'deleting a reply moves the parent replyCount back (BUT-2379)',
+        () async {
+          const parentCommentId = 'parent-1';
+          await _seedComment(
+            fakeFirestore,
+            parentCommentId,
+            _createComment('recipe-1', 'other-user', id: parentCommentId),
+          );
+          final reply = await repository.addComment(
+            recipeId: 'recipe-1',
+            userId: 'user-123',
+            content: 'I agree!',
+            parentCommentId: parentCommentId,
+          );
+
+          await repository.deleteComment(reply.id);
+
+          final parent = await fakeFirestore
+              .collection('recipe_comments')
+              .doc(parentCommentId)
+              .get();
+          expect(parent.data()!['replyCount'], equals(0));
+        },
+      );
+
       test('should delete comment successfully', () async {
         // Arrange
         const commentId = 'comment-1';

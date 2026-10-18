@@ -16,7 +16,6 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   late MockCommentsRepository mockCommentsRepository;
 
-  // Register the mock BEFORE any test groups to ensure it's available when CommentUtilities loads
   setUpAll(() async {
     // Register fallback values for mocktail
     registerFallbackValue(
@@ -33,7 +32,6 @@ void main() {
     // Initialize base test infrastructure
     await BaseUnitTest.setupUnit();
 
-    // Create and register mock repository before CommentUtilities class loads
     mockCommentsRepository = MockCommentsRepository();
     final getIt = GetIt.instance;
     await getIt.reset();
@@ -227,68 +225,6 @@ void main() {
     });
 
     group('Reply Count Management', () {
-      test('should increment reply count', () async {
-        // Arrange
-        when(
-          () => mockCommentsRepository.read('comment_1'),
-        ).thenAnswer((_) async => testComment);
-        when(
-          () => mockCommentsRepository.update(any()),
-        ).thenAnswer((_) async => true);
-
-        // Act
-        await CommentUtilities.incrementReplyCount(
-          parentCommentId: 'comment_1',
-        );
-
-        // Assert
-        verify(() => mockCommentsRepository.read('comment_1')).called(1);
-        verify(() => mockCommentsRepository.update(any())).called(1);
-      });
-
-      test('should decrement reply count', () async {
-        // Arrange
-        when(
-          () => mockCommentsRepository.read('comment_1'),
-        ).thenAnswer((_) async => testComment);
-        when(
-          () => mockCommentsRepository.update(any()),
-        ).thenAnswer((_) async => true);
-
-        // Act
-        await CommentUtilities.decrementReplyCount(
-          parentCommentId: 'comment_1',
-        );
-
-        // Assert
-        verify(() => mockCommentsRepository.read('comment_1')).called(1);
-        verify(() => mockCommentsRepository.update(any())).called(1);
-      });
-
-      test('should not decrement below zero', () async {
-        // Arrange
-        final zeroReplyComment = testComment.copyWith(replyCount: 0);
-        when(
-          () => mockCommentsRepository.read('comment_1'),
-        ).thenAnswer((_) async => zeroReplyComment);
-        when(
-          () => mockCommentsRepository.update(any()),
-        ).thenAnswer((_) async => true);
-
-        // Act
-        await CommentUtilities.decrementReplyCount(
-          parentCommentId: 'comment_1',
-        );
-
-        // Assert
-        final capturedComment =
-            verify(
-                  () => mockCommentsRepository.update(captureAny()),
-                ).captured.first
-                as RecipeComment;
-        expect(capturedComment.replyCount, equals(0));
-      });
-
       test('should get reply count', () async {
         // Arrange
         when(

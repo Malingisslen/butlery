@@ -16,6 +16,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
+import 'package:butlery/services/unified/operations/modules/comment_utilities.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_comments_manager.dart';
 
 import '../../../../../test_support/base_unit_test.dart';
@@ -691,6 +692,79 @@ void main() {
           verify(() => mockCommentsRepo.read('posted-1')).called(1);
         },
       );
+    });
+
+    group('reply count (BUT-2379)', () {
+      // The reply-count path must be watched through THIS test's mock.
+      setUp(() => CommentUtilities.overrideRepository(mockCommentsRepo));
+      tearDown(() => CommentUtilities.overrideRepository(null));
+
+      setUpAll(
+        () => registerFallbackValue(
+          RecipeComment(
+            id: 'fb',
+            recipeId: 'r',
+            authorId: 'u',
+            authorDisplayName: 'x',
+            text: 'x',
+          ),
+        ),
+      );
+
+      // The repository's batch already moves the parent's replyCount; a second
+      // client-side write counted a reply on one's own comment twice.
+      final reply = RecipeComment(
+        id: 'reply-1',
+        recipeId: 'r1',
+        authorId: 'user-1',
+        authorDisplayName: 'Anna',
+        text: 'Svar',
+        parentCommentId: 'parent-1',
+      );
+
+      test('posting a reply never writes the parent comment', () async {
+        when(
+          () => mockCommentsRepo.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenAnswer((_) async => reply);
+        when(
+          () => mockAnalytics.logCommentCreated(
+            recipeId: any(named: 'recipeId'),
+            commentLength: any(named: 'commentLength'),
+          ),
+        ).thenAnswer((_) async {});
+        when(() => mockCommentsRepo.read(any())).thenAnswer((_) async => reply);
+
+        final id = await manager.addComment(
+          recipeId: 'r1',
+          content: 'Svar',
+          parentCommentId: 'parent-1',
+        );
+        await pumpEventQueue();
+
+        expect(id, 'reply-1');
+        verifyNever(() => mockCommentsRepo.update(any()));
+        verifyNever(() => mockCommentsRepo.read('parent-1'));
+      });
+
+      test('deleting a reply never writes the parent comment', () async {
+        when(() => mockCommentsRepo.read(any())).thenAnswer((_) async => reply);
+        when(
+          () => mockCommentsRepo.deleteComment('reply-1'),
+        ).thenAnswer((_) async {});
+
+        final ok = await manager.deleteComment('reply-1');
+
+        expect(ok, isTrue);
+        verify(() => mockCommentsRepo.deleteComment('reply-1')).called(1);
+        verifyNever(() => mockCommentsRepo.update(any()));
+        verifyNever(() => mockCommentsRepo.read('parent-1'));
+      });
     });
 
     test('getComments delegates to crud operations', () async {
