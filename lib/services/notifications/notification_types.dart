@@ -1,6 +1,8 @@
-import 'package:clock/clock.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/services/notifications/notification_translations.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/notifications/notification_routes.dart';
+
+export 'package:butlery/services/notifications/notification_routes.dart';
+export 'package:butlery/services/notifications/notification_template.dart';
 
 /// Comprehensive notification type system defining intelligent delivery strategies and priority management for cooking-focused notifications.
 /// This system implements sophisticated notification categorization with intelligent delivery strategies based on user
@@ -103,7 +105,15 @@ class NotificationStrategy {
   final bool requiresInternet; // Whether to queue offline
   final Map<String, String> localization; // Swedish/English templates
 
+  /// Analytics tag the server and `recordNotificationOpened` attribute by.
+  final String notificationType;
+
+  /// Where a tap on this push lands.
+  final NotificationDestination destination;
+
   const NotificationStrategy({
+    required this.notificationType,
+    required this.destination,
     required this.type,
     required this.priority,
     required this.category,
@@ -113,8 +123,42 @@ class NotificationStrategy {
     this.localization = const {},
   });
 
+  /// The same strategy with text built at send time.
+  NotificationStrategy withLocalization(Map<String, String> localization) =>
+      NotificationStrategy(
+        notificationType: notificationType,
+        destination: destination,
+        type: type,
+        priority: priority,
+        category: category,
+        batchWindow: batchWindow,
+        maxBatchSize: maxBatchSize,
+        requiresInternet: requiresInternet,
+        localization: localization,
+      );
+
+  /// The three fields `sendNotification` refuses a push without (BUT-641,
+  /// BUT-2400). Spread LAST into a payload so they win over `additionalData`,
+  /// as they do on the server.
+  Map<String, String> deepLinkData(Map<String, dynamic>? additionalData) {
+    final key = destination.targetIdKey;
+    final String? targetId = key == null
+        ? null
+        : additionalData?[key]?.toString();
+    return {
+      'route': destination.route,
+      'targetId': targetId.orEmpty(),
+      'notificationType': notificationType,
+    };
+  }
+
   /// Friend request sent/received - immediate attention required
   static const friendRequest = NotificationStrategy(
+    notificationType: 'friend_request_received',
+    destination: NotificationDestination(
+      NotificationRoutes.friendRequest,
+      targetIdKey: 'requestId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.critical,
     category: NotificationCategory.friends,
@@ -128,6 +172,11 @@ class NotificationStrategy {
 
   /// Recipe shared directly with user - immediate notification
   static const recipeShared = NotificationStrategy(
+    notificationType: 'recipe_shared',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'collaborativeRecipeId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.recipes,
@@ -141,6 +190,11 @@ class NotificationStrategy {
 
   /// Someone posted a cooking photo on a recipe you own
   static const cookSnapAdded = NotificationStrategy(
+    notificationType: 'cook_snap_added',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.batchable,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -156,6 +210,11 @@ class NotificationStrategy {
 
   /// Recipe comments - can be batched to prevent spam
   static const recipeComment = NotificationStrategy(
+    notificationType: 'comment_posted',
+    destination: NotificationDestination(
+      NotificationRoutes.commentThread,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.batchable,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -171,6 +230,11 @@ class NotificationStrategy {
 
   /// Real-time collaboration invitation - immediate for active sessions
   static const collaborationInvite = NotificationStrategy(
+    notificationType: 'collaboration_invite',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.collaboration,
@@ -184,6 +248,8 @@ class NotificationStrategy {
 
   /// Shopping list updates - silent sync with periodic summary
   static const shoppingListUpdate = NotificationStrategy(
+    notificationType: 'shopping_list_update',
+    destination: NotificationDestination(NotificationRoutes.home),
     type: NotificationType.silent,
     priority: NotificationPriority.low,
     category: NotificationCategory.shopping,
@@ -192,6 +258,8 @@ class NotificationStrategy {
 
   /// Daily activity digest - scheduled periodic summary
   static const activityDigest = NotificationStrategy(
+    notificationType: 'activity_digest',
+    destination: NotificationDestination(NotificationRoutes.home),
     type: NotificationType.digest,
     priority: NotificationPriority.low,
     category: NotificationCategory.social,
@@ -205,6 +273,8 @@ class NotificationStrategy {
 
   /// Friend online status - optional user preference
   static const friendOnline = NotificationStrategy(
+    notificationType: 'friend_online',
+    destination: NotificationDestination(NotificationRoutes.friends),
     type: NotificationType.optional,
     priority: NotificationPriority.low,
     category: NotificationCategory.friends,
@@ -218,6 +288,8 @@ class NotificationStrategy {
 
   /// Friend request accepted - immediate feedback
   static const friendRequestAccepted = NotificationStrategy(
+    notificationType: 'friend_request_accepted',
+    destination: NotificationDestination(NotificationRoutes.friends),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.friends,
@@ -229,32 +301,13 @@ class NotificationStrategy {
     },
   );
 
-  /// Collaboration joined - silent notification for presence
-  static const collaborationJoined = NotificationStrategy(
-    type: NotificationType.silent,
-    priority: NotificationPriority.low,
-    category: NotificationCategory.collaboration,
-    requiresInternet: false,
-  );
-
-  /// Collaboration left - silent notification for presence
-  static const collaborationLeft = NotificationStrategy(
-    type: NotificationType.silent,
-    priority: NotificationPriority.low,
-    category: NotificationCategory.collaboration,
-    requiresInternet: false,
-  );
-
-  /// Real-time edit notification - silent for live collaboration
-  static const realtimeEdit = NotificationStrategy(
-    type: NotificationType.silent,
-    priority: NotificationPriority.low,
-    category: NotificationCategory.collaboration,
-    requiresInternet: false,
-  );
-
   /// Collaboration enabled - immediate notification for new feature
   static const collaborationEnabled = NotificationStrategy(
+    notificationType: 'collaboration_enabled',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.collaboration,
@@ -266,49 +319,15 @@ class NotificationStrategy {
     },
   );
 
-  /// Collaboration disabled - immediate notification when collaboration is turned off
-  static const collaborationDisabled = NotificationStrategy(
-    type: NotificationType.immediate,
-    priority: NotificationPriority.high,
-    category: NotificationCategory.collaboration,
-    localization: {
-      'title_sv': 'Samarbete inaktiverat',
-      'title_en': 'Collaboration disabled',
-      'body_sv': '{disablerName} inaktiverade samarbete för ”{recipeTitle}”',
-      'body_en': '{disablerName} disabled collaboration for “{recipeTitle}”',
-    },
-  );
-
-  /// Added to collaboration - immediate notification when invited to collaborate
-  static const addedToCollaboration = NotificationStrategy(
-    type: NotificationType.immediate,
-    priority: NotificationPriority.high,
-    category: NotificationCategory.collaboration,
-    localization: {
-      'title_sv': 'Tillagd i samarbete',
-      'title_en': 'Added to collaboration',
-      'body_sv': '{adderName} la till dig i ”{recipeTitle}”',
-      'body_en': '{adderName} added you to “{recipeTitle}”',
-    },
-  );
-
-  /// Removed from collaboration - immediate notification when removed
-  static const removedFromCollaboration = NotificationStrategy(
-    type: NotificationType.immediate,
-    priority: NotificationPriority.high,
-    category: NotificationCategory.collaboration,
-    localization: {
-      'title_sv': 'Borttagen från samarbete',
-      'title_en': 'Removed from collaboration',
-      'body_sv': '{removerName} tog bort dig från ”{recipeTitle}”',
-      'body_en': '{removerName} removed you from “{recipeTitle}”',
-    },
-  );
-
   // Ping strategies (nudge / timer-alert / help-me). Same shape — only
   // localization differs — so the recipient sees ping copy instead of
   // borrowing the friend-request wording.
   static const pingNudge = NotificationStrategy(
+    notificationType: 'ping',
+    destination: NotificationDestination(
+      NotificationRoutes.group,
+      targetIdKey: 'groupId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.social,
@@ -321,6 +340,11 @@ class NotificationStrategy {
   );
 
   static const pingTimerAlert = NotificationStrategy(
+    notificationType: 'ping',
+    destination: NotificationDestination(
+      NotificationRoutes.group,
+      targetIdKey: 'groupId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.social,
@@ -333,6 +357,11 @@ class NotificationStrategy {
   );
 
   static const pingHelpMe = NotificationStrategy(
+    notificationType: 'ping',
+    destination: NotificationDestination(
+      NotificationRoutes.group,
+      targetIdKey: 'groupId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
     category: NotificationCategory.social,
@@ -344,141 +373,66 @@ class NotificationStrategy {
     },
   );
 
-  /// Tag shared - immediate notification when someone shares a personal tag
-  static const tagShared = NotificationStrategy(
+  /// A chat message. The caller writes the title and body.
+  static const chatMessage = NotificationStrategy(
+    notificationType: 'new_message',
+    destination: NotificationDestination(
+      NotificationRoutes.conversation,
+      targetIdKey: 'conversationId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.high,
-    category: NotificationCategory.recipes,
+    category: NotificationCategory.messaging,
     localization: {
-      'title_sv': 'Tagg delad med dig',
-      'title_en': 'Tag shared with you',
-      'body_sv': '{senderName} delade taggen ”{tagName}” med dig',
-      'body_en': '{senderName} shared the tag “{tagName}” with you',
-    },
-  );
-}
-
-/// Template for notification content
-class NotificationTemplate {
-  final String title;
-  final String body;
-  final Map<String, dynamic> data;
-  final String? imageUrl;
-  final List<NotificationAction>? actions;
-
-  /// The same push per language; null for a push built before this existed.
-  final Map<String, NotificationText>? translations;
-
-  const NotificationTemplate({
-    required this.title,
-    required this.body,
-    required this.data,
-    this.imageUrl,
-    this.actions,
-    this.translations,
-  });
-
-  /// Create from strategy with variable substitution
-  factory NotificationTemplate.fromStrategy(
-    NotificationStrategy strategy,
-    Map<String, String> variables, {
-    Map<String, dynamic>? additionalData,
-    String? imageUrl,
-    List<NotificationAction>? actions,
-  }) {
-    final translations = translateStrategy(strategy, variables);
-    final sv = translations['sv']!;
-
-    // Build data payload
-    final data = <String, dynamic>{
-      'type': strategy.type.toString(),
-      'priority': strategy.priority.toString(),
-      'category': strategy.category.toString(),
-      'timestamp': clock.now().toIso8601String(),
-      ...?additionalData,
-    };
-
-    return NotificationTemplate(
-      title: sv.title,
-      body: sv.body,
-      data: data,
-      imageUrl: imageUrl,
-      actions: actions,
-      translations: translations,
-    );
-  }
-}
-
-/// Action buttons for notifications (Android)
-class NotificationAction {
-  final String id;
-  final String title;
-  final Map<String, dynamic>? data;
-
-  const NotificationAction({
-    required this.id,
-    required this.title,
-    this.data,
-  });
-
-  /// Accept friend request action
-  static NotificationAction get acceptFriend => NotificationAction(
-    id: 'accept_friend',
-    title: AppLocale.current.notificationActionAccept,
-  );
-
-  /// Decline friend request action
-  static NotificationAction get declineFriend => NotificationAction(
-    id: 'decline_friend',
-    title: AppLocale.current.notificationActionDecline,
-  );
-
-  /// View recipe action
-  static NotificationAction get viewRecipe => NotificationAction(
-    id: 'view_recipe',
-    title: AppLocale.current.notificationActionViewRecipe,
-  );
-
-  /// Join collaboration action
-  static NotificationAction get joinCollaboration => NotificationAction(
-    id: 'join_collaboration',
-    title: AppLocale.current.notificationActionJoin,
-  );
-}
-
-/// Notification batching configuration
-class BatchingConfig {
-  final Duration window;
-  final int maxSize;
-  final String Function(List<NotificationTemplate>) contentBuilder;
-
-  const BatchingConfig({
-    required this.window,
-    required this.maxSize,
-    required this.contentBuilder,
-  });
-
-  /// Default batching for recipe comments
-  static final recipeComments = BatchingConfig(
-    window: const Duration(minutes: 5),
-    maxSize: 5,
-    contentBuilder: (notifications) {
-      if (notifications.length == 1) {
-        return notifications.first.body;
-      }
-      return AppLocale.current.notificationBatchComments(notifications.length);
+      'title_sv': '{title}',
+      'title_en': '{title}',
+      'body_sv': '{body}',
+      'body_en': '{body}',
     },
   );
 
-  /// Default batching for recipe likes
-  static final recipeLikes = BatchingConfig(
-    window: const Duration(minutes: 10),
-    maxSize: 10,
-    contentBuilder: (notifications) {
-      if (notifications.length == 1) {
-        return notifications.first.body;
-      }
-      return '${notifications.length} personer gillade dina recept';
-    },
+  /// A friend asks the owner to share a recipe. The text is built at send
+  /// time with [withLocalization].
+  static const recipeShareRequest = NotificationStrategy(
+    notificationType: NotificationPayloadType.recipeShareRequest,
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
+    type: NotificationType.immediate,
+    priority: NotificationPriority.critical,
+    category: NotificationCategory.friends,
   );
+
+  /// Sent silently to a member removed from a shared recipe.
+  static const memberRemoved = NotificationStrategy(
+    notificationType: 'member_removed',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
+    type: NotificationType.silent,
+    priority: NotificationPriority.low,
+    category: NotificationCategory.collaboration,
+  );
+
+  /// Every strategy above, for the payload contract test.
+  static const List<NotificationStrategy> all = [
+    friendRequest,
+    recipeShared,
+    cookSnapAdded,
+    recipeComment,
+    collaborationInvite,
+    shoppingListUpdate,
+    activityDigest,
+    friendOnline,
+    friendRequestAccepted,
+    collaborationEnabled,
+    pingNudge,
+    pingTimerAlert,
+    pingHelpMe,
+    chatMessage,
+    recipeShareRequest,
+    memberRemoved,
+  ];
 }

@@ -46,6 +46,8 @@ void main() {
       'a language the strategy lacks falls back to that language default',
       () {
         const onlySwedish = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.system,

@@ -43,6 +43,8 @@ void main() {
       NotificationCategory? category,
     }) {
       return NotificationStrategy(
+        notificationType: 'test',
+        destination: NotificationDestination(NotificationRoutes.home),
         type: type ?? NotificationType.immediate,
         priority: priority ?? NotificationPriority.medium,
         category: category ?? NotificationCategory.system,

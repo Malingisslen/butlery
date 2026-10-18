@@ -170,6 +170,8 @@ void main() {
     group('Immediate Notifications', () {
       test('should complete for valid target users', () async {
         final strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.medium,
           category: NotificationCategory.social,
@@ -187,6 +189,8 @@ void main() {
 
       test('should complete for empty target list', () async {
         final strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.medium,
           category: NotificationCategory.social,
@@ -206,6 +210,8 @@ void main() {
     group('Batchable Notifications', () {
       test('should queue batchable notification', () async {
         final strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.batchable,
           priority: NotificationPriority.low,
           category: NotificationCategory.social,
@@ -237,6 +243,8 @@ void main() {
     group('Digest Notifications', () {
       test('should send digest notification', () async {
         final strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.digest,
           priority: NotificationPriority.low,
           category: NotificationCategory.social,

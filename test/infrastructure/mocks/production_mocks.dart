@@ -3652,6 +3652,8 @@ class FakeNotificationStrategy {
   /// Adapter method to convert to production NotificationStrategy
   NotificationStrategy toNotificationStrategy() {
     return NotificationStrategy(
+      notificationType: 'test',
+      destination: NotificationDestination(NotificationRoutes.home),
       type: NotificationType.immediate,
       priority: NotificationPriority.medium,
       category: NotificationCategory.social,

@@ -16,6 +16,7 @@
  */
 
 import { evaluateSendGate } from "../shared/notification-gate";
+import { classifyImportance } from "../shared/notification-importance";
 import { __resetRcFlagsCacheForTests } from "../shared/notification-rc-flags";
 import { isInWindow, localHourMinute, QuietHoursConfig } from "../shared/quiet-hours";
 
@@ -77,6 +78,13 @@ function record(name: string, ok: boolean, detail?: string): void {
     console.log(`  FAIL  ${name}`);
     if (detail) console.log(`        ${detail}`);
   }
+}
+
+function testBut2400AppTypes(): void {
+  const high = ["ping", "recipe_share_request", "collaboration_invite", "comment_mention"];
+  const notHigh = high.filter((t) => classifyImportance(t) !== "high");
+  record("BUT-2400 app-sent types are delayed, not dropped", notHigh.length === 0, `low=${notHigh.join(",")}`);
+  record("BUT-2400 a chat message is dropped, not queued", classifyImportance("new_message") === "low");
 }
 
 async function testCase1InsideWindowLowImportanceDrops(): Promise<void> {
@@ -290,6 +298,7 @@ async function runAll(): Promise<void> {
   await testCase5MissingPrefsDefaultAllow();
   await testCase6UserTimezoneOverridesUtc();
   await testCase7RcFlagDisabledDrops();
+  testBut2400AppTypes();
   await unitInWindowWrap();
 
   console.log(

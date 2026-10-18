@@ -296,6 +296,52 @@ void main() {
       );
     });
 
+    test('conversation route opens the chat it names', () async {
+      router.handle('/conversation', {
+        'id': 'conv-1',
+        'notificationType': 'new_message',
+      });
+      await drain();
+
+      expect(nav.calls.single.route, Routes.chat);
+      expect(nav.calls.single.arguments, 'conv-1');
+    });
+
+    test('friends route opens the friends list', () async {
+      router.handle('/friends', {
+        'id': '',
+        'notificationType': 'friend_request_accepted',
+      });
+      await drain();
+
+      expect(nav.calls.single.route, Routes.friends);
+    });
+
+    test('group route opens the group it names', () async {
+      router.handle('/group', {'id': 'grp-1', 'notificationType': 'ping'});
+      await drain();
+
+      expect(nav.calls.single.route, Routes.groupDetail);
+      expect(nav.calls.single.arguments, 'grp-1');
+    });
+
+    test('conversation and group without an id land on home', () async {
+      router.handle('/conversation', {'id': '', 'notificationType': 'x'});
+      router.handle('/group', {'id': null, 'notificationType': 'x'});
+      await drain();
+
+      expect(nav.calls.map((c) => c.route), [Routes.home, Routes.home]);
+      expect(nav.calls.map((c) => c.kind).toSet(), {'pushAndRemoveUntil'});
+    });
+
+    test('home route lands on home', () async {
+      router.handle('/home', {'id': '', 'notificationType': 'digest'});
+      await drain();
+
+      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.route, Routes.home);
+    });
+
     test('winback route lands on home (push and remove until)', () async {
       router.handle('/winback', {'id': null, 'notificationType': 'winback'});
       await drain();

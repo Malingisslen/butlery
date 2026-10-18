@@ -32,8 +32,9 @@
  */
 
 /**
- * Allowlisted top-level routes. Keep in sync with the client-side
- * `NotificationRoute` enum (BUT-641 client task).
+ * Allowlisted top-level routes. The app's copy is `NotificationRoutes` in
+ * `lib/services/notifications/notification_routes.dart`;
+ * `notification_routes_contract_test.dart` fails when the two differ.
  */
 export const NOTIFICATION_ROUTES = [
   "/recipe",
@@ -45,6 +46,11 @@ export const NOTIFICATION_ROUTES = [
   // BUT-2353: a moderation decision, for the reporter and for the owner.
   "/my_reports",
   "/my_content_decisions",
+  // BUT-2400: pushes the app sends (chat, accepted request, ping, digest).
+  "/conversation",
+  "/friends",
+  "/group",
+  "/home",
 ] as const;
 
 export type NotificationRoute = (typeof NOTIFICATION_ROUTES)[number];

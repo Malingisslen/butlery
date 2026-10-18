@@ -98,7 +98,10 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     final targetId = (entry.data['targetId'] ?? entry.data['id'])?.toString();
     NotificationService.onNotificationTapped?.call(route, <String, String?>{
       'id': targetId,
-      'notificationType': entry.type,
+      // The stamped tag is what sends are counted under; `type` is only the
+      // delivery strategy (immediate, batchable) for entries from before it.
+      'notificationType':
+          entry.data['notificationType']?.toString() ?? entry.type,
       'notificationId': entry.notificationId,
     });
   }
