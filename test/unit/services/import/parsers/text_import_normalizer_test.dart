@@ -537,6 +537,35 @@ void main() {
         expect(result, contains('\nServera'));
       });
 
+      test(
+        'a lower-case instruction word mid-step does not split the step',
+        () {
+          final result = TextImportNormalizer.preprocessText(
+            'Smält smöret i stekpannan och häll i smeten.',
+          );
+          expect(
+            result,
+            equals('Smält smöret i stekpannan och häll i smeten.'),
+          );
+        },
+      );
+
+      test('"ingredienserna" in a step is not cut at "ingredienser"', () {
+        final result = TextImportNormalizer.preprocessText(
+          'Häll i resten av ingredienserna.',
+        );
+        expect(result, equals('Häll i resten av ingredienserna.'));
+      });
+
+      test('a standalone ingredient header still gets its line break', () {
+        // The space before the digit keeps splitConcatenatedIngredients out of
+        // it, so only the header split can produce this break.
+        final result = TextImportNormalizer.preprocessText(
+          'Ingredienser 2 dl mjölk',
+        );
+        expect(result, contains('Ingredienser\n'));
+      });
+
       test('an instruction word inside another word does not split it', () {
         expect(
           TextImportNormalizer.preprocessText('rostade solroskärnor'),

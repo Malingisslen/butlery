@@ -187,10 +187,12 @@ class TextImportNormalizer {
     // Clean up social media formatting
     processed = cleanSocialMediaFormatting(processed);
 
-    // Add line breaks after common ingredient headers
+    // Add line breaks after common ingredient headers. Word-bounded for the
+    // same reason as the instruction headers below: unbounded, "ingredienser"
+    // fired inside "ingredienserna" and cut a step in two.
     processed = processed.replaceAllMapped(
-      RegExp(
-        r'(behöver är|ingredienser|du behöver|ingredients|what you need|shopping list)',
+      SwedishWordBoundary.boundedRegExp(
+        r'behöver är|ingredienser|du behöver|ingredients|what you need|shopping list',
         caseSensitive: false,
       ),
       (match) => '${match.group(0)}\n',
@@ -252,10 +254,12 @@ class TextImportNormalizer {
     // "skär" fired inside "solroskärnor" and "add" inside "graddsas", and the
     // fragment after the cut scored as an instruction, which ended the
     // ingredient block and dropped the quantity-less rows beneath it.
+    // Case-sensitive: a new step starts with a capital, while the same verb in
+    // lower case is the middle of a step ("Smält smöret och häll i smeten"),
+    // and splitting there left "Smält smöret och." as a step of its own.
     processed = processed.replaceAllMapped(
       SwedishWordBoundary.boundedRegExp(
         r'Börja med|Sätt ugnen|Koka|Stek|Blanda|Häll|Lägg|Skär|Servera|Värm|Rör|Start by|Preheat|Cook|Fry|Mix|Pour|Add|Cut|Serve|Heat|Stir',
-        caseSensitive: false,
       ),
       (match) => '\n${match.group(0)}',
     );
