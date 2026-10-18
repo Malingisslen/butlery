@@ -139,6 +139,9 @@ function declsFor(st, p, base) {
   if (p.h != null) d.push(`height:${p.h}px;min-height:${p.h}px;max-height:${p.h}px`);
   if (p.mY != null) d.push(`margin-top:${p.mY}px;margin-bottom:${p.mY}px`);
   if (p.mX != null) d.push(`margin-left:${p.mX}px;margin-right:${p.mX}px`);
+  if (p.mT != null) d.push(`margin-top:${p.mT}px`);
+  if (p.mB != null) d.push(`margin-bottom:${p.mB}px`);
+  if (p.mL != null) d.push(`margin-left:${p.mL}px`);
   if (p.alignX || p.alignY) {
     const flex = /flex|grid/.test(base?.display || '');
     const col = base?.col;
@@ -184,7 +187,7 @@ function partsCss(st, scope) {
   let css = '';
   for (const [key, { sel, mode, props, view, state }] of Object.entries(st.parts)) {
     const phone = view != null ? `${MODE_SCOPE[mode]}[data-view="${view}"]` : MODE_SCOPE[mode];
-    const base = scoped(sel === '.phone' ? phone : `${phone} ${sel}`, scope);
+    const base = scoped(sel === '.phone' ? phone : `${phone} ${sel.replace(/^\.phone /, '')}`, scope);
     const targets = state ? [...STATE_SELECTORS[state].map(x => base + x), `${base}[data-lab-state="${state}"]`] : [base];
     const decls = declsFor(st, props, partBase[key]);
     if (decls) css += `${targets.join(',')}{${important(decls)}}`;
