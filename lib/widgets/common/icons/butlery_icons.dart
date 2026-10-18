@@ -868,7 +868,7 @@ abstract final class ButleryIcons {
     name: 'star',
     meaning: 'Betyg',
     svg:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">\n  <title>star</title>\n  <path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path>\n</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">\n  <title>star</title>\n  <path d="M12.0 4.74L14.35 9.53L19.57 10.31L15.78 14.01L16.68 19.19L12.0 16.71L7.32 19.19L8.22 14.01L4.43 10.31L9.65 9.53z"></path>\n</svg>\n',
   );
 
   /// `star-half`: Halvt betyg.
@@ -1178,7 +1178,7 @@ abstract final class ButleryIcons {
 
   /// The master of `star`.
   static const String starSvg =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">\n  <title>star</title>\n  <path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path>\n</svg>';
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">\n  <title>star</title>\n  <path d="M12.0 4.74L14.35 9.53L19.57 10.31L15.78 14.01L16.68 19.19L12.0 16.71L7.32 19.19L8.22 14.01L4.43 10.31L9.65 9.53z"></path>\n</svg>\n';
 
   /// Semantic alias for [heart].
   static const ButleryGlyph favourite = heart;
