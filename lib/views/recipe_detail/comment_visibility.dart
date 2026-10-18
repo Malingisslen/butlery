@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -48,8 +49,9 @@ List<String> commentVisibilityAudience(Recipe recipe, String currentUserId) {
   if (audienceIds.isEmpty) return (resolved: const <String>[], total: 0);
 
   final names = Map<String, String>.from(friendNames);
-  if (ownerId != null && (ownerName?.isNotEmpty ?? false)) {
-    names.putIfAbsent(ownerId, () => ownerName!);
+  final knownOwnerName = knownStoredName(ownerName);
+  if (ownerId != null && knownOwnerName != null) {
+    names.putIfAbsent(ownerId, () => knownOwnerName);
   }
 
   final resolved = audienceIds

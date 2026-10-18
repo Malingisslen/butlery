@@ -7,6 +7,7 @@
 // - Tap to claim on unassigned items; tap to release on own-assigned items.
 // All Firestore work routes through the ViewModel.
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -151,7 +152,11 @@ class CollaborativeShoppingItems extends StatelessWidget {
     // Plan: "Annas del". When >1 assignee, collapse to "Andra".
     final uniqueAssignees = <String>{
       for (final i in others)
-        if (i.assignedToDisplayName != null) i.assignedToDisplayName!,
+        if (i.assignedToDisplayName != null)
+          storedNameOr(
+            i.assignedToDisplayName,
+            context.l10n.shoppingUnknownUser,
+          ),
     };
     if (uniqueAssignees.length == 1) {
       return context.l10n.annasDel(uniqueAssignees.first);
@@ -432,8 +437,8 @@ class _CollaborativeItemCard extends StatelessWidget {
 
   Widget _buildTrailing(BuildContext context) {
     final widgets = <Widget>[];
-    final buyer = item.purchasedByDisplayName;
-    if (item.bought && buyer != null && buyer.isNotEmpty) {
+    final buyer = knownStoredName(item.purchasedByDisplayName);
+    if (item.bought && buyer != null) {
       // #inkop: a bought row names who bought it, in the secondary tone.
       widgets.add(
         Text(
@@ -491,7 +496,10 @@ class _CollaborativeItemCard extends StatelessWidget {
 
   void _maybeShowSnackBar(BuildContext context, ClaimResult result) {
     if (result.outcome != ClaimOutcome.conflict) return;
-    final name = result.conflictingDisplayName.orEmpty();
+    final name = storedNameOr(
+      result.conflictingDisplayName,
+      context.l10n.shoppingUnknownUser,
+    );
     // Informs, never Ångra (produktregler.md § 8.6).
     SnackBarUtils.showInfo(context, context.l10n.nagonAnnanTogDen(name));
   }

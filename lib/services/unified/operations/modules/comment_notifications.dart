@@ -1,6 +1,9 @@
 // lib/services/unified/operations/modules/comment_notifications.dart
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -47,10 +50,18 @@ class CommentNotifications {
       targetUserIds: targetUserIds,
       strategy: NotificationStrategy.recipeComment,
       variables: {
-        'commenterName': comment.authorDisplayName,
+        'commenterName': knownStoredName(comment.authorDisplayName).orEmpty(),
         'recipeName': recipe.title,
         'commentPreview': _truncateComment(comment.text),
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'commenterName': storedNameOr(
+            comment.authorDisplayName,
+            l.displayUnknownUser,
+          ),
+        },
+      ),
       additionalData: {
         'recipeId': recipe.id,
         'commentId': comment.id,
@@ -83,10 +94,18 @@ class CommentNotifications {
       targetUserIds: [parentComment.authorId],
       strategy: RecipeActivityStrategies.commentReply,
       variables: {
-        'replierName': reply.authorDisplayName,
+        'replierName': knownStoredName(reply.authorDisplayName).orEmpty(),
         'recipeName': recipe.title,
         'replyPreview': _truncateComment(reply.text),
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'replierName': storedNameOr(
+            reply.authorDisplayName,
+            l.displayUnknownUser,
+          ),
+        },
+      ),
       additionalData: {
         'recipeId': recipe.id,
         'commentId': reply.id,
@@ -129,10 +148,18 @@ class CommentNotifications {
       targetUserIds: targetUserIds,
       strategy: RecipeActivityStrategies.commentMention,
       variables: {
-        'mentionerName': comment.authorDisplayName,
+        'mentionerName': knownStoredName(comment.authorDisplayName).orEmpty(),
         'recipeName': recipe.title,
         'commentPreview': _truncateComment(comment.text),
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'mentionerName': storedNameOr(
+            comment.authorDisplayName,
+            l.displayUnknownUser,
+          ),
+        },
+      ),
       additionalData: {
         'recipeId': recipe.id,
         'commentId': comment.id,
@@ -260,10 +287,15 @@ class CommentNotifications {
     final l = AppLocale.current;
     if (comments.length == 1) {
       final comment = comments.first;
-      return l.notificationCommentSingle(comment.authorDisplayName, recipeName);
+      return l.notificationCommentSingle(
+        storedNameOr(comment.authorDisplayName, l.displayUnknownUser),
+        recipeName,
+      );
     }
 
-    final uniqueCommenters = comments.map((c) => c.authorDisplayName).toSet();
+    final uniqueCommenters = comments
+        .map((c) => storedNameOr(c.authorDisplayName, l.displayUnknownUser))
+        .toSet();
     if (uniqueCommenters.length == 1) {
       return l.notificationCommentMultipleSameAuthor(
         uniqueCommenters.first,

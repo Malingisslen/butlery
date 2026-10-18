@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -9,6 +10,8 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/notifications/notification_translations.dart';
 
 /// Collaborative recipe membership management module
 class RecipeMemberManager {
@@ -450,7 +453,10 @@ class RecipeMemberManager {
       final members = <Map<String, dynamic>>[];
       final permissions = recipe.socialData?.memberPermissions ?? {};
       final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-      final ownerDisplayName = recipe.socialData?.ownerDisplayName ?? '?';
+      final ownerDisplayName = storedNameOr(
+        recipe.socialData?.ownerDisplayName,
+        '?',
+      );
 
       if (ownerId != null) {
         members.add({
@@ -544,7 +550,7 @@ class RecipeMemberManager {
     required String newMemberName,
     required ResourcePermission permission,
   }) async {
-    final currentUserName = _getCurrentUserDisplayName() ?? '?';
+    final currentUserName = _getCurrentUserDisplayName();
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,
@@ -552,9 +558,14 @@ class RecipeMemberManager {
       targetUserIds: [newMemberId],
       strategy: NotificationStrategy.collaborationInvite,
       variables: {
-        'senderName': currentUserName,
+        'senderName': knownStoredName(currentUserName).orEmpty(),
         'resourceName': recipeTitle,
       },
+      variablesByLocale: localizedVariables(
+        (l) => {
+          'senderName': storedNameOr(currentUserName, l.displayUnknownUser),
+        },
+      ),
       additionalData: {
         'recipeId': recipeId,
         'action': 'member_added',
@@ -572,12 +583,12 @@ class RecipeMemberManager {
     required String recipeTitle,
     required String removedMemberId,
   }) async {
-    final currentUserName = _getCurrentUserDisplayName() ?? '?';
+    final currentUserName = _getCurrentUserDisplayName();
     final data = <String, dynamic>{
       'type': 'member_removed',
       'recipeId': recipeId,
       'recipeTitle': recipeTitle,
-      'removedBy': currentUserName,
+      'removedBy': knownStoredName(currentUserName).orEmpty(),
     };
 
     await NotificationHelper.sendSilentSafely(

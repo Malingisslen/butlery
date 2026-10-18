@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'helpers/model_test_base.dart';
@@ -300,6 +302,57 @@ void main() {
           equals('Anna Andersson'),
         );
       });
+
+      test(
+        'a direct title names an unnamed or label-stamped participant in the reader\'s language (BUT-2351)',
+        () {
+          Conversation direct(String otherName) => Conversation(
+            id: 'conv_unknown',
+            participantIds: ['user_1', 'user_2'],
+            participantDisplayNames: {'user_1': 'Anna', 'user_2': otherName},
+            participantAvatarUrls: {'user_1': null, 'user_2': null},
+            lastReadTimestamps: {
+              'user_1': DateTime.now(),
+              'user_2': DateTime.now(),
+            },
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            title: null,
+            isGroup: false,
+          );
+
+          expect(direct('').getDisplayTitle('user_1'), 'Okänd användare');
+          expect(
+            direct('Unknown user').getDisplayTitle('user_1'),
+            'Okänd användare',
+          );
+          expect(direct('Erik').getDisplayTitle('user_1'), 'Erik');
+        },
+      );
+
+      test(
+        'the unknown participant is named in the active reader language (BUT-2351)',
+        () {
+          addTearDown(() => AppLocale.initialize(const Locale('sv')));
+          AppLocale.initialize(const Locale('en'));
+
+          final conversation = Conversation(
+            id: 'conv_unknown_en',
+            participantIds: ['user_1', 'user_2'],
+            participantDisplayNames: {'user_1': 'Anna', 'user_2': ''},
+            participantAvatarUrls: {'user_1': null, 'user_2': null},
+            lastReadTimestamps: {
+              'user_1': DateTime.now(),
+              'user_2': DateTime.now(),
+            },
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            isGroup: false,
+          );
+
+          expect(conversation.getDisplayTitle('user_1'), 'Unknown user');
+        },
+      );
 
       test('should get display title for group conversation', () {
         expect(

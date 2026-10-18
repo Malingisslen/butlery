@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -29,7 +30,10 @@ Future<String?> inviteToLiveShoppingList({
   final names = {for (final f in friends.friends) f.uid: f.displayName};
   return AppLocale.current.listInviteNotInvited(
     summary.notInvited
-        .map((id) => names[id] ?? AppLocale.current.shoppingUnknownUser)
+        .map(
+          (id) =>
+              storedNameOr(names[id], AppLocale.current.shoppingUnknownUser),
+        )
         .join(', '),
   );
 }

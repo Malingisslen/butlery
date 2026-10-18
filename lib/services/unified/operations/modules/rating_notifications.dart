@@ -11,6 +11,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/recipe_activity_strategies.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// Focused module for rating notifications
 /// This module handles ONLY rating-related notifications:
@@ -32,10 +33,12 @@ class RatingNotifications {
     final ownerId = recipe.ownerUid;
 
     if (ownerId != null) {
-      String message(AppLocalizations l) =>
-          review?.isNotEmpty == true && review != null
-          ? '$raterName: ${_truncateReview(review)}'
-          : l.notificationRatingReceived(raterName, stars);
+      String message(AppLocalizations l) {
+        final name = storedNameOr(raterName, l.displayUnknownUser);
+        return review?.isNotEmpty == true && review != null
+            ? '$name: ${_truncateReview(review)}'
+            : l.notificationRatingReceived(name, stars);
+      }
 
       await NotificationHelper.sendImmediateSafely(
         notificationService: notificationService,
@@ -157,9 +160,12 @@ class RatingNotifications {
     if (ownerId == null) return;
 
     final stars = '★' * rating.round();
-    String message(AppLocalizations l) => review?.isNotEmpty == true
-        ? l.notificationRatingFirstReview(raterName, _truncateReview(review!))
-        : l.notificationRatingFirstRating(raterName, stars);
+    String message(AppLocalizations l) {
+      final name = storedNameOr(raterName, l.displayUnknownUser);
+      return review?.isNotEmpty == true
+          ? l.notificationRatingFirstReview(name, _truncateReview(review!))
+          : l.notificationRatingFirstRating(name, stars);
+    }
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: notificationService,

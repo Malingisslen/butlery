@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// List management operations for shopping lists
 class ShoppingListOperations {
@@ -293,7 +294,7 @@ class ShoppingListOperations {
         final l10n = context.l10n;
         final missed = result.selectedFriends
             .where((f) => outcome.notInvited.contains(f.uid))
-            .map((f) => f.displayName);
+            .map((f) => storedNameOr(f.displayName, l10n.shoppingUnknownUser));
         onSuccess(
           missed.isEmpty
               ? l10n.listInviteConvertedInvited
@@ -419,6 +420,10 @@ class _ConvertToCollaborativeDialogState
                 itemBuilder: (context, index) {
                   final friend = widget.friends[index];
                   final isSelected = _selectedIds.contains(friend.uid);
+                  final shownName = storedNameOr(
+                    friend.displayName,
+                    context.l10n.shoppingUnknownUser,
+                  );
                   return ButleryCheckboxTile(
                     value: isSelected,
                     onChanged: (checked) {
@@ -431,7 +436,7 @@ class _ConvertToCollaborativeDialogState
                       });
                     },
                     title: Text(
-                      friend.displayName,
+                      shownName,
                       style: AppTextStyles.contentLabel,
                     ),
                     subtitle: friend.email.isNotEmpty
@@ -446,7 +451,7 @@ class _ConvertToCollaborativeDialogState
                         : null,
                     secondary: AvatarCircle(
                       imageUrl: friend.avatarUrl,
-                      displayName: friend.displayName,
+                      displayName: shownName,
                     ),
                     contentPadding: EdgeInsets.zero,
                   );

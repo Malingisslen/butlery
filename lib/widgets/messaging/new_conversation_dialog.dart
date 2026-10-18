@@ -21,6 +21,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/messaging/create_group_conversation_view.dart';
 import 'package:butlery/widgets/common/input/butlery_checkbox.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// Styled dialog for creating new conversations
 class NewConversationDialog extends StatefulWidget {
@@ -269,10 +270,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       itemBuilder: (context, index) {
         final friend = _filteredFriends[index];
         final isSelected = _selectedFriendIds.contains(friend.uid);
+        final shownName = storedNameOr(
+          friend.displayName,
+          context.l10n.displayUnknownUser,
+        );
 
         return ButleryCheckboxTile(
           key: ValueKey(friend.uid),
-          title: Text(friend.displayName),
+          title: Text(shownName),
           value: isSelected,
           onChanged: (bool selected) {
             if (mounted) {
@@ -287,7 +292,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           },
           secondary: AvatarCircle(
             imageUrl: friend.avatarUrl,
-            displayName: friend.displayName,
+            displayName: shownName,
           ),
         );
       },
@@ -338,7 +343,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           participantDisplayNames: participantDisplayNames,
           participantAvatarUrls: participantAvatarUrls,
           title: context.l10n.conversationGroupChatWith(
-            selectedFriends.map((f) => f.displayName).join(', '),
+            selectedFriends
+                .map(
+                  (f) => storedNameOr(
+                    f.displayName,
+                    context.l10n.displayUnknownUser,
+                  ),
+                )
+                .join(', '),
           ),
         );
       }

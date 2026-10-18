@@ -128,9 +128,12 @@ class NotificationContentManager {
       final bodyTemplate =
           strategy.localization['body_sv'] ?? l.notificationDefaultBody;
 
-      // Substitute variables in templates
-      final title = _substituteVariables(titleTemplate, variables);
-      final body = _substituteVariables(bodyTemplate, variables);
+      // The top-level text is the Swedish slot, so it takes the Swedish
+      // per-locale values too; the server falls back to it when the
+      // recipient's language cannot be read.
+      final svVariables = {...variables, ...?variablesByLocale?['sv']};
+      final title = _substituteVariables(titleTemplate, svVariables);
+      final body = _substituteVariables(bodyTemplate, svVariables);
 
       // Build data payload
       final data = <String, dynamic>{

@@ -1,5 +1,6 @@
 // lib/widgets/messaging/reply_banner.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -66,7 +67,12 @@ class ReplyBanner extends StatelessWidget {
               children: [
                 // Sender name
                 Text(
-                  context.l10n.messagingReplyingTo(message.senderDisplayName),
+                  context.l10n.messagingReplyingTo(
+                    storedNameOr(
+                      message.senderDisplayName,
+                      context.l10n.displayUnknownUser,
+                    ),
+                  ),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: context.modeColors.success,
                   ),

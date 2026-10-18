@@ -18,6 +18,8 @@
 /// Mounted by the week menu (veckomeny_view.dart, package 5 phase A, P5-U26a).
 library;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -51,7 +53,9 @@ abstract final class ConflictSnackBar {
       return null;
     }
     final l = context.l10n;
-    final name = event.remoteValue.lastEditedByDisplayName.trim();
+    final name = knownStoredName(
+      event.remoteValue.lastEditedByDisplayName,
+    ).orEmpty();
     final message = name.isEmpty
         ? l.conflictWeekSavedUnnamed
         : l.conflictWeekSaved(name);

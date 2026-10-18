@@ -11,7 +11,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -567,7 +566,7 @@ void main() {
         expect(captured!.ownerDisplayName, isNot(equals('Auth Handle')));
         expect(
           captured!.ownerDisplayName,
-          equals(AppLocale.current.displayUnknownUser),
+          isEmpty,
         );
       },
     );

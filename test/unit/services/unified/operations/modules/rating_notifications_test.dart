@@ -112,6 +112,38 @@ void main() {
       });
 
       test(
+        'a nameless rater is called the unknown user in each language slot',
+        () async {
+          Map<String, Map<String, String>>? byLocale;
+          when(
+            () => mockNotificationService.sendImmediateNotification(
+              variablesByLocale: any(named: 'variablesByLocale'),
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+              actions: any(named: 'actions'),
+              imageUrl: any(named: 'imageUrl'),
+            ),
+          ).thenAnswer((invocation) async {
+            byLocale =
+                invocation.namedArguments[#variablesByLocale]
+                    as Map<String, Map<String, String>>?;
+          });
+
+          await RatingNotifications.sendRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: testRecipe,
+            rating: 4.0,
+            raterName: '',
+          );
+
+          expect(byLocale!['sv']!['message'], contains('Okänd användare'));
+          expect(byLocale!['en']!['message'], contains('Unknown user'));
+        },
+      );
+
+      test(
         'writes the rating sentence in each language for the recipient',
         () async {
           Map<String, Map<String, String>>? byLocale;

@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -281,11 +282,18 @@ class MessageSendingOperations {
       String title;
       String body;
 
+      // The sender may have no profile name; the push text is built in the
+      // sender's language, as everywhere else.
+      final senderName = storedNameOr(
+        message.senderDisplayName,
+        AppLocale.current.displayUnknownUser,
+      );
+
       if (conversation.isGroup) {
         title = conversation.title ?? AppLocale.current.conversationGroupChat;
-        body = '${message.senderDisplayName}: ${message.displayContent}';
+        body = '$senderName: ${message.displayContent}';
       } else {
-        title = message.senderDisplayName;
+        title = senderName;
         body = message.displayContent;
       }
 
@@ -301,14 +309,14 @@ class MessageSendingOperations {
           variables: {
             'title': title,
             'body': body,
-            'sender_name': message.senderDisplayName,
+            'sender_name': senderName,
           },
           additionalData: {
             'type': 'new_message',
             'conversationId': conversationId,
             'messageId': message.id,
             'senderId': message.senderId,
-            'senderName': message.senderDisplayName,
+            'senderName': senderName,
           },
         );
       }

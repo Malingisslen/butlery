@@ -16,6 +16,7 @@
 /// view). Recorded as interpretations in the P5-U27b commit.
 library;
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
@@ -191,7 +192,7 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
     final name = RecipeSuggestionService.suggesterNameOf(widget.suggestion);
     // Q6-12 = B: both readers are told when it replaced an earlier one.
     final replaced = widget.suggestion.wasReplaced;
-    final who = name.isEmpty ? l.displayUnknownUser : name;
+    final who = storedNameOr(name, l.displayUnknownUser);
     // The recipe's own title: a suggestion that renames it must not rename
     // the sentence about it.
     final recipeTitle =

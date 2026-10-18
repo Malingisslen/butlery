@@ -1,5 +1,6 @@
 // lib/widgets/messaging/conversation_list_item.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_disc.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -343,7 +344,11 @@ class ConversationListItem extends StatelessWidget {
     if (message.isFromCurrentUser(currentUserId)) {
       return '${context.l10n.conversationYouPrefix} ${message.displayContent}';
     } else {
-      return '${message.senderDisplayName}: ${message.displayContent}';
+      final sender = storedNameOr(
+        message.senderDisplayName,
+        context.l10n.displayUnknownUser,
+      );
+      return '$sender: ${message.displayContent}';
     }
   }
 }

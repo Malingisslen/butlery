@@ -107,6 +107,22 @@ void main() {
   });
 
   group('content helpers', () {
+    test(
+      'shared-by lines name an unnamed sharer with the reader\'s label (BUT-2351)',
+      () {
+        final list = _build(
+          sharedByDisplayName: '',
+          originalOwnerDisplayName: '',
+        );
+        expect(list.sharingContextText, contains('Okänd användare'));
+        expect(list.attributionText, contains('Okänd användare'));
+        expect(
+          _build(sharedByDisplayName: 'Alice').sharingContextText,
+          contains('Alice'),
+        );
+      },
+    );
+
     test('contentTypeName is "shopping_list"', () {
       expect(_build().contentTypeName, 'shopping_list');
     });

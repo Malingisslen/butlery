@@ -334,6 +334,7 @@ class NotificationService extends BaseService {
     required List<String> targetUserIds,
     required NotificationStrategy strategy,
     required Map<String, String> variables,
+    LocalizedVariables? variablesByLocale,
     Map<String, dynamic>? additionalData,
     String? imageUrl,
   }) async {
@@ -349,6 +350,7 @@ class NotificationService extends BaseService {
           targetUserIds: targetUserIds,
           strategy: strategy,
           variables: variables,
+          variablesByLocale: variablesByLocale,
           additionalData: additionalData,
           imageUrl: imageUrl,
         );

@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/rating_statistics.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -100,7 +101,10 @@ class RatingStatistics {
           'recipe': {
             'id': recipe.id,
             'title': recipe.core.title,
-            'owner': recipe.socialData?.ownerDisplayName ?? 'Unknown',
+            'owner': storedNameOr(
+              recipe.socialData?.ownerDisplayName,
+              'Unknown',
+            ),
             'isCollaborative': recipe.isCollaborative,
             'memberCount':
                 (recipe.socialData?.memberPermissions?.length ?? 0) + 1,
@@ -144,7 +148,7 @@ class RatingStatistics {
         'recipe': {
           'id': recipe.id,
           'title': recipe.core.title,
-          'owner': recipe.socialData?.ownerDisplayName ?? 'Unknown',
+          'owner': storedNameOr(recipe.socialData?.ownerDisplayName, 'Unknown'),
           'isCollaborative': recipe.isCollaborative,
           'memberCount':
               (recipe.socialData?.memberPermissions?.length ?? 0) + 1,

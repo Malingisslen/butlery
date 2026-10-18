@@ -30,6 +30,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -215,7 +216,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     final friendNames = <String, String>{};
     try {
       for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
-        friendNames[f.uid] = f.displayName;
+        // A nameless friend stays unresolved, so the label counts them in
+        // "+N" instead of showing a blank or an invented name.
+        final known = knownStoredName(f.displayName);
+        if (known != null) friendNames[f.uid] = known;
       }
     } catch (_) {
       // Friends unavailable — the owner-name fallback below still resolves.

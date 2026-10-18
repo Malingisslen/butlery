@@ -1,5 +1,6 @@
 // lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
@@ -227,7 +228,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       final sharedRecipe = SharedRecipe.create(
         originalRecipeId: recipeId,
         sharedByUserId: currentUserId,
-        sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
+        sharedByDisplayName: _getCurrentUserDisplayName().orEmpty(),
         sharedToUserIds: userIds,
         shareMessage: message,
         recipeSnapshot: updatedRecipe,
@@ -503,8 +504,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         if (friend != null) {
           memberMap[memberId] = friend.displayName;
         } else {
-          // If friend not found, use fallback display name
-          memberMap[memberId] = AppLocale.current.displayUnknownUser;
+          // Empty so the reader shows "unknown" in its own language.
+          memberMap[memberId] = '';
           AppLogger.warning(
             'Friend ${memberId.maskedUserId} not found in friends list',
           );

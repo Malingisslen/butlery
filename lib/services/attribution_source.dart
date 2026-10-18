@@ -1,6 +1,6 @@
 // lib/services/attribution_source.dart
 
-import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -24,9 +24,7 @@ class AttributionSource {
 
   final UserService? Function() _userService;
 
-  String get displayName =>
-      _userService()?.attributionDisplayName ??
-      AppLocale.current.displayUnknownUser;
+  String get displayName => (_userService()?.attributionDisplayName).orEmpty();
 
   String? get avatarUrl => _userService()?.profileAvatarUrl;
 }

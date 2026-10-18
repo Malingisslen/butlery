@@ -134,6 +134,16 @@ void main() {
       expect(m.menuTitle, 'Helgmenyn');
     });
 
+    test('an unnamed sharer gets a name-free stored title (BUT-2351)', () {
+      final m = SharedMenu.create(
+        sharedByUserId: 'a',
+        sharedByDisplayName: '',
+        sharedToUserIds: const [],
+        menuSnapshot: const {},
+      );
+      expect(m.menuTitle, 'Delad meny');
+    });
+
     test('sharedAt stamps via clock.now()', () {
       withClock(Clock.fixed(DateTime.utc(2026, 5, 23, 12)), () {
         final m = SharedMenu.create(

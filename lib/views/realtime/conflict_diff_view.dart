@@ -37,6 +37,8 @@
 /// it's a leaf detail screen with no persistent state of its own beyond an
 /// in-flight save guard.
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_divider.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -170,9 +172,8 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
   Future<void> _useTheirVersion() async {
     if (_saving || !mounted) return;
     setState(() => _saving = true);
-    final myName =
-        ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
-        context.l10n.displayUnknownUser;
+    final myName = (ServiceLocator.tryGet<UserService>()?.profileDisplayName)
+        .orEmpty();
 
     try {
       final svc = ServiceLocator.tryGet<RealtimeSyncService>();
@@ -251,7 +252,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
     final saffron = context.modeColors.textAccent;
     final remoteApplies =
         widget.event.chosenStrategy == ConflictResolutionStrategy.remoteWon;
-    final name = widget.event.remoteValue.lastEditedByDisplayName.trim();
+    final name = knownStoredName(
+      widget.event.remoteValue.lastEditedByDisplayName,
+    ).orEmpty();
     final title = widget.event.remoteValue.toFirestore()['title'];
     final named = name.isNotEmpty && title is String && title.isNotEmpty;
 

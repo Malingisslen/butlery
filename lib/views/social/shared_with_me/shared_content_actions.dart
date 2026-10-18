@@ -1,5 +1,6 @@
 // lib/views/social/shared_with_me/shared_content_actions.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -140,7 +141,10 @@ class SharedContentActions {
       title: context.l10n.sharedHideRecipe,
       message: context.l10n.sharedHideRecipeConfirm(
         sharedRecipe.recipeTitle,
-        sharedRecipe.sharedByDisplayName,
+        storedNameOr(
+          sharedRecipe.sharedByDisplayName,
+          context.l10n.displayUnknownUser,
+        ),
       ),
       confirmText: context.l10n.commonHide,
       icon: ButleryIcons.eyeOff,
@@ -180,7 +184,10 @@ class SharedContentActions {
       title: context.l10n.sharedHideMenu,
       message: context.l10n.sharedHideMenuConfirm(
         sharedMenu.menuTitle,
-        sharedMenu.sharedByDisplayName,
+        storedNameOr(
+          sharedMenu.sharedByDisplayName,
+          context.l10n.displayUnknownUser,
+        ),
       ),
       confirmText: context.l10n.commonHide,
       icon: ButleryIcons.eyeOff,
@@ -219,7 +226,10 @@ class SharedContentActions {
       title: context.l10n.sharedHideShoppingList,
       message: context.l10n.sharedHideShoppingListConfirm(
         sharedShoppingList.listName,
-        sharedShoppingList.sharedByDisplayName,
+        storedNameOr(
+          sharedShoppingList.sharedByDisplayName,
+          context.l10n.displayUnknownUser,
+        ),
       ),
       confirmText: context.l10n.commonHide,
       icon: ButleryIcons.eyeOff,

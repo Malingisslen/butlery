@@ -1,5 +1,6 @@
 // lib/services/unified/unified_menu_service.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
@@ -577,7 +578,10 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
           if (recipes.isNotEmpty) {
             final firstRecipe = recipes[0];
             final attributionText = AppLocale.current.menuAttributionText(
-              sharedMenu.sharedByDisplayName,
+              storedNameOr(
+                sharedMenu.sharedByDisplayName,
+                AppLocale.current.displayUnknownUser,
+              ),
             );
             final attributedRecipe = firstRecipe.copyWith(
               description: firstRecipe.description.isEmpty

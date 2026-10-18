@@ -1,5 +1,6 @@
 // lib/services/unified/operations/social_recipe_operations.dart
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_comment.dart';
@@ -392,7 +393,10 @@ class SocialRecipeOperations {
           'title': recipe.title,
           'description': recipe.description,
           'ownerId': recipe.socialData?.ownerId ?? recipe.createdBy,
-          'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
+          'ownerDisplayName': storedNameOr(
+            recipe.socialData?.ownerDisplayName,
+            'Unknown',
+          ),
           'sharedAt': recipe.createdAt.toIso8601String(),
           'permissions': {_getCurrentUserId()!: 'view'}, // Simplified
           'recipe': recipe.toJson(),

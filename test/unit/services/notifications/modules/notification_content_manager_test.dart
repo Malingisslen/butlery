@@ -166,6 +166,27 @@ void main() {
         },
       );
 
+      test(
+        'the top-level Swedish text takes the Swedish per-locale values (BUT-2351)',
+        () {
+          final template = contentManager.createNotificationContent(
+            strategy: createTestStrategy(),
+            variables: {'senderName': '', 'recipeTitle': 'Soppa'},
+            variablesByLocale: {
+              'sv': {'senderName': 'Okänd användare'},
+              'en': {'senderName': 'Unknown user'},
+            },
+          );
+
+          expect(template.title, 'Test titel Okänd användare');
+          expect(template.body, 'Test meddelande Soppa');
+          expect(
+            template.translations?['en']?.title,
+            'Test title Unknown user',
+          );
+        },
+      );
+
       test('should create English notification template', () {
         // Arrange
         final strategy = createTestStrategy();

@@ -1,5 +1,7 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -66,10 +68,9 @@ class SocialMenuOperations {
       // PROFILE name that `on-profile-updated.ts` renames and that account
       // deletion scrubs, so an Auth-sourced stamp would be both unconsented and
       // un-erasable. `tryGet` keeps this working before/without the service
-      // graph; an unresolved name stamps the localized unknown-user label.
+      // graph; an unresolved name stamps empty (readers show their own label).
       final sharedByDisplayName =
-          ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
-          AppLocale.current.displayUnknownUser;
+          (ServiceLocator.tryGet<UserService>()?.profileDisplayName).orEmpty();
 
       // Validate that all friend IDs are actual friends
       final userFriends = _friendsService.friends.map((f) => f.uid).toSet();
@@ -94,9 +95,12 @@ class SocialMenuOperations {
       // `on-profile-updated.ts` does not rename a title. An Auth-sourced legal
       // name here would be the one copy the rename propagator and the deletion
       // cascade can never reach.
+      final knownName = knownStoredName(sharedByDisplayName);
       final menuTitle =
           customTitle ??
-          AppLocale.current.menuDefaultTitle(sharedByDisplayName);
+          (knownName == null
+              ? AppLocale.current.menuCardSharedMenu
+              : AppLocale.current.menuDefaultTitle(knownName));
 
       // Prepare menu data for Firebase
       final menuData = {
