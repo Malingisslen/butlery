@@ -6307,3 +6307,23 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
   `firestore.rules` does not check `termsAcceptedAt`, so a hand-rolled client can create the
   profile without accepting the terms. The e-mail form's terms checkbox (`AuthView`) is
   likewise checked in the app only.
+
+## BUT-2290, BUT-2291 — profile and chat writes stay on Firestore's queue (2026-10-18)
+
+- **Firestore's queue, not the app's (default taken 2026-10-18, awaiting Malin's card).**
+  A profile save, a settings toggle, a chat message, an edit, a delete, a read marker and a
+  conversation setting (pin, mute, archive) go through `awaitOrLeaveQueued`: they wait for
+  the server at most 2 s, then return with the write left in Firestore's queue. A refusal
+  after that is logged, not shown, as in BUT-2287. No `opId`: a message is
+  `batch.set(messages/{clientUuid})`, so a repeat writes the same document. The same
+  F3-1 call as BUT-2287 to BUT-2289 and BUT-2363.
+- **A sent message turns "sent" when the server has answered, not at the timeout.** Offline
+  it stays "sending". A message sent offline whose app is closed before the answer stays
+  "sending" after the queue flushes: the step that marks it sent lives in the process.
+- **A reaction is a read of the local copy plus `arrayUnion`/`arrayRemove`, not a
+  transaction.** A transaction cannot run offline. Two quick toggles by one user before the
+  first is read can end as one reaction instead of none.
+- **Left as they were, deliberately:** a poll vote (transaction, refused offline), a group
+  rename (two writes whose order is the gate, BUT-1838), the allergen preferences (their batch also updates household shares, and a late refusal would drop the declaration), a minor's profile save (the searchability callable that follows must land after it, BUT-1629), accepting the terms, the FCM token,
+  online status, counters and every delete of a conversation or profile.
+

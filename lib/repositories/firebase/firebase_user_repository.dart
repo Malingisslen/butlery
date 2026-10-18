@@ -12,6 +12,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/user_root_deletion_mixin.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -190,10 +191,21 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       // stored value. Dropping the key preserves it.
       settings.remove('householdSize');
     }
-    await Future.wait([
+    final writes = Future.wait([
       collection.doc(profile.uid).set(data, SetOptions(merge: true)),
       _settingsDoc(profile.uid).set(settings, SetOptions(merge: true)),
     ]);
+    // A minor's save forces isSearchable:false and the caller then re-asserts
+    // an opt-in through a callable; that must land after this write, so it
+    // waits for the server (BUT-1629).
+    if (profile.isMinor) {
+      await writes;
+    } else {
+      await awaitOrLeaveQueued(
+        writes,
+        what: 'profile ${profile.uid.maskedUserId}',
+      );
+    }
 
     logPermissionCheck(
       userId: currentUser,
@@ -362,7 +374,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     }
 
     if (updates.isNotEmpty) {
-      await collection.doc(userId).update(updates);
+      await awaitOrLeaveQueued(
+        collection.doc(userId).update(updates),
+        what: 'profile stats',
+      );
 
       logPermissionCheck(
         userId: currentUser,
@@ -621,9 +636,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update notification settings',
     );
 
-    await _settingsDoc(
-      userId,
-    ).set({'notificationsEnabled': enabled}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'notificationsEnabled': enabled}, SetOptions(merge: true)),
+      what: 'notification setting',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -642,9 +660,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update preferred locale',
     );
 
-    await _settingsDoc(
-      userId,
-    ).set({'preferredLocale': localeCode}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'preferredLocale': localeCode}, SetOptions(merge: true)),
+      what: 'preferred locale',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -801,6 +822,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         share.toFirestore(),
       );
     }
+    // Strict on purpose: the batch also updates household shares, which the
+    // server refuses once the household changed, and a refusal after the 2 s
+    // would drop the allergen declaration itself.
     await batch.commit();
 
     logPermissionCheck(
@@ -825,9 +849,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // merge:true single-field set touches only this field — it never overwrites
     // the public profile doc, so it can't clobber friendsCount (mutated by
     // friend-creation transactions) or moderator-owned isHidden/hiddenAt.
-    await _settingsDoc(
-      userId,
-    ).set({'hasSeenActivityFeedHint': true}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'hasSeenActivityFeedHint': true}, SetOptions(merge: true)),
+      what: 'activity feed hint',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -850,9 +877,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // (toPrivateSettings). A merge:true single-field set touches only this field
     // and never overwrites the public profile doc, so it can't clobber
     // friendsCount (friend-creation transactions) or isHidden/hiddenAt.
-    await _settingsDoc(
-      userId,
-    ).set({'autoAddBoughtToPantry': enabled}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'autoAddBoughtToPantry': enabled}, SetOptions(merge: true)),
+      what: 'auto-add to pantry',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -874,9 +904,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // BUT-1465: household-allergen-filter opt-out lives in the private settings
     // sub-doc (toPrivateSettings). A merge:true single-field set touches only
     // this field and never overwrites the public profile doc.
-    await _settingsDoc(
-      userId,
-    ).set({'useHouseholdAllergens': enabled}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'useHouseholdAllergens': enabled}, SetOptions(merge: true)),
+      what: 'household allergens',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -895,9 +928,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'set use-meal-allergen-scope',
     );
 
-    await _settingsDoc(
-      userId,
-    ).set({'useMealAllergenScope': enabled}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'useMealAllergenScope': enabled}, SetOptions(merge: true)),
+      what: 'meal allergen scope',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -916,9 +952,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'set show-nutrition-strip',
     );
 
-    await _settingsDoc(
-      userId,
-    ).set({'showNutritionStrip': enabled}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'showNutritionStrip': enabled}, SetOptions(merge: true)),
+      what: 'nutrition strip',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -937,10 +976,13 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'set show-name-on-shared-dishes',
     );
 
-    await collection.doc(userId).update({
-      'showNameOnSharedDishes': enabled,
-      'showNameOnSharedDishesChangedAt': FieldValue.serverTimestamp(),
-    });
+    await awaitOrLeaveQueued(
+      collection.doc(userId).update({
+        'showNameOnSharedDishes': enabled,
+        'showNameOnSharedDishesChangedAt': FieldValue.serverTimestamp(),
+      }),
+      what: 'show name on shared dishes',
+    );
 
     logPermissionCheck(
       userId: currentUser,
@@ -959,9 +1001,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'mark pantry auto-add prompted',
     );
 
-    await _settingsDoc(
-      userId,
-    ).set({'pantryAutoAddPrompted': true}, SetOptions(merge: true));
+    await awaitOrLeaveQueued(
+      _settingsDoc(
+        userId,
+      ).set({'pantryAutoAddPrompted': true}, SetOptions(merge: true)),
+      what: 'pantry prompt',
+    );
 
     logPermissionCheck(
       userId: currentUser,

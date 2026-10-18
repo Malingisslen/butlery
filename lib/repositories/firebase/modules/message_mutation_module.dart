@@ -1,5 +1,7 @@
 // lib/repositories/firebase/modules/message_mutation_module.dart
 
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
@@ -11,6 +13,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/repositories/firebase/modules/message_poll_mutation_module.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 
 /// Message mutation module for write operations (including complex sendMessage).
 class MessageMutationModule {
@@ -159,55 +162,19 @@ class MessageMutationModule {
         '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId.maskedConversationId}',
       );
 
-      // Commit batch - all writes succeed or all fail (atomicity guaranteed)
+      // Commit batch - all writes succeed or all fail (atomicity guaranteed).
+      // Without a connection the commit settles only when the server answers
+      // (BUT-2291), so the sender waits at most `queuedWritePatience`; the
+      // message stays "sending" until the server has it.
       AppLogger.debug('📤 [MessageMutation] Committing atomic batch...');
-      try {
-        await batch.commit();
-        AppLogger.success(
-          '✅ [MessageMutation] Atomic batch committed - message in Firestore with status: sending',
-        );
-
-        // STEP 2: Update message status to "sent" AFTER batch commits successfully
-        AppLogger.debug(
-          '📤 [MessageMutation] Scheduling status update to sent...',
-        );
-        Future.delayed(const Duration(milliseconds: 100), () async {
-          try {
-            await messagesRef.doc(message.id).update({
-              'status': MessageStatus.sent.name,
-            });
-            AppLogger.success(
-              '✅ [MessageMutation] Message status updated to: sent',
-            );
-
-            // Also update conversation's lastMessage status
-            await firestore
-                .collection(collectionName)
-                .doc(message.conversationId)
-                .update({
-                  'lastMessage.status': MessageStatus.sent.name,
-                });
-            AppLogger.success(
-              '✅ [MessageMutation] Conversation lastMessage status updated to: sent',
-            );
-          } catch (e) {
-            AppLogger.warning(
-              '⚠️ [MessageMutation] Could not update message status: $e',
-            );
-          }
-        });
-      } catch (batchError) {
-        AppLogger.error('❌ [MessageMutation] Batch commit failed', batchError);
-        // Check if it's network related
-        if (batchError.toString().contains('UNAVAILABLE') ||
-            batchError.toString().contains('network')) {
-          AppLogger.warning(
-            '📡 [MessageMutation] Network unavailable - batch queued for offline sync',
-          );
-        } else {
-          rethrow;
-        }
-      }
+      final commit = batch.commit();
+      await awaitOrLeaveQueued(commit, what: 'message ${message.id}');
+      unawaited(
+        commit.then(
+          (_) => _markSent(message),
+          onError: (Object _) {},
+        ),
+      );
 
       AppLogger.success(
         '✅ [MessageMutation] Message sent: ${message.id} in conversation ${message.conversationId.maskedConversationId}',
@@ -219,6 +186,24 @@ class MessageMutationModule {
       );
       AppLogger.error('❌ [MessageMutation] Stack trace: $stackTrace');
       rethrow;
+    }
+  }
+
+  /// Moves a message the server has accepted from "sending" to "sent".
+  Future<void> _markSent(Message message) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    try {
+      await messagesRef.doc(message.id).update({
+        'status': MessageStatus.sent.name,
+      });
+      await firestore
+          .collection(collectionName)
+          .doc(message.conversationId)
+          .update({'lastMessage.status': MessageStatus.sent.name});
+    } catch (e) {
+      AppLogger.warning(
+        '⚠️ [MessageMutation] Could not update message status: $e',
+      );
     }
   }
 
@@ -249,7 +234,10 @@ class MessageMutationModule {
           break;
       }
 
-      await messagesRef.doc(messageId).update(updateData);
+      await awaitOrLeaveQueued(
+        messagesRef.doc(messageId).update(updateData),
+        what: 'message status $messageId',
+      );
 
       AppLogger.debug('Message status updated: $messageId -> $status');
     } catch (e) {
@@ -316,10 +304,13 @@ class MessageMutationModule {
       // diff. It survives only while those values round-trip byte-identically
       // (BUT-1831). One dotted key cannot trip it.
       final now = clock.now().toUtc();
-      await firestore.collection(collectionName).doc(conversationId).update({
-        'lastReadTimestamps.$userId': Timestamp.fromDate(now),
-        'updatedAt': Timestamp.fromDate(now),
-      });
+      await awaitOrLeaveQueued(
+        firestore.collection(collectionName).doc(conversationId).update({
+          'lastReadTimestamps.$userId': Timestamp.fromDate(now),
+          'updatedAt': Timestamp.fromDate(now),
+        }),
+        what: 'read marker ${conversationId.maskedConversationId}',
+      );
 
       AppLogger.debug(
         'Conversation marked as read: ${conversationId.maskedConversationId} by ${userId.maskedUserId}',
@@ -340,12 +331,15 @@ class MessageMutationModule {
     required String newContent,
   }) async {
     try {
-      await messagesRef.doc(messageId).update({
-        'content': newContent,
-        'isEdited': true,
-        'editedAt': timestampProvider.serverTimestamp(),
-        'updatedAt': timestampProvider.serverTimestamp(),
-      });
+      await awaitOrLeaveQueued(
+        messagesRef.doc(messageId).update({
+          'content': newContent,
+          'isEdited': true,
+          'editedAt': timestampProvider.serverTimestamp(),
+          'updatedAt': timestampProvider.serverTimestamp(),
+        }),
+        what: 'message edit $messageId',
+      );
 
       AppLogger.debug('Message content updated: $messageId');
     } catch (e) {
@@ -357,7 +351,10 @@ class MessageMutationModule {
   /// Delete message.
   Future<void> deleteMessage(String messageId) async {
     try {
-      await messagesRef.doc(messageId).delete();
+      await awaitOrLeaveQueued(
+        messagesRef.doc(messageId).delete(),
+        what: 'message delete $messageId',
+      );
 
       AppLogger.debug('Message deleted: $messageId');
     } catch (e) {
