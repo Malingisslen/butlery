@@ -236,52 +236,6 @@ class SocialShoppingCoordinator
     );
   }
 
-  /// Join shared shopping list (direct collaboration - not copy-on-write)
-  /// This is different from recipes/menus which create copies
-  Future<String?> joinSharedShoppingList({
-    required String sharedShoppingListId,
-  }) async {
-    final currentUserId = this.currentUserId;
-    if (currentUserId == null) {
-      AppLogger.error('Cannot join shopping list: No authenticated user');
-      return null;
-    }
-
-    try {
-      AppLogger.info('🤝 Joining shared shopping list $sharedShoppingListId');
-
-      // Get shared shopping list
-      final sharedList = await _sharedShoppingRepository.read(
-        sharedShoppingListId,
-      );
-      if (sharedList == null) {
-        AppLogger.error(
-          'Shared shopping list not found: $sharedShoppingListId',
-        );
-        return null;
-      }
-
-      // Mark as joined in SharedShoppingList (analytics tracking)
-      await _sharedShoppingRepository.markAsJoined(
-        sharedShoppingListId,
-        currentUserId,
-      );
-
-      // No seat is written here: a seat on the live list is taken by accepting
-      // a list invitation (BUT-2089), and the rules refuse any other client
-      // write that adds a key to its members.
-
-      AppLogger.success('✅ Successfully joined shopping list collaboration');
-      notifyStateChanged();
-
-      return sharedShoppingListId;
-    } catch (e) {
-      AppLogger.error('Failed to join shared shopping list: $e');
-      setError(sanitizeErrorForUser(e));
-      return null;
-    }
-  }
-
   /// Get shopping list invitations received by current user
   Future<List<SharedShoppingList>> getReceivedShoppingListInvitations() async {
     return await getReceivedInvitations();
@@ -478,15 +432,5 @@ class SocialShoppingCoordinator
     List<String> sharedWithUserIds,
   ) async {
     await sendSharingNotifications(listId, sharedWithUserIds);
-  }
-
-  /// Override importSharedContent to use join behavior for shopping lists
-  @override
-  Future<String?> importSharedContent({
-    required String sharedContentId,
-    String? newTitle,
-  }) async {
-    // For shopping lists, "import" actually means "join"
-    return await joinSharedShoppingList(sharedShoppingListId: sharedContentId);
   }
 }

@@ -14,7 +14,7 @@ import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 
 /// A shared shopping list as a [SharedContentRow]. Opening it shows the list
-/// in a sheet whose last step is joining; the row's own control joins at once.
+/// in a sheet.
 class SharedShoppingListCard {
   static Widget build(
     BuildContext context,
@@ -34,18 +34,9 @@ class SharedShoppingListCard {
       ),
       message: sharedShoppingList.shareMessage,
       unread: !isRead,
-      saved: lists.isShoppingListJoined(sharedShoppingList),
-      saving: lists.isOperating,
-      saveLabel: l10n.sharedJoin,
-      savedLabel: l10n.sharedMember,
-      onSave: () => SharedContentActions.joinShoppingList(
-        context,
-        viewModel,
-        sharedShoppingList,
-      ),
       onOpen: () {
         if (!isRead) lists.markAsViewed(sharedShoppingList);
-        _showShoppingListPreview(context, viewModel, sharedShoppingList);
+        _showShoppingListPreview(context, sharedShoppingList);
       },
       onActions: () => showSharedContentActions(
         context,
@@ -83,7 +74,6 @@ class SharedShoppingListCard {
 
   static void _showShoppingListPreview(
     BuildContext context,
-    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
     showButlerySheet<void>(
@@ -94,8 +84,6 @@ class SharedShoppingListCard {
         minChildSize: 0.5,
         builder: (sheetContext, scrollController) => _buildPreviewContent(
           sheetContext,
-          context,
-          viewModel,
           sharedShoppingList,
           scrollController,
         ),
@@ -103,19 +91,11 @@ class SharedShoppingListCard {
     );
   }
 
-  /// [pageContext] outlives the sheet: joining shows its result and navigates
-  /// after the sheet has closed, which the sheet's own context cannot.
   static Widget _buildPreviewContent(
     BuildContext context,
-    BuildContext pageContext,
-    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
     ScrollController scrollController,
   ) {
-    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(
-      sharedShoppingList,
-    );
-
     return Column(
       children: [
         // Header
@@ -175,29 +155,6 @@ class SharedShoppingListCard {
                   context,
                   label: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              const SizedBox(width: AppDimensions.space8),
-              Expanded(
-                child: ActionButtons.primaryButton(
-                  context,
-                  label: isJoined
-                      ? context.l10n.sharedAlreadyMember
-                      : context.l10n.sharedJoinList,
-                  icon: isJoined
-                      ? ButleryIcons.check
-                      : ButleryIcons.shoppingCart,
-                  isLoading: viewModel.shoppingViewModel.isOperating,
-                  onPressed: isJoined || viewModel.shoppingViewModel.isOperating
-                      ? null
-                      : () {
-                          Navigator.pop(context);
-                          SharedContentActions.joinShoppingList(
-                            pageContext,
-                            viewModel,
-                            sharedShoppingList,
-                          );
-                        },
                 ),
               ),
             ],

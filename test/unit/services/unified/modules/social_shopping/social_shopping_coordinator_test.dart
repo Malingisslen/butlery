@@ -27,8 +27,7 @@
 ///   AND non-empty memberPermissions. A personal list with members or a
 ///   collaborative list with no members → false. Pins the AND.
 /// - `createSharedContentModel`: pulls listName + itemCount from the
-///   snapshot, propagates shoppingListId for the join-back resolution,
-///   defaults shareMessage to '' when null, and uses `items.length` for
+///   snapshot, propagates shoppingListId, defaults shareMessage to '' when null, and uses `items.length` for
 ///   itemCount (NOT a hardcoded zero).
 /// - `createImportedContent`: produces a COLLABORATIVE list (not
 ///   personal); always starts with `items: []`; uses sharedByUserId as
@@ -46,18 +45,10 @@
 ///   the documented divergence from recipes/menus.
 /// - `createStaticCopyForOwner`: returns null (no copy semantics for
 ///   shopping). Pins the "direct collaboration" contract.
-/// - `importSharedContent` override: delegates to `joinSharedShoppingList`.
-///   For shopping lists "import" IS "join" — different semantics from
-///   recipes/menus where import creates a copy.
 /// - `getSharedShoppingListsForUser`: error swallow → empty list, no
 ///   rethrow. UI tab must render empty state on a permission/offline error.
 /// - `getJoinedShoppingLists`: unauthenticated → empty list, no throw.
 ///   Failed repo → empty list AND sets error.
-/// - `joinSharedShoppingList`: unauthenticated → null; not-found → null;
-///   repo-throw IS caught (try-catch wraps the read) → null + error set
-///   — opposite shape from the BUT-1090 bug in SocialMenuCoordinator.
-///   Happy path: found → markAsJoined and nothing else; the join writes no
-///   seat on the live list (BUT-2089), whatever `shoppingListId` holds.
 /// - `loadStatusForShoppingList`: caches viewed/imported/dismissed status
 ///   from repository calls; `is*` getters return cached values.
 /// - `isShoppingList{Viewed,Imported,Dismissed}`: cache miss → false.
@@ -72,15 +63,7 @@
 ///   BUT-1087 (SocialRecipeService) and BUT-1094 (SocialMenuCoordinator).
 ///   `loadStatusForShoppingList` (line 349) ALSO swallows without error.
 ///   The base class's `markAsViewed` (base line 408) and `getUnreadCount`
-///   (base line 425) also lack `_error`. `joinSharedShoppingList` DOES
-///   set error correctly — inconsistency within the same file. File as
-///   "BUT-1094 family extension".
-///
-/// - **BUT-1090 (missing try-catch on `joinSharedMenu`) — NOT REPRODUCED**:
-///   `joinSharedShoppingList` properly wraps the `_sharedShoppingRepository.read()`
-///   call in try-catch (production lines 282–322). This is the CORRECT
-///   pattern — `SocialMenuCoordinator.joinSharedMenu` should mirror it.
-///   Pin the correct contract here so a regression is caught.
+///   (base line 425) also lack `_error`. File as "BUT-1094 family extension".
 ///
 /// - **BUT-1095 (hardwired repo in constructor) — PARTIALLY ADDRESSED**:
 ///   `_sharedShoppingRepository` still resolves via
@@ -91,9 +74,9 @@
 /// - **Save-through throws UnsupportedError (BUT-1105 fix)**:
 ///   `ShoppingListServiceAdapter.saveShoppingList` now throws [UnsupportedError]
 ///   instead of silently returning the list id without persisting anything.
-///   Shopping lists use direct collaboration — callers must join via
-///   `joinSharedShoppingList`, not save a copy. The fail-loud contract is
-///   pinned in the `ShoppingListServiceAdapter.saveShoppingList` test group.
+///   Shopping lists use direct collaboration — callers must not save a copy.
+///   The fail-loud contract is pinned in the
+///   `ShoppingListServiceAdapter.saveShoppingList` test group.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -117,17 +100,8 @@ class _MockSharedShoppingRepo extends Mock
 
 /// Fake adapter so we don't need the real UnifiedShoppingService chain
 /// when validating the coordinator's `_serviceAdapter` injection path.
-/// It wraps a [_NoopShoppingService] the join tests read back, to prove the
-/// join reaches the shopping service for nothing: a seat on a live list is
-/// taken by accepting an invitation, never written here (BUT-2089).
 class _FakeServiceAdapter extends ShoppingListServiceAdapter {
-  _FakeServiceAdapter._(this.shoppingService)
-    : super(shoppingService: shoppingService);
-
-  factory _FakeServiceAdapter() =>
-      _FakeServiceAdapter._(_NoopShoppingService());
-
-  final _NoopShoppingService shoppingService;
+  _FakeServiceAdapter() : super(shoppingService: _NoopShoppingService());
 }
 
 /// Tiny stub fulfilling the constructor's `lists` getter so the adapter
@@ -511,8 +485,7 @@ void main() {
         expect(
           shared.shoppingListId,
           'orig-123',
-          reason:
-              'originalContentId must propagate so join can resolve back to the live list',
+          reason: 'originalContentId must propagate to shoppingListId',
         );
         expect(shared.sharedByUserId, 'sender');
         expect(shared.sharedByDisplayName, 'Anna');
@@ -727,7 +700,7 @@ void main() {
       /// (e.g. through saveImportedContent) would get no error and no data.
       ///
       /// The intended behaviour is for shopping lists to use direct
-      /// collaboration — callers should join via [joinSharedShoppingList], not
+      /// collaboration — callers must not
       /// save a copy. Throwing UnsupportedError makes a mis-wiring immediately
       /// visible instead of silently discarding data.
       test('saveShoppingList throws UnsupportedError (not a silent no-op)', () {
@@ -771,25 +744,6 @@ void main() {
           );
         },
       );
-    });
-
-    // ---------------------------------------------------------------------
-    // importSharedContent — shopping override routes to join
-    // ---------------------------------------------------------------------
-    group('importSharedContent (override)', () {
-      /// For shopping, "import" IS "join" — the override delegates.
-      /// Verify by stubbing the underlying read to return null (so the
-      /// join short-circuits to null without touching the live list).
-      test('delegates to joinSharedShoppingList', () async {
-        when(() => mockRepo.read('shared-xyz')).thenAnswer((_) async => null);
-
-        final out = await coordinator.importSharedContent(
-          sharedContentId: 'shared-xyz',
-        );
-
-        expect(out, isNull);
-        verify(() => mockRepo.read('shared-xyz')).called(1);
-      });
     });
 
     // ---------------------------------------------------------------------
@@ -881,121 +835,6 @@ void main() {
               'see BUT-1094 family note in header)',
         );
       });
-    });
-
-    // ---------------------------------------------------------------------
-    // joinSharedShoppingList — CORRECT try-catch contract (anti-regression
-    // for BUT-1090)
-    // ---------------------------------------------------------------------
-    group('joinSharedShoppingList', () {
-      /// Unauthenticated → null short-circuit.
-      test('unauthenticated → null, repo never touched', () async {
-        currentUserId = null;
-
-        final out = await coordinator.joinSharedShoppingList(
-          sharedShoppingListId: 'shared-1',
-        );
-
-        expect(out, isNull);
-        verifyNever(() => mockRepo.read(any()));
-      });
-
-      /// Not-found (null read) → null without crash. The downstream
-      /// `markAsJoined` must NOT be called.
-      test(
-        'shared list not found → null, no markAsJoined',
-        () async {
-          when(
-            () => mockRepo.read('does-not-exist'),
-          ).thenAnswer((_) async => null);
-
-          final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'does-not-exist',
-          );
-
-          expect(out, isNull);
-          verifyNever(() => mockRepo.markAsJoined(any(), any()));
-        },
-      );
-
-      /// **ANTI-REGRESSION FOR BUT-1090**: a repo throw from `read()`
-      /// is CAUGHT — returns null and sets the error. The buggy shape
-      /// from `SocialMenuCoordinator.joinSharedMenu` (which lets the
-      /// throw escape) is NOT present here. If a future refactor
-      /// removes the try-catch around the read, this test breaks.
-      test('repo throw on read → null AND error set (NOT rethrown)', () async {
-        when(
-          () => mockRepo.read('shared-1'),
-        ).thenThrow(Exception('permission-denied'));
-
-        final out = await coordinator.joinSharedShoppingList(
-          sharedShoppingListId: 'shared-1',
-        );
-
-        expect(
-          out,
-          isNull,
-          reason: 'try-catch correctly swallows — opposite of BUT-1090',
-        );
-        expect(
-          lastError,
-          isNotNull,
-          reason:
-              'this path DOES set error (contrast getSharedShoppingListsForUser)',
-        );
-      });
-
-      /// **HAPPY PATH**: read() returns a shared list with a non-null
-      /// shoppingListId. The success branch calls markAsJoined and returns, and
-      /// it must NOT reach the shopping service: the rules refuse a client write
-      /// that adds a key to a live list's members, and a seat comes from
-      /// accepting a list invitation (BUT-2089).
-      test(
-        'found with shoppingListId → markAsJoined, no seat written',
-        () async {
-          when(() => mockRepo.read('shared-1')).thenAnswer(
-            (_) async => _sharedList(id: 'shared-1', shoppingListId: 'live-7'),
-          );
-          when(
-            () => mockRepo.markAsJoined('shared-1', 'me-uid'),
-          ).thenAnswer((_) async {});
-
-          final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1',
-          );
-
-          expect(out, 'shared-1');
-          verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-          verifyNoMoreInteractions(fakeAdapter.shoppingService);
-          expect(
-            notifyCount,
-            greaterThanOrEqualTo(1),
-            reason: 'success path notifies state change',
-          );
-        },
-      );
-
-      /// Pre-migration data: shoppingListId is null. markAsJoined still runs
-      /// (analytics) and the shopping service is still untouched.
-      test(
-        'found but null shoppingListId → markAsJoined, shopping service untouched',
-        () async {
-          when(() => mockRepo.read('shared-1')).thenAnswer(
-            (_) async => _sharedList(id: 'shared-1', shoppingListId: null),
-          );
-          when(
-            () => mockRepo.markAsJoined('shared-1', 'me-uid'),
-          ).thenAnswer((_) async {});
-
-          final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1',
-          );
-
-          expect(out, 'shared-1');
-          verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-          verifyNoMoreInteractions(fakeAdapter.shoppingService);
-        },
-      );
     });
 
     // ---------------------------------------------------------------------
