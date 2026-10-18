@@ -59,7 +59,7 @@ Known findings: 0 (ceiling 0) in 0 cases (view, state, mode, width, text scale).
 
 ## Token parity
 
-tokens.json 1.13 (sha256 `3a06c1d140335b310b63e368747386493e9c9c84b4767f3a152173ea4e1baf04`); generated files say tokens 1.13 (light) and 1.13 (dark).
+tokens.json 1.13 (sha256 `d34ee818cbb50404438800c03cb018e4efa1737184e3fe4d02f29f88007b4115`); generated files say tokens 1.13 (light) and 1.13 (dark).
 - Semantic keys: 58; with a generated member: 58
 - Translucent semantic values on the opacityLadder: 19; off it: 0 ()
 
@@ -95,7 +95,7 @@ Total counts every entry (a count where the list holds one); Live leaves out ent
 | `package4_adoption_test.dart` | `_package7Components` | ALLOWANCE | LIVE | 1 | 1 | 1 |
 | `package4_adoption_test.dart` | `_spinnerResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `package4_adoption_test.dart` | `_barResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
-| `package4_adoption_test.dart` | `_exclusiveHeroFiles` | ALLOWANCE | LIVE | 2 | 2 | 2 |
+| `package4_adoption_test.dart` | `_exclusiveHeroFiles` | ALLOWANCE | LIVE | 3 | 3 | 3 |
 | `package4_adoption_test.dart` | `_snackBarResidue` | RESIDUE | RETIRED | 0 | 0 | 0 |
 | `package4_t3_adoption_test.dart` | `_plateLineFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
 | `package4_t3_adoption_test.dart` | `_topBarFiles` | ADOPTION | LIVE | 15 | 15 | 15 |
@@ -141,22 +141,22 @@ Places that draw a component type outside its canonical widget. A count may only
 
 | Type | Count | Ceiling | Target | Files | Ticket | What is counted |
 | --- | --- | --- | --- | --- | --- | --- |
-| `raw_destructive_alert_dialogs` | 3 | 3 | 0 | 3 | BUT-2366 | AlertDialog built in place that uses the error colour, instead of the shared destructive confirmation dialog |
+| `raw_destructive_alert_dialogs` | 0 | 0 | 0 | 0 | BUT-2366 | AlertDialog built in place that uses the error colour, instead of the shared destructive confirmation dialog |
 | `hero_style_outside_hero_button` | 0 | 0 | 0 | 0 | BUT-2367 | ComponentThemes.heroButtonStyle used outside HeroButton |
-| `raw_button_style_from` | 1 | 2 | 0 | 1 | BUT-2367 | Filled/Elevated/OutlinedButton.styleFrom in views and widgets, outside lib/widgets/common/buttons/ |
+| `raw_button_style_from` | 0 | 0 | 0 | 0 | BUT-2367 | Filled/Elevated/OutlinedButton.styleFrom in views and widgets, outside lib/widgets/common/buttons/ |
 | `raw_dialog_cancel` | 0 | 0 | 0 | 0 | BUT-2367 | TextButton( labelled with the commonCancel text, outside lib/widgets/common/dialogs/, instead of DialogCancelButton |
 | `raw_snackbars` | 0 | 0 | 0 | 0 | BUT-2371 | SnackBar( built outside SnackBarUtils |
-| `own_empty_states` | 1 | 1 | 0 | 1 | BUT-2371 | classes whose name holds Empty...State, or _Empty, outside lib/widgets/common/state/, each its own empty state |
-| `card_surface_overrides` | 1 | 1 | 0 | 1 | BUT-2370 | Card( with its own shape or elevation instead of the theme surface |
+| `own_empty_states` | 0 | 0 | 0 | 0 | BUT-2371 | classes whose name holds Empty...State, or _Empty, outside lib/widgets/common/state/, each its own empty state |
+| `card_surface_overrides` | 0 | 0 | 0 | 0 | BUT-2370 | Card( with its own shape or elevation instead of the theme surface |
 | `chevron_sizes` | 1 | 1 | 1 | 1 | BUT-2370 | distinct size: values on ButleryIcon(chevronRight/chevronLeft) ("default" when none is given) |
 | `sheet_shape_overrides` | 0 | 0 | 0 | 0 | BUT-2373 | showModalBottomSheet( with its own shape instead of the theme |
-| `direct_font_weights` | 4 | 4 | 0 | 3 | BUT-2369 | fontWeight: written in views and widgets instead of a text style |
-| `hardcoded_max_width` | 4 | 5 | 0 | 4 | BUT-2368 | maxWidth: with a number literal outside lib/theme/ and lib/core/responsive/ |
-| `raw_white_black` | 0 | 1 | 0 | 0 | BUT-2376 | Colors.white or Colors.black in views and widgets instead of a theme or mode colour |
+| `direct_font_weights` | 0 | 0 | 0 | 0 | BUT-2369 | fontWeight: written in views and widgets instead of a text style |
+| `hardcoded_max_width` | 0 | 0 | 0 | 0 | BUT-2368 | maxWidth: with a number literal outside lib/theme/ and lib/core/responsive/ |
+| `raw_white_black` | 0 | 0 | 0 | 0 | BUT-2376 | Colors.white or Colors.black in views and widgets instead of a theme or mode colour |
 | `photo_viewers` | 0 | 0 | 0 | 0 | BUT-2376 | InteractiveViewer( outside the shared FullscreenImageViewer, each its own fullscreen photo viewer |
 | `alpha_literals` | 0 | 0 | 0 | 0 | BUT-2376 | alpha: with a number literal, or withOpacity(, outside lib/theme/ instead of a step on the opacity ladder |
-| `icon_size_literals` | 2 | 2 | 0 | 2 | BUT-2376 | ButleryIcon size: written as a number instead of an AppDimensions icon size |
-| `spacing_literals` | 38 | 40 | 0 | 32 | BUT-2376 | EdgeInsets with a non-zero number, or a SizedBox gap of 32 or less written as a number, in views and widgets instead of space4…space32 |
+| `icon_size_literals` | 0 | 0 | 0 | 0 | BUT-2376 | ButleryIcon size: written as a number instead of an AppDimensions icon size |
+| `spacing_literals` | 0 | 0 | 0 | 0 | BUT-2376 | EdgeInsets with a non-zero number, or a SizedBox gap of 32 or less written as a number, in views and widgets instead of space4…space32 |
 | `scale_aliases` | 0 | 0 | 0 | 0 | BUT-2376 | AppDimensions names that repeat a value the scale already names (spacingSm for space8, iconSizeAction for iconSizeM …) |
 | `own_bordered_boxes` | 0 | 0 | 0 | 0 | BUT-2391 | BoxDecoration with both a border and a corner radius outside lib/widgets/common/, each its own card, chip or row box |
 | `own_circle_boxes` | 0 | 0 | 0 | 0 | BUT-2391 | BoxDecoration with shape: BoxShape.circle outside lib/widgets/common/, each its own avatar or dot |
@@ -166,7 +166,7 @@ Places that draw a component type outside its canonical widget. A count may only
 | `raw_divider` | 0 | 0 | 0 | 0 | helskanning | Divider / VerticalDivider built outside lib/widgets/common/, instead of the shared hairline |
 | `raw_chips` | 0 | 0 | 0 | 0 | helskanning | Chip / ChoiceChip / FilterChip / ActionChip / InputChip built outside lib/widgets/common/, instead of the shared chip |
 | `raw_app_bar` | 0 | 0 | 0 | 0 | helskanning | AppBar built outside lib/widgets/common/, instead of ButleryTopBar |
-| `raw_text_style` | 6 | 6 | 0 | 5 | helskanning | TextStyle built outside lib/widgets/common/, instead of a theme text role |
+| `raw_text_style` | 0 | 0 | 0 | 0 | helskanning | TextStyle built outside lib/widgets/common/, instead of a theme text role |
 | `raw_toggles` | 0 | 0 | 0 | 0 | helskanning | Checkbox / CheckboxListTile / Switch / SwitchListTile / RadioListTile built outside lib/widgets/common/, instead of the shared checkbox / switch |
 | `raw_menus` | 0 | 0 | 0 | 0 | helskanning | PopupMenuButton / DropdownButton / DropdownButtonFormField built outside lib/widgets/common/, instead of the shared menu / dropdown |
 | `raw_circle_avatar` | 0 | 0 | 0 | 0 | helskanning | CircleAvatar built outside lib/widgets/common/, instead of the shared avatar |
