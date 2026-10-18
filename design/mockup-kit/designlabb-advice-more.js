@@ -75,9 +75,24 @@ const ADVICE_MORE = {
     src: 'Apple HIG (materials); Flutter: BackdropFilter kostar prestanda',
   },
   rorelse: {
-    nums: [['Små rörelser', '100–250 ms'], ['Större rörelser', '250–400 ms'], ['Loopande', 'pausbar efter 5 s (WCAG)']],
-    mistakes: ['Evig puls på flera element samtidigt.', 'Linjär rörelse (känns mekanisk, använd ease).', 'Ingen hänsyn till "minska rörelse".'],
-    src: 'Material Design 3 (motion), WCAG 2.2: 2.2.2 Pausa, stoppa, dölj',
+    nums: [['Små reaktioner', '100–150 ms'], ['Tooltips och menyer', '150–250 ms'], ['Dialoger och lådor', '200–300 ms'], ['Sidbyten', '300–400 ms'], ['Loopande', 'pausbar efter 5 s (WCAG)']],
+    mistakes: ['Evig puls på flera element samtidigt.', 'Linjär rörelse (känns mekanisk, använd ease).', 'Ingen hänsyn till "minska rörelse".', 'Animera skuggor eller stora sudd (dyrt för processorn).'],
+    src: 'Material Design 3 (motion), WCAG 2.2: 2.2.2 Pausa, stoppa, dölj; Emil Kowalski, tidsriktlinjer (X, 14 okt 2026)',
+  },
+  rorelsekurva: {
+    nums: [['In och ut', 'ease-out'], ['Flytt på skärmen', 'ease-in-out'], ['Följer fingret', 'fjäder'], ['Sudd som mask', 'cirka 2 px']],
+    mistakes: ['Linjär rörelse på gränssnittet.', 'Olika tider på dialogen och mörkläggningen bakom den.', 'Fjäder på vanliga dialoger.'],
+    src: 'Emil Kowalski (X, 2025–2026); easing.dev',
+  },
+  rorelsefrekvens: {
+    nums: [['Över 100 gånger/dag', 'ingen rörelse'], ['Då och då', 'vanlig rörelse'], ['Sällan eller första gången', 'får vara lekfull']],
+    mistakes: ['Animera varje öppning av ett verktyg som används hela dagen.', 'Rörelse på det som styrs med tangentbord.'],
+    src: 'Emil Kowalski, frekvensprincipen (X, 14 okt 2026)',
+  },
+  rorelsestart: {
+    nums: [['Startskala', '0,9 eller högre'], ['Ursprung', 'där man tryckte'], ['Större eller längre rörelse', 'längre tid']],
+    mistakes: ['scale(0) som start.', 'Meny som växer från mitten.'],
+    src: 'Emil Kowalski (X, aug 2025 och okt 2026)',
   },
   hovring: {
     nums: [['Telefon', 'finns inte'], ['Dator och webb', 'ofta'], ['Tid', '100–200 ms']],
@@ -85,9 +100,9 @@ const ADVICE_MORE = {
     src: 'Allmän webbpraxis; Material 3 (states)',
   },
   tryck: {
-    nums: [['Reaktionstid', 'inom 100 ms'], ['Krympning', '3–6 %'], ['Tid', '80–150 ms']],
+    nums: [['Reaktionstid', 'inom 100 ms'], ['Krympning', '2–3 % (skala 0,97–0,98)'], ['Tid', 'cirka 150 ms']],
     mistakes: ['Ingen reaktion alls (knappen känns död).', 'Kraftig krympning som ser studsig ut.'],
-    src: 'Material 3 (states: pressed), Apple HIG (feedback)',
+    src: 'Material 3 (states: pressed), Apple HIG (feedback); Emil Kowalski (X, aug 2025)',
   },
   kant: {
     nums: [['Tunn kant', '1 px'], ['Kontrast mot bakgrund', 'minst 3:1 för fält'], ['Fokusring', '2 px']],
