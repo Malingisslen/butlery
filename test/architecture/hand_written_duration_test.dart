@@ -32,7 +32,7 @@ const _handWritten = <String, int>{
   'lib/views/recipe_detail/recipe_detail_comments.dart': 1,
   'lib/views/social/group_detail_view.dart': 1,
   'lib/views/social/menu_preview_view.dart': 1,
-  'lib/views/social/shared_with_me/shared_content_actions.dart': 3,
+  'lib/views/social/shared_with_me/shared_content_actions.dart': 1,
   'lib/views/social/user_profile_edit_view.dart': 1,
   'lib/views/sync/sync_queue_view.dart': 1,
   'lib/widgets/common/animations/animated_list_item.dart': 3,

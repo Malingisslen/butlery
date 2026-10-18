@@ -3,7 +3,7 @@
 /// SharedShoppingViewModel extends `BaseSharedContentViewModel<SharedShoppingList>`.
 /// Base-class mechanics (loadContent/refresh/pagination/search cache) are
 /// covered by the base's own suite — we only assert subclass-specific
-/// behaviour here, plus the cross-cutting contracts on dismiss/join/markViewed
+/// behaviour here, plus the cross-cutting contracts on dismiss/markViewed
 /// that have a high bug-prior (see BUT-1068 for the sibling pattern).
 ///
 /// Behaviours covered:
@@ -22,9 +22,6 @@
 /// - markAsViewed short-circuits when already viewed (no repo round-trips).
 /// - markAsViewed writes + reloads cache + notifies listeners on success.
 /// - markAsViewed returns false (no writes) when unauthenticated.
-/// - joinSharedShoppingList returns coordinator's collaborative list id on
-///   success, and skips the cache-reload short-circuit when coordinator
-///   returns null.
 /// - markAllAsViewed only marks UNviewed lists (no redundant writes); uses
 ///   loading-state lane not operating-state (per useOperatingState: false).
 /// - canEditShoppingList: owner always edits; non-owner edits iff joined;
@@ -451,64 +448,6 @@ void main() {
             'the unauth case still completes cleanly',
       );
       verifyNever(() => coordinator.loadStatusForShoppingList(any(), any()));
-      vm.dispose();
-    });
-  });
-
-  group('joinSharedShoppingList', () {
-    /// Happy path: coordinator returns a collaborative list id → caller gets
-    /// the same id back, AND the cache is reloaded so the just-joined list
-    /// becomes "imported" without a separate refresh.
-    test('returns collaborative id and reloads status on success', () async {
-      final l = _list(id: 'j1');
-      when(
-        () => coordinator.joinSharedShoppingList(
-          sharedShoppingListId: any(named: 'sharedShoppingListId'),
-        ),
-      ).thenAnswer((_) async => 'collab-list-7');
-
-      final vm = makeVm();
-      final result = await vm.joinSharedShoppingList(l);
-
-      expect(result, 'collab-list-7');
-      verify(
-        () => coordinator.loadStatusForShoppingList('j1', _kCurrentUid),
-      ).called(1);
-      vm.dispose();
-    });
-
-    /// Coordinator-null short-circuit: when no collaborative id was created
-    /// (e.g. permission denied, list deleted), we must NOT bother reloading
-    /// status — a wasted Firestore round-trip on a no-op.
-    test('skips cache reload when coordinator returns null', () async {
-      final l = _list(id: 'j2');
-      when(
-        () => coordinator.joinSharedShoppingList(
-          sharedShoppingListId: any(named: 'sharedShoppingListId'),
-        ),
-      ).thenAnswer((_) async => null);
-
-      final vm = makeVm();
-      final result = await vm.joinSharedShoppingList(l);
-
-      expect(result, isNull);
-      verifyNever(() => coordinator.loadStatusForShoppingList(any(), any()));
-      vm.dispose();
-    });
-
-    test('returns null and sets hasError when coordinator throws', () async {
-      final l = _list(id: 'j3');
-      when(
-        () => coordinator.joinSharedShoppingList(
-          sharedShoppingListId: any(named: 'sharedShoppingListId'),
-        ),
-      ).thenThrow(Exception('boom'));
-
-      final vm = makeVm();
-      final result = await vm.joinSharedShoppingList(l);
-
-      expect(result, isNull);
-      expect(vm.hasError, isTrue);
       vm.dispose();
     });
   });

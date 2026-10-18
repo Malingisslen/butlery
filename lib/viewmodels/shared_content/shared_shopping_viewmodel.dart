@@ -1,13 +1,12 @@
 /// Shared Shopping List ViewModel providing shopping list-specific shared content management.
 /// This specialized ViewModel handles all shared shopping list operations including loading,
-/// joining, dismissing, and direct collaboration. It extends the base shared content
+/// dismissing, and direct collaboration. It extends the base shared content
 /// ViewModel but implements direct collaboration instead of copy-on-write, demonstrating
 /// the flexibility of the base class architecture.
 /// **Key Difference**: Shopping lists use **direct collaboration** where all users edit
 /// the same list, while recipes and menus use **copy-on-write** collaboration.
 /// **Responsibilities:**
 /// - **Shopping List Loading**: Load shared shopping lists from repository with proper filtering
-/// - **Join Operations**: Handle shopping list joining with direct collaboration
 /// - **Status Management**: Track viewed/joined status and dismissal state
 /// - **Direct Collaboration**: Support real-time collaborative editing
 /// - **Search Integration**: Implement shopping list-specific search functionality
@@ -24,7 +23,6 @@
 /// shoppingViewModel.updateSearchQuery('handla');
 /// final searchResults = shoppingViewModel.filteredContent;
 /// // Shopping list operations
-/// final listId = await shoppingViewModel.joinSharedShoppingList(sharedList);
 /// await shoppingViewModel.dismissSharedShoppingList(sharedList);
 /// ```
 
@@ -43,7 +41,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized ViewModel for shared shopping list management and operations.
-/// Implements direct collaboration model where users join and edit the same list,
+/// Implements direct collaboration model where users edit the same list,
 /// different from the copy-on-write model used for recipes and menus.
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
 /// Status loaded from Firestore subcollections and cached for performance.
@@ -190,38 +188,6 @@ class SharedShoppingViewModel
   /// Get shopping lists with items
   List<SharedShoppingList> get listsWithItems {
     return content.where((list) => list.itemCount > 0).toList();
-  }
-
-  /// Join shared shopping list (direct collaboration)
-  /// Unlike recipes/menus, shopping lists use direct collaboration where
-  /// all users edit the same list. Returns collaborative list ID for navigation.
-  /// Note (Issue #014): Updates cache instead of local model state.
-  Future<String?> joinSharedShoppingList(SharedShoppingList sharedList) async {
-    return await executeOperation(
-      'Join shopping list "${getContentTitle(sharedList)}"',
-      () async {
-        final collaborativeListId = await _socialShoppingCoordinator
-            .joinSharedShoppingList(
-              sharedShoppingListId: sharedList.id,
-            );
-
-        if (collaborativeListId != null) {
-          // Reload status to update coordinator's cache (Issue #014)
-          final userId = currentUserId;
-          if (userId != null) {
-            await _socialShoppingCoordinator.loadStatusForShoppingList(
-              sharedList.id,
-              userId,
-            );
-          }
-          notifyListeners(); // Notify UI to refresh
-
-          AppLogger.success('✅ Joined shopping list for direct collaboration');
-        }
-
-        return collaborativeListId;
-      },
-    );
   }
 
   /// Dismiss shared shopping list from user's list
