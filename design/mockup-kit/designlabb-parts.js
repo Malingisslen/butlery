@@ -12,6 +12,7 @@ const PART_GROUPS = [
     ['alignX', 'Innehållet vågrätt', 'sel', [['', 'Som nu'], ['flex-start', 'Vänster'], ['center', 'Mitten'], ['flex-end', 'Höger']]],
     ['alignY', 'Innehållet lodrätt', 'sel', [['', 'Som nu'], ['flex-start', 'Upptill'], ['center', 'Mitten'], ['flex-end', 'Nedtill']]],
     ['mY', 'Marginal upp/ner', 'px', -16, 48, 0], ['mX', 'Marginal sidor', 'px', -16, 48, 0],
+    ['mT', 'Avstånd ovanför', 'px', -16, 64, 0], ['mL', 'Avstånd till vänster', 'px', -16, 64, 0],
   ]],
   ['Form, text och luft', [
     ['radius', 'Rundning', 'px', 0, 40], ['size', 'Textstorlek', 'px', 8, 44],
@@ -373,7 +374,7 @@ function showPart(variant = false) {
   const shadow = cs.filter.match(/drop-shadow\((.*)\)/)?.[1] || '';
   const [, sx, sy, sblur] = shadow.match(/\)\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px/) || [];
   Object.assign(now, {
-    mY: parseFloat(cs.marginTop) || 0, mX: parseFloat(cs.marginLeft) || 0, tracking: parseFloat(cs.letterSpacing) || 0,
+    mY: parseFloat(cs.marginTop) || 0, mX: parseFloat(cs.marginLeft) || 0, mT: parseFloat(cs.marginTop) || 0, mL: parseFloat(cs.marginLeft) || 0, tracking: parseFloat(cs.letterSpacing) || 0,
     opacity: Math.round(+cs.opacity * 100), bgAlpha: alpha == null ? 100 : Math.round(alpha * 100),
     blur: parseFloat(cs.backdropFilter?.match(/blur\(([\d.]+)px\)/)?.[1]) || 0,
     bw: parseFloat(cs.borderTopWidth) || 0, shY: +sy || 0, shBlur: +sblur || 0,

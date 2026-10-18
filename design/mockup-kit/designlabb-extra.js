@@ -174,6 +174,22 @@ function drawOverlay() {
       }
     }
     if (!spaceDrag) continue;
+    // Views built from their own parts: every gap between neighbours moves that part and its like parts.
+    const covered = '.b-body, .b-section, .b-chips, .b-btnrow, .b-row';
+    for (const parent of phone.querySelectorAll('[data-lab-id]')) {
+      if (parent.matches(covered) || parent.closest('svg')) continue;
+      const kids = [...parent.children].filter(c => c.dataset.labId && !c.classList.contains('lab-gap') && c.getBoundingClientRect().height > 0);
+      for (let i = 1; i < kids.length; i++) {
+        const a = kids[i - 1].getBoundingClientRect(), b = kids[i].getBoundingClientRect();
+        const down = b.top >= a.bottom - 0.5, across = !down && b.left >= a.right - 0.5;
+        const gap = down ? b.top - a.bottom : across ? b.left - a.right : 0;
+        if (gap < 1) continue;
+        const axis = down ? 'y' : 'x';
+        if (down) tag(Math.min(a.left, b.left), a.bottom, Math.max(a.width, b.width), gap, Math.round(gap), 'between', 'part', 'y');
+        else tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between', 'part', axis);
+        phone.lastElementChild.dataset.partId = kids[i].dataset.labId;
+      }
+    }
     for (const sec of phone.querySelectorAll('.b-section')) {
       const r = sec.getBoundingClientRect(), pad = parseFloat(getComputedStyle(sec).paddingTop);
       if (pad >= 1) tag(r.left, r.top, Math.min(r.width, 56), pad, Math.round(pad), 'between', 'sectionGap', 'y');
@@ -197,6 +213,7 @@ function wireSpaceDrag() {
     if (!h) return;
     e.preventDefault(); e.stopPropagation();
     const { spaceKey: key, spaceAxis: axis } = h.dataset, sign = +h.dataset.spaceSign;
+    if (key === 'part') return dragPartGap(e, h, axis);
     const input = document.getElementById(key);
     const shown = parseFloat(h.textContent.replace(/[^\d.-]/g, '')) || 0;
     // A slider left at its original reads from the gap that was grabbed; one already set is the start.
@@ -212,4 +229,26 @@ function wireSpaceDrag() {
     addEventListener('pointerup', up);
   }, true);
   screens.addEventListener('click', e => { if (e.target.closest?.('.lab-gap.drag')) { e.preventDefault(); e.stopPropagation(); } }, true);
+}
+
+// A gap between two parts is the later part's top (or left) margin; it is set on that part and its like
+// parts, except the first of each group, which has nothing above it.
+function dragPartGap(e, h, axis) {
+  const el = h.closest('.phone').querySelector(`[data-lab-id="${h.dataset.partId}"]`);
+  if (!el) return;
+  const base = selectorFor(el, false);
+  if (base === '.phone') return;
+  const sel = `${base}:not(:first-child)`, pkey = `both|${sel}`, prop = axis === 'y' ? 'mT' : 'mL';
+  const part = state.parts[pkey] ||= { sel, mode: 'both', props: {} };
+  const cs = getComputedStyle(el), from = parseFloat(axis === 'y' ? cs.marginTop : cs.marginLeft) || 0;
+  const at = axis === 'y' ? e.clientY : e.clientX;
+  const move = ev => {
+    const v = Math.min(64, Math.max(-16, Math.round(from + (axis === 'y' ? ev.clientY : ev.clientX) - at)));
+    if (part.props[prop] === v) return;
+    part.props[prop] = v;
+    render();
+  };
+  const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+  addEventListener('pointermove', move);
+  addEventListener('pointerup', up);
 }
