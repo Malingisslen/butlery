@@ -140,6 +140,7 @@ function declsFor(st, p, base) {
   if (p.mY != null) d.push(`margin-top:${p.mY}px;margin-bottom:${p.mY}px`);
   if (p.mX != null) d.push(`margin-left:${p.mX}px;margin-right:${p.mX}px`);
   if (p.mT != null) d.push(`margin-top:${p.mT}px`);
+  if (p.mB != null) d.push(`margin-bottom:${p.mB}px`);
   if (p.mL != null) d.push(`margin-left:${p.mL}px`);
   if (p.alignX || p.alignY) {
     const flex = /flex|grid/.test(base?.display || '');

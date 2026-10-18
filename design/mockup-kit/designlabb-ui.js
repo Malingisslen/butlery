@@ -455,7 +455,14 @@ function wireExtras() {
   $('icon-style').onchange = () => { state.iconStyle = $('icon-style').value; render(); };
   $('icon-lib').onchange = () => { state.iconLib = $('icon-lib').value; render(); };
   $('overlay').onchange = () => { state.overlay = $('overlay').checked; render(); };
-  $('spacedrag').onchange = () => { spaceDrag = $('spacedrag').checked; render(); };
+  $('spacedrag').onchange = () => { spaceDrag = $('spacedrag').checked; $('spacesize').hidden = !spaceDrag; render(); };
+  for (const b of $('spacesize').querySelectorAll('button')) {
+    b.onclick = () => {
+      spaceBig = b.dataset.size === 'big';
+      for (const o of $('spacesize').querySelectorAll('button')) o.classList.toggle('on', o === b);
+      render();
+    };
+  }
   wireSpaceDrag();
   for (const [name, patch] of Object.entries(SPACE_PRESETS)) {
     const b = document.createElement('button');

@@ -133,6 +133,8 @@ function applyIcons() {
 // With "drag the spacing" on, every gap is a handle for the global slider that sets it, so one drag
 // changes that spacing in the whole app.
 let spaceDrag = false;
+let spaceBig = true; // one size of gap at a time keeps the screens readable
+const BIG_GAP = 12;
 function drawOverlay() {
   document.querySelectorAll('.lab-gap').forEach(n => n.remove());
   const show = state.overlay || spaceDrag;
@@ -142,6 +144,7 @@ function drawOverlay() {
   for (const phone of document.querySelectorAll('#screens .phone')) {
     const base = phone.getBoundingClientRect();
     const tag = (x, y, w, h, text, kind, key, axis, sign = 1) => {
+      if (spaceDrag && key && (text >= BIG_GAP) !== spaceBig) return null;
       const el = document.createElement('div');
       el.className = `lab-gap ${kind}`;
       el.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${w}px;height:${h}px`;
@@ -151,6 +154,7 @@ function drawOverlay() {
         el.textContent = `${axis === 'y' ? '↕' : '↔'} ${text}`;
       } else if (text) el.textContent = text;
       phone.append(el);
+      return el;
     };
     for (const body of phone.querySelectorAll('.b-body')) {
       const r = body.getBoundingClientRect();
@@ -185,9 +189,9 @@ function drawOverlay() {
         const gap = down ? b.top - a.bottom : across ? b.left - a.right : 0;
         if (gap < 1) continue;
         const axis = down ? 'y' : 'x';
-        if (down) tag(Math.min(a.left, b.left), a.bottom, Math.max(a.width, b.width), gap, Math.round(gap), 'between', 'part', 'y');
-        else tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between', 'part', axis);
-        phone.lastElementChild.dataset.partId = kids[i].dataset.labId;
+        const made = down ? tag(Math.min(a.left, b.left), a.bottom, Math.max(a.width, b.width), gap, Math.round(gap), 'between', 'part', 'y')
+          : tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between', 'part', axis);
+        if (made) made.dataset.partId = kids[i].dataset.labId;
       }
     }
     for (const sec of phone.querySelectorAll('.b-section')) {
@@ -236,16 +240,29 @@ function wireSpaceDrag() {
 function dragPartGap(e, h, axis) {
   const el = h.closest('.phone').querySelector(`[data-lab-id="${h.dataset.partId}"]`);
   if (!el) return;
-  const base = selectorFor(el, false);
-  if (base === '.phone') return;
-  const sel = `${base}:not(:first-child)`, pkey = `both|${sel}`, prop = axis === 'y' ? 'mT' : 'mL';
-  const part = state.parts[pkey] ||= { sel, mode: 'both', props: {} };
-  const cs = getComputedStyle(el), from = parseFloat(axis === 'y' ? cs.marginTop : cs.marginLeft) || 0;
+  const partOf = (node, edge) => {
+    const base = selectorFor(node, false);
+    if (base === '.phone') return null;
+    const sel = `${base}:not(:${edge}-child)`, key = `both|${sel}`;
+    return state.parts[key] ||= { sel, mode: 'both', props: {} };
+  };
+  const part = partOf(el, 'first'), prev = el.previousElementSibling;
+  if (!part) return;
+  const cs = getComputedStyle(el), flow = /flex|grid/.test(getComputedStyle(el.parentElement).display);
+  const mtNow = parseFloat(axis === 'y' ? cs.marginTop : cs.marginLeft) || 0;
+  const r = el.getBoundingClientRect(), pr = prev.getBoundingClientRect();
+  const gapNow = Math.round(axis === 'y' ? r.top - pr.bottom : r.left - pr.right);
+  // In normal block flow the previous part's bottom margin collapses with this top margin, so it is
+  // cleared and the top margin carries the whole gap; flex and grid add the two instead.
+  const collapses = axis === 'y' && !flow && prev.dataset.labId;
+  const prevPart = collapses ? partOf(prev, 'last') : null;
+  const from = collapses ? gapNow : mtNow, prop = axis === 'y' ? 'mT' : 'mL';
   const at = axis === 'y' ? e.clientY : e.clientX;
   const move = ev => {
     const v = Math.min(64, Math.max(-16, Math.round(from + (axis === 'y' ? ev.clientY : ev.clientX) - at)));
     if (part.props[prop] === v) return;
     part.props[prop] = v;
+    if (prevPart) prevPart.props.mB = 0;
     render();
   };
   const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
