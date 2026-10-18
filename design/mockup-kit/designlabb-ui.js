@@ -455,6 +455,8 @@ function wireExtras() {
   $('icon-style').onchange = () => { state.iconStyle = $('icon-style').value; render(); };
   $('icon-lib').onchange = () => { state.iconLib = $('icon-lib').value; render(); };
   $('overlay').onchange = () => { state.overlay = $('overlay').checked; render(); };
+  $('spacedrag').onchange = () => { spaceDrag = $('spacedrag').checked; render(); };
+  wireSpaceDrag();
   for (const [name, patch] of Object.entries(SPACE_PRESETS)) {
     const b = document.createElement('button');
     b.type = 'button'; b.textContent = name;

@@ -130,38 +130,86 @@ function applyIcons() {
 }
 
 // ---- Spacing overlay: boxes for every block and the gap between neighbours ----
+// With "drag the spacing" on, every gap is a handle for the global slider that sets it, so one drag
+// changes that spacing in the whole app.
+let spaceDrag = false;
 function drawOverlay() {
   document.querySelectorAll('.lab-gap').forEach(n => n.remove());
+  const show = state.overlay || spaceDrag;
   document.getElementById('screens').classList.toggle('lab-overlay', state.overlay);
-  if (!state.overlay) return;
+  document.getElementById('screens').classList.toggle('lab-spacedrag', spaceDrag);
+  if (!show) return;
   for (const phone of document.querySelectorAll('#screens .phone')) {
     const base = phone.getBoundingClientRect();
-    const tag = (x, y, w, h, text, kind) => {
+    const tag = (x, y, w, h, text, kind, key, axis, sign = 1) => {
       const el = document.createElement('div');
       el.className = `lab-gap ${kind}`;
       el.style.cssText = `left:${x - base.left}px;top:${y - base.top}px;width:${w}px;height:${h}px`;
-      if (text) el.textContent = text;
+      if (spaceDrag && key) {
+        el.classList.add('drag');
+        Object.assign(el.dataset, { spaceKey: key, spaceAxis: axis, spaceSign: sign });
+        el.textContent = `${axis === 'y' ? '↕' : '↔'} ${text}`;
+      } else if (text) el.textContent = text;
       phone.append(el);
     };
     for (const body of phone.querySelectorAll('.b-body')) {
       const r = body.getBoundingClientRect();
       const m = parseFloat(getComputedStyle(body).paddingLeft);
       if (m) {
-        tag(r.left, r.top, m, 28, Math.round(m), 'side');
-        tag(r.right - m, r.top, m, 28, Math.round(m), 'side');
+        tag(r.left, r.top, m, 28, spaceDrag ? state.margin : Math.round(m), 'side', 'margin', 'x', 1);
+        tag(r.right - m, r.top, m, 28, spaceDrag ? state.margin : Math.round(m), 'side', 'margin', 'x', -1);
       }
     }
     const groups = [...phone.querySelectorAll('.b-body, .b-section, .b-chips, .b-btnrow')];
     for (const parent of groups) {
       const kids = [...parent.children].filter(c => c.getBoundingClientRect().height > 0 && !c.classList.contains('lab-gap'));
+      const row = parent.matches('.b-chips, .b-btnrow');
+      const key = row ? 'chipGap' : parent.matches('.b-body') ? 'blockGap' : null;
       for (let i = 1; i < kids.length; i++) {
         const a = kids[i - 1].getBoundingClientRect(), b = kids[i].getBoundingClientRect();
-        const row = parent.matches('.b-chips, .b-btnrow');
         const gap = row ? b.left - a.right : b.top - a.bottom;
         if (gap < 1) continue;
-        if (row) tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between');
-        else tag(Math.min(a.left, b.left), a.bottom, Math.max(a.width, b.width), gap, Math.round(gap), 'between');
+        if (row) tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between', key, 'x');
+        else tag(Math.min(a.left, b.left), a.bottom, Math.max(a.width, b.width), gap, Math.round(gap), 'between', key, 'y');
+      }
+    }
+    if (!spaceDrag) continue;
+    for (const sec of phone.querySelectorAll('.b-section')) {
+      const r = sec.getBoundingClientRect(), pad = parseFloat(getComputedStyle(sec).paddingTop);
+      if (pad >= 1) tag(r.left, r.top, Math.min(r.width, 56), pad, Math.round(pad), 'between', 'sectionGap', 'y');
+    }
+    for (const rowEl of phone.querySelectorAll('.b-row')) {
+      const r = rowEl.getBoundingClientRect(), cs = getComputedStyle(rowEl), pad = parseFloat(cs.paddingTop);
+      if (pad >= 1) tag(r.left, r.top, Math.min(r.width, 56), pad, Math.round(pad), 'between', 'rowPad', 'y');
+      const kids = [...rowEl.children].filter(c => c.getBoundingClientRect().height > 0);
+      if (kids.length > 1) {
+        const a = kids[0].getBoundingClientRect(), b = kids[1].getBoundingClientRect(), gap = b.left - a.right;
+        if (gap >= 1) tag(a.right, Math.min(a.top, b.top), gap, Math.max(a.height, b.height), Math.round(gap), 'between', 'rowInner', 'x');
       }
     }
   }
+}
+// A drag on a gap handle moves the global slider by the pointer's travel along the gap's axis.
+function wireSpaceDrag() {
+  const screens = document.getElementById('screens');
+  screens.addEventListener('pointerdown', e => {
+    const h = e.target.closest?.('.lab-gap.drag');
+    if (!h) return;
+    e.preventDefault(); e.stopPropagation();
+    const { spaceKey: key, spaceAxis: axis } = h.dataset, sign = +h.dataset.spaceSign;
+    const input = document.getElementById(key);
+    const shown = parseFloat(h.textContent.replace(/[^\d.-]/g, '')) || 0;
+    // A slider left at its original reads from the gap that was grabbed; one already set is the start.
+    const from = key === 'margin' || state[key] !== SPACE_DEFAULTS[key] && state[key] ? state[key] : shown, at = axis === 'y' ? e.clientY : e.clientX;
+    const move = ev => {
+      const v = Math.round(from + sign * ((axis === 'y' ? ev.clientY : ev.clientX) - at));
+      const next = Math.min(+input.max, Math.max(+input.min, v));
+      if (next === state[key]) return;
+      state[key] = next; input.value = next; showValue(key); markSliders(); render();
+    };
+    const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+  }, true);
+  screens.addEventListener('click', e => { if (e.target.closest?.('.lab-gap.drag')) { e.preventDefault(); e.stopPropagation(); } }, true);
 }
