@@ -116,7 +116,6 @@ class QuickFilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space16,
-        vertical: AppDimensions.space4,
       ),
       child: Row(
         children: [
