@@ -108,7 +108,8 @@ void main() {
     test('filled exceptions fill and the UI family strokes at 1.75', () {
       final filled = GlyphDrawing.parse(ButleryIcons.star.svg);
       expect(filled.shapes.single.fill, isTrue);
-      expect(filled.shapes.single.stroke, isFalse);
+      expect(filled.shapes.single.stroke, isTrue);
+      expect(filled.shapes.single.join, StrokeJoin.round);
       final outline = GlyphDrawing.of(ButleryIcons.starOutline);
       expect(outline.shapes.single.fill, isFalse);
       expect(outline.shapes.single.stroke, isTrue);
