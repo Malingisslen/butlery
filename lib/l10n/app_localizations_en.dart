@@ -20146,6 +20146,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminOpsEventDeletionAuditLogCleanup => 'Deletion log cleaned';
 
   @override
+  String get adminOpsEventRateLimitAbuse =>
+      'Account repeatedly stopped by the rate limit in one day';
+
+  @override
   String get adminParsingSectionTitle => 'Parsing by domain';
 
   @override

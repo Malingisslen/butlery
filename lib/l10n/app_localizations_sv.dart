@@ -19985,6 +19985,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminOpsEventDeletionAuditLogCleanup => 'Raderingslogg städad';
 
   @override
+  String get adminOpsEventRateLimitAbuse =>
+      'Konto upprepat stoppat av spärren samma dygn';
+
+  @override
   String get adminParsingSectionTitle => 'Parsning per domän';
 
   @override

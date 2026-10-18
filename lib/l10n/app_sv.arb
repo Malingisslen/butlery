@@ -16397,6 +16397,10 @@
   "@adminOpsEventDeletionAuditLogCleanup": {
     "description": "Ops-log event name for the deletion_audit_log_cleanup job"
   },
+  "adminOpsEventRateLimitAbuse": "Konto upprepat stoppat av spärren samma dygn",
+  "@adminOpsEventRateLimitAbuse": {
+    "description": "Ops-log alert name: one account was refused by the rate limiter 20 times on one UTC day (BUT-2138)"
+  },
   "adminParsingSectionTitle": "Parsning per domän",
   "@adminParsingSectionTitle": {
     "description": "Skiss spår 9 (v66): heading above the parsing table"

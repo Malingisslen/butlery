@@ -30646,6 +30646,12 @@ abstract class AppLocalizations {
   /// **'Raderingslogg städad'**
   String get adminOpsEventDeletionAuditLogCleanup;
 
+  /// Ops-log alert name: one account was refused by the rate limiter 20 times on one UTC day (BUT-2138)
+  ///
+  /// In sv, this message translates to:
+  /// **'Konto upprepat stoppat av spärren samma dygn'**
+  String get adminOpsEventRateLimitAbuse;
+
   /// Skiss spår 9 (v66): heading above the parsing table
   ///
   /// In sv, this message translates to:

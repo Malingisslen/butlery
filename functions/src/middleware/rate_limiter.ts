@@ -31,6 +31,7 @@ import * as admin from "firebase-admin";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
+import { recordViolation } from "./violation_alert";
 
 // =============================================================================
 // Types
@@ -633,6 +634,14 @@ async function logRateLimitViolation(
   operationType: string,
   result: RateLimitCheckResult
 ): Promise<void> {
+  // A denial from our own failed check is not the caller's doing (BUT-2138).
+  // Counted beside the row write, not after it, so a denial waits for one
+  // round trip rather than two; neither can throw.
+  const now = new Date();
+  const counted = result.unavailable
+    ? Promise.resolve()
+    : recordViolation(getFirestore(), userId, operationType, utcDayKey(now), now);
+
   try {
     // BUT-1692: `getFirestore()`, not `admin.firestore()` directly. This row is
     // the whole reason callers must go through `enforceRateLimit` rather than
@@ -651,6 +660,7 @@ async function logRateLimitViolation(
     // Don't fail the request if logging fails
     logger.warn("Failed to log rate limit violation:", error);
   }
+  await counted;
 }
 
 // =============================================================================
