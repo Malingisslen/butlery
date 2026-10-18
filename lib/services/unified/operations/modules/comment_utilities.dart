@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:get_it/get_it.dart';
 
 /// Focused module for comment utilities and statistics
@@ -19,8 +20,16 @@ import 'package:get_it/get_it.dart';
 /// - Comment content validation
 /// ❌ DOES NOT CONTAIN: Comment CRUD, likes, notifications, content operations
 class CommentUtilities {
-  static final CommentsRepository _commentsRepository =
-      GetIt.instance<CommentsRepository>();
+  static CommentsRepository? _repositoryOverride;
+
+  // Resolved per call: a repository captured once per process would keep
+  // answering for the first test's mock.
+  static CommentsRepository get _commentsRepository =>
+      _repositoryOverride ?? GetIt.instance<CommentsRepository>();
+
+  @visibleForTesting
+  static void overrideRepository(CommentsRepository? repository) =>
+      _repositoryOverride = repository;
 
   /// Check if user can comment on recipe
   static bool canCommentOnRecipe({
@@ -88,50 +97,6 @@ class CommentUtilities {
 
     // Only comment author can edit
     return comment.authorId == currentUserId;
-  }
-
-  /// Increment reply count for parent comment
-  static Future<void> incrementReplyCount({
-    required String parentCommentId,
-  }) async {
-    try {
-      // Get current comment
-      final comment = await _commentsRepository.read(parentCommentId);
-      if (comment != null) {
-        // Update reply count - this is a simplified approach
-        // In a more robust system, reply count would be managed by the repository
-        final updatedComment = comment.copyWith(
-          replyCount: comment.replyCount + 1,
-        );
-        await _commentsRepository.update(updatedComment);
-        AppLogger.debug(
-          '✅ Incremented reply count for comment $parentCommentId',
-        );
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Failed to increment reply count: $e');
-    }
-  }
-
-  /// Decrement reply count for parent comment
-  static Future<void> decrementReplyCount({
-    required String parentCommentId,
-  }) async {
-    try {
-      // Get current comment
-      final comment = await _commentsRepository.read(parentCommentId);
-      if (comment != null) {
-        // Update reply count - this is a simplified approach
-        final newCount = comment.replyCount > 0 ? comment.replyCount - 1 : 0;
-        final updatedComment = comment.copyWith(replyCount: newCount);
-        await _commentsRepository.update(updatedComment);
-        AppLogger.debug(
-          '✅ Decremented reply count for comment $parentCommentId',
-        );
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Failed to decrement reply count: $e');
-    }
   }
 
   /// Get reply count for comment

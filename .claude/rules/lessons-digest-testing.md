@@ -81,3 +81,4 @@ they simply do not load in sessions that never open a test file.
 - Ett muteringsprov över HELA testfilen krediterar rött till fel påstående — skopa till det enda testet och skriv ut den fallande raden; ett prov på EN variant bevisar ingen klass, och en granskare som håller med är inte en mätning (BUT-1899, 2026-09-20)
 - A comment explaining WHY a test or guard is shaped as it is asserts what it CATCHES … Write such a clause only after mutation-probing what it describes (BUT-1929, 2026-08-27)
 - En utforskares fil:rad för ett matrisfynd är en gissning — läs fyndets egen mätning (SemanticsNode-rekt/tooltip i resultat-JSON:en, `BoxConstraints` ur felet) innan koden ändras (BUT-2194, BUT-2190, 2026-09-30)
+- Ett mock-repo bakom en `static final` binds av det FÖRSTA provet i processen — bara det provet kan rodna vid en revert-sond; kör varje nytt prov ensamt eller injicera repot (BUT-2379, 2026-10-18)

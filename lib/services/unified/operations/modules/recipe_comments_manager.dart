@@ -82,7 +82,6 @@ class RecipeCommentsManager {
         _afterCommentPosted(
           recipeId: recipeId,
           commentId: commentId,
-          parentCommentId: parentCommentId,
           mentions: mentions,
         ),
       );
@@ -97,17 +96,9 @@ class RecipeCommentsManager {
   Future<void> _afterCommentPosted({
     required String recipeId,
     required String commentId,
-    String? parentCommentId,
     List<String>? mentions,
   }) async {
     try {
-      // Update reply count if this is a reply
-      if (parentCommentId != null) {
-        await CommentUtilities.incrementReplyCount(
-          parentCommentId: parentCommentId,
-        );
-      }
-
       // Send notifications
       final recipe = _getRecipe(recipeId);
       if (recipe != null) {
@@ -246,13 +237,6 @@ class RecipeCommentsManager {
     );
 
     if (result) {
-      // Update reply count if this was a reply
-      if (comment.parentCommentId != null) {
-        await CommentUtilities.decrementReplyCount(
-          parentCommentId: comment.parentCommentId!,
-        );
-      }
-
       // Update comment streams
       _notifyCommentStreams(comment.recipeId);
     }

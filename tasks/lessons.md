@@ -4720,3 +4720,9 @@ Date: 2026-10-17
 Trigger: Granskningen av vyer utan skiss (BUT-2395). Bilderna renderades först på en utcheckning som låg 34 incheckningar efter origin/main, och när 24 vyer fick en host i golden-harnessen blev 13 textskalafall röda i CI.
 Rule: Kör `git fetch origin main` innan du mäter eller renderar. En ny host körs av varje svit som loopar över `reviewHosts` (textskala, tillgänglighetsmatris), så kör `text_scale_all_views_test.dart` innan push; fynd som är verkliga får ett ärende och en pinnad post, aldrig en borttagen kontroll.
 Example: 2026-10-17 — PR #868, BUT-2396.
+
+### Ett prov mot ett mock-repo bakom en `static final` mäter bara det FÖRSTA provet (2026-10-18)
+Date: 2026-10-18
+Trigger: BUT-2379. `CommentUtilities._commentsRepository` var `static final` och band den första testets mock för hela processen. Med felet återställt rodnade bara provet som råkade köra först; raderings-provet gick grönt i hela filen och rodnade bara körd ensam.
+Rule: När en hjälpare håller sitt repo i en `static final`, bevisar bara ETT prov per process en revert-sond. Slå upp repot per anrop och låt provet sätta det (`overrideRepository`), och sondera varje prov i hela filens körning, inte ensamt.
+Example: 2026-10-18 — `CommentUtilities.repositoryOverride`; båda proven rodnar nu i hela filen med den gamla koden återställd.
