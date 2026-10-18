@@ -225,7 +225,7 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "allowlist is exactly the BUT-641 routes plus the BUT-2353 two (no drift)",
+    name: "allowlist is exactly the BUT-641 routes plus the BUT-2353 two and the BUT-2400 four (no drift)",
     fn: () => {
       const expected = [
         "/recipe",
@@ -236,6 +236,10 @@ const cases: UnitCase[] = [
         "/winback",
         "/my_reports",
         "/my_content_decisions",
+        "/conversation",
+        "/friends",
+        "/group",
+        "/home",
       ];
       assertEqual(NOTIFICATION_ROUTES.length, expected.length, "route count");
       for (const r of expected) {

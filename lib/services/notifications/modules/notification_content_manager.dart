@@ -140,6 +140,7 @@ class NotificationContentManager {
         'timestamp': clock.now().toIso8601String(),
         'user_id': _userId,
         ...?additionalData,
+        ...strategy.deepLinkData(additionalData),
       };
 
       final template = NotificationTemplate(
@@ -190,6 +191,7 @@ class NotificationContentManager {
         'user_id': _userId,
         'language': 'en',
         ...?additionalData,
+        ...strategy.deepLinkData(additionalData),
       };
 
       return NotificationTemplate(
@@ -242,6 +244,7 @@ class NotificationContentManager {
           'batched': true,
           'count': notifications.length,
           'original_notifications': notifications.map((n) => n.data).toList(),
+          ...NotificationTemplate.batchDestination(notifications),
         },
         imageUrl: firstNotification.imageUrl, // Use first notification's image
         actions: _generateBatchActions(category),
@@ -329,6 +332,7 @@ class NotificationContentManager {
         'category': strategy.category.name,
         'timestamp': clock.now().toIso8601String(),
         'fallback': true,
+        ...strategy.deepLinkData(null),
       },
     );
   }

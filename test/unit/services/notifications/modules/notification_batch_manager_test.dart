@@ -51,6 +51,8 @@ void main() {
       Duration? batchWindow,
     }) {
       return NotificationStrategy(
+        notificationType: 'test',
+        destination: NotificationDestination(NotificationRoutes.home),
         type: type ?? NotificationType.batchable,
         priority: NotificationPriority.medium,
         category: category ?? NotificationCategory.social,
@@ -583,6 +585,33 @@ void main() {
         final combinedNotification = sentBatch.notifications.first;
         expect(combinedNotification.data['batched'], isTrue);
         expect(combinedNotification.data['count'], equals(3));
+      });
+
+      test('a summary of items for different recipes lands home', () async {
+        final batch = createTestBatch(
+          batchKey: 'mixed-routes',
+          notifications: [
+            for (final id in ['r1', 'r2'])
+              createTestTemplate(
+                data: {
+                  'category': 'recipes',
+                  'route': NotificationRoutes.commentThread,
+                  'targetId': id,
+                  'notificationType': 'comment_posted',
+                },
+              ),
+          ],
+        );
+        when(
+          () => mockRepository.getBatchByKey('mixed-routes'),
+        ).thenAnswer((_) async => batch);
+
+        await batchManager.forceBatchProcessing('mixed-routes');
+
+        final data = sentBatches.single.notifications.single.data;
+        expect(data['route'], NotificationRoutes.home);
+        expect(data['targetId'], '');
+        expect(data['notificationType'], 'comment_posted');
       });
 
       test('should carry the summary in every supported language', () async {

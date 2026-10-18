@@ -127,6 +127,8 @@ void main() {
       test('should create strategy with required fields', () {
         // Arrange & Act
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.friends,
@@ -145,6 +147,8 @@ void main() {
       test('should create strategy with optional batch configuration', () {
         // Arrange & Act
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.batchable,
           priority: NotificationPriority.medium,
           category: NotificationCategory.social,
@@ -161,6 +165,8 @@ void main() {
       test('should create strategy with localization', () {
         // Arrange & Act
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.critical,
           category: NotificationCategory.recipes,
@@ -303,6 +309,8 @@ void main() {
       test('should create template from strategy with variables', () {
         // Arrange
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.friends,
@@ -334,6 +342,8 @@ void main() {
       test('should create template from strategy with additional data', () {
         // Arrange
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.batchable,
           priority: NotificationPriority.medium,
           category: NotificationCategory.social,
@@ -363,6 +373,8 @@ void main() {
       test('should use fallback text when localization missing', () {
         // Arrange
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.system,
@@ -560,6 +572,8 @@ void main() {
       test('should handle empty strings in localization', () {
         // Arrange
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.friends,
@@ -584,6 +598,8 @@ void main() {
       test('should handle special characters in template variables', () {
         // Arrange
         const strategy = NotificationStrategy(
+          notificationType: 'test',
+          destination: NotificationDestination(NotificationRoutes.home),
           type: NotificationType.immediate,
           priority: NotificationPriority.high,
           category: NotificationCategory.recipes,

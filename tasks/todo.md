@@ -1,34 +1,57 @@
-# Adminpanelen v17: ny ram, samma flikar (2026-10-12)
+# BUT-2400: app push notifications rejected by `sendNotification` (2026-10-18)
 
-Malin chose "Ny ram, samma flikar" on the card in the thread "Mer och undersidorna"
-(2026-10-12 09.34). Sketch: `design/skiss-mot-app/17-admin.png`, frame
-`del_3_sok_och_skalbevis#29`. The panel is web-only and admin-only. Router tier: single
-(Software Architect, Product Manager); no sensitive domain, no data, rules or auth change.
+Router tier: single (Database Administrator / Data-layer Engineer, Vendor / Procurement
+Manager; matched on `functions/src/shared/notification-payload.ts`). No rules, auth or GDPR
+change. `firestore.rules` is not touched.
 
-No architecture-changing unknowns. Assumptions: the six tabs and their data stay; Moderering
-is not added; the statistic tiles show what the Feedback tab already holds (new, in progress,
-resolved among the loaded reports), not new queries.
+## Cause
 
-## Shared parts (one place each, every tab uses them)
+`sendNotification` runs every payload through `buildNotificationPayload` (BUT-641), which
+throws without `route` and `notificationType`. The app's two template builders
+(`NotificationContentManager.createTemplate`, `NotificationTemplate.fromStrategy`) never stamp
+either, so every app-sent push is refused with `invalid-argument`. Silent pushes hit the same
+check. Twin found while reading: `_handleMessageOpened` never forwards `notificationId` to the
+router, so `recordNotificationOpened` never runs for a tapped push.
 
-- `AdminTopBar`: dark bar with "Butlery Admin", the six tabs as text with an underline on the
-  selected one, and the signed-in e-mail with a sign-out button on the right. Replaces
-  `AdminRail` in `admin_shell.dart`. Scrolls sideways when narrow.
-- `AdminTabHeader`: the title and the tab's own actions (refresh, export) as a light header
-  row. Replaces the per-tab `ButleryTopBar.undersida` in feedback, metrics, ops log and
-  parsing so there is one dark bar, not two.
-- `AdminStatCard`: restyled to the sketch tile (rule above, overline label, big value). Every
-  tab's tiles change with it.
-- Feedback rows: a table row per report with the existing detail and status control.
+## Change
 
-## Verification
+1. `NotificationStrategy` gets required `route`, `notificationType` and optional
+   `targetIdKey` (the `additionalData` key whose value is the destination id). One method
+   builds `{route, targetId, notificationType}`; both template builders and the fallback
+   template spread it last, so schema wins on collision (as on the server).
+2. The two inline strategies (chat message, recipe share request) become named constants so
+   the drift test can see them.
+3. New routes, added on both sides in the same change: `/conversation` (chat, id =
+   conversationId), `/friends` (accepted request), `/group` (ping, id = groupId), `/home`
+   (digest and strategies with no destination). The router opens chat, friends list and group
+   detail for them.
+4. Cook-snap push adds `recipeId` so it opens the recipe.
+5. A batched push keeps the first item's destination only when every item shares it,
+   otherwise `/home`.
+6. Silent push (`member_removed`) carries the schema fields.
+7. `_handleMessageOpened` forwards `notificationId`.
 
-Analyze, the admin tests (`test/widget/views/admin`, `test/unit/viewmodels/admin`,
-`test/widget/admin`), a rendered image of the Feedback tab at web width for the PR, and the
-design-state hosts for the admin screens.
+## Proof
+
+- Dart test: parses `NOTIFICATION_ROUTES` out of `functions/src/shared/notification-payload.ts`,
+  asserts it equals `NotificationRoutes.all`, and that every strategy in
+  `NotificationStrategy.all` + `RecipeActivityStrategies.all` has a route in it and a
+  non-empty `notificationType`.
+- Dart test: each strategy's template data passes the server's checks (route known,
+  targetId string, type non-empty) and the router opens the expected screen for each route.
+- Functions tests updated for the new allowlist.
+- Emulator: call `sendNotification` with a payload built by the app's template code for every
+  strategy and see it accepted (no `invalid-argument`).
+
+## Deploy
+
+Functions first (`sendNotification`, `sendNotificationBatch`), then the app picks the routes up
+in the next build. An old server would refuse the new routes, so the order matters.
 
 ## Summary for Malin
 
-The admin panel gets the sketch's look: a dark bar across the top with the tabs, four
-summary tiles, and feedback as a table where you click a row to open it. The six tabs and
-what they show stay as they are. The "Moderering" tab from the sketch is not added.
+Alla pushnotiser som appen själv skickar (vänförfrågan, chatt, knuff, delat recept, matbild,
+kommentarer) stoppades av servern eftersom appen inte talade om vilken sida notisen skulle
+öppna. Lagningen ger varje notistyp en sida att öppna, lägger till de sidor som saknades
+(chatten, vänlistan, gruppen) och ett test som larmar om appen och servern någonsin glider
+isär igen.

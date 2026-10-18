@@ -427,6 +427,7 @@ class NotificationBatchManager {
           .toSet()
           .toList(),
       'batch_types': notifications.map((n) => n.data['type']).toSet().toList(),
+      ...NotificationTemplate.batchDestination(notifications),
     };
 
     return NotificationTemplate(

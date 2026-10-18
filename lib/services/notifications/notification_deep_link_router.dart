@@ -13,11 +13,8 @@
 /// missing-route handling. Putting the routing in a class lets us test it
 /// without spinning up a full Flutter binding.
 ///
-/// **Route constants live here** so the Cloud Functions agent has one
-/// canonical list to align outgoing payloads against. If you add a route,
-/// add the constant AND the case in [route]. If a Cloud Functions sender
-/// uses a string not in [NotificationRoutes.all], the router falls back to
-/// home + logs `notification_payload_unknown_route` so the drift surfaces
+/// If a sender uses a string not in [NotificationRoutes.all], the router
+/// falls back to home + logs `notification_payload_unknown_route` so the drift surfaces
 /// in analytics.
 library;
 
@@ -35,48 +32,9 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/models/social/decision_detail_args.dart';
+import 'package:butlery/services/notifications/notification_routes.dart';
 
-/// Notification payload route strings. These MUST stay in sync with the
-/// strings the Cloud Functions sender (`functions/src/notifications/`)
-/// emits in the FCM `data.route` field.
-abstract final class NotificationRoutes {
-  /// Recipe detail. `targetId` = recipeId.
-  static const String recipe = '/recipe';
-
-  /// Friend request inbox. `targetId` ignored (the inbox is the recipient).
-  static const String friendRequest = '/friend_request';
-
-  /// Recipe detail with comment thread auto-scrolled. `targetId` = recipeId.
-  static const String commentThread = '/comment_thread';
-
-  /// Active cooking session. `targetId` = sessionId (group id).
-  static const String cookingSession = '/cooking_session';
-
-  /// Menu voting screen. `targetId` ignored.
-  static const String menuVoting = '/menu_voting';
-
-  /// Re-engagement / "we miss you" deep links — always land on home.
-  /// `targetId` ignored.
-  static const String winback = '/winback';
-
-  /// The caller's own report decision. `targetId` = reportId.
-  static const String myReports = '/my_reports';
-
-  /// A decision about the caller's own content. `targetId` = reportId.
-  static const String myContentDecisions = '/my_content_decisions';
-
-  /// All known route strings. Used by tests and by the unknown-route guard.
-  static const Set<String> all = <String>{
-    recipe,
-    friendRequest,
-    commentThread,
-    cookingSession,
-    menuVoting,
-    winback,
-    myReports,
-    myContentDecisions,
-  };
-}
+export 'package:butlery/services/notifications/notification_routes.dart';
 
 /// Type of the test-seam callback that records a notification-open event
 /// server-side. Production wiring resolves to the `recordNotificationOpened`
@@ -294,6 +252,18 @@ class NotificationDeepLinkRouter {
       case NotificationRoutes.myContentDecisions:
         _openDecision(navigator, AppealRole.owner, targetId);
         break;
+      case NotificationRoutes.conversation:
+        _pushWithIdOrHome(navigator, Routes.chat, targetId);
+        break;
+      case NotificationRoutes.friends:
+        navigator.pushNamed(Routes.friends);
+        break;
+      case NotificationRoutes.group:
+        _pushWithIdOrHome(navigator, Routes.groupDetail, targetId);
+        break;
+      case NotificationRoutes.home:
+        _goHome(navigator);
+        break;
     }
   }
 
@@ -351,6 +321,15 @@ class NotificationDeepLinkRouter {
     navigator.pushNamed(
       role == AppealRole.owner ? Routes.myContentDecisions : Routes.myReports,
     );
+  }
+
+  /// Both screens throw on a missing id, so without one the tap lands home.
+  void _pushWithIdOrHome(NavigatorState navigator, String route, String? id) {
+    if (_isNonEmpty(id)) {
+      navigator.pushNamed(route, arguments: id);
+    } else {
+      _goHome(navigator);
+    }
   }
 
   void _goHome(NavigatorState? navigator) {

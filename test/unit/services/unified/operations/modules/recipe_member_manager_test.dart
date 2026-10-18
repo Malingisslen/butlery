@@ -277,6 +277,18 @@ void main() {
           updatedRecipe.socialData?.memberPermissions?.containsKey('user_456'),
           isFalse,
         );
+        // BUT-2400: the server refuses a silent push without these too.
+        final data =
+            verify(
+                  () => mockNotificationService.sendSilentNotification(
+                    targetUserIds: ['user_456'],
+                    data: captureAny(named: 'data'),
+                  ),
+                ).captured.single
+                as Map<String, dynamic>;
+        expect(data['route'], NotificationRoutes.recipe);
+        expect(data['targetId'], 'collab_1');
+        expect(data['notificationType'], 'member_removed');
       });
 
       test('should prevent owner from being removed', () async {

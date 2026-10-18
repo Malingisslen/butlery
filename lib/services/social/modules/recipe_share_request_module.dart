@@ -158,14 +158,11 @@ class RecipeShareRequestModule {
 
     final sv = lookupAppLocalizations(const Locale('sv'));
     final en = lookupAppLocalizations(const Locale('en'));
-    final strategy = NotificationStrategy(
-      type: NotificationType.immediate,
-      priority: NotificationPriority.critical,
-      category: NotificationCategory.friends,
+    final strategy = NotificationStrategy.recipeShareRequest.withLocalization(
       // BUT-1744: the push text is baked on this device and the recipient's
       // language is not known here, so each language slot is built from its
       // own localization rather than both from the sender's.
-      localization: {
+      {
         'title_sv': sv.recipeShareRequestNotifTitle,
         'title_en': en.recipeShareRequestNotifTitle,
         'body_sv': sv.recipeShareRequestNotifBody(

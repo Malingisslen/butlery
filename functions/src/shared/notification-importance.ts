@@ -24,6 +24,13 @@ const HIGH_IMPORTANCE_TYPES: ReadonlySet<string> = new Set([
   "menu_share_received",
   "cooking_session_started",
   "cooking_session_invite",
+  // BUT-2400: app-sent pushes a person is waiting on. A chat message
+  // (`new_message`) stays low: delaying it would keep its text in
+  // `scheduled_notifications` and release one push per message at once.
+  "ping",
+  "recipe_share_request",
+  "collaboration_invite",
+  "comment_mention",
 ]);
 
 const LOW_IMPORTANCE_TYPES: ReadonlySet<string> = new Set([

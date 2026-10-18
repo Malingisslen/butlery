@@ -295,17 +295,9 @@ class MessageSendingOperations {
           .toList();
 
       if (targetUserIds.isNotEmpty) {
-        // Create notification strategy for messaging
-        const strategy = NotificationStrategy(
-          type: NotificationType.immediate,
-          priority: NotificationPriority.high,
-          category: NotificationCategory.messaging,
-        );
-
-        // Send notification
         await notificationService.sendImmediateNotification(
           targetUserIds: targetUserIds,
-          strategy: strategy,
+          strategy: NotificationStrategy.chatMessage,
           variables: {
             'title': title,
             'body': body,

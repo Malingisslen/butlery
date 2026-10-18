@@ -573,17 +573,18 @@ class RecipeMemberManager {
     required String removedMemberId,
   }) async {
     final currentUserName = _getCurrentUserDisplayName() ?? '?';
+    final data = <String, dynamic>{
+      'type': 'member_removed',
+      'recipeId': recipeId,
+      'recipeTitle': recipeTitle,
+      'removedBy': currentUserName,
+    };
 
     await NotificationHelper.sendSilentSafely(
       notificationService: _notificationService,
       operationName: 'Send member removed notification to $removedMemberId',
       targetUserIds: [removedMemberId],
-      data: {
-        'type': 'member_removed',
-        'recipeId': recipeId,
-        'recipeTitle': recipeTitle,
-        'removedBy': currentUserName,
-      },
+      data: {...data, ...NotificationStrategy.memberRemoved.deepLinkData(data)},
     );
   }
 

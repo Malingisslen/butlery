@@ -158,6 +158,7 @@ class CookSnapService extends BaseService {
         if (recipeAuthorId != userId) {
           _notifyRecipeAuthor(
             recipeAuthorId: recipeAuthorId,
+            recipeId: recipeId,
             senderName: profile?.displayName ?? '?',
             recipeName: recipeName,
           );
@@ -245,6 +246,7 @@ class CookSnapService extends BaseService {
 
   void _notifyRecipeAuthor({
     required String recipeAuthorId,
+    required String recipeId,
     required String senderName,
     required String recipeName,
   }) {
@@ -257,6 +259,7 @@ class CookSnapService extends BaseService {
           'senderName': senderName,
           'recipeName': recipeName,
         },
+        additionalData: {'recipeId': recipeId},
       );
     } catch (e) {
       // Non-critical — don't fail the snap creation if notification fails

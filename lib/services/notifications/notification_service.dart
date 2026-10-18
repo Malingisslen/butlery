@@ -518,6 +518,7 @@ class NotificationService extends BaseService {
         onNotificationTapped!(route.orEmpty(), <String, String?>{
           'id': targetId,
           'notificationType': notificationType,
+          'notificationId': notificationId,
         });
       }
     } catch (e) {

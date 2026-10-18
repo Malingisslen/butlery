@@ -27,6 +27,8 @@ void main() {
       Map<String, String>? localization,
     }) {
       return NotificationStrategy(
+        notificationType: 'test',
+        destination: NotificationDestination(NotificationRoutes.home),
         type: type ?? NotificationType.immediate,
         priority: priority ?? NotificationPriority.medium,
         category: category ?? NotificationCategory.social,
@@ -362,6 +364,82 @@ void main() {
           () => contentManager.buildBatchedNotification(notifications),
           throwsA(isA<ArgumentError>()),
         );
+      });
+    });
+
+    group('Deep-link fields (BUT-2400)', () {
+      const strategy = NotificationStrategy.chatMessage;
+      const extra = <String, dynamic>{
+        'conversationId': 'conv-1',
+        'route': '/not-a-route',
+        'notificationType': '',
+      };
+
+      void expectChatFields(NotificationTemplate t, String targetId) {
+        expect(t.data['route'], NotificationRoutes.conversation);
+        expect(t.data['targetId'], targetId);
+        expect(t.data['notificationType'], 'new_message');
+      }
+
+      test('createNotificationContent stamps them over additionalData', () {
+        expectChatFields(
+          contentManager.createNotificationContent(
+            strategy: strategy,
+            variables: const {'title': 'Anna', 'body': 'Hej'},
+            additionalData: extra,
+          ),
+          'conv-1',
+        );
+      });
+
+      test('createEnglishTemplate stamps them over additionalData', () {
+        expectChatFields(
+          contentManager.createEnglishTemplate(
+            strategy: strategy,
+            variables: const {'title': 'Anna', 'body': 'Hej'},
+            additionalData: extra,
+          ),
+          'conv-1',
+        );
+      });
+
+      test('a batch sharing one destination keeps it', () {
+        final items = [
+          for (var i = 0; i < 2; i++)
+            contentManager.createNotificationContent(
+              strategy: strategy,
+              variables: const {},
+              additionalData: const {'conversationId': 'conv-1'},
+            ),
+        ];
+        expectChatFields(
+          contentManager.buildBatchedNotification(items),
+          'conv-1',
+        );
+      });
+
+      test('a batch with different destinations lands home', () {
+        final items = [
+          for (final id in ['conv-1', 'conv-2'])
+            contentManager.createNotificationContent(
+              strategy: strategy,
+              variables: const {},
+              additionalData: {'conversationId': id},
+            ),
+        ];
+        final batched = contentManager.buildBatchedNotification(items);
+        expect(batched.data['route'], NotificationRoutes.home);
+        expect(batched.data['targetId'], '');
+        expect(batched.data['notificationType'], 'new_message');
+      });
+
+      test('a batch of templates stored without a route lands home', () {
+        final batched = contentManager.buildBatchedNotification([
+          createTestTemplate(),
+          createTestTemplate(),
+        ]);
+        expect(batched.data['route'], NotificationRoutes.home);
+        expect(batched.data['notificationType'], 'batched');
       });
     });
 

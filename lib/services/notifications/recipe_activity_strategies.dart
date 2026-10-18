@@ -7,6 +7,11 @@ class RecipeActivityStrategies {
   RecipeActivityStrategies._();
 
   static const commentReply = NotificationStrategy(
+    notificationType: 'comment_reply',
+    destination: NotificationDestination(
+      NotificationRoutes.commentThread,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.batchable,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -25,6 +30,11 @@ class RecipeActivityStrategies {
   );
 
   static const commentMention = NotificationStrategy(
+    notificationType: 'comment_mention',
+    destination: NotificationDestination(
+      NotificationRoutes.commentThread,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.batchable,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -43,6 +53,11 @@ class RecipeActivityStrategies {
   );
 
   static const commentLike = NotificationStrategy(
+    notificationType: 'comment_like',
+    destination: NotificationDestination(
+      NotificationRoutes.commentThread,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.batchable,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -59,6 +74,11 @@ class RecipeActivityStrategies {
   /// Ratings, rating milestones and rating summaries. The sentence is built
   /// by the caller, so the template only frames it.
   static const ratingNotice = NotificationStrategy(
+    notificationType: 'rating_notice',
+    destination: NotificationDestination(
+      NotificationRoutes.recipe,
+      targetIdKey: 'recipeId',
+    ),
     type: NotificationType.immediate,
     priority: NotificationPriority.medium,
     category: NotificationCategory.recipes,
@@ -69,4 +89,12 @@ class RecipeActivityStrategies {
       'body_en': '{message}',
     },
   );
+
+  /// Every strategy above, for the payload contract test.
+  static const List<NotificationStrategy> all = [
+    commentReply,
+    commentMention,
+    commentLike,
+    ratingNotice,
+  ];
 }
