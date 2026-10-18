@@ -5,6 +5,9 @@
  * BUT-2213: read-only count of `realtime_recipes` documents and of the
  * `presence` rows under them, before the code that erases and exports them is
  * removed.
+ * BUT-2332: read-only count of groups whose `ownerId` names a different account
+ * than the one they are stored under, which only the retired
+ * `transferOwnership` could leave behind.
  *
  * Prints counts only, never a uid, so the job log can be read by anyone with
  * access to the repository. Writes nothing.
@@ -67,6 +70,27 @@ async function main() {
     (d) => d.ref.parent.parent?.parent.id === "realtime_recipes",
   ).length;
   console.log(`realtime_recipes_presence_rows=${recipePresence}`);
+
+  // Only the live `users/{uid}/friend_categories` spelling; `handOverGroup`
+  // refuses a group whose `ownerId` is not the account it is stored under.
+  const groups = await db.collectionGroup("friend_categories").select("ownerId").get();
+  let userGroups = 0;
+  let ownerMismatch = 0;
+  let ownerMissing = 0;
+  for (const doc of groups.docs) {
+    const account = doc.ref.parent.parent;
+    if (account?.parent.id !== "users") continue;
+    userGroups++;
+    const ownerId = doc.get("ownerId");
+    if (typeof ownerId !== "string" || ownerId === "") {
+      ownerMissing++;
+    } else if (ownerId !== account.id) {
+      ownerMismatch++;
+    }
+  }
+  console.log(`friend_categories_docs=${userGroups}`);
+  console.log(`friend_categories_owner_mismatch=${ownerMismatch}`);
+  console.log(`friend_categories_owner_missing=${ownerMissing}`);
 }
 
 main().catch((err) => {

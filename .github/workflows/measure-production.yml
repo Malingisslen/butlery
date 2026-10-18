@@ -1,4 +1,4 @@
-# BUT-2278, BUT-2260, BUT-2031 and BUT-1814: read-only measurements against butlery-app-1.
+# BUT-2278, BUT-2260, BUT-2031, BUT-1814 and BUT-2332: read-only measurements against butlery-app-1.
 #
 # Writes nothing to Firestore or anywhere else in the project. Prints counts
 # only, never a uid or a log line's text, because the onUserDeleted error line
@@ -48,7 +48,7 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
           echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
 
-      - name: "BUT-2278 and BUT-2260: searchable minor profiles, recipe cache"
+      - name: "BUT-2278, BUT-2260 and BUT-2332: minor profiles, recipe cache, group owners"
         working-directory: functions
         run: node scripts/measure-launch-risks.js | tee -a "$GITHUB_STEP_SUMMARY"
 
