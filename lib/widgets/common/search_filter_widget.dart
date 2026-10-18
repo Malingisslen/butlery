@@ -361,7 +361,12 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   /// Search bar with integrated filter toggle
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.space12),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.space12,
+        AppDimensions.space8,
+        AppDimensions.space12,
+        AppDimensions.space4,
+      ),
       child: ButlerySearchBox(
         controller: _searchController,
         focusNode: _searchFocusNode,

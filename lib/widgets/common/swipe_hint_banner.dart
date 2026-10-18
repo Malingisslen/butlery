@@ -115,13 +115,13 @@ class _SwipeHintBannerState extends State<SwipeHintBanner> {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space8,
-        vertical: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.space8,
-        AppDimensions.space8,
         AppDimensions.space4,
-        AppDimensions.space8,
+        AppDimensions.space4,
+        AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         // The information surface, without a border (B83-2b), with the
