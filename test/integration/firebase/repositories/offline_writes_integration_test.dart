@@ -1,6 +1,6 @@
-/// Emulator-lane test: pantry, personal shopping-list, week menu and recipe
-/// comment saves made without a connection (BUT-2287, BUT-2288, BUT-2289,
-/// BUT-2363).
+/// Emulator-lane test: pantry, personal shopping-list, week menu, recipe
+/// comment, profile and chat saves made without a connection (BUT-2287,
+/// BUT-2288, BUT-2289, BUT-2363, BUT-2290, BUT-2291).
 ///
 /// Firestore keeps an offline write in its own queue and sends it on
 /// reconnect, but the write's future only settles when the server answers.
@@ -21,7 +21,14 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
+import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_item_operations_module.dart';
@@ -318,6 +325,104 @@ void main() {
           all.docs.map((d) => d.data()['text']),
           unorderedEquals(['Gott!', 'Igen!']),
         );
+      },
+    );
+
+    test(
+      'profile: saving the profile and a setting return offline and reach the '
+      'server on reconnect',
+      () async {
+        final repo = FirebaseUserRepository(
+          firestore: firestore,
+          authRepository: _signedIn(),
+        );
+
+        await firestore.disableNetwork();
+        await repo
+            .saveProfile(
+              UserProfile(
+                uid: _uid,
+                displayName: 'Alice',
+                email: 'alice@example.com',
+                joinedAt: DateTime.utc(2026, 1, 1),
+                lastActiveAt: DateTime.utc(2026, 1, 1),
+              ),
+            )
+            .timeout(_offlineBudget);
+        await repo.setShowNutritionStrip(_uid, true).timeout(_offlineBudget);
+
+        await firestore.enableNetwork();
+        await firestore.waitForPendingWrites();
+        final profile = await firestore
+            .collection(FirestoreCollections.publicProfiles)
+            .doc(_uid)
+            .get(const GetOptions(source: Source.server));
+        expect(profile.data()?['displayName'], 'Alice');
+        final settings = await firestore
+            .collection(FirestoreCollections.users)
+            .doc(_uid)
+            .collection(FirestoreCollections.userSettings)
+            .doc('preferences')
+            .get(const GetOptions(source: Source.server));
+        expect(settings.data()?['showNutritionStrip'], true);
+      },
+    );
+
+    test(
+      'chat: sending a message and reacting to it return offline and reach the '
+      'server on reconnect',
+      () async {
+        final conversations = firestore.collection('conversations');
+        final messages = firestore.collection(FirestoreCollections.messages);
+        await conversations.doc('conv-1').set({
+          'participantIds': [_uid, 'bob'],
+        });
+        final message = Message.text(
+          conversationId: 'conv-1',
+          senderId: _uid,
+          senderDisplayName: _uid,
+          content: 'Hej!',
+        );
+        final module = MessageMutationModule(
+          firestore: firestore,
+          collectionName: 'conversations',
+          messagesRef: messages,
+          readConversation: (id) async => Conversation(
+            id: id,
+            participantIds: const [_uid, 'bob'],
+            participantDisplayNames: const {_uid: 'Alice', 'bob': 'Bob'},
+            participantAvatarUrls: const {},
+            lastReadTimestamps: const {},
+            isGroup: false,
+            createdAt: DateTime.utc(2026, 1, 1),
+            updatedAt: DateTime.utc(2026, 1, 1),
+          ),
+        );
+        final reactions = MessageReactionsService(
+          firestoreRepository: FirestoreRepository(firestore: firestore),
+          authRepository: _signedIn(),
+        );
+
+        await firestore.disableNetwork();
+        await module.sendMessage(message).timeout(_offlineBudget);
+        await reactions
+            .toggleReaction(
+              messageId: message.id,
+              conversationId: 'conv-1',
+              userId: _uid,
+              emoji: '👍',
+            )
+            .timeout(_offlineBudget);
+
+        await firestore.enableNetwork();
+        await firestore.waitForPendingWrites();
+        final server = await messages
+            .doc(message.id)
+            .get(const GetOptions(source: Source.server));
+        expect(server.data()?['content'], 'Hej!');
+        expect(server.data()?['reactions'], {
+          '👍': [_uid],
+        });
       },
     );
   }, skip: emulatorOnlySkip);

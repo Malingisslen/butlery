@@ -10,6 +10,7 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 
 /// Conversation mutation module for write operations.
 ///
@@ -325,13 +326,16 @@ class ConversationMutationModule {
           .map((key) => 'perUserSettings.$userId.$key')
           .toList();
 
-      await docRef.set(
-        {
-          'perUserSettings': {
-            userId: settings,
+      await awaitOrLeaveQueued(
+        docRef.set(
+          {
+            'perUserSettings': {
+              userId: settings,
+            },
           },
-        },
-        SetOptions(mergeFields: mergeFieldPaths),
+          SetOptions(mergeFields: mergeFieldPaths),
+        ),
+        what: 'conversation settings ${conversationId.maskedConversationId}',
       );
 
       AppLogger.debug(

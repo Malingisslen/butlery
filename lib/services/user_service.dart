@@ -390,8 +390,7 @@ class UserService extends ChangeNotifier
   }
 
   /// BUT-2221: persists the name-on-shared-dishes opt-in on its own write
-  /// path. False when the write failed or the rules refused it (a minor, or
-  /// an account whose age is not verified); the profile then keeps its value.
+  /// path.
   Future<bool> setShowNameOnSharedDishes(bool enabled) async {
     _clearError();
     final profile = _currentUserProfile;

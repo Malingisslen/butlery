@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -46,29 +47,27 @@ class MessageReactionsService extends BaseService {
           .doc(messageId);
       final field = 'reactions.$emoji';
 
-      // Use a transaction to atomically check-and-toggle without race conditions
-      await _firestoreRepository.firestore.runTransaction((transaction) async {
-        final doc = await transaction.get(messageRef);
-        if (!doc.exists) {
-          AppLogger.warning('Message $messageId not found for reaction toggle');
-          return;
-        }
+      // Not a transaction: a transaction cannot run without a connection, and
+      // arrayUnion/arrayRemove are applied on the server whatever the array
+      // holds by then, so a reaction made offline is kept (BUT-2291).
+      final doc = await messageRef.get();
+      if (!doc.exists) {
+        AppLogger.warning('Message $messageId not found for reaction toggle');
+        return;
+      }
 
-        final data = doc.data();
-        final reactions = data?['reactions'] as Map<String, dynamic>? ?? {};
-        final currentVoters =
-            (reactions[emoji] as List<dynamic>?)?.cast<String>() ?? [];
+      final reactions = doc.data()?['reactions'] as Map<String, dynamic>? ?? {};
+      final currentVoters =
+          (reactions[emoji] as List<dynamic>?)?.cast<String>() ?? [];
 
-        if (currentVoters.contains(userId)) {
-          transaction.update(messageRef, {
-            field: FieldValue.arrayRemove([userId]),
-          });
-        } else {
-          transaction.update(messageRef, {
-            field: FieldValue.arrayUnion([userId]),
-          });
-        }
-      });
+      await awaitOrLeaveQueued(
+        messageRef.update({
+          field: currentVoters.contains(userId)
+              ? FieldValue.arrayRemove([userId])
+              : FieldValue.arrayUnion([userId]),
+        }),
+        what: 'reaction on $messageId',
+      );
     } catch (e) {
       AppLogger.error('Failed to toggle reaction on message $messageId', e);
       rethrow;
