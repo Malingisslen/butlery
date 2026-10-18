@@ -39,13 +39,22 @@ function extraCss(st, scope) {
   const rule = (sel, decls) => `${scoped(sel, scope)}{${important(decls)}}`;
   let css = '';
   const rowPad = pick(st.rowPad, 10), sectionGap = pick(st.sectionGap, 16), chipGap = pick(st.chipGap, 8), rowInner = pick(st.rowInner, 12);
-  if (rowPad !== 10) css += rule('.phone .b-row', `padding-top:${rowPad}px;padding-bottom:${rowPad}px`);
-  if (sectionGap !== 16) css += rule('.phone .b-section', `padding-top:${sectionGap}px`);
+  if (rowPad !== 10) {
+    css += rule('.phone .b-row,.phone .mr-item', `padding-top:${rowPad}px;padding-bottom:${rowPad}px`);
+    for (const [cls, h] of Object.entries(FIXED_ROWS)) css += rule(`.phone ${cls}`, `height:${+(h + 2 * (rowPad - 10)).toFixed(2)}px`);
+  }
+  if (sectionGap !== 16) {
+    css += rule('.phone .b-section', `padding-top:${sectionGap}px`);
+    css += rule('.phone .ik-sec,.phone .sk-sec', `margin-top:${sectionGap}px`);
+  }
   if (st.blockGap) css += rule('.phone .b-body > * + *:not(.b-section)', `margin-top:${st.blockGap}px`);
   else if (k !== 1) css += rule('.phone .b-body > * + *:not(.b-section)', `margin-top:${+(8 * k).toFixed(2)}px`);
-  if (chipGap !== 8) css += rule('.phone .b-chips,.phone .b-btnrow,.phone .b-field', `gap:${chipGap}px`);
-  if (rowInner !== 12) css += rule('.phone .b-row', `gap:${rowInner}px`);
-  if (st.hair !== 1) css += rule('.phone .b-row + .b-row', `border-top-width:${st.hair}px`);
+  if (chipGap !== 8) css += rule('.phone .b-chips,.phone .b-btnrow,.phone .b-field,.phone .mr-chips', `gap:${chipGap}px`);
+  if (rowInner !== 12) css += rule('.phone .b-row,.phone .mr-item,.phone .ik-item,.phone .sk-item', `gap:${rowInner}px`);
+  if (st.hair !== 1) {
+    css += rule('.phone .b-row + .b-row,.phone .sk-item + .sk-item', `border-top-width:${st.hair}px`);
+    css += rule('.phone .mr-item,.phone .ik-item', `border-bottom-width:${st.hair}px`);
+  }
   if (st.touch !== 48) {
     css += rule('.phone .b-iconbtn:not(.b-band .b-iconbtn)', `width:${st.touch}px;height:${st.touch}px`);
     css += rule('.phone .b-row,.phone .b-btn,.phone .b-input', `min-height:${st.touch}px`);
@@ -56,11 +65,8 @@ function extraCss(st, scope) {
     }
   }
   if (st.iconStroke) css += rule('.phone svg.i', `--icon-stroke:${st.iconStroke}`);
-  // The glyph markup sits in the page's sprite, so the line ends are set there.
-  if (!scope && st.iconStyle === 'round') css += '#butlery-icons g{stroke-linecap:round !important;stroke-linejoin:round !important}';
-  if (!scope && st.iconStyle === 'square') css += '#butlery-icons g{stroke-linecap:square !important;stroke-linejoin:miter !important}';
-  if (!scope && st.iconStyle === 'duo') css += '#butlery-icons g[fill="none"]{fill:currentColor !important;fill-opacity:.18}';
-  return css;
+  css += staticTextCss(st.scale / 100 * (scope ? 1 : SEE.text / 100), scope);
+  return css + pageMarginCss(st.margin, scope);
 }
 
 function spaceSummary(st, out) {
@@ -115,7 +121,29 @@ function iconOverrides() {
   }
   return map;
 }
+// A <use> clone ignores page rules aimed at the sprite, so the line ends are written onto the sprite's own markup.
+const ICON_ATTRS = ['stroke-linecap', 'stroke-linejoin', 'fill', 'fill-opacity'];
+let iconStyleDone = null;
+function applyIconStyle(style) {
+  const sprite = document.getElementById('butlery-icons');
+  const key = style + '|' + sprite.childElementCount;
+  if (key === iconStyleDone) return;
+  iconStyleDone = key;
+  for (const g of sprite.querySelectorAll('g')) {
+    g.labOrig ||= Object.fromEntries(ICON_ATTRS.map(a => [a, g.getAttribute(a)]));
+    const want = { ...g.labOrig };
+    if (style === 'round') Object.assign(want, { 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    if (style === 'square') Object.assign(want, { 'stroke-linecap': 'square', 'stroke-linejoin': 'miter' });
+    if (style === 'duo' && g.labOrig.fill === 'none') Object.assign(want, { fill: 'currentColor', 'fill-opacity': '.18' });
+    for (const a of ICON_ATTRS) {
+      if (want[a] === null) g.removeAttribute(a);
+      else if (g.getAttribute(a) !== want[a]) g.setAttribute(a, want[a]);
+    }
+  }
+}
+
 function applyIcons() {
+  applyIconStyle(compare ? '' : state.iconStyle);
   const over = iconOverrides();
   for (const use of document.querySelectorAll('#screens svg.i > use, #compare-grid svg.i > use')) {
     use.dataset.orig ||= use.getAttribute('href');

@@ -102,7 +102,7 @@ function wireViewTools() {
     const sel = document.getElementById(id);
     for (const [v, l] of list) sel.add(new Option(l, v));
     sel.value = SEE[key];
-    sel.onchange = () => { SEE[key] = num ? +sel.value : sel.value; applyViewTools(); };
+    sel.onchange = () => { SEE[key] = num ? +sel.value : sel.value; render(); };
   };
   fill('see-vision', VISION, 'vision');
   fill('see-text', TEXT_SIZES.map(v => [v, `Systemtext ${v} %`]), 'text', true);
@@ -115,7 +115,7 @@ function wireViewTools() {
     for (const [id, key] of [['see-vision', 'vision'], ['see-text', 'text'], ['see-device', 'device'], ['see-grid', 'grid']]) document.getElementById(id).value = SEE[key];
     document.getElementById('see-motion').checked = false;
     document.getElementById('see-safe').checked = false;
-    applyViewTools();
+    render();
   };
   // Alt over a part shows the distances to its neighbours and to the screen edges, like Figma.
   const screens = document.getElementById('screens');
