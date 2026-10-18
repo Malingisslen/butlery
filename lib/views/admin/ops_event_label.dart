@@ -16,6 +16,8 @@ String opsEventLabel(AppLocalizations l10n, String type) {
       return l10n.adminOpsEventAuditLogCleanup;
     case 'deletion_audit_log_cleanup':
       return l10n.adminOpsEventDeletionAuditLogCleanup;
+    case 'rate_limit_abuse_threshold_reached':
+      return l10n.adminOpsEventRateLimitAbuse;
   }
   final words = type
       .replaceAllMapped(RegExp('([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}')
