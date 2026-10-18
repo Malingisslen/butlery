@@ -20,6 +20,9 @@ for (const fig of [...document.querySelectorAll('#screens > figure')]) {
   dark.querySelector('.phone').dataset.theme = 'dark';
   fig.after(dark);
 }
+tagStaticText();
+tagPageMargins();
+measureFixedRows();
 snapshotLayoutBase();
 
 // A script-made <style> element can be refused by a page policy that only trusts the page's own

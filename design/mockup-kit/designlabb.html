@@ -751,20 +751,20 @@
 <div class="panes">
 <section class="pane" data-pane="all">
 <h2>Typsnitt</h2>
-<label><span>Typsnitt</span><select id="font"></select></label>
-<label><span>Rubrikfont</span><select id="font-head"></select></label>
-<label><span>Textskala</span><select id="type-ratio"></select></label>
-<label><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
-<label><span>Radavstånd</span><input type="range" id="lh" min="100" max="170" value="100"><span class="val" id="lh-v">orig</span></label>
+<label data-kw="font bokstäver text"><span>Typsnitt</span><select id="font"></select></label>
+<label data-kw="font bokstäver rubrik"><span>Rubrikfont</span><select id="font-head"></select></label>
+<label data-kw="text storlekar steg"><span>Textskala</span><select id="type-ratio"></select></label>
+<label data-kw="text storlek större mindre font"><span>Textstorlek</span><input type="range" id="scale" min="80" max="140" value="100"><span class="val" id="scale-v">100 %</span></label>
+<label data-kw="text rad luft höjd"><span>Radavstånd</span><input type="range" id="lh" min="100" max="170" value="100"><span class="val" id="lh-v">orig</span></label>
 <details><summary>Storlek och tyngd per textroll</summary><div id="roles"></div></details>
 <h2>Former och luft</h2>
-<label><span>Kort och ark</span><input type="range" id="card" min="0" max="28" value="12"><span class="val" id="card-v">12 px</span></label>
-<label><span>Knappar och fält</span><input type="range" id="control" min="0" max="20" value="8"><span class="val" id="control-v">8 px</span></label>
-<label><span>Sidmarginal</span><input type="range" id="margin" min="12" max="40" value="24"><span class="val" id="margin-v">24 px</span></label>
+<label data-kw="rundning hörn radie rundade"><span>Kort och ark</span><input type="range" id="card" min="0" max="28" value="12"><span class="val" id="card-v">12 px</span></label>
+<label data-kw="rundning hörn radie rundade"><span>Knappar och fält</span><input type="range" id="control" min="0" max="20" value="8"><span class="val" id="control-v">8 px</span></label>
+<label data-kw="marginal sida kant luft"><span>Sidmarginal</span><input type="range" id="margin" min="12" max="40" value="24"><span class="val" id="margin-v">24 px</span></label>
 <h2>Färgstämning (alla färger)</h2>
-<label><span>Nyans</span><input type="range" id="hue" min="-180" max="180" value="0"><span class="val" id="hue-v">0°</span></label>
-<label><span>Mättnad</span><input type="range" id="sat" min="0" max="200" value="100"><span class="val" id="sat-v">100 %</span></label>
-<label><span>Ljushet</span><input type="range" id="light" min="70" max="130" value="100"><span class="val" id="light-v">100 %</span></label>
+<label data-kw="färg ton"><span>Nyans</span><input type="range" id="hue" min="-180" max="180" value="0"><span class="val" id="hue-v">0°</span></label>
+<label data-kw="färg stark svag"><span>Mättnad</span><input type="range" id="sat" min="0" max="200" value="100"><span class="val" id="sat-v">100 %</span></label>
+<label data-kw="färg ljus mörk"><span>Ljushet</span><input type="range" id="light" min="70" max="130" value="100"><span class="val" id="light-v">100 %</span></label>
 <h2>Färgroller</h2>
 <p class="hint">Appens namngivna färger. En roll är en token, så ändringen gäller överallt där den används.</p>
 <div id="role-colors"></div>
@@ -788,16 +788,16 @@
 <section class="pane" data-pane="space">
 <h2>Avstånd i hela appen</h2>
 <div class="chips" id="space-presets"></div>
-<label><span>Avståndsskala</span><input type="range" id="space" min="50" max="200" value="100"><span class="val" id="space-v">100 %</span></label>
-<label><span>Luft i rader</span><input type="range" id="rowPad" min="0" max="24" value="10"><span class="val" id="rowPad-v">10 px</span></label>
-<label><span>Mellan avsnitt</span><input type="range" id="sectionGap" min="0" max="48" value="16"><span class="val" id="sectionGap-v">16 px</span></label>
-<label><span>Mellan block</span><input type="range" id="blockGap" min="0" max="40" value="0"><span class="val" id="blockGap-v">orig</span></label>
-<label><span>Mellan knappar och chips</span><input type="range" id="chipGap" min="0" max="24" value="8"><span class="val" id="chipGap-v">8 px</span></label>
-<label><span>Ikon till text i rad</span><input type="range" id="rowInner" min="4" max="28" value="12"><span class="val" id="rowInner-v">12 px</span></label>
+<label data-kw="luft avstånd marginal"><span>Avståndsskala</span><input type="range" id="space" min="50" max="200" value="100"><span class="val" id="space-v">100 %</span></label>
+<label data-kw="avstånd padding rad lista"><span>Luft i rader</span><input type="range" id="rowPad" min="0" max="24" value="10"><span class="val" id="rowPad-v">10 px</span></label>
+<label data-kw="avstånd luft rubriker"><span>Mellan avsnitt</span><input type="range" id="sectionGap" min="0" max="48" value="16"><span class="val" id="sectionGap-v">16 px</span></label>
+<label data-kw="avstånd luft"><span>Mellan block</span><input type="range" id="blockGap" min="0" max="40" value="0"><span class="val" id="blockGap-v">orig</span></label>
+<label data-kw="avstånd luft gap"><span>Mellan knappar och chips</span><input type="range" id="chipGap" min="0" max="24" value="8"><span class="val" id="chipGap-v">8 px</span></label>
+<label data-kw="avstånd luft gap"><span>Ikon till text i rad</span><input type="range" id="rowInner" min="4" max="28" value="12"><span class="val" id="rowInner-v">12 px</span></label>
 <p class="hint">Skalan ändrar alla avstånd som du inte ställt in själv. Sidmarginalen finns under Hela appen.</p>
 <h2>Linjer och träffyta</h2>
-<label><span>Skiljelinjer</span><input type="range" id="hair" min="1" max="4" value="1"><span class="val" id="hair-v">1 px</span></label>
-<label><span>Minsta träffyta</span><input type="range" id="touch" min="40" max="64" value="48"><span class="val" id="touch-v">48 px</span></label>
+<label data-kw="linje tjocklek avdelare kant"><span>Skiljelinjer</span><input type="range" id="hair" min="1" max="4" value="1"><span class="val" id="hair-v">1 px</span></label>
+<label data-kw="knapp tryckyta storlek tumme"><span>Minsta träffyta</span><input type="range" id="touch" min="40" max="64" value="48"><span class="val" id="touch-v">48 px</span></label>
 <h2>Visa avstånden</h2>
 <label><input type="checkbox" id="overlay"><span>Rita ut avstånd och marginaler i px</span></label>
 <label><input type="checkbox" id="spacedrag"><span>Dra avstånden direkt i vyn</span></label>
@@ -806,12 +806,12 @@
 </section>
 <section class="pane" data-pane="icons">
 <h2>Ikonbibliotek</h2>
-<label><span>Bibliotek</span><select id="icon-lib"></select></label>
+<label data-kw="ikon ikoner lucide phosphor"><span>Bibliotek</span><select id="icon-lib"></select></label>
 <p class="hint">Ikoner som saknar motsvarighet behåller Butlerys egen. Jämför-läget visar alltid Butlerys egna linjeändar.</p>
 <h2>Stil</h2>
-<label><span>Linjeändar</span><select id="icon-style"></select></label>
-<label><span>Linjetjocklek</span><input type="range" id="iconStroke" min="0" max="3" step="0.25" value="0"><span class="val" id="iconStroke-v">orig</span></label>
-<label><span>Ikonstorlek</span><input type="range" id="iconSize" min="60" max="160" value="100"><span class="val" id="iconSize-v">100 %</span></label>
+<label data-kw="ikon streck runda"><span>Linjeändar</span><select id="icon-style"></select></label>
+<label data-kw="ikon streck stroke tjocklek"><span>Linjetjocklek</span><input type="range" id="iconStroke" min="0" max="3" step="0.25" value="0"><span class="val" id="iconStroke-v">orig</span></label>
+<label data-kw="ikon storlek"><span>Ikonstorlek</span><input type="range" id="iconSize" min="60" max="160" value="100"><span class="val" id="iconSize-v">100 %</span></label>
 </section>
 <section class="pane" data-pane="check">
 <h2>Flyttar i exempelvyerna</h2>
@@ -1292,6 +1292,7 @@
 <script src="designlabb-type.js"></script>
 <script src="designlabb-notes.js"></script>
 <script src="designlabb-core.js"></script>
+<script src="designlabb-reach.js"></script>
 <script src="designlabb-roles.js"></script>
 <script src="designlabb-palette.js"></script>
 <script src="designlabb-warn.js"></script>

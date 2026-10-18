@@ -32,7 +32,7 @@ for (const sheet of document.styleSheets) {
       }
     }
     const v = rule.style.getPropertyValue('border-radius').trim();
-    if (!root && (v === '12px' || v === '8px')) radii.push({ selector: rule.selectorText, px: v });
+    if (!root && (v === '12px' || v === '8px') && rule.selectorText.split(',').every(x => /^\s*\.(phone|b-)/.test(x))) radii.push({ selector: rule.selectorText, px: v });
   }
 }
 

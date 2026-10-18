@@ -5,7 +5,7 @@
 const FX_TARGETS = [
   ['@sel', 'Markerad del (klicka på något i skärmarna)'],
   ['.b-btn', 'Alla knappar'], ['.b-btn.hero', 'Stora knappen (Börja laga)'], ['.b-iconbtn', 'Ikonknappar'],
-  ['.b-card', 'Kort'], ['.b-row', 'Rader i listor'], ['.b-section', 'Sektioner'], ['.b-chip', 'Chips (taggar)'],
+  [CARD, 'Kort'], ['.b-row', 'Rader i listor'], ['.b-section', 'Sektioner'], ['.b-chip', 'Chips (taggar)'],
   ['.b-bottomnav', 'Bottenmenyn'], ['.b-bottomnav .tab', 'Flikarna i bottenmenyn'], ['.b-topbar-root', 'Toppfält (huvudflik)'],
   ['.b-topbar-sub', 'Toppfält (undersida)'], ['.b-input', 'Fält'], ['.b-snackbar', 'Snackbar'], ['.b-stepper', 'Portionsväljare'],
   ['.b-switch', 'Brytare'], ['.b-avatar', 'Avatar'], ['.b-band', 'Band'], ['.b-count', 'Räknare'], ['.b-overline', 'Avsnittsrubriker'],
@@ -67,16 +67,15 @@ const FX_GROUPS = [
   ]],
 ];
 const FX_COMBOS = [
-  ['Mjuk och modern', 'Runda kort med mjuk skugga, pillerknappar', [['.b-card', { radius: 20, shY: 4, shBlur: 14, shAlpha: 18 }], ['.b-btn', { radius: 40 }], ['.b-chip', { radius: 40 }]]],
-  ['Skarp och teknisk', 'Inga rundningar, tunna kanter, ingen skugga', [['.b-card', { radius: 0, bw: 1, bc: '#7d897c', ...FX_NONE }], ['.b-btn', { radius: 0 }], ['.b-input', { radius: 0, bw: 1, bc: '#7d897c' }]]],
-  ['Lekfull', 'Studsande huvudknapp, chips som växer', [['.b-btn.hero', { anim: 'bounce', dur: 1.2, radius: 40 }], ['.b-chip', { hover: 'grow', press: 'sink' }], ['.b-card', { radius: 24 }]]],
-  ['Lugn och dämpad', 'Ingen rörelse, minimala skuggor', [['.b-card', { shY: 2, shBlur: 8, shAlpha: 10 }], ['.b-btn.hero', { anim: '' }]]],
-  ['Premium', 'Tunna kanter, diskret skugga, spärrade rubriker', [['.b-card', { bw: 1, bc: '#d3d6c8', shY: 6, shBlur: 20, shAlpha: 12 }], ['.b-overline', { caps: true, tracking: 2 }]]],
-  ['Skuggor på alla kort', 'Lyft alla kort lite', [['.b-card', { shY: 6, shBlur: 18, shAlpha: 22 }]]],
-  ['Glas på ark och dialoger', 'Halvgenomskinliga ark', [['.b-sheet', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }], ['.b-dialog', { bgAlpha: 70, blur: 12, shY: 8, shBlur: 24, shAlpha: 25 }]]],
+  ['Mjuk och modern', 'Runda kort med mjuk skugga, pillerknappar', [[CARD, { radius: 20, shY: 4, shBlur: 14, shAlpha: 18 }], ['.b-btn', { radius: 40 }], ['.b-chip', { radius: 40 }]]],
+  ['Skarp och teknisk', 'Inga rundningar, tunna kanter, ingen skugga', [[CARD, { radius: 0, bw: 1, bc: '#7d897c', ...FX_NONE }], ['.b-btn', { radius: 0 }], ['.b-input', { radius: 0, bw: 1, bc: '#7d897c' }]]],
+  ['Lekfull', 'Studsande huvudknapp, chips som växer', [['.b-btn.hero', { anim: 'bounce', dur: 1.2, radius: 40 }], ['.b-chip', { hover: 'grow', press: 'sink' }], [CARD, { radius: 24 }]]],
+  ['Lugn och dämpad', 'Ingen rörelse, minimala skuggor', [[CARD, { shY: 2, shBlur: 8, shAlpha: 10 }], ['.b-btn.hero', { anim: '' }]]],
+  ['Premium', 'Tunna kanter, diskret skugga, spärrade rubriker', [[CARD, { bw: 1, bc: '#d3d6c8', shY: 6, shBlur: 20, shAlpha: 12 }], ['.b-overline', { caps: true, tracking: 2 }]]],
+  ['Skuggor på alla kort', 'Lyft alla kort lite', [[CARD, { shY: 6, shBlur: 18, shAlpha: 22 }]]],
   ['Knappar lyfter och krymper', 'Hovring och tryck på alla knappar', [['.b-btn', { hover: 'lift', press: 'sink' }]]],
   ['Glödande stora knappen', 'Saffransglöd på Börja laga', [['.b-btn.hero', { anim: 'glow', dur: 2 }]]],
-  ['Svävande kort', 'Korten rör sig mjukt', [['.b-card', { anim: 'float', dur: 3.5, shY: 10, shBlur: 24, shAlpha: 18 }]]],
+  ['Svävande kort', 'Korten rör sig mjukt', [[CARD, { anim: 'float', dur: 3.5, shY: 10, shBlur: 24, shAlpha: 18 }]]],
   ['Rader tonar vid hovring', 'Hovring på listrader', [['.b-row', { hover: 'dim' }]]],
 ];
 
