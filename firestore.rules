@@ -264,6 +264,14 @@ service cloud.firestore {
     // size == 2); Firestore rules cannot iterate a group participant list.
     // ------------------------------------------------------------------
 
+    // BUT-1918: the conversations preview and list-order stamps get the hour
+    // BUT-1903 gave a message's `sentAt` (ADR-0008). The messages create limb
+    // carries the same hour inline, and its Dart and Cloud Functions mirrors
+    // are named above it; a change to one is a change to all of them.
+    function notAheadOfServer(t) {
+      return t is timestamp && t <= request.time + duration.value(1, 'h');
+    }
+
     // The participant who is NOT the creator, for a 2-person conversation.
     function otherParticipant(participantIds) {
       return participantIds[0] == request.auth.uid
@@ -2327,6 +2335,12 @@ service cloud.firestore {
         // read directly — no sync lag, no fail-open. The blocker's own create
         // is untouched (one-directional, as everywhere else).
         && isNotBlockedBy(otherParticipant(request.resource.data.participantIds))
+        // BUT-1918: the same two stamps as the update limb below, bounded at
+        // creation too, or a new chat could be born pinned to the top.
+        && (request.resource.data.get('lastMessage', null) == null
+            || notAheadOfServer(request.resource.data.lastMessage.sentAt))
+        && (!('updatedAt' in request.resource.data)
+            || notAheadOfServer(request.resource.data.updatedAt))
         && rateLimitStamped('conversations', 3, conversationId);
 
       // Can update if you're a participant (but cannot modify participantIds,
@@ -2386,7 +2400,16 @@ service cloud.firestore {
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastMessage'])
             || ((resource.data.participantIds.size() != 2
                   || isNotBlockedBy(otherParticipant(resource.data.participantIds)))
-                && notBlockedByAnyOf(resource.data.participantIds)));
+                && notBlockedByAnyOf(resource.data.participantIds)))
+        // BUT-1918: the chat list orders on `updatedAt` and the preview's time
+        // and unread dot read `lastMessage.sentAt`. Both are client-written, so
+        // without a bound a participant could pin a conversation at the top of
+        // every member's list, or keep its unread dot lit, for as long as they
+        // liked. Scoped to writes that change the key.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastMessage'])
+            || notAheadOfServer(request.resource.data.lastMessage.sentAt))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['updatedAt'])
+            || notAheadOfServer(request.resource.data.updatedAt));
 
       // Can delete if you're a participant
       allow delete: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
@@ -2784,31 +2807,9 @@ service cloud.firestore {
         // top of the MESSAGE LIST for up to an hour. That is a trade, not an
         // oversight.
         //
-        // The CHAT-LIST PREVIEW is not hour-bounded, and a first draft of this
-        // comment said it was. `conversations.lastMessage` is a denormalised
-        // COPY of this field on another collection, and the `conversations`
-        // `allow update` deny-list does not name it — so any participant can
-        // write `lastMessage.sentAt` directly, at any value, bypassing this
-        // rule entirely.
-        //
-        // How long it lasts, stated carefully because a second draft got this
-        // wrong too: the SERVER never heals it. `shouldReplaceLastMessage`'s
-        // self-healing branch fires only when the stored stamp is NOT a
-        // Timestamp, and a well-typed far-future one is exactly the un-healable
-        // case. What clears it is the next message sent through the real
-        // client, which merge-sets the whole `lastMessage` map with no
-        // comparison at all (`MessageMutationModule.sendMessage`). So the
-        // freeze lasts until the next message in that conversation — which in
-        // a quiet one is indefinite, and that is precisely where a frozen
-        // preview is both most visible and least likely to clear itself — and
-        // it can be re-poisoned after every send.
-        //
-        // Found by the firestore-rules-tester gate on this diff; pre-existing,
-        // not introduced here, and it has its own ticket.
-        //
         // The lesson generalises: bounding a field's VALUE on one collection
         // does not bound a projection of it stored on another. The complete
-        // close for both routes is ordering the preview on a server-written
+        // close is ordering the preview on a server-written
         // stamp instead of this device-written one; a tighter number here is
         // not a substitute for it.
         && request.resource.data.sentAt is timestamp

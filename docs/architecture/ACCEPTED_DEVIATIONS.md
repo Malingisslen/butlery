@@ -6327,3 +6327,24 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
   rename (two writes whose order is the gate, BUT-1838), the allergen preferences (their batch also updates household shares, and a late refusal would drop the declaration), a minor's profile save (the searchability callable that follows must land after it, BUT-1629), accepting the terms, the FCM token,
   online status, counters and every delete of a conversation or profile.
 
+
+## BUT-1918 — the chat list's order and preview stamps at most one hour ahead (2026-10-18)
+
+- **SUPERSEDES the "Not closed by it" clause of the BUT-1903 entry, which reads
+  "`conversations.lastMessage` is a denormalised copy of `sentAt` whose update deny-list does
+  not name it, so the preview can still be frozen without touching this rule."** Malin chose
+  "Samma timgräns" on 2026-10-18. A `conversations` create or update that writes
+  `lastMessage` must give it a timestamp `sentAt`, and one that writes `updatedAt` must give
+  it a timestamp; each at most one hour ahead of the server (`notAheadOfServer`). The
+  `messages` create limb keeps its own inline copy of the hour, so the hour now sits in two
+  places in `firestore.rules` besides its Dart and Cloud Functions mirrors. A create may still
+  carry `lastMessage: null`; an update that changes `lastMessage` may not. The chat list
+  orders on `updatedAt`, so that field is bounded with the preview.
+- **Also SUPERSEDES, in the BUT-2246 entry, the clause "so BUT-1903's `lastMessage.sentAt`
+  gap is unchanged."** (BUT-1918, 2026-10-18)
+- **Cost, accepted:** a phone whose clock runs more than an hour fast, which already cannot
+  send a message, now also has its read marker and a chat rename refused; the read marker's
+  refusal is logged, not shown (BUT-2291), and a group chat's rename lands on `chat_groups`
+  before the refused `conversations` write, so the two names differ until a rename from a
+  phone with a correct clock. Within the hour a participant can still hold a chat
+  at the top of the list, as BUT-1903 accepts for the message list.

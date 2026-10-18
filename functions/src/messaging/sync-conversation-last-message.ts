@@ -107,16 +107,13 @@ interface MessageWireFields {
  * That heal is TYPE-SCOPED and stops there — do not read the sentence above as
  * "a real message always heals the preview". A stored stamp that IS a Timestamp
  * but sits far in the future is never replaced, because the comparison below is
- * `>=`. `conversations.lastMessage` is a denormalised copy of `sentAt` that the
- * conversations update rule does not name, so a participant can plant exactly
- * that state directly, without going near the messages create rule and its
- * BUT-1903 bound. Raised by the firestore-rules-tester gate; its own ticket.
+ * `>=`.
  * The client's own next send does clear it: `MessageMutationModule` merge-sets
  * `lastMessage` with no comparison at all, and `MessageDto.toMap` emits `sentAt`
  * unconditionally, so the poisoned stamp is overwritten. (A merge is DEEP, so
  * only the keys that map emits are replaced — `sentAt` always is, which is what
  * makes this hold.) The freeze therefore lasts until the next message in that
- * conversation rather than forever — indefinite in a quiet one.
+ * conversation rather than forever.
  */
 export function shouldReplaceLastMessage(
   current: { sentAt?: admin.firestore.Timestamp } | null | undefined,
