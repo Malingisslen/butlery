@@ -5,6 +5,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/services/attribution_source.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -53,6 +54,7 @@ void main() {
       final source = AttributionSource(userService: () => null);
 
       expect(source.displayName, isEmpty);
+      expect(knownStoredName(source.displayName), isNull);
       expect(source.avatarUrl, isNull);
     },
   );
