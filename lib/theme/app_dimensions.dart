@@ -148,6 +148,9 @@ class AppDimensions {
   /// Extra small icon size (12px)
   static const double iconSizeXs = 12.0;
 
+  /// The star before a recipe's rating in a meta line, on a card and in a row.
+  static const double ratingStarSize = 13.0;
+
   /// Space under the last row of a long list so the floating action button
   /// never covers it.
   static const double fabClearance = 96.0;
@@ -245,6 +248,18 @@ class AppDimensions {
   /// Large dialog max width (700px)
   static const double dialogMaxWidthLarge = 700.0;
 
+  /// Widest the admin sign-in column grows.
+  static const double adminSignInMaxWidth = 360.0;
+
+  /// Widest the "heard" caption of the voice assistant grows.
+  static const double voiceHeardChipMaxWidth = 220.0;
+
+  /// Widest a photo or recipe attachment grows inside a chat message.
+  static const double messageAttachmentMaxWidth = 250.0;
+
+  /// Widest a poll grows inside a chat message.
+  static const double messagePollMaxWidth = 280.0;
+
   /// Small dialog max height (400px)
   static const double dialogMaxHeightSmall = 400.0;
 
@@ -266,6 +281,11 @@ class AppDimensions {
   /// not by drawing the control that tall.
   static const double controlVisualHeight = 40.0;
   static const double fieldVisualPaddingY = 8.0;
+
+  /// Drawn height of a text tab with its bar, as the sketch draws a tab row.
+  /// The tab is laid out [minTouchTarget] tall; the part above the drawn tab
+  /// is hit area only, so the touch target stays 48 dp (B-03).
+  static const double underlineTabHeight = 42.0;
 
   /// Hit area added above and below a drawn field to reach [minTouchTarget].
   static const double fieldTapPad = 4.0;
@@ -391,6 +411,12 @@ class AppDimensions {
   /// A drawn line thickness and a drawn component gap, not spacing steps.
   static const double bottomNavStackGap = 2.0;
   static const double bottomNavMarkerThickness = 3.0;
+
+  /// The home glyph is drawn larger than the other destinations' (Malin's
+  /// designlab choice 2026-10-17); every destination's glyph sits in a slot
+  /// of [bottomNavIconSlot] so the labels stay on one line.
+  static const double bottomNavHomeIconSize = 27.0;
+  static const double bottomNavIconSlot = 28.0;
 
   /// The root top bar's secondary line sits 2 px under the title
   /// (Komponentark v1:64 `margin-top:2px`). Drawn component geometry.

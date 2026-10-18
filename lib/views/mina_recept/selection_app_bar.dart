@@ -600,7 +600,10 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const ButleryIcon(ButleryIcons.tag, size: 64),
+              const ButleryIcon(
+                ButleryIcons.tag,
+                size: AppDimensions.iconSizeXXXl,
+              ),
               const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.bulkTagNoTagsAvailable,

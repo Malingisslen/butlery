@@ -157,6 +157,7 @@ class ButleryClocheMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final markInset = size * 0.14;
     return ExcludeSemantics(
       child: SizedBox.square(
         dimension: size,
@@ -166,7 +167,7 @@ class ButleryClocheMark extends StatelessWidget {
             borderRadius: BorderRadius.circular(size * 0.25),
           ),
           child: Padding(
-            padding: EdgeInsets.all(size * 0.14),
+            padding: EdgeInsets.all(markInset),
             child: CustomPaint(
               painter: _ClochePainter(
                 ink: BrandColors.markInk,

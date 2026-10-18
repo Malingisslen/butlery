@@ -9,8 +9,10 @@ import 'dart:ui' show Tristate;
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
@@ -111,6 +113,30 @@ void main() {
       expect(x(Routes.weeklyMenu), lessThan(plus));
       expect(plus, lessThan(x(Routes.shoppingList)));
       expect(x(Routes.shoppingList), lessThan(x(Routes.more)));
+    });
+
+    testWidgets('the home glyph is drawn 27 px and the others 24 px, all in '
+        'one slot', (tester) async {
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+      double size(String route) => tester
+          .widget<ButleryIcon>(
+            find.descendant(
+              of: find.byKey(ValueKey('test-nav-$route')),
+              matching: find.byType(ButleryIcon),
+            ),
+          )
+          .size!;
+      expect(size(Routes.home), AppDimensions.bottomNavHomeIconSize);
+      expect(size(Routes.weeklyMenu), AppDimensions.iconSizeL);
+      for (final route in _routes) {
+        final slot = find.descendant(
+          of: find.byKey(ValueKey('test-nav-$route')),
+          matching: find.byWidgetPredicate(
+            (w) => w is SizedBox && w.height == AppDimensions.bottomNavIconSlot,
+          ),
+        );
+        expect(slot, findsOneWidget, reason: route);
+      }
     });
 
     testWidgets('the tabs are a tab list; the chosen one is exposed as '

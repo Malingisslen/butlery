@@ -1,6 +1,7 @@
 /// Feed tab — shows social activity from friends (CookSnaps, shares).
 // lib/views/social/friends_list/feed_tab.dart
 
+import 'package:butlery/theme/span_styles.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -314,12 +315,12 @@ class FeedTab {
                       ),
                       TextSpan(
                         text: ' $actionText',
-                        style: TextStyle(color: cs.onSurfaceVariant),
+                        style: SpanStyles.colour(cs.onSurfaceVariant),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.space4),
                 // Time
                 Text(
                   _relativeTime(context, event.createdAt),

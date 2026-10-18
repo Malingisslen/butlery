@@ -131,7 +131,7 @@ class CookingSessionCard extends StatelessWidget {
                               letterSpacing: 1.8,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             primaryLine,
                             style: AppTextStyles.bodyBold.copyWith(

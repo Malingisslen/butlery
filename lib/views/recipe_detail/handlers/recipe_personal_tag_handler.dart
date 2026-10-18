@@ -363,7 +363,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           children: [
             const ButleryIcon(
               ButleryIcons.tag,
-              size: 64,
+              size: AppDimensions.iconSizeXXXl,
             ),
             const SizedBox(height: AppDimensions.space16),
             Text(

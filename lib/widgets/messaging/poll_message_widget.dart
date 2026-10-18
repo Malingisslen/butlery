@@ -54,7 +54,9 @@ class PollMessageWidget extends StatelessWidget {
     final votesUnread = voteHydration.isUnread;
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 280),
+      constraints: const BoxConstraints(
+        maxWidth: AppDimensions.messagePollMaxWidth,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -192,7 +194,7 @@ class PollMessageWidget extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
-              vertical: AppDimensions.space4 + 2,
+              vertical: AppDimensions.space4,
             ),
             color: isFromCurrentUser
                 ? AppModeColors.surfaceRaisedOnInk()

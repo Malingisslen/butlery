@@ -35,7 +35,9 @@ class VoiceHeardChip extends StatelessWidget {
         return Semantics(
           label: label,
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 220),
+            constraints: const BoxConstraints(
+              maxWidth: AppDimensions.voiceHeardChipMaxWidth,
+            ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space8,
               vertical: AppDimensions.space4,

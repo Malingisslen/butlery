@@ -256,7 +256,7 @@ abstract final class RecipeDetailSharedWidgets {
         ],
       ),
       if (category.isNotEmpty) ...[
-        const SizedBox(height: 14),
+        const SizedBox(height: AppDimensions.space16),
         Text(
           category.toUpperCase(),
           style: AppTextStyles.overline.copyWith(

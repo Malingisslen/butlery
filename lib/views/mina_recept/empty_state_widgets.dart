@@ -2,7 +2,7 @@
 /// onboarding-skipped banner and the welcome banner. Both stateless.
 ///
 /// HEM-HERO: the no-recipes empty state that lived here is Hem's empty state
-/// now, `lib/views/hem/hem_empty_state.dart` (Skarmar v12 del 4 #hemtom).
+/// now, `lib/widgets/common/state/hem_empty_state.dart` (Skarmar v12 del 4 #hemtom).
 library;
 
 import 'package:flutter/material.dart';

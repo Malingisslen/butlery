@@ -1,3 +1,4 @@
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -21,7 +22,7 @@ class ErrorText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(color: Theme.of(context).colorScheme.error),
+      style: SpanStyles.colour(Theme.of(context).colorScheme.error),
     );
   }
 }

@@ -241,7 +241,10 @@ class MessageContentBuilder {
     }
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 250, maxHeight: 300),
+      constraints: const BoxConstraints(
+        maxWidth: AppDimensions.messageAttachmentMaxWidth,
+        maxHeight: 300,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

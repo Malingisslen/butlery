@@ -165,7 +165,7 @@ class HemSection extends StatelessWidget {
         if (hero == null) return const [];
         final fetchedAt = viewModel.fetchedAt;
         return [
-          const SizedBox(height: AppDimensions.space12),
+          const SizedBox(height: AppDimensions.space8),
           HemTonightCard(
             hero: hero,
             onStartCooking: onStartCooking,
@@ -320,7 +320,7 @@ class HemTonightCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ButleryDisc(size: 7, color: cs.secondary),
-                    const SizedBox(width: 7),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Text(
                         meta.toUpperCase(),

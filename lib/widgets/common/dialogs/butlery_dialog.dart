@@ -96,6 +96,7 @@ class ButleryDialog extends StatelessWidget {
     this.content,
     this.scrollable = true,
     this.titleIcon,
+    this.actionsOverflowDirection,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -116,6 +117,7 @@ class ButleryDialog extends StatelessWidget {
     IconData? primaryIcon,
     this.scrollable = true,
     this.titleIcon,
+    this.actionsOverflowDirection,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -147,6 +149,7 @@ class ButleryDialog extends StatelessWidget {
     String? closeLabel,
     this.scrollable = true,
     this.titleIcon,
+    this.actionsOverflowDirection,
     super.key,
   }) : assert(
          message == null || content == null,
@@ -169,6 +172,9 @@ class ButleryDialog extends StatelessWidget {
   final Widget? content;
   final List<Widget> actions;
 
+  /// Which way actions stack when they do not fit on one line.
+  final VerticalDirection? actionsOverflowDirection;
+
   /// The body scrolls when it is taller than the screen allows.
   final bool scrollable;
 
@@ -176,6 +182,7 @@ class ButleryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: scrollable,
+      actionsOverflowDirection: actionsOverflowDirection,
       icon: titleIcon == null ? null : ButleryIcon(titleIcon!),
       title: Text(title),
       content:

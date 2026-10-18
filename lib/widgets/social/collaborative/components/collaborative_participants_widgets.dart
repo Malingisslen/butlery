@@ -33,7 +33,9 @@ class CollaborativeParticipantsWidgets {
             children: List.generate(
               2,
               (index) => Padding(
-                padding: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
+                padding: EdgeInsetsDirectional.only(
+                  start: index > 0 ? AppDimensions.space4 : 0,
+                ),
                 child: ButleryDisc(
                   size: avatarSize,
                   color: Theme.of(context).colorScheme.surface,

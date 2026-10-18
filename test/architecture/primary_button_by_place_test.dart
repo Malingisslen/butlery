@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _flowStarts = <String>{
-  'lib/views/hem/hem_empty_state.dart',
+  'lib/widgets/common/state/hem_empty_state.dart',
   'lib/views/hem/hem_section.dart',
   'lib/views/auth_view.dart',
   'lib/views/auth/guest_start_view.dart',

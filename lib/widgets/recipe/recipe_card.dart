@@ -1,3 +1,4 @@
+import 'package:butlery/theme/span_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -296,7 +297,7 @@ class RecipeCard extends StatelessWidget {
                 children: [
                   _buildTitle(context),
                   if (showMetadata && _hasAnyMetadata) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppDimensions.space4),
                     _buildMetadataRow(context),
                   ],
                   // BUT-1869: the spacer and the row are gated on what the row WILL
@@ -411,8 +412,8 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  /// "45 min · 4 port. · ★ 4,5": the metadata as one line of text, the
-  /// rating a data marker in text.accent (Komponentark v1, saffranshierarkin
+  /// The metadata as one line of text, the
+  /// rating a star and a data marker in text.accent (Komponentark v1, saffranshierarkin
   /// punkt 4), not a badge.
   Widget _buildMetadataRow(BuildContext context) {
     final brightness = Theme.of(context).brightness;
@@ -431,15 +432,30 @@ class RecipeCard extends StatelessWidget {
         ? context.modeColors.onWarningContainer
         : context.modeColors.textAccent;
 
-    final line = Text.rich(
+    final text = Text.rich(
       TextSpan(
         children: [
           TextSpan(text: parts.join(' · ')),
           if (rating != null) ...[
             if (parts.isNotEmpty) const TextSpan(text: ' · '),
+            // A drawn star: the ★ character is missing from the app font and
+            // showed as a bullet.
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.space4,
+                ),
+                child: ButleryIcon(
+                  ButleryIcons.star,
+                  size: AppDimensions.ratingStarSize,
+                  color: context.modeColors.starGold,
+                ),
+              ),
+            ),
             TextSpan(
-              text: '★ ${rating.value}',
-              style: TextStyle(color: accent),
+              text: rating.value,
+              style: SpanStyles.colour(accent),
               semanticsLabel: rating.semantics,
             ),
           ],
@@ -449,6 +465,15 @@ class RecipeCard extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
+    // The drawn star splits the text's own semantics at the placeholder, so
+    // the line is announced as one sentence from here.
+    final line = rating == null
+        ? text
+        : Semantics(
+            label: [...parts, rating.semantics].join(' \u00B7 '),
+            excludeSemantics: true,
+            child: text,
+          );
 
     if (matchPercent == null) return line;
     // Wrap so the badge flows to a new line instead of overflowing at 2x

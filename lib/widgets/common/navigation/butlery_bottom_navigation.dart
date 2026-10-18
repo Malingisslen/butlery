@@ -330,10 +330,18 @@ class NavBadgedIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final glyph = ButleryIcon(
-      icon,
-      color: color,
-      size: AppDimensions.iconSizeL,
+    final glyph = SizedBox(
+      height: AppDimensions.bottomNavIconSlot,
+      child: Center(
+        widthFactor: 1,
+        child: ButleryIcon(
+          icon,
+          color: color,
+          size: icon == ButleryIcons.navHome
+              ? AppDimensions.bottomNavHomeIconSize
+              : AppDimensions.iconSizeL,
+        ),
+      ),
     );
     final count = badgeCount;
     if (count == null || count <= 0) return glyph;

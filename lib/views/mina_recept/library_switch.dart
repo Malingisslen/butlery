@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/navigation/underline_tabs.dart';
 
@@ -28,7 +27,7 @@ class LibrarySwitch extends StatelessWidget {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
         side,
-        AppDimensions.space8,
+        0,
         side,
         0,
       ),

@@ -133,32 +133,42 @@ class UnderlineTabs<T> extends StatelessWidget {
               constraints: const BoxConstraints(
                 minHeight: AppDimensions.minTouchTarget,
               ),
-              child: Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.space12,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top:
+                      AppDimensions.minTouchTarget -
+                      AppDimensions.underlineTabHeight,
                 ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: isSelected ? cs.onSurface : Colors.transparent,
-                      width: _bar,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    minHeight: AppDimensions.underlineTabHeight,
+                  ),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.space12,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isSelected ? cs.onSurface : Colors.transparent,
+                        width: _bar,
+                      ),
                     ),
                   ),
-                ),
-                child: ExcludeSemantics(
-                  child: Text(
-                    labelOf(value),
-                    softWrap: wrap,
-                    style:
-                        (isSelected
-                                ? AppTextStyles.labelLarge
-                                : AppTextStyles.labelMedium)
-                            .copyWith(
-                              color: isSelected
-                                  ? cs.onSurface
-                                  : cs.onSurfaceVariant,
-                            ),
+                  child: ExcludeSemantics(
+                    child: Text(
+                      labelOf(value),
+                      softWrap: wrap,
+                      style:
+                          (isSelected
+                                  ? AppTextStyles.labelLarge
+                                  : AppTextStyles.labelMedium)
+                              .copyWith(
+                                color: isSelected
+                                    ? cs.onSurface
+                                    : cs.onSurfaceVariant,
+                              ),
+                    ),
                   ),
                 ),
               ),

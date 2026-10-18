@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
@@ -103,7 +106,7 @@ void main() {
 
         // Metadata and the rating are one line of text
         // (Komponentark v1 receptlistrad)
-        expect(_meta('45 min \u00B7 4 port \u00B7 \u2605 4,5'), findsOneWidget);
+        expect(_meta('45 min \u00B7 4 port \u00B7 \uFFFC4,5'), findsOneWidget);
       });
 
       testWidgets('should render recipe without image correctly', (
@@ -677,7 +680,7 @@ void main() {
           withCore(testRecipe, familyAverage: 4.2, familyRatingCount: 3),
         );
         expect(
-          _metaHas('★ 4,2'),
+          _metaHas('\uFFFC4,2'),
           findsOneWidget,
         );
         expect(_metaHas('4,5'), findsNothing);
@@ -688,7 +691,7 @@ void main() {
       ) async {
         await pump(tester, testRecipe);
         expect(
-          _metaHas('★ 4,5'),
+          _metaHas('\uFFFC4,5'),
           findsOneWidget,
         );
       });
@@ -697,7 +700,7 @@ void main() {
         final unrated = RecipeFactory.build(rating: null);
         await pump(tester, withCore(unrated, averageRating: 4.3));
         expect(
-          _metaHas('★ 4,3'),
+          _metaHas('\uFFFC4,3'),
           findsOneWidget,
         );
       });
@@ -712,7 +715,27 @@ void main() {
             averageRating: 4.5,
           ),
         );
-        expect(_metaHas('★'), findsOneWidget);
+        expect(_metaHas('\uFFFC'), findsOneWidget);
+      });
+
+      testWidgets('the rating star is a drawn glyph in star gold', (
+        tester,
+      ) async {
+        await pump(tester, testRecipe);
+        final star = tester.widget<ButleryIcon>(
+          find.descendant(
+            of: find.byWidgetPredicate(
+              (w) =>
+                  w is Text &&
+                  (w.textSpan?.toPlainText(includeSemanticsLabels: false) ?? '')
+                      .contains('\uFFFC'),
+            ),
+            matching: find.byType(ButleryIcon),
+          ),
+        );
+        expect(star.icon, ButleryIcons.star);
+        expect(star.size, AppDimensions.ratingStarSize);
+        expect(star.color, AppColors.starGold);
       });
 
       testWidgets('the rating announces its label alone', (tester) async {
@@ -752,7 +775,7 @@ void main() {
           pooledStats: const PooledStats(count: 12, average: 4.3),
         );
         expect(
-          _metaHas('★ 4,3'),
+          _metaHas('\uFFFC4,3'),
           findsOneWidget,
         );
         expect(_metaHas('4,0'), findsNothing);
@@ -766,7 +789,7 @@ void main() {
           pooledStats: const PooledStats(count: 4, average: 4.3),
         );
         expect(
-          _metaHas('★ 4,0'),
+          _metaHas('\uFFFC4,0'),
           findsOneWidget,
         );
       });
@@ -781,7 +804,7 @@ void main() {
           pooledStats: const PooledStats(count: 12, average: 4.0),
         );
         expect(
-          _metaHas('★ 4,0'),
+          _metaHas('\uFFFC4,0'),
           findsOneWidget,
         );
       });

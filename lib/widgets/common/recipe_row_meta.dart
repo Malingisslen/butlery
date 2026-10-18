@@ -35,10 +35,10 @@ class RecipeRowMeta extends StatelessWidget {
           children: [
             ButleryIcon(
               ButleryIcons.star,
-              size: AppDimensions.iconSizeXs,
+              size: AppDimensions.ratingStarSize,
               color: context.modeColors.starGold,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: AppDimensions.space4),
             Text(formatRatingComma(rating!)),
           ],
         ),

@@ -7,6 +7,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
+import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -45,17 +47,9 @@ class DraftRecoveryDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      icon: ButleryIcon(
-        ButleryIcons.history,
-        color: Theme.of(context).colorScheme.onSurface,
-        size: AppDimensions.iconSizeL,
-      ),
-      title: Text(
-        context.l10n.draftRecovery,
-        style: AppTextStyles.headlineSmall,
-      ),
+    return ButleryDialog(
+      titleIcon: ButleryIcons.history,
+      title: context.l10n.draftRecovery,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,28 +80,21 @@ class DraftRecoveryDialog extends StatelessWidget {
       ),
       actions: [
         if (onDiscardAll != null)
-          TextButton(
+          ButleryTextButton(
+            tone: ButleryTextButtonTone.danger,
             onPressed: () {
               onDiscardAll!();
               Navigator.of(context).pop(null);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(
-              availableDrafts.length == 1
-                  ? context.l10n.draftDiscard
-                  : context.l10n.draftDiscardAll,
-            ),
+            label: availableDrafts.length == 1
+                ? context.l10n.draftDiscard
+                : context.l10n.draftDiscardAll,
           ),
 
         // Secondary action - Start fresh
-        TextButton(
+        ButleryTextButton(
           onPressed: () => Navigator.of(context).pop(null),
-          style: TextButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          child: Text(context.l10n.draftStartFresh),
+          label: context.l10n.draftStartFresh,
         ),
 
         // Primary action - Restore most recent

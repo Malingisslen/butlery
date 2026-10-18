@@ -144,7 +144,7 @@ class _CounterBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: 2,
+        vertical: AppDimensions.space4,
       ),
       color: context.modeColors.overlayPaperCard,
       child: Text(

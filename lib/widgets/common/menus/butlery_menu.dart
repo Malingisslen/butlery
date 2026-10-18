@@ -104,7 +104,7 @@ class ButleryMenu<T> extends StatelessWidget {
       surface: PressSurface.base,
       child: PopupMenuButton<T>(
         tooltip: semanticLabel,
-        padding: padding ?? const EdgeInsets.all(8),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space8),
         style: style,
         icon:
             iconWidget ??

@@ -27,7 +27,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
-import 'package:butlery/views/hem/hem_empty_state.dart';
+import 'package:butlery/widgets/common/state/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
 import 'package:butlery/views/mina_recept/library_header_row.dart';
