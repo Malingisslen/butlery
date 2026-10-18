@@ -525,4 +525,90 @@ void main() {
       expect(plan.editTrail.first.entryId, 'e5');
     });
   });
+
+  // BUT-1977: the service's last-admin refusal and its admin gate had no test,
+  // so either could be deleted with every suite green. `firestore.rules` does
+  // not count admins, so for a client write this throw is what stands
+  // between a plan and nobody being able to change its membership.
+  group('removing a participant', () {
+    late GroupWeeklyMenuPlanService service;
+    const alice = 'user-alice';
+    const bob = 'user-bob';
+    const carol = 'user-carol';
+
+    setUp(() {
+      service = GroupWeeklyMenuPlanService(repository: _MockRepo());
+    });
+
+    GroupWeeklyMenuPlan planWith(Map<String, SharedListPermission> roster) =>
+        GroupWeeklyMenuPlan.empty(
+          groupId: 'fam-roster',
+          creatorId: alice,
+          date: DateTime(2026, 4, 15),
+          initialParticipants: [
+            for (final e in roster.entries)
+              GroupMenuParticipant(
+                userId: e.key,
+                permission: e.value,
+                addedAt: DateTime.utc(2026, 1, 1),
+              ),
+          ],
+        );
+
+    test('the last admin cannot be removed', () {
+      final plan = planWith({
+        alice: SharedListPermission.admin,
+        bob: SharedListPermission.edit,
+      });
+
+      expect(
+        () => service.removeParticipant(
+          plan: plan,
+          actorId: alice,
+          participantUserId: alice,
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    // Without this control the test above is green against a method that
+    // refuses every removal.
+    test('one of two admins can be removed', () {
+      final plan = planWith({
+        alice: SharedListPermission.admin,
+        bob: SharedListPermission.admin,
+      });
+
+      final after = service.removeParticipant(
+        plan: plan,
+        actorId: alice,
+        participantUserId: bob,
+      );
+
+      expect(after.participants.map((p) => p.userId), [alice]);
+    });
+
+    test('an edit member cannot remove anyone, an admin can', () {
+      final plan = planWith({
+        alice: SharedListPermission.admin,
+        bob: SharedListPermission.edit,
+        carol: SharedListPermission.edit,
+      });
+
+      expect(
+        () => service.removeParticipant(
+          plan: plan,
+          actorId: bob,
+          participantUserId: carol,
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      final after = service.removeParticipant(
+        plan: plan,
+        actorId: alice,
+        participantUserId: carol,
+      );
+      expect(after.participants.map((p) => p.userId), [alice, bob]);
+    });
+  });
 }
