@@ -51,3 +51,10 @@
 A moderator gets a removal action for a reported dish (admins may read a shared menu and
 change only its `menuSnapshot`). A misattribution report reads no throttle and writes none. The forgery itself
 (`createdBy` written by any member) stays possible and is filed as BUT-2352.
+
+## Superseded in part (2026-10-19)
+Malin chose "Serverkontroll" (BUT-2352). This retires "The forgery itself (`createdBy` written
+by any member) stays possible and is filed as BUT-2352." The rules still let a member write any
+`createdBy`; `onMenuDishCreatorWrite` then removes a new one unless the named person's own recipe
+backs it and they have no misattribution report on that dish. The full conditions are in the
+BUT-2352 entry of `docs/architecture/ACCEPTED_DEVIATIONS.md`.

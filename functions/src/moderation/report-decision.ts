@@ -52,6 +52,11 @@ const CONTENT_TYPES = ["recipe", "comment", "message", "profile", "cook_snap", "
  */
 const NON_USER_AUTH = ["service_account", "api_key", "system", "unauthenticated", "unknown"];
 
+/** True when a trigger's `authType` names a signed-in person. */
+export function isPersonAuth(authType: string | undefined): boolean {
+  return typeof authType === "string" && !NON_USER_AUTH.includes(authType);
+}
+
 type Data = admin.firestore.DocumentData;
 
 /** True only on the write that moves a report INTO `closed`. */
@@ -109,7 +114,7 @@ export async function recordDecision(
   const reason = report.reason;
   const contentType = report.contentType;
   const decision = decisionFrom(report);
-  const isPerson = typeof authType === "string" && !NON_USER_AUTH.includes(authType);
+  const isPerson = isPersonAuth(authType);
   const decisionRef = db.collection(MODERATION_DECISIONS).doc(reportId);
   const reportRef = db.collection(REPORTS).doc(reportId);
 
