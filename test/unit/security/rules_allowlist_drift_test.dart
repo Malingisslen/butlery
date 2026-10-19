@@ -584,9 +584,11 @@ void main() {
     // affectedKeys().hasOnly(['nutritionAmountChoices', 'nutritionAmountKey',
     // 'updatedAt']) over the household document's on the member update. The
     // last two are diff restrictions outside the payload comparison.
+    // BUT-1997 added users/{uid}/acquisition: one keys().hasOnly on create,
+    // guarded in allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      58,
+      59,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

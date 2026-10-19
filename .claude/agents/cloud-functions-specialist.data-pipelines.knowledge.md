@@ -80,6 +80,11 @@
   must stay unresolved), `collectionGroup(…)`, and doc paths in BOTH quote and
   backtick form. ONE anchor per branch, on a name only THAT branch finds and
   something writes; the mutant must COMPILE (TS6133 is not a red test).
+  That scan collapses a `users/{uid}` subcollection only when `.collection("users").doc(…)`
+  sits in the SAME chain: `userRef.collection("consent")` off a variable reads as a TOP-LEVEL
+  collection and reddens `every collection this repo knows about is decided` — write such
+  refs as one inline chain. The reset prune's `dailyDocRef` scan likewise needs a string
+  LITERAL group; a named const is reported unresolved.
 - **A skip register's reason is a MEASURED claim about EVERY writer** — it authorises
   retention, and rules are not evidence (the Admin SDK bypasses them): `system_events`
   read clean in two writers while a third wrote raw uids in a doc id and a field.

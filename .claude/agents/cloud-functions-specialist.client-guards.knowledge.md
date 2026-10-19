@@ -25,6 +25,9 @@
   green when the menus, shopping-list or total conjunct is deleted. One deny per
   field, each moving exactly that field. A `field = "…"` default parameter on the
   write helper is the tell that the other fields were never sent.
+- **An `is string` deny needs a payload only that conjunct refuses.** Beside
+  `x.size() <= N`, a NUMBER is refused by `size()`'s evaluation error too, so deleting
+  `is string` stays green; a one-element LIST passes `size()` and isolates it.
 - **A floor (`>= 0`) deny is attributable only against an ALLOW of the direction
   it bounds.** A stranger's `increment(-1)` from 0 also denies if the `- 1` branch
   itself is missing, so either pair the floor deny with a stranger `-1` from 2 that

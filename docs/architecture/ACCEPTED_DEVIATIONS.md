@@ -6422,3 +6422,49 @@ service-level ones `recipe_comments` uses.
 - **Cost:** a write that adds no new name reads nothing. Each checked triple is one recipe
   read (batched with `getAll`), plus one `reports` query per named person whose recipe backs
   the name.
+
+## BUT-1997 — an anonymous acquisition tally that outlives the account (2026-10-19)
+
+### [Privacy/GDPR] The acquisition DAILY TALLY keeps an erased user's count; the per-user row is erased (BUT-1997)
+
+Malin chose "Anonym räknare" and "Bara vid ja" on 2026-10-19. The BUT-1789 split, applied to
+acquisition attribution.
+
+- **Switched off in code.** `ACQUISITION_COUNTER_ENABLED` is `false`, so the deployed trigger
+  counts nothing and logs `{outcome: "disabled"}`. Setting it to `true` is a one-line change, made
+  after Malin approves and the privacy-policy sentence is published.
+- **What is kept.** While enabled, `onAcquisitionCreated`
+  (`functions/src/analytics/acquisition-counter.ts`) runs on the create of
+  `users/{uid}/acquisition/current` and adds one to
+  `analytics/acquisition/daily/{UTC date of firstSeenAt}`: `total`, `bySource.<key>`,
+  `byMedium.<key>` and `unmapped.source` / `unmapped.medium`, beside `date`, `v: 1` and
+  `scope: 'consented-signed-in-utm'`. `deleteUserSubcollections` erases the per-user row; nothing
+  erases or recomputes the tally, so a deleted user's count stays in it.
+- **What the tally cannot hold.** Its map keys come only from `SOURCE_ALLOWLIST` and
+  `MEDIUM_ALLOWLIST`; any other value, an empty, non-string or over-100-character one, counts as
+  `other`. `unmapped` counts present values that missed the list, never the value. There is no
+  campaign map, no uid, no hash of one, no event id and no per-user time.
+- **Consent, in two places.** The app writes the row only when `ConsentService` reports analytics
+  consent (`AcquisitionMilestone.recordIfFirst`); a skipped write leaves its dedupe flag unset. The
+  trigger reads `users/{uid}/consent/current` in its transaction and counts only when
+  `purposes.analytics == true`, so a row written without consent (an app from before BUT-1997, or
+  a hand-rolled client) is not counted.
+- **Accepted residuals:**
+  - Consent given after the row was written does not count that row; the trigger runs on create
+    only.
+  - Consent withdrawn later leaves the count in the tally and the per-user row in place until the
+    account is erased.
+  - A row erased before the trigger runs is not counted.
+  - A hand-rolled client with analytics consent can add one count per account it creates, under
+    any allowlisted key.
+  - Rows written before the counter is enabled are never counted: no backfill.
+  - The series has no TTL. A reset keeps it, as it keeps every `daily` series (BUT-2044).
+  - A day with few arrivals can single a person out to someone who knows who joined that day. The
+    tally is admin-read only (`analytics/{document=**}`), and any reader built on it must show a
+    cell under 5 as "<5".
+  - A UTM value over 100 characters makes the row's create fail the rules; the app then sets its
+    dedupe flag, so that user's row is not written.
+- **What it measures.** First UTM link opened while signed in, by users with analytics consent: a
+  floor, not installs and not sign-ups.
+- **Doc id.** The create rule admits only the id `current` and only the keys `source`, `medium`,
+  `campaign`, `firstSeenAt`; `countedAt` is written by the trigger alone.

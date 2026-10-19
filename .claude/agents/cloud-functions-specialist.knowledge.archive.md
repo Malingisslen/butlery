@@ -21130,3 +21130,20 @@ Production fixes were made by the main session; this run only changed tests (no 
   control: stale password token → `requires-recent-login`. Probes (backup + sha256 restore): check disabled RED 1;
   check moved below `requireRecentLogin` RED 1 (the stale-token case). The app-side mapping of the new reason is
   not in functions/src.
+
+### 2026-10-19 — BUT-1997 acquisition tally: consent-gated trigger, two scan gotchas [analytics][rules]
+- Built `onAcquisitionCreated` (`analytics/acquisition-counter.ts`): `onDocumentCreated("users/{uid}/acquisition/current", retry:true)`,
+  one transaction `getAll(source, consent)` → skip on gone / `countedAt` / `purposes.analytics !== true`, else
+  `set(merge)` + nested `increment` on `analytics/acquisition/daily/{UTC firstSeenAt}` and `update(countedAt)`.
+  Emulator suite `acquisition-counter.integration.test.ts` 18/18, incl. two concurrent deliveries → total 1.
+- Wrong turn 1: `ACQUISITION_GROUP` const passed to `dailyDocRef` → reset-analytics-prune reported it unresolved
+  and "reviewed series has no writer". Fixed with a literal.
+- Wrong turn 2: `const userRef = db.collection("users").doc(uid); userRef.collection("consent")` → cascade suite
+  `every collection this repo knows about is decided` RED naming `acquisition, consent`. Inline chains fixed it.
+- Rules: the pre-existing acquisition-rules create-DENY tests ran after test 1 wrote `current`, so they were
+  evaluated as UPDATEs (vacuous). Runner now `clearFirestore()` per test. `[field]: 5` did not pin `is string`
+  (size() errors on an int); `["x"]` does — probes on source/medium/campaign each RED 1 after the change.
+- Probes (sha256 restore): countedAt guard, raw-key bypass, uid in aggregate, consent gate (&& swap; truthy
+  check), hasOnly, size bounds, doc-id pin, reviewedDaily, cascade deleting the tally, Dart consent gate and
+  flag-on-skip — all RED. Emulator `clearFirestore` intermittently returned 499 CANCELLED under the probe
+  harness only; manual runs were stable.

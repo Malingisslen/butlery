@@ -360,12 +360,30 @@ function testCascadeTriggersAreSerialised(): void {
   );
 }
 
+// BUT-1997: a trigger not re-exported from `index.ts` compiles, passes its
+// own suite and never deploys. By name, and missing is a FAIL.
+function testAcquisitionCounterShips(): void {
+  const endpoint = collectEndpoints().find(
+    ({ name }) => name === "onAcquisitionCreated",
+  )?.endpoint;
+  record(
+    "onAcquisitionCreated ships as a gen2 export in the expected region",
+    endpoint?.platform === "gcfv2"
+      && Array.isArray(endpoint.region)
+      && endpoint.region.length === 1
+      && endpoint.region[0] === EXPECTED_REGION
+      && endpoint.maxInstances === EXPECTED_MAX_INSTANCES,
+    endpoint ? JSON.stringify(endpoint) : "NO SUCH EXPORT",
+  );
+}
+
 function main(): void {
   console.log("deploy-manifest tests\n");
   testManifestIsReadable();
   testEveryGen2EndpointIsRegionPinned();
   testEveryGen2EndpointCapsItsInstances();
   testCascadeTriggersAreSerialised();
+  testAcquisitionCounterShips();
 
   console.log(`\n${totalRun - totalFailed}/${totalRun} checks passed`);
   if (totalFailed > 0) process.exit(1);

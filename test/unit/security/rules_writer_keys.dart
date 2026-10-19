@@ -7,6 +7,7 @@
 /// of two that can drift apart.
 library;
 
+import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
@@ -199,6 +200,14 @@ const allowlists = <Allowlist>[
     writer:
         'lib/services/import/models/rate_limit_models.dart '
         'UsageLimits.toFirestore, written whole by ImportRateLimiter.recordUsage',
+  ),
+  // BUT-1997. The block's only `keys().hasOnly`, on the create limb.
+  Allowlist(
+    label: 'users/{uid}/acquisition create',
+    mustContain: 'firstSeenAt',
+    anchor: 'match /users/{userId}/acquisition/{acquisitionDoc}',
+    writer:
+        'lib/models/acquisition_attribution.dart AcquisitionAttribution.toFirestore',
   ),
 ];
 
@@ -402,6 +411,12 @@ Map<String, Set<String>> writtenKeys() => {
       .toFirestore()
       .keys
       .toSet(),
+  // Every key is emitted unconditionally.
+  'users/{uid}/acquisition create': const AcquisitionAttribution(
+    source: 's',
+    medium: 'm',
+    campaign: 'c',
+  ).toFirestore().keys.toSet(),
   // Every optional argument set, so the set is the widest the writer sends.
   'realtime_resources (menu)': RealtimeMenu.fromMenuCategories(
     menuTitle: 'm',
