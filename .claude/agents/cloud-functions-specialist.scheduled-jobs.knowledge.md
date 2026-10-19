@@ -26,6 +26,11 @@
   `maxInstances` only, so a declared timeout is unguarded; assert
   `__endpoint.timeoutSeconds` and that the in-code self-budget is below it, or
   the job joins the siblings whose 8-minute budgets have never been reachable.
+- **A repair that re-derives a rollup delta must use the nightly job's window
+  CONSTANTS and pin each LENGTH at its edge** — a user seen at offset N-1 counts, at
+  N does not, per window (`wau7d` 7, `wau28d` 28). A fixture three days apart leaves
+  `offset <= days` and `WAU_28D = 7` green, and the wrong delta is permanent: the
+  re-run sees no false left to flip.
 - **Auth `UserRecord.metadata` times are `toUTCString()` strings, whole seconds.** A
   fake built the same way rounds a "1 ms short of N days" boundary fixture ONTO the
   line; step a boundary by 1000 ms. A sweep module importing

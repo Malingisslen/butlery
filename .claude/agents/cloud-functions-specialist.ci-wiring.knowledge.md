@@ -24,6 +24,11 @@
 - Post-deploy smoke: `firebase functions:list --json` + grep stable names.
   `deploy` exiting 0 does not prove callability; a run concluding `failure`
   does not prove the DEPLOY step failed.
+- **An ops script's top-level `catch` that prints `err.message` re-leaks what the
+  module excluded** — a batch `update` NOT_FOUND names the whole doc path
+  (emulator: `no entity to update ... name: "<uid>_<date>"`), so a uid-keyed doc id
+  lands in the Actions log. Convert every Firestore throw at its SITE (query AND
+  `commit`) to a code-only error; a probe-only wrapper leaves the commit path raw.
 - **A step whose `if:` names only a step OUTCOME is DEAD after a failure** —
   GitHub ANDs an implicit `success()`. Write `always() && (...)`.
 - **A guard READING files outside `functions/src` is asleep unless the workflow
