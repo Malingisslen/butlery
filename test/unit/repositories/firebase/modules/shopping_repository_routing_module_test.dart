@@ -12,6 +12,8 @@ library;
 // (fake_cloud_firestore ignores GetOptions entirely).
 // ignore_for_file: subtype_of_sealed_class
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +27,16 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart'
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
+
+/// Stands in for the browser-side wrapper the web plugin throws.
+class _JsErrorStandIn implements Exception {}
+
+/// A transaction whose every call fails as an unreachable server does.
+class _UnreachableTransaction extends Fake implements Transaction {
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+}
 
 const _userId = 'alice';
 const _sharedPath = 'unified_shared_shopping_lists';
@@ -1415,6 +1427,114 @@ void main() {
         },
       );
     }
+
+    // On the web the plugin does not hand the handler's error back: the
+    // runner throws something that is not a FirebaseException. The fallback
+    // must still run, and a refusal raised by the handler must still be a
+    // refusal.
+    group('when the platform hides the handler error (web)', () {
+      CollaborativeListTransactionRunner hidesHandlerError(
+        Future<void> Function(
+          Future<UnifiedShoppingList> Function(Transaction) handler,
+        )
+        runHandler,
+      ) => (handler) async {
+        try {
+          await runHandler(handler);
+        } catch (_) {}
+        throw _JsErrorStandIn();
+      };
+
+      test(
+        'an unreachable server still falls back to the cached base',
+        () async {
+          final firestore = FakeFirebaseFirestore();
+          final saved = await _routing(
+            firestore,
+          ).createCollaborativeList(_collabList());
+          await firestore.collection(_sharedPath).doc(saved.id).update({
+            'items': [_item('mjölk').toFirestore()],
+          });
+
+          final offline = _routing(
+            firestore,
+            transactionRunner: hidesHandlerError(
+              (handler) => handler(_UnreachableTransaction()),
+            ),
+          );
+
+          final merged = await offline.mutateCollaborativeList(
+            saved.id,
+            (live) => live.copyWith(
+              items: [live.items.single.copyWith(bought: true)],
+            ),
+          );
+
+          expect(merged.items.single.bought, isTrue);
+          await Future<void>.delayed(Duration.zero);
+          final snap = await firestore
+              .collection(_sharedPath)
+              .doc(saved.id)
+              .get();
+          final stored = (snap.data()!['items'] as List).cast<Map>();
+          expect(stored.single['bought'], isTrue);
+        },
+      );
+
+      test('a spent budget falls back to the cached base', () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+
+        final offline = _routing(
+          firestore,
+          transactionRunner: (_) async => throw TimeoutException('budget'),
+        );
+
+        final merged = await offline.mutateCollaborativeList(
+          saved.id,
+          (live) => live.copyWith(items: [_item('smör')]),
+        );
+
+        expect(merged.items.map((i) => i.name), ['smör']);
+      });
+
+      test('a view-only member is refused, not queued', () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(firestore).createCollaborativeList(
+          UnifiedShoppingList.collaborative(
+            name: 'Handla',
+            ownerId: _userId,
+            ownerDisplayName: 'Alice',
+            memberPermissions: const {'bob': SharedListPermission.view},
+          ),
+        );
+
+        final viewer = _routing(
+          firestore,
+          currentUid: 'bob',
+          transactionRunner: hidesHandlerError(
+            (handler) => firestore.runTransaction(handler),
+          ),
+        );
+
+        await expectLater(
+          () => viewer.mutateCollaborativeList(
+            saved.id,
+            (live) => live.copyWith(items: [_item('smyg')]),
+          ),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        final snap = await firestore
+            .collection(_sharedPath)
+            .doc(saved.id)
+            .get();
+        expect(snap.data()!['items'], isEmpty);
+      });
+    });
 
     // 'aborted' is retry contention on a WORKING connection — re-basing on the
     // cache there would drop another member's tick, so it must escape.

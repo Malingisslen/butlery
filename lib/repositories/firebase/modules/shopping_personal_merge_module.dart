@@ -9,6 +9,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest, PersonalMergeResult;
@@ -121,7 +122,12 @@ class ShoppingPersonalMergeModule {
     final PersonalMergeResult result;
     if (request.replace) {
       try {
-        result = await (transactionRunner ?? _runOnBudget)(
+        result = await runTransactionKeepingHandlerError(
+          transactionRunner ??
+              budgetedTransactionRunner<PersonalMergeResult>(
+                firestore,
+                _transactionBudget,
+              ),
           (transaction) =>
               _replace(transaction, uid, server, request, concurrentChange),
         );
@@ -406,13 +412,6 @@ class ShoppingPersonalMergeModule {
       return false;
     }
   }
-
-  Future<PersonalMergeResult> _runOnBudget(
-    Future<PersonalMergeResult> Function(Transaction transaction) handler,
-  ) => firestore.runTransaction<PersonalMergeResult>(
-    handler,
-    timeout: _transactionBudget,
-  );
 
   /// Whether the server's list differs from the copy in memory in its rows,
   /// a row's name, amount or tick, or its `menuItemIds`.
