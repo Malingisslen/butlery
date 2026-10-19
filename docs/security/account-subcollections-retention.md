@@ -71,7 +71,7 @@ safety of the person who placed the block, whose choice it enforces.
 ## Retention
 
 Erased on account deletion by `deleteUserSubcollections` in
-`functions/src/account/account-deletion-cascade.ts`.
+`functions/src/account/cascade/user-subcollections.ts`.
 
 `block_mirror` takes TWO legs, because the uid appears in two places. Its own row is in
 `deleteUserSubcollections`' list, which erases the leaving user's mirror — the list of who

@@ -41,7 +41,7 @@ Note the near-collision that hid `users/{uid}/notifications` for so long: the to
   deleted, which is what makes the export's 500 cap and its `truncated` flag load-bearing rather
   than theoretical.
 - Fully erased on account deletion by `deleteNotificationAnalytics` in
-  `account-deletion-cascade.ts`, and verified post-deletion by `probeResidualData`
+  `cascade/own-account-data.ts`, and verified post-deletion by `probeResidualData` in `cascade/residual-probe.ts`
   (the three `userId`-scoped collections via the probe array; `notification_delivery` via a
   dedicated `senderId`/`targetUserId` probe — BUT-1450).
 - `analytics/notifications/effectiveness`: erased by `deleteNotificationEffectiveness`
