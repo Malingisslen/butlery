@@ -3,6 +3,7 @@
 /// Handles profile loading, caching, and display name/avatar resolution.
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/user_service.dart';
@@ -10,13 +11,13 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-class FriendsProfileCacheManager extends ChangeNotifier {
+class FriendsProfileCacheManager extends ChangeNotifier
+    with DisposalGuardMixin {
   final UserService _userService;
 
   static const int _maxCacheSize = 100;
   final Map<String, UserProfile> _requestUserProfiles = {};
   bool _isLoadingUserProfiles = false;
-  bool _isDisposed = false;
 
   FriendsProfileCacheManager({required UserService userService})
     : _userService = userService;
@@ -30,10 +31,10 @@ class FriendsProfileCacheManager extends ChangeNotifier {
     required List<FriendRequest> incomingRequests,
     required List<FriendRequest> sentRequests,
   }) async {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     _isLoadingUserProfiles = true;
-    _safeNotifyListeners();
+    notifyListeners();
 
     try {
       // Collect unique user IDs
@@ -57,7 +58,7 @@ class FriendsProfileCacheManager extends ChangeNotifier {
 
         final batch = await _userService.getUserProfiles(uncachedUserIds);
 
-        if (_isDisposed) return;
+        if (isDisposed) return;
 
         // Update cache with LRU eviction
         for (final profile in batch.profiles) {
@@ -88,16 +89,16 @@ class FriendsProfileCacheManager extends ChangeNotifier {
     } catch (e) {
       AppLogger.error('Failed to load user profiles: $e');
     } finally {
-      if (!_isDisposed) {
+      if (!isDisposed) {
         _isLoadingUserProfiles = false;
-        _safeNotifyListeners();
+        notifyListeners();
       }
     }
   }
 
   /// Clears the profile cache (useful for refresh)
   void clearCache() {
-    if (_isDisposed) return;
+    if (isDisposed) return;
     _requestUserProfiles.clear();
     AppLogger.info('🗑️ User profile cache cleared');
   }
@@ -125,16 +126,10 @@ class FriendsProfileCacheManager extends ChangeNotifier {
     return profile?.isOnline ?? false;
   }
 
-  void _safeNotifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
-    _requestUserProfiles.clear();
+    // First, so the guard is up before the cleanup below runs.
     super.dispose();
+    _requestUserProfiles.clear();
   }
 }
