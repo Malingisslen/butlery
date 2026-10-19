@@ -13,6 +13,8 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.d
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/services/tagging/cookbook_cover_cleanup.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -24,6 +26,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class PersonalTagCrudService extends BaseService {
   final FirebasePersonalTagRepository _tagRepository;
   final FirebasePersonalTagGroupRepository _groupRepository;
+  final CookbookCoverCleanup _coverCleanup;
 
   static const String tagsCacheKey = 'personal_tags';
   static const String groupsCacheKey = 'personal_groups';
@@ -45,8 +48,10 @@ class PersonalTagCrudService extends BaseService {
   PersonalTagCrudService({
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
+    StorageService? storageService,
   }) : _tagRepository = tagRepository,
-       _groupRepository = groupRepository;
+       _groupRepository = groupRepository,
+       _coverCleanup = CookbookCoverCleanup(storageService: storageService);
 
   @override
   String get serviceName => 'PersonalTagCrudService';
@@ -59,6 +64,29 @@ class PersonalTagCrudService extends BaseService {
     clearCache(tagsCacheKey);
     if (!_tagsMutatedController.isClosed) {
       _tagsMutatedController.add(null);
+    }
+  }
+
+  /// Read before a delete so the cover photo can follow it; a failed read
+  /// only means the photo stays in Storage, never that the delete is refused.
+  Future<CookbookDetails?> _cookbookOf(String tagId) async {
+    try {
+      return (await _tagRepository.read(tagId))?.cookbook;
+    } catch (e) {
+      AppLogger.warning('Cookbook of tag $tagId not read before delete: $e');
+      return null;
+    }
+  }
+
+  /// Skips the 5-minute tag cache: another device may have merged a cookbook
+  /// into a tag since, and a stale cover URL would delete a photo that tag now
+  /// uses.
+  Future<List<PersonalTag>> _freshTags() async {
+    try {
+      return await _tagRepository.getAllSorted();
+    } catch (e) {
+      AppLogger.warning('Cookbooks not read before bulk delete: $e');
+      return const [];
     }
   }
 
@@ -194,6 +222,7 @@ class PersonalTagCrudService extends BaseService {
   Future<void> deleteTag(String tagId) async {
     await executeServiceOperation(
       () async {
+        final cookbook = await _cookbookOf(tagId);
         final recipeRepo = _getRecipeRepository();
         int cascadeCount = 0;
         if (recipeRepo != null) {
@@ -205,6 +234,7 @@ class PersonalTagCrudService extends BaseService {
         final deleteBatch = _tagRepository.newWriteBatch();
         _tagRepository.addDeleteToBatch(deleteBatch, tagId);
         await deleteBatch.commit();
+        await _coverCleanup.deleteOwnPhotos([cookbook]);
 
         if (cascadeCount > 0) {
           AppLogger.info(
@@ -242,6 +272,7 @@ class PersonalTagCrudService extends BaseService {
       () async {
         const chunkSize = 100;
         final recipeRepo = _getFirebaseRecipeRepository();
+        final allTags = await _freshTags();
         final deleted = <String>[];
         final failed = <String>[];
         var totalCascaded = 0;
@@ -264,6 +295,9 @@ class PersonalTagCrudService extends BaseService {
             await batch.commit();
             deleted.addAll(chunk);
             totalCascaded += cascaded;
+            await _coverCleanup.deleteOwnPhotos(
+              CookbookCoverCleanup.cookbooksOf(allTags, chunk),
+            );
           } catch (e, stackTrace) {
             AppLogger.error(
               'Bulk-delete chunk of ${chunk.length} tags failed: $e',
@@ -353,6 +387,11 @@ class PersonalTagCrudService extends BaseService {
         final deleteBatch = _tagRepository.newWriteBatch();
         _tagRepository.addDeleteToBatch(deleteBatch, fromId);
         await deleteBatch.commit();
+
+        // A cookbook that moved to the target keeps its photo.
+        if (toTag.cookbook != null) {
+          await _coverCleanup.deleteOwnPhotos([fromCookbook]);
+        }
 
         _invalidateTagsCache();
         AppLogger.info(
