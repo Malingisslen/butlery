@@ -270,6 +270,14 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `menu_generator.dart` | 922 | Scoring, allergen filtering, diversity logic, and attendance weighting — extract scorer/filter helpers |
 | `intelligent_cache_manager.dart` | 607 | Behavior-analysis, prefetching, friend-activity cache, and eviction policies are separable strategies |
 
+## Cloud Functions (TypeScript)
+
+The size guard and `tools/count_large_files.sh` look at `lib/` Dart files only; this row records a decision for a server file they do not see.
+
+| File | Lines | Reason |
+|------|-------|--------|
+| `residual-probe.ts` | 1060 | `probeResidualData` moved whole from the deletion cascade (BUT-2113). One ordered sequence of legs whose order BUT-1822 and BUT-1838 froze, with tables that mix areas; splitting it means rewriting bodies. Follow-up: BUT-2408. |
+
 ## Categories
 
 1. **Generated / Data**: Auto-generated files — never modify, never count

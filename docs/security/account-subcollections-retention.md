@@ -75,7 +75,7 @@ safety of the person who placed the block, whose choice it enforces.
 ## Retention
 
 Erased on account deletion by `deleteUserSubcollections` in
-`functions/src/account/account-deletion-cascade.ts`.
+`functions/src/account/cascade/user-subcollections.ts`.
 
 While `ACQUISITION_COUNTER_ENABLED` is true, `onAcquisitionCreated` counts `acquisition` into
 `analytics/acquisition/daily/{date}`, a uid-free tally of integer counts under allowlisted keys;
