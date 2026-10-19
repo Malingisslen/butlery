@@ -1,6 +1,7 @@
 // lib/services/permissions/recipe_permission_module.dart
 
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -43,7 +44,7 @@ class RecipePermissionModule {
       if (recipe == null) return false;
 
       // Check ownership
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       return ownerId == currentUserId;
     } catch (e) {
       // If we can't verify, default to safe (deny)
@@ -259,7 +260,7 @@ class RecipePermissionModule {
       }
 
       // Use RecipePermissionHelper for actual ownership validation
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       return ownerId == currentUserId;
     } catch (e) {
       // If validation fails, default to safe (deny access)
