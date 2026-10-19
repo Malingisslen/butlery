@@ -26,4 +26,14 @@ void main() {
       expect(text.contains('!'), isFalse, reason: 'no exclamation marks');
     });
   }
+
+  test('the privacy policy names the anonymous daily channel count', () {
+    final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
+    final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
+
+    expect(sv, contains('helt anonymt och per dag'));
+    expect(sv, contains('Anonym kanalräkning per dag'));
+    expect(en, contains('Count, anonymously and per day'));
+    expect(en, contains('Anonymous daily channel count'));
+  });
 }

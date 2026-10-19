@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 12 oktober 2026
-**Version:** 1.16.0
+**Senast uppdaterad:** 19 oktober 2026
+**Version:** 1.17.0
 
 ---
 
@@ -98,6 +98,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Identifiera och åtgärda buggar
 - Förbättra användarupplevelsen
 - Mäta appens prestanda
+- Räkna, helt anonymt och per dag, vilken kanal (till exempel Instagram eller nyhetsbrev) nya användare kom från. Räkningen innehåller inget användar-id och kan inte kopplas till dig. Den finns kvar även om du senare raderar ditt konto.
 
 **Marknadsföring (om du har samtyckt):**
 - Skicka nyhetsbrev om nya funktioner
@@ -263,6 +264,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
 | Analyticsdata | 14 månader (Google Analytics standard) | Samtycke |
+| Anonym kanalräkning per dag (inget användar-id) | Tills vidare, eftersom den inte går att koppla till en person | Samtycke (Art. 6.1.a) vid räkningen |
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
