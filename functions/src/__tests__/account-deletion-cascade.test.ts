@@ -1,6 +1,5 @@
 /**
- * BUT-1766 / BUT-1768: per-step semantics of the account-deletion cascade for
- * the two collections it silently skipped.
+ * BUT-1766 / BUT-1768.
  *
  * `request-account-deletion.test.ts` covers ORCHESTRATION only — its fake makes
  * every query return an empty snapshot, so every step "succeeds" whatever it
@@ -58,7 +57,7 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
 }
 
 /**
- * The collection-group query the two legs above depend on needs a declared
+ * The collection-group query needs a declared
  * index; Firestore's automatic single-field indexes cover COLLECTION scope only.
  * Nothing in a stub-backed suite can notice a missing or misspelled one — the
  * query would throw FAILED_PRECONDITION in production, land in the probe's own
@@ -959,7 +958,7 @@ async function scenario_exportCoversEveryDeletedSubcollection(): Promise<void> {
 
 /**
  * BUT-2046: the collection-group index the reporter sweep needs. Same reasoning
- * as `scenario_pollVoteIndexIsDeclared` above — automatic single-field indexes
+ * as `scenario_pollVoteIndexIsDeclared` — automatic single-field indexes
  * are COLLECTION-scoped, so `collectionGroup('report_history').where('reporterId')`
  * throws FAILED_PRECONDITION without the override, and a `--force` index deploy
  * prunes anything absent from the file.

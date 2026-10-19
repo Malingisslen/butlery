@@ -116,9 +116,7 @@ async function scenario_resetScriptListsDoNotOverlap(): Promise<void> {
  * A flag that sticks ON silently stops report anonymisation and between-user
  * cleanup on every REAL account deletion, so the self-healing half is what
  * these checks are mostly about. Its own local fake, not `FakeFirestore`: the
- * shared one has no top-level `doc(path)` and its refs have no `get`/`set`, and
- * teaching it both to serve one module would change the store 260 other checks
- * read from.
+ * shared one has no top-level `doc(path)`.
  */
 async function scenario_resetKillSwitchSelfHeals(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
