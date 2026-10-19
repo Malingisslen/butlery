@@ -234,6 +234,8 @@ void main() {
 
     await tester.tap(find.text('Stäng omröstning'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Avsluta'));
+    await tester.pumpAndSettle();
 
     verify(
       () => messagingService.closePoll(messageId: 'msg_poll'),
@@ -244,6 +246,25 @@ void main() {
       reason: 'a well-read poll must not be refused',
     );
     expect(find.textContaining('hämtats'), findsNothing);
+  });
+
+  // BUT-1919: declining the confirmation must reach `closePoll` zero times.
+  testWidgets('keeping the poll open never calls closePoll', (tester) async {
+    final controller = await pumpChat(tester, pollMessage(const ['user_2']));
+    controller.add([
+      pollMessage(const ['user_2']),
+    ]);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Stäng omröstning'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Just nu leder'), findsOneWidget);
+    await tester.tap(find.text('Behåll öppen'));
+    await tester.pumpAndSettle();
+
+    verifyNever(
+      () => messagingService.closePoll(messageId: any(named: 'messageId')),
+    );
   });
 
   // ── The REFUSAL the user actually sees ───────────────────────────────────
@@ -265,6 +286,8 @@ void main() {
     await pumpChat(tester, pollMessage(const ['user_2']));
 
     await tester.tap(find.text('Stäng omröstning'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Avsluta'));
     await tester.pumpAndSettle();
 
     expect(

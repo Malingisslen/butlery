@@ -137,7 +137,7 @@ class MessageQueryModule {
         // the list here holds ONE message, so `.take(maxHydratedPolls)` is a
         // no-op, and a poll's close is hydrated however far down the chat it
         // sits. Nor would an unhydrated poll close on the first option —
-        // `_resolveWinner` returns null once every option reads zero votes, so
+        // `Poll.leader` returns null once every option reads zero votes, so
         // it writes no plan at all. Both claims were made in this file and both
         // were false; they cost a ticket that specified a guard against a state
         // the code cannot enter (BUT-1883, measured 2026-08-20).
@@ -240,7 +240,7 @@ class MessageQueryModule {
     // The THIRD is a genuine gap, named rather than papered over: a poll whose
     // `options` is not a List is still a poll to `_isPoll`, so the widget draws
     // it, reads no votes, and offers the creator a close button on a tally that
-    // was never read. `_resolveWinner` then writes no plan, so the harm stops
+    // was never read. `Poll.leader` then writes no plan, so the harm stops
     // at a burnt poll rather than a wrong recipe — which is why this is a note
     // and not a guard. Only a malformed stored document reaches it.
 

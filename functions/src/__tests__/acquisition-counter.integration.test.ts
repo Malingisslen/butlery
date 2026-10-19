@@ -253,8 +253,8 @@ async function missingFirstSeenAt(): Promise<void> {
   );
 }
 
-/** The deployed handler, not the core: while the flag is off it counts nothing. */
-async function disabledHandler(): Promise<void> {
+/** The deployed handler, not the core: the uid comes from the path and the day from firstSeenAt. */
+async function enabledHandler(): Promise<void> {
   const date = "2031-04-01";
   await dayRef(date).delete();
   const uid = nextUid();
@@ -263,10 +263,12 @@ async function disabledHandler(): Promise<void> {
     run: (event: unknown) => Promise<unknown>;
   }).run;
   await run({ params: { uid }, time: new Date().toISOString(), data: undefined });
+  const doc = await day(date);
   check(
-    "the exported handler counts nothing while ACQUISITION_COUNTER_ENABLED is false",
-    (await day(date)) === undefined && !("countedAt" in ((await source(uid)) ?? {})),
-    `${JSON.stringify(await day(date))} ${JSON.stringify(await source(uid))}`,
+    "the exported handler counts the row on the day of firstSeenAt",
+    doc?.total === 1 && doc?.bySource?.instagram === 1 &&
+      (await source(uid))?.countedAt instanceof admin.firestore.Timestamp,
+    `${JSON.stringify(doc)} ${JSON.stringify(await source(uid))}`,
   );
 }
 
@@ -291,7 +293,7 @@ async function main(): Promise<void> {
   await normalisation();
   await utcBuckets();
   await missingFirstSeenAt();
-  await disabledHandler();
+  await enabledHandler();
   endpoint();
   console.log(`\n${run - failed}/${run} passing`);
   if (failed > 0) process.exit(1);
