@@ -68,7 +68,6 @@ const Map<String, String> acceptedA11yFindingsLinuxOnly = {
 const Map<String, String> acceptedA11yFindingsWindowsOnly = {};
 
 /// The findings, known and accepted, expected on the host running the tests.
-/// Other hosts (macOS) have not been measured and get the shared lists only.
 Map<String, String> expectedA11yFindingsOnThisHost() => {
   ...knownA11yFindings,
   ...acceptedA11yFindings,
@@ -77,6 +76,19 @@ Map<String, String> expectedA11yFindingsOnThisHost() => {
   if (Platform.isWindows) ...knownA11yFindingsWindowsOnly,
   if (Platform.isWindows) ...acceptedA11yFindingsWindowsOnly,
 };
+
+/// Accepted TEXT_CONTRAST findings a host other than Linux may show or not
+/// show, without the run failing either way: the measurement depends on the
+/// glyph rasteriser (see [knownA11yFindingsLinuxOnly]), and Linux, the host
+/// CI gates every change on, is the one that stays exact. Known findings are
+/// never tolerated, and neither is any other check.
+Set<String> a11yFindingsAcceptedEitherWayOnThisHost() => Platform.isLinux
+    ? const {}
+    : {
+        ...acceptedA11yFindings.keys,
+        ...acceptedA11yFindingsLinuxOnly.keys,
+        ...acceptedA11yFindingsWindowsOnly.keys,
+      }.where((k) => k.endsWith('::TEXT_CONTRAST')).toSet();
 
 /// The most entries the three known lists may hold together. Lower it when
 /// an entry goes.

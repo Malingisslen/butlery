@@ -130,6 +130,7 @@ void main() {
   final rows = StateFixture.load().rows;
   final results = <Map<String, Object?>>[];
   final knownOnThisHost = expectedA11yFindingsOnThisHost();
+  final eitherWayOnThisHost = a11yFindingsAcceptedEitherWayOnThisHost();
 
   setUpAll(() async {
     registerHostFallbacks();
@@ -208,7 +209,11 @@ void main() {
       'case': key,
       'violations': [for (final v in violations) v.toString()],
     });
-    final unlisted = found.difference(known);
+    final eitherWay = eitherWayOnThisHost
+        .where((k) => k.startsWith('$key::'))
+        .map((k) => k.substring(key.length + 2))
+        .toSet();
+    final unlisted = found.difference(known).difference(eitherWay);
     expect(
       unlisted,
       isEmpty,
@@ -216,7 +221,7 @@ void main() {
           '$key: ${violations.where((v) => unlisted.contains(v.code)).join('\n')}',
     );
     expect(
-      known.difference(found),
+      known.difference(found).difference(eitherWay),
       isEmpty,
       reason: '$key passes now: remove it from known_a11y_findings.dart',
     );
