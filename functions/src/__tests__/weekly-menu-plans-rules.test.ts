@@ -43,8 +43,12 @@ import {
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
 
-const PROJECT_ID = "butlery-rules-weekly-menu-plans";
-const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
+// MUTATION-PROBE SEAM (same contract as writer-payload-rules.test.ts).
+const PROJECT_ID =
+  process.env.PROBE_PROJECT_ID ?? "butlery-rules-weekly-menu-plans";
+const RULES_PATH =
+  process.env.PROBE_RULES_PATH ??
+  path.resolve(__dirname, "../../../firestore.rules");
 
 const OWNER_UID = "wmp-owner-uid";
 const STRANGER_UID = "wmp-stranger-uid";
@@ -311,9 +315,9 @@ test("a recipe scrub built on a stale read is denied", async () => {
   );
 });
 
-// W4: a userId change is denied. Note this is over-determined — the two
-// `request.auth.uid == …userId` conjuncts deny it on their own, so removing
-// `'userId'` from `cannotModify` leaves the whole suite green (probed).
+// W4: a userId change is denied. Over-determined on purpose (BUT-1967): the two
+// `request.auth.uid == …userId` conjuncts deny it on their own, so `'userId'`
+// in `cannotModify` is a backstop that cannot be told apart from them here.
 test("an edit that changes userId is denied", async () => {
   await seed(OWNED_ID, planBody(OWNER_UID));
   const ctx = env.authenticatedContext(OWNER_UID);
@@ -322,6 +326,36 @@ test("an edit that changes userId is denied", async () => {
       .firestore()
       .doc(`weekly_menu_plans/${OWNED_ID}`)
       .set(planBody(STRANGER_UID))
+  );
+});
+
+// W4b (BUT-1969, M10): the update limb's own doc-id prefix conjunct. A stored
+// document whose id names ANOTHER uid but whose `userId` is the caller passes
+// every `uid == …userId` conjunct, so only the prefix can deny. The client
+// cannot create such a document; the Admin SDK can. Control: W3, the same
+// caller on an id carrying their own prefix.
+test("an owner cannot update a document whose id names another uid", async () => {
+  const foreignId = `${STRANGER_UID}_2026-W22`;
+  await seed(foreignId, planBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`weekly_menu_plans/${foreignId}`)
+      .set(planBody(OWNER_UID, { updatedAt: LATER }))
+  );
+});
+
+// W4c: the pre-state half of the same backstop. An own-prefix document whose
+// stored `userId` names someone else (Admin SDK only) rewritten by the prefix
+// owner: the pre-state `uid == resource.data.userId` conjunct and
+// `'userId'` in `cannotModify` both deny it, so only dropping both turns it
+// red.
+test("an owner cannot take over a document stored under another userId", async () => {
+  await seed(OWNED_ID, planBody(STRANGER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`weekly_menu_plans/${OWNED_ID}`).set(planBody(OWNER_UID))
   );
 });
 
@@ -514,6 +548,29 @@ test("an edit member can write a group plan", async () => {
         entries: [{ recipeId: "r4", day: "thu" }],
         lastModifiedAt: LATER,
       })
+  );
+});
+
+// G4b (BUT-1969, M11): a user absent from `memberPermissions` entirely. G3
+// is a `view` MEMBER, not a stranger. G4 is the ALLOW control: the same kind
+// of write, from an actor who is on the map. Today the refusal comes from TWO places: `uid in memberPermissions`
+// and the map lookup beside it, which errors for a missing key (an error
+// evaluates as DENY). Removing the `in` conjunct alone therefore stays green —
+// measured; only loosening the lookup as well (e.g. `.get(uid, 'edit')`) turns
+// this red, and that is the rewrite this test exists to catch.
+test("a user who is not on the permission map cannot write a group plan", async () => {
+  await seedGroup(groupPlanBody());
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`group_weekly_menu_plans/${GROUP_PLAN_ID}`)
+      .set(
+        groupPlanBody({
+          entries: [{ recipeId: "r4", day: "thu" }],
+          lastModifiedAt: LATER,
+        })
+      )
   );
 });
 
