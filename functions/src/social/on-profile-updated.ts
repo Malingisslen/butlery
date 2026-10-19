@@ -4,11 +4,11 @@
  * Triggered when a public_profiles/{userId} document is updated.
  * Updates denormalized copies in messages, conversations, recipe_comments,
  * friends subcollections, shared content members, realtime resources,
- * shared recipes, shopping lists (list level AND item level), shopping-list
+ * shares (`shared_content`), shopping lists (list level AND item level), shopping-list
  * templates, and group invitations.
  *
  * Safety: the genuinely-unbounded fan-out collections (messages, conversations,
- * recipe_comments, the `members` collection group, shared_recipes, realtime
+ * recipe_comments, the `members` collection group, shared_content, realtime
  * resources, shared shopping lists) are paged with a per-collection documentId
  * cursor via `batchUpdateQueryPaginated` — the full result set is never held in
  * memory at once, so a prolific user can't OOM or blow the 540s timeout.
@@ -156,10 +156,10 @@ export async function propagateProfileUpdate(
 
     steps.push(
       batchUpdateQueryPaginated(
-        db.collection(Collections.sharedRecipes).where("socialData.ownerId", "==", userId),
-        { "socialData.ownerDisplayName": newName },
+        db.collection(Collections.sharedContent).where("sharedByUserId", "==", userId),
+        { sharedByDisplayName: newName },
         db
-      ).catch((e) => { logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
+      ).catch((e) => { logger.error(`Failed to update ${Collections.sharedContent} for ${userHash}`, e); return 0; })
     );
 
     // Shared shopping lists — owner + last-activity denorm names. A real

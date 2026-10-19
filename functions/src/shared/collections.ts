@@ -8,7 +8,9 @@ export const Collections = {
   publicProfiles: "public_profiles",
   recipes: "recipes",
   ingredients: "ingredients",
-  sharedRecipes: "shared_recipes",
+  // Every share the app makes (recipe, menu, shopping list), told apart by
+  // `contentType`.
+  sharedContent: "shared_content",
   realtimeMenus: "realtime_menus",
   realtimeResources: "realtime_resources",
   messages: "messages",

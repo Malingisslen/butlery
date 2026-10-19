@@ -10,8 +10,7 @@
  *     so the profile / recipes / friends signals cost ZERO extra reads.
  *   - The friend-share signal (highest impact — "Anna delade ett recept
  *     med dig") costs ONE indexed query per lapsed user per run. Included
- *     deliberately; it reuses the existing `sharedToUserIds CONTAINS +
- *     sharedAt DESC` composite index, so no index maintenance is added.
+ *     deliberately; no index maintenance is added.
  *
  * Resolution returns `null` when no signal applies → the caller falls back
  * to the existing Remote Config variant copy (`winback-variant.ts`). The
@@ -21,6 +20,7 @@
 
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
+import { Collections } from "../shared/collections";
 
 /** A resolved, personalized push line plus the signal that produced it. */
 export interface ContextualCopy {
@@ -94,7 +94,8 @@ export async function loadRecentShareDefault(
   nowMs: number,
 ): Promise<RecentShare | null> {
   const snap = await db
-    .collection("shared_recipes")
+    .collection(Collections.sharedContent)
+    .where("contentType", "==", "recipe")
     .where("sharedToUserIds", "array-contains", userId)
     .orderBy("sharedAt", "desc")
     .limit(3)

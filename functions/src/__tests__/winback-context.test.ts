@@ -14,6 +14,7 @@ import {
   SHARE_RECENCY_MS,
   type ContextualCopy,
 } from "../analytics/winback-context";
+import { makeRecordingDb, servingComposite } from "./_query-index-coverage";
 
 interface TestCase {
   name: string;
@@ -212,6 +213,21 @@ const cases: TestCase[] = [
       ]);
       const share = await loadRecentShareDefault(db, "u1", NOW);
       assert(share === null, `expected null for stale share, got ${JSON.stringify(share)}`);
+    },
+  },
+  {
+    name: "default loader reads recipe shares to the user in shared_content, with its index",
+    fn: async () => {
+      const db = makeRecordingDb();
+      await loadRecentShareDefault(db as never, "u1", NOW);
+      const rec = db.gets[0];
+      assert(rec.path.join("/") === "shared_content", `read ${rec.path.join("/")}`);
+      assert(
+        rec.filters.some((f) => f.field === "contentType" && f.op === "==") &&
+          rec.filters.some((f) => f.field === "sharedToUserIds" && f.op === "array-contains"),
+        `filters ${JSON.stringify(rec.filters)}`,
+      );
+      assert(servingComposite(rec), `no composite serves ${JSON.stringify(rec)}`);
     },
   },
   {

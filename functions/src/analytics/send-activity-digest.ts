@@ -44,6 +44,32 @@ export function wantsActivityDigest(digestFrequency: unknown): boolean {
   return digestFrequency !== "never";
 }
 
+/**
+ * The four per-user counts behind the digest. Exported so a test can check
+ * each query's shape against `firestore.indexes.json`: one that lacks its
+ * composite throws FAILED_PRECONDITION and stops the whole run.
+ */
+export function digestActivityQueries(
+  db: admin.firestore.Firestore,
+  userId: string,
+  since: admin.firestore.Timestamp,
+): Record<"recipes" | "comments" | "ratings" | "shares", admin.firestore.Query> {
+  return {
+    recipes: db.collection("users").doc(userId).collection("recipes")
+      .where("core.createdAt", ">=", since),
+    comments: db.collection(Collections.recipeComments)
+      .where("authorId", "==", userId)
+      .where("createdAt", ">=", since),
+    ratings: db.collection("recipe_ratings")
+      .where("userId", "==", userId)
+      .where("createdAt", ">=", since),
+    shares: db.collection(Collections.sharedContent)
+      .where("sharedByUserId", "==", userId)
+      .where("contentType", "==", "recipe")
+      .where("sharedAt", ">=", since),
+  };
+}
+
 export async function runWeeklyActivityDigest(
   deps: RunDeps = {},
 ): Promise<void> {
@@ -103,19 +129,13 @@ export async function runWeeklyActivityDigest(
             }
 
             // Count activity in past 7 days (parallel queries)
+            const q = digestActivityQueries(db, userId, sevenDaysAgo);
             const [recipesSnapshot, commentsSnapshot, ratingsSnapshot, sharedSnapshot] =
               await Promise.all([
-                db.collection("users").doc(userId).collection("recipes")
-                  .where("core.createdAt", ">=", sevenDaysAgo).get(),
-                db.collection(Collections.recipeComments)
-                  .where("authorId", "==", userId)
-                  .where("createdAt", ">=", sevenDaysAgo).get(),
-                db.collection("recipe_ratings")
-                  .where("userId", "==", userId)
-                  .where("createdAt", ">=", sevenDaysAgo).get(),
-                db.collection(Collections.sharedRecipes)
-                  .where("sharedByUserId", "==", userId)
-                  .where("sharedAt", ">=", sevenDaysAgo).get(),
+                q.recipes.get(),
+                q.comments.get(),
+                q.ratings.get(),
+                q.shares.get(),
               ]);
             const newRecipeCount = recipesSnapshot.size;
             const newCommentCount = commentsSnapshot.size;
