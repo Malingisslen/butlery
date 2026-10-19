@@ -6,7 +6,6 @@
 // sync queue (queue_retry_policy.dart, produktregler.md:185-192).
 library;
 
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:drift/drift.dart';
@@ -16,36 +15,51 @@ import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart'
     show decodeDependsOn;
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/upload_completion.dart';
 
 /// The upload statuses a pass picks up. "uploading" is only ever seen at the
 /// start of a pass when an earlier run stopped mid-upload (passes do not
-/// overlap), so it is tried again.
-const _sendableStatuses = ['pending', 'uploading', 'failed'];
+/// overlap), so it is tried again. "uploaded" is a row whose image is in
+/// Storage and whose use of it is still to do.
+const _sendableStatuses = liveUploadStatuses;
 
 class UploadQueueProcessor {
   UploadQueueProcessor({
     required AppDatabase database,
     required OfflineUserStorage storage,
     required QueuedImageUploader upload,
+    UploadedImageDeleter? deleteUploaded,
+    Map<String, UploadCompletion> completions = const {},
     Random? random,
   }) : _db = database,
-       _storage = storage,
        _upload = upload,
+       _deleteUploaded = deleteUploaded,
+       _completions = {
+         SyncQueueEntityType.recipe: RecipeImageCompletion(
+           database: database,
+           storage: storage,
+         ),
+         ...completions,
+       },
        _random = random;
 
   final AppDatabase _db;
-  final OfflineUserStorage _storage;
   final QueuedImageUploader _upload;
+  final UploadedImageDeleter? _deleteUploaded;
+  final Map<String, UploadCompletion> _completions;
   final Random? _random;
 
   /// Whether [userId] has an upload the queue still sends.
+  ///
+  /// An image still in Storage for a row that no longer uses it counts too:
+  /// taking it back is a pass's work.
   Future<bool> hasPending(String userId) async =>
-      (await _sendable(userId)).isNotEmpty;
+      (await _sendable(userId)).isNotEmpty ||
+      (await _unusedUploads(userId)).isNotEmpty;
 
   /// The earliest time an upload waiting for its retry may be tried again.
   Future<DateTime?> earliestRetry(String userId) async {
@@ -63,9 +77,16 @@ class UploadQueueProcessor {
   /// server and whose retry time has come ([force] ignores the time).
   /// Returns how many reached the server.
   ///
-  /// An image that reaches the server is added to its recipe's copy on the
-  /// device, and that change is queued like any edit, so the recipe on the
-  /// server gets the image's address through the sync queue.
+  /// A row goes up in two steps. The image is put in Storage and the row
+  /// becomes `uploaded`; then the handler for its entity type uses it. A
+  /// failure of the second step retries only that step, so the image is
+  /// never uploaded twice. For a recipe image the handler adds the address
+  /// to the recipe's copy on the device, and that change is queued like any
+  /// edit, so the recipe on the server gets it through the sync queue.
+  ///
+  /// The row is read again before the upload and before the second step: a
+  /// row the user threw away meanwhile must not publish its image, and an
+  /// image uploaded for such a row is taken back out of Storage.
   ///
   /// [isCurrentUser] is asked before each upload: once the account changes,
   /// the rest waits for that user's next pass.
@@ -75,17 +96,18 @@ class UploadQueueProcessor {
     required bool Function() isCurrentUser,
     bool force = false,
   }) async {
+    await _takeBackUnused(userId);
     final ids = await _db.queuedOpIds(userId);
     var sent = 0;
-    for (final row in await _sendable(userId)) {
+    for (final listed in await _sendable(userId)) {
       if (!isCurrentUser()) break;
       final decision = decideQueueEntry(
         QueueEntryState(
-          opId: row.id,
+          opId: listed.id,
           // Uploads are independent of each other.
-          entityKey: 'upload:${row.id}',
-          dependsOn: decodeDependsOn(row.dependsOn),
-          nextAttemptAt: row.nextAttemptAt,
+          entityKey: 'upload:${listed.id}',
+          dependsOn: decodeDependsOn(listed.dependsOn),
+          nextAttemptAt: listed.nextAttemptAt,
         ),
         now: now,
         waiting: ids.waiting,
@@ -97,7 +119,7 @@ class UploadQueueProcessor {
         case QueueEntryDecision.dependencyFailed:
           await _db.markChainPermanentlyFailed(
             userId,
-            row.id,
+            listed.id,
             reason: QueuedChangeReason.dependencyFailed.code,
           );
           continue;
@@ -107,34 +129,150 @@ class UploadQueueProcessor {
         case QueueEntryDecision.send:
       }
 
-      await _db.uploadQueueDao.markUploading(row.id);
-      final UploadedImage uploaded;
-      try {
-        uploaded = await _upload(row.localPath, userId);
-      } catch (e) {
-        AppLogger.error('❌ Bilduppladdning misslyckades: ${queueErrorCode(e)}');
-        await _recordFailure(row, userId, e, now);
-        continue;
-      }
-      try {
-        await _complete(row, userId, uploaded);
-      } catch (e) {
-        // The image is up; sending it again would only add a copy. The
-        // upload waits for the user instead of retrying.
-        AppLogger.error(
-          '❌ Bildens adress kunde inte läggas i receptet: ${queueErrorCode(e)}',
-        );
-        await _db.markChainPermanentlyFailed(
-          userId,
+      var row = await _stillQueued(listed.id, userId);
+      if (row == null) continue;
+
+      if (row.status != 'uploaded') {
+        await _db.uploadQueueDao.markUploading(row.id);
+        final UploadedImage uploaded;
+        try {
+          uploaded = await _upload(row.localPath, userId, row.id);
+        } catch (e) {
+          AppLogger.error(
+            '❌ Bilduppladdning misslyckades: ${queueErrorCode(e)}',
+          );
+          // A row thrown away meanwhile stays thrown away.
+          if (await _stillQueued(row.id, userId) == null) continue;
+          await _recordFailure(row, userId, e, now, status: 'failed');
+          continue;
+        }
+        final marked = await _db.uploadQueueDao.markUploaded(
           row.id,
-          reason: QueuedChangeReason.dependencyFailed.code,
-          rootReason: queueErrorCode(e),
+          url: uploaded.url,
+          thumbnailUrl: uploaded.thumbnailUrl,
+        );
+        if (!marked) {
+          await _takeBack(row.id, uploaded);
+          continue;
+        }
+        row = await _stillQueued(row.id, userId);
+        if (row == null) continue;
+      }
+
+      final handler = row.entityType == null
+          ? _completions[SyncQueueEntityType.recipe]
+          : _completions[row.entityType];
+      if (handler == null) {
+        AppLogger.error('❌ Ingen hanterare för ${row.entityType}');
+        await _recordFailure(
+          row,
+          userId,
+          StateError('no handler'),
+          now,
+          status: 'uploaded',
+          permanent: QueuedChangeReason.unknown,
         );
         continue;
       }
-      sent++;
+      try {
+        switch (await handler.complete(row, userId)) {
+          case CompletionOutcome.done:
+            sent++;
+          case CompletionOutcome.waitingForGroup:
+          case CompletionOutcome.discarded:
+            break;
+          case CompletionOutcome.targetGone:
+            await _takeBack(row.id, (
+              url: row.uploadedUrl!,
+              thumbnailUrl: row.uploadedThumbnailUrl,
+            ), thenDropRow: true);
+        }
+      } catch (e) {
+        AppLogger.error(
+          '❌ Bilden kunde inte användas: ${queueErrorCode(e)}',
+        );
+        await _recordFailure(row, userId, e, now, status: 'uploaded');
+      }
     }
     return sent;
+  }
+
+  /// The row as it is now, or null when it is gone, thrown away, waiting for
+  /// the user, or not this user's.
+  Future<UploadQueueEntry?> _stillQueued(String id, String userId) async {
+    final row = await _db.uploadQueueDao.getUpload(id);
+    return uploadRowIsLive(row, userId) ? row : null;
+  }
+
+  /// Rows that hold the address of an image in Storage they no longer use:
+  /// thrown away, or waiting for the user after the image was taken back
+  /// and the take-back failed.
+  Future<List<UploadQueueEntry>> _unusedUploads(String userId) {
+    return (_db.select(_db.uploadQueueEntries)..where(
+          (e) =>
+              e.userId.equals(userId) &
+              e.uploadedUrl.isNotNull() &
+              (e.status.equals('cancelled') | e.permanentlyFailed.equals(true)),
+        ))
+        .get();
+  }
+
+  Future<void> _takeBackUnused(String userId) async {
+    for (final row in await _unusedUploads(userId)) {
+      await _takeBack(row.id, (
+        url: row.uploadedUrl!,
+        thumbnailUrl: row.uploadedThumbnailUrl,
+      ));
+    }
+  }
+
+  /// Takes [image] out of Storage. When it cannot be, its address is kept on
+  /// the row [rowId] so a later pass tries again; with [thenDropRow] the row
+  /// goes once the image is gone. True when the image is gone.
+  Future<bool> _takeBack(
+    String rowId,
+    UploadedImage image, {
+    bool thenDropRow = false,
+  }) async {
+    var gone = false;
+    try {
+      gone = await _deleteUploaded?.call(image) ?? false;
+    } catch (e) {
+      AppLogger.error(
+        '❌ Uppladdad bild kunde inte tas tillbaka: ${queueErrorCode(e)}',
+      );
+    }
+    if (!gone) {
+      await _db.uploadQueueDao.rememberUploaded(
+        rowId,
+        url: image.url,
+        thumbnailUrl: image.thumbnailUrl,
+      );
+      if (thenDropRow) await _db.uploadQueueDao.cancelUpload(rowId);
+      return false;
+    }
+    if (thenDropRow) {
+      await _db.uploadQueueDao.markCompleted(rowId);
+    } else {
+      await _forgetUploaded(rowId);
+    }
+    return true;
+  }
+
+  /// The image of [rowId] is gone from Storage. A row that was waiting to be
+  /// used goes back to `failed`, so a retry by the user uploads it again.
+  Future<void> _forgetUploaded(String rowId) async {
+    final row = await _db.uploadQueueDao.getUpload(rowId);
+    if (row == null) return;
+    await (_db.update(
+      _db.uploadQueueEntries,
+    )..where((e) => e.id.equals(rowId))).write(
+      UploadQueueEntriesCompanion(
+        status: Value(row.status == 'uploaded' ? 'failed' : row.status),
+        uploadedUrl: const Value(null),
+        uploadedThumbnailUrl: const Value(null),
+      ),
+    );
   }
 
   Future<List<UploadQueueEntry>> _sendable(String userId) {
@@ -149,18 +287,33 @@ class UploadQueueProcessor {
         .get();
   }
 
+  /// [status] is where the row rests while it waits for its retry: `failed`
+  /// before the image is up, `uploaded` after, so a retry of the second step
+  /// does not upload again.
   Future<void> _recordFailure(
     UploadQueueEntry row,
     String userId,
     Object error,
-    DateTime now,
-  ) async {
-    final permanent = permanentFailureReason(error);
+    DateTime now, {
+    required String status,
+    QueuedChangeReason? permanent,
+  }) async {
+    permanent ??= permanentFailureReason(error);
     final firstFailedAt = row.firstFailedAt ?? now;
     if (permanent != null || queueRetriesExhausted(firstFailedAt, now)) {
-      await (_db.update(_db.uploadQueueEntries)
-            ..where((e) => e.id.equals(row.id)))
-          .write(const UploadQueueEntriesCompanion(status: Value('failed')));
+      // The image is never used from here, so it does not stay in Storage; a
+      // retry by the user uploads it again.
+      final url = row.uploadedUrl;
+      if (url != null) {
+        await _takeBack(row.id, (
+          url: url,
+          thumbnailUrl: row.uploadedThumbnailUrl,
+        ));
+      } else {
+        await (_db.update(_db.uploadQueueEntries)
+              ..where((e) => e.id.equals(row.id)))
+            .write(UploadQueueEntriesCompanion(status: Value(status)));
+      }
       await _db.markChainPermanentlyFailed(
         userId,
         row.id,
@@ -174,7 +327,7 @@ class UploadQueueProcessor {
       _db.uploadQueueEntries,
     )..where((e) => e.id.equals(row.id))).write(
       UploadQueueEntriesCompanion(
-        status: const Value('failed'),
+        status: Value(status),
         retryCount: Value(failures),
         lastError: Value(queueErrorCode(error)),
         nextAttemptAt: Value(
@@ -183,45 +336,5 @@ class UploadQueueProcessor {
         firstFailedAt: Value(firstFailedAt),
       ),
     );
-  }
-
-  /// The image is on the server: its address goes into the recipe on the
-  /// device and into the sync queue, and the upload and its file on the
-  /// device are done with. One transaction, so a restart never leaves the
-  /// upload gone without the address queued.
-  Future<void> _complete(
-    UploadQueueEntry row,
-    String userId,
-    UploadedImage uploaded,
-  ) async {
-    await _db.transaction(() async {
-      final recipeId = row.entityType == SyncQueueEntityType.recipe
-          ? row.entityId
-          : null;
-      final stored = recipeId == null
-          ? null
-          : await _db.recipeDao.getRecipe(recipeId, userId);
-      if (stored == null) {
-        AppLogger.warning(
-          '⚠️ Receptet finns inte på enheten; bilden läggs inte till',
-        );
-      } else {
-        final recipe = Recipe.fromJson(
-          jsonDecode(stored.recipeJson) as Map<String, dynamic>,
-        );
-        if (!recipe.imageUrls.contains(uploaded.url)) {
-          recipe.core
-            ..imageUrls = [...recipe.imageUrls, uploaded.url]
-            ..thumbnailUrl ??= uploaded.thumbnailUrl;
-          await _storage.saveRecipeForUser(
-            recipe,
-            userId,
-            queueTagging: false,
-          );
-        }
-      }
-      await _db.uploadQueueDao.markCompleted(row.id);
-    });
-    await _storage.deleteUploadFile(row.localPath);
   }
 }

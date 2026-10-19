@@ -84,6 +84,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     final result = await query.getSingle();
@@ -99,6 +100,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     final result = await query.getSingle();
@@ -111,6 +113,51 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
       UploadQueueEntriesCompanion(
         status: const Value('uploading'),
         lastAttemptAt: Value(clock.now()),
+      ),
+    );
+  }
+
+  /// Records that the object is in Storage and the entity it belongs to is
+  /// not yet written, so a retry of the completion does not upload again.
+  /// The retry schedule starts over: earlier failures were the upload's.
+  ///
+  /// Writes nothing, and returns false, for a row that was thrown away or
+  /// removed while the image went up. The check and the write are one
+  /// statement, so a discard cannot land between them and be undone.
+  Future<bool> markUploaded(
+    String id, {
+    required String url,
+    String? thumbnailUrl,
+  }) async {
+    final written =
+        await (update(uploadQueueEntries)..where(
+              (e) => e.id.equals(id) & e.status.isNotIn(['cancelled']),
+            ))
+            .write(
+              UploadQueueEntriesCompanion(
+                status: const Value('uploaded'),
+                uploadedUrl: Value(url),
+                uploadedThumbnailUrl: Value(thumbnailUrl),
+                retryCount: const Value(0),
+                lastError: const Value(null),
+                nextAttemptAt: const Value(null),
+                firstFailedAt: const Value(null),
+              ),
+            );
+    return written > 0;
+  }
+
+  /// Keeps the address of an uploaded image on a row that no longer uses it,
+  /// so the queue can still take the image out of Storage later.
+  Future<void> rememberUploaded(
+    String id, {
+    required String url,
+    String? thumbnailUrl,
+  }) {
+    return (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
+      UploadQueueEntriesCompanion(
+        uploadedUrl: Value(url),
+        uploadedThumbnailUrl: Value(thumbnailUrl),
       ),
     );
   }
@@ -206,6 +253,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     return query.watchSingle().map((row) => row.read(count) ?? 0);
@@ -219,6 +267,28 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     return (select(uploadQueueEntries)..where(
           (e) => e.entityId.equals(entityId) & e.entityType.equals(entityType),
         ))
+        .get();
+  }
+
+  /// The rows of one entity in the order they were queued, so a completion
+  /// that needs every row of a group (a cook snap's photos) reads them in
+  /// one place.
+  Future<List<UploadQueueEntry>> getGroup(
+    String userId,
+    String entityType,
+    String entityId,
+  ) {
+    return (select(uploadQueueEntries)
+          ..where(
+            (e) =>
+                e.userId.equals(userId) &
+                e.entityType.equals(entityType) &
+                e.entityId.equals(entityId),
+          )
+          ..orderBy([
+            (e) => OrderingTerm.asc(e.queuedAt),
+            (e) => OrderingTerm.asc(e.id),
+          ]))
         .get();
   }
 

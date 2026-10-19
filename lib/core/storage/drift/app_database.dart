@@ -58,8 +58,10 @@ class AppDatabase extends _$AppDatabase {
   /// 4: the retry schedule (produktregler.md:188) — when a sync entry may be
   /// sent again, and when its first attempt failed.
   /// 5: the same two columns on the upload queue (BUT-2162).
+  /// 6: the upload step's result on the upload queue, and the `uploaded`
+  /// status (BUT-2294).
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -79,6 +81,7 @@ class AppDatabase extends _$AppDatabase {
         } else {
           if (from < 4) await _migrateSyncQueueToV4(m);
           if (from < 5) await _migrateUploadQueueToV5(m);
+          if (from < 6) await _migrateUploadQueueToV6(m);
         }
       },
       beforeOpen: (details) async {
@@ -125,6 +128,9 @@ class AppDatabase extends _$AppDatabase {
           // Schema 5: the table is rebuilt in its current shape.
           uploadQueueEntries.nextAttemptAt,
           uploadQueueEntries.firstFailedAt,
+          // Schema 6: the table is rebuilt in its current shape.
+          uploadQueueEntries.uploadedUrl,
+          uploadQueueEntries.uploadedThumbnailUrl,
         ],
       ),
     );
@@ -147,6 +153,16 @@ class AppDatabase extends _$AppDatabase {
     await m.addColumn(uploadQueueEntries, uploadQueueEntries.firstFailedAt);
   }
 
+  /// Schema 5 → 6: the upload step's result. Every row is kept and a
+  /// migrated upload has no result yet.
+  Future<void> _migrateUploadQueueToV6(Migrator m) async {
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.uploadedUrl);
+    await m.addColumn(
+      uploadQueueEntries,
+      uploadQueueEntries.uploadedThumbnailUrl,
+    );
+  }
+
   /// A random UUID v4 per row, in SQL, so migrated opIds have the same
   /// format as the ones new entries get.
   static const String _uuidV4Sql =
@@ -158,7 +174,8 @@ class AppDatabase extends _$AppDatabase {
 
   /// The user's queue counts across both queues, live. See [QueueCounts].
   ///
-  /// An upload counts while it is pending, uploading, or failed; a completed
+  /// An upload counts while it is pending, uploading, uploaded (in Storage
+  /// but not yet written to its entity), or failed; a completed
   /// or cancelled one does not. A failed upload counts as draining until it
   /// is marked permanently failed: no caller yet passes a retry limit to
   /// [UploadQueueDao.getRetryableUploads], so the count cannot tell an
@@ -188,7 +205,8 @@ SELECT
      WHERE user_id = ?1 AND permanently_failed = 0)
   + (SELECT COUNT(*) FROM upload_queue_entries
      WHERE user_id = ?1 AND permanently_failed = 0
-       AND status IN ('pending', 'uploading', 'failed')) AS draining,
+       AND status IN ('pending', 'uploading', 'uploaded', 'failed'))
+    AS draining,
   (SELECT COUNT(*) FROM sync_queue_entries
      WHERE user_id = ?1 AND permanently_failed = 1)
   + (SELECT COUNT(*) FROM upload_queue_entries

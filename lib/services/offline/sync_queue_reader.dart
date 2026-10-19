@@ -26,8 +26,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 
 /// Upload statuses that still count as waiting, as in
-/// AppDatabase.watchQueueCounts: pending, uploading and failed.
-const _waitingUploadStatuses = ['pending', 'uploading', 'failed'];
+/// AppDatabase.watchQueueCounts. "uploaded" is in Storage but not yet used,
+/// and the sign-out warning counts it, so the list must show it too.
+const _waitingUploadStatuses = ['pending', 'uploading', 'uploaded', 'failed'];
 
 /// Every change of [userId] that has not reached the server, live, across
 /// the sync queue and the upload queue. Re-read whenever either table (or a

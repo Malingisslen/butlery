@@ -21,6 +21,7 @@ class OfflineSyncManager {
     void Function(String recipeId)? onRecipeSent,
     RecipeConflictCallback? onRecipeConflict,
     QueuedImageUploader? uploadImage,
+    UploadedImageDeleter? deleteUploadedImage,
     OfflineUserStorage? userStorage,
     bool Function()? isOnlineNow,
     this.recipeWriter,
