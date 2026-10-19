@@ -154,10 +154,12 @@ class CanonicalPoolKey {
   /// Folded copies of the shared unit / approximate-word lists, so unit
   /// stripping runs against the already-folded ingredient text.
   static final _foldedUnitsRe = RegExp(
+    // swedish-boundary-ok: the entries are folded to ASCII by _foldDiacritics
     '\\b(${RecipeTextNormalizer.ingredientUnits.map(_foldDiacritics).join('|')})\\b',
     caseSensitive: false,
   );
   static final _foldedApproxRe = RegExp(
+    // swedish-boundary-ok: the entries are folded to ASCII by _foldDiacritics
     '\\b(${RecipeTextNormalizer.approximateWords.map(_foldDiacritics).join('|')})\\b',
   );
 

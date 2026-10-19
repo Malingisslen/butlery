@@ -244,6 +244,7 @@ class HtmlSanitizer {
     // Remove dangerous self-closing/void tags
     for (final tag in _dangerousSelfTags) {
       result = result.replaceAll(
+        // swedish-boundary-ok: HTML tag names are ASCII
         RegExp('<$tag\\b[^>]*/?>', caseSensitive: false),
         '',
       );
@@ -287,6 +288,7 @@ class HtmlSanitizer {
     String tagName, {
     bool Function(String openingTag)? preserveWhen,
   }) {
+    // swedish-boundary-ok: HTML tag names are ASCII
     final openPattern = RegExp('<$tagName\\b', caseSensitive: false);
     final lowerHtml = html.toLowerCase();
     final closeTag = '</$tagName>';

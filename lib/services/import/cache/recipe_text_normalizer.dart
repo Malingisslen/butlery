@@ -118,6 +118,7 @@ class RecipeTextNormalizer {
   // [approximateWords] starts or ends with å/ä/ö, so neither the missing- nor
   // the phantom-boundary failure can fire.
   static final approximateWordsRe = RegExp(
+    // swedish-boundary-ok: the words start and end ASCII, pinned by dynamic_boundary_inputs_test
     '\\b(${approximateWords.join('|')})\\b',
   );
   static final parentheticalRe = RegExp(r'\([^)]*\)');
