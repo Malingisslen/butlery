@@ -17,6 +17,7 @@ import 'package:butlery/core/form/form_fields_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/contextual_error_handler.dart';
 import 'package:butlery/core/errors/contextual_error_engine.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -26,7 +27,7 @@ import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_save_blocker.dart';
 
 /// Core state management for recipe form with intelligent auto-save
-class RecipeFormState extends ChangeNotifier {
+class RecipeFormState extends ChangeNotifier with DisposalGuardMixin {
   // FormFieldsManagers for dynamic fields
   late final FormFieldsManager _ingredientsManager;
   late final FormFieldsManager _instructionsManager;
@@ -843,7 +844,7 @@ class RecipeFormState extends ChangeNotifier {
     // so building here would silently yield a recipe with no ingredients and
     // no instructions — which a resuming save would then WRITE over the user's
     // stored recipe. Fail loudly instead.
-    if (_isDisposed) {
+    if (isDisposed) {
       throw StateError(
         'createRecipe called on a disposed RecipeFormState — the form data is '
         'already gone, so the result would be an empty recipe',
@@ -997,19 +998,12 @@ class RecipeFormState extends ChangeNotifier {
   void removeIngredientHeading(String id) =>
       _ingredientSectionState.removeHeading(id);
 
-  bool _isDisposed = false;
-
-  void _onAutoSaveChanged() {
-    if (!_isDisposed) notifyListeners();
-  }
-
-  /// Whether [dispose] has run. Once true the form's field VALUES are gone,
-  /// not just its controllers, so nothing may be built from this state.
-  bool get isDisposed => _isDisposed;
+  void _onAutoSaveChanged() => notifyListeners();
 
   @override
   void dispose() {
-    _isDisposed = true;
+    // First, so the guard is up before the cleanup below runs.
+    super.dispose();
     _autoSaveManager.removeListener(_onAutoSaveChanged);
     _autoSaveManager.dispose();
     // BUT-1667: the three field managers own the form's TextEditingControllers;
@@ -1018,6 +1012,5 @@ class RecipeFormState extends ChangeNotifier {
     _instructionsManager.dispose();
     _tagsManager.dispose();
     _ingredientSectionState.dispose();
-    super.dispose();
   }
 }

@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -80,7 +81,8 @@ class DraftMetadata {
 }
 
 /// Intelligent auto-save manager for recipe forms with draft persistence and recovery
-class RecipeFormAutoSaveManager extends ChangeNotifier {
+class RecipeFormAutoSaveManager extends ChangeNotifier
+    with DisposalGuardMixin {
   /// [ownerIdProvider] names the signed-in account; it defaults to
   /// [AuthService.currentUserId].
   RecipeFormAutoSaveManager({String? Function()? ownerIdProvider})
@@ -170,7 +172,6 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   Timer? _feedbackTimer;
   String? _currentDraftId;
   bool _isAutoSaving = false;
-  bool _isDisposed = false;
   bool _hasShownAutoSaveNotice = false;
   DateTime? _lastAutoSaveTime;
   bool _isTemplate = false; // Track if this is a template-based form
@@ -277,7 +278,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     }
 
     _isAutoSaving = true;
-    if (!_isDisposed) notifyListeners();
+    notifyListeners();
 
     try {
       final now = clock.now();
@@ -320,7 +321,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       }
     } finally {
       _isAutoSaving = false;
-      if (!_isDisposed) notifyListeners();
+      notifyListeners();
     }
   }
 
@@ -637,13 +638,13 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// Dispose resources
   @override
   void dispose() {
-    _isDisposed = true;
+    // First, so the guard is up before the cleanup below runs.
+    super.dispose();
     _autoSaveTimer?.cancel();
     _feedbackTimer?.cancel();
     // Unblock any waiter before tearing down
     if (_metadataWriteLock != null && !_metadataWriteLock!.isCompleted) {
       _metadataWriteLock!.complete();
     }
-    super.dispose();
   }
 }
