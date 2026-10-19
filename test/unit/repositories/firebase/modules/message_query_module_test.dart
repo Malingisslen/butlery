@@ -432,7 +432,7 @@ void main() {
     //
     // This comment stated the harm wrongly for days, in the same words the
     // module itself did: an unhydrated poll does NOT make `closePoll` resolve
-    // to the first option. `_resolveWinner` returns null once every option
+    // to the first option. `Poll.leader` returns null once every option
     // reads zero votes, so it writes no plan at all (BUT-1883, measured
     // 2026-08-20).
 

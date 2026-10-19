@@ -19289,6 +19289,42 @@ abstract class AppLocalizations {
   /// **'Stäng omröstning'**
   String get pollCloseAction;
 
+  /// Title of the confirmation shown before a group poll is closed (BUT-1919). Closing cannot be undone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta omröstningen?'**
+  String get pollCloseConfirmTitle;
+
+  /// Body of the close confirmation when one option leads.
+  ///
+  /// In sv, this message translates to:
+  /// **'Just nu leder {name} med {votes, plural, =1{1 röst} other{{votes} röster}}. Det går inte att ångra när omröstningen är avslutad.'**
+  String pollCloseConfirmLeader(String name, int votes);
+
+  /// Body of the close confirmation when several options share the top vote count; the earliest option wins a tie.
+  ///
+  /// In sv, this message translates to:
+  /// **'Just nu är det lika mellan {names}. {name} kom först och vinner om du avslutar nu. Det går inte att ångra.'**
+  String pollCloseConfirmTie(String names, String name);
+
+  /// Body of the close confirmation when nobody has voted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har röstat än, så ingen vinner. Det går inte att ångra när omröstningen är avslutad.'**
+  String get pollCloseConfirmNoVotes;
+
+  /// Confirm button of the close-poll confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta'**
+  String get pollCloseConfirmAction;
+
+  /// Cancel button of the close-poll confirmation; the poll stays open.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll öppen'**
+  String get pollCloseConfirmKeepOpen;
+
   /// No description provided for @authRequiredError.
   ///
   /// In sv, this message translates to:

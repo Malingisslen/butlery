@@ -267,6 +267,24 @@ class Poll {
     return allVoters.length;
   }
 
+  /// The option a close would pick: most votes, the earlier option on a tie,
+  /// none while nobody has voted.
+  PollOption? get leader {
+    PollOption? best;
+    for (final option in options) {
+      if (best == null || option.voteCount > best.voteCount) best = option;
+    }
+    if (best == null || best.voteCount == 0) return null;
+    return best;
+  }
+
+  /// The options sharing the top vote count with [leader]; empty without one.
+  List<PollOption> get tiedLeaders {
+    final top = leader;
+    if (top == null) return const [];
+    return options.where((o) => o.voteCount == top.voteCount).toList();
+  }
+
   /// Whether the poll has expired based on deadline.
   bool get isExpired => deadline != null && clock.now().isAfter(deadline!);
 

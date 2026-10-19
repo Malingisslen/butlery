@@ -8380,6 +8380,38 @@
     "description": "Snackbar for any other failure to close a poll."
   },
   "pollCloseAction": "Close poll",
+  "pollCloseConfirmTitle": "Close the poll?",
+  "@pollCloseConfirmTitle": {
+    "description": "Title of the confirmation shown before a group poll is closed (BUT-1919). Closing cannot be undone."
+  },
+  "pollCloseConfirmLeader": "{name} is ahead with {votes, plural, =1{1 vote} other{{votes} votes}} right now. This cannot be undone once the poll is closed.",
+  "@pollCloseConfirmLeader": {
+    "description": "Body of the close confirmation when one option leads.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "votes": {"type": "int"}
+    }
+  },
+  "pollCloseConfirmTie": "It is a tie between {names} right now. {name} came first and wins if you close now. This cannot be undone.",
+  "@pollCloseConfirmTie": {
+    "description": "Body of the close confirmation when several options share the top vote count; the earliest option wins a tie.",
+    "placeholders": {
+      "names": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "pollCloseConfirmNoVotes": "Nobody has voted yet, so nobody wins. This cannot be undone once the poll is closed.",
+  "@pollCloseConfirmNoVotes": {
+    "description": "Body of the close confirmation when nobody has voted."
+  },
+  "pollCloseConfirmAction": "Close",
+  "@pollCloseConfirmAction": {
+    "description": "Confirm button of the close-poll confirmation."
+  },
+  "pollCloseConfirmKeepOpen": "Keep open",
+  "@pollCloseConfirmKeepOpen": {
+    "description": "Cancel button of the close-poll confirmation; the poll stays open."
+  },
   "authRequiredError": "You must be signed in",
   "shoppingListEditPermissionDenied": "You do not have permission to edit this shared shopping list",
   "userStatusOffline": "Offline",

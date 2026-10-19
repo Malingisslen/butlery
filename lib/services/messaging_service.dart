@@ -986,7 +986,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       // `pollMap['creatorId'] != closerId`.
       PlanCommit? commitPlan;
       if (resolvablePoll.creatorId == currentUserId) {
-        final winner = _resolveWinner(resolvablePoll);
+        final winner = resolvablePoll.leader;
         if (winner?.recipeId != null) {
           final conversation = await _messagingRepository.getConversation(
             existing.conversationId,
@@ -1074,20 +1074,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.warning('Failed to parse poll from metadata: $e');
       return null;
     }
-  }
-
-  /// Winner = option with the most votes. Ties broken by chronological order
-  /// (first option in `options` wins) — keeps resolution deterministic.
-  PollOption? _resolveWinner(Poll poll) {
-    if (poll.options.isEmpty) return null;
-    PollOption? best;
-    for (final option in poll.options) {
-      if (best == null || option.voteCount > best.voteCount) {
-        best = option;
-      }
-    }
-    if (best == null || best.voteCount == 0) return null;
-    return best;
   }
 
   /// Find the winner recipe in the local recipe cache. Returns null if

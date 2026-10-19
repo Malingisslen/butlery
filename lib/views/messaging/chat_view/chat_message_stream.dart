@@ -24,6 +24,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/models/messaging/poll.dart';
+import 'package:butlery/views/messaging/chat_view/poll_close_confirmation.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -328,6 +330,25 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   /// `mounted` is checked after the await because a snackbar outlives its
   /// route, and this widget can be disposed while the close is in flight.
   Future<void> _closePoll(ChatViewModel viewModel, String messageId) async {
+    Poll? poll;
+    try {
+      final pollData = _messages
+          .where((m) => m.id == messageId)
+          .map((m) => m.metadata?['poll'])
+          .whereType<Map<String, dynamic>>()
+          .firstOrNull;
+      if (pollData != null) poll = Poll.fromMap(pollData);
+    } catch (_) {
+      poll = null;
+    }
+    // A close is one-way, so a poll the screen cannot read is not closed
+    // unasked.
+    if (poll == null) {
+      SnackBarUtils.showFailure(context, what: context.l10n.pollCloseFailed);
+      return;
+    }
+    final confirmed = await confirmPollClose(context, poll);
+    if (!confirmed || !mounted) return;
     final problem = await viewModel.closePoll(messageId);
     if (!mounted || problem == null) return;
     SnackBarUtils.showFailure(context, what: problem);

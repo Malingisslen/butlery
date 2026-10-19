@@ -8438,6 +8438,38 @@
     "description": "Snackbar for any other failure to close a poll."
   },
   "pollCloseAction": "Stäng omröstning",
+  "pollCloseConfirmTitle": "Avsluta omröstningen?",
+  "@pollCloseConfirmTitle": {
+    "description": "Title of the confirmation shown before a group poll is closed (BUT-1919). Closing cannot be undone."
+  },
+  "pollCloseConfirmLeader": "Just nu leder {name} med {votes, plural, =1{1 röst} other{{votes} röster}}. Det går inte att ångra när omröstningen är avslutad.",
+  "@pollCloseConfirmLeader": {
+    "description": "Body of the close confirmation when one option leads.",
+    "placeholders": {
+      "name": {"type": "String"},
+      "votes": {"type": "int"}
+    }
+  },
+  "pollCloseConfirmTie": "Just nu är det lika mellan {names}. {name} kom först och vinner om du avslutar nu. Det går inte att ångra.",
+  "@pollCloseConfirmTie": {
+    "description": "Body of the close confirmation when several options share the top vote count; the earliest option wins a tie.",
+    "placeholders": {
+      "names": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "pollCloseConfirmNoVotes": "Ingen har röstat än, så ingen vinner. Det går inte att ångra när omröstningen är avslutad.",
+  "@pollCloseConfirmNoVotes": {
+    "description": "Body of the close confirmation when nobody has voted."
+  },
+  "pollCloseConfirmAction": "Avsluta",
+  "@pollCloseConfirmAction": {
+    "description": "Confirm button of the close-poll confirmation."
+  },
+  "pollCloseConfirmKeepOpen": "Behåll öppen",
+  "@pollCloseConfirmKeepOpen": {
+    "description": "Cancel button of the close-poll confirmation; the poll stays open."
+  },
   "authRequiredError": "Du måste vara inloggad",
   "shoppingListEditPermissionDenied": "Du har inte behörighet att redigera denna delade inköpslista",
   "userStatusOffline": "Offline",
