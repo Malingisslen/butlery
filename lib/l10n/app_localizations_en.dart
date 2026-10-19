@@ -12660,6 +12660,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollCloseAction => 'Close poll';
 
   @override
+  String get pollCloseConfirmTitle => 'Close the poll?';
+
+  @override
+  String pollCloseConfirmLeader(String name, int votes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      votes,
+      locale: localeName,
+      other: '$votes votes',
+      one: '1 vote',
+    );
+    return '$name is ahead with $_temp0 right now. This cannot be undone once the poll is closed.';
+  }
+
+  @override
+  String pollCloseConfirmTie(String names, String name) {
+    return 'It is a tie between $names right now. $name came first and wins if you close now. This cannot be undone.';
+  }
+
+  @override
+  String get pollCloseConfirmNoVotes =>
+      'Nobody has voted yet, so nobody wins. This cannot be undone once the poll is closed.';
+
+  @override
+  String get pollCloseConfirmAction => 'Close';
+
+  @override
+  String get pollCloseConfirmKeepOpen => 'Keep open';
+
+  @override
   String get authRequiredError => 'You must be signed in';
 
   @override

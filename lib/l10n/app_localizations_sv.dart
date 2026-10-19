@@ -12584,6 +12584,35 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pollCloseAction => 'Stäng omröstning';
 
   @override
+  String get pollCloseConfirmTitle => 'Avsluta omröstningen?';
+
+  @override
+  String pollCloseConfirmLeader(String name, int votes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      votes,
+      locale: localeName,
+      other: '$votes röster',
+      one: '1 röst',
+    );
+    return 'Just nu leder $name med $_temp0. Det går inte att ångra när omröstningen är avslutad.';
+  }
+
+  @override
+  String pollCloseConfirmTie(String names, String name) {
+    return 'Just nu är det lika mellan $names. $name kom först och vinner om du avslutar nu. Det går inte att ångra.';
+  }
+
+  @override
+  String get pollCloseConfirmNoVotes =>
+      'Ingen har röstat än, så ingen vinner. Det går inte att ångra när omröstningen är avslutad.';
+
+  @override
+  String get pollCloseConfirmAction => 'Avsluta';
+
+  @override
+  String get pollCloseConfirmKeepOpen => 'Behåll öppen';
+
+  @override
   String get authRequiredError => 'Du måste vara inloggad';
 
   @override
