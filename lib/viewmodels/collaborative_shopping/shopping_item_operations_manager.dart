@@ -3,6 +3,7 @@
 import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -33,7 +34,8 @@ class ClaimResult {
 }
 
 /// Manages shopping item operations including adding, toggling completion, and error handling.
-class ShoppingItemOperationsManager extends ChangeNotifier {
+class ShoppingItemOperationsManager extends ChangeNotifier
+    with DisposalGuardMixin {
   final UnifiedShoppingService _shoppingService;
   final String listId;
 
@@ -297,27 +299,5 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       AppLogger.error('unclaimItem failed', e);
       return const ClaimResult(ClaimOutcome.error);
     }
-  }
-
-  bool _isDisposed = false;
-
-  bool get isDisposed => _isDisposed;
-
-  // BUT-1641: swallowed, not thrown — the caller reaching here is an async
-  // continuation finishing after the screen closed. Why the parents' own
-  // guards do not cover this is recorded in the ticket.
-  @override
-  void notifyListeners() {
-    if (_isDisposed) return;
-    super.notifyListeners();
-  }
-
-  /// Exists only to flip the flag above. This class holds no subscriptions and
-  /// no timers, so there is nothing else to cancel — that half of BUT-1628's
-  /// finding still holds.
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }
