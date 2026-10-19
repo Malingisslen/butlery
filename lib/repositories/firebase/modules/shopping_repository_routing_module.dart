@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_list_permission_guards.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -342,10 +343,17 @@ class ShoppingRepositoryRoutingModule {
     final uid = requireCurrentUserId();
     final docRef = sharedListsRef.doc(listId);
 
-    final runTransaction = transactionRunner ?? _runTransactionOnBudget;
+    final run =
+        transactionRunner ??
+        budgetedTransactionRunner<UnifiedShoppingList>(
+          firestore,
+          _transactionBudget,
+        );
 
     try {
-      final result = await runTransaction((transaction) async {
+      final result = await runTransactionKeepingHandlerError(run, (
+        transaction,
+      ) async {
         final snapshot = await transaction.get(docRef);
         if (!snapshot.exists) {
           throw ResourceNotFoundException(
@@ -437,13 +445,6 @@ class ShoppingRepositoryRoutingModule {
           : {...knownContributors, uid}.toList(),
     };
   }
-
-  Future<UnifiedShoppingList> _runTransactionOnBudget(
-    Future<UnifiedShoppingList> Function(Transaction transaction) handler,
-  ) => firestore.runTransaction<UnifiedShoppingList>(
-    handler,
-    timeout: _transactionBudget,
-  );
 
   /// Offline path for [mutateCollaborativeList]: apply [mutate] to the cached
   /// document and queue a write, which Firestore replays on reconnect.
