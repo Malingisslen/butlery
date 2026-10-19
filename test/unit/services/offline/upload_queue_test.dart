@@ -64,7 +64,11 @@ void main() {
   Object? uploadFailure;
   void Function()? onUploaded;
 
-  Future<UploadedImage> upload(String localPath, String userId) async {
+  Future<UploadedImage> upload(
+    String localPath,
+    String userId,
+    String objectId,
+  ) async {
     final failure = uploadFailure;
     if (failure != null) throw failure;
     uploadedPaths.add(localPath);
@@ -296,7 +300,7 @@ void main() {
   });
 
   test('an image whose address cannot reach its recipe is not uploaded '
-      'again', () async {
+      'again, and fails for good after 24 h', () async {
     await saveOffline('r1');
     final id = await queueImage('r1');
     await pass();
@@ -314,8 +318,15 @@ void main() {
     await pass(at: t0.add(const Duration(hours: 1)), force: true);
 
     expect(uploadedPaths, hasLength(2), reason: 'r1 once, r2 once');
-    final row = (await uploadRow(id2))!;
-    expect(row.permanentlyFailed, isTrue);
+    final waiting = (await uploadRow(id2))!;
+    expect(waiting.status, 'uploaded');
+    expect(waiting.uploadedUrl, isNotNull);
+    expect(waiting.permanentlyFailed, isFalse);
+
+    await pass(at: t0.add(const Duration(hours: 25)), force: true);
+
+    expect(uploadedPaths, hasLength(2));
+    expect((await uploadRow(id2))!.permanentlyFailed, isTrue);
   });
 
   test('a recipe that already has a thumbnail keeps it', () async {
