@@ -81,8 +81,7 @@ class DraftMetadata {
 }
 
 /// Intelligent auto-save manager for recipe forms with draft persistence and recovery
-class RecipeFormAutoSaveManager extends ChangeNotifier
-    with DisposalGuardMixin {
+class RecipeFormAutoSaveManager extends ChangeNotifier with DisposalGuardMixin {
   /// [ownerIdProvider] names the signed-in account; it defaults to
   /// [AuthService.currentUserId].
   RecipeFormAutoSaveManager({String? Function()? ownerIdProvider})
