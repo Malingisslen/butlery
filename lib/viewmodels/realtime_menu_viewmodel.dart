@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -23,9 +24,8 @@ import 'package:butlery/viewmodels/realtime_menu/realtime_menu_operations.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_participant_manager.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-class RealtimeMenuViewModel extends ChangeNotifier {
+class RealtimeMenuViewModel extends ChangeNotifier with DisposalGuardMixin {
   final RealtimeMenuService _menuService;
-  bool _isDisposed = false;
 
   late final RealtimeMenuState _state;
   late final RealtimeStreamManager _streamManager;
@@ -69,7 +69,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     );
 
     _onStateChanged = () {
-      if (!_isDisposed) notifyListeners();
+      if (!isDisposed) notifyListeners();
     };
     _state.addListener(_onStateChanged);
     _initialize();
@@ -302,7 +302,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   void clearError() {
     // dispose() disposes _state, so an unguarded call after disposal notifies
     // a dead ChangeNotifier and throws.
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     _state.clearError();
   }
@@ -412,13 +412,9 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   }
 
   @override
-  void notifyListeners() {
-    if (!_isDisposed) super.notifyListeners();
-  }
-
-  @override
   void dispose() {
-    _isDisposed = true;
+    // First, so the guard is up before the cleanup below runs.
+    super.dispose();
     AppLogger.info('🗑️ RealtimeMenuViewModel disposing...');
 
     _streamManager.dispose();
@@ -432,7 +428,5 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     _optimisticManager.dispose();
     _participantManager.dispose();
     _connectionMonitor.dispose();
-
-    super.dispose();
   }
 }

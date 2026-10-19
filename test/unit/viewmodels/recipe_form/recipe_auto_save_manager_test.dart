@@ -643,9 +643,7 @@ void main() {
 
   group('dispose mid-save', () {
     /// Proves: disposing the manager while a debounced save is pending
-    /// does not crash (no `notifyListeners` after dispose). The
-    /// `_isDisposed` guard inside `_performAutoSave` is what we're
-    /// protecting.
+    /// does not crash (no `notifyListeners` after dispose).
     test(
       'dispose with pending timer is safe and cancels the write',
       () async {

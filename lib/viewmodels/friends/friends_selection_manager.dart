@@ -3,11 +3,11 @@
 /// Handles multi-friend selection for group creation and bulk operations.
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/models/user_profile.dart';
 
-class FriendsSelectionManager extends ChangeNotifier {
+class FriendsSelectionManager extends ChangeNotifier with DisposalGuardMixin {
   final Set<String> _selectedFriendIds = {};
-  bool _isDisposed = false;
 
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
   bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
@@ -15,39 +15,39 @@ class FriendsSelectionManager extends ChangeNotifier {
 
   /// Toggles friend selection state
   void toggleFriendSelection(String friendId) {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     if (_selectedFriendIds.contains(friendId)) {
       _selectedFriendIds.remove(friendId);
     } else {
       _selectedFriendIds.add(friendId);
     }
-    _safeNotifyListeners();
+    notifyListeners();
   }
 
   /// Selects all friends
   void selectAllFriends(List<UserProfile> allFriends) {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     _selectedFriendIds.clear();
     _selectedFriendIds.addAll(allFriends.map((f) => f.uid));
-    _safeNotifyListeners();
+    notifyListeners();
   }
 
   /// Clears all selections
   void clearSelection() {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     _selectedFriendIds.clear();
-    _safeNotifyListeners();
+    notifyListeners();
   }
 
   /// Removes a friend from selection (useful when friend is removed)
   void removeFromSelection(String friendId) {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     if (_selectedFriendIds.remove(friendId)) {
-      _safeNotifyListeners();
+      notifyListeners();
     }
   }
 
@@ -56,16 +56,10 @@ class FriendsSelectionManager extends ChangeNotifier {
     return allFriends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
   }
 
-  void _safeNotifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
-    _selectedFriendIds.clear();
+    // First, so the guard is up before the cleanup below runs.
     super.dispose();
+    _selectedFriendIds.clear();
   }
 }

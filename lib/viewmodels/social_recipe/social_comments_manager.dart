@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -14,14 +15,13 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-class SocialCommentsManager extends ChangeNotifier {
+class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
   final UnifiedRecipeService _recipeService;
   ContentFilterService? _contentFilter;
   UnifiedFriendsService? _friendsService;
   UserService? _userService;
   AuthRepository? _authRepository;
   final AccountMaturityHelper _maturityHelper;
-  bool _isDisposed = false;
 
   bool _isLoadingComments = false;
   String? _commentsError;
@@ -56,10 +56,6 @@ class SocialCommentsManager extends ChangeNotifier {
     firebaseUser: _authRepository?.currentUser,
   );
 
-  void _safeNotify() {
-    if (!_isDisposed) notifyListeners();
-  }
-
   /// BP3: Filter out comments from blocked users.
   List<RecipeComment> _filterBlockedUsers(List<RecipeComment> comments) {
     final blocked = _friendsService?.blockedUsers;
@@ -82,7 +78,7 @@ class SocialCommentsManager extends ChangeNotifier {
   Future<void> refreshComments(String recipeId) async {
     _isLoadingComments = true;
     _commentsError = null;
-    _safeNotify();
+    notifyListeners();
 
     try {
       final recipeComments = await _recipeService.social.getComments(
@@ -96,7 +92,7 @@ class SocialCommentsManager extends ChangeNotifier {
       AppLogger.error('Failed to refresh comments for recipe $recipeId: $e');
     } finally {
       _isLoadingComments = false;
-      _safeNotify();
+      notifyListeners();
     }
   }
 
@@ -105,7 +101,7 @@ class SocialCommentsManager extends ChangeNotifier {
     try {
       final stats = await _recipeService.social.getCommentStatistics(recipeId);
       _commentCount = stats['total_comments'] as int? ?? 0;
-      _safeNotify();
+      notifyListeners();
     } catch (e) {
       AppLogger.warning('Failed to fetch comment count: $e');
     }
@@ -122,7 +118,7 @@ class SocialCommentsManager extends ChangeNotifier {
     _isLoadingComments = true;
     _commentsError = null;
     _watchedRecipeId = recipeId;
-    _safeNotify();
+    notifyListeners();
 
     try {
       AppLogger.info('Starting real-time comment stream for recipe: $recipeId');
@@ -134,7 +130,7 @@ class SocialCommentsManager extends ChangeNotifier {
               _comments = _filterBlockedUsers(recipeComments);
               _isLoadingComments = false;
               _commentsError = null;
-              _safeNotify();
+              notifyListeners();
               AppLogger.debug(
                 'Real-time comment update received: ${_comments.length} comments',
               );
@@ -144,7 +140,7 @@ class SocialCommentsManager extends ChangeNotifier {
                 'kommentarer',
               );
               _isLoadingComments = false;
-              _safeNotify();
+              notifyListeners();
               AppLogger.error(
                 'Comment stream error for recipe $recipeId: $error',
               );
@@ -153,7 +149,7 @@ class SocialCommentsManager extends ChangeNotifier {
     } catch (e) {
       _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
       _isLoadingComments = false;
-      _safeNotify();
+      notifyListeners();
       AppLogger.error(
         'Failed to start comment stream for recipe $recipeId: $e',
       );
@@ -171,7 +167,7 @@ class SocialCommentsManager extends ChangeNotifier {
 
   void updateNewCommentText(String text) {
     _newCommentText = text;
-    _safeNotify();
+    notifyListeners();
   }
 
   Future<void> postComment(
@@ -187,7 +183,7 @@ class SocialCommentsManager extends ChangeNotifier {
     // the opaque permission-denied a fresh, unverified account would hit.
     if (!isAccountMatured) {
       _commentsError = AppLocale.current.newAccountSocialBlockedComment;
-      _safeNotify();
+      notifyListeners();
       return;
     }
 
@@ -203,13 +199,13 @@ class SocialCommentsManager extends ChangeNotifier {
       );
       if (!result.isClean) {
         _commentsError = result.reason;
-        _safeNotify();
+        notifyListeners();
         return;
       }
     }
 
     _isPostingComment = true;
-    _safeNotify();
+    notifyListeners();
 
     try {
       final commentId = await _recipeService.social.addComment(
@@ -239,20 +235,20 @@ class SocialCommentsManager extends ChangeNotifier {
       rethrow;
     } finally {
       _isPostingComment = false;
-      _safeNotify();
+      notifyListeners();
     }
   }
 
   void setReplyTo(String commentId) {
     _replyToCommentId = commentId;
     _isReplying = true;
-    _safeNotify();
+    notifyListeners();
   }
 
   void cancelReply() {
     _replyToCommentId = null;
     _isReplying = false;
-    _safeNotify();
+    notifyListeners();
   }
 
   Future<void> deleteComment(String recipeId, String commentId) async {
@@ -267,7 +263,7 @@ class SocialCommentsManager extends ChangeNotifier {
     } catch (e) {
       _commentsError = AppLocale.current.errorCouldNotDelete('kommentar');
       AppLogger.error('Failed to delete comment $commentId: $e');
-      _safeNotify();
+      notifyListeners();
     }
   }
 
@@ -290,7 +286,7 @@ class SocialCommentsManager extends ChangeNotifier {
     } catch (e) {
       _commentsError = AppLocale.current.commentEditError;
       AppLogger.error('Failed to edit comment $commentId: $e');
-      _safeNotify();
+      notifyListeners();
       rethrow;
     }
   }
@@ -303,8 +299,8 @@ class SocialCommentsManager extends ChangeNotifier {
 
   @override
   void dispose() {
-    _isDisposed = true;
-    stopWatchingComments();
+    // First, so the guard is up before the cleanup below runs.
     super.dispose();
+    stopWatchingComments();
   }
 }

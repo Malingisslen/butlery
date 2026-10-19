@@ -30,6 +30,8 @@
 ///   (executeOperation swallows exceptions per base-class contract).
 library;
 
+import 'dart:async';
+
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -147,6 +149,28 @@ void main() {
   );
 
   group('loadContentFromRepository', () {
+    /// A load that answers after the screen closed must not notify (BUT-2051).
+    test(
+      'a load answering after dispose notifies nobody and does not throw',
+      () async {
+        final answer = Completer<List<SharedRecipe>>();
+        when(
+          () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+        ).thenAnswer((_) => answer.future);
+        final vm = makeVm();
+        var notified = 0;
+        vm.addListener(() => notified++);
+
+        final loading = vm.loadContent();
+        final beforeDispose = notified;
+        vm.dispose();
+        answer.complete([_recipe(id: 'late')]);
+
+        await expectLater(loading, completes);
+        expect(notified, beforeDispose);
+      },
+    );
+
     /// Auth-required contract: if the permission service has no current user,
     /// loadContentFromRepository must throw — and the base's `loadContent()`
     /// wrapper must surface that as `hasError` rather than crashing the view.

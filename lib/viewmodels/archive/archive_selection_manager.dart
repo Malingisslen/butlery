@@ -3,10 +3,16 @@
 // lib/viewmodels/archive/archive_selection_manager.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Manages recipe selection state for batch import operations.
-class ArchiveSelectionManager extends ChangeNotifier {
+///
+/// `ArchiveImportOperationsManager` calls its `onSuccess` callback, which
+/// `ArchiveImportViewModel` binds to `clearSelection()`, BEFORE its own
+/// `notifyListeners()`, so a user who leaves mid-import lands here after this
+/// manager is disposed.
+class ArchiveSelectionManager extends ChangeNotifier with DisposalGuardMixin {
   final Set<String> _selectedRecipeIds = {};
 
   Set<String> get selectedRecipeIds => Set.unmodifiable(_selectedRecipeIds);
@@ -53,27 +59,5 @@ class ArchiveSelectionManager extends ChangeNotifier {
       _selectedRecipeIds.clear();
       notifyListeners();
     }
-  }
-
-  bool _isDisposed = false;
-
-  bool get isDisposed => _isDisposed;
-
-  /// BUT-1641. `ArchiveImportOperationsManager` calls its `onSuccess` callback
-  /// — which `ArchiveImportViewModel` binds to `clearSelection()` — BEFORE its
-  /// own guarded `notifyListeners()`, so a guard on the notification cannot see
-  /// this hop. A user who leaves the screen mid-import lands here on a disposed
-  /// receiver, and the assert inside `notifyListeners` is live in debug and
-  /// test builds.
-  @override
-  void notifyListeners() {
-    if (_isDisposed) return;
-    super.notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

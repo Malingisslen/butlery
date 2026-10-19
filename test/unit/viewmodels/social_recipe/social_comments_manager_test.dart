@@ -265,4 +265,21 @@ void main() {
       },
     );
   });
+
+  group('SocialCommentsManager after dispose (BUT-2051)', () {
+    test('a late setter notifies nobody and does not throw', () {
+      final manager = buildManager(matured: true, emailVerified: true);
+      var notifications = 0;
+      manager.addListener(() => notifications++);
+
+      manager.updateNewCommentText('före');
+      expect(notifications, 1, reason: 'positive control: alive notifies');
+
+      manager.dispose();
+      manager.updateNewCommentText('efter');
+
+      expect(manager.isDisposed, isTrue);
+      expect(notifications, 1);
+    });
+  });
 }

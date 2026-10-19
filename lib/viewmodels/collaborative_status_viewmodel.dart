@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Content type enum for type safety
@@ -52,11 +53,8 @@ class CollaborativeStatus {
 /// Scalable system for managing collaborative status across all content types
 /// med robust caching, batch operations och comprehensive error handling
 class CollaborativeStatusViewModel extends ChangeNotifier
-    with ErrorHandlingMixin {
+    with ErrorHandlingMixin, DisposalGuardMixin {
   final SocialRecipeService _socialRecipeService;
-
-  /// Flag to track if ViewModel has been disposed
-  bool _isDisposed = false;
 
   /// Universal cache for all content types
   final Map<String, CollaborativeStatus> _statusCache = {};
@@ -72,13 +70,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
            socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
-
-  /// Safely notify listeners only if not disposed
-  void _safeNotifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
 
   /// Get cached status for content
   CollaborativeStatus? getCachedStatus(
@@ -186,7 +177,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _safeNotifyListeners();
+      notifyListeners();
     });
 
     try {
@@ -250,7 +241,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
       // Defer notification to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _safeNotifyListeners();
+        notifyListeners();
       });
 
       AppLogger.info(
@@ -266,7 +257,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
       // Defer notification to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _safeNotifyListeners();
+        notifyListeners();
       });
     } finally {
       _checkingKeys.remove(key);
@@ -416,7 +407,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _safeNotifyListeners();
+      notifyListeners();
     });
 
     AppLogger.info('🗑️ Invalidated cache för ${type.name} $contentId');
@@ -436,7 +427,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _safeNotifyListeners();
+      notifyListeners();
     });
 
     AppLogger.info('🗑️ Cleared all collaborative status cache');
@@ -463,8 +454,8 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   @override
   void dispose() {
-    _isDisposed = true;
-    clearAllCache();
+    // First, so the guard is up before the cleanup below runs.
     super.dispose();
+    clearAllCache();
   }
 }

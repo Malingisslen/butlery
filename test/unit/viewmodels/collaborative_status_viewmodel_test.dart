@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
@@ -546,5 +548,35 @@ void main() {
       vm.dispose();
       expect(vm.debugInfo['totalCacheSize'], equals(0));
     });
+
+    testWidgets(
+      'a check answering after dispose notifies nobody and does not throw',
+      (
+        tester,
+      ) async {
+        final answer = Completer<bool>();
+        when(
+          () => mockSocial.isRecipeSharedByUser(any(), any()),
+        ).thenAnswer((_) => answer.future);
+        when(
+          () => mockSocial.getRecipeParticipants(any()),
+        ).thenAnswer((_) async => []);
+        final vm = CollaborativeStatusViewModel(
+          socialRecipeService: mockSocial,
+        );
+        var notified = 0;
+        vm.addListener(() => notified++);
+
+        vm.getRecipeCollaborativeStatus('recipe_1', null);
+        final beforeDispose = notified;
+        vm.dispose();
+        answer.complete(true);
+        await tester.pump();
+        await tester.pump();
+
+        expect(notified, beforeDispose);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
