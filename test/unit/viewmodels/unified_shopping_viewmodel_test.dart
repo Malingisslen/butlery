@@ -1357,7 +1357,7 @@ void main() {
       viewModel = UnifiedShoppingViewModel();
     });
 
-    test("names the updater when another member changes the list", () async {
+    test('names the updater when another member changes the list', () async {
       await emitUpdate(
         shared.copyWith(
           lastActivityAt: DateTime(2026, 10, 18, 12),
@@ -1421,6 +1421,57 @@ void main() {
         expect(viewModel.updatedByNotice, isNull);
 
         await emitUpdate(updated);
+        expect(viewModel.updatedByNotice, isNull);
+      },
+    );
+
+    test('a notice raised on one list is gone after switching list', () async {
+      await emitUpdate(
+        shared.copyWith(
+          lastActivityAt: DateTime(2026, 10, 18, 12),
+          lastActivityByUserId: 'other-user',
+          lastActivityByDisplayName: 'Bertil',
+        ),
+      );
+      expect(viewModel.updatedByNotice, isNotNull);
+
+      final other = ShoppingListFactory.buildSharedList(
+        id: 'shared-2',
+        ownerId: 'other-user',
+      );
+      mockShoppingService.setShoppingState(
+        lists: [shared, other],
+        collaborativeLists: [shared, other],
+        activeListId: other.id,
+        currentUserId: testUserId,
+      );
+      mockShoppingService.emitState(ShoppingStateData(lists: [shared, other]));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.updatedByNotice, isNull);
+    });
+
+    test(
+      'a notice raised on a shared list is gone on a personal list',
+      () async {
+        await emitUpdate(
+          shared.copyWith(
+            lastActivityAt: DateTime(2026, 10, 18, 12),
+            lastActivityByUserId: 'other-user',
+            lastActivityByDisplayName: 'Bertil',
+          ),
+        );
+        expect(viewModel.updatedByNotice, isNotNull);
+
+        mockShoppingService.setShoppingState(
+          lists: [testList],
+          personalLists: [testList],
+          activeListId: testListId,
+          currentUserId: testUserId,
+        );
+        mockShoppingService.emitState(ShoppingStateData(lists: [testList]));
+        await Future<void>.delayed(Duration.zero);
+
         expect(viewModel.updatedByNotice, isNull);
       },
     );
