@@ -1,9 +1,9 @@
 {
-  "lastRun": "2026-10-12",
+  "lastRun": "2026-10-19",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 1,
+  "worldWatchRoles": 2,
   "retroDue": false,
-  "acceptRate": 0.98,
+  "acceptRate": 0.957,
   "scratchCleared": 0,
-  "notes": "Accept-rate healthy: 0.98 (49 commits, 1 reworked) over the trailing 30 days. Legal Counsel world-watch had been stuck at 2026-08-31 for several cycles (42 days overdue vs its monthly cadence) — lean pass run this cycle, no material item found, caught up to 2026-10-12. Security Architect + Release/App-Store Compliance not due (both scanned 2026-10-08). Corrected the prior run's 'retro never ran' claim: events.jsonl actually has both shakedown (2026-07-04) and full (2026-09-15) retro events logged — no retro is due. No dossier-staleness markers visible (gitignored, cloud checkout)."
+  "notes": "Accept-rate healthy: 0.957 (47 commits, 2 reworked) over the trailing 30 days. Security Architect and Release/App-Store Compliance were both due (last scanned 2026-10-08) — lean WebSearch pass run on both, no material finding, caught up to 2026-10-19. Legal Counsel not due (scanned 2026-10-12, monthly cadence). No retro due (shakedown + full both already logged). No dossier-staleness markers present. No tasks/*-plan.md files qualified for archiving — all three outstanding plans (design-migration-completion-plan, design-migration-handover, receptkort-plan) have open decisions/questions awaiting Malin, kept as-is."
 }
