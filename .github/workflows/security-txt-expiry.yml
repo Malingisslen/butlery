@@ -1,0 +1,36 @@
+# BUT-2322: security.txt (RFC 9116) must not go stale. deploy-app-link-files.yml
+# only checks Expires when someone deploys, so nothing would warn before the
+# published file expires. A red run here is the warning: move Expires forward
+# (at most a year) in web/.well-known/security.txt, then run
+# "Deploy app link files".
+name: security.txt expiry
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fail when Expires is less than 60 days away
+        run: |
+          python3 - <<'PY'
+          import datetime, re
+          text = open("web/.well-known/security.txt").read()
+          m = re.search(r"^Expires: (\S+)$", text, re.M)
+          assert m, "security.txt has no Expires"
+          expires = datetime.datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+          left = expires - datetime.datetime.now(datetime.timezone.utc)
+          print(f"security.txt expires {m.group(1)}, {left.days} days left")
+          assert left > datetime.timedelta(days=60), (
+              f"security.txt expires in {left.days} days: renew Expires and run Deploy app link files"
+          )
+          PY
