@@ -9,18 +9,18 @@
 /// - [RecipeMenuRole.other], anyone else, gets neither.
 ///
 /// A pure predicate so the view and its test share one rule. Identity comes
-/// from the recipe's owner id (socialData.ownerId, else createdBy, as
-/// RecipePermissionModule.isRecipeOwner reads it) and the uid keys of
+/// from [Recipe.ownerUid] and the uid keys of
 /// socialData.memberPermissions (the map firestore.rules grants shared
 /// reads on), never from anything the screen shows.
 library;
 
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 enum RecipeMenuRole { owner, member, other }
 
 RecipeMenuRole recipeMenuRole(Recipe recipe, String? currentUserId) {
-  final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+  final ownerId = recipe.ownerUid;
   // A local recipe with no owner is the user's own (as showForkInOverflow).
   if (ownerId == null || ownerId.isEmpty || ownerId == currentUserId) {
     return RecipeMenuRole.owner;
