@@ -88,12 +88,11 @@ class _RecordingPlatform extends FirebaseFirestorePlatform
       _RecordingCollection(this, collectionPath);
 }
 
-QuerySnapshotPlatform _emptySnapshot() =>
-    QuerySnapshotPlatform(
-      <DocumentSnapshotPlatform>[],
-      <DocumentChangePlatform>[],
-      SnapshotMetadataPlatform(false, false),
-    );
+QuerySnapshotPlatform _emptySnapshot() => QuerySnapshotPlatform(
+  <DocumentSnapshotPlatform>[],
+  <DocumentChangePlatform>[],
+  SnapshotMetadataPlatform(false, false),
+);
 
 class _RecordingQuery extends QueryPlatform {
   _RecordingQuery(
