@@ -1,7 +1,7 @@
 /**
  * Pooled ratings Stage B — pool aggregator unit tests (Increment 3).
  *
- * Proves the decision-5 acceptance criteria (tasks/pooled-ratings-plan.md):
+ * Proves the decision-5 acceptance criteria (tasks/archive/pooled-ratings-plan.md):
  *   AC5  the drain issues a Firestore AGGREGATE query and NEVER folds the pool's
  *        events in memory (a rater count is unbounded — read-all is forbidden).
  *        The fake trips a counter if anyone `.get()`s the raw event query; the

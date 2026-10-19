@@ -1,6 +1,6 @@
 /**
  * CanonicalPoolKey — SERVER AUTHORITY for the v1 pooled-ratings recipe-identity
- * key ("Butlery-betyget"). See tasks/pooled-ratings-plan.md (decision 1,
+ * key ("Butlery-betyget"). See tasks/archive/pooled-ratings-plan.md (decision 1,
  * revised 2026-07-03) and the Dart twin lib/services/rating/canonical_pool_key.dart.
  *
  * The aggregation Cloud Function recomputes the key HERE from recipe content and

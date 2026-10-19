@@ -9,7 +9,7 @@
  *     key = poolKey) — added by the pooled-ratings aggregator (increments 2–3
  *     of tasks/todo.md); not yet wired at the time this core landed.
  *
- * Decision 5 of tasks/pooled-ratings-plan.md: the pool aggregator REUSES this
+ * Decision 5 of tasks/archive/pooled-ratings-plan.md: the pool aggregator REUSES this
  * (a `DebounceConfig` with a different marker collection), it does NOT fork a
  * second copy of the transaction/claim-by-delete logic.
  *

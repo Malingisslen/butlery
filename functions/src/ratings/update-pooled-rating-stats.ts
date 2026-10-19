@@ -1,6 +1,6 @@
 /**
  * Stage B of the pooled-ratings pipeline ("Butlery-betyget") — the pool
- * aggregator. See tasks/pooled-ratings-plan.md decision 5 ("the crux") and
+ * aggregator. See tasks/archive/pooled-ratings-plan.md decision 5 ("the crux") and
  * tasks/todo.md Increment 3.
  *
  * Stage A (canonical-rating-aggregation.ts) files ONE frozen pool event per
