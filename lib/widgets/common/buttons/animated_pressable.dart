@@ -57,6 +57,7 @@ class AnimatedPressable extends StatefulWidget {
 class _AnimatedPressableState extends State<AnimatedPressable>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late CurvedAnimation _curvedProgress;
   late Animation<double> _scaleAnimation;
   bool _reduceMotion = false;
 
@@ -67,16 +68,14 @@ class _AnimatedPressableState extends State<AnimatedPressable>
       duration: widget.duration,
       vsync: this,
     );
-    _scaleAnimation =
-        Tween<double>(
-          begin: 1.0,
-          end: widget.pressedScale,
-        ).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: widget.curve,
-          ),
-        );
+    _curvedProgress = CurvedAnimation(
+      parent: _controller,
+      curve: widget.curve,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: widget.pressedScale,
+    ).animate(_curvedProgress);
   }
 
   @override
@@ -87,6 +86,7 @@ class _AnimatedPressableState extends State<AnimatedPressable>
 
   @override
   void dispose() {
+    _curvedProgress.dispose();
     _controller.dispose();
     super.dispose();
   }

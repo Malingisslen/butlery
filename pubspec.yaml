@@ -131,6 +131,7 @@ dev_dependencies:
 
   # ==================== CORE TESTING ====================
   test: ^1.26.2
+  leak_tracker_flutter_testing: ^3.0.10
   integration_test:
     sdk: flutter
   coverage: ^1.15.0
