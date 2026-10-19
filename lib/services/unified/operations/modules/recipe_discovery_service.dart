@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/recipe_discovery_service.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -49,7 +50,7 @@ class RecipeDiscoveryService extends BaseService {
         if (!recipe.isCollaborative) return false;
 
         // User must be owner or member
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId == currentUserId) return true;
         if (recipe.socialData?.memberPermissions?.containsKey(currentUserId) ==
             true) {
@@ -123,7 +124,7 @@ class RecipeDiscoveryService extends BaseService {
         if (!recipe.isCollaborative) return false;
 
         // User must be member but NOT owner
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId == currentUserId) return false;
         if (recipe.socialData?.memberPermissions?.containsKey(currentUserId) !=
             true) {
@@ -199,7 +200,7 @@ class RecipeDiscoveryService extends BaseService {
       var sharedRecipes = allRecipes.where((recipe) {
         // Must be collaborative and owned by current user
         if (!recipe.isCollaborative) return false;
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId != currentUserId) return false;
 
         // If includeEmpty is false, only include recipes with members
@@ -274,7 +275,7 @@ class RecipeDiscoveryService extends BaseService {
       final allRecipes = _getRecipes();
       var userRecipes = allRecipes.where((recipe) {
         // Must be owned by the specified user
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId != userId) return false;
 
         // Check access permissions
@@ -437,7 +438,7 @@ class RecipeDiscoveryService extends BaseService {
             if (!recipe.isCollaborative) return false;
 
             // Check if user has access
-            final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+            final ownerId = recipe.ownerUid;
             if (ownerId == currentUserId) return true;
             if (recipe.socialData?.memberPermissions?.containsKey(
                   currentUserId,
@@ -488,7 +489,7 @@ class RecipeDiscoveryService extends BaseService {
       var totalMembers = 0;
 
       for (final recipe in allRecipes) {
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (ownerId == currentUserId) {
           if (recipe.isPersonal) {
             personalRecipes++;
@@ -572,7 +573,7 @@ class RecipeDiscoveryService extends BaseService {
       // Filter accessible recipes
       var searchableRecipes = allRecipes.where((recipe) {
         // Check access permissions
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+        final ownerId = recipe.ownerUid;
         if (recipe.isPersonal) {
           return includePersonal && ownerId == currentUserId;
         } else if (recipe.isCollaborative) {
