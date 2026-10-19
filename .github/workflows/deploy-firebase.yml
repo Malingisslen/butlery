@@ -245,7 +245,7 @@ jobs:
       #
       # `|| true` keeps it idempotent: after the first successful run every name
       # is already gone and `functions:delete` exits non-zero on a miss.
-      - name: Retire the merged scheduler functions (one-shot, idempotent)
+      - name: Retire the merged scheduler functions and finished one-shots (idempotent)
         if: env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all'
         run: |
           set -uo pipefail
@@ -255,7 +255,7 @@ jobs:
                    snapshotOpsDaily snapshotFeedbackDaily detectAnomalies \
                    correlateNotificationEffectiveness northStarWeekly \
                    drainRatingAggregations drainPooledRatingAggregations \
-                   cleanupExpiredCache; do
+                   cleanupExpiredCache backfillSharedListContributors; do
             echo "Retiring $f (no-op if already gone)"
             firebase functions:delete "$f" \
               --region europe-west1 \
