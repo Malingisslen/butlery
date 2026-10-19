@@ -393,6 +393,16 @@ const cases: UnitCase[] = [
       }
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: exportErasureResidue is five per hour, ten per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.exportErasureResidue;
+      assertEqual(cfg.dailyLimit, 10, "exportErasureResidue.dailyLimit");
+      assertEqual(cfg.maxTokens, 5, "exportErasureResidue.maxTokens");
+      assertEqual(cfg.refillRate, 5, "exportErasureResidue.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "exportErasureResidue.refillIntervalMs");
+    },
+  },
   // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
   {
     name: "RATE_LIMIT_CONFIGS: reportContent is ten per hour, twenty per day",
@@ -444,6 +454,7 @@ const cases: UnitCase[] = [
         "listOpenAppeals",
         "answerAppeal",
         "exportModerationAppeals",
+        "exportErasureResidue",
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",

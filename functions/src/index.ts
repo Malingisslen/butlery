@@ -113,6 +113,8 @@ export { exportSharedResidue } from "./exports/shared-residue";
 export { exportCommentReactions } from "./exports/comment-reactions";
 // BUT-2353: the requester's own appeals on moderation decisions.
 export { exportModerationAppeals } from "./exports/moderation-appeals";
+// BUT-2414: what account erasure deletes or anonymises.
+export { exportErasureResidue } from "./exports/erasure-residue";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG

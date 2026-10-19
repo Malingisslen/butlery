@@ -219,6 +219,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
   },
+  // BUT-2414: the same numbers as `exportSharedResidue`.
+  exportErasureResidue: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
 
   // BUT-2222: called once each time "Mina anmälningar" loads.
   getMyReportOutcomes: {

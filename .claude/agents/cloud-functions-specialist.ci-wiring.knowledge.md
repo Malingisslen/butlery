@@ -36,7 +36,21 @@
   it against BOTH the `push` and `pull_request` blocks; fixing one is the
   half-miss. A hand-rolled `paths:` parser fails CLOSED. Assert PER GUARD — a
   sibling scenario's derived assertion covers only ITS inputs — and reach the
-  ORCHESTRATOR assembling the output, not just the helper directory. Two guards
+  ORCHESTRATOR assembling the output, not just the helper directory.
+  `assertGuardTriggersCoverItsDartInputs` takes lib/ paths only; a docs or
+  `firestore.rules` input needs its own `paths:` entry and assertion. Two guards
   in two languages must never cite EACH OTHER for a case neither covers: a
   TEXT scan sees the token, the behavioural test sees named keys, and a rename
   escapes both — name the residual, never describe it as covered.
+- **A source-scanning erasure guard counts READERS as writers.**
+  `discoverUserSubcollectionWriters` (`account-deletion-cascade.test.ts`) flags any
+  `.collection(users).doc(x).collection("y")` chain, and `reset-analytics-prune.test.ts`
+  flags any `.collection("analytics").doc(<variable>)` outside `reviewedVariableChains`.
+  A new export reader of an erased path reddens both: add the name to
+  `COVERED_BY_OWN_STEP` (which seeds and runs the real deleter) and spell analytics parents
+  as literals. Never reshape the chain so the regex misses it.
+- **Count a probe's FAIL lines from a FILE, never a pipe**: once a failure message is
+  large (an `assertEqual` over thousands of rows) a piped `ts-node` run came back
+  truncated while the same run redirected to a file was complete. A no-uid-in-logs test
+  patches `process.stdout/stderr.write`; patching `console.*` captured nothing from
+  `firebase-functions/logger`.
