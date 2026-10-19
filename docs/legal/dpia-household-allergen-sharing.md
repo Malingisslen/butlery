@@ -371,7 +371,7 @@ instruction. What is built, with its evidence:
 
 - Rules: `functions/src/__tests__/household-allergen-shares-rules.test.ts` (emulator).
 - Account deletion and residual probe: the household-allergen-share scenarios in
-  `functions/src/__tests__/account-deletion-cascade.test.ts`.
+  `functions/src/__tests__/account-deletion-cascade-own-account-data.test.ts`.
 - Art. 15 export: the BUT-1693 case in
   `test/unit/services/account/data_export_service_test.dart`.
 - R5 consent trail: the "consent audit trail" group in

@@ -221,9 +221,10 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       // is taken. All this suite proves is that the orchestrator invokes them
       // and neither throws — which is its job. Their real behaviour, including
       // the decline above the cap, is proven in
-      // `account-deletion-cascade.test.ts`
-      // (`scenario_implausibleChatGroupCountDeclines`,
-      // `scenario_implausiblePollVoteCountDeclines`), not here.
+      // `account-deletion-cascade-chat-groups.test.ts`
+      // (`scenario_implausibleChatGroupCountDeclines`) and
+      // `account-deletion-cascade-polls-reactions.test.ts`
+      // (`scenario_implausiblePollVoteCountDeclines`), not here.
       limit() {
         return query;
       },
@@ -297,7 +298,8 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       // Empty is the honest answer here (this fake holds nothing), and it means
       // this suite proves only that the call EXISTS. What the enumeration
       // actually reports, and that its two exclusions are load-bearing, is
-      // proven against the in-memory store in `account-deletion-cascade.test.ts`.
+      // proven against the in-memory store in
+      // `account-deletion-cascade-user-subcollections.test.ts`.
       async listCollections(): Promise<unknown[]> {
         return [];
       },
