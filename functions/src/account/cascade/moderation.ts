@@ -1,9 +1,5 @@
 import * as admin from "firebase-admin";
 import { commitInChunks } from "../../shared/batch-update";
-// BUT-2032 / ADR-0014: the first audit staging in this file. The cascade had
-// none and `on-user-deleted.ts` stages one per mutated row; the panel measured
-// that BUT-781's analogy carries the ACTION and not the record, so the two new
-// steps below keep the trigger's posture rather than inherit the cascade's.
 import { stageCascadeAuditEntry } from "../../cleanup/cascade-audit-log";
 import {
   isClosedReportStatus,

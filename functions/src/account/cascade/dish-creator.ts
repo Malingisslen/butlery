@@ -66,7 +66,7 @@ function withoutUid(node: unknown, uid: string): unknown {
  * array element cannot be queried, so a dish of theirs on a menu they never
  * joined is out of reach, and no probe leg can see what is left.
  *
- * Per-doc transaction, as in [scrubLastEditor]: the menu is live, and the
+ * Per-doc transaction: the menu is live, and the
  * whole `menuSnapshot` is rewritten, so it must be rewritten from a fresh read.
  */
 export async function scrubDishCreator(

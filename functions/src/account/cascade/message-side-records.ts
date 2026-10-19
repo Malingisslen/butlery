@@ -51,7 +51,7 @@ export const MESSAGE_TOMBSTONE = "[Borttaget meddelande]";
 
 /**
  * Cap on one erasure's poll-vote sweep. Same contract as `MAX_ROSTER_SWEEP_ROWS`
- * above and set to the same number — but NOT for the same reason, and the
+ * and set to the same number — but NOT for the same reason, and the
  * difference is worth stating because the first version of this docstring
  * borrowed the roster's argument and was wrong (BUT-1801 review, 2026-08-17).
  *
@@ -227,12 +227,12 @@ export async function deletePollVotes(
  * this was `leaveGroupConversation`). Three separate things make that row invisible to every
  * other leg of this cascade:
  *
- *  1. the `senderId == uid` query above cannot match it — the author is
+ *  1. the `senderId == uid` query cannot match it — the author is
  *     "system";
  *  2. `buildGroupDepartureUpdate` only tombstones `lastMessage` when the
  *     departing user is its SENDER, and here they are its subject;
  *  3. once the person has left, the `participantIds array-contains uid` query
- *     below never returns that conversation at all, so the cascade does not
+ *     never returns that conversation at all, so the cascade does not
  *     even visit it.
  *
  * The writer therefore stamps `metadata.subjectUserId`, which is the only claim-lint:ok moved unchanged, BUT-2113

@@ -128,8 +128,7 @@ export async function removeFromSharedContent(
     // the share document, unreachable by any client and unerasable by
     // anyone but this cascade.
     //
-    // Children first and STRICT, parent only if they went: the same contract
-    // `deleteRealtimeDocsWithChildren` states in this file. Ordering alone does
+    // Children first and STRICT, parent only if they went. Ordering alone does
     // not prevent an orphan — a swallowed chunk plus an unconditional parent
     // delete does exactly what the ordering is there to stop.
     const [childMembers, childItems] = await Promise.all([
@@ -173,8 +172,7 @@ export const ITEM_UID_FIELDS = [
 ] as const;
 
 /**
- * A shared-list row cap in the shape every sibling sweep in this file uses:
- * DECLINE rather than truncate, because a truncated erasure reports success
+ * A shared-list row cap: DECLINE rather than truncate, because a truncated erasure reports success
  * over rows it never touched.
  */
 const MAX_SHARED_ITEM_ROWS = 2000;

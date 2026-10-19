@@ -200,7 +200,7 @@ export async function deleteConsentRecords(
  * guards used to do that with `/"([A-Za-z_]+)"/` over a body with only `//`
  * comments stripped, which made a name carrying a digit invisible to them and
  * read a quoted name inside a block comment as a list entry. `EXPORT_EXEMPT`
- * below is the precedent, in this same file — no separate module is needed,
+ * is the precedent, in this same file — no separate module is needed,
  * because nothing here runs at import.
  */
 export const USER_SUBCOLLECTIONS: readonly string[] = [

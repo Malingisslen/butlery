@@ -220,8 +220,7 @@ export async function deleteWeeklyMenuPlans(
             ...(entriesRaw !== undefined && !Array.isArray(entriesRaw)
               ? { entries: admin.firestore.FieldValue.delete() }
               : {}),
-            // Tombstoned, not deleted: every sibling attribution field in
-            // this file uses "deleted", and the Dart reader takes it as a
+            // Tombstoned, not deleted: the Dart reader takes it as a
             // nullable string either way.
             ...(data.lastModifiedBy === uid ? { lastModifiedBy: "deleted" } : {}),
             [`memberPermissions.${uid}`]: admin.firestore.FieldValue.delete(),

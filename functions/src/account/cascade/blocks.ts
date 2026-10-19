@@ -82,8 +82,7 @@ export async function deleteBlockMirrors(
  * Cap on one erasure's `blocks` sweep, per direction.
  *
  * The two directions do NOT have the same cap argument, and saying so is the
- * point of writing it down — this file already records one docstring that
- * borrowed a sibling's reasoning and was wrong.
+ * point of writing it down.
  *
  * `blockerId == uid` is self-chosen: only this user can create a row naming
  * themselves as blocker (`firestore.rules` pins

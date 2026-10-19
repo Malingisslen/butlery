@@ -288,9 +288,7 @@ export async function deleteShoppingLists(
         // firestore.rules:1620-1626 still reads it as write authorization for an claim-lint:ok moved unchanged, BUT-2113
         // account that no longer exists. It also shows up in the UI:
         // `UnifiedShoppingList.memberCount`/`collaborators` are derived from these
-        // keys, so remaining members see a ghost member forever. Two sibling steps
-        // in this file already delete it (`deleteWeeklyMenuPlans`,
-        // `deleteFamilyData`).
+        // keys, so remaining members see a ghost member forever.
         //
         // It MUST go in the SAME per-doc write as the scrub, never a second one:
         // this key is the step's re-entry query handle, so a split write that

@@ -4,10 +4,6 @@ import { commitInChunks } from "../../shared/batch-update";
 
 /**
  * One thing kept, and why — the Art. 12(4) notice is rendered from this.
- *
- * Declared here rather than beside the hold logic in `moderation/erasure-hold.ts`
- * so that file can import from this one and this one need not import back: a
- * value cycle between the cascade and the hold is avoidable, so it is avoided.
  */
 export interface RetainedRecord {
   /** Collection the retained rows live in. */

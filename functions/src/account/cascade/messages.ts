@@ -249,7 +249,7 @@ export async function deleteMessages(
  * they are the Art. 17 completeness signal, and they do not depend on which of
  * the three sources above is the live one. Do not relax either to truncation on
  * the argument that the bootstrap hole is closed.
- * Truncating would be loud too — the probe below is an uncapped `count()`, so
+ * Truncating would be loud too — the probe is an uncapped `count()`, so
  * either way `residual_data_detected` fires and the audit row says
  * `gdprCompliant: false`. Declining is chosen because it is strictly less
  * erasure for the same alarm.

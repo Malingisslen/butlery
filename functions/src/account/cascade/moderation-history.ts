@@ -1,10 +1,6 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../../shared/batch-update";
-// BUT-2032 / ADR-0014: the first audit staging in this file. The cascade had
-// none and `on-user-deleted.ts` stages one per mutated row; the panel measured
-// that BUT-781's analogy carries the ACTION and not the record, so the two new
-// steps below keep the trigger's posture rather than inherit the cascade's.
 import { stageCascadeAuditEntry } from "../../cleanup/cascade-audit-log";
 import {
   openReportIds,
@@ -283,8 +279,7 @@ const MAX_REPORT_HISTORY_SWEEP_ROWS = 2000;
  * discovered through a query on the PARENT, so losing the parent loses the
  * rows forever. These sit at a path derived from the uid alone, so a retry — and
  * `probeResidualData`'s own leg — reaches them whether or not the parent
- * survived. The order is kept anyway because it costs nothing and it is what
- * every sibling in this file does.
+ * survived. The order is kept anyway because it costs nothing.
  */
 export async function deleteModerationRecord(
   db: admin.firestore.Firestore,
@@ -302,7 +297,7 @@ export async function deleteModerationRecord(
       { uid_prefix: uid.slice(0, 6), rows: history.size },
     );
     // The parent is left standing too: deleting it while its rows remain would
-    // hide them from a reader without erasing them, and the probe leg below
+    // hide them from a reader without erasing them, and the probe leg
     // counts them either way.
     return false;
   }
