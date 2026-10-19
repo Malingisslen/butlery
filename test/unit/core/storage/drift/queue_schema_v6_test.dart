@@ -125,6 +125,36 @@ void main() {
       },
     );
 
+    test('markUploaded writes nothing for a row thrown away meanwhile, so a '
+        'discard cannot be undone by the upload finishing', () async {
+      await queue('a');
+      await db.uploadQueueDao.cancelUpload('a');
+
+      final written = await db.uploadQueueDao.markUploaded(
+        'a',
+        url: 'https://x/a.jpg',
+      );
+
+      expect(written, isFalse);
+      final row = (await db.uploadQueueDao.getUpload('a'))!;
+      expect(row.status, 'cancelled');
+      expect(row.uploadedUrl, isNull);
+      expect(await db.uploadQueueDao.markUploaded('nope', url: 'u'), isFalse);
+    });
+
+    test('markUploaded starts the retry schedule over', () async {
+      await queue('a');
+      await db.uploadQueueDao.recordFailure('a', 'unavailable');
+
+      await db.uploadQueueDao.markUploaded('a', url: 'https://x/a.jpg');
+
+      final row = (await db.uploadQueueDao.getUpload('a'))!;
+      expect(row.retryCount, 0);
+      expect(row.lastError, isNull);
+      expect(row.firstFailedAt, isNull);
+      expect(row.nextAttemptAt, isNull);
+    });
+
     test('an uploaded row still counts as waiting, so a sign-out is warned '
         'about the photo that is in Storage but not on the snap', () async {
       await queue('a');

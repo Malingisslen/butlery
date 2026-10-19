@@ -119,14 +119,43 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Records that the object is in Storage and the entity it belongs to is
   /// not yet written, so a retry of the completion does not upload again.
-  Future<void> markUploaded(
+  /// The retry schedule starts over: earlier failures were the upload's.
+  ///
+  /// Writes nothing, and returns false, for a row that was thrown away or
+  /// removed while the image went up. The check and the write are one
+  /// statement, so a discard cannot land between them and be undone.
+  Future<bool> markUploaded(
+    String id, {
+    required String url,
+    String? thumbnailUrl,
+  }) async {
+    final written =
+        await (update(uploadQueueEntries)..where(
+              (e) => e.id.equals(id) & e.status.isNotIn(['cancelled']),
+            ))
+            .write(
+              UploadQueueEntriesCompanion(
+                status: const Value('uploaded'),
+                uploadedUrl: Value(url),
+                uploadedThumbnailUrl: Value(thumbnailUrl),
+                retryCount: const Value(0),
+                lastError: const Value(null),
+                nextAttemptAt: const Value(null),
+                firstFailedAt: const Value(null),
+              ),
+            );
+    return written > 0;
+  }
+
+  /// Keeps the address of an uploaded image on a row that no longer uses it,
+  /// so the queue can still take the image out of Storage later.
+  Future<void> rememberUploaded(
     String id, {
     required String url,
     String? thumbnailUrl,
   }) {
     return (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
       UploadQueueEntriesCompanion(
-        status: const Value('uploaded'),
         uploadedUrl: Value(url),
         uploadedThumbnailUrl: Value(thumbnailUrl),
       ),
