@@ -11,6 +11,8 @@
 /// so "returned the fallback" can never coincide with a real message.
 library;
 
+import 'dart:io';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -172,13 +174,6 @@ void main() {
       expect(message, contains('100'));
     });
 
-    test('the cap constant is 100', () {
-      // One literal, deliberately. The ARB string takes the number as a
-      // placeholder, so feeding `maxMembers` into it and reading it back is a
-      // tautology. BUT-1960.
-      expect(ChatGroupErrorMapper.maxMembers, 100);
-    });
-
     test(
       'an invalid-argument about something else falls back to generic',
       () {
@@ -272,6 +267,62 @@ void main() {
         );
       },
     );
+  });
+
+  group('the server contract (BUT-1960)', () {
+    // Each side's own tests spell the literal, so renaming a `reason` on the
+    // server reddens only the TypeScript suite and the mapper keeps matching
+    // its old spelling: the user then gets the generic message with nothing
+    // red anywhere. Reading the server source closes that direction.
+    final reasonLiteral = RegExp(r'reason:\s*"([^"]+)"');
+
+    Set<String> serverReasons() {
+      final reasons = <String>{};
+      final files = Directory(
+        'functions/src/groups',
+      ).listSync().whereType<File>().where((f) => f.path.endsWith('.ts'));
+      for (final file in files) {
+        for (final match in reasonLiteral.allMatches(file.readAsStringSync())) {
+          reasons.add(match.group(1)!);
+        }
+      }
+      return reasons;
+    }
+
+    test('the server throws at least one structured reason', () {
+      // Premise: an empty set would make the loop below pass for nothing.
+      expect(serverReasons(), isNotEmpty);
+    });
+
+    test('every reason the server throws has a branch in the mapper', () {
+      for (final reason in serverReasons()) {
+        final message = _map(
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'server said so',
+            details: {'reason': reason},
+          ),
+        );
+        expect(
+          message,
+          isNot(equals(_fallback)),
+          reason:
+              'the server throws reason "$reason" but the mapper has no '
+              'branch for it, so users get the generic message',
+        );
+      }
+    });
+
+    test('maxMembers equals the cap the server enforces', () {
+      final source = File(
+        'functions/src/groups/minor-membership-gate.ts',
+      ).readAsStringSync();
+      final cap = RegExp(
+        r'MAX_CHAT_GROUP_MEMBERS\s*=\s*(\d+)',
+      ).firstMatch(source);
+      expect(cap, isNotNull);
+      expect(ChatGroupErrorMapper.maxMembers, int.parse(cap!.group(1)!));
+    });
   });
 
   group('everything else', () {

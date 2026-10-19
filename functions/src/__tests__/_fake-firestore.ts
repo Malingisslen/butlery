@@ -23,7 +23,7 @@
  *  - an unmodelled method throws by name instead of answering.
  *
  * **What it is NOT**: it evaluates no security rules, it has no isolation,
- * contention, abort or retry (the callback runs exactly once, single-threaded),
+ * contention or abort (a retry happens only when `retryTransactions` asks),
  * and its query primitive is "the direct children of this collection" (or,
  * for `collectionGroup`, every document whose own collection has that id),
  * optionally `.limit()`ed, `.select()`ed, and filtered by `==`, `array-contains` or a
@@ -50,6 +50,20 @@ export interface FakeFirestoreOptions {
   failAdds?: boolean;
   /** The value every `serverTimestamp()` sentinel resolves to. */
   now?: admin.firestore.Timestamp;
+  /**
+   * Runs every transaction callback this many times, applying only the LAST
+   * run's buffered writes, as Firestore does on a contended commit. Default 1.
+   * Without it a fix that exists because the closure re-runs cannot be proven:
+   * the callback ran once, so reverting the fix stayed green.
+   */
+  retryTransactions?: number;
+  /**
+   * Called after each run that is followed by a retry (never after the last),
+   * with that run's 1-based number and the store. Mutate the store here to play
+   * the concurrent writer that made the first attempt conflict; the next run
+   * then reads the changed state.
+   */
+  onTransactionAttempt?: (attempt: number, store: FakeFirestore) => void;
 }
 
 export interface FakeDocSnap {
@@ -67,7 +81,7 @@ export interface FakeDocRef {
   readonly parent: { id: string; path: string; parent: FakeDocRef | null };
   collection(name: string): FakeColRef;
   get(): Promise<FakeDocSnap>;
-  set(data: FakeDoc): Promise<void>;
+  set(data: FakeDoc, options?: unknown): Promise<void>;
   update(data: FakeDoc): Promise<void>;
   delete(): Promise<void>;
 }
@@ -102,6 +116,18 @@ interface Pending {
   op: "set" | "update" | "delete";
   path: string;
   data?: FakeDoc;
+}
+
+/**
+ * `set(data, {merge:true})` would be applied as a destructive overwrite, and
+ * the `as unknown as Firestore` handle hides that from the type checker.
+ */
+function rejectSetOptions(options: unknown): void {
+  if (options !== undefined) {
+    throw new Error(
+      "fake-firestore: set() with SetOptions (merge / mergeFields) is not modelled — teach the fake about it",
+    );
+  }
 }
 
 /** grpc NOT_FOUND, the code `retry:true` handlers branch on. */
@@ -327,17 +353,28 @@ export class FakeFirestore {
   }
 
   async runTransaction<T>(fn: (tx: unknown) => Promise<T>): Promise<T> {
-    const pending: Pending[] = [];
-    const tx = {
-      get: async (ref: FakeDocRef) => this.snapshot(ref.path),
-      set: (ref: FakeDocRef, data: FakeDoc) =>
-        void pending.push({ op: "set", path: ref.path, data }),
-      update: (ref: FakeDocRef, data: FakeDoc) =>
-        void pending.push({ op: "update", path: ref.path, data }),
-      delete: (ref: FakeDocRef) =>
-        void pending.push({ op: "delete", path: ref.path }),
-    };
-    const result = await fn(tx);
+    const attempts = Math.max(1, this.options.retryTransactions ?? 1);
+    let pending: Pending[] = [];
+    let result!: T;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      // A retried run starts with an empty buffer: the conflicted run's writes
+      // never landed.
+      const buffer: Pending[] = [];
+      pending = buffer;
+      const tx = {
+        get: async (ref: FakeDocRef) => this.snapshot(ref.path),
+        set: (ref: FakeDocRef, data: FakeDoc, options?: unknown) => {
+          rejectSetOptions(options);
+          buffer.push({ op: "set", path: ref.path, data });
+        },
+        update: (ref: FakeDocRef, data: FakeDoc) =>
+          void buffer.push({ op: "update", path: ref.path, data }),
+        delete: (ref: FakeDocRef) =>
+          void buffer.push({ op: "delete", path: ref.path }),
+      };
+      result = await fn(tx);
+      if (attempt < attempts) this.options.onTransactionAttempt?.(attempt, this);
+    }
     // Existence is checked for the WHOLE batch first: a real commit that hits a
     // missing update target applies none of its writes, and the "nothing was
     // written" assertions would be wrong if this applied a prefix of them.
@@ -417,7 +454,10 @@ export class FakeFirestore {
       },
       collection: (name: string) => this.colRef(`${path}/${name}`),
       get: async () => this.snapshot(path),
-      set: async (data: FakeDoc) => this.apply({ op: "set", path, data }),
+      set: async (data: FakeDoc, options?: unknown) => {
+        rejectSetOptions(options);
+        return this.apply({ op: "set", path, data });
+      },
       update: async (data: FakeDoc) => this.apply({ op: "update", path, data }),
       delete: async () => {
         if (this.options.failDeleteAt?.(path)) {

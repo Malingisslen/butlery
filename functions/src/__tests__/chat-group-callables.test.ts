@@ -488,6 +488,75 @@ const cases: UnitCase[] = [
     },
   },
 
+  {
+    // Firestore re-runs the transaction closure when a concurrent commit makes
+    // the first attempt conflict, and only the last run commits. The reply and
+    // the system messages must describe THAT run, not the list the caller asked
+    // for — so the concurrent writer here seats "racer" between the attempts.
+    name: "add reports what the committed run seated when a concurrent invite won the race",
+    fn: async () => {
+      const fake = new FakeFirestore({
+        retryTransactions: 2,
+        onTransactionAttempt: (_attempt, store) => {
+          const group = store.read("chat_groups/g1") ?? {};
+          store.seed("chat_groups/g1", {
+            ...group,
+            memberIds: [...(group.memberIds as string[]), "racer"],
+          });
+        },
+      });
+      seedExistingGroup(fake, ["admin", "member"], ["admin"]);
+      seedProfile(fake, "newbie", "Nils");
+      seedProfile(fake, "racer", "Rasmus");
+
+      const res = await addChatGroupMembersWithDeps(fake.db, "admin", "g1", [
+        "newbie",
+        "racer",
+      ]);
+
+      assertEqual(
+        JSON.stringify(res.addedUserIds),
+        JSON.stringify(["newbie"]),
+        "the reply names only who this call seated",
+      );
+      assertEqual(
+        res.memberCount,
+        4,
+        "admin, member and racer were there; newbie makes four, not five",
+      );
+      assertEqual(
+        messagePaths(fake).length,
+        1,
+        "one system message, for the one person this call seated",
+      );
+    },
+  },
+
+  {
+    // The fake's contract, not the SUT's: `as unknown as Firestore` hides a
+    // dropped `merge`, and a merge applied as an overwrite would make every
+    // suite built on this fake answer wrong quietly.
+    name: "the fake refuses set() with SetOptions instead of overwriting",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      fake.seed("chat_groups/g1", { name: "Familjen", memberIds: ["admin"] });
+      let message = "";
+      try {
+        await (fake.db.doc("chat_groups/g1") as unknown as {
+          set(d: object, o: object): Promise<void>;
+        }).set({ name: "Nytt" }, { merge: true });
+      } catch (e) {
+        message = (e as Error).message;
+      }
+      assertEqual(message.includes("SetOptions"), true, "throws by name");
+      assertEqual(
+        (fake.read("chat_groups/g1")?.memberIds as string[]).length,
+        1,
+        "the stored document is untouched",
+      );
+    },
+  },
+
   // --- the departure tombstone (BUT-1856) -----------------------------------
   {
     // `departedUserIds` sits on a document every member can read, and the
