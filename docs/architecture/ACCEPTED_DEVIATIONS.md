@@ -6310,7 +6310,7 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
 
 ## BUT-2290, BUT-2291 — profile and chat writes stay on Firestore's queue (2026-10-18)
 
-- **Firestore's queue, not the app's (default taken 2026-10-18, awaiting Malin's card).**
+- **Firestore's queue, not the app's (Malin chose it on the decision card, 2026-10-19).**
   A profile save, a settings toggle, a chat message, an edit, a delete, a read marker and a
   conversation setting (pin, mute, archive) go through `awaitOrLeaveQueued`: they wait for
   the server at most 2 s, then return with the write left in Firestore's queue. A refusal
@@ -6349,6 +6349,15 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
   phone with a correct clock. Within the hour a participant can still hold a chat
   at the top of the list, as BUT-1903 accepts for the message list.
 
+## BUT-2138 — the rate limiter's counters stay out of the Art. 15 export (2026-10-19)
+
+- **Malin chose "Nej, som övriga" on 2026-10-19.** Nothing in `system_rate_limits` is in the
+  Art. 15 export: neither the buckets (`{uid}_{operation}`) nor the abuse-alert counter
+  (`{uid}_violationCounter`), which holds the day's denial count and the day the account
+  reached the alert threshold. Reason: showing an account where the limits sit helps whoever
+  wants to stay under them.
+- Both are deleted by `cleanupOldRateLimits` once `updatedAt` is more than 90 days old, and by
+  the account-deletion cascade's `{uid}_` prefix sweep.
 
 ## BUT-2398 — emoji reactions on chat messages (2026-10-19)
 
