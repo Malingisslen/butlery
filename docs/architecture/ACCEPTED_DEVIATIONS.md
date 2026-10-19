@@ -6468,6 +6468,10 @@ acquisition attribution.
   floor, not installs and not sign-ups.
 - **Doc id.** The create rule admits only the id `current` and only the keys `source`, `medium`,
   `campaign`, `firstSeenAt`; `countedAt` is written by the trigger alone.
+- **SUPERSEDES "Switched off in code" (2026-10-19, Malin approved the sentence).** Privacy policy
+  1.17.0 names the count and is published on butlery-legal.web.app, and
+  `ACQUISITION_COUNTER_ENABLED` is `true`. The constant stays as a kill switch: `false` makes the
+  deployed trigger count nothing again. Everything else above is unchanged.
 
 ## BUT-2413 — poll votes are exported by the predicate they are erased by (2026-10-19)
 
