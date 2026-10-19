@@ -65,10 +65,15 @@ class StorageService extends BaseService
   /// Other exceptions still collapse to null, preserving the existing
   /// nullable-result contract for callers that don't care about cause.
   /// Auth is enforced at the repository layer via `_validateUploadPermission`.
+  ///
+  /// [objectId] names the object after the caller's own id instead of a fresh
+  /// one, so uploading again overwrites instead of adding a copy (the offline
+  /// queue uploads under its row id).
   Future<ImageUploadResult?> uploadImageFile(
     File imageFile,
     String userId, {
     Function(double)? onProgress,
+    String? objectId,
   }) async {
     try {
       // BUT-1020: surface offline state immediately so the user sees the
@@ -86,10 +91,12 @@ class StorageService extends BaseService
         );
       }
 
-      final fileName = _repository.generateFileName(
-        originalPath: imageFile.path,
-        prefix: 'recipe',
-      );
+      final fileName = objectId != null
+          ? '$objectId.jpg'
+          : _repository.generateFileName(
+              originalPath: imageFile.path,
+              prefix: 'recipe',
+            );
       final path = 'users/$userId/recipes/$fileName';
 
       final url = await _repository.uploadImage(

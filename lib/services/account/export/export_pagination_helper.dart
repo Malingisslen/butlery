@@ -404,6 +404,10 @@ class ExportPaginationHelper {
     'comment_likes': 1000,
     // BUT-2118: one ballot document per live menu the user voted on.
     'live_menu_votes': 500,
+    // BUT-2413: chat poll votes, by collection group. Equal to the erasure
+    // sweep's `MAX_POLL_VOTE_SWEEP_ROWS`, so the export reaches as far as the
+    // erasure does.
+    'poll_votes': 2000,
   };
 
   /// Get export limit for content type

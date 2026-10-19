@@ -269,6 +269,27 @@ void main() {
     expect(counts.waiting, 0);
   });
 
+  test('BUT-2294: an image resting in Storage is listed, as the counts '
+      'already include it', () async {
+    await withClock(
+      Clock.fixed(t0),
+      () => db.uploadQueueDao.queueUpload(
+        id: 'up-1',
+        userId: 'u1',
+        localPath: '/a.jpg',
+        targetPath: 'x/a.jpg',
+        fileSizeBytes: 10,
+      ),
+    );
+    await db.uploadQueueDao.markUploaded('up-1', url: 'https://img/a.jpg');
+
+    final listed = await readQueuedChanges(db, 'u1');
+    final counts = await db.watchQueueCounts('u1').first;
+
+    expect(listed, hasLength(1));
+    expect(counts.waiting, 1);
+  });
+
   test('BUT-2295: Släng on an image removes its copy on the device', () async {
     final dir = await Directory.systemTemp.createTemp('slang');
     addTearDown(() => dir.delete(recursive: true));

@@ -16,7 +16,7 @@ class AppDatabase {
   AppDatabase.forTesting(dynamic e);
 
   /// Mirrors the native schema version (app_database.dart).
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   Future<void> clearAllData() async {}
   Future<void> clearUserData(String userId) async {}

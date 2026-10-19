@@ -35,7 +35,15 @@ class _FakeDataExportRepository extends Fake
     this.sharedShoppingLists = const [],
     this.outgoingBlocks = const [],
     this.chatGroups = const [],
+    this.pollVotes = const [],
+    this.failPollVotes = false,
   });
+
+  /// BUT-2413: rows shaped as `exportPollVotesByUser` returns them.
+  final List<Map<String, dynamic>> pollVotes;
+
+  /// Sends the poll-vote read down the facade's catch branch.
+  final bool failPollVotes;
 
   final List<Map<String, dynamic>> friends;
   final List<Map<String, dynamic>> sentRequests;
@@ -126,6 +134,16 @@ class _FakeDataExportRepository extends Fake
   }) async {
     capturedMax['exportFriendCategories'] = maxDocuments;
     return categories;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportPollVotesByUser(
+    String userId, {
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportPollVotesByUser'] = maxDocuments;
+    if (failPollVotes) throw StateError('poll votes unreadable');
+    return pollVotes.take(maxDocuments).toList();
   }
 
   @override
@@ -1627,7 +1645,7 @@ void main() {
         // When a cap starts being forwarded this reddens, which is where the
         // truncation flag has to be added rather than quietly capping a
         // bundle that asserts it is complete.
-        expect(repo.capturedMax, {'exportChatGroups': -1});
+        expect(repo.capturedMax['exportChatGroups'], -1);
       },
     );
 
@@ -1805,109 +1823,188 @@ void main() {
       },
     );
 
-    // BUT-1832. The repository probes each poll message for the requester's own
-    // vote row and hands three new keys up; the manager REBUILDS every
-    // conversation map key by key, so each one has to be copied across or it
-    // silently never reaches the bundle. Before this test, deleting all three
-    // facade blocks left the entire suite green and the user's votes simply
-    // vanished from their Art. 15 export — the repository-side tests cannot see
-    // it, because they stop at the repository.
-    test(
-      'carries a poll vote, its truncation flag and its error code through, '
-      'and omits both flags on a complete conversation',
-      () async {
-        const userId = 'user-uid';
-        final manager = SocialExportManager(
-          dataExportRepository: _FakeDataExportRepository(
-            conversations: [
+    // BUT-2413. Votes are read once by the erasure's predicate and placed by
+    // message id: beside an exported message, in the withheld list, or in the
+    // section-level list for a message the section does not hold.
+    Map<String, dynamic> voteRow(String messageId, String optionId) => {
+      'message_id': messageId,
+      'data': {
+        'voterId': 'user-uid',
+        'optionIds': [optionId],
+        // A server timestamp in production; `JsonEncoder.convert` throws on
+        // one, so the facade must sanitise it.
+        'votedAt': Timestamp.fromDate(DateTime.utc(2026, 10, 19)),
+      },
+    };
+
+    test('places every vote: beside its message, or under '
+        'your_poll_votes_on_other_messages', () async {
+      const userId = 'user-uid';
+      final repo = _FakeDataExportRepository(
+        conversations: [
+          {
+            'id': 'c1',
+            'data': {'title': 'Middag'},
+            'messages': [
               {
-                'id': 'polls',
-                'data': {'title': 'Middagsomröstning'},
-                'messages': [
-                  {
-                    'id': 'p1',
-                    'data': {
-                      'senderId': 'other-uid',
-                      'text': 'Vad ska vi äta?',
-                    },
-                    // Shaped like a real row: `votedAt` is a server timestamp in
-                    // production, which is why the facade must run it through
-                    // `sanitizeForJson` — `JsonEncoder.convert` throws on a
-                    // Timestamp, and that would take down the whole bundle.
-                    'your_poll_vote': {
-                      'voterId': userId,
-                      'optionIds': ['opt-a'],
-                      'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 17)),
-                    },
-                  },
-                ],
-                'poll_votes_truncated': true,
-                'poll_votes_error_code': 'conversation-poll-votes-read-failed',
+                'id': 'm-poll',
+                'data': {'senderId': 'other-uid', 'content': 'Vad äter vi?'},
+              },
+              // Hole 1: a share card, metadata without `poll`.
+              {
+                'id': 'm-share',
+                'data': {
+                  'senderId': 'other-uid',
+                  'metadata': {'recipeId': 'r1'},
+                },
               },
               {
-                'id': 'clean',
-                'data': {'title': 'Vanlig tråd'},
-                'messages': [
-                  {
-                    'id': 'm1',
-                    'data': {'senderId': userId, 'text': 'hej'},
-                  },
-                ],
+                'id': 'm-plain',
+                'data': {'senderId': userId, 'content': 'hej'},
               },
             ],
-          ),
-        );
+          },
+        ],
+        pollVotes: [
+          voteRow('m-poll', 'opt-a'),
+          voteRow('m-share', 'opt-b'),
+          // Hole 2: a message the conversation read never returned (sent
+          // before the requester joined, or in a chat they left).
+          voteRow('m-before-joined', 'opt-c'),
+        ],
+      );
+      final result = await SocialExportManager(
+        dataExportRepository: repo,
+      ).exportMessages(userId);
 
-        final result = await manager.exportMessages(userId);
-        final conversations = (result['conversations'] as List)
-            .cast<Map<String, dynamic>>();
-        final polls = conversations.firstWhere(
-          (c) => c['conversation_id'] == 'polls',
-        );
-        final clean = conversations.firstWhere(
-          (c) => c['conversation_id'] == 'clean',
-        );
+      final rows =
+          ((result['conversations'] as List).single
+                  as Map<String, dynamic>)['messages']
+              as List;
+      Map<String, dynamic> row(String id) =>
+          rows.cast<Map<String, dynamic>>().firstWhere(
+            (r) => r['message_id'] == id,
+          );
+      expect(
+        (row('m-poll')['your_poll_vote'] as Map)['optionIds'],
+        ['opt-a'],
+      );
+      expect(
+        (row('m-share')['your_poll_vote'] as Map)['optionIds'],
+        ['opt-b'],
+      );
+      expect(row('m-plain').containsKey('your_poll_vote'), isFalse);
 
-        final vote =
-            ((polls['messages'] as List).first
-                    as Map<String, dynamic>)['your_poll_vote']
-                as Map<String, dynamic>;
-        expect(vote['voterId'], userId);
-        expect(vote['optionIds'], ['opt-a']);
-        // Sanitised, not raw: a surviving Timestamp here is the defect that
-        // would throw at `JsonEncoder.convert` and lose the entire export.
-        expect(vote['votedAt'], isNot(isA<Timestamp>()));
+      final other = (result['your_poll_votes_on_other_messages'] as List)
+          .cast<Map<String, dynamic>>();
+      expect(other.map((v) => v['message_id']), ['m-before-joined']);
+      expect((other.single['your_poll_vote'] as Map)['optionIds'], ['opt-c']);
+      expect(
+        (other.single['your_poll_vote'] as Map)['votedAt'],
+        isNot(isA<Timestamp>()),
+      );
+      expect(jsonEncode(result), isA<String>());
 
-        expect(polls['poll_votes_truncated'], isTrue);
-        expect(
-          polls['poll_votes_error_code'],
-          'conversation-poll-votes-read-failed',
-        );
-        // The SECTION-ROOT lift, which is a SEPARATE path from the flag above,
-        // not a better one. `DataExportService` builds
-        // `export_metadata.warnings` by scanning each section's own `error` /
-        // `error_code` at its ROOT — the per-conversation copy asserted above is
-        // never consulted for that, so only this key produces a warning. (The
-        // truncation walk is the other mechanism, and it DOES recurse lists
-        // since BUT-1721, which is why `poll_votes_truncated` on a conversation
-        // map reaches `truncated_collections`. Two mechanisms, two keys; an
-        // earlier version of this comment described the pre-BUT-1721 walk and
-        // concluded the conversation-level key was inert, which is false.)
-        //
-        // Without this line the `??=` that sets the root key could be deleted
-        // and the whole suite would stay green.
-        expect(result['error_code'], 'conversation-poll-votes-read-failed');
+      expect(repo.capturedMax['exportPollVotesByUser'], 2001);
+      expect(result.containsKey('poll_votes_truncated'), isFalse);
+      expect(result.containsKey('poll_votes_error_code'), isFalse);
+      expect(result.containsKey('error_code'), isFalse);
+      expect(
+        result['data_minimisation'],
+        contains('your_poll_votes_on_other_messages'),
+      );
+    });
 
-        // Recall controls. A flag stuck true tells every data subject their
-        // export is incomplete when it is not — the false-positive direction
-        // BUT-1721 exists to prevent.
-        expect(clean.containsKey('poll_votes_truncated'), isFalse);
-        expect(clean.containsKey('poll_votes_error_code'), isFalse);
-        expect(clean.containsKey('your_poll_vote'), isFalse);
-        // Positive control: the absences above are not a build that fell over.
-        expect((clean['messages'] as List), hasLength(1));
-      },
-    );
+    test('a user with no stray votes gets no other-messages list', () async {
+      final result = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          conversations: [
+            {
+              'id': 'c1',
+              'data': {'title': 'Middag'},
+              'messages': [
+                {
+                  'id': 'm-poll',
+                  'data': {'senderId': 'other-uid'},
+                },
+              ],
+            },
+          ],
+          pollVotes: [voteRow('m-poll', 'opt-a')],
+        ),
+      ).exportMessages('user-uid');
+
+      expect(result.containsKey('your_poll_votes_on_other_messages'), isFalse);
+    });
+
+    test('past the cap the section says it is clipped', () async {
+      final result = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          pollVotes: [for (var i = 0; i < 2001; i++) voteRow('m-$i', 'opt-a')],
+        ),
+      ).exportMessages('user-uid');
+
+      expect(result['poll_votes_truncated'], isTrue);
+      expect(
+        result['your_poll_votes_on_other_messages'] as List,
+        hasLength(2000),
+      );
+    });
+
+    test('a failed vote read is reported, and the conversations still '
+        'export', () async {
+      final result = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          failPollVotes: true,
+          conversations: [
+            {
+              'id': 'c1',
+              'data': {'title': 'Middag'},
+              'messages': [
+                {
+                  'id': 'm1',
+                  'data': {'senderId': 'user-uid', 'content': 'hej'},
+                },
+              ],
+            },
+          ],
+        ),
+      ).exportMessages('user-uid');
+
+      expect(result['poll_votes_error_code'], 'poll-votes-read-failed');
+      expect(result['error_code'], 'poll-votes-read-failed');
+      expect(result.containsKey('error'), isFalse);
+      expect(result['total_messages'], 1);
+      expect(
+        result['data_minimisation'],
+        isNot(contains('your_poll_votes_on_other_messages')),
+      );
+      expect(result['data_minimisation'], contains('poll_votes_error_code'));
+      expect(
+        result['data_minimisation'],
+        isNot(contains('your_poll_votes_on_withheld_messages')),
+      );
+    });
+
+    test('a conversation failure keeps the root error_code', () async {
+      final result = await SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          failPollVotes: true,
+          conversations: [
+            {
+              'id': 'c1',
+              'data': {'title': 'Trasig'},
+              'messages': const <Map<String, dynamic>>[],
+              'messages_truncated': false,
+              'error_code': 'conversation-messages-read-failed',
+            },
+          ],
+        ),
+      ).exportMessages('user-uid');
+
+      expect(result['error_code'], 'conversation-messages-read-failed');
+      expect(result['poll_votes_error_code'], 'poll-votes-read-failed');
+    });
 
     // BUT-1955. Another participant's duplicate-guard row is withheld, but a
     // vote the requester cast on it is their own record.
@@ -1929,11 +2026,6 @@ void main() {
                       'type': 'duplicateBlocked',
                       'content': '',
                     },
-                    'your_poll_vote': {
-                      'voterId': userId,
-                      'optionIds': ['opt-a'],
-                      'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 26)),
-                    },
                   },
                   {
                     'id': 'm-withheld-unvoted',
@@ -1946,10 +2038,6 @@ void main() {
                   {
                     'id': 'm-kept-voted',
                     'data': {'senderId': 'other-uid', 'text': 'Vad äter vi?'},
-                    'your_poll_vote': {
-                      'voterId': userId,
-                      'optionIds': ['opt-b'],
-                    },
                   },
                 ],
               },
@@ -1966,6 +2054,23 @@ void main() {
                     },
                   },
                 ],
+              },
+            ],
+            pollVotes: [
+              {
+                'message_id': 'm-withheld-voted',
+                'data': {
+                  'voterId': userId,
+                  'optionIds': ['opt-a'],
+                  'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 26)),
+                },
+              },
+              {
+                'message_id': 'm-kept-voted',
+                'data': {
+                  'voterId': userId,
+                  'optionIds': ['opt-b'],
+                },
               },
             ],
           ),

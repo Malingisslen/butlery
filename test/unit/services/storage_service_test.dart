@@ -164,6 +164,47 @@ void main() {
         ).called(1);
       });
 
+      test('an object id names the object after it, so a second upload of '
+          'the same id overwrites instead of adding a copy', () async {
+        const userId = 'test_user_123';
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => 'https://storage.googleapis.com/test/a.jpg');
+        when(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        await storageService.uploadImageFile(
+          mockFile,
+          userId,
+          objectId: 'row-7',
+        );
+
+        verify(
+          () => mockRepository.uploadImage(
+            imageFile: mockFile,
+            userId: userId,
+            path: 'users/$userId/recipes/row-7.jpg',
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        );
+      });
+
       test('should upload multiple images', () async {
         // Arrange
         const userId = 'test_user_123';

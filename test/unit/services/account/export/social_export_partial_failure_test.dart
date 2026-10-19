@@ -131,6 +131,13 @@ class _ScriptedRepository extends Fake implements FirebaseDataExportRepository {
     int maxGroups = -1,
   }) async => const [];
 
+  // Answered for the same reason as the chat-groups leg (BUT-2413).
+  @override
+  Future<List<Map<String, dynamic>>> exportPollVotesByUser(
+    String userId, {
+    int maxDocuments = -1,
+  }) async => const [];
+
   @override
   Future<int> countConversations(String userId) async {
     countCalls++;

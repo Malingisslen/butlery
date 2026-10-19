@@ -217,7 +217,7 @@ class QueueJourney {
       isOnlineNow: () => j.offline.online,
       random: MidRandom(),
       recipeWriter: j.writer,
-      uploadImage: (localPath, userId) async {
+      uploadImage: (localPath, userId, objectId) async {
         j.uploaded.add(localPath);
         final name = localPath.split('/').last;
         return (url: 'https://img/$name', thumbnailUrl: 'https://thumb/$name');
