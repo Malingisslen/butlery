@@ -102,7 +102,7 @@ class PersonalRecipeCrud {
 
     final index = recipes.indexWhere((r) => r.id == recipe.id);
     if (index != -1) {
-      recipes[index] = recipe;
+      recipes[index] = personalModule.takeConflictWinner(recipe.id) ?? recipe;
       notifyListeners();
     }
   }
@@ -120,7 +120,9 @@ class PersonalRecipeCrud {
       // Update local list
       final index = recipes.indexWhere((r) => r.id == updatedRecipe.id);
       if (index != -1) {
-        recipes[index] = updatedRecipe;
+        recipes[index] =
+            personalModule.takeConflictWinner(updatedRecipe.id) ??
+            updatedRecipe;
         notifyListeners();
       }
     }

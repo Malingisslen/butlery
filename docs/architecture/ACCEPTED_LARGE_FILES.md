@@ -88,7 +88,7 @@ Already modular services or well-organized modules within service facades. Furth
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `personal_recipe_module.dart` | 1,030 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
+| `personal_recipe_module.dart` | 1,063 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1174 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 1,089 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 680 | Social recipe sharing/rating coordinator |
