@@ -17,6 +17,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe/recipe_serialization.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/trash_item.dart';
@@ -158,7 +159,7 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
       uid,
       recipe.id,
       isLegacy,
-      (r) => (r.socialData?.ownerId ?? r.createdBy).orEmpty(),
+      (r) => r.ownerUid.orEmpty(),
     );
     await _require(canDelete, uid, recipe.id, 'delete');
 

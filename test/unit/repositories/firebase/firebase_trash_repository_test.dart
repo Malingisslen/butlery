@@ -230,6 +230,36 @@ void main() {
       expect(firestore.batches, isEmpty);
     });
 
+    // BUT-2107: an empty ownerId is a missing owner, so the creator decides.
+    Recipe emptyOwnerBy(String id, String createdBy) => Recipe(
+      core: RecipeFactory.build(id: id, createdBy: createdBy).core,
+      type: RecipeType.personal,
+      socialData: RecipeSocialData(ownerId: ''),
+    );
+
+    test('a recipe with an empty ownerId and me as creator moves', () async {
+      final mine = emptyOwnerBy('r5', _me);
+      await storeRecipe(_me, mine);
+
+      await repository.moveRecipeToTrash(mine);
+
+      expect((await recipesOf(_me).doc('r5').get()).exists, isFalse);
+      expect((await trashOf(_me).doc('r5').get()).exists, isTrue);
+    });
+
+    test('a recipe with an empty ownerId and someone else as creator is '
+        'refused', () async {
+      final theirs = emptyOwnerBy('r6', _other);
+      await storeRecipe(_me, theirs);
+
+      await expectLater(
+        repository.moveRecipeToTrash(theirs),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect((await recipesOf(_me).doc('r6').get()).exists, isTrue);
+      expect(firestore.batches, isEmpty);
+    });
+
     test('signed out, nothing is attempted', () async {
       signIn(null);
       await expectLater(
