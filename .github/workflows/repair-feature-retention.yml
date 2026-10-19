@@ -1,0 +1,83 @@
+# One-time repair of the `cooked` and `shared` feature-retention flags for the
+# days their probes failed (missing indexes; `shared` read a dead collection).
+# Dry run unless `apply` is ticked; prints counts only. Deploy the indexes and
+# let them finish building first, and do not run it around 06:00 UTC, when the
+# nightly analytics chain rewrites the same aggregates.
+# See functions/src/analytics/repair-feature-retention.ts.
+name: Repair feature retention
+
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "First UTC day to repair (yyyy-mm-dd)"
+        type: string
+        required: true
+        default: "2026-10-04"
+      to:
+        description: "Last UTC day to repair (yyyy-mm-dd, a finished day)"
+        type: string
+        required: true
+      apply:
+        description: "Write the repair (unticked = dry run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    name: Repair cooked/shared flags
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Build
+        working-directory: functions
+        run: npm run build
+
+      - name: Authenticate
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
+
+      - name: Run repair
+        working-directory: functions
+        env:
+          APPLY: ${{ github.event.inputs.apply }}
+          FROM_DAY: ${{ github.event.inputs.from }}
+          TO_DAY: ${{ github.event.inputs.to }}
+        run: |
+          set -o pipefail
+          if [ "$APPLY" = "true" ]; then
+            node scripts/repair-feature-retention.js --from "$FROM_DAY" --to "$TO_DAY" --apply | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            node scripts/repair-feature-retention.js --from "$FROM_DAY" --to "$TO_DAY" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi

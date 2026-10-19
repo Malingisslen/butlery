@@ -21147,3 +21147,26 @@ Production fixes were made by the main session; this run only changed tests (no 
   check), hasOnly, size bounds, doc-id pin, reviewedDaily, cascade deleting the tally, Dart consent gate and
   flag-on-skip — all RED. Emulator `clearFirestore` intermittently returned 499 CANCELLED under the probe
   harness only; manual runs were stable.
+
+### 2026-10-19 — feature-retention cooked/shared repair review (retention-wip) [review]
+- Staged: `featureProbeQueries` extracted in `analytics/compute-feature-retention.ts`; `shared` repointed
+  `shared_recipes` -> `shared_content` + `contentType == 'recipe'`; new ASC composites cook_snaps
+  (userId, createdAt) and shared_content (sharedByUserId, contentType, sharedAt); one-shot
+  `analytics/repair-feature-retention.ts` + `scripts/repair-feature-retention.js` + workflow_dispatch.
+- Verified writer: `getCommonFirestoreFields` writes `sharedAt` as `AppTimestamp...toFirestore()` (Timestamp);
+  `createSharedContent` stamps `contentType`. A re-share of the same recipe reuses the doc (BUT-1132) and leaves
+  `sharedAt` at the first share, so `shared` is first-share-per-recipe — a lower bound.
+- MEASURED (emulator v1.22.0, scratch script): `batch.update` on a missing doc throws code 5 with message
+  `no entity to update: ... Element { type: "users" name: "RAWUID123_2026-10-05" }`. The repair only wraps
+  probe errors; `batch.commit()` NOT_FOUND (the erased-row path its own test stages) reaches the script's
+  `main().catch`, which prints `err.message` -> raw uid in the Actions log. Filed High, blocking.
+- MEASURED mutation probes (scratch copy, src untouched): `offset <= days` in `seenInWindow` -> 14/14 green;
+  `WAU_28D = 7` -> 14/14 green; before-read starting at `from` -> RED 1. Window lengths unpinned (Medium).
+- Suites: compute 16/16, repair 14/14, account-deletion-cascade 84/84, tsc clean, check-test-registration OK.
+
+### 2026-10-19 — feature-retention repair re-review after fixes [review]
+- Fixes: `batch.commit()` wrapped to a code-only error; `WAU_7D`/`WAU_28D` exported from compute and imported
+  by the repair; `windowEdges` test (6/7/27/28 days back); `apply` refused 05:30-08:00 UTC.
+- MEASURED mutation probes (scratch copy, src untouched): `offset <= days` RED 1 (7-back); `WAU_28D = 7` in
+  compute RED 2 (7-back, 27-back); re-throwing the raw commit error RED 1 (names no document); guard disabled
+  RED 1 (06:00). Suites: repair 20/20, compute 16/16, tsc clean. Verdict pass.
