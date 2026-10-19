@@ -84,6 +84,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     final result = await query.getSingle();
@@ -99,6 +100,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     final result = await query.getSingle();
@@ -111,6 +113,22 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
       UploadQueueEntriesCompanion(
         status: const Value('uploading'),
         lastAttemptAt: Value(clock.now()),
+      ),
+    );
+  }
+
+  /// Records that the object is in Storage and the entity it belongs to is
+  /// not yet written, so a retry of the completion does not upload again.
+  Future<void> markUploaded(
+    String id, {
+    required String url,
+    String? thumbnailUrl,
+  }) {
+    return (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
+      UploadQueueEntriesCompanion(
+        status: const Value('uploaded'),
+        uploadedUrl: Value(url),
+        uploadedThumbnailUrl: Value(thumbnailUrl),
       ),
     );
   }
@@ -206,6 +224,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         uploadQueueEntries.userId.equals(userId) &
             uploadQueueEntries.permanentlyFailed.equals(false) &
             (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('uploaded') |
                 uploadQueueEntries.status.equals('failed')),
       );
     return query.watchSingle().map((row) => row.read(count) ?? 0);
@@ -219,6 +238,28 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     return (select(uploadQueueEntries)..where(
           (e) => e.entityId.equals(entityId) & e.entityType.equals(entityType),
         ))
+        .get();
+  }
+
+  /// The rows of one entity in the order they were queued, so a completion
+  /// that needs every row of a group (a cook snap's photos) reads them in
+  /// one place.
+  Future<List<UploadQueueEntry>> getGroup(
+    String userId,
+    String entityType,
+    String entityId,
+  ) {
+    return (select(uploadQueueEntries)
+          ..where(
+            (e) =>
+                e.userId.equals(userId) &
+                e.entityType.equals(entityType) &
+                e.entityId.equals(entityId),
+          )
+          ..orderBy([
+            (e) => OrderingTerm.asc(e.queuedAt),
+            (e) => OrderingTerm.asc(e.id),
+          ]))
         .get();
   }
 

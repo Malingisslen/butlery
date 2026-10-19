@@ -4,6 +4,11 @@ import 'package:drift/drift.dart';
 enum UploadQueueStatus {
   pending,
   uploading,
+
+  /// The object is in Storage but the entity it belongs to is not yet
+  /// written. A crash or a lost connection between the two steps must not
+  /// upload the file again under another name (BUT-2294).
+  uploaded,
   completed,
   failed,
   cancelled,
@@ -79,6 +84,16 @@ class UploadQueueEntries extends Table {
 
   /// When its first attempt failed, for the 24 h limit; null until then.
   DateTimeColumn get firstFailedAt => dateTime().nullable()();
+
+  // ── Schema 6: the result of the upload step (BUT-2294), kept so the
+  // completion step can be retried without uploading again.
+
+  /// Download URL of the uploaded image, set when the status becomes
+  /// `uploaded`.
+  TextColumn get uploadedUrl => text().nullable()();
+
+  /// Download URL of its thumbnail, when the upload made one.
+  TextColumn get uploadedThumbnailUrl => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
