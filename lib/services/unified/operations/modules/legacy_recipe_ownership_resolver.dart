@@ -1,4 +1,5 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
@@ -10,7 +11,7 @@ class LegacyRecipeOwnershipResolver {
     try {
       AppLogger.debug('🔍 Determining ownership for recipe: ${recipe.id}');
 
-      final standardOwnerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final standardOwnerId = recipe.ownerUid;
       if (standardOwnerId != null && standardOwnerId.isNotEmpty) {
         AppLogger.debug(
           '✅ Standard ownership found: ${standardOwnerId.maskedUserId}',

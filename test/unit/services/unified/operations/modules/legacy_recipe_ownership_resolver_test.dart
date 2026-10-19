@@ -40,6 +40,15 @@ void main() {
       expect(resolver.determineOwnership(recipe, 'me'), 'creator1');
     });
 
+    test('an empty social owner falls through to the creator', () {
+      final recipe = RecipeFactory.build(
+        socialData: const RecipeSocialData(ownerId: ''),
+        createdBy: 'creator1',
+        createdAt: _recent,
+      );
+      expect(resolver.determineOwnership(recipe, 'me'), 'creator1');
+    });
+
     test('infers the current user for a legacy personal recipe', () {
       final recipe = RecipeFactory.build(
         createdBy: '', // empty → legacy + no standard owner
