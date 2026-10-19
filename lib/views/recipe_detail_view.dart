@@ -12,6 +12,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/views/recipe_detail/cook_snap_visibility.dart';
 import 'package:butlery/views/recipe_detail/cook_snap_visibility_dialog.dart';
@@ -471,8 +472,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: RecipeSuggestionNotice(
                     recipeId: recipe.id,
                     isOwner:
-                        (recipe.socialData?.ownerId ?? recipe.createdBy) ==
-                        ServiceLocator.get<PermissionService>().currentUserId,
+                        recipe.ownerUid != null &&
+                        recipe.ownerUid ==
+                            ServiceLocator.get<PermissionService>()
+                                .currentUserId,
                   ),
                 ),
                 // App bar with recipe title and actions

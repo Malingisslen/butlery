@@ -1980,15 +1980,14 @@ export const RETENTION_ANALYTICS_PARENTS = ["retention", "lapsed_users"] as cons
  * `analytics/lapsed_users`, which BUT-1789 left behind.
  *
  * `analytics/retention/events/{uid}_dN` (`analytics/track-retention.ts`) and
- * `analytics/lapsed_users/events/{autoId}` (`analytics/detect-lapsed-users.ts`)
+ * `analytics/lapsed_users/events/{uid}_{type}_{lastActiveAt ms}` (`analytics/detect-lapsed-users.ts`)
  * both carry the uid in a `userId` field, so Art. 17 reaches them exactly as it
  * reached the feature-retention rows.
  *
  * Shaped on `deleteFeatureRetentionFlags`.
  *
- * The filter is the writer's own `userId` field on both. `lapsed_users` has no
- * choice: its ids are auto-generated, so there is no id form to range over. A
- * single-field equality needs no composite index.
+ * The filter is the writer's own `userId` field on both. A single-field
+ * equality needs no composite index.
  *
  * Neither parent has an aggregate sibling to preserve.
  *

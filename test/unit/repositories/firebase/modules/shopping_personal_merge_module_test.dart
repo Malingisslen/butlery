@@ -157,6 +157,12 @@ PersonalMergeRequest _request(
 FirebaseException _offline() =>
     FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
 
+/// A transaction whose every call fails as an unreachable server does.
+class _UnreachableTransaction extends Fake implements Transaction {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw _offline();
+}
+
 void main() {
   late _CountingFirestore firestore;
   late List<String> audit;
@@ -385,6 +391,27 @@ void main() {
         expect(stored['new']!.bought, isTrue);
         expect(await storedMenuIds(), ['new']);
         expect(result.concurrentChange, isFalse);
+      });
+
+      test('offline Ersätt listan also replaces from memory when the platform '
+          'hides the handler error (web)', () async {
+        final memory = _list([_row('own', 'kaffe')], menuItemIds: ['old']);
+        await seedServer(memory);
+
+        await module(
+          transactionRunner: (handler) async {
+            try {
+              await handler(_UnreachableTransaction());
+            } catch (_) {}
+            throw StateError('the web wrapper');
+          },
+        ).applyPersonalMerge(
+          memory,
+          _request([_row('new', 'gul lök')], replace: true),
+        );
+        await pumpEventQueue();
+
+        expect(await storedMenuIds(), ['new']);
       });
 
       test('writes of this device still waiting to sync are not reported as '

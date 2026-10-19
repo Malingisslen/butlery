@@ -5,6 +5,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 
@@ -84,7 +85,7 @@ class RecipePermissionManager {
   /// stream, as does a build without the recipe repository.
   Stream<bool> watchCanEdit(Recipe recipe) {
     final uid = _permissionService.currentUserId;
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    final ownerId = recipe.ownerUid;
     if (uid == null || recipe.id.isEmpty || ownerId == null || ownerId == uid) {
       return const Stream.empty();
     }
@@ -105,13 +106,12 @@ class RecipePermissionManager {
   /// owner of [recipe] when it is someone else's, or null when it is the
   /// signed-in user's own (or has no owner, as a local recipe).
   ///
-  /// The owner is the recipe's owner id (socialData.ownerId, else
-  /// createdBy), the same id recipe detail and the permission module use,
-  /// never anything the screen shows. Without a signed-in user nothing is
+  /// The owner is [Recipe.ownerUid], the same id recipe detail and the
+  /// permission module use, never anything the screen shows. Without a signed-in user nothing is
   /// someone else's here; the save then fails on its own checks.
   String? someoneElsesOwner(Recipe recipe) {
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-    if (ownerId == null || ownerId.isEmpty) return null;
+    final ownerId = recipe.ownerUid;
+    if (ownerId == null) return null;
     final uid = currentUserId;
     if (uid == null || uid.isEmpty || uid == ownerId) return null;
     return ownerId;

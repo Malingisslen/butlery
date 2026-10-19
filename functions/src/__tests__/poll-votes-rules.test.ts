@@ -1162,8 +1162,6 @@ test("shared_content: a shopping-list share with its real payload is allowed", a
 // BUT-2092 — closing a poll is one-way on the sender limb
 //
 // `MessagePollMutationModule.closePoll` writes `{metadata}` and nothing else.
-// The reopen DENY and the closed-row edit
-// ALLOW differ only in the `isClosed` value.
 // ============================================================================
 
 function updateMessage(
@@ -1225,10 +1223,88 @@ test("BUT-2092: the sender cannot reopen a closed poll by nulling metadata", asy
   );
 });
 
-test("BUT-2092: the sender can still edit a closed poll that stays closed", async () => {
+test("BUT-2092: the sender can still edit the text of a closed poll message", async () => {
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, { content: "Vad blev det?" })
+  );
+});
+
+function closedPollWith(
+  change: (poll: Record<string, unknown>) => void
+): Record<string, unknown> {
+  const poll = JSON.parse(
+    JSON.stringify((pollBody(true).metadata as { poll: unknown }).poll)
+  ) as Record<string, unknown>;
+  change(poll);
+  return { poll };
+}
+
+// BUT-2116. Each DENY below keeps `isClosed: true`, so the BUT-2092 reopen
+// conjunct passes and only the freeze can refuse.
+test("BUT-2116: rewriting a closed poll with the same poll is allowed", async () => {
   await assertSucceeds(
     updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
       metadata: pollBody(true).metadata,
+    })
+  );
+});
+
+test("BUT-2116: the sender cannot change the question of a closed poll", async () => {
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
+      metadata: closedPollWith((p) => {
+        p.question = "Vad ska vi INTE äta?";
+      }),
+    })
+  );
+});
+
+test("BUT-2116: the sender cannot change an option of a closed poll", async () => {
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
+      metadata: closedPollWith((p) => {
+        (p.options as Array<Record<string, unknown>>)[0].text = "Sushi";
+      }),
+    })
+  );
+});
+
+test("BUT-2116: the sender cannot add an option to a closed poll", async () => {
+  await assertFails(
+    updateMessage(AUTHOR_UID, CLOSED_POLL_MSG_ID, {
+      metadata: closedPollWith((p) => {
+        (p.options as Array<Record<string, unknown>>).push({
+          id: "opt-c",
+          text: "Sushi",
+          voterIds: [],
+        });
+      }),
+    })
+  );
+});
+
+test("BUT-2116: the app's own close of an open poll is still allowed", async () => {
+  const msgId = `pv-poll-open-close-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`messages/${msgId}`).set(pollBody(false));
+  });
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, msgId, { metadata: pollBody(true).metadata })
+  );
+});
+
+test("BUT-2116: closing an open poll while rewriting its question is still allowed", async () => {
+  // The freeze starts once the STORED message is closed; the transition itself
+  // is not constrained beyond BUT-2092 (the app writes only isClosed).
+  const msgId = `pv-poll-open-close-edit-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`messages/${msgId}`).set(pollBody(false));
+  });
+  await assertSucceeds(
+    updateMessage(AUTHOR_UID, msgId, {
+      metadata: closedPollWith((p) => {
+        p.question = "Ny fråga";
+      }),
     })
   );
 });

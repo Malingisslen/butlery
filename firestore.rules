@@ -1291,6 +1291,10 @@ service cloud.firestore {
         && planId.matches('^' + request.auth.uid + '_.*')
         && request.auth.uid == request.resource.data.userId;
 
+      // `'userId'` in `cannotModify` is deliberately redundant with the two
+      // `uid == …userId` conjuncts: today they deny a changed owner on their
+      // own, and the list entry is the backstop if either is ever loosened.
+      // `'createdAt'` is not redundant.
       allow update: if isAuthenticated()
         && planId.matches('^' + request.auth.uid + '_.*')
         && request.auth.uid == resource.data.userId
@@ -2855,6 +2859,9 @@ service cloud.firestore {
       // a sender who could reopen the poll could plant the winner again. Each
       // `is map` guard keeps a message whose `metadata` is null, or a map
       // without `poll`, updatable.
+      // BUT-2116: once closed, the poll map itself is frozen, so the question
+      // and options a closed poll shows cannot be rewritten afterwards. The
+      // app's own close changes only `isClosed` on an open poll.
       function pollIsClosed(data) {
         let meta = data.get('metadata', null);
         return meta is map
@@ -2865,7 +2872,9 @@ service cloud.firestore {
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
         && resource.data.get('type', 'text') != 'duplicateBlocked'
-        && (!pollIsClosed(resource.data) || pollIsClosed(request.resource.data))
+        && (!pollIsClosed(resource.data)
+            || (pollIsClosed(request.resource.data)
+                && request.resource.data.metadata.poll == resource.data.metadata.poll))
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
         && cannotModify(['senderId', 'conversationId', 'sentAt', 'reactions'])

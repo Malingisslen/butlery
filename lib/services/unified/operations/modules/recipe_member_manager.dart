@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -150,7 +151,7 @@ class RecipeMemberManager {
         return false;
       }
 
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == memberId) {
         AppLogger.error('Cannot remove recipe owner from member list');
         return false;
@@ -290,7 +291,7 @@ class RecipeMemberManager {
         groupId: groupId,
         // The owner is never cut by a group revoke, whatever the grants say —
         // the same invariant removeMember enforces explicitly.
-        ownerId: recipe.socialData?.ownerId ?? recipe.createdBy,
+        ownerId: recipe.ownerUid,
       );
 
       final updatedSocialData = (recipe.socialData ?? const RecipeSocialData())
@@ -376,7 +377,7 @@ class RecipeMemberManager {
         return false;
       }
 
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == memberId) {
         AppLogger.error('Cannot change recipe owner permission');
         return false;
@@ -452,7 +453,7 @@ class RecipeMemberManager {
 
       final members = <Map<String, dynamic>>[];
       final permissions = recipe.socialData?.memberPermissions ?? {};
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       final ownerDisplayName = storedNameOr(
         recipe.socialData?.ownerDisplayName,
         '?',
@@ -604,7 +605,7 @@ class RecipeMemberManager {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
 
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == currentUserId) return true;
 
     final allowMemberInvites = recipe.socialData?.allowMemberInvites ?? true;
@@ -622,7 +623,7 @@ class RecipeMemberManager {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
 
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == currentUserId) return true;
 
     final userPermission =

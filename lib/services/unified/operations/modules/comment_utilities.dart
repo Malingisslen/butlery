@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -45,7 +46,7 @@ class CommentUtilities {
 
     // Collaborative recipes: owner and members can comment
     if (recipe.isCollaborative) {
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == currentUserId) return true;
       return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ??
           false;
@@ -62,7 +63,7 @@ class CommentUtilities {
     if (currentUserId == null) return false;
 
     // Recipe owner
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId == currentUserId) return true;
 
     // Check if user is admin

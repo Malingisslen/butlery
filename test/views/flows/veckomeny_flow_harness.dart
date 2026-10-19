@@ -71,6 +71,9 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
   /// Thrown by every read while set, the way an unreachable Firestore read is.
   Object? fetchError;
 
+  /// Thrown by every save while set, the way a refused write is.
+  Object? saveError;
+
   @override
   Future<WeeklyMenuPlan?> fetchForWeek({
     required String userId,
@@ -83,6 +86,8 @@ class MemoryPlanRepository implements WeeklyMenuPlanRepository {
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {
+    final refusal = saveError;
+    if (refusal != null) throw refusal;
     final stored = plans[plan.id];
     if (stored != null && !_builtOn(plan, stored)) {
       throw WeekPlanConflictException(stored);
@@ -131,6 +136,9 @@ class HeldMenuService extends Mock implements MenuService {
   Completer<void>? hold;
   int generations = 0;
 
+  /// The scoring context the last generation was handed.
+  MenuScoringContext? lastScoringContext;
+
   @override
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
@@ -139,6 +147,7 @@ class HeldMenuService extends Mock implements MenuService {
     MenuScoringContext scoringContext = MenuScoringContext.empty,
   }) async {
     generations++;
+    lastScoringContext = scoringContext;
     final gate = hold;
     if (gate != null) await gate.future;
     return next;
@@ -192,10 +201,17 @@ class VeckomenyFlowHarness {
   late final HeldMenuService menu;
   late final WeeklyMenuPlanService planService;
   late final UserProfile user;
+  late final MockUnifiedRecipeService _recipes;
   final FlowConnectivity connectivity = FlowConnectivity();
 
   /// Registers every seam. Call from setUp.
-  Future<void> setUp({List<Recipe>? library}) async {
+  ///
+  /// [readDislikes] stands in for the household roster read: memberId → what
+  /// that member dislikes. Left out, nobody dislikes anything.
+  Future<void> setUp({
+    List<Recipe>? library,
+    Future<Map<String, Set<String>>> Function()? readDislikes,
+  }) async {
     SharedPreferences.setMockInitialValues({});
     await TestServiceLocator.initialize();
     prod.ServiceLocator.initialize(DIContainer());
@@ -217,7 +233,7 @@ class VeckomenyFlowHarness {
     final users = _Users(user);
     TestServiceLocator.registerMock<UserService>(users);
 
-    final recipes = MockUnifiedRecipeService()
+    final recipes = _recipes = MockUnifiedRecipeService()
       ..setRecipeState(
         recipes: library ?? [for (var i = 1; i <= 6; i++) flowDinner(i)],
         isInitialized: true,
@@ -262,9 +278,20 @@ class VeckomenyFlowHarness {
         service: planService,
         recipeService: recipes,
         shoppingListGenerator: MenuShoppingListGenerator(),
+        readDislikes: readDislikes,
       ),
     );
   }
+
+  /// A calendar view model over the same service and recipes the view gets.
+  WeeklyMenuPlanViewModel buildPlanViewModel({
+    Future<Map<String, Set<String>>> Function()? readDislikes,
+  }) => WeeklyMenuPlanViewModel(
+    service: planService,
+    recipeService: _recipes,
+    shoppingListGenerator: MenuShoppingListGenerator(),
+    readDislikes: readDislikes,
+  );
 
   Future<void> tearDown() async {
     await TestServiceLocator.reset();

@@ -81,4 +81,38 @@ void main() {
       RecipeMenuRole.other,
     );
   });
+
+  // BUT-2107: an empty socialData.ownerId is a missing owner, so the creator
+  // decides.
+  test('an empty owner id with me as creator is mine', () {
+    expect(
+      recipeMenuRole(recipe(createdBy: me, ownerId: ''), me),
+      RecipeMenuRole.owner,
+    );
+  });
+
+  test('an empty owner id with someone else as creator is theirs', () {
+    expect(
+      recipeMenuRole(recipe(createdBy: olle, ownerId: ''), me),
+      RecipeMenuRole.other,
+    );
+    expect(
+      recipeMenuRole(
+        recipe(
+          createdBy: olle,
+          ownerId: '',
+          members: {me: ResourcePermission.editor},
+        ),
+        me,
+      ),
+      RecipeMenuRole.member,
+    );
+  });
+
+  test('both owner fields empty is still a local recipe of mine', () {
+    expect(
+      recipeMenuRole(recipe(createdBy: '', ownerId: ''), me),
+      RecipeMenuRole.owner,
+    );
+  });
 }

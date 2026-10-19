@@ -131,6 +131,7 @@ dev_dependencies:
 
   # ==================== CORE TESTING ====================
   test: ^1.26.2
+  leak_tracker_flutter_testing: ^3.0.10
   integration_test:
     sdk: flutter
   coverage: ^1.15.0
@@ -142,6 +143,7 @@ dev_dependencies:
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.1.0+1
+  cloud_firestore_platform_interface: ^8.0.3  # BUT-1765: recording query platform in test/helpers/recording_firestore.dart
   firebase_auth_mocks: ^0.15.1
   firebase_storage_mocks: ^0.8.0+1
   # ==================== TEST DATA GENERATION ====================
