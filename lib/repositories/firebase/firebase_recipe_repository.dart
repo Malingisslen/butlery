@@ -436,7 +436,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     final allowed = operation == 'create'
         ? await validateCreatePermission(userId, entity)
         : await validateUpdatePermission(userId, entity.id, entity);
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: 'Recipe/${entity.id}',
       operation: operation,

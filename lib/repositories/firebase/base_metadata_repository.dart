@@ -81,7 +81,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       final canAccess = await validateMetadataAccess(currentUserId, resourceId);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource:
             '$parentCollectionName/$resourceId/$subcollectionName/$userId',
@@ -130,7 +130,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       final canAccess = await validateMetadataAccess(currentUserId, resourceId);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource:
             '$parentCollectionName/$resourceId/$subcollectionName/$userId',
@@ -177,7 +177,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       final currentUserId = requireCurrentUserId();
       final canAccess = await validateMetadataAccess(currentUserId, resourceId);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource:
             '$parentCollectionName/$resourceId/$subcollectionName/$userId',
@@ -213,7 +213,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       final currentUserId = requireCurrentUserId();
       final canAccess = await validateMetadataAccess(currentUserId, resourceId);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource: '$parentCollectionName/$resourceId/$subcollectionName',
         operation: 'list_$metadataType',
@@ -244,7 +244,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       final currentUserId = requireCurrentUserId();
       final canAccess = await validateMetadataAccess(currentUserId, resourceId);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource: '$parentCollectionName/$resourceId/$subcollectionName',
         operation: 'count_$metadataType',

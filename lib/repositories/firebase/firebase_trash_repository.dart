@@ -122,7 +122,7 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
     String resource,
     String operation,
   ) async {
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'TrashItem/$resource',
       operation: operation,

@@ -68,7 +68,7 @@ class FirebaseNotificationHistoryRepository
     final doc = await collection.doc(resourceId).get();
     final granted = doc.exists && doc.data()?['userId'] == userId;
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: '$collectionName/$resourceId',
       operation: 'delete',

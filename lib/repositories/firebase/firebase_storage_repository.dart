@@ -96,7 +96,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     final currentUserId = _getCurrentUserId();
 
     if (currentUserId == null) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: 'anonymous',
         resource: 'storage/$path',
         operation: 'upload',
@@ -112,7 +112,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
     // Validate user is uploading to their own path
     if (userId != currentUserId) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource: 'storage/$path',
         operation: 'upload',
@@ -130,7 +130,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
     // Validate path starts with users/{userId}/
     if (!path.startsWith('users/$userId/')) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource: 'storage/$path',
         operation: 'upload',
@@ -147,7 +147,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     }
 
     // Log successful permission check
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: currentUserId,
       resource: 'storage/$path',
       operation: 'upload',
@@ -162,7 +162,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     final currentUserId = _getCurrentUserId();
 
     if (currentUserId == null) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: 'anonymous',
         resource: 'storage/$imageUrl',
         operation: 'delete',
@@ -180,7 +180,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     final userIdFromPath = _extractUserIdFromPath(imageUrl);
 
     if (userIdFromPath == null || userIdFromPath != currentUserId) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUserId,
         resource: 'storage/$imageUrl',
         operation: 'delete',
@@ -197,7 +197,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     }
 
     // Log successful permission check
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: currentUserId,
       resource: 'storage/$imageUrl',
       operation: 'delete',

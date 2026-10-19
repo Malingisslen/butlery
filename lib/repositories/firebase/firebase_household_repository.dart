@@ -166,7 +166,7 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
     final userId = requireCurrentUserId();
     final current = await _loadRaw(householdId);
     final allowed = current != null && current.canEdit(userId);
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: 'Household/$householdId/nutritionFoodChoices',
       operation: 'update',
@@ -198,7 +198,7 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
     final userId = requireCurrentUserId();
     final current = await _loadRaw(householdId);
     final allowed = current != null && current.canEdit(userId);
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: 'Household/$householdId/nutritionAmountChoices',
       operation: 'update',

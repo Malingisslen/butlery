@@ -42,7 +42,7 @@ class ShoppingRestoreOperationsModule {
     required String resourceId,
   })
   validateOwnership;
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -275,7 +275,7 @@ class ShoppingRestoreOperationsModule {
       );
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'restore_removed',
@@ -331,7 +331,7 @@ class ShoppingRestoreOperationsModule {
       written = swapped;
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'restore_changed',

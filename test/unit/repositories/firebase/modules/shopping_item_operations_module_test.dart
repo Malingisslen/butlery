@@ -199,8 +199,6 @@ class _Harness {
     }
   }
 
-  // BUT-1741: the module's callback is `Future<void> Function(...)` now, so
-  // the fake has to be awaitable too — a `void` closure no longer type-checks.
   Future<void> _logPermissionCheck({
     required String userId,
     required String resource,

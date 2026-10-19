@@ -129,7 +129,7 @@ class FirebaseWeeklyMenuPlanRepository
       // register of processing categories and purposes, not an access log
       // (checked 2026-08-29). What remains is the accountability value of
       // being able to show refusals. Malin's call, BUT-1981.
-      await logPermissionCheck(
+      logPermissionCheck(
         // The AUTHENTICATED actor — `plan.userId` is the CLAIMED owner. An
         // `audit_logs` create whose uid does not match the caller is refused
         // by the rules, so naming the claim here would lose the row.
@@ -233,7 +233,7 @@ class FirebaseWeeklyMenuPlanRepository
     // BUT-893: logged once at the user level, not per plan — the cascade is
     // naturally one-per-user, so a row per document would say the same thing
     // N times.
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: actorId,
       resource: '$collectionName/user:$userId',
       operation: 'removeRecipeFromAllPlans',

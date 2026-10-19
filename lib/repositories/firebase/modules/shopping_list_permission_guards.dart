@@ -27,13 +27,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 ///
 /// Split out of that module by BUT-1719/BUT-1725.
 class ShoppingListPermissionGuards {
-  /// BUT-1741: the audit sink is asynchronous, so the callback type says so.
-  /// Typed `void` it still ACCEPTED the async implementation — Dart allows a
-  /// `Future<void>` function where `void` is expected — and every call here
-  /// silently dropped the future, which turns a failing audit write into an
-  /// unhandled async error instead of a caught one. Each call is now awaited,
-  /// so the row is on its way before the guard throws.
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -141,7 +135,7 @@ class ShoppingListPermissionGuards {
         : rewritesMembers
         ? 'memberPermissions'
         : 'createdAt';
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -198,7 +192,7 @@ class ShoppingListPermissionGuards {
     if (privileged.isEmpty) return payload;
 
     if (declaredBase == null) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',
@@ -233,7 +227,7 @@ class ShoppingListPermissionGuards {
       };
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -300,7 +294,7 @@ class ShoppingListPermissionGuards {
         ? 'attempted to create a list owned by another user'
         : 'attempted to create a list without seating the owner in '
               'memberPermissions';
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'create',
@@ -421,7 +415,7 @@ class ShoppingListPermissionGuards {
         : !othersUntouched
         ? "the write also changes another member's entry"
         : 'the write also changes a field outside memberPermissions';
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -478,7 +472,7 @@ class ShoppingListPermissionGuards {
 
     if (granted) return;
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',

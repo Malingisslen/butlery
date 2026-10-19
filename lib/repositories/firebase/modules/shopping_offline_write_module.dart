@@ -107,7 +107,7 @@ class ShoppingOfflineWriteModule {
             .toList()
           ..sort();
     if (privileged.isNotEmpty) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',
@@ -150,11 +150,7 @@ class ShoppingOfflineWriteModule {
     );
   }
 
-  /// BUT-1741: the audit sink is asynchronous. Typed `void` this field still
-  /// accepted the async implementation and then dropped its future, so a
-  /// failing audit write escaped as an unhandled async error rather than one
-  /// this module could observe. Each call below is awaited.
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -393,7 +389,7 @@ class ShoppingOfflineWriteModule {
         .toList();
     if (privileged.isEmpty || !baseIsCached) return payload;
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -444,7 +440,7 @@ class ShoppingOfflineWriteModule {
     final denied =
         error is FirebaseException && error.code == 'permission-denied';
     if (denied) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',

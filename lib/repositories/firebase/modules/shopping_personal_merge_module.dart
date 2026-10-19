@@ -62,7 +62,7 @@ class ShoppingPersonalMergeModule {
     required String resourceId,
   })
   validateOwnership;
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -153,7 +153,7 @@ class ShoppingPersonalMergeModule {
       );
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_list',
       operation: 'menu_merge',
@@ -206,7 +206,7 @@ class ShoppingPersonalMergeModule {
       what: 'shopping undo merge on ${base.id}',
     );
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_list',
       operation: 'menu_merge_undo',
@@ -363,7 +363,7 @@ class ShoppingPersonalMergeModule {
       ),
     );
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_list',
       operation: 'menu_merge',
