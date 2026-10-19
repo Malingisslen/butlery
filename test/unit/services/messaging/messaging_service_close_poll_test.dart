@@ -25,6 +25,7 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
@@ -373,6 +374,81 @@ void main() {
           menu: any(named: 'menu'),
           friendUserIds: any(named: 'friendUserIds'),
         ),
+      );
+    });
+
+    // BUT-1985. The roster handed to `readOrBuildWeek` IS the group menu's
+    // permission model (`memberPermissions` is derived from it), and every other
+    // verify in this file takes `any(named: 'initialParticipants')`, so deleting
+    // the build or swapping admin/edit left the file green. The closer is NOT
+    // first in the list on purpose, so an index-based admin would not pass.
+    test('seeds every conversation participant, the closer as admin and the '
+        'rest as editors', () async {
+      final now = DateTime.now();
+      when(() => messagingRepo.getConversation(conversationId)).thenAnswer(
+        (_) async => _groupConversation(
+          conversationId,
+          ['user-2', creatorId, 'user-3', 'user-4'],
+        ),
+      );
+      when(() => recipeService.recipes).thenReturn([
+        _recipe('recipe-winner', 'Tacos'),
+        _recipe('recipe-loser', 'Pasta'),
+      ]);
+      final poll = Poll(
+        id: 'poll-roster',
+        question: 'Vad ska vi äta?',
+        creatorId: creatorId,
+        createdAt: now,
+        options: [
+          PollOption(
+            id: 'opt-1',
+            text: 'Tacos',
+            voterIds: const ['user-2', 'user-3'],
+            recipeId: 'recipe-winner',
+          ),
+          PollOption(
+            id: 'opt-2',
+            text: 'Pasta',
+            voterIds: const ['user-4'],
+            recipeId: 'recipe-loser',
+          ),
+        ],
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
+      );
+
+      await service.closePoll(messageId: messageId);
+
+      final roster =
+          verify(
+                () => groupPlanService.readOrBuildWeek(
+                  groupId: any(named: 'groupId'),
+                  creatorId: any(named: 'creatorId'),
+                  date: any(named: 'date'),
+                  initialParticipants: captureAny(named: 'initialParticipants'),
+                ),
+              ).captured.single
+              as List<GroupMenuParticipant>;
+      expect(
+        {for (final p in roster) p.userId: p.permission},
+        {
+          creatorId: SharedListPermission.admin,
+          'user-2': SharedListPermission.edit,
+          'user-3': SharedListPermission.edit,
+          'user-4': SharedListPermission.edit,
+        },
+        reason: 'one entry per participant, only the closer admin',
+      );
+      expect(
+        roster.length,
+        4,
+        reason: 'a participant listed twice would hide behind the map above',
       );
     });
 
