@@ -6310,7 +6310,7 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
 
 ## BUT-2290, BUT-2291 — profile and chat writes stay on Firestore's queue (2026-10-18)
 
-- **Firestore's queue, not the app's (default taken 2026-10-18, awaiting Malin's card).**
+- **Firestore's queue, not the app's (Malin chose it on the decision card, 2026-10-19).**
   A profile save, a settings toggle, a chat message, an edit, a delete, a read marker and a
   conversation setting (pin, mute, archive) go through `awaitOrLeaveQueued`: they wait for
   the server at most 2 s, then return with the write left in Firestore's queue. A refusal
