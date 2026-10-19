@@ -8,6 +8,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/repositories/interfaces/menu_voting_repository.dart';
 
 /// `realtime_resources/{menuId}/votes/{uid}`: each person writes only their
@@ -93,7 +94,7 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuBallot>
   ) async {
     final userId = requireCurrentUserId();
     final ref = _votesRef(menuId).doc(userId);
-    await firestore.runTransaction((tx) async {
+    await runTransactionWithNativeErrors<void>(firestore, (tx) async {
       final snap = await tx.get(ref);
       final current = snap.exists
           ? fromFirestore(snap)

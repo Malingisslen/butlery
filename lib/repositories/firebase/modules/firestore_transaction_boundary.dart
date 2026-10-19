@@ -61,3 +61,14 @@ Future<T> runTransactionKeepingHandlerError<T>(
     rethrow;
   }
 }
+
+/// Runs [handler] in a transaction on [firestore] with the error contract
+/// [runTransactionKeepingHandlerError] gives: for callers that act on an
+/// error their handler throws and use the platform's own budget.
+Future<T> runTransactionWithNativeErrors<T>(
+  FirebaseFirestore firestore,
+  Future<T> Function(Transaction transaction) handler,
+) => runTransactionKeepingHandlerError<T>(
+  (inner) => firestore.runTransaction<T>(inner),
+  handler,
+);
