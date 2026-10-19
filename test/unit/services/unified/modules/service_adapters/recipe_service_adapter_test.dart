@@ -17,6 +17,7 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -145,6 +146,125 @@ void main() {
 
         // Assert
         expect(result, isFalse);
+      });
+
+      group('updateRecipeOnRevision (BUT-2401)', () {
+        test(
+          'the first edit of a recipe created through this adapter is built '
+          'on revision 0, not an unknown base',
+          () async {
+            final recipe = RecipeFactory.buildPersonal(id: 'r1');
+            expect(recipe.rev, isNull);
+            when(
+              () => mockRecipeRepository.create(any()),
+            ).thenAnswer((_) async => recipe);
+            when(
+              () => mockRecipeRepository.updateAtRevision(
+                any(),
+                expectedRev: any(named: 'expectedRev'),
+              ),
+            ).thenAnswer((_) async => 1);
+
+            await adapter.createRecipe(recipe);
+            await adapter.updateRecipeOnRevision(recipe);
+
+            verify(
+              () =>
+                  mockRecipeRepository.updateAtRevision(recipe, expectedRev: 0),
+            ).called(1);
+          },
+        );
+
+        test('writes on the revision the recipe was built on', () async {
+          final recipe = RecipeFactory.buildPersonal(id: 'r1').copyWith(rev: 3);
+          when(
+            () => mockRecipeRepository.updateAtRevision(
+              any(),
+              expectedRev: any(named: 'expectedRev'),
+            ),
+          ).thenAnswer((_) async => 4);
+
+          expect(await adapter.updateRecipeOnRevision(recipe), isTrue);
+
+          verify(
+            () => mockRecipeRepository.updateAtRevision(recipe, expectedRev: 3),
+          ).called(1);
+        });
+
+        test('a second save from the same stale copy is built on the '
+            "revision this adapter's own save produced", () async {
+          final recipe = RecipeFactory.buildPersonal(id: 'r1').copyWith(rev: 3);
+          final revs = [4, 5];
+          when(
+            () => mockRecipeRepository.updateAtRevision(
+              any(),
+              expectedRev: any(named: 'expectedRev'),
+            ),
+          ).thenAnswer((_) async => revs.removeAt(0));
+
+          await adapter.updateRecipeOnRevision(recipe);
+          await adapter.updateRecipeOnRevision(recipe);
+
+          verify(
+            () => mockRecipeRepository.updateAtRevision(recipe, expectedRev: 3),
+          ).called(1);
+          verify(
+            () => mockRecipeRepository.updateAtRevision(recipe, expectedRev: 4),
+          ).called(1);
+        });
+
+        test(
+          'a conflict is rethrown and forgets the own-revision record',
+          () async {
+            final recipe = RecipeFactory.buildPersonal(
+              id: 'r1',
+            ).copyWith(rev: 3);
+            final remote = recipe.copyWith(title: 'Andra', rev: 5);
+            var calls = 0;
+            when(
+              () => mockRecipeRepository.updateAtRevision(
+                any(),
+                expectedRev: any(named: 'expectedRev'),
+              ),
+            ).thenAnswer((_) async {
+              calls++;
+              if (calls == 2) throw RecipeRevisionConflictException(remote);
+              return calls == 1 ? 4 : 6;
+            });
+
+            await adapter.updateRecipeOnRevision(recipe);
+            await expectLater(
+              adapter.updateRecipeOnRevision(recipe),
+              throwsA(isA<RecipeRevisionConflictException>()),
+            );
+            await adapter.updateRecipeOnRevision(recipe);
+
+            // Base 3, then base 4 (raised over its own save, then refused),
+            // then base 3 again because the record died with the conflict.
+            verify(
+              () =>
+                  mockRecipeRepository.updateAtRevision(recipe, expectedRev: 3),
+            ).called(2);
+            verify(
+              () =>
+                  mockRecipeRepository.updateAtRevision(recipe, expectedRev: 4),
+            ).called(1);
+          },
+        );
+
+        test('any other failure returns false', () async {
+          when(
+            () => mockRecipeRepository.updateAtRevision(
+              any(),
+              expectedRev: any(named: 'expectedRev'),
+            ),
+          ).thenThrow(Exception('boom'));
+
+          expect(
+            await adapter.updateRecipeOnRevision(RecipeFactory.buildPersonal()),
+            isFalse,
+          );
+        });
       });
 
       test('should delete recipe successfully', () async {

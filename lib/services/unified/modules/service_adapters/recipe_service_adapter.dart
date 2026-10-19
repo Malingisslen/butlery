@@ -1,6 +1,8 @@
 // lib/services/unified/modules/service_adapters/recipe_service_adapter.dart
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
+import 'package:butlery/core/storage/drift/recipe_revision_record.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
@@ -26,6 +28,11 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   /// compile and its deletes cannot skip the trash.
   final TrashRepository _trashRepository;
 
+  /// The revisions this adapter's own writes produced, per recipe id, so a
+  /// second save from a copy read before the first is not a conflict with
+  /// itself (BUT-2213's rule for the queue, kept in memory for the web).
+  final Map<String, Map<String, dynamic>> _ownRevisions = {};
+
   RecipeServiceAdapter({
     required RecipeRepository recipeRepository,
     required TrashRepository trashRepository,
@@ -45,6 +52,12 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
         '🔄 [RecipeServiceAdapter] Creating recipe: ${recipe.title}, id: ${recipe.id}',
       );
       final createdRecipe = await _recipeRepository.create(recipe);
+      _ownRevisions[createdRecipe.id] = RecipeRevisionRecord.advanced(
+        const <String, dynamic>{},
+        sentRev: null,
+        newRev: 0,
+        created: true,
+      );
       AppLogger.success('✅ Recipe created via repository: ${createdRecipe.id}');
       return createdRecipe.id;
     } catch (e, stackTrace) {
@@ -62,6 +75,34 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to update recipe via repository', e);
+      return false;
+    }
+  }
+
+  /// Like [updateRecipe] but written only on the revision the recipe was built
+  /// on (BUT-2401: the web has no queue, so this is its only conflict check).
+  /// Throws [RecipeRevisionConflictException] when another save got there
+  /// first.
+  Future<bool> updateRecipeOnRevision(Recipe recipe) async {
+    try {
+      final stored = _ownRevisions[recipe.id];
+      final base = RecipeRevisionRecord.baseFor(recipe.rev, stored);
+      final newRev = await _recipeRepository.updateAtRevision(
+        recipe,
+        expectedRev: base,
+      );
+      _ownRevisions[recipe.id] = RecipeRevisionRecord.advanced(
+        stored ?? const <String, dynamic>{},
+        sentRev: base,
+        newRev: newRev,
+        created: false,
+      );
+      return true;
+    } on RecipeRevisionConflictException {
+      _ownRevisions.remove(recipe.id);
+      rethrow;
+    } catch (e) {
+      AppLogger.error('❌ Failed to update recipe on revision', e);
       return false;
     }
   }
