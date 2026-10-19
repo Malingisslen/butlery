@@ -61,6 +61,12 @@ service firebase.storage {
         && request.auth.uid == userId
         && isValidImage()
         && isWithinSizeLimit(10);
+
+      // A delete has no incoming file, so the `write` limb above (which reads
+      // request.resource) can never allow one. This limb also covers
+      // comment_images/, whose own block above only has the `write` limb
+      // (BUT-2294).
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
     // Shared recipe images - publicly readable, upload-validated writes
