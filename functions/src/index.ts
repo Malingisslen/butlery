@@ -289,6 +289,9 @@ export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analyt
 // unchanged and remain the contract for tests.
 export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 
+// BUT-1997: anonymous per-day acquisition tally, consent-gated on the server.
+export { onAcquisitionCreated } from "./analytics/acquisition-counter";
+
 // Maintenance dispatchers — one Cloud Scheduler job per chain. Cloud Scheduler
 // bills per JOB per month (3 free per billing account), not per run, so the
 // analytics jobs above are merged into these three.

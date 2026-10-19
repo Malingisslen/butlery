@@ -22,6 +22,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
@@ -189,7 +190,7 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
     // A transaction rather than a batch: it is written only while the copy
     // is still there and the recipe is not, so a second restore from a stale
     // screen can neither replace a recipe edited since nor reset its `rev`.
-    return firestore.runTransaction((tx) async {
+    return runTransactionWithNativeErrors<Recipe>(firestore, (tx) async {
       final trashSnap = await tx.get(trashRef);
       final stored = trashSnap.exists
           ? TrashItem.fromFirestore(trashSnap.id, trashSnap.data() ?? {})

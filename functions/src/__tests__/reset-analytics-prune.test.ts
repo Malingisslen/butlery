@@ -285,6 +285,7 @@ async function run(): Promise<void> {
   // see BOTH forms: the chain spelled out, and
   // `dailyDocRef(db, "<group>", date)` in analytics/daily-snapshots.ts.
   const reviewedDaily = new Set([
+    "acquisition",
     "anomalies",
     "duplicate_guard",
     "feature_retention",

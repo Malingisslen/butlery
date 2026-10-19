@@ -13,6 +13,7 @@ import 'package:collection/collection.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 
@@ -66,7 +67,7 @@ class RecipeRevisionOperations {
     int? expectedRev,
   }) {
     final fields = toFirestore(recipe);
-    return firestore.runTransaction<int>((tx) async {
+    return runTransactionWithNativeErrors<int>(firestore, (tx) async {
       final snap = await tx.get(ref);
       final data = snap.data();
       if (!snap.exists || data == null) {
@@ -99,7 +100,7 @@ class RecipeRevisionOperations {
     Recipe recipe,
   ) {
     final fields = toFirestore(recipe);
-    return firestore.runTransaction((tx) async {
+    return runTransactionWithNativeErrors<int>(firestore, (tx) async {
       final snap = await tx.get(ref);
       final data = snap.data();
       if (!snap.exists || data == null) {

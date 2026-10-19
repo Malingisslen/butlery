@@ -116,7 +116,7 @@ function bump(obj: Record<string, number>, key: string): void {
 }
 
 /** Reference to `analytics/{group}/daily/{date}` (4 segments = a doc). */
-function dailyDocRef(
+export function dailyDocRef(
   db: admin.firestore.Firestore,
   group: string,
   dateStr: string,

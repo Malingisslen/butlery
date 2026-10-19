@@ -3,7 +3,7 @@
 GDPR Article 30 record of processing for the personal `users/{uid}` subcollections the
 account-deletion cascade erases, and their data-subject-access (Art. 15) export treatment.
 Companion to `notification-analytics-retention.md`, `family-data-retention.md` and
-`audit-logs-retention.md`. Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03), BUT-1917/BUT-2018 (2026-09-09).
+`audit-logs-retention.md`. Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03), BUT-1917/BUT-2018 (2026-09-09), BUT-1997 (2026-10-19).
 
 Art. 30 records PROCESSING, not export status, so every collection below has a row here
 whether or not it is exported.
@@ -14,7 +14,7 @@ whether or not it is exported.
 |---|---|---|---|---|
 | `ingredients` | The user's own ingredient entries | Their personal ingredient library | `firebase_user_ingredient_repository.dart` | **Exported** |
 | `onboarding` | Progress flags through first-run setup | Resume onboarding where the user left off | `onboarding_progress_service.dart` | **Exported** |
-| `acquisition` | Install attribution: source, medium, campaign, first-seen stamp | Growth measurement (BUT-612) | `firebase_acquisition_repository.dart` | **Exported, unprojected** |
+| `acquisition` | source, medium, campaign, first-seen stamp; `countedAt` once the daily tally has counted it | Growth measurement (BUT-612) | `firebase_acquisition_repository.dart`; `countedAt` only by `functions/src/analytics/acquisition-counter.ts` | **Exported, unprojected** |
 | `rate_limits` | Burst stamps (a timestamp and the key of the guarded write, bounded by the rules to expire within 4 days, ADR-0020), import usage counters, the AI cost ledger `llm_cost` (cost today and this month, BUT-2243), a one-time migration flag | Anti-abuse throttling; the per-user AI cost ceiling | `firebase_activity_event_repository.dart` and others; `llm_cost` only by `functions/src/middleware/llm_cost_ledger.ts` | **Exempt** |
 | `counters` | Unread-badge totals over shared content | Render unread badges | `base_shared_content_repository.dart` | **Exempt** |
 | `report_throttle` | Cooldown between abuse reports | Anti-abuse throttling | `firebase_report_repository.dart` | **Exempt** |
@@ -63,8 +63,12 @@ rules deploy has rows that are erasable.
 ## Lawful basis
 
 Contract (Art. 6(1)(b)) for `ingredients` and `onboarding`: they are the service the user
-signed up for. Legitimate interests (Art. 6(1)(f)) for `rate_limits`, `counters`,
-`report_throttle` and `acquisition` — service integrity and growth measurement respectively.
+signed up for. Legitimate interests (Art. 6(1)(f)) for `rate_limits`, `counters` and
+`report_throttle` — service integrity.
+Consent (Art. 6(1)(a)), the `analytics` purpose, for `acquisition` (BUT-1997): the app writes
+the row only with that consent, and `onAcquisitionCreated` counts it only when
+`users/{uid}/consent/current` has `purposes.analytics == true`. App versions from before
+BUT-1997 write the row without checking consent; such a row is not counted.
 Legitimate interests (Art. 6(1)(f)) for `block_mirror` too, on a different interest: the
 safety of the person who placed the block, whose choice it enforces.
 
@@ -72,6 +76,12 @@ safety of the person who placed the block, whose choice it enforces.
 
 Erased on account deletion by `deleteUserSubcollections` in
 `functions/src/account/cascade/user-subcollections.ts`.
+
+While `ACQUISITION_COUNTER_ENABLED` is true, `onAcquisitionCreated` counts `acquisition` into
+`analytics/acquisition/daily/{date}`, a uid-free tally of integer counts under allowlisted keys;
+it is false in code. Account deletion does not touch it and it has no TTL, so an
+erased user's count stays; it is not in the Art. 15 export. The decision and its residuals are the
+BUT-1997 entry in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
 
 `block_mirror` takes TWO legs, because the uid appears in two places. Its own row is in
 `deleteUserSubcollections`' list, which erases the leaving user's mirror — the list of who
