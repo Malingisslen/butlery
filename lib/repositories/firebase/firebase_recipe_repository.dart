@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -108,8 +109,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       toFirestore: toFirestore,
       checkOwner: (existing) => validateOwnership(
         currentUserId: currentUserId,
-        resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy)
-            .orEmpty(),
+        resourceOwnerId: existing.ownerUid.orEmpty(),
         resourceType: 'recipe',
         resourceId: existing.id,
       ),
@@ -158,9 +158,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<bool> validateCreatePermission(String userId, Recipe entity) async {
     // Users can only create recipes in their own collection
     // Validate ownerId matches the authenticated user
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(
-      userId,
-    );
+    final ownerId = entity.ownerUid.orDefault(userId);
     return ownerId == userId;
   }
 
@@ -173,8 +171,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (entity == null) return false;
 
     // Owner can always read their own recipes
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orEmpty();
-    if (ownerId == userId) return true;
+    if (entity.ownerUid == userId) return true;
 
     // Check if user is a collaborator/member with permissions (for collaborative recipes)
     if (entity.isCollaborative &&
@@ -200,8 +197,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     Recipe entity,
   ) async {
     // Owner can always update
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orEmpty();
-    if (ownerId == userId) return true;
+    if (entity.ownerUid == userId) return true;
 
     // For collaborative recipes, check if user has write permission
     if (entity.isCollaborative &&
@@ -226,9 +222,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       final recipe = await read(resourceId);
       if (recipe == null) return false;
 
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty();
-      return ownerId == userId;
+      return recipe.ownerUid == userId;
     } catch (e) {
       AppLogger.error('Failed to validate delete permission: $e');
       return false;
@@ -292,9 +286,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     _enforceShareCap(entity);
 
     // For personal recipes, createdBy should match current user
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(
-      currentUser,
-    );
+    final ownerId = entity.ownerUid.orDefault(currentUser);
     await validateSelfOperation(
       currentUserId: currentUser,
       targetUserId: ownerId,
@@ -388,8 +380,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         await validateOwnership(
           currentUserId: currentUser,
-          resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy)
-              .orEmpty(),
+          resourceOwnerId: existing.ownerUid.orEmpty(),
           resourceType: 'recipe',
           resourceId: entity.id,
         );
@@ -486,8 +477,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
               currentUser,
               id,
               isLegacy,
-              (recipe) =>
-                  (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+              (recipe) => recipe.ownerUid.orEmpty(),
             );
 
         if (!canDelete) {
@@ -964,9 +954,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
       // User can read if:
       // 1. They own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty();
-      if (ownerId == userId) return true;
+      if (recipe.ownerUid == userId) return true;
 
       // 2. Recipe is shared with them (check member permissions)
       final memberPermissions = (recipe.socialData?.memberPermissions)
@@ -990,9 +978,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
       // User can write if:
       // 1. They own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty();
-      if (ownerId == userId) return true;
+      if (recipe.ownerUid == userId) return true;
 
       // 2. They are a member with write permissions
       final memberPermissions = (recipe.socialData?.memberPermissions)
@@ -1017,9 +1003,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       if (recipe == null) return false;
 
       // User can delete if they own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty();
-      return ownerId == userId;
+      return recipe.ownerUid == userId;
     } catch (e) {
       return false;
     }
@@ -1041,8 +1025,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty(),
+      resourceOwnerId: recipe.ownerUid.orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
@@ -1097,8 +1080,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy)
-          .orEmpty(),
+      resourceOwnerId: recipe.ownerUid.orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
