@@ -177,6 +177,7 @@
     "test:rate-limiter-global-limits": "ts-node src/__tests__/rate-limiter-global-limits.test.ts",
     "test:request-account-deletion": "ts-node src/__tests__/request-account-deletion.test.ts",
     "test:account-deletion-cascade": "ts-node src/__tests__/account-deletion-cascade.test.ts",
+    "test:account-deletion-cascade-reset-script": "ts-node src/__tests__/account-deletion-cascade-reset-script.test.ts",
     "test:account-deletion-cascade-moderation-holds": "ts-node src/__tests__/account-deletion-cascade-moderation-holds.test.ts",
     "test:account-deletion-cascade-comments-ratings": "ts-node src/__tests__/account-deletion-cascade-comments-ratings.test.ts",
     "test:account-deletion-cascade-own-account-data": "ts-node src/__tests__/account-deletion-cascade-own-account-data.test.ts",
