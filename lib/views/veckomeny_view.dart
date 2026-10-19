@@ -211,6 +211,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // starting anything.
     if (!VeckomenyConnectivity.isOnlineNow()) return;
 
+    // The menu is placed in the current week, so its who's-home weighs the
+    // dishes, not that of a week the user browsed to.
+    await calendarVm.loadWeek(clock.now());
+    if (!mounted) return;
+
     // If we're in calendar mode and the visible week already has entries,
     // confirm before overwriting.
     if (_viewMode == VeckomenyViewMode.kalender && calendarVm.hasEntries) {
