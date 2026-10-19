@@ -2527,6 +2527,9 @@ class MockRecipeServiceAdapter extends Mock implements RecipeServiceAdapter {
     return true;
   }
 
+  @override
+  Future<bool> updateRecipeOnRevision(Recipe recipe) async => true;
+
   /// Delete recipe
   @override
   Future<bool> deleteRecipe(String recipeId) async {

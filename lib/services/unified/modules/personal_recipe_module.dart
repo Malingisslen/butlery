@@ -6,6 +6,7 @@ import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -71,6 +73,12 @@ class PersonalRecipeModule {
   /// Used to verify cache and Firebase are in sync.
   final Map<String, DateTime> _lastSyncedAt = {};
 
+  /// What the server held when a web save lost a revision race (BUT-2401),
+  /// until [takeConflictWinner] hands it to the list.
+  final Map<String, Recipe> _conflictWinners = {};
+
+  final Future<void> Function(Recipe local, Recipe remote)? _onRevisionConflict;
+
   /// BUG-003: Stores the last created recipe for direct retrieval.
   /// On web, cache is stubbed so we need direct access to the created recipe.
   Recipe? _lastCreatedRecipe;
@@ -85,6 +93,10 @@ class PersonalRecipeModule {
     _lastCreatedRecipe = null;
     return recipe;
   }
+
+  /// The server's recipe a save that lost a revision race left in place, once.
+  Recipe? takeConflictWinner(String recipeId) =>
+      _conflictWinners.remove(recipeId);
 
   /// HIGH-10: Gets the current sync status for a recipe.
   /// Returns [RecipeSyncStatus.synced] if no status is tracked (assumed synced from Firebase).
@@ -119,7 +131,9 @@ class PersonalRecipeModule {
     PersonalTagService? personalTagService,
     void Function(String recipeTitle)? onTaggingFailed,
     OfflineService? Function()? getOfflineQueue,
-  }) : _getOfflineQueue = getOfflineQueue ?? _noOfflineQueue,
+    Future<void> Function(Recipe local, Recipe remote)? onRevisionConflict,
+  }) : _onRevisionConflict = onRevisionConflict,
+       _getOfflineQueue = getOfflineQueue ?? _noOfflineQueue,
        _recipeRepository = recipeRepository,
        _userRepository = userRepository,
        _getCacheHelper = getCacheHelper,
@@ -812,7 +826,7 @@ class PersonalRecipeModule {
         success = createdId != null;
       } else if (operation == 'update') {
         success = await _getServiceAdapter()
-            .updateRecipe(recipe)
+            .updateRecipeOnRevision(recipe)
             .timeout(
               _syncTimeout,
               onTimeout: () {
@@ -835,6 +849,24 @@ class PersonalRecipeModule {
         _syncStatus[recipe.id] = RecipeSyncStatus.failed;
         return false;
       }
+    } on RecipeRevisionConflictException catch (conflict) {
+      // Saved as two versions, not failed: the banner offers both, as on the
+      // phone.
+      final remote = conflict.remote;
+      _conflictWinners[recipe.id] = remote;
+      await _saveToCache(remote);
+      try {
+        final announce =
+            _onRevisionConflict ??
+            ServiceLocator.tryGet<RealtimeSyncService>()
+                ?.announceQueuedRecipeConflict;
+        await announce?.call(recipe, remote);
+      } catch (e) {
+        AppLogger.error('❌ [Web] conflict notice failed for ${recipe.id}: $e');
+      }
+      _syncStatus[recipe.id] = RecipeSyncStatus.synced;
+      _lastSyncedAt[recipe.id] = clock.now();
+      return true;
     } catch (e) {
       AppLogger.error('❌ [Web] $operation error for ${recipe.id}: $e');
       _syncStatus[recipe.id] = RecipeSyncStatus.failed;

@@ -7,10 +7,16 @@
 /// overrides and IS stubbable with when().
 library;
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -631,6 +637,110 @@ void main() {
       });
     });
 
+    group('Web save that loses a revision race (BUT-2401)', () {
+      late _RecordingAdapter adapter;
+      late List<(Recipe, Recipe)> announced;
+      var announceFails = false;
+
+      PersonalRecipeModule build() => PersonalRecipeModule(
+        recipeRepository: mockRepository,
+        userRepository: mockUserRepository,
+        getCacheHelper: () => mockCacheHelper,
+        getCurrentUserId: () => currentUserId,
+        getCurrentUserDisplayName: () => currentUserDisplayName,
+        setError: (error) => lastError = error,
+        notifyListeners: () => notifyListenersCalled++,
+        getServiceAdapter: () => adapter,
+        onRevisionConflict: (local, remote) async {
+          announced.add((local, remote));
+          if (announceFails) throw StateError('no banner');
+        },
+      );
+
+      setUp(() {
+        adapter = _RecordingAdapter();
+        announced = [];
+        announceFails = false;
+      });
+
+      test(
+        'counts as saved, keeps the server version and announces both',
+        () async {
+          final remote = testRecipe.copyWith(title: 'Annan version');
+          adapter.conflictWith = remote;
+          final web = build();
+
+          await web.saveRecipeRaw(testRecipe);
+
+          expect(web.getSyncStatus(testRecipe.id), RecipeSyncStatus.synced);
+          expect(announced, hasLength(1));
+          expect(announced.single.$1.id, testRecipe.id);
+          expect(announced.single.$2.title, 'Annan version');
+          expect(
+            jsonEncode(await mockCacheHelper.loadJson(testRecipe.id)),
+            contains('Annan version'),
+          );
+          expect(web.takeConflictWinner(testRecipe.id)?.title, 'Annan version');
+          expect(web.takeConflictWinner(testRecipe.id), isNull);
+        },
+      );
+
+      test('a failing conflict notice still counts as saved', () async {
+        adapter.conflictWith = testRecipe.copyWith(title: 'Annan version');
+        announceFails = true;
+        final web = build();
+
+        await web.saveRecipeRaw(testRecipe);
+
+        expect(web.getSyncStatus(testRecipe.id), RecipeSyncStatus.synced);
+        expect(web.takeConflictWinner(testRecipe.id), isNotNull);
+      });
+
+      test(
+        'with no injected callback the notice goes to the realtime sync '
+        'service, as on the phone',
+        () async {
+          final realtime = _MockRealtimeSyncService();
+          final remote = testRecipe.copyWith(title: 'Annan version');
+          when(
+            () => realtime.announceQueuedRecipeConflict(any(), any()),
+          ).thenAnswer((_) async {});
+          prod.ServiceLocator.initialize(DIContainer());
+          TestServiceLocator.registerMock<RealtimeSyncService>(realtime);
+          adapter.conflictWith = remote;
+          final web = PersonalRecipeModule(
+            recipeRepository: mockRepository,
+            userRepository: mockUserRepository,
+            getCacheHelper: () => mockCacheHelper,
+            getCurrentUserId: () => currentUserId,
+            getCurrentUserDisplayName: () => currentUserDisplayName,
+            setError: (error) => lastError = error,
+            notifyListeners: () => notifyListenersCalled++,
+            getServiceAdapter: () => adapter,
+          );
+
+          await web.saveRecipeRaw(testRecipe);
+
+          verify(
+            () => realtime.announceQueuedRecipeConflict(testRecipe, remote),
+          ).called(1);
+          expect(announced, isEmpty);
+        },
+      );
+
+      test(
+        'a save without a conflict leaves no winner and no notice',
+        () async {
+          final web = build();
+
+          await web.saveRecipeRaw(testRecipe);
+
+          expect(announced, isEmpty);
+          expect(web.takeConflictWinner(testRecipe.id), isNull);
+        },
+      );
+    });
+
     group('Import', () {
       test('should fail import when not authenticated', () async {
         currentUserId = null;
@@ -684,14 +794,21 @@ void main() {
 
 class _MockOfflineQueue extends Mock implements OfflineService {}
 
+class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
 class _MockTaggingService extends Mock implements TaggingService {}
 
 class _RecordingAdapter extends MockRecipeServiceAdapter {
   final List<String> updatedIds = [];
 
+  /// Set to make the next save lose its revision race.
+  Recipe? conflictWith;
+
   @override
-  Future<bool> updateRecipe(Recipe recipe) async {
+  Future<bool> updateRecipeOnRevision(Recipe recipe) async {
     updatedIds.add(recipe.id);
+    final remote = conflictWith;
+    if (remote != null) throw RecipeRevisionConflictException(remote);
     return true;
   }
 }

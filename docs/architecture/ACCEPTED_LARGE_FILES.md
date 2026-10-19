@@ -88,7 +88,7 @@ Already modular services or well-organized modules within service facades. Furth
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `personal_recipe_module.dart` | 1,030 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
+| `personal_recipe_module.dart` | 1,063 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1174 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 1,089 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 680 | Social recipe sharing/rating coordinator |
@@ -136,7 +136,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_shopping_coordinator.dart` | 492 | Direct-collaboration coordinator extending base; single shopping-list domain |
 | `menu_service.dart` | 686 | Single-algorithm service for Swedish NLP menu generation; coherent domain (grew with BUT-1320/1321/1324 personalization + combined cuisine/protein diversity pass) |
 | `persistence_service.dart` | 693 | SharedPreferences local persistence service; large due to many recipe+menu fields across platforms |
-| `personal_tag_crud_service.dart` | 711 | CRUD service extracted from PersonalTagService to keep each service under 500 lines | <!-- claim-lint:ok the 500 is the file-size limit, not a repo count; only the Lines figure was recounted -->
+| `personal_tag_crud_service.dart` | 750 | CRUD service extracted from PersonalTagService to keep each service under 500 lines | <!-- claim-lint:ok the 500 is the file-size limit, not a repo count; only the Lines figure was recounted -->
 | `universal_share_dialog_viewmodel.dart` | 566 | Dialog VM for multi-content sharing (recipes, menus, lists); single dialog scope |
 | `recipe_detail_viewmodel.dart` | 624 | Detail VM with explicit "does not handle" SRP doc comment; analytics+display only |
 | `tag_generator.dart` | 556 | Orchestrator for the five tagging phases, which already live in their own files under `phases/`. Resolves config once per run and invokes the phases in order with a per-phase failure fallback; `TagResult` is constructed at the end of a run, not accumulated across phases |
