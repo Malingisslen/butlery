@@ -50,6 +50,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - `users/{uid}/notifications` needs its own `firestore.rules` read block … Writes stay `if false` (BUT-1957, 2026-09-02)
 - Art. 15 comments and ratings carry `recipe_title` (today's name) only where a server read as the requester succeeds, at most 200 recipes; `recipeOwnerId` stays stripped and the note is byte-invariant (BUT-2082, 2026-10-09)
 - The requester's own vote on another participant's withheld duplicate-guard row is exported under `your_poll_votes_on_withheld_messages`; the row stays withheld (BUT-1955, 2026-10-09)
+- The acquisition tally `analytics/acquisition/daily/{date}` keeps an erased user's count while their `users/{uid}/acquisition` row is erased; it counts only with analytics consent, read by the app AND by `onAcquisitionCreated`, under allowlisted keys (else `other`), with no uid, hash, event id or per-user time; a consenting hand-rolled client can inflate it one account at a time; it is a floor of consenting signed-in UTM arrivals, not installs or sign-ups; no backfill, no TTL, admin-read only, and any reader shows cells under 5 as "<5"; switched off in code (`ACQUISITION_COUNTER_ENABLED = false`) until Malin approves and the privacy-policy sentence is published (BUT-1997, Malin 2026-10-19)
 
 ## Engineering
 

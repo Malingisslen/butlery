@@ -24,6 +24,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics/acquisition_milestone.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -296,9 +297,9 @@ class DeepLinkHandler {
   /// P8-21: Track UTM campaign attribution from deep links.
   ///
   /// BUT-612: also persists first-arrival UTM as Firebase user properties
-  /// AND mirrors to Firestore (users/{uid}/acquisition/current) so retention
-  /// can be sliced by acquisition channel. First-write-wins — later UTM
-  /// clicks log the `campaign_click` event but do not overwrite attribution.
+  /// AND mirrors to Firestore (users/{uid}/acquisition/current).
+  /// First-write-wins — later UTM clicks log the `campaign_click` event but do
+  /// not overwrite attribution.
   void _trackCampaignAttribution(Map<String, String> params) {
     final utmSource = params['utm_source'];
     if (utmSource == null || utmSource.isEmpty) return;
@@ -317,13 +318,14 @@ class DeepLinkHandler {
         },
       );
 
-      // BUT-612: persist as user properties + Firestore subdoc for cohorting.
+      // BUT-612: persist as user properties + Firestore subdoc.
       // Fire-and-forget — never block deep-link routing on attribution work.
       final repo = ServiceLocator.tryGet<AcquisitionRepository>();
       final authRepo = ServiceLocator.tryGet<AuthRepository>();
       AcquisitionMilestone.recordIfFirst(
         analytics: analytics,
         repository: repo,
+        consentService: ServiceLocator.tryGet<ConsentService>(),
         userId: authRepo?.currentUserId,
         utmSource: utmSource,
         utmMedium: utmMedium,

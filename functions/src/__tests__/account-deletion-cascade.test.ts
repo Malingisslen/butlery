@@ -1648,6 +1648,50 @@ async function scenario_featureRetentionRowsAreErased(): Promise<void> {
 }
 
 /**
+ * BUT-1997: the per-user attribution row goes with the account; the uid-free
+ * `analytics/acquisition/daily/{date}` tally it was counted into stays (the
+ * BUT-1789 split).
+ */
+async function scenario_acquisitionTallySurvivesErasure(): Promise<void> {
+  const {
+    deleteUserSubcollections,
+  } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set(`users/${UID}`, { displayName: "Raderad" });
+  db.set(`users/${UID}/acquisition/current`, {
+    source: "instagram",
+    medium: "social",
+    campaign: "spring",
+    countedAt: "2026-10-20T08:00:00Z",
+  });
+  db.set(`users/${OTHER}/acquisition/current`, { source: "google" });
+  db.set("analytics/acquisition/daily/2026-10-20", {
+    date: "2026-10-20",
+    total: 1,
+    bySource: { instagram: 1 },
+  });
+
+  const ok = await deleteUserSubcollections(asDb(db), UID);
+  check("deleteUserSubcollections reports success", ok === true, `returned ${ok}`);
+  check(
+    "the deleted user's acquisition row is erased",
+    db.pathsUnder(`users/${UID}/acquisition`).length === 0,
+    `left: ${JSON.stringify(db.pathsUnder(`users/${UID}/acquisition`))}`,
+  );
+  check(
+    "the anonymous acquisition tally is kept (accepted residual)",
+    db.has("analytics/acquisition/daily/2026-10-20"),
+    `daily left: ${JSON.stringify(db.pathsUnder("analytics/acquisition/daily"))}`,
+  );
+  check(
+    "another user's acquisition row is untouched",
+    db.has(`users/${OTHER}/acquisition/current`),
+    "the other user's row was swept too",
+  );
+}
+
+/**
  * BUT-1800. `analytics/retention/events` and `analytics/lapsed_users/events`
  * were left out of BUT-1789's scope.
  * Both carry `userId`; the second has AUTO ids, so it can only be reached by a
@@ -10784,6 +10828,7 @@ async function main(): Promise<void> {
   await scenario_realtimeResourcesAreErased();
   await scenario_menuDishCreatorIsScrubbed();
   await scenario_featureRetentionRowsAreErased();
+  await scenario_acquisitionTallySurvivesErasure();
   await scenario_retentionAnalyticsRowsAreErased();
   await scenario_retentionAnalyticsWithNoRowsSucceeds();
   await scenario_probeSeesLeftoverRetentionAnalytics();

@@ -2,8 +2,7 @@
 ///
 /// Mirrors the [FirstRecipeSourceMilestone] / `first_share` dedupe pattern:
 /// SharedPreferences-flag keyed by uid for fast first-write-wins on Firebase
-/// user properties, plus a Firestore mirror at users/{uid}/acquisition/current
-/// for server-side cohort/retention queries.
+/// user properties, plus a Firestore mirror at users/{uid}/acquisition/current.
 ///
 /// Anonymous users (no uid yet): user properties still set on the device
 /// (Firebase Analytics tolerates pre-auth), Firestore write deferred until
@@ -12,8 +11,10 @@ library;
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/utils/shared_preferences_safe.dart';
@@ -35,9 +36,16 @@ class AcquisitionMilestone {
   ///
   /// [utmSource], [utmMedium], [utmCampaign] are taken verbatim from deep
   /// link query params. Empty/missing source short-circuits the whole call.
+  ///
+  /// BUT-1997: the Firestore mirror is written only when [consentService]
+  /// positively reports analytics consent. A missing service, no consent
+  /// record, a refusal or a failed lookup all skip it, and a skipped write
+  /// leaves the dedupe flag unset, so a later arrival with consent is still
+  /// written.
   static Future<void> recordIfFirst({
     required AnalyticsService? analytics,
     required AcquisitionRepository? repository,
+    required ConsentService? consentService,
     required String? userId,
     required String? utmSource,
     String? utmMedium,
@@ -80,6 +88,13 @@ class AcquisitionMilestone {
     if (userId == null || userId.isEmpty || repository == null) return;
     final fsKey = '$_firestorePrefsPrefix$userId';
     if (prefs != null && prefs.getBool(fsKey) == true) return;
+
+    final consented = await ConsentService.checkSafely(
+      consentService,
+      ConsentPurpose.analytics,
+      logTag: 'AcquisitionMilestone',
+    );
+    if (!consented) return;
 
     final wrote = await repository.setAcquisitionIfAbsent(
       userId,

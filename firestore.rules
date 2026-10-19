@@ -3570,8 +3570,7 @@ service cloud.firestore {
 
     // ========================================
     // ACQUISITION ATTRIBUTION (BUT-612)
-    // First-write-wins UTM data mirroring `campaign_click` events for
-    // server-side cohort/retention analysis. Owner reads + creates only;
+    // First-write-wins UTM data mirroring `campaign_click` events. Owner reads + creates only;
     // updates are blocked so original-source attribution is immutable.
     // Deletes go through admin tooling, not the client.
     // ========================================
@@ -3579,9 +3578,19 @@ service cloud.firestore {
       allow read: if isAuthenticated()
         && request.auth.uid == userId;
 
+      // BUT-1997: only `current` may be created, so one uid has one row and
+      // `onAcquisitionCreated` counts it once. `countedAt` is server-owned.
       allow create: if isAuthenticated()
         && request.auth.uid == userId
+        && acquisitionDoc == 'current'
+        && request.resource.data.keys().hasOnly(['source', 'medium', 'campaign', 'firstSeenAt'])
         && hasRequiredFields(['source', 'medium', 'campaign', 'firstSeenAt'])
+        && request.resource.data.source is string
+        && request.resource.data.source.size() <= 100
+        && request.resource.data.medium is string
+        && request.resource.data.medium.size() <= 100
+        && request.resource.data.campaign is string
+        && request.resource.data.campaign.size() <= 100
         && request.resource.data.firstSeenAt == request.time;
 
       // First-write-wins: clients cannot modify or delete acquisition data
