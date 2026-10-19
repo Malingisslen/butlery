@@ -19,9 +19,8 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { dailyDocRef, formatUtcDate } from "./daily-snapshots";
 
-// Stays false until Malin approves and the privacy-policy sentence is
-// published (BUT-1997 release gate): until then a deployed trigger counts nothing.
-export const ACQUISITION_COUNTER_ENABLED = false;
+// Kill switch: false makes the deployed trigger count nothing.
+export const ACQUISITION_COUNTER_ENABLED = true;
 
 /** Bumped when the day document's shape changes. */
 export const ACQUISITION_SCHEMA_VERSION = 1;

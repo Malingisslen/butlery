@@ -77,9 +77,9 @@ safety of the person who placed the block, whose choice it enforces.
 Erased on account deletion by `deleteUserSubcollections` in
 `functions/src/account/cascade/user-subcollections.ts`.
 
-While `ACQUISITION_COUNTER_ENABLED` is true, `onAcquisitionCreated` counts `acquisition` into
-`analytics/acquisition/daily/{date}`, a uid-free tally of integer counts under allowlisted keys;
-it is false in code. Account deletion does not touch it and it has no TTL, so an
+`onAcquisitionCreated` counts `acquisition` into
+`analytics/acquisition/daily/{date}`, a uid-free tally of integer counts under allowlisted keys.
+Account deletion does not touch it and it has no TTL, so an
 erased user's count stays; it is not in the Art. 15 export. The decision and its residuals are the
 BUT-1997 entry in `docs/architecture/ACCEPTED_DEVIATIONS.md`.
 
