@@ -85,6 +85,7 @@ class OfflineSyncManager {
     this.recipeWriter,
     this.sendTimeout = const Duration(seconds: 30),
     QueuedImageUploader? uploadImage,
+    UploadedImageDeleter? deleteUploadedImage,
     OfflineUserStorage? userStorage,
     UploadQueueProcessor? uploads,
   }) : uploads =
@@ -96,6 +97,7 @@ class OfflineSyncManager {
                    storage:
                        userStorage ?? OfflineUserStorage(database: database),
                    upload: uploadImage,
+                   deleteUploaded: deleteUploadedImage,
                    random: random,
                  )),
        _database = database,

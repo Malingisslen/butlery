@@ -23,7 +23,6 @@
 /// - **Manual Sync**: User-initiated synchronization with detailed progress reporting
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -44,9 +43,8 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
 import 'package:butlery/services/offline/offline_purge_store.dart';
-import 'package:butlery/services/offline/queued_image_uploader.dart';
+import 'package:butlery/services/offline/queued_image_transport.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
-import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -253,19 +251,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     _sendWhenOnline();
   }
 
-  Future<UploadedImage> _uploadQueuedImage(
-    String localPath,
-    String userId,
-  ) async {
-    final result = await ServiceLocator.get<StorageService>().uploadImageFile(
-      File(localPath),
-      userId,
-    );
-    // uploadImageFile returns null for a failure it has no code for.
-    if (result == null) throw StateError('Image upload failed');
-    return (url: result.imageUrl, thumbnailUrl: result.thumbnailUrl);
-  }
-
   /// A queued write thrown away under Väntar på dig leaves the queue unsent,
   /// and the recipe screens still show it until they hear about it.
   void announceRecipeLeftQueue(String recipeId) {
@@ -337,7 +322,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onRecipeConflict: (local, remote) =>
           ServiceLocator.tryGet<RealtimeSyncService>()
               ?.announceQueuedRecipeConflict(local, remote),
-      uploadImage: _uploadQueuedImage,
+      uploadImage: uploadQueuedImage,
+      deleteUploadedImage: deleteQueuedImage,
       userStorage: _userStorage,
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
