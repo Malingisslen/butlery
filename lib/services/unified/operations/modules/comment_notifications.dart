@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/services/notifications/notification_translations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -212,7 +213,7 @@ class CommentNotifications {
     final targetUserIds = <String>[];
 
     // Add recipe owner
-    final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+    final ownerId = recipe.ownerUid;
     if (ownerId != null && ownerId != comment.authorId) {
       targetUserIds.add(ownerId);
     }
@@ -257,13 +258,13 @@ class CommentNotifications {
   }) {
     // Personal recipes: only owner receives notifications
     if (recipe.isPersonal) {
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       return ownerId == userId;
     }
 
     // Collaborative recipes: owner and members receive notifications
     if (recipe.isCollaborative) {
-      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      final ownerId = recipe.ownerUid;
       if (ownerId == userId) return true;
       return recipe.socialData?.memberPermissions?.containsKey(userId) ?? false;
     }

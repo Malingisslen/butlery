@@ -10,14 +10,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _oldSpelling = <String, int>{
   'lib/models/tagging/rule_condition.dart': 1,
-  'lib/services/permissions/recipe_permission_module.dart': 2,
   'lib/services/realtime/queued_recipe_conflicts.dart': 1,
-  'lib/services/unified/operations/modules/comment_notifications.dart': 3,
-  'lib/services/unified/operations/modules/comment_utilities.dart': 2,
   'lib/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart':
       1,
   'lib/services/unified/operations/modules/recipe_discovery_service.dart': 7,
-  'lib/services/unified/operations/modules/recipe_member_manager.dart': 6,
   'lib/services/unified/operations/social_recipe_operations.dart': 1,
   'lib/viewmodels/recipe_form/recipe_permission_manager.dart': 2,
   'lib/views/recipe_detail/recipe_menu_role.dart': 1,
