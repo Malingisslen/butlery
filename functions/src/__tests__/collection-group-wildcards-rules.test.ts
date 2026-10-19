@@ -15,6 +15,7 @@
  *   {path=**}/recipes/{recipeId}    → allow read  if isAdmin()   (admin-only, not owner-shaped)
  *   {path=**}/likes/{likeId}        → allow read  if resource.data.userId == auth.uid (BUT-2114)
  *   {path=**}/votes/{voteId}        → allow read  if resource.data.userId == auth.uid (BUT-2118)
+ *   {path=**}/poll_votes/{voterId}  → allow read  if resource.data.voterId == auth.uid (BUT-2413)
  *   {path=**}/pings/{pingId}        → allow read,delete if resource.data.fromUserId == auth.uid
  *                                                          || resource.data.toUserId == auth.uid
  *
@@ -313,6 +314,78 @@ test("votes: FOREIGN-owner document on a novel parent path is denied", async () 
 test("votes: the catch-all is READ-ONLY on a novel parent path", async () => {
   const ctx = env.authenticatedContext(OWNER);
   await assertFails(ctx.firestore().doc(`cg_wild/v8/votes/${OWNER}`).set(ballotBody(OWNER)));
+});
+
+// ── poll_votes: gate is resource.data.voterId == auth.uid (read only, BUT-2413) ──
+// The Art. 15 export reads `collectionGroup('poll_votes').where('voterId', ==,
+// uid)` (FirebaseDataExportRepository.exportPollVotesByUser), the predicate
+// `deletePollVotes` erases by. It must reach a vote whose conversation no
+// longer lists the voter, which the nested `messages` rule refuses.
+
+function pollVoteBody(voterId: string): Record<string, unknown> {
+  return { voterId, optionIds: ["opt-a"], votedAt: new Date() };
+}
+
+test("poll_votes: owner's filtered collection-group query returns only their rows, including in a chat they left", async () => {
+  // `cgp_left` lists only OTHER, so the nested rule alone would refuse OWNER.
+  await seed("conversations/cgp_left", { participantIds: [OTHER] });
+  await seed("messages/cgp_m1", { conversationId: "cgp_left", senderId: OTHER });
+  await seed(`messages/cgp_m1/poll_votes/${OWNER}`, pollVoteBody(OWNER));
+  await seed(`messages/cgp_m1/poll_votes/${OTHER}`, pollVoteBody(OTHER));
+  // No parent message document at all.
+  await seed(`messages/cgp_m2/poll_votes/${OWNER}`, pollVoteBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  const snap = await assertSucceeds(
+    ctx.firestore().collectionGroup("poll_votes")
+      .where("voterId", "==", OWNER).limit(2001).get()
+  );
+  const paths = snap.docs.map((d) => d.ref.path).sort();
+  const want = [
+    `messages/cgp_m1/poll_votes/${OWNER}`,
+    `messages/cgp_m2/poll_votes/${OWNER}`,
+  ];
+  if (JSON.stringify(paths) !== JSON.stringify(want)) {
+    throw new Error(`expected ${JSON.stringify(want)}, got ${JSON.stringify(paths)}`);
+  }
+});
+
+test("poll_votes: a collection-group query filtered on ANOTHER uid is refused", async () => {
+  await seed(`messages/cgp_m3/poll_votes/${OTHER}`, pollVoteBody(OTHER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().collectionGroup("poll_votes").where("voterId", "==", OTHER).get()
+  );
+});
+
+test("poll_votes: an UNFILTERED collection-group query is refused", async () => {
+  await seed(`messages/cgp_m4/poll_votes/${OWNER}`, pollVoteBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().collectionGroup("poll_votes").get());
+});
+
+test("poll_votes: a document LACKING voterId is denied, even when its id is the caller's uid", async () => {
+  await seed(`cg_wild/pv5/poll_votes/${OWNER}`, { optionIds: [] });
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/pv5/poll_votes/${OWNER}`).get());
+});
+
+test("poll_votes: owner reads their own document on a novel parent path", async () => {
+  await seed(`cg_wild/pv6/poll_votes/${OWNER}`, pollVoteBody(OWNER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(`cg_wild/pv6/poll_votes/${OWNER}`).get());
+});
+
+test("poll_votes: FOREIGN-owner document is denied to a non-participant", async () => {
+  await seed("conversations/cgp_c7", { participantIds: [OTHER] });
+  await seed("messages/cgp_m7", { conversationId: "cgp_c7", senderId: OTHER });
+  await seed(`messages/cgp_m7/poll_votes/${OTHER}`, pollVoteBody(OTHER));
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`messages/cgp_m7/poll_votes/${OTHER}`).get());
+});
+
+test("poll_votes: the catch-all is READ-ONLY on a novel parent path", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(ctx.firestore().doc(`cg_wild/pv8/poll_votes/${OWNER}`).set(pollVoteBody(OWNER)));
 });
 
 // ── likes: gate is resource.data.userId == auth.uid (read only, BUT-2114) ──

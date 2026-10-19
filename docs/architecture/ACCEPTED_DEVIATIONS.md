@@ -6468,3 +6468,23 @@ acquisition attribution.
   floor, not installs and not sign-ups.
 - **Doc id.** The create rule admits only the id `current` and only the keys `source`, `medium`,
   `campaign`, `firstSeenAt`; `countedAt` is written by the trigger alone.
+
+## BUT-2413 — poll votes are exported by the predicate they are erased by (2026-10-19)
+
+- **SUPERSEDES the export half of the BUT-1832 entry** "Poll votes on non-poll messages, and the
+  missing `memberSince` cut-off", which reads: "the export probes only messages where
+  `metadata['poll'] is Map`, while the cascade erases by collection group regardless of parent
+  shape", and its "Second Art. 15 route" paragraph. `SocialExportManager.exportMessages` reads
+  `collectionGroup('poll_votes').where('voterId', ==, uid)` once
+  (`exportPollVotesByUser`, cap `poll_votes` = 2000, the sweep's `MAX_POLL_VOTE_SWEEP_ROWS`), the
+  predicate `deletePollVotes` erases by. A vote whose message is in the section rides beside it as
+  `your_poll_vote`; one on a withheld duplicate-guard row stays in
+  `your_poll_votes_on_withheld_messages`; every other vote is listed in the section-level
+  `your_poll_votes_on_other_messages`. Past the cap the section carries `poll_votes_truncated`; a
+  failed read carries `poll_votes_error_code` and the conversations still export. The per-message
+  probe and `maxPollVoteLookupsPerConversation` are gone.
+- `firestore.rules` gains `match /{path=**}/poll_votes/{voterId}` with
+  `allow read: if isAuthenticated() && resource.data.voterId == request.auth.uid`, read only.
+- **Unchanged:** the WRITE half of the BUT-1832 entry. A message whose `metadata` is a map
+  without `poll` still accepts a vote, and a late joiner can still cast one in a poll from before
+  they joined.

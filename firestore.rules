@@ -2940,17 +2940,15 @@ service cloud.firestore {
       // into the PATH, where a rule can enforce it exactly.
       //
       // Erasure: `deletePollVotes` in the account-deletion cascade sweeps these
-      // by `voterId` (BUT-1835). The Admin SDK bypasses rules, so no
-      // collection-group `match` is added here — one would only widen client
-      // reach past the per-conversation gate below.
+      // by `voterId` (BUT-1835).
       match /poll_votes/{voterId} {
         function pollMessage() {
           return get(/databases/$(database)/documents/messages/$(messageId));
         }
 
-        // Membership in the poll's conversation decides who may see or cast a
-        // vote. That is the membership HALF of the message read rule, and ONLY
-        // that half: BUT-1838's `memberSince` cut-off is not reproduced here.
+        // `inPollConversation()` is the membership HALF of the message read
+        // rule, and ONLY that half: BUT-1838's `memberSince` cut-off is not
+        // reproduced here.
         //
         // Measured 2026-08-17 on a group whose `memberSince` postdates the poll
         // — a late joiner is DENIED the poll message but ALLOWED to read the
@@ -4096,6 +4094,18 @@ service cloud.firestore {
     match /{path=**}/votes/{voteId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
+    }
+
+    // BUT-2413: users can read their OWN poll votes via collectionGroup, for
+    // the Art. 15 export (`poll_votes where voterId == uid`), the same
+    // predicate `deletePollVotes` erases by. Read only: casting and
+    // withdrawing a vote stay on the nested rules under `messages`, which pin
+    // `voterId` to the doc id and to the caller.
+    // NOTE: matches ALL 'poll_votes' subcollections. A new one must carry a
+    // `voterId` naming its owner before relying on this block.
+    match /{path=**}/poll_votes/{voterId} {
+      allow read: if isAuthenticated()
+        && resource.data.voterId == request.auth.uid;
     }
 
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.

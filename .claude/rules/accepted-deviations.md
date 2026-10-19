@@ -75,6 +75,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
   - Do not "simplify" the two surfaces back into one action, and do not describe the client-side row filter as a privacy control
   - The Art. 15 export deliberately DIVERGES here and keeps such a row … Do not harmonise the two.
 - `inPollConversation()` reproduces only the MEMBERSHIP half of the message read rule, not BUT-1838's `memberSince` cut-off. (BUT-1832, 2026-08-17)
+- SUPERSEDES the Art. 15 half of the full BUT-1832 entry: the export reads `poll_votes` by `voterId == uid` across the collection group, the predicate the erasure uses, and lists a vote whose message is not in the section under `your_poll_votes_on_other_messages`; the write half stands (BUT-2413, 2026-10-19)
 - the granted audit row IS restored on the GROUP repository, and the edit trail ships BESIDE it. … the per-user reduction is untouched and must not be "harmonised". (BUT-1971, 2026-08-30)
 - A group menu's `proposedBy`/`votedInBy` are FORGEABLE by any editor — `entries` is not validated element-wise and will not be. (2026-08-29)
 - A trail row can name the wrong person — a SEPARATE accepted risk from the forgeable-provenance entry … Do not cite one as authority for the other. (BUT-1971, 2026-08-30)
