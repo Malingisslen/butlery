@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -266,7 +267,7 @@ class RuleCondition {
     final ownershipValue = stringValue.toLowerCase().trim();
 
     // Get ownership info from recipe and its socialData
-    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final ownerId = recipe.ownerUid;
     final isCollaborative =
         recipe.type == RecipeType.collaborative ||
         recipe.type == RecipeType.realtime;
