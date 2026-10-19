@@ -65,8 +65,8 @@
  *   | Flag         | Source                                                 |
  *   | cooked       | `cook_snaps` where userId == uid AND createdAt in day  |
  *   | imported     | `users/{uid}/recipes` where core.createdAt in day      |
- *   | shared       | `shared_recipes` where sharedByUserId == uid AND       |
- *   |              | sharedAt in day                                        |
+ *   | shared       | `shared_content` where sharedByUserId == uid AND       |
+ *   |              | contentType == 'recipe' AND sharedAt in day            |
  *   | mealPlanned  | `users/{uid}/menus` where createdAt in day             |
  *   | shopped      | EITHER leg true: (a) `users/{uid}/unified_shopping_    |
  *   |              | lists` where updatedAt in day — the PERSONAL leg;      |
@@ -192,8 +192,8 @@ import { hashUid } from "../shared/hash-uid";
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const BATCH_LIMIT = 500;
 const PAGE_SIZE = 500;
-const WAU_28D = 28;
-const WAU_7D = 7;
+export const WAU_28D = 28;
+export const WAU_7D = 7;
 /** Reserve 1 op for the daily aggregate write. */
 const OPS_RESERVE = 1;
 
@@ -280,7 +280,67 @@ function emptyCounters(): Record<FeatureFlag, number> {
  * index on the shared collection from a failure on the personal
  * subcollection, and both would otherwise print `"flag":"shopped"`.
  */
-type ProbeLabel = FeatureFlag | "shoppedShared";
+export type ProbeLabel = FeatureFlag | "shoppedShared";
+
+/**
+ * The six probe queries, one per label, each `limit(1)`. Built in one place so
+ * the nightly job, the repair (`repair-feature-retention.ts`) and the index
+ * test all read exactly the same queries.
+ */
+export function featureProbeQueries(
+  db: admin.firestore.Firestore,
+  userId: string,
+  dayStart: admin.firestore.Timestamp,
+  dayEnd: admin.firestore.Timestamp,
+): Record<ProbeLabel, FirebaseFirestore.Query> {
+  return {
+    cooked: db
+      .collection("cook_snaps")
+      .where("userId", "==", userId)
+      .where("createdAt", ">=", dayStart)
+      .where("createdAt", "<", dayEnd)
+      .limit(1),
+    imported: db
+      .collection("users")
+      .doc(userId)
+      .collection("recipes")
+      .where("core.createdAt", ">=", dayStart)
+      .where("core.createdAt", "<", dayEnd)
+      .limit(1),
+    // The app writes recipe shares to `shared_content` (`contentType:
+    // 'recipe'`); `shared_recipes` has no rules block and no server writer.
+    shared: db
+      .collection("shared_content")
+      .where("sharedByUserId", "==", userId)
+      .where("contentType", "==", "recipe")
+      .where("sharedAt", ">=", dayStart)
+      .where("sharedAt", "<", dayEnd)
+      .limit(1),
+    mealPlanned: db
+      .collection("users")
+      .doc(userId)
+      .collection("menus")
+      .where("createdAt", ">=", dayStart)
+      .where("createdAt", "<", dayEnd)
+      .limit(1),
+    shopped: db
+      .collection("users")
+      .doc(userId)
+      .collection(Collections.unifiedShoppingLists)
+      .where("updatedAt", ">=", dayStart)
+      .where("updatedAt", "<", dayEnd)
+      .limit(1),
+    // BUT-1761: the collaborative leg. Top-level collection, so membership has
+    // to come from a field — `lastActivityByUserId` is the one the document
+    // actually carries per-user activity in.
+    shoppedShared: db
+      .collection(Collections.unifiedSharedShoppingLists)
+      .where("lastActivityByUserId", "==", userId)
+      .where("updatedAt", ">=", dayStart)
+      .where("updatedAt", "<", dayEnd)
+      .limit(1),
+  };
+}
 
 /**
  * Probe the six feature sources for a single user on a single day.
@@ -327,6 +387,7 @@ async function probeUserFeatureFlags(
     }
   };
 
+  const q = featureProbeQueries(db, userId, dayStart, dayEnd);
   const [
     cooked,
     imported,
@@ -335,67 +396,12 @@ async function probeUserFeatureFlags(
     shoppedPersonal,
     shoppedShared,
   ] = await Promise.all([
-    safeProbe("cooked", () =>
-      db
-        .collection("cook_snaps")
-        .where("userId", "==", userId)
-        .where("createdAt", ">=", dayStart)
-        .where("createdAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
-    safeProbe("imported", () =>
-      db
-        .collection("users")
-        .doc(userId)
-        .collection("recipes")
-        .where("core.createdAt", ">=", dayStart)
-        .where("core.createdAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
-    safeProbe("shared", () =>
-      db
-        .collection("shared_recipes")
-        .where("sharedByUserId", "==", userId)
-        .where("sharedAt", ">=", dayStart)
-        .where("sharedAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
-    safeProbe("mealPlanned", () =>
-      db
-        .collection("users")
-        .doc(userId)
-        .collection("menus")
-        .where("createdAt", ">=", dayStart)
-        .where("createdAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
-    safeProbe("shopped", () =>
-      db
-        .collection("users")
-        .doc(userId)
-        .collection(Collections.unifiedShoppingLists)
-        .where("updatedAt", ">=", dayStart)
-        .where("updatedAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
-    // BUT-1761: the collaborative leg. Top-level collection, so membership has
-    // to come from a field — `lastActivityByUserId` is the one the document
-    // actually carries per-user activity in. Needs the declared composite; see
-    // the header note and `sharedShoppingListCompositeDeclared` in the test.
-    safeProbe("shoppedShared", () =>
-      db
-        .collection(Collections.unifiedSharedShoppingLists)
-        .where("lastActivityByUserId", "==", userId)
-        .where("updatedAt", ">=", dayStart)
-        .where("updatedAt", "<", dayEnd)
-        .limit(1)
-        .get(),
-    ),
+    safeProbe("cooked", () => q.cooked.get()),
+    safeProbe("imported", () => q.imported.get()),
+    safeProbe("shared", () => q.shared.get()),
+    safeProbe("mealPlanned", () => q.mealPlanned.get()),
+    safeProbe("shopped", () => q.shopped.get()),
+    safeProbe("shoppedShared", () => q.shoppedShared.get()),
   ]);
 
   // One flag, two sources: the dashboard question is "did this person shop

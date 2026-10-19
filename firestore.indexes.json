@@ -417,6 +417,23 @@
       "collectionGroup": "cook_snaps",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "contentType", "order": "ASCENDING" },
+        { "fieldPath": "sharedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cook_snaps",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "recipeId", "order": "ASCENDING" },
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }

@@ -92,7 +92,7 @@ resolution BUT-1450 declined on cost.
 `ownerId == uid || uid in memberPermissions`), so only the Admin-SDK deletion cascade can reach
 them. The section carries a plain-language `note` when the probe is refused — and only on an
 actual `permission-denied`; any other failure gets neutral wording plus a
-`contributor_probe_failed` flag, because an Art. 15 bundle may say it is incomplete but must not
+`contributor_probe_failed` flag (removed with the probe in f487402b, BUT-1747), because an Art. 15 bundle may say it is incomplete but must not
 invent WHY. Closing the gap itself needs a Cloud Function export path, not a client change —
 tracked as **BUT-1747**. — 2026-07-30
 
@@ -150,7 +150,7 @@ which is this same decision applied consistently rather than a reopening of it �
 `shared_recipes_received` / `shared_menus_received` rows, whose `shared_content` documents carry
 `sharedByAvatarUrl`: when a friend shares a recipe with you, their profile-picture URL landed
 verbatim in your bundle three sections below the one that had just been fixed. All three sites now
-go through ONE helper (`_dropAvatarUnlessOwn`), because a second copy of the logic is exactly how
+go through ONE helper (`dropAvatarUnlessOwn` in `social_export_redaction.dart`), because a second copy of the logic is exactly how
 two sections implementing one verdict drift apart. Nothing else is governed.
 
 **Extended 2026-08-01 (BUT-1798).** `shared_shopping_lists_received` was added to the export the
@@ -243,8 +243,8 @@ DENIED the query and `exportMessages` failed the whole section as `messages-expo
 removed the `recipientIds` filter that dropped every RECEIVED message, and fixed the
 `orderBy('timestamp')` on a field no message document carries. The section now SHIPS, so this
 verdict is live rather than unit-level only. Each message row carries its own
-`senderDisplayName` and `senderAvatarUrl`, and the rule applies there too: `_dropOtherSenderAvatar`
-strips another sender's avatar from every row and fails closed on an unrecognised shape.
+`senderDisplayName` and `senderAvatarUrl`, and the rule applies there too: `dropAvatarUnlessOwn`
+(called with `ownerIdField: 'senderId'`) strips another sender's avatar from every row and fails closed on an unrecognised shape.
 
 **The two fields this entry left open are now decided — DIFFERENTLY (BUT-1774, Malin,
 2026-07-30).** The conversation document's key set is not `ConversationDto.toFirestore()`: the
@@ -321,7 +321,7 @@ only displays at n ≥ 5 and self-heal on the user's next rating):
    systematic pooling miss. Do NOT re-file "unchanged rating write does a redundant read/write." — 2026-07-03
 
 ### [Ratings] Pooled ratings have NO edit-triggered detachment (decision 6 superseded)
-The pooled-ratings plan's draft decision 6 (`tasks/pooled-ratings-plan.md`) proposed a
+The pooled-ratings plan's draft decision 6 (`tasks/archive/pooled-ratings-plan.md`) proposed a
 recipe-write trigger that removes a user's contribution from the old pool when an edit changes
 the recipe's poolKey, plus a one-time user notice. **Malin decided 2026-07-03: NO detachment.**
 A rating is frozen to the pool of the dish it judged; editing a recipe never moves or removes a

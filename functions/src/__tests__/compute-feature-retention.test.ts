@@ -34,6 +34,10 @@
  *      used to run at 08:00Z against 06:00Z activity — a run AFTER the
  *      activity, which the 04:30 schedule never performs — so the suite was
  *      structurally unable to see that the job measured 4.5 hours of a day.
+ *  12. `shared` reads recipe shares from `shared_content`; a menu share does
+ *      not count.
+ *  13. Every probe pairing an equality with a range on another field has a
+ *      declared ascending composite, derived from `featureProbeQueries`.
  *
  * WHICH DAY THE FIXTURES USE (BUT-1791, read before editing any case below):
  * `now` is the RUN time and `probeStartMs` is the day the run asks about, which
@@ -50,6 +54,7 @@ import * as path from "path";
 import {
   runComputeFeatureRetention,
   formatUtcDate,
+  featureProbeQueries,
 } from "../analytics/compute-feature-retention";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -96,6 +101,8 @@ interface ActivityRecord {
   userId: string;
   /** UTC ms timestamp of the activity. */
   ts: number;
+  /** `shared_content` rows only: `recipe` | `menu` | `shopping_list`. */
+  contentType?: string;
 }
 
 interface PreExistingFlagDoc {
@@ -210,6 +217,7 @@ function makeFakeDb(args: {
     startMs: number | null;
     endMs: number | null;
     failFlag?: string | null;
+    contentType?: string | null;
   }) {
     return {
       _source: args.source,
@@ -218,7 +226,10 @@ function makeFakeDb(args: {
       _startMs: args.startMs,
       _endMs: args.endMs,
       where(field: string, op: string, value: unknown) {
-        // userId equality (used by cook_snaps, shared_recipes).
+        if (op === "==" && field === "contentType") {
+          return makeActivityQuery({ ...args, contentType: value as string });
+        }
+        // userId equality (used by cook_snaps, shared_content).
         if (op === "==") {
           return makeActivityQuery({ ...args, userId: value as string });
         }
@@ -257,6 +268,7 @@ function makeFakeDb(args: {
           (r) =>
             r.source === args.source &&
             r.userId === args.userId &&
+            (args.contentType == null || r.contentType === args.contentType) &&
             (args.startMs == null || r.ts >= args.startMs) &&
             (args.endMs == null || r.ts < args.endMs),
         );
@@ -360,19 +372,19 @@ function makeFakeDb(args: {
           failFlag: "cook_snaps",
         });
       }
-      if (name === "shared_recipes") {
+      if (name === "shared_content") {
         return makeActivityQuery({
-          source: "shared_recipes",
+          source: "shared_content",
           userId: "",
           timeField: "",
           startMs: null,
           endMs: null,
-          failFlag: "shared_recipes",
+          failFlag: "shared_content",
         });
       }
       // BUT-1761: the collaborative leg of `shopped`. Top-level collection
       // whose user filter is `lastActivityByUserId == uid`, which lands on the
-      // same `op === "=="` branch as `cook_snaps`/`shared_recipes`, so the
+      // same `op === "=="` branch as `cook_snaps`/`shared_content`, so the
       // generic activity query models it unchanged. `failFlag` is
       // `shoppedShared`, NOT `shopped` — the two legs must be failable
       // independently or a degradation test cannot tell them apart.
@@ -429,7 +441,7 @@ async function happyPath(): Promise<void> {
   const activity: ActivityRecord[] = [
     { source: "cook_snaps", userId: "uA", ts: inDay },
     { source: "users/uA/recipes", userId: "uA", ts: inDay },
-    { source: "shared_recipes", userId: "uB", ts: inDay },
+    { source: "shared_content", userId: "uB", ts: inDay, contentType: "recipe" },
   ];
   const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
 
@@ -599,7 +611,7 @@ async function probeFailureGracefulDegrade(): Promise<void> {
   const users: FakeUser[] = [{ id: "uProbe", lastActiveDaysAgo: 0 }];
   const activity: ActivityRecord[] = [
     { source: "cook_snaps", userId: "uProbe", ts: inDay },
-    { source: "shared_recipes", userId: "uProbe", ts: inDay },
+    { source: "shared_content", userId: "uProbe", ts: inDay, contentType: "recipe" },
   ];
   // Inject failure into the cook_snaps probe.
   const db = makeFakeDb({
@@ -1038,6 +1050,119 @@ function sharedShoppingListCompositeDeclared(): void {
   );
 }
 
+/**
+ * `shared` counts RECIPE shares, read from `shared_content` where the app
+ * writes them; a menu share by the same person on the same day does not set it.
+ */
+async function sharedCountsRecipeSharesOnly(): Promise<void> {
+  const now = new Date("2026-04-30T08:00:00Z");
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
+
+  const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const users: FakeUser[] = [
+    { id: "uRecipe", lastActiveDaysAgo: 0 },
+    { id: "uMenu", lastActiveDaysAgo: 0 },
+  ];
+  const activity: ActivityRecord[] = [
+    { source: "shared_content", userId: "uRecipe", ts: inDay, contentType: "recipe" },
+    { source: "shared_content", userId: "uMenu", ts: inDay, contentType: "menu" },
+  ];
+  const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
+
+  await runComputeFeatureRetention({ db: db as never, now });
+
+  const probeDay = formatUtcDate(probeStartMs);
+  const recipeDoc = store.data.get(
+    `analytics/feature_retention/users/uRecipe_${probeDay}`,
+  ) as Record<string, unknown> | undefined;
+  const menuDoc = store.data.get(
+    `analytics/feature_retention/users/uMenu_${probeDay}`,
+  ) as Record<string, unknown> | undefined;
+  record(
+    "shared: a recipe share in shared_content sets it, a menu share does not",
+    recipeDoc?.shared === true && menuDoc?.shared === false,
+    `recipe=${JSON.stringify(recipeDoc)} menu=${JSON.stringify(menuDoc)}`,
+  );
+}
+
+interface RecordedQuery {
+  path: string[];
+  filters: Array<{ field: string; op: string }>;
+}
+
+/** A db that only records the shape of the queries built against it. */
+function makeRecordingDb() {
+  function query(rec: RecordedQuery): Record<string, unknown> {
+    return {
+      _rec: rec,
+      where(field: string, op: string) {
+        return query({ ...rec, filters: [...rec.filters, { field, op }] });
+      },
+      limit() {
+        return query(rec);
+      },
+      doc(id: string) {
+        return {
+          collection(sub: string) {
+            return query({ path: [...rec.path, id, sub], filters: [] });
+          },
+        };
+      },
+    };
+  }
+  return {
+    collection(name: string) {
+      return query({ path: [name], filters: [] });
+    },
+  };
+}
+
+/**
+ * Every probe that pairs an equality with a range on another field needs a
+ * declared composite: equality fields first, the range field last, all
+ * ascending (a range with no `orderBy` is served ascending, so a DESCENDING
+ * composite does not serve it). The shapes come from `featureProbeQueries`
+ * itself, so a new or edited probe is checked without editing this test.
+ */
+function everyProbeQueryHasItsIndex(): void {
+  const parsed = JSON.parse(fs.readFileSync(INDEXES_PATH, "utf8"));
+  const indexes = parsed.indexes as CompositeIndex[];
+  const queries = featureProbeQueries(
+    makeRecordingDb() as never,
+    "uShape",
+    tsFromMs(0) as never,
+    tsFromMs(1) as never,
+  ) as unknown as Record<string, { _rec: RecordedQuery }>;
+
+  for (const [label, q] of Object.entries(queries)) {
+    const { path: segs, filters } = q._rec;
+    const equality = filters.filter((f) => f.op === "==").map((f) => f.field);
+    const ranges = [
+      ...new Set(filters.filter((f) => f.op !== "==").map((f) => f.field)),
+    ];
+    if (equality.length === 0) continue;
+    const group = segs[segs.length - 1];
+    const range = ranges[0];
+    const match = indexes.find(
+      (idx) =>
+        idx.collectionGroup === group &&
+        idx.queryScope === "COLLECTION" &&
+        idx.fields.length === equality.length + 1 &&
+        idx.fields.every((f) => f.order === "ASCENDING") &&
+        idx.fields[equality.length].fieldPath === range &&
+        equality.every((e) =>
+          idx.fields.slice(0, equality.length).some((f) => f.fieldPath === e),
+        ),
+    );
+    record(
+      `probe "${label}" has a declared composite on ${group} (${equality.join(", ")} ASC, ${range} ASC)`,
+      ranges.length === 1 && match !== undefined,
+      `ranges=${JSON.stringify(ranges)} — without it the probe throws FAILED_PRECONDITION in production`,
+    );
+  }
+}
+
 async function runAll(): Promise<void> {
   console.log("BUT-599: Feature-level retention tests\n");
   console.log("==============================================\n");
@@ -1052,6 +1177,8 @@ async function runAll(): Promise<void> {
   await sharedShoppedProbeFailureDegrades();
   await probesPreviousCompletedUtcDay();
   sharedShoppingListCompositeDeclared();
+  await sharedCountsRecipeSharesOnly();
+  everyProbeQueryHasItsIndex();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +
