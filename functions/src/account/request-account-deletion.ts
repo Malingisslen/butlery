@@ -70,6 +70,7 @@ import {
   deleteCommentLikes,
   scrubRecipeMemberPermissions,
   scrubCommentReactions,
+  scrubMessageReactions,
   deletePingsByUser,
   deleteUserReports,
   deleteModerationSystemEvents,
@@ -524,6 +525,10 @@ export async function runAccountDeletionWithDeps(
   // BUT-2115: the user's emoji reactions on other people's comments.
   await runStep("comment_reactions", result, () =>
     scrubCommentReactions(database, uid),
+  );
+  // BUT-2398: the same keys on chat messages.
+  await runStep("message_reactions", result, () =>
+    scrubMessageReactions(database, uid),
   );
 
   // BUT-2272: the uid as a member of other people's shared recipes.

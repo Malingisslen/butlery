@@ -6358,3 +6358,38 @@ by `firestore.rules`); the map holds at most 300 keys and the value is exactly `
   wants to stay under them.
 - Both are deleted by `cleanupOldRateLimits` once `updatedAt` is more than 90 days old, and by
   the account-deletion cascade's `{uid}_` prefix sweep.
+
+## BUT-2398 — emoji reactions on chat messages (2026-10-19)
+
+Malin chose "Tillåt reaktioner" on 2026-10-19. Two `allow update` limbs on `messages` admit
+the client's dotted `reactions.<key>` arrayUnion/arrayRemove: ADD and REMOVE, each limited
+to the caller's own uid, the six `reactionKeys()`, at most 500 uids in a key the write
+changes, without repeats, and messages the caller can read (`canReadMessage()`, the read rule's predicate:
+a participant, and in a group only from their `memberSince`). The reaction helpers are the
+service-level ones `recipe_comments` uses.
+
+- **Adding carries the send gates; removing does not.** ADD requires `!isGuest()`,
+  `isAgeCompliant()`, a message whose `type` is not `duplicateBlocked`, and the BUT-2017
+  gate: in a DM an exact read of `blocks/{other}_{me}`, in every room the caller's own
+  mirror (fail-open on a missing mirror, `truncated` ignored, one-directional). REMOVE
+  requires read access and nothing else.
+- **No `isAccountMatured()` and no rate-limit stamp on ADD**, as on comment reactions
+  (BUT-2115).
+- **Read access bounds REMOVE.** A member who has left the conversation, or a group member
+  looking at a message from before their `memberSince`, cannot remove a reaction there.
+  Only the account's erasure removes it.
+- **Erasure.** `scrubMessageReactions` (step `message_reactions`, right after
+  `comment_reactions`) takes the uid out of each key with `arrayRemove`, at most 2000 rows
+  per key (`MAX_MESSAGE_REACTION_SWEEP_ROWS`); a key above the cap is not swept, and a key
+  that declines or fails fails the step while the other keys still run.
+  `probeResidualData` has one `message reaction <key>` leg per key.
+- **Art. 15.** `exportCommentReactions` also returns `messageReactions: {messageId, key}[]`
+  (document ids and keys only, sorted), read with `.select()`; above the cap on any key it
+  declines with `message-reactions-too-large`. The client shapes it as the
+  `message_reactions` section from the same call as `comment_reactions`, so a failed or
+  declined call fails both sections.
+- **Nobody writes reactions outside these limbs.** The sender limb lists `reactions` in
+  `cannotModify`, and the create limb requires `request.resource.data.get('reactions', {})
+  == {}`.
+- **Deploy order: functions before rules.** The `message_reactions` step, its probe legs and
+  the export must be live before the rules let a participant write a reaction.

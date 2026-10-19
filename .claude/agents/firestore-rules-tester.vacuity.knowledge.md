@@ -44,7 +44,10 @@
   Measured on `recipe_comments.reactions` (BUT-2115): neutralising the `heart` link killed 8,
   each of the other five links survived 56/56, so a copy-paste `keys[4]` twice would open
   another person's uid on `thinking` silently. A shared function body does not discharge the
-  call sites; each index is its own conjunct.
+  call sites; each index is its own conjunct. Once the helper is SERVICE-LEVEL and called from
+  two collections (BUT-2398 hoisted it for `messages`), one suite's per-index denies grade the
+  body for both, and the new call site owes only its own limb conjuncts — so check the body's
+  per-index cases exist in SOME suite on the `test:rules:all` chain, not in the new one.
 - **Two new conjuncts can mask each other**: a missing-required-key test alone can pass
   even with the neighbouring `is list`/`is map` type-guard deleted, because the absent
   key already CEL-errors first. Pin the type guard separately with a WRONG-TYPE payload,

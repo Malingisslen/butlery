@@ -926,12 +926,6 @@ test("messages: a recipient cannot edit the content under cover of a receipt", a
 // it would hand every participant the poll question, `isClosed`, and
 // `metadata.poll.options[].voterIds` — the inline vote store this ticket exists
 // to abandon.
-//
-// Still UNCOVERED, and worth a test the day anyone touches this list:
-// `MessageDto.toFirestore` also emits a top-level `reactions` key, which appears
-// nowhere in `firestore.rules`. A "let participants react" ticket would widen the
-// allow-list with `'reactions'`, not `'metadata'` — so that is the plausible
-// widening this test does NOT catch.
 test("messages: a recipient cannot rewrite metadata under cover of a receipt", async () => {
   const ctx = env.authenticatedContext(VOTER_UID);
   await assertFails(

@@ -237,6 +237,7 @@ class DataExportService extends BaseService {
     // instead of sum(t). Each manager method is read-only, stateless, takes
     // only userId, and returns Map<String, dynamic>. Mirrors the pattern in
     // account_deletion_service.dart's tier-parallel deletion.
+    final reactions = _commentReactionsManager.exportReactions();
     final futures = <String, Future<Map<String, dynamic>>>{
       'profile': _exportUserProfile(userId),
       'recipes': _contentManager.exportRecipes(userId),
@@ -262,8 +263,10 @@ class DataExportService extends BaseService {
       'shared_content': _socialManager.exportSharedContent(userId),
       'comments_and_ratings': _activityManager.exportCommentsAndRatings(userId),
       'comment_likes': _activityManager.exportCommentLikes(userId),
-      // BUT-2318: reactions on comments, which the read rule refuses them.
-      'comment_reactions': _commentReactionsManager.exportCommentReactions(),
+      // BUT-2318, BUT-2398: reactions on comments and on chat messages, which
+      // the read rules refuse them.
+      'comment_reactions': reactions.then((r) => r.comments),
+      'message_reactions': reactions.then((r) => r.messages),
       // BUT-2353: appeals about moderation decisions, server-only records.
       'moderation_appeals': _moderationAppealsManager.exportModerationAppeals(),
       'audit_logs': _complianceManager.exportAuditLogs(userId),

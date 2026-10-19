@@ -422,7 +422,15 @@ class _CommentReactionsHttpsCallable extends Fake implements HttpsCallable {
   Future<HttpsCallableResult<T>> call<T extends Object?>([
     Object? parameters,
   ]) async => _EmptyHttpsCallableResult<T>(
-    <dynamic, dynamic>{'reactions': const <dynamic>[]} as T,
+    <dynamic, dynamic>{
+          'reactions': const <dynamic>[
+            {'commentId': 'c1', 'key': 'heart'},
+          ],
+          'messageReactions': const <dynamic>[
+            {'messageId': 'm1', 'key': 'fire'},
+          ],
+        }
+        as T,
   );
 }
 
@@ -1162,6 +1170,18 @@ void main() {
         expect(data['comment_likes'], isNotNull);
         // BUT-2318: the cascade erases reactions on comments too.
         expect(data['comment_reactions'], isNotNull);
+        expect((data['comment_reactions'] as Map)['reactions'], [
+          {'comment_id': 'c1', 'reaction': 'heart'},
+        ]);
+        // BUT-2398: and reactions on chat messages, from the same call.
+        expect(data['message_reactions'], isNotNull);
+        expect(
+          (data['message_reactions'] as Map).containsKey('error'),
+          isFalse,
+        );
+        expect((data['message_reactions'] as Map)['reactions'], [
+          {'message_id': 'm1', 'reaction': 'fire'},
+        ]);
         expect(data['moderation_appeals'], isNotNull);
       });
     });

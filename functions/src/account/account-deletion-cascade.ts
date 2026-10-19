@@ -561,30 +561,36 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
-  // BUT-2115: one leg per reaction key, the deleter's own query shape.
-  for (const key of COMMENT_REACTION_KEYS) {
-    const label = `comment reaction ${key}`;
-    try {
-      const snap = await db
-        .collection("recipe_comments")
-        .where(`reactions.${key}`, "array-contains", uid)
-        .count()
-        .get();
-      const count = snap.data().count ?? 0;
-      if (count > 0) {
-        residual += count;
-        logger.warn(`[deletion-cascade] residual ${label} stamps`, {
+  // BUT-2115 (comments) and BUT-2398 (messages): one leg per reaction key,
+  // the deleter's own query shape.
+  for (const [collection, noun] of [
+    ["recipe_comments", "comment"],
+    ["messages", "message"],
+  ] as const) {
+    for (const key of COMMENT_REACTION_KEYS) {
+      const label = `${noun} reaction ${key}`;
+      try {
+        const snap = await db
+          .collection(collection)
+          .where(`reactions.${key}`, "array-contains", uid)
+          .count()
+          .get();
+        const count = snap.data().count ?? 0;
+        if (count > 0) {
+          residual += count;
+          logger.warn(`[deletion-cascade] residual ${label} stamps`, {
+            uid_prefix: uid.slice(0, 6),
+            count,
+          });
+        }
+      } catch (err) {
+        residual += 1;
+        logger.error(`[deletion-cascade] residual probe failed: ${label}`, {
           uid_prefix: uid.slice(0, 6),
-          count,
+          errCode: (err as { code?: number | string }).code ?? null,
+          errName: err instanceof Error ? err.name : typeof err,
         });
       }
-    } catch (err) {
-      residual += 1;
-      logger.error(`[deletion-cascade] residual probe failed: ${label}`, {
-        uid_prefix: uid.slice(0, 6),
-        errCode: (err as { code?: number | string }).code ?? null,
-        errName: err instanceof Error ? err.name : typeof err,
-      });
     }
   }
   // A read rather than `count()`, because only rows under `recipe_comments`
@@ -3908,19 +3914,20 @@ export const MAX_COMMENT_SHARE_SWEEP_ROWS = 2000;
 export const MAX_COMMENT_LIKE_SWEEP_ROWS = 2000;
 
 /**
- * One capped scrub over `recipe_comments` rows that carry the erased uid in a
- * field someone else's client wrote. The comment stays; only the uid goes.
+ * One capped scrub over rows of `collection` that carry the erased uid in a
+ * field someone else's client wrote. The row stays; only the uid goes.
  */
 async function scrubCommentField(
   db: admin.firestore.Firestore,
   uid: string,
+  collection: "recipe_comments" | "messages",
   query: { field: string; op: "==" | "array-contains"; cap: number },
   update: Record<string, unknown>,
   label: string,
 ): Promise<boolean> {
   const read = () =>
     db
-      .collection("recipe_comments")
+      .collection(collection)
       .where(query.field, query.op, uid)
       .limit(query.cap + 1)
       .get();
@@ -3972,6 +3979,7 @@ export async function scrubCommentRecipeOwner(
   return scrubCommentField(
     db,
     uid,
+    "recipe_comments",
     { field: "recipeOwnerId", op: "==", cap: MAX_COMMENT_OWNER_SWEEP_ROWS },
     { recipeOwnerId: admin.firestore.FieldValue.delete() },
     "scrubCommentRecipeOwner",
@@ -3989,6 +3997,7 @@ export async function scrubCommentSharedWith(
   return scrubCommentField(
     db,
     uid,
+    "recipe_comments",
     {
       field: "sharedWithUserIds",
       op: "array-contains",
@@ -4214,7 +4223,8 @@ export async function scrubRecipeMemberPermissions(
 }
 
 /**
- * BUT-2115: the reaction keys `recipe_comments.reactions` may hold. One list
+ * BUT-2115: the reaction keys `recipe_comments.reactions` and
+ * `messages.reactions` may hold. One list
  * with `reactionKeys()` in firestore.rules and `kReactionEmojis` in
  * emoji_reaction_picker.dart; a functions test parses all three.
  */
@@ -4244,6 +4254,7 @@ export async function scrubCommentReactions(
     const swept = await scrubCommentField(
       db,
       uid,
+      "recipe_comments",
       {
         field: `reactions.${key}`,
         op: "array-contains",
@@ -4251,6 +4262,38 @@ export async function scrubCommentReactions(
       },
       { [`reactions.${key}`]: admin.firestore.FieldValue.arrayRemove(uid) },
       `scrubCommentReactions:${key}`,
+    );
+    if (!swept) ok = false;
+  }
+  return ok;
+}
+
+/** Per-key cap for `scrubMessageReactions`, declining like the comment cap. */
+export const MAX_MESSAGE_REACTION_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2398: take the erased uid out of every reaction list on chat messages.
+ * The rules admit the same keys as on comments. `arrayRemove` leaves the other
+ * reactors in place. A key that declines or fails does not stop the others,
+ * and fails the step.
+ */
+export async function scrubMessageReactions(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let ok = true;
+  for (const key of COMMENT_REACTION_KEYS) {
+    const swept = await scrubCommentField(
+      db,
+      uid,
+      "messages",
+      {
+        field: `reactions.${key}`,
+        op: "array-contains",
+        cap: MAX_MESSAGE_REACTION_SWEEP_ROWS,
+      },
+      { [`reactions.${key}`]: admin.firestore.FieldValue.arrayRemove(uid) },
+      `scrubMessageReactions:${key}`,
     );
     if (!swept) ok = false;
   }

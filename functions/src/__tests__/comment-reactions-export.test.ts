@@ -1,6 +1,6 @@
 /**
  * BUT-2318: `exportCommentReactions` — the Art. 15 export of the requester's
- * own emoji reactions on comments.
+ * own emoji reactions on comments, and (BUT-2398) on chat messages.
  *
  * What this file cannot prove: `_fake-firestore` answers queries without
  * indexes, so the `reactions.<key>` array-contains queries are known to be
@@ -32,13 +32,14 @@ function assertTrue(condition: boolean, msg: string): void {
 
 /** Records the field each query filters on and what each `select` names. */
 interface QuerySpy {
+  collections: string[];
   filters: string[];
   selects: string[][];
   limits: number[];
 }
 
 function spied(fake: FakeFirestore): { db: admin.firestore.Firestore; spy: QuerySpy } {
-  const spy: QuerySpy = { filters: [], selects: [], limits: [] };
+  const spy: QuerySpy = { collections: [], filters: [], selects: [], limits: [] };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrap = (q: any): any => ({
     where: (field: string, op: string, value: unknown) => {
@@ -55,7 +56,12 @@ function spied(fake: FakeFirestore): { db: admin.firestore.Firestore; spy: Query
     },
     get: () => q.get(),
   });
-  const db = { collection: (name: string) => wrap(fake.db.collection(name)) };
+  const db = {
+    collection: (name: string) => {
+      spy.collections.push(name);
+      return wrap(fake.db.collection(name));
+    },
+  };
   return { db: db as unknown as admin.firestore.Firestore, spy };
 }
 
@@ -68,7 +74,19 @@ function seedComment(db: FakeFirestore, id: string, r: Record<string, string[]>)
   });
 }
 
-async function expectDecline(p: Promise<unknown>): Promise<void> {
+function seedMessage(db: FakeFirestore, id: string, r: Record<string, string[]>): void {
+  db.seed(`messages/${id}`, {
+    conversationId: "conv-1",
+    senderId: OTHER,
+    content: "Någon annans meddelande",
+    reactions: r,
+  });
+}
+
+async function expectDecline(
+  p: Promise<unknown>,
+  errorCode: string = reactions.TOO_LARGE_ERROR_CODE,
+): Promise<void> {
   try {
     await p;
   } catch (err) {
@@ -77,7 +95,7 @@ async function expectDecline(p: Promise<unknown>): Promise<void> {
     assertEqual(e.code, "failed-precondition", "decline code");
     assertEqual(
       (e.details as { error_code?: string } | undefined)?.error_code,
-      reactions.TOO_LARGE_ERROR_CODE,
+      errorCode,
       "decline error_code",
     );
     assertTrue(!/\d/.test(e.message), "the decline message carries no count");
@@ -123,18 +141,31 @@ const cases: UnitCase[] = [
     fn: async () => {
       const { db, spy } = spied(new FakeFirestore());
       await reactions.runExportCommentReactionsWithDb(db, UID);
+      const perKey = cascade.COMMENT_REACTION_KEYS.map((k) => `reactions.${k}`);
       assertEqual(
         [...spy.filters].sort().join(","),
-        cascade.COMMENT_REACTION_KEYS.map((k) => `reactions.${k}`).sort().join(","),
-        "one query per COMMENT_REACTION_KEYS entry",
+        [...perKey, ...perKey].sort().join(","),
+        "one query per COMMENT_REACTION_KEYS entry in each collection",
       );
-      assertEqual(spy.selects.length, cascade.COMMENT_REACTION_KEYS.length, "select per query");
+      assertEqual(
+        [...spy.collections].sort().join(","),
+        [
+          ...cascade.COMMENT_REACTION_KEYS.map(() => "messages"),
+          ...cascade.COMMENT_REACTION_KEYS.map(() => "recipe_comments"),
+        ].join(","),
+        "one query per key on recipe_comments and on messages",
+      );
+      assertEqual(
+        spy.selects.length,
+        2 * cascade.COMMENT_REACTION_KEYS.length,
+        "select per query",
+      );
       assertTrue(
         spy.selects.every((fields) => fields.length === 0),
-        "select() names no field, so comment content is never read",
+        "select() names no field, so comment and message content is never read",
       );
       assertTrue(
-        spy.limits.length === cascade.COMMENT_REACTION_KEYS.length &&
+        spy.limits.length === 2 * cascade.COMMENT_REACTION_KEYS.length &&
           spy.limits.every((n) => n === reactions.MAX_REACTIONS_PER_KEY + 1),
         "every query reads at most cap + 1 rows",
       );
@@ -147,6 +178,75 @@ const cases: UnitCase[] = [
         reactions.MAX_REACTIONS_PER_KEY,
         cascade.MAX_COMMENT_REACTION_SWEEP_ROWS,
         "per-key cap",
+      );
+      assertEqual(
+        reactions.MAX_MESSAGE_REACTIONS_PER_KEY,
+        cascade.MAX_MESSAGE_REACTION_SWEEP_ROWS,
+        "per-key message cap",
+      );
+    },
+  },
+  {
+    name: "BUT-2398: returns the requester's message reactions as {messageId, key} only, sorted",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedMessage(fake, "m2", { heart: [UID, OTHER], fire: [OTHER] });
+      seedMessage(fake, "m1", { thumbs_up: [UID], yum: [UID] });
+      seedMessage(fake, "m3", { laughing: [OTHER] });
+      seedComment(fake, "c1", { heart: [UID] });
+      const out = await reactions.runExportCommentReactionsWithDb(fake.db, UID);
+      assertEqual(
+        JSON.stringify(out.messageReactions),
+        JSON.stringify([
+          { messageId: "m1", key: "thumbs_up" },
+          { messageId: "m1", key: "yum" },
+          { messageId: "m2", key: "heart" },
+        ]),
+        "own message reactions only",
+      );
+      assertEqual(
+        JSON.stringify(out.reactions),
+        JSON.stringify([{ commentId: "c1", key: "heart" }]),
+        "comment reactions stay in their own list",
+      );
+      const json = JSON.stringify(out);
+      assertTrue(!json.includes("Någon annans"), "no message text");
+      assertTrue(!json.includes(OTHER), "no other reactor's or sender's uid");
+      assertTrue(!json.includes("conv-1"), "no conversation id");
+    },
+  },
+  {
+    name: "BUT-2398: no message reactions gives an empty list, not an error",
+    fn: async () => {
+      const out = await reactions.runExportCommentReactionsWithDb(new FakeFirestore().db, UID);
+      assertEqual(out.messageReactions.length, 0, "empty");
+    },
+  },
+  {
+    name: "BUT-2398: declines above the cap on one message key with its own code",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      for (let i = 0; i <= reactions.MAX_MESSAGE_REACTIONS_PER_KEY; i++) {
+        seedMessage(fake, `m${i}`, { yum: [UID] });
+      }
+      await expectDecline(
+        reactions.runExportCommentReactionsWithDb(fake.db, UID),
+        reactions.MESSAGES_TOO_LARGE_ERROR_CODE,
+      );
+    },
+  },
+  {
+    name: "BUT-2398: exactly at the message cap still answers",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      for (let i = 0; i < reactions.MAX_MESSAGE_REACTIONS_PER_KEY; i++) {
+        seedMessage(fake, `m${i}`, { yum: [UID] });
+      }
+      const out = await reactions.runExportCommentReactionsWithDb(fake.db, UID);
+      assertEqual(
+        out.messageReactions.length,
+        reactions.MAX_MESSAGE_REACTIONS_PER_KEY,
+        "all message rows",
       );
     },
   },
@@ -226,7 +326,11 @@ const cases: UnitCase[] = [
             },
             run: async () => {
               ran = true;
-              return { reactions: [], gdprArticle: "Article 15 - Right of Access" };
+              return {
+                reactions: [],
+                messageReactions: [],
+                gdprArticle: "Article 15 - Right of Access",
+              };
             },
           },
         );
