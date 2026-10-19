@@ -25,6 +25,9 @@
 import {
   sendPushToUserRespectingPreferences,
 } from "../shared/preference-aware-push";
+import { wantsActivityDigest } from "../analytics/send-activity-digest";
+import * as fs from "fs";
+import * as path from "path";
 
 interface SendCall {
   userId: string;
@@ -187,7 +190,39 @@ async function runTests(): Promise<void> {
     }
   }
 
-  const total = scenarios.length;
+  // The scheduler's own frequency gate, which the scenarios above never reach:
+  // they exercise the push helper, and a stored 'daily' (a removed dropdown
+  // option, never migrated) must keep meaning "send" (BUT-1844).
+  const frequencyCases: Array<[unknown, boolean]> = [
+    ["weekly", true],
+    ["daily", true],
+    ["never", false],
+  ];
+  for (const [value, expected] of frequencyCases) {
+    const ok = wantsActivityDigest(value) === expected;
+    if (!ok) failed++;
+    console.log(
+      `  ${ok ? "PASS" : "FAIL"}  digestFrequency ${JSON.stringify(value)} ` +
+        `${expected ? "sends" : "is skipped"}`
+    );
+  }
+
+  // The predicate above proves nothing if the scheduler stops calling it.
+  // Comments stripped: a commented-out call would otherwise satisfy the match.
+  const schedulerSource = fs
+    .readFileSync(
+      path.join(__dirname, "..", "analytics", "send-activity-digest.ts"),
+      "utf8"
+    )
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, (_m, keep: string) => keep);
+  const wired = schedulerSource.includes("!wantsActivityDigest(digestFrequency)");
+  if (!wired) failed++;
+  console.log(
+    `  ${wired ? "PASS" : "FAIL"}  the scheduler skips users through wantsActivityDigest`
+  );
+
+  const total = scenarios.length + frequencyCases.length + 1;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

@@ -34,6 +34,16 @@ export interface RunDeps {
   now?: Date;
 }
 
+/**
+ * Anything but "never" means send. Options that were removed from the settings
+ * dropdown (`'daily'`) were never migrated off stored documents, so narrowing
+ * this to `=== "weekly"` would silently stop the digest for those accounts
+ * until a backfill has run (BUT-1844).
+ */
+export function wantsActivityDigest(digestFrequency: unknown): boolean {
+  return digestFrequency !== "never";
+}
+
 export async function runWeeklyActivityDigest(
   deps: RunDeps = {},
 ): Promise<void> {
@@ -87,7 +97,7 @@ export async function runWeeklyActivityDigest(
               ? prefsDoc.data()?.digestFrequency ?? "never"
               : "never";
 
-            if (digestFrequency === "never") {
+            if (!wantsActivityDigest(digestFrequency)) {
               usersSkipped++;
               continue;
             }

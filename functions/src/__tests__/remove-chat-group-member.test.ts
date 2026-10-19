@@ -544,7 +544,7 @@ const cases: UnitCase[] = [
     // group-ness test left to fool, but `memberIds` is still SANITISED before
     // anything is counted or spliced into a field path, and the count reported
     // back must reflect that. A junk id is not a member.
-    name: "a malformed member id is not counted and cannot be removed",
+    name: "a malformed member id is not counted",
     fn: async () => {
       const fake = new FakeFirestore();
       seedGroup(fake, { memberIds: ["admin", "member", "a.b"] });
