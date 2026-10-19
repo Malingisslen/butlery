@@ -122,7 +122,10 @@ const MAP_REQUIRED: {
   {
     fieldPath: "socialData.memberPermissions",
     order: "ASCENDING",
-    queriers: ["functions/src/account/account-deletion-cascade.ts"],
+    queriers: [
+      "functions/src/account/cascade/recipe-members-reactions.ts",
+      "functions/src/account/cascade/residual-probe.ts",
+    ],
   },
 ];
 

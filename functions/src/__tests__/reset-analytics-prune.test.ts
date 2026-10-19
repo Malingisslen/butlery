@@ -319,14 +319,14 @@ async function run(): Promise<void> {
   // the files allowed to contain one are named. `daily-snapshots.ts` is the
   // helper itself, resolved through its call sites above; `detect-anomalies.ts`
   // READS the same shape back; `own-account-data.ts` DELETES through it,
-  // looping `RETENTION_ANALYTICS_PARENTS`, and `account-deletion-cascade.ts`
-  // holds the residual probe that walks the same parents. A file beyond these
-  // is a series nobody reviewed.
+  // looping `RETENTION_ANALYTICS_PARENTS`, and `residual-probe.ts` holds the
+  // residual probe that walks the same parents. A file beyond these is a series
+  // nobody reviewed.
   const reviewedVariableChains = [
     "daily-snapshots.ts",
     "detect-anomalies.ts",
     "own-account-data.ts",
-    "account-deletion-cascade.ts",
+    "residual-probe.ts",
   ];
   check(
     "no new file reaches analytics through a variable parent",
