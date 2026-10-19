@@ -512,6 +512,57 @@ void main() {
       verifyNever(() => suggestions.watchPendingToMe(any()));
     });
 
+    // BUT-2107: an empty socialData.ownerId is a missing owner, so the
+    // creator decides who the notice is for.
+    testWidgets('an empty owner id with me as creator still reads as the '
+        'owner', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      toMe = [
+        _suggestion(
+          ownedRecipe.id,
+          ownerId: _testUserId,
+          suggesterId: _friendUserId,
+        ),
+      ];
+      final emptyOwner = RecipeFactory.build(
+        id: ownedRecipe.id,
+        createdBy: _testUserId,
+        socialData: const RecipeSocialData(ownerId: ''),
+      );
+      await pumpView(tester, RecipeDetailView(recipe: emptyOwner));
+      await tester.pump();
+
+      expect(find.byKey(RecipeSuggestionNotice.noticeKey), findsOneWidget);
+      verifyNever(() => suggestions.watchMine(any()));
+    });
+
+    testWidgets('an empty owner id with someone else as creator reads as '
+        'theirs', (tester) async {
+      conflicts = StreamController<ConflictEvent>.broadcast();
+      addTearDown(conflicts.close);
+      mine = [
+        _suggestion(
+          friendRecipe.id,
+          ownerId: _friendUserId,
+          suggesterId: _testUserId,
+        ),
+      ];
+      final emptyOwner = RecipeFactory.build(
+        id: friendRecipe.id,
+        createdBy: _friendUserId,
+        socialData: const RecipeSocialData(ownerId: ''),
+      );
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: emptyOwner, readOnly: true),
+      );
+      await tester.pump();
+
+      expect(find.byKey(RecipeSuggestionNotice.noticeKey), findsOneWidget);
+      verifyNever(() => suggestions.watchPendingToMe(any()));
+    });
+
     testWidgets('nothing kept, no line', (tester) async {
       conflicts = StreamController<ConflictEvent>.broadcast();
       addTearDown(conflicts.close);

@@ -11,9 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 const _oldSpelling = <String, int>{
   'lib/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart':
       1,
-  'lib/viewmodels/recipe_form/recipe_permission_manager.dart': 2,
-  'lib/views/recipe_detail/recipe_menu_role.dart': 1,
-  'lib/views/recipe_detail_view.dart': 1,
 };
 
 String _code(String source) => source
