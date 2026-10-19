@@ -28,6 +28,7 @@
 // lib/viewmodels/shared_content/base_shared_content_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -45,8 +46,9 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 /// memoized filtered-content cache, and a show-imported filter. Re-homing
 /// onto BaseViewModel's single isLoading/error pair would lose those.
 /// The one thing BaseViewModel gives for free that we MUST preserve is the
-/// post-dispose [notifyListeners] guard — replicated below via [_isDisposed].
-abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
+/// post-dispose [notifyListeners] guard — taken from [DisposalGuardMixin].
+abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier
+    with DisposalGuardMixin {
   /// Content collection loaded from repositories
   List<TContent> _content = [];
 
@@ -61,17 +63,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Error message, null if no error
   String? _error;
-
-  /// Disposed flag — async work (loadContent, loadMoreContent, markAsViewed,
-  /// executeOperation) can complete after the widget is gone. This guards
-  /// every notifyListeners against the post-dispose "used after disposed"
-  /// crash. Mirrors BaseViewModel's override; this family stays on
-  /// ChangeNotifier directly (see class header) but must not lose the guard.
-  bool _isDisposed = false;
-
-  /// Whether this ViewModel has been disposed. Subclasses should check this
-  /// before any post-await state mutation.
-  bool get isDisposed => _isDisposed;
 
   /// Import/operation in progress indicator (global)
   bool _isOperating = false;
@@ -445,22 +436,9 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     }
   }
 
-  /// Guarded so async continuations that fire after [dispose] (in-flight
-  /// coordinator calls in loadContent / loadMoreContent / markAsViewed /
-  /// executeOperation) become no-ops instead of throwing "A
-  /// ChangeNotifier was used after being disposed." Mirrors the guard
-  /// BaseViewModel provides; this family intentionally stays on
-  /// ChangeNotifier (see class header).
-  @override
-  void notifyListeners() {
-    if (_isDisposed) return;
-    super.notifyListeners();
-  }
-
   @override
   void dispose() {
     AppLogger.info('Disposing ${contentTypeName}ViewModel');
-    _isDisposed = true;
     super.dispose();
   }
 }
