@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 12, 2026
-**Version:** 1.16.0
+**Last updated:** October 19, 2026
+**Version:** 1.17.0
 
 ---
 
@@ -98,6 +98,7 @@ We use your personal data for the following purposes:
 - Identify and fix bugs
 - Improve user experience
 - Measure app performance
+- Count, anonymously and per day, which channel (for example Instagram or the newsletter) new users came from. The count holds no user ID and cannot be linked to you. It remains if you later delete your account.
 
 **Marketing (if you have consented):**
 - Send newsletters about new features
@@ -262,6 +263,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
+| Anonymous daily channel count (no user ID) | Kept indefinitely, as it cannot be linked to a person | Consent (Art. 6.1.a) at the time of counting |
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
 | Deletion audit logs | 180 days | GDPR accountability |
