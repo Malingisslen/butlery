@@ -21189,3 +21189,30 @@ Production fixes were made by the main session; this run only changed tests (no 
 - Not verified: prod residue under shared_recipes/shared_menus/shared_shopping_lists metadata
   subcollections (old job swept them; new one skips and re-reads them).
 - Verdict pass (0 blocking); Medium: helper fail-open, legacy-residue measurement, timeout.
+
+### 2026-10-19 — BUT-2414 exportErasureResidue built (plan section 1) [build]
+- Chapters loaded: gdpr-erasure, ci-wiring, client-guards (core card first). Built
+  `functions/src/exports/erasure-residue/` (index, project, account-sections, social-sections,
+  messages-section, realtime-legacy-sections): 30 sections, each on its cascade step's predicate,
+  fail-closed allowlists, per-section `error_code`, whole-section replacement over 8 MiB.
+- Deviation from the cascade, on the plan's word: `members`/`engagements` are path-scoped to
+  `shared_content` (document-id range, as `exportSharedResidue`), while `removeFromSharedContent`
+  deletes `members` rows unscoped. The unscoped rows include other people's friend-category
+  rows naming the requester, which Malin is deciding on a card.
+- Two guards reddened on the first full lane (136/138): `account-deletion-cascade` ("every
+  users/{uid} subcollection ... is reached": `shopping_lists` chained by the new reader) and
+  `reset-analytics-prune` ("no new file reaches analytics through a variable parent":
+  `account-sections.ts`). Fixed by adding `shopping_lists: ["deleteShoppingLists", "l1"]` to
+  `COVERED_BY_OWN_STEP` (its real-erasure check passes) and by literal `analytics/retention` /
+  `analytics/lapsed_users` chains plus `RETENTION_SECTION_OF` typed over
+  `RETENTION_ANALYTICS_PARENTS`. Lane then 138/138 (338s).
+- MEASURED: patching `console.log/info/warn/error/debug` captured an empty string from
+  `firebase-functions/logger`; patching `process.stdout/stderr.write` captured the JSON lines.
+- MEASURED: the cap+1 decline probe run through Python `subprocess.run(capture_output=True)`
+  showed 32 PASS lines and no total; the same mutant redirected to files showed 81 PASS,
+  "81/104 passed, 23 failed". Mechanism not established.
+- Probes (erasure-residue.test.ts, source restored, sha256 verified): shares_sent predicate
+  KILLED (2 failed); left-conversation test KILLED (3); `addedBy` strip KILLED (1); allowlist
+  iterating raw keys KILLED (26); cappedDocs cap+1 KILLED (23 — the 4 sections with their own
+  Decline line survive it by design); left-message cap x2 KILLED; runSection rethrow KILLED (33).
+  Deleting the left-message Decline line was INVALID (TS6133 unused import).

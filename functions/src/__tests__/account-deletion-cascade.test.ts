@@ -718,6 +718,9 @@ async function scenario_everyUserSubcollectionHasADeleter(): Promise<void> {
     // comments: it is genuinely covered by its own tier step, it was simply
     // never visible to this map before.
     unified_shopping_lists: ["deleteShoppingLists", "l1"],
+    // The pre-rename name, swept by the same step's legacy leg. Surfaced when
+    // `exportErasureResidue` (BUT-2414) chained it to export what that leg erases.
+    shopping_lists: ["deleteShoppingLists", "l1"],
   };
 
   const discovered = discoverUserSubcollectionWriters(repoRoot);

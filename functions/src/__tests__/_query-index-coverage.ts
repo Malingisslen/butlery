@@ -53,6 +53,10 @@ export function makeRecordingDb(): Record<string, unknown> & { gets: RecordedQue
       limit() {
         return query(rec);
       },
+      // A projection does not change which index serves the query.
+      select() {
+        return query(rec);
+      },
       doc(id: string) {
         return {
           collection(sub: string) {

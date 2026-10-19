@@ -15,6 +15,7 @@ import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
+import 'package:butlery/services/account/export/erasure_residue_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
@@ -437,6 +438,39 @@ class _CommentReactionsHttpsCallable extends Fake implements HttpsCallable {
 CommentReactionsExportManager _commentReactionsOk() =>
     CommentReactionsExportManager(functions: _CommentReactionsFunctions());
 
+class _ErasureResidueFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, ErasureResidueExportManager.callableName);
+    return _ErasureResidueHttpsCallable();
+  }
+}
+
+class _ErasureResidueHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async => _EmptyHttpsCallableResult<T>(
+    <dynamic, dynamic>{
+          'sections': <dynamic, dynamic>{
+            'tag_overrides_log': <dynamic, dynamic>{
+              'rows': const <dynamic>[
+                {'id': 't1', 'tag': 'gluten'},
+              ],
+            },
+          },
+          'known_gaps': const <dynamic>['a-gap'],
+        }
+        as T,
+  );
+}
+
+ErasureResidueExportManager _erasureResidueOk() =>
+    ErasureResidueExportManager(functions: _ErasureResidueFunctions());
+
 class _ModerationAppealsFunctions extends Fake implements FirebaseFunctions {
   @override
   HttpsCallable httpsCallable(
@@ -514,6 +548,7 @@ void main() {
         // manager re-throws unknown errors instead of swallowing them).
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
+        erasureResidueExportManager: _erasureResidueOk(),
         commentReactionsExportManager: _commentReactionsOk(),
         moderationAppealsExportManager: _moderationAppealsOk(),
         complianceExportManager: ComplianceExportManager(
@@ -652,6 +687,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          erasureResidueExportManager: _erasureResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
           moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
@@ -1992,6 +2028,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            erasureResidueExportManager: _erasureResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
             moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
@@ -2098,6 +2135,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          erasureResidueExportManager: _erasureResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
           moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
@@ -2164,6 +2202,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          erasureResidueExportManager: _erasureResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
           moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
@@ -2254,6 +2293,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          erasureResidueExportManager: _erasureResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
           moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
@@ -2325,6 +2365,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            erasureResidueExportManager: _erasureResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
             moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
@@ -2414,6 +2455,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            erasureResidueExportManager: _erasureResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
             moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
@@ -2450,6 +2492,19 @@ void main() {
           );
         },
       );
+    });
+
+    test('BUT-2414: the bundle carries the erasure_residue section', () async {
+      final data =
+          json.decode(await buildService().exportUserData())
+              as Map<String, dynamic>;
+
+      final section = data['erasure_residue'] as Map<String, dynamic>;
+      final rows =
+          (section['sections'] as Map<String, dynamic>)['tag_overrides_log']
+              as Map<String, dynamic>;
+      expect((rows['rows'] as List).single, {'id': 't1', 'tag': 'gluten'});
+      expect(section['known_gaps'], ['a-gap']);
     });
 
     group('BUT-1747: shared_lists_left section', () {
@@ -2535,6 +2590,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          erasureResidueExportManager: _erasureResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
           moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(

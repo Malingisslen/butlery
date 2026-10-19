@@ -52,6 +52,8 @@ on:
       # the keys this file's `toFirestore` writes.
       - "lib/models/unified/unified_shopping_item.dart"
       - "lib/models/unified/shopping_row_snapshot.dart"
+      # BUT-2414: `erasure-export-coverage.test.ts` quotes decisions from it.
+      - "docs/architecture/ACCEPTED_DEVIATIONS.md"
   pull_request:
     # A draft gets no CI; marking it ready for review starts the run.
     types: [opened, synchronize, reopened, ready_for_review]
@@ -74,6 +76,7 @@ on:
       - "firestore.rules"
       - "lib/models/unified/unified_shopping_item.dart"
       - "lib/models/unified/shopping_row_snapshot.dart"
+      - "docs/architecture/ACCEPTED_DEVIATIONS.md"
   workflow_dispatch:
 
 concurrency:

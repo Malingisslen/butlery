@@ -1,5 +1,5 @@
 // Step 0 GATE + ongoing C6/C7 regression harness for the pooled-ratings plan
-// (tasks/pooled-ratings-plan.md).
+// (tasks/archive/pooled-ratings-plan.md).
 //
 // Deterministic, no LLM. Runs the PRODUCTION pool key over known same-recipe
 // pairs imported via different methods (URL / OCR / Instagram) and reports the

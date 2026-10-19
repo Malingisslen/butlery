@@ -51,6 +51,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
   "exportCommentReactions", // exports/comment-reactions.ts — BUT-2318 GDPR Article 15 export
   "exportModerationAppeals", // exports/moderation-appeals.ts — BUT-2353 GDPR Article 15 export
+  "exportErasureResidue", // exports/erasure-residue/index.ts — BUT-2414 GDPR Article 15 export
   "getMyReportOutcomes", // moderation/my-report-outcomes.ts — BUT-2222 a reporter's own decisions
   "getMyContentDecisions", // moderation/my-content-decisions.ts — BUT-2353 decisions about the caller's content
   "submitAppeal", // moderation/submit-appeal.ts — BUT-2353 a party appeals a decision

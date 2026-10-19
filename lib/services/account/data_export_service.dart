@@ -33,6 +33,7 @@ import 'package:butlery/services/account/export/preferences_export_manager.dart'
 import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
+import 'package:butlery/services/account/export/erasure_residue_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/export/shopping_template_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
@@ -65,6 +66,7 @@ class DataExportService extends BaseService {
   late final PreferencesExportManager _preferencesManager;
   late final FamilyExportManager _familyManager;
   late final SharedResidueExportManager _sharedResidueManager;
+  late final ErasureResidueExportManager _erasureResidueManager;
   late final CommentReactionsExportManager _commentReactionsManager;
   late final ModerationAppealsExportManager _moderationAppealsManager;
 
@@ -106,6 +108,7 @@ class DataExportService extends BaseService {
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
     required SharedResidueExportManager sharedResidueExportManager,
+    required ErasureResidueExportManager erasureResidueExportManager,
     required CommentReactionsExportManager commentReactionsExportManager,
     required ModerationAppealsExportManager moderationAppealsExportManager,
     // BUT-1773: test seam for the one-row-per-export audit trail.
@@ -151,6 +154,7 @@ class DataExportService extends BaseService {
       dataExportRepository: _exportRepo,
     );
     _sharedResidueManager = sharedResidueExportManager;
+    _erasureResidueManager = erasureResidueExportManager;
     _commentReactionsManager = commentReactionsExportManager;
     _moderationAppealsManager = moderationAppealsExportManager;
     _familyManager = FamilyExportManager(
@@ -251,6 +255,9 @@ class DataExportService extends BaseService {
       ),
       // BUT-1747: lists the user has LEFT, which the read rule refuses them.
       'shared_lists_left': _sharedResidueManager.exportSharedListsLeft(),
+      // BUT-2414: rows the account erasure deletes, each read with the
+      // erasure step's own predicate.
+      'erasure_residue': _erasureResidueManager.exportErasureResidue(),
       'personal_tags': _contentManager.exportPersonalTags(userId),
       'personal_tag_groups': _contentManager.exportPersonalTagGroups(userId),
       'cook_snaps': _contentManager.exportCookSnaps(userId),
