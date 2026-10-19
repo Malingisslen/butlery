@@ -36,7 +36,9 @@
   it against BOTH the `push` and `pull_request` blocks; fixing one is the
   half-miss. A hand-rolled `paths:` parser fails CLOSED. Assert PER GUARD — a
   sibling scenario's derived assertion covers only ITS inputs — and reach the
-  ORCHESTRATOR assembling the output, not just the helper directory. Two guards
+  ORCHESTRATOR assembling the output, not just the helper directory.
+  `assertGuardTriggersCoverItsDartInputs` takes lib/ paths only; a docs or
+  `firestore.rules` input needs its own `paths:` entry and assertion. Two guards
   in two languages must never cite EACH OTHER for a case neither covers: a
   TEXT scan sees the token, the behavioural test sees named keys, and a rename
   escapes both — name the residual, never describe it as covered.

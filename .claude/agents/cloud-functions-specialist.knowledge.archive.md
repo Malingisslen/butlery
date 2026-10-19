@@ -21216,3 +21216,14 @@ Production fixes were made by the main session; this run only changed tests (no 
   iterating raw keys KILLED (26); cappedDocs cap+1 KILLED (23 — the 4 sections with their own
   Decline line survive it by design); left-message cap x2 KILLED; runSection rethrow KILLED (33).
   Deleting the left-message Decline line was INVALID (TS6133 unused import).
+
+## 2026-10-19 — BUT-2414 gate review (exportErasureResidue)
+- HIGH: `messages_in_left_conversations` exported another sender's text and conversation id
+  for messages found by `metadata.poll.creatorId == uid`, which any sender can plant. Fix: rows
+  with `senderId !== uid` export `{messageId, sent_by_you:false, names_you_as_poll_creator:true}`;
+  fixture p3 failed 103/104 before, passed after.
+- HIGH (tests): `sharedContentChildRows`' documentId range was unpinned; every fixture outside
+  `shared_content` was also rejected by `isSharedContentParent`. A 20001-row planted fixture
+  reddens only when the range is deleted (probe verified).
+- `assertGuardTriggersCoverItsDartInputs` accepts lib/ paths only; a docs input needs its own
+  trigger check (erasure-export-coverage.test.ts checks ACCEPTED_DEVIATIONS.md directly).

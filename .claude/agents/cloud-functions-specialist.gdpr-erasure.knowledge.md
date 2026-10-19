@@ -96,6 +96,7 @@
   overrides may already exist for a rename propagator. PATH-scope each row
   (`parent.id === X && parent.parent === null`, BOTH limbs) where a sibling path
   shares the group id, and scope BEFORE counting against a cap.
+  Pin a query-level path RANGE ahead of that filter with planted rows past the RAW bound.
 - A rules hard-deny plus an Admin-SDK escape hatch has TWO guards: the callable
   exempts only the first; the model's `toFirestore` coercion is the second.
   Enumerate the SERIALIZER's call sites, not just the rules' writes.
@@ -205,6 +206,10 @@
   decision-record sentence it falsifies. Name each withheld collection in a
   `data_minimisation` line, verifying WHICH line, or the gap is undisclosed
   (Art. 12(1)).
+- **An Art. 15 section found through a FORGEABLE field exports only the handle**:
+  the deleter's predicate suffices for Art. 17, not 15 (`metadata.poll.creatorId`
+  is unpinned). Gate content on a pinned field (`senderId == uid`); pin with a
+  planted row.
 - **A fail-closed export allowlist is pinned to its Dart `toFirestore` per LEVEL** —
   a nested map field (`previous` = `ShoppingRowSnapshot`) gets its own key list,
   source-pinned to ITS model file and that file added to the CI `paths:`; the
@@ -237,12 +242,6 @@
   COLLECTION-scoped equality or `array-contains` — including on a nested map
   subfield such as `reactions.<key>` — needs none unless `fieldOverrides`
   EXEMPTS the field — check exemptions, not `indexes`.
-- **A cascade-suite guard that parses a file outside `functions/src` runs on CI
-  only if `.github/workflows/cloud-functions-unit.yml` `paths:` (push AND
-  pull_request) lists that file** — a key-agreement guard over Dart or
-  `firestore.rules` is otherwise skipped on exactly the edit it exists for. Call
-  `assertGuardTriggersCoverItsDartInputs(repoRoot, [absoluteDartPath])` for each
-  `lib/` input (its parameter is `dartInputsAbsolute`); a `firestore.rules` input has no helper, so add it to `paths:`.
 
 ### Verify-signup-age, account callables & minor-safety triggers
 - **A cleanup helper writing an ATTRIBUTION row takes the ACTOR as an argument,
