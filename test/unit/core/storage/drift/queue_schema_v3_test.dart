@@ -132,6 +132,7 @@ void main() {
     test('records the current schema version', () async {
       final row = await db.customSelect('PRAGMA user_version').getSingle();
       expect(row.data.values.single, db.schemaVersion);
+      expect(db.schemaVersion, greaterThanOrEqualTo(5));
     });
 
     test('a migrated entry has no retry time yet', () async {
