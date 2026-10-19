@@ -8,8 +8,13 @@
  * (2026-10-10): read them here with the Admin SDK and return only
  * `{commentId, key}`, never comment content, and leave the rule as it is.
  *
- * Above the cap it DECLINES with `comment-reactions-too-large` and never
- * truncates: a truncated Art. 15 answer reads as complete.
+ * BUT-2398: the same for the reactions a user has put on chat messages
+ * (`messages/{id}.reactions.<key>`), returned as `{messageId, key}`, never
+ * message content.
+ *
+ * Above the cap it DECLINES with `comment-reactions-too-large` or
+ * `message-reactions-too-large` and never truncates: a truncated Art. 15
+ * answer reads as complete.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
@@ -22,23 +27,32 @@ import { enforceRateLimit } from "../middleware/rate_limiter";
 import {
   COMMENT_REACTION_KEYS,
   MAX_COMMENT_REACTION_SWEEP_ROWS,
+  MAX_MESSAGE_REACTION_SWEEP_ROWS,
 } from "../account/account-deletion-cascade";
 
 const db = admin.firestore();
 
 export const RATE_LIMIT_KEY = "exportCommentReactions";
 export const TOO_LARGE_ERROR_CODE = "comment-reactions-too-large";
+export const MESSAGES_TOO_LARGE_ERROR_CODE = "message-reactions-too-large";
 
 /** Per key, the erasure sweep's own cap. */
 export const MAX_REACTIONS_PER_KEY = MAX_COMMENT_REACTION_SWEEP_ROWS;
+export const MAX_MESSAGE_REACTIONS_PER_KEY = MAX_MESSAGE_REACTION_SWEEP_ROWS;
 
 export interface CommentReactionExport {
   commentId: string;
   key: string;
 }
 
+export interface MessageReactionExport {
+  messageId: string;
+  key: string;
+}
+
 export interface ExportCommentReactionsResponse {
   reactions: CommentReactionExport[];
+  messageReactions: MessageReactionExport[];
   gdprArticle: "Article 15 - Right of Access";
 }
 
@@ -82,45 +96,76 @@ export async function runExportCommentReactionsWithDb(
   database: admin.firestore.Firestore,
   uid: string,
 ): Promise<ExportCommentReactionsResponse> {
-  const snaps = await Promise.all(
-    COMMENT_REACTION_KEYS.map((key) =>
-      database
-        .collection(Collections.recipeComments)
-        .where(`reactions.${key}`, "array-contains", uid)
-        // No fields: only the document id is read, never the comment.
-        .select()
-        .limit(MAX_REACTIONS_PER_KEY + 1)
-        .get(),
-    ),
-  );
+  const [commentRows, messageRows] = await Promise.all([
+    reactionRows(database, Collections.recipeComments, uid, MAX_REACTIONS_PER_KEY),
+    reactionRows(database, Collections.messages, uid, MAX_MESSAGE_REACTIONS_PER_KEY),
+  ]);
+  if ("overCapKey" in commentRows) {
+    decline(uid, commentRows.overCapKey, TOO_LARGE_ERROR_CODE);
+  }
+  if ("overCapKey" in messageRows) {
+    decline(uid, messageRows.overCapKey, MESSAGES_TOO_LARGE_ERROR_CODE);
+  }
 
-  const reactions: CommentReactionExport[] = [];
-  snaps.forEach((snap, i) => {
-    const key = COMMENT_REACTION_KEYS[i];
-    if (snap.size > MAX_REACTIONS_PER_KEY) decline(uid, key);
-    for (const doc of snap.docs) reactions.push({ commentId: doc.id, key });
-  });
-  reactions.sort(
-    (a, b) => a.commentId.localeCompare(b.commentId) || a.key.localeCompare(b.key),
-  );
+  const reactions = commentRows.rows.map(({ id, key }) => ({ commentId: id, key }));
+  const messageReactions = messageRows.rows.map(({ id, key }) => ({ messageId: id, key }));
 
   logger.info("exportCommentReactions.complete", {
     event: "export_comment_reactions.complete",
     uid_prefix: uid.slice(0, 6),
     reactions: reactions.length,
+    messageReactions: messageReactions.length,
   });
-  return { reactions, gdprArticle: "Article 15 - Right of Access" };
+  return {
+    reactions,
+    messageReactions,
+    gdprArticle: "Article 15 - Right of Access",
+  };
 }
 
-function decline(uid: string, key: string): never {
+/**
+ * The requester's reactions in one collection, sorted by document id then key,
+ * or the first key holding more than `cap` rows.
+ */
+async function reactionRows(
+  database: admin.firestore.Firestore,
+  collection: string,
+  uid: string,
+  cap: number,
+): Promise<{ rows: { id: string; key: string }[] } | { overCapKey: string }> {
+  const snaps = await Promise.all(
+    COMMENT_REACTION_KEYS.map((key) =>
+      database
+        .collection(collection)
+        .where(`reactions.${key}`, "array-contains", uid)
+        // No fields: only the document id is read, never the content.
+        .select()
+        .limit(cap + 1)
+        .get(),
+    ),
+  );
+  const over = snaps.findIndex((snap) => snap.size > cap);
+  if (over >= 0) return { overCapKey: COMMENT_REACTION_KEYS[over] };
+
+  const rows: { id: string; key: string }[] = [];
+  snaps.forEach((snap, i) => {
+    const key = COMMENT_REACTION_KEYS[i];
+    for (const doc of snap.docs) rows.push({ id: doc.id, key });
+  });
+  rows.sort((a, b) => a.id.localeCompare(b.id) || a.key.localeCompare(b.key));
+  return { rows };
+}
+
+function decline(uid: string, key: string, errorCode: string): never {
   logger.warn("exportCommentReactions.declined", {
     event: "export_comment_reactions.declined",
     uid_prefix: uid.slice(0, 6),
     key,
+    error_code: errorCode,
   });
   throw new HttpsError(
     "failed-precondition",
-    "Comment reactions are too many to export in one response.",
-    { error_code: TOO_LARGE_ERROR_CODE },
+    "Reactions are too many to export in one response.",
+    { error_code: errorCode },
   );
 }

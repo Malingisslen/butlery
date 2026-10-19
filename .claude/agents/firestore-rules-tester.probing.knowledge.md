@@ -72,7 +72,9 @@ const ADMIN_UID = "admin-uid";
   mutation silently counts the create limb too — anchor on `&& resource.data`. When one
   collection's shape is shared repo-wide (`memberPermissions[uid] in ['edit','admin']`
   appears three times), slice the block by `indexOf('match /<collection>')` and mutate
-  inside the slice rather than widening the pattern.
+  inside the slice rather than widening the pattern. An END anchor such as `allow update`
+  can match PROSE inside the limb being sliced (the messages create comment names it), so
+  the slice truncates and reads as a missing needle; anchor on the next limb (BUT-2398).
   **The same slice is mandatory in a SHIPPED cross-language guard, where the consequence is
   worse than in a probe: an unanchored needle stays green FOREVER instead of measuring the
   wrong bytes once.** A rules test pinning a Cloud Function's cap by

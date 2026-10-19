@@ -89,6 +89,52 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
+    // BUT-2115: `reactions.<key>` lists the uids that reacted, and the
+    // client toggles one key with arrayUnion/arrayRemove. Must equal
+    // kReactionEmojis in emoji_reaction_picker.dart and
+    // COMMENT_REACTION_KEYS in account-deletion-cascade.ts; a functions
+    // test parses all three.
+    function reactionKeys() {
+      return ['thumbs_up', 'heart', 'fire', 'laughing', 'yum', 'thinking'];
+    }
+
+    // `grown` holds at most the caller's uid beyond `base` and lost nothing,
+    // so nobody can add or withdraw another person's uid.
+    function onlyCallerAdded(base, grown) {
+      return grown.difference(base).hasOnly([request.auth.uid])
+        && base.difference(grown).size() == 0;
+    }
+
+    function reactionListOk(k, adding) {
+      let after = request.resource.data.reactions.get(k, []);
+      let before = resource.data.get('reactions', {}).get(k, []);
+      return after is list
+        && after.size() <= 500
+        // A set comparison cannot see a repeated uid, and the app shows a
+        // list's length as the count.
+        && after.toSet().size() == after.size()
+        && (adding
+            ? onlyCallerAdded(before.toSet(), after.toSet())
+            : onlyCallerAdded(after.toSet(), before.toSet()));
+    }
+
+    // Only keys the write changes run the set comparison.
+    function reactionShapeOk(adding) {
+      let keys = reactionKeys();
+      let changed = request.resource.data.reactions
+          .diff(resource.data.get('reactions', {})).affectedKeys();
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['reactions'])
+        && request.resource.data.reactions is map
+        && request.resource.data.reactions.keys().hasOnly(keys)
+        && (!(keys[0] in changed) || reactionListOk(keys[0], adding))
+        && (!(keys[1] in changed) || reactionListOk(keys[1], adding))
+        && (!(keys[2] in changed) || reactionListOk(keys[2], adding))
+        && (!(keys[3] in changed) || reactionListOk(keys[3], adding))
+        && (!(keys[4] in changed) || reactionListOk(keys[4], adding))
+        && (!(keys[5] in changed) || reactionListOk(keys[5], adding));
+    }
+
     // BUT-659: anti-spam cooldown for high-friction social actions on
     // brand-new accounts. Returns true when the account is "matured":
     //   - email is verified, OR
@@ -1987,55 +2033,6 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['text', 'updatedAt', 'editedAt']);
 
-      // BUT-2115: `reactions.<key>` lists the uids that reacted, and the
-      // client toggles one key with arrayUnion/arrayRemove. Must equal
-      // kReactionEmojis in emoji_reaction_picker.dart and
-      // COMMENT_REACTION_KEYS in account-deletion-cascade.ts; a functions
-      // test parses all three.
-      function reactionKeys() {
-        return ['thumbs_up', 'heart', 'fire', 'laughing', 'yum', 'thinking'];
-      }
-
-      // `grown` holds at most the caller's uid beyond `base` and lost nothing,
-      // so nobody can add or withdraw another person's uid.
-      function onlyCallerAdded(base, grown) {
-        return grown.difference(base).hasOnly([request.auth.uid])
-          && base.difference(grown).size() == 0;
-      }
-
-      function reactionListOk(k, adding) {
-        let after = request.resource.data.reactions.get(k, []);
-        let before = resource.data.get('reactions', {}).get(k, []);
-        return after is list
-          && after.size() <= 500
-          // A set comparison cannot see a repeated uid, and the app shows a
-          // list's length as the count.
-          && after.toSet().size() == after.size()
-          && (adding
-              ? onlyCallerAdded(before.toSet(), after.toSet())
-              : onlyCallerAdded(after.toSet(), before.toSet()));
-      }
-
-      // Only keys the write changes run the set comparison. A remove is
-      // evaluated by both update limbs against one 1000-expression budget per
-      // request, and comparing all six keys in each leaves no room for one
-      // more such comparison.
-      function reactionShapeOk(adding) {
-        let keys = reactionKeys();
-        let changed = request.resource.data.reactions
-            .diff(resource.data.get('reactions', {})).affectedKeys();
-        return request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['reactions'])
-          && request.resource.data.reactions is map
-          && request.resource.data.reactions.keys().hasOnly(keys)
-          && (!(keys[0] in changed) || reactionListOk(keys[0], adding))
-          && (!(keys[1] in changed) || reactionListOk(keys[1], adding))
-          && (!(keys[2] in changed) || reactionListOk(keys[2], adding))
-          && (!(keys[3] in changed) || reactionListOk(keys[3], adding))
-          && (!(keys[4] in changed) || reactionListOk(keys[4], adding))
-          && (!(keys[5] in changed) || reactionListOk(keys[5], adding));
-      }
-
       // Adding carries the age, soft-delete and block gates; removing does
       // not, so a reaction stays withdrawable after any of them changes.
       allow update: if isAuthenticated() && !isGuest()
@@ -2732,6 +2729,17 @@ service cloud.firestore {
                .data.get('memberSince', {}).get(request.auth.uid, request.time)
         );
 
+      // The read rule's predicate, for the reaction limbs: whoever can see a
+      // message may react to it, and nobody else.
+      function canReadMessage() {
+        return request.auth.uid in convOf(resource.data.conversationId).data.participantIds
+          && (
+            !('groupId' in convOf(resource.data.conversationId).data)
+            || resource.data.sentAt >= convOf(resource.data.conversationId)
+                 .data.get('memberSince', {}).get(request.auth.uid, request.time)
+          );
+      }
+
       // Can create messages if you're the sender.
       // BUT-659: also gate behind the new-account cooldown — DMs are a
       // primary spam vector.
@@ -2814,6 +2822,9 @@ service cloud.firestore {
         // not a substitute for it.
         && request.resource.data.sentAt is timestamp
         && request.resource.data.sentAt <= request.time + duration.value(1, 'h')
+        // BUT-2398: a reaction names someone else's uid, so only the reaction
+        // limbs below may write one.
+        && request.resource.data.get('reactions', {}) == {}
         && isAccountMatured()
         && isAgeCompliant()
         // BUT-2017: a blocked person cannot create a message in a room the
@@ -2857,7 +2868,7 @@ service cloud.firestore {
         && (!pollIsClosed(resource.data) || pollIsClosed(request.resource.data))
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
-        && cannotModify(['senderId', 'conversationId', 'sentAt'])
+        && cannotModify(['senderId', 'conversationId', 'sentAt', 'reactions'])
         // BUT-2246: an edit is a second way to send text. When the edited
         // message is the newest, `syncConversationLastMessage` copies it into
         // the chat-list preview with the Admin SDK, past the `conversations`
@@ -2886,6 +2897,23 @@ service cloud.firestore {
         && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['status', 'deliveredAt', 'readAt', 'updatedAt']);
+
+      // BUT-2398: any participant who can read the message adds or removes
+      // only their own uid. Adding carries the guest, age and BUT-2017 block
+      // gates of a send and the duplicate guard's freeze; removing carries
+      // none of them, so a reaction stays withdrawable.
+      allow update: if isAuthenticated() && !isGuest()
+        && canReadMessage()
+        && reactionShapeOk(true)
+        && isAgeCompliant()
+        && resource.data.get('type', 'text') != 'duplicateBlocked'
+        && (convOf(resource.data.conversationId).data.participantIds.size() != 2
+            || isNotBlockedBy(otherParticipant(convOf(resource.data.conversationId).data.participantIds)))
+        && notBlockedByAnyOf(convOf(resource.data.conversationId).data.participantIds);
+
+      allow update: if isAuthenticated()
+        && canReadMessage()
+        && reactionShapeOk(false);
 
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;

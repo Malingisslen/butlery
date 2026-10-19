@@ -1,57 +1,67 @@
-# BUT-2400: app push notifications rejected by `sendNotification` (2026-10-18)
+# BUT-2398: chat participants may react to each other's messages (2026-10-19)
 
-Router tier: single (Database Administrator / Data-layer Engineer, Vendor / Procurement
-Manager; matched on `functions/src/shared/notification-payload.ts`). No rules, auth or GDPR
-change. `firestore.rules` is not touched.
+Router tier: full-panel (`firestore.rules` high-stakes). Decision: Malin chose "Tillåt reaktioner"
+on the card 2026-10-19 (each participant adds/removes only their own reaction, blocked people
+cannot add, account deletion removes them, the export lists them).
 
-## Cause
+## Goal beyond the ticket
 
-`sendNotification` runs every payload through `buildNotificationPayload` (BUT-641), which
-throws without `route` and `notificationType`. The app's two template builders
-(`NotificationContentManager.createTemplate`, `NotificationTemplate.fromStrategy`) never stamp
-either, so every app-sent push is refused with `invalid-argument`. Silent pushes hit the same
-check. Twin found while reading: `_handleMessageOpened` never forwards `notificationId` to the
-router, so `recordNotificationOpened` never runs for a tapped push.
+Cause: `match /messages/{messageId}` has no reactions limb, so only the sender limb accepts a
+`reactions.<key>` write. Sibling faults found: the sender limb and the create limb do not pin
+`reactions`, so a sender can forge other people's uids into reactions on their own message.
+No erasure path removes a uid from `messages.reactions`. Regression guard: emulator tests on
+every limb, cascade and export unit tests.
 
-## Change
+## Steps
 
-1. `NotificationStrategy` gets required `route`, `notificationType` and optional
-   `targetIdKey` (the `additionalData` key whose value is the destination id). One method
-   builds `{route, targetId, notificationType}`; both template builders and the fallback
-   template spread it last, so schema wins on collision (as on the server).
-2. The two inline strategies (chat message, recipe share request) become named constants so
-   the drift test can see them.
-3. New routes, added on both sides in the same change: `/conversation` (chat, id =
-   conversationId), `/friends` (accepted request), `/group` (ping, id = groupId), `/home`
-   (digest and strategies with no destination). The router opens chat, friends list and group
-   detail for them.
-4. Cook-snap push adds `recipeId` so it opens the recipe.
-5. A batched push keeps the first item's destination only when every item shares it,
-   otherwise `/home`.
-6. Silent push (`member_removed`) carries the schema fields.
-7. `_handleMessageOpened` forwards `notificationId`.
+1. **Rules** (`firestore.rules`)
+   - Hoist `reactionKeys`, `onlyCallerAdded`, `reactionListOk`, `reactionShapeOk` from
+     `match /recipe_comments` to service level (bodies unchanged); keep the key-parity test
+     in `account-deletion-cascade.test.ts` finding `reactionKeys()`.
+   - In `match /messages`: `canReadMessage()` = the read rule's predicate (participant; group
+     `sentAt >= memberSince[uid]`).
+   - ADD limb: `isAuthenticated() && !isGuest() && canReadMessage() && reactionShapeOk(true)
+     && isAgeCompliant() && type != 'duplicateBlocked'` + the BUT-2017 block gate (exact
+     `blocks` read in a DM, `notBlockedByAnyOf` mirror). No `isAccountMatured`, no rate limit
+     (as BUT-2115).
+   - REMOVE limb: `isAuthenticated() && canReadMessage() && reactionShapeOk(false)`.
+   - Sender limb: add `'reactions'` to `cannotModify`. Create limb:
+     `request.resource.data.get('reactions', {}) == {}`. Verify no client sender update or
+     create carries a non-empty reactions map.
+2. **Erasure** (`functions/src/account/account-deletion-cascade.ts`): give `scrubCommentField`
+   a collection argument; add `scrubMessageReactions` (six keys, `arrayRemove(uid)`, cap 2000
+   per key, decline above cap, one failing key fails the step); probe leg in
+   `probeResidualData` for `messages`. Register `runStep("message_reactions")` right after
+   `comment_reactions` in `request-account-deletion.ts`.
+3. **Export**: extend `exportCommentReactions` (`functions/src/exports/comment-reactions.ts`)
+   with `messageReactions: {messageId, key}[]` (ids only, sorted, decline code
+   `message-reactions-too-large`). Client `comment_reactions_export_manager.dart` adds a
+   `message_reactions` section and maps the new code.
+4. **Client toggle**: unchanged (already writes `reactions.<key>` arrayUnion/arrayRemove of the
+   caller's uid; UI offers only the six keys).
+5. **Accepted deviations**: a dated BUT-2398 entry in `.claude/rules/accepted-deviations.md` and
+   `docs/architecture/ACCEPTED_DEVIATIONS.md`.
+6. Not in scope: skipping `syncConversationLastMessage` for reaction-only updates (cost
+   optimisation, needs its own race review) — ticket.
 
-## Proof
+## Verification
 
-- Dart test: parses `NOTIFICATION_ROUTES` out of `functions/src/shared/notification-payload.ts`,
-  asserts it equals `NotificationRoutes.all`, and that every strategy in
-  `NotificationStrategy.all` + `RecipeActivityStrategies.all` has a route in it and a
-  non-empty `notificationType`.
-- Dart test: each strategy's template data passes the server's checks (route known,
-  targetId string, type non-empty) and the router opens the expected screen for each route.
-- Functions tests updated for the new allowlist.
-- Emulator: call `sendNotification` with a payload built by the app's template code for every
-  strategy and see it accepted (no `invalid-argument`).
-
-## Deploy
-
-Functions first (`sendNotification`, `sendNotificationBatch`), then the app picks the routes up
-in the next build. An old server would refuse the new routes, so the order matters.
+- Emulator: `conversations-rules.test.ts` new section (allow: DM add/remove, own message, group
+  after memberSince, blocked user removes, remove on duplicateBlocked, guest removes, remove with
+  six full keys, create without reactions, sender edit, receipts; deny: non-participant, before
+  memberSince, left member, other uid add/remove, unknown key, duplicate uid, >500, mixed with
+  content/status, DM block, group mirror block, guest add, under-age add, duplicateBlocked add,
+  sender forgery, create with reactions). Re-run `recipe-comments-rules.test.ts`.
+- CF unit tests: cascade scrub, decline, failing key, probe leg, step order; export section,
+  ids-only, decline.
+- Dart: export manager section test. `flutter analyze`, functions `npm run build` + tests.
+- Mutation-check: removing each new rule conjunct fails its test.
+- Deploy: functions first (export + deletion), then rules.
 
 ## Summary for Malin
 
-Alla pushnotiser som appen själv skickar (vänförfrågan, chatt, knuff, delat recept, matbild,
-kommentarer) stoppades av servern eftersom appen inte talade om vilken sida notisen skulle
-öppna. Lagningen ger varje notistyp en sida att öppna, lägger till de sidor som saknades
-(chatten, vänlistan, gruppen) och ett test som larmar om appen och servern någonsin glider
-isär igen.
+Nu kan alla i en chatt reagera med emoji på vilket meddelande som helst, men bara lägga till
+eller ta bort sin egen reaktion. Den som är blockerad kan inte lägga till nya reaktioner men kan
+alltid ta bort sina gamla. Ingen kan längre fejka någon annans reaktion, inte ens på sitt eget
+meddelande. När ett konto raderas försvinner personens reaktioner i alla chattar, och
+dataexporten listar dem, precis som för kommentarer.

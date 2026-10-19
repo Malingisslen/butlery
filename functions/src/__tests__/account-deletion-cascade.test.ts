@@ -10071,6 +10071,138 @@ async function scenario_probeSeesLeftoverReactions(): Promise<void> {
 }
 
 /**
+ * BUT-2398: on chat messages the erased uid leaves every reaction list it is
+ * in, every other reactor and the message itself stay, and the probe reads
+ * zero afterwards.
+ */
+async function scenario_messageReactionsLoseOnlyTheErasedUid(): Promise<void> {
+  const { scrubMessageReactions } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("messages/m1", {
+    senderId: OTHER,
+    content: "hej",
+    reactions: { heart: [UID, THIRD], thinking: [UID], fire: [THIRD] },
+  });
+  db.set("messages/m2", { senderId: THIRD, reactions: { yum: [OTHER, UID] } });
+  db.set("messages/m3", { senderId: OTHER, reactions: { heart: [THIRD] } });
+  db.set("messages/m4", { senderId: OTHER });
+  db.set("recipe_comments/c1", { authorId: OTHER, reactions: { heart: [UID] } });
+
+  const ok = await scrubMessageReactions(asDb(db), UID);
+
+  check("the message reaction scrub reports success", ok === true);
+  check(
+    "the erased uid leaves each message list and the other reactors stay",
+    JSON.stringify(db.get("messages/m1")?.reactions) ===
+      JSON.stringify({ heart: [THIRD], thinking: [], fire: [THIRD] }) &&
+      JSON.stringify(db.get("messages/m2")?.reactions) ===
+        JSON.stringify({ yum: [OTHER] }),
+    JSON.stringify([db.get("messages/m1"), db.get("messages/m2")]),
+  );
+  check(
+    "the message content and sender survive",
+    db.get("messages/m1")?.content === "hej" &&
+      db.get("messages/m1")?.senderId === OTHER,
+  );
+  check(
+    "messages without the erased uid, and comments, are not written to",
+    !db.updatedPaths.includes("messages/m3") &&
+      !db.updatedPaths.includes("messages/m4") &&
+      !db.updatedPaths.includes("recipe_comments/c1"),
+    JSON.stringify(db.updatedPaths),
+  );
+
+  db.set("recipe_comments/c1", { authorId: OTHER });
+  const residual = emptyResult();
+  await probeAfter(db, residual);
+  check(
+    "after the message scrub the probe reads zero",
+    !sawResidual(residual),
+    `failed: ${JSON.stringify(residual.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2398: over the cap on one key that key declines and writes nothing, the
+ * other keys are still swept, and the step fails; a rejected write fails it too.
+ */
+async function scenario_implausibleMessageReactionSweepDeclines(): Promise<void> {
+  const {
+    scrubMessageReactions,
+    MAX_MESSAGE_REACTION_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+
+  const over = new FakeFirestore();
+  for (let i = 0; i <= MAX_MESSAGE_REACTION_SWEEP_ROWS; i++) {
+    over.set(`messages/h-${i}`, { senderId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  over.set("messages/f", { senderId: OTHER, reactions: { fire: [UID, THIRD] } });
+  check(
+    "the message reaction scrub fails the step when one key is over its cap",
+    (await scrubMessageReactions(asDb(over), UID)) === false,
+  );
+  check(
+    "the over-cap message key is not written to",
+    !over.updatedPaths.some((p) => p.startsWith("messages/h-")),
+  );
+  check(
+    "the other message keys are still swept",
+    JSON.stringify(over.get("messages/f")?.reactions) ===
+      JSON.stringify({ fire: [THIRD] }),
+    JSON.stringify(over.get("messages/f")),
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < MAX_MESSAGE_REACTION_SWEEP_ROWS; i++) {
+    atCap.set(`messages/h-${i}`, { senderId: `p-${i}`, reactions: { heart: [UID] } });
+  }
+  check(
+    "the message reaction scrub runs at exactly its cap",
+    (await scrubMessageReactions(asDb(atCap), UID)) === true &&
+      atCap.updatedPaths.length === MAX_MESSAGE_REACTION_SWEEP_ROWS,
+  );
+
+  const fails = new FakeFirestore();
+  fails.set("messages/x", { senderId: OTHER, reactions: { yum: [UID] } });
+  fails.set("messages/y", { senderId: OTHER, reactions: { heart: [UID] } });
+  fails.batchFailures.set("messages/x", 13);
+  check(
+    "a rejected message-scrub chunk fails the step and the other keys still run",
+    (await scrubMessageReactions(asDb(fails), UID)) === false &&
+      JSON.stringify(fails.get("messages/y")?.reactions) ===
+        JSON.stringify({ heart: [] }),
+    JSON.stringify(fails.get("messages/y")),
+  );
+}
+
+/**
+ * BUT-2398: each reaction key's message probe leg fires on its own residue,
+ * and another person's reaction does not fire it.
+ */
+async function scenario_probeSeesLeftoverMessageReactions(): Promise<void> {
+  const { COMMENT_REACTION_KEYS } = require("../account/account-deletion-cascade");
+  const quiet: string[] = [];
+  for (const key of COMMENT_REACTION_KEYS as readonly string[]) {
+    const db = new FakeFirestore();
+    db.set("messages/x", { senderId: OTHER, reactions: { [key]: [THIRD, UID] } });
+    const r = emptyResult();
+    await probeAfter(db, r);
+    if (!sawResidual(r)) quiet.push(key);
+  }
+  check(
+    "a surviving message reaction on every key is residual",
+    quiet.length === 0,
+    `keys the probe missed: ${quiet.join(", ")}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set("messages/x", { senderId: OTHER, reactions: { heart: [THIRD] } });
+  const r = emptyResult();
+  await probeAfter(clean, r);
+  check("another person's message reaction does not fire the probe", !sawResidual(r));
+}
+
+/**
  * BUT-2115: one reaction key list in three places — the rules' `reactionKeys()`,
  * the app's `kReactionEmojis` and the cascade's `COMMENT_REACTION_KEYS`. A key
  * the rules accept and the cascade does not sweep would survive an erasure; a
@@ -10777,6 +10909,9 @@ async function main(): Promise<void> {
   await scenario_implausibleReactionSweepDeclines();
   await scenario_probeSeesLeftoverReactions();
   await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
+  await scenario_messageReactionsLoseOnlyTheErasedUid();
+  await scenario_implausibleMessageReactionSweepDeclines();
+  await scenario_probeSeesLeftoverMessageReactions();
   await scenario_commentLikeIndexIsDeclared();
   await scenario_liveMenuBallotsAreDeleted();
   await scenario_implausibleLiveMenuBallotCountDeclines();

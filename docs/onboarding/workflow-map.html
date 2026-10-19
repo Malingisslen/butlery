@@ -2922,14 +2922,14 @@
         {
           "from": "svc-export-managers",
           "to": "cf-export-comment-reactions",
-          "payload": "inget (uid tas ur request.auth) — läsregeln för kommentarer nekar klientens array-contains-fråga på reactions.<emoji> (BUT-2318)",
+          "payload": "inget (uid tas ur request.auth) — läsreglerna för kommentarer och meddelanden nekar klientens array-contains-fråga på reactions.<emoji> (BUT-2318, BUT-2398)",
           "transport": "callable CF",
           "verified": true
         },
         {
           "from": "cf-export-comment-reactions",
           "to": "svc-export-managers",
-          "payload": "{reactions: [{commentId, key}], gdprArticle} — aldrig kommentarens text",
+          "payload": "{reactions: [{commentId, key}], messageReactions: [{messageId, key}], gdprArticle} — aldrig kommentarens eller meddelandets text; sektionerna comment_reactions och message_reactions",
           "transport": "callable response",
           "verified": true
         },

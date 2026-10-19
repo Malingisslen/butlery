@@ -52,7 +52,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp } from "firebase/firestore";
+import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
 
 // MUTATION-PROBE SEAM (BUT-1838). Both values are overridable so a mutation
 // probe can point this suite at a MUTATED COPY of firestore.rules in a scratch
@@ -2939,6 +2939,417 @@ test("BUT-1918: a chat created with a preview inside the hour is allowed (contro
         lastMessage: { content: "hej", senderId: actor, sentAt: new Date(Date.now() + 55 * MINUTE) },
       })
     )
+  );
+});
+
+// ============================================================================
+// BUT-2398: message reactions
+// ============================================================================
+//
+// The app writes `reactions.<key>: arrayUnion/arrayRemove([uid])` with a plain
+// update (message_reactions_service.dart). Whoever can read a message adds or
+// removes only their own uid; adding also needs the send gates. Each deny has
+// an allow twin that differs in the one fact its title names. Every test seeds
+// its own room and message, so no test reads state another one left behind.
+
+const RX_KEYS = ["thumbs_up", "heart", "fire", "laughing", "yum", "thinking"];
+const RX_AGE_OK = { ageCompliant: true };
+const RX_NO_AGE = { email_verified: true };
+// The age claim too, so the guest tests differ from RX_AGE_OK in the sign-in
+// provider alone.
+const RX_GUEST = {
+  ageCompliant: true,
+  firebase: { sign_in_provider: "anonymous", identities: {} },
+};
+
+function rxUid(tag: string): string {
+  return `rx-${tag}-${RUN}`;
+}
+
+/** A DM between `a` and `b` holding one message from `sender`. */
+async function rxDm(
+  tag: string,
+  a: string,
+  b: string,
+  sender: string,
+  extra: Record<string, unknown> = {}
+): Promise<string> {
+  const conv = directId(a, b);
+  const msg = `rx-msg-${tag}-${RUN}`;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await db.doc(`conversations/${conv}`).set({
+      participantIds: [a, b],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: false,
+    });
+    await db.doc(`messages/${msg}`).set({
+      ...messageBody(conv, sender, T_AFTER_JOIN),
+      ...extra,
+    });
+  });
+  return msg;
+}
+
+/**
+ * A group whose `joiner` joined at T_JOIN and whose other members have older
+ * stamps, holding one message sent at `sentAt`.
+ */
+async function rxGroup(
+  tag: string,
+  members: string[],
+  joiner: string,
+  sentAt: Date,
+  extra: Record<string, unknown> = {},
+  participantIds: string[] = members
+): Promise<string> {
+  const conv = `rx-group-${tag}-${RUN}`;
+  const msg = `rx-msg-${tag}-${RUN}`;
+  const memberSince: Record<string, Date> = {};
+  for (const m of members) memberSince[m] = m === joiner ? T_JOIN : T_BEFORE_JOIN;
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await db.doc(`conversations/${conv}`).set({
+      participantIds,
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+      groupId: `grp-${tag}`,
+      memberSince,
+    });
+    await db.doc(`messages/${msg}`).set({
+      ...messageBody(conv, members[0], sentAt),
+      ...extra,
+    });
+  });
+  return msg;
+}
+
+function rxUpdate(
+  uid: string,
+  msg: string,
+  data: Record<string, unknown>,
+  claims: Record<string, unknown> = RX_AGE_OK
+): Promise<void> {
+  return env.authenticatedContext(uid, claims).firestore().doc(`messages/${msg}`).update(data);
+}
+
+function rxOthers(prefix: string, n: number): string[] {
+  return Array.from({ length: n }, (_, i) => `${prefix}-${i}`);
+}
+
+// RED on main before BUT-2398: the app's own write by the non-sender was refused.
+test("BUT-2398: a DM participant adds a reaction to the other's message (the app's write)", async () => {
+  const a = rxUid("dm-add-a");
+  const b = rxUid("dm-add-b");
+  const msg = await rxDm("dm-add", a, b, a);
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b) }));
+});
+
+test("BUT-2398: a DM participant removes their own reaction", async () => {
+  const a = rxUid("dm-rm-a");
+  const b = rxUid("dm-rm-b");
+  const msg = await rxDm("dm-rm", a, b, a, { reactions: { heart: [a, b] } });
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": arrayRemove(b) }));
+});
+
+test("BUT-2398: the sender reacts to their own message", async () => {
+  const a = rxUid("own-a");
+  const b = rxUid("own-b");
+  const msg = await rxDm("own", a, b, a);
+  await assertSucceeds(rxUpdate(a, msg, { "reactions.fire": arrayUnion(a) }));
+});
+
+test("BUT-2398: a non-participant cannot add a reaction", async () => {
+  const a = rxUid("np-a");
+  const b = rxUid("np-b");
+  const out = rxUid("np-out");
+  const msg = await rxDm("np", a, b, a);
+  await assertFails(rxUpdate(out, msg, { "reactions.heart": arrayUnion(out) }));
+});
+
+test("BUT-2398: a group member adds a reaction to a message sent after they joined", async () => {
+  const [o, j] = [rxUid("g-after-o"), rxUid("g-after-j")];
+  const msg = await rxGroup("g-after", [o, j, rxUid("g-after-x")], j, T_AFTER_JOIN);
+  await assertSucceeds(rxUpdate(j, msg, { "reactions.yum": arrayUnion(j) }));
+});
+
+test("BUT-2398: a group member cannot add a reaction to a message sent before they joined", async () => {
+  const [o, j] = [rxUid("g-before-o"), rxUid("g-before-j")];
+  const msg = await rxGroup("g-before", [o, j, rxUid("g-before-x")], j, T_BEFORE_JOIN);
+  await assertFails(rxUpdate(j, msg, { "reactions.yum": arrayUnion(j) }));
+});
+
+test("BUT-2398: a group member cannot remove a reaction from a message sent before they joined", async () => {
+  const [o, j] = [rxUid("g-before-rm-o"), rxUid("g-before-rm-j")];
+  const msg = await rxGroup("g-before-rm", [o, j, rxUid("g-before-rm-x")], j, T_BEFORE_JOIN, {
+    reactions: { yum: [j] },
+  });
+  await assertFails(rxUpdate(j, msg, { "reactions.yum": arrayRemove(j) }));
+});
+
+test("BUT-2398: a group member removes their reaction (control for the left member)", async () => {
+  const [o, j, l] = [rxUid("g-stay-o"), rxUid("g-stay-j"), rxUid("g-stay-l")];
+  const msg = await rxGroup("g-stay", [o, j, l], j, T_AFTER_JOIN, { reactions: { yum: [l] } });
+  await assertSucceeds(rxUpdate(l, msg, { "reactions.yum": arrayRemove(l) }));
+});
+
+test("BUT-2398: a member who left the group cannot remove their old reaction", async () => {
+  const [o, j, l] = [rxUid("g-left-o"), rxUid("g-left-j"), rxUid("g-left-l")];
+  const msg = await rxGroup(
+    "g-left",
+    [o, j, l],
+    j,
+    T_AFTER_JOIN,
+    { reactions: { yum: [l] } },
+    [o, j]
+  );
+  await assertFails(rxUpdate(l, msg, { "reactions.yum": arrayRemove(l) }));
+});
+
+test("BUT-2398: adding someone else's uid is denied", async () => {
+  const a = rxUid("add-other-a");
+  const b = rxUid("add-other-b");
+  const msg = await rxDm("add-other", a, b, a);
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayUnion(a) }));
+});
+
+test("BUT-2398: removing someone else's uid is denied", async () => {
+  const a = rxUid("rm-other-a");
+  const b = rxUid("rm-other-b");
+  const msg = await rxDm("rm-other", a, b, a, { reactions: { heart: [a, b] } });
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayRemove(a) }));
+});
+
+test("BUT-2398: a key outside the six is denied", async () => {
+  const a = rxUid("key-a");
+  const b = rxUid("key-b");
+  const msg = await rxDm("key", a, b, a);
+  await assertFails(rxUpdate(b, msg, { "reactions.clap": arrayUnion(b) }));
+});
+
+test("BUT-2398: adding your own uid twice is denied", async () => {
+  const a = rxUid("dup-a");
+  const b = rxUid("dup-b");
+  const msg = await rxDm("dup", a, b, a, { reactions: { heart: [a] } });
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": [a, b, b] }));
+});
+
+test("BUT-2398: adding your own uid once as a whole list is allowed (control)", async () => {
+  const a = rxUid("dup-ctl-a");
+  const b = rxUid("dup-ctl-b");
+  const msg = await rxDm("dup-ctl", a, b, a, { reactions: { heart: [a] } });
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": [a, b] }));
+});
+
+// The other five keys sit at 499 too, the largest map an add evaluates.
+test("BUT-2398: an add that reaches 500 in one list is allowed", async () => {
+  const a = rxUid("cap-a");
+  const b = rxUid("cap-b");
+  const full: Record<string, string[]> = {};
+  for (const k of RX_KEYS) full[k] = rxOthers(`u-${k}`, 499);
+  const msg = await rxDm("cap", a, b, a, { reactions: full });
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b) }));
+});
+
+test("BUT-2398: an add that makes a list 501 is denied", async () => {
+  const a = rxUid("over-a");
+  const b = rxUid("over-b");
+  const msg = await rxDm("over", a, b, a, { reactions: { heart: rxOthers("u-heart", 500) } });
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b) }));
+});
+
+test("BUT-2398: a reaction mixed with a status change is denied", async () => {
+  const a = rxUid("mix-status-a");
+  const b = rxUid("mix-status-b");
+  const msg = await rxDm("mix-status", a, b, a);
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b), status: "read" }));
+});
+
+test("BUT-2398: a reaction mixed with a content edit by the sender is denied", async () => {
+  const a = rxUid("mix-content-a");
+  const b = rxUid("mix-content-b");
+  const msg = await rxDm("mix-content", a, b, a);
+  await assertFails(rxUpdate(a, msg, { "reactions.heart": arrayUnion(a), content: "ändrad" }));
+});
+
+test("BUT-2398: a read receipt by the recipient is still allowed", async () => {
+  const a = rxUid("receipt-a");
+  const b = rxUid("receipt-b");
+  const msg = await rxDm("receipt", a, b, a);
+  await assertSucceeds(rxUpdate(b, msg, { status: "read", readAt: new Date(), updatedAt: new Date() }));
+});
+
+test("BUT-2398: the sender's content edit is still allowed", async () => {
+  const a = rxUid("edit-a");
+  const b = rxUid("edit-b");
+  const msg = await rxDm("edit", a, b, a, { reactions: { heart: [b] } });
+  await assertSucceeds(
+    rxUpdate(a, msg, { content: "ändrad", isEdited: true, editedAt: new Date(), updatedAt: new Date() })
+  );
+});
+
+// RED on main before BUT-2398: the sender limb let a sender write any uid.
+test("BUT-2398: the sender cannot put another person's uid in a reaction on their own message", async () => {
+  const a = rxUid("forge-a");
+  const b = rxUid("forge-b");
+  const msg = await rxDm("forge", a, b, a);
+  await assertFails(rxUpdate(a, msg, { "reactions.heart": arrayUnion(b) }));
+});
+
+test("BUT-2398: the sender cannot take another person's reaction off their own message", async () => {
+  const a = rxUid("forge-rm-a");
+  const b = rxUid("forge-rm-b");
+  const msg = await rxDm("forge-rm", a, b, a, { reactions: { heart: [b] } });
+  await assertFails(rxUpdate(a, msg, { "reactions.heart": arrayRemove(b) }));
+});
+
+test("BUT-2398: a blocked person cannot add a reaction in the DM with their blocker", async () => {
+  const blocker = rxUid("dmblk-blocker");
+  const blocked = rxUid("dmblk-blocked");
+  const msg = await rxDm("dmblk", blocker, blocked, blocker);
+  await deleteMirror(blocked);
+  await seedBlockRow(blocker, blocked);
+  try {
+    await assertFails(rxUpdate(blocked, msg, { "reactions.heart": arrayUnion(blocked) }));
+  } finally {
+    await deleteBlockRow(blocker, blocked);
+  }
+});
+
+test("BUT-2398: the blocker can still add a reaction in that DM (one-directional)", async () => {
+  const blocker = rxUid("dmblk2-blocker");
+  const blocked = rxUid("dmblk2-blocked");
+  const msg = await rxDm("dmblk2", blocker, blocked, blocked);
+  await seedBlockRow(blocker, blocked);
+  try {
+    await assertSucceeds(rxUpdate(blocker, msg, { "reactions.heart": arrayUnion(blocker) }));
+  } finally {
+    await deleteBlockRow(blocker, blocked);
+  }
+});
+
+test("BUT-2398: a blocked person can remove their reaction in the DM with their blocker", async () => {
+  const blocker = rxUid("dmblk3-blocker");
+  const blocked = rxUid("dmblk3-blocked");
+  const msg = await rxDm("dmblk3", blocker, blocked, blocker, { reactions: { heart: [blocked] } });
+  await seedBlockRow(blocker, blocked);
+  await seedMirror(blocked, [blocker]);
+  try {
+    await assertSucceeds(rxUpdate(blocked, msg, { "reactions.heart": arrayRemove(blocked) }));
+  } finally {
+    await deleteBlockRow(blocker, blocked);
+    await deleteMirror(blocked);
+  }
+});
+
+test("BUT-2398: a blocked member cannot add a reaction in a group their blocker is in", async () => {
+  const [blocker, blocked] = [rxUid("gblk-blocker"), rxUid("gblk-blocked")];
+  const msg = await rxGroup("gblk", [blocker, blocked, rxUid("gblk-x")], blocked, T_AFTER_JOIN);
+  await seedMirror(blocked, [blocker]);
+  try {
+    await assertFails(rxUpdate(blocked, msg, { "reactions.heart": arrayUnion(blocked) }));
+  } finally {
+    await deleteMirror(blocked);
+  }
+});
+
+test("BUT-2398: a member whose blocker is not in the group can add (control)", async () => {
+  const [blocker, blocked] = [rxUid("gblk2-blocker"), rxUid("gblk2-blocked")];
+  const msg = await rxGroup("gblk2", [blocker, blocked, rxUid("gblk2-x")], blocked, T_AFTER_JOIN);
+  await seedMirror(blocked, [rxUid("gblk2-outsider")]);
+  try {
+    await assertSucceeds(rxUpdate(blocked, msg, { "reactions.heart": arrayUnion(blocked) }));
+  } finally {
+    await deleteMirror(blocked);
+  }
+});
+
+test("BUT-2398: a guest cannot add a reaction", async () => {
+  const a = rxUid("guest-a");
+  const g = rxUid("guest-g");
+  const msg = await rxDm("guest", a, g, a);
+  await assertFails(rxUpdate(g, msg, { "reactions.heart": arrayUnion(g) }, RX_GUEST));
+});
+
+test("BUT-2398: a guest can remove their reaction", async () => {
+  const a = rxUid("guest-rm-a");
+  const g = rxUid("guest-rm-g");
+  const msg = await rxDm("guest-rm", a, g, a, { reactions: { heart: [g] } });
+  await assertSucceeds(rxUpdate(g, msg, { "reactions.heart": arrayRemove(g) }, RX_GUEST));
+});
+
+test("BUT-2398: no ageCompliant claim — add denied", async () => {
+  const a = rxUid("age-a");
+  const b = rxUid("age-b");
+  const msg = await rxDm("age", a, b, a);
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b) }, RX_NO_AGE));
+});
+
+test("BUT-2398: no ageCompliant claim — remove allowed", async () => {
+  const a = rxUid("age-rm-a");
+  const b = rxUid("age-rm-b");
+  const msg = await rxDm("age-rm", a, b, a, { reactions: { heart: [b] } });
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": arrayRemove(b) }, RX_NO_AGE));
+});
+
+test("BUT-2398: a message the duplicate guard blocked takes no new reaction", async () => {
+  const a = rxUid("dupblk-a");
+  const b = rxUid("dupblk-b");
+  const msg = await rxDm("dupblk", a, b, a, { type: "duplicateBlocked", content: "" });
+  await assertFails(rxUpdate(b, msg, { "reactions.heart": arrayUnion(b) }));
+});
+
+test("BUT-2398: a reaction can be removed from a message the duplicate guard blocked", async () => {
+  const a = rxUid("dupblk-rm-a");
+  const b = rxUid("dupblk-rm-b");
+  const msg = await rxDm("dupblk-rm", a, b, a, {
+    type: "duplicateBlocked",
+    content: "",
+    reactions: { heart: [b] },
+  });
+  await assertSucceeds(rxUpdate(b, msg, { "reactions.heart": arrayRemove(b) }));
+});
+
+// Expression budget, worst case: every key changed, every list at the cap, a
+// group member on the longest canReadMessage() path, and the message's other
+// update limbs evaluated against the same per-request budget.
+test("BUT-2398: removing your uid from all six full keys in one write is allowed", async () => {
+  const [o, j] = [rxUid("six-o"), rxUid("six-j")];
+  const full: Record<string, string[]> = {};
+  const update: Record<string, unknown> = {};
+  for (const k of RX_KEYS) {
+    full[k] = [...rxOthers(`u-${k}`, 499), j];
+    update[`reactions.${k}`] = arrayRemove(j);
+  }
+  const msg = await rxGroup("six", [o, j, rxUid("six-x")], j, T_AFTER_JOIN, { reactions: full });
+  await assertSucceeds(rxUpdate(j, msg, update));
+});
+
+test("BUT-2398: a message created without reactions is allowed (control)", async () => {
+  const a = rxUid("create-a");
+  const b = rxUid("create-b");
+  const conv = directId(a, b);
+  await seedRoom(conv, [a, b]);
+  await assertSucceeds(
+    env
+      .authenticatedContext(a, MSG_CLAIMS)
+      .firestore()
+      .doc(`messages/rx-create-ok-${RUN}`)
+      .set(messageBody(conv, a, new Date()))
+  );
+});
+
+test("BUT-2398: a message created carrying another person's reaction is denied", async () => {
+  const a = rxUid("create-rx-a");
+  const b = rxUid("create-rx-b");
+  const conv = directId(a, b);
+  await seedRoom(conv, [a, b]);
+  await assertFails(
+    env
+      .authenticatedContext(a, MSG_CLAIMS)
+      .firestore()
+      .doc(`messages/rx-create-deny-${RUN}`)
+      .set({ ...messageBody(conv, a, new Date()), reactions: { heart: [b] } })
   );
 });
 

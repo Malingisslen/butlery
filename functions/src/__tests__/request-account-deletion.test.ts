@@ -499,6 +499,8 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "comment_likes",
     // BUT-2115, same reason.
     "comment_reactions",
+    // BUT-2398, same reason.
+    "message_reactions",
     // BUT-2272, same reason.
     "recipe_member_permissions",
     // BUT-2354, same reason.
