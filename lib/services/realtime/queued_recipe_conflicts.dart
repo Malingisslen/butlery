@@ -20,6 +20,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/overwritten_version_repository.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
@@ -131,9 +132,9 @@ class QueuedRecipeConflicts {
   /// [recipe] in the shape the banner and the comparison view read, with
   /// who saved it last from its own `realtimeData`.
   static RealtimeRecipe asResource(Recipe recipe, String? fallbackOwnerId) {
-    final ownerId =
-        (recipe.socialData?.ownerId ?? recipe.createdBy ?? fallbackOwnerId)
-            .orEmpty();
+    // RealtimeRecipe.ownerId is a non-null String, so an owner nobody can
+    // resolve still has to become '' here.
+    final ownerId = (recipe.ownerUid ?? fallbackOwnerId).orEmpty();
     final edit = recipe.realtimeData;
     return RealtimeRecipe(
       id: recipe.id,
