@@ -26,6 +26,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/collaborative_shopping/updated_by_notice.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
@@ -140,6 +141,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     : _connectivity =
           connectivity ??
           ServiceLocator.tryGet<ConnectivityMonitoringService>() {
+    _noticeBaseline = activeList;
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
     _shoppingServiceSubscription = _shoppingService.stateStream.listen(
@@ -151,7 +153,42 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
   /// Handles state updates from shopping service
   void _onServiceUpdate() {
+    _trackUpdatedByNotice();
     notifyListeners();
+  }
+
+  /// BUT-2402: the previous snapshot of the open list, so a change by another
+  /// member of a shared list is told in the shopping tab too.
+  UnifiedShoppingList? _noticeBaseline;
+  String? _updatedByNotice;
+
+  String? get updatedByNotice => _updatedByNotice;
+
+  void dismissUpdatedByNotice() {
+    if (_updatedByNotice == null) return;
+    _updatedByNotice = null;
+    notifyListeners();
+  }
+
+  void _trackUpdatedByNotice() {
+    final updated = activeList;
+    final previous = _noticeBaseline;
+    _noticeBaseline = updated;
+    if (updated == null || !updated.isCollaborative) {
+      _updatedByNotice = null;
+      return;
+    }
+    // Switching list is not "someone changed it": a notice belongs to one list.
+    if (previous == null || previous.id != updated.id) {
+      _updatedByNotice = null;
+      return;
+    }
+    final notice = updatedByNoticeFor(
+      previous: previous,
+      updated: updated,
+      currentUserId: currentUserId,
+    );
+    if (notice != null) _updatedByNotice = notice;
   }
 
   /// Rebuilds the view when the live connectivity signal changes so the offline
