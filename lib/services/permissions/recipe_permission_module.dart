@@ -259,7 +259,6 @@ class RecipePermissionModule {
         return false;
       }
 
-      // Use RecipePermissionHelper for actual ownership validation
       final ownerId = recipe.ownerUid;
       return ownerId == currentUserId;
     } catch (e) {

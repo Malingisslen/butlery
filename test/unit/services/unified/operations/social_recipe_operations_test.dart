@@ -144,6 +144,22 @@ void main() {
         final recipe = RecipeBuilder().withCreatedBy('other-user').build();
         expect(helper.canDeleteRecipe(recipe), isFalse);
       });
+
+      test('empty ownerId with the signed-in user as creator can delete', () {
+        final recipe = RecipeBuilder()
+            .withCreatedBy('current-user')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+        expect(helper.canDeleteRecipe(recipe), isTrue);
+      });
+
+      test('empty ownerId with someone else as creator cannot delete', () {
+        final recipe = RecipeBuilder()
+            .withCreatedBy('other-user')
+            .withSocialData(const RecipeSocialData(ownerId: ''))
+            .build();
+        expect(helper.canDeleteRecipe(recipe), isFalse);
+      });
     });
 
     group('canManageMembers', () {

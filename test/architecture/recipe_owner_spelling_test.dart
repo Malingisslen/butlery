@@ -8,10 +8,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _oldSpelling = <String, int>{
-  'lib/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart':
-      1,
-};
+const _oldSpelling = <String, int>{};
 
 String _code(String source) => source
     .replaceAll('\r\n', '\n')
