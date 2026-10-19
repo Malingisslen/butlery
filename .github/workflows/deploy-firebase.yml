@@ -255,7 +255,7 @@ jobs:
                    snapshotOpsDaily snapshotFeedbackDaily detectAnomalies \
                    correlateNotificationEffectiveness northStarWeekly \
                    drainRatingAggregations drainPooledRatingAggregations \
-                   cleanupExpiredCache; do
+                   cleanupExpiredCache backfillSharedListContributors; do
             echo "Retiring $f (no-op if already gone)"
             firebase functions:delete "$f" \
               --region europe-west1 \

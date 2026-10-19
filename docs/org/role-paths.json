@@ -556,7 +556,6 @@
       "functions/src/migrations/**",
       "functions/src/migrations/backfill-canonical-ratings.ts",
       "functions/src/migrations/backfill-recipe-comments-denorm.ts",
-      "functions/src/migrations/backfill-shared-list-contributors.ts",
       "functions/src/moderation/**",
       "functions/src/moderation/erasure-hold.ts",
       "functions/src/scheduled/**",
