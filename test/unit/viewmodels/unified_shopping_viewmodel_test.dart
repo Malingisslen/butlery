@@ -1319,4 +1319,132 @@ void main() {
       expect(viewModel.savedCategoryFor('Kaffe'), isNull);
     });
   });
+
+  // BUT-2402: the shopping tab tells a member what someone else changed on
+  // the open shared list, the same notice the full-screen list shows.
+  group('updated-by notice (BUT-2402)', () {
+    // The factory stamps item ids from the millisecond clock, so items built
+    // together collide; the diff keys on id.
+    final shared =
+        ShoppingListFactory.buildSharedList(
+          id: 'shared-1',
+          ownerId: 'other-user',
+        ).copyWith(
+          items: [
+            ShoppingListFactory.buildItem(id: 'i1', name: 'Mjölk'),
+            ShoppingListFactory.buildItem(id: 'i2', name: 'Bröd'),
+          ],
+        );
+
+    void openShared(UnifiedShoppingList list) {
+      mockShoppingService.setShoppingState(
+        lists: [list],
+        collaborativeLists: [list],
+        activeListId: list.id,
+        currentUserId: testUserId,
+      );
+    }
+
+    Future<void> emitUpdate(UnifiedShoppingList list) async {
+      openShared(list);
+      mockShoppingService.emitState(ShoppingStateData(lists: [list]));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    setUp(() {
+      viewModel.dispose();
+      openShared(shared);
+      viewModel = UnifiedShoppingViewModel();
+    });
+
+    test("names the updater when another member changes the list", () async {
+      await emitUpdate(
+        shared.copyWith(
+          lastActivityAt: DateTime(2026, 10, 18, 12),
+          lastActivityByUserId: 'other-user',
+          lastActivityByDisplayName: 'Bertil',
+        ),
+      );
+
+      expect(
+        viewModel.updatedByNotice,
+        AppLocale.current.shoppingListUpdatedByNotice('Bertil'),
+      );
+    });
+
+    test('stays silent for the user\'s own change', () async {
+      await emitUpdate(
+        shared.copyWith(
+          lastActivityAt: DateTime(2026, 10, 18, 12),
+          lastActivityByUserId: testUserId,
+          lastActivityByDisplayName: 'Test User',
+        ),
+      );
+
+      expect(viewModel.updatedByNotice, isNull);
+    });
+
+    test('stays silent on a personal list', () async {
+      mockShoppingService.setShoppingState(
+        lists: [testList],
+        personalLists: [testList],
+        activeListId: testListId,
+        currentUserId: testUserId,
+      );
+      // Settle the baseline on the personal list, so only the list type can
+      // keep the notice away (not the switch from the shared list).
+      mockShoppingService.emitState(ShoppingStateData(lists: [testList]));
+      await Future<void>.delayed(Duration.zero);
+      await emitUpdate(
+        testList.copyWith(
+          lastActivityAt: DateTime(2026, 10, 18, 12),
+          lastActivityByUserId: 'other-user',
+          lastActivityByDisplayName: 'Bertil',
+        ),
+      );
+
+      expect(viewModel.updatedByNotice, isNull);
+    });
+
+    test(
+      'is cleared by dismiss and not raised again by the same update',
+      () async {
+        final updated = shared.copyWith(
+          lastActivityAt: DateTime(2026, 10, 18, 12),
+          lastActivityByUserId: 'other-user',
+          lastActivityByDisplayName: 'Bertil',
+        );
+        await emitUpdate(updated);
+        expect(viewModel.updatedByNotice, isNotNull);
+
+        viewModel.dismissUpdatedByNotice();
+        expect(viewModel.updatedByNotice, isNull);
+
+        await emitUpdate(updated);
+        expect(viewModel.updatedByNotice, isNull);
+      },
+    );
+
+    test('switching to another list is not an update', () async {
+      final other =
+          ShoppingListFactory.buildSharedList(
+            id: 'shared-2',
+            ownerId: 'other-user',
+          ).copyWith(
+            lastActivityAt: DateTime(2026, 10, 18, 12),
+            lastActivityByUserId: 'other-user',
+            lastActivityByDisplayName: 'Bertil',
+          );
+      mockShoppingService.setShoppingState(
+        lists: [shared, other],
+        collaborativeLists: [shared, other],
+        activeListId: other.id,
+        currentUserId: testUserId,
+      );
+      mockShoppingService.emitState(ShoppingStateData(lists: [shared, other]));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.updatedByNotice, isNull);
+    });
+  });
 }

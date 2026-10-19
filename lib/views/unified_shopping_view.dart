@@ -34,6 +34,7 @@ import 'package:butlery/services/share_service.dart';
 import 'package:butlery/widgets/shopping/shopping_template_browser.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
+import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_notices.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_lists_pane.dart';
@@ -368,6 +369,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
         children: [
           if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
           const ListInvitationsSection(),
+          if (viewModel.updatedByNotice != null)
+            CollaborativeUpdatedByNotice(
+              key: const ValueKey('unifiedShopping.updatedByNotice'),
+              text: viewModel.updatedByNotice!,
+              onDismiss: viewModel.dismissUpdatedByNotice,
+            ),
           ShoppingListHeader.build(
             context,
             viewModel,

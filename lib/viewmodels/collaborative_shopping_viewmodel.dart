@@ -2,7 +2,7 @@
 
 // lib/viewmodels/collaborative_shopping_viewmodel.dart
 
-import 'package:butlery/core/utils/stored_display_name.dart';
+import 'package:butlery/viewmodels/collaborative_shopping/updated_by_notice.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 
@@ -24,7 +24,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_ma
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ShoppingItemOperationsManager, ClaimOutcome, ClaimResult;
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
-import 'package:butlery/viewmodels/collaborative_shopping/shopping_list_change_summary.dart';
+import 'package:butlery/core/utils/stored_display_name.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -104,9 +104,6 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     }
   }
 
-  /// BUT-2187: "Listan uppdaterades av namn" (produktregler.md).
-  /// `lastActivityAt` / `lastActivityByUserId` / `lastActivityByDisplayName`
-  /// ([UnifiedShoppingList]) already exist — no new Firestore field.
   String? _updatedByNotice;
 
   /// The header notice text, or null when there is nothing to show.
@@ -125,41 +122,12 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   void _checkForUpdatedByNotice(UnifiedShoppingList updated) {
     final previous = _currentList;
     if (previous == null) return;
-
-    final activityAt = updated.lastActivityAt;
-    final activityUserId = updated.lastActivityByUserId;
-    if (activityAt == null || activityUserId == null) return;
-
-    // The (timestamp, uid) pair must differ from the previous snapshot's,
-    // not `isAfter`: clocks differ across devices, and a queued offline
-    // edit can replay with its original — possibly older — timestamp. The
-    // pair-differs check still suppresses a re-broadcast of the same
-    // unchanged document.
-    final previousAt = previous.lastActivityAt;
-    final isSameActivity =
-        previousAt != null &&
-        activityAt.isAtSameMomentAs(previousAt) &&
-        activityUserId == previous.lastActivityByUserId;
-    if (isSameActivity) return;
-
-    // currentUserId is the permission/identity check (CLAUDE.md data-source
-    // rule) — this compares who acted, not their profile.
-    if (activityUserId == currentUserId) return;
-
-    final name = knownStoredName(updated.lastActivityByDisplayName);
-    final l = AppLocale.current;
-    if (name == null) {
-      _updatedByNotice = l.shoppingListUpdatedByUnknown;
-      return;
-    }
-    _updatedByNotice =
-        summarizeListChange(
-          previous: previous.items,
-          updated: updated.items,
-          byName: name,
-          l10n: l,
-        ) ??
-        l.shoppingListUpdatedByNotice(name);
+    final notice = updatedByNoticeFor(
+      previous: previous,
+      updated: updated,
+      currentUserId: currentUserId,
+    );
+    if (notice != null) _updatedByNotice = notice;
   }
 
   /// P6-U05: the last seen answer to [canEdit], so a drop to read-only while
