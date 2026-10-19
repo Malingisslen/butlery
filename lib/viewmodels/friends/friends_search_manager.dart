@@ -6,6 +6,7 @@
 /// - Search result caching (last 10 queries)
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -14,7 +15,8 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
+class FriendsSearchManager extends ChangeNotifier
+    with DebounceMixin, DisposalGuardMixin {
   final UnifiedFriendsService _friendsService;
 
   String _searchQuery = '';
@@ -22,7 +24,6 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   String? _searchError;
   bool _searchDegraded = false;
   bool _isSearching = false;
-  bool _isDisposed = false;
 
   static const Duration _debounceDuration = Duration(milliseconds: 300);
   final Map<String, List<UserProfile>> _searchCache = {};
@@ -46,14 +47,14 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
 
   /// Updates search query with validation and executes debounced search
   Future<void> updateSearch(String query) async {
-    if (_isDisposed) return;
+    if (isDisposed) return;
 
     _searchQuery = query.trim();
 
     if (_searchQuery.isEmpty) {
       cancelDebounce('search');
       _clearSearch();
-      _safeNotifyListeners();
+      notifyListeners();
       return;
     }
 
@@ -62,7 +63,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
       _searchResults = [];
       _searchError = AppLocale.current.errorFillRequiredFields;
       _searchDegraded = false;
-      _safeNotifyListeners();
+      notifyListeners();
       return;
     }
 
@@ -71,13 +72,13 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
 
   /// Clears search state completely
   void clearSearch() {
-    if (_isDisposed) return;
+    if (isDisposed) return;
     _clearSearch();
-    _safeNotifyListeners();
+    notifyListeners();
   }
 
   Future<void> _performSearch() async {
-    if (_isDisposed || _searchQuery.isEmpty) return;
+    if (isDisposed || _searchQuery.isEmpty) return;
 
     // Check cache first
     if (_searchCache.containsKey(_searchQuery)) {
@@ -87,19 +88,19 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
       AppLogger.info(
         '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results (from cache)',
       );
-      _safeNotifyListeners();
+      notifyListeners();
       return;
     }
 
     _isSearching = true;
-    _safeNotifyListeners();
+    notifyListeners();
 
     try {
       final result = await _friendsService.management.searchUsersResult(
         _searchQuery,
       );
 
-      if (_isDisposed) return;
+      if (isDisposed) return;
 
       _searchResults = result.hits;
 
@@ -132,14 +133,14 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
             );
       }
     } catch (e) {
-      if (_isDisposed) return;
+      if (isDisposed) return;
 
       _searchDegraded = true;
       _searchError = AppLocale.current.socialSearchUnavailable;
       AppLogger.error('Search failed: $e');
     } finally {
       _isSearching = false;
-      _safeNotifyListeners();
+      notifyListeners();
     }
   }
 
@@ -159,20 +160,14 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
     _searchDegraded = false;
   }
 
-  void _safeNotifyListeners() {
-    if (!_isDisposed) {
-      notifyListeners();
-    }
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
+    // First, so the guard is up before the cleanup below runs.
+    super.dispose();
     // Replace rather than clear() in place: a degraded/empty search assigns the
     // unmodifiable `const []` from SearchResult.failure (BUT-1442), and
     // clear()-ing that throws. Dropping the reference frees it just the same.
     _searchResults = [];
     _searchCache.clear();
-    super.dispose();
   }
 }

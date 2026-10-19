@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
@@ -27,7 +28,7 @@ enum VoiceAssistState { idle, listening, transcribing, speaking }
 /// speaker and the microphone are strictly sequential. Speech is always
 /// stopped before the mic opens; the talk-window opens only AFTER a
 /// readout's completion; a capture never starts while speaking.
-class CookingVoiceController extends ChangeNotifier {
+class CookingVoiceController extends ChangeNotifier with DisposalGuardMixin {
   CookingVoiceController({
     required VoiceCaptureService voiceCapture,
     required TtsService tts,
@@ -62,7 +63,6 @@ class CookingVoiceController extends ChangeNotifier {
   String? _lastHeard;
   bool _muted = false;
   int _consecutiveButtonMisses = 0;
-  bool _isDisposed = false;
 
   VoiceAssistState get state => _state;
 
@@ -73,7 +73,7 @@ class CookingVoiceController extends ChangeNotifier {
   /// finding, 2026-07-13.)
   Future<void> init() async {
     await _tts.init();
-    _notify();
+    notifyListeners();
   }
 
   /// The last transcript, for the on-screen heard-chip (mishearings must
@@ -90,7 +90,7 @@ class CookingVoiceController extends ChangeNotifier {
     if (_muted == value) return;
     _muted = value;
     if (value) _tts.stop();
-    _notify();
+    notifyListeners();
   }
 
   /// The big mic button. Idle → listen (button-sourced); listening → stop
@@ -146,7 +146,7 @@ class CookingVoiceController extends ChangeNotifier {
         maxDuration: commandCaptureCap,
         onAutoStopped: () => _finishListening(),
       );
-      if (_isDisposed) {
+      if (isDisposed) {
         // Disposed mid-start: the capture we just opened has no owner —
         // abandon it explicitly or it blocks the singleton until app
         // restart (review finding #3).
@@ -156,12 +156,12 @@ class CookingVoiceController extends ChangeNotifier {
       if (!started) {
         // Model missing / mic busy: quiet failure — the buttons still work.
         _state = VoiceAssistState.idle;
-        _notify();
+        notifyListeners();
         return;
       }
       _listenSource = source;
       _state = VoiceAssistState.listening;
-      _notify();
+      notifyListeners();
     } finally {
       _startingCapture = false;
     }
@@ -171,10 +171,10 @@ class CookingVoiceController extends ChangeNotifier {
     if (_state != VoiceAssistState.listening) return;
     final source = _listenSource ?? VoiceListenSource.buttonTap;
     _state = VoiceAssistState.transcribing;
-    _notify();
+    notifyListeners();
 
     final transcript = await _voice.stopAndTranscribe();
-    if (_isDisposed) return;
+    if (isDisposed) return;
     _state = VoiceAssistState.idle;
 
     if (transcript == null || transcript.trim().isEmpty) {
@@ -184,7 +184,7 @@ class CookingVoiceController extends ChangeNotifier {
       if (source == VoiceListenSource.buttonTap) {
         await _handleMiss(heard: null);
       } else {
-        _notify();
+        notifyListeners();
       }
       return;
     }
@@ -200,7 +200,7 @@ class CookingVoiceController extends ChangeNotifier {
       } else {
         // Talk-window chatter ("kan du hämta smöret?") is not a miss —
         // show what was heard, act on nothing, stay quiet.
-        _notify();
+        notifyListeners();
       }
       return;
     }
@@ -239,7 +239,7 @@ class CookingVoiceController extends ChangeNotifier {
         final beforeTimerStart = _beforeTimerStart;
         if (beforeTimerStart != null) {
           await beforeTimerStart();
-          if (_isDisposed) return;
+          if (isDisposed) return;
         }
         _timers.startTimer(
           id: 'voice-${clock.now().microsecondsSinceEpoch}',
@@ -255,12 +255,12 @@ class CookingVoiceController extends ChangeNotifier {
         await _speakThenWindow(_timerStatusAnnouncement());
       case StopCommand():
         await _tts.stop();
-        _notify();
+        notifyListeners();
       case SubstitutionQuery(:final ingredient):
         // The service resolves the raw span itself (canonical-ID lookup with
         // the tagging spine's fuzzy tolerance) and never throws.
         final suggestions = await _substitutions.suggestFor(ingredient);
-        if (_isDisposed) return;
+        if (isDisposed) return;
         if (suggestions.isEmpty) {
           await _speakThenWindow(
             AppLocale.current.voiceAssistNoSubstitutions(ingredient),
@@ -312,13 +312,13 @@ class CookingVoiceController extends ChangeNotifier {
         ? AppLocale.current.voiceAssistMissedTwice
         : AppLocale.current.voiceAssistMissed;
     await _speak(message);
-    _notify();
+    notifyListeners();
   }
 
   /// Speaks (unless muted/unavailable), then opens the hands-free window.
   Future<void> _speakThenWindow(String text) async {
     await _speak(text);
-    if (_isDisposed) return;
+    if (isDisposed) return;
     // The window is the follow-up to HEARING the butler — muted or
     // voiceless sessions keep the button as the only entry point.
     if (!_muted && _tts.isAvailable) {
@@ -329,12 +329,12 @@ class CookingVoiceController extends ChangeNotifier {
   Future<void> _speak(String text) async {
     if (_muted || !_tts.isAvailable) return;
     _state = VoiceAssistState.speaking;
-    _notify();
+    notifyListeners();
     await _tts.speak(text);
-    if (_isDisposed) return;
+    if (isDisposed) return;
     if (_state == VoiceAssistState.speaking) {
       _state = VoiceAssistState.idle;
-      _notify();
+      notifyListeners();
     }
   }
 
@@ -423,13 +423,10 @@ class CookingVoiceController extends ChangeNotifier {
         '${l10n.voiceAssistAnd} ${parts.last}';
   }
 
-  void _notify() {
-    if (!_isDisposed) notifyListeners();
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
+    // First, so the guard is up before the cleanup below runs.
+    super.dispose();
     // Abandon our capture (ownership: the assistant only ever records via
     // its own begin/finish, and cooking mode owns this controller) and
     // silence the voice.
@@ -438,6 +435,5 @@ class CookingVoiceController extends ChangeNotifier {
       _voice.cancelRecording();
     }
     _tts.stop();
-    super.dispose();
   }
 }
