@@ -62,6 +62,12 @@
   catch-all**: a single-doc deny test is not proof — the engine can't show every matched
   doc satisfies an owner predicate for an unconstrained collection-group query, so the
   load-bearing test is a non-owner `collectionGroup(name).get()` denial.
+  **The owner FIELD such a catch-all trusts is only as good as every WRITER that stamps it**:
+  enumerate the nested write limbs (does each pin `field == docId == request.auth.uid` on the
+  post-state?) and grep `functions/` for Admin SDK writers of the collection constant. When
+  both hold, the grant is exactly "rows you wrote yourself" (`poll_votes`, BUT-2413). Grade the
+  field gate against the doc-id spelling (`request.auth.uid == {id}`): that mutant must kill the
+  field-filtered collection-group query and the field-missing-but-id-is-yours case.
 - **A header disclaiming "the missing `hasOnly`/rate limit is NOT asserted here as
   contract" is a claim about the ALLOW FIXTURES' key set, and only a mutant settles it.**
   Every required key the builder must send is a key a future hardening can forbid: on

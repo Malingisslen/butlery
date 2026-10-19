@@ -271,6 +271,33 @@ class SocialExportManager with SocialExportRedaction {
         maxMessagesPerConversation: messageLimit,
       );
 
+      // BUT-2413: the votes are read once, by the predicate the erasure uses,
+      // and then placed. Reading them per exported message missed every vote
+      // whose message is not in the bundle (sent before the user joined, past
+      // the message cap, in a chat they left) and every vote on a message
+      // without a poll, all of which the erasure still deletes.
+      final votesByMessage = <String, Map<String, dynamic>>{};
+      var pollVotesTruncated = false;
+      String? pollVotesErrorCode;
+      try {
+        final votes = await ExportPaginationHelper.fetchCapped(
+          type: 'poll_votes',
+          fetch: (max) =>
+              _exports.exportPollVotesByUser(userId, maxDocuments: max),
+        );
+        pollVotesTruncated = votes.truncated;
+        for (final vote in votes.items) {
+          final messageId = vote['message_id'];
+          if (messageId is String) {
+            votesByMessage[messageId] =
+                sanitizeForJson(vote['data']) as Map<String, dynamic>;
+          }
+        }
+      } catch (e) {
+        app_logger.AppLogger.error('[$_logTag] Failed to read poll votes', e);
+        pollVotesErrorCode = 'poll-votes-read-failed';
+      }
+
       for (final convo in conversations) {
         final messagesList = <Map<String, dynamic>>[];
         final votesOnWithheldRows = <Map<String, dynamic>>[];
@@ -298,13 +325,14 @@ class SocialExportManager with SocialExportRedaction {
           // than the chat screen's; `isOthersBlockedRow` says why.
           final storedRow =
               sanitizeForJson(msg['data']) as Map<String, dynamic>;
+          final vote = votesByMessage.remove(msg['id']);
           if (isOthersBlockedRow(storedRow, userId: userId)) {
             // BUT-1955: the row is someone else's, but a vote the requester
             // cast on it is their own record and stays in the bundle.
-            if (msg['your_poll_vote'] != null) {
+            if (vote != null) {
               votesOnWithheldRows.add({
                 'message_id': msg['id'],
-                'your_poll_vote': sanitizeForJson(msg['your_poll_vote']),
+                'your_poll_vote': vote,
               });
             }
             continue;
@@ -326,8 +354,7 @@ class SocialExportManager with SocialExportRedaction {
             // (`messages/{id}/poll_votes/{uid}`) and folding it in would make
             // the bundle describe a shape Firestore does not hold. Only the
             // requester's own row is read, so nothing here needs redacting.
-            if (msg['your_poll_vote'] != null)
-              'your_poll_vote': sanitizeForJson(msg['your_poll_vote']),
+            'your_poll_vote': ?vote,
           });
         }
 
@@ -364,22 +391,6 @@ class SocialExportManager with SocialExportRedaction {
         if (convo['messages_truncated'] == true) {
           conversationData['messages_truncated'] = true;
         }
-        // BUT-1832: the vote overlay clipped, while the messages themselves did
-        // not. `DataExportService`'s nested walk lifts any `*_truncated` flag,
-        // so naming it this way is what puts it in the bundle's truncation
-        // notice.
-        if (convo['poll_votes_truncated'] == true) {
-          conversationData['poll_votes_truncated'] = true;
-        }
-        // Its own key, never folded into `error_code` below: that one says the
-        // conversation's MESSAGES could not be read, and the section sentence
-        // it triggers says exactly that. A vote row that failed while every
-        // message came through is a different and smaller claim.
-        if (convo['poll_votes_error_code'] is String) {
-          conversationData['poll_votes_error_code'] =
-              convo['poll_votes_error_code'];
-          messagesData['error_code'] ??= 'conversation-poll-votes-read-failed';
-        }
         // BUT-1838: carry the per-conversation failure marker UP. The
         // repository's new per-conversation catch stops one unreadable
         // conversation failing the whole section — but a row that silently
@@ -402,6 +413,24 @@ class SocialExportManager with SocialExportRedaction {
 
       messagesData['total_conversations'] =
           messagesData['conversations'].length;
+
+      // BUT-2413: what is left is a vote whose message is not in this
+      // section, so it cannot ride beside it.
+      if (votesByMessage.isNotEmpty) {
+        final ids = votesByMessage.keys.toList()..sort();
+        messagesData['your_poll_votes_on_other_messages'] = [
+          for (final id in ids)
+            {'message_id': id, 'your_poll_vote': votesByMessage[id]},
+        ];
+      }
+      if (pollVotesTruncated) messagesData['poll_votes_truncated'] = true;
+      // Its own key, never folded into a conversation's `error_code`: that one
+      // says the conversation's MESSAGES could not be read. The root key is
+      // `??=` because a conversation failure above claims it unconditionally.
+      if (pollVotesErrorCode != null) {
+        messagesData['poll_votes_error_code'] = pollVotesErrorCode;
+        messagesData['error_code'] ??= pollVotesErrorCode;
+      }
 
       // BUT-1701: the conversation list is capped, and the N+1 probe the other
       // sections use would fetch a whole extra conversation's messages. A
@@ -463,8 +492,8 @@ class SocialExportManager with SocialExportRedaction {
       // BUT-1832 is why that list no longer says "poll `voterIds`": votes moved
       // to `messages/{id}/poll_votes/{uid}` and no live writer puts one back in
       // the message copy, so naming that array would point at a field recording
-      // nothing. The requester's own vote is exported beside each poll message
-      // as `your_poll_vote`, which keeps the sentence below true.
+      // nothing. The requester's own vote is exported beside its message as
+      // `your_poll_vote`, or in one of the two vote lists the note names.
       // BUT-1904 narrowed "everything else is kept as it was stored" to the
       // rows that are HERE. It was a categorical claim about FIELDS, and it
       // stopped being true the moment a whole ROW could be withheld: a bundle
@@ -484,14 +513,23 @@ class SocialExportManager with SocialExportRedaction {
           : 'The chat_groups section could not be read on this export and has '
                 'been left out entirely rather than shown as empty; see '
                 'chat_groups_error_code.';
+      // BUT-2014's rule: a sentence about where the votes are is only true
+      // when they were read.
+      final pollVotesNote = pollVotesErrorCode == null
+          ? 'A vote you cast on such a row is listed under '
+                'your_poll_votes_on_withheld_messages, and one on a message '
+                'that is not listed here (for example one sent before you '
+                'joined a group, or in a chat you have left) under '
+                'your_poll_votes_on_other_messages. '
+          : 'Your poll votes could not be read on this export; see '
+                'poll_votes_error_code. ';
       messagesData['data_minimisation'] =
           "Other participants' profile pictures have been removed, as have "
           'their own notification settings for this conversation (muted, '
           'pinned, archived) and, for a group chat, the moment each of THEM '
           'joined it. Rows where the app stopped a duplicate message that '
-          'someone ELSE sent have been left out entirely — yours are kept, '
-          'and a vote you cast on such a row is listed under '
-          'your_poll_votes_on_withheld_messages. '
+          'someone ELSE sent have been left out entirely — yours are kept. '
+          '$pollVotesNote'
           'For a group chat, the one-line preview of the most '
           'recent message is left out when that message was sent before you '
           'joined — the same cut-off the app itself applies, so the preview '

@@ -125,7 +125,9 @@
   close, and the code then owes a comment saying a change removing that surface reopens the
   decision. Three things a row filter does not
   reach: a denormalised COPY of the row on the parent doc (`conversations.lastMessage`), any
-  overlay attached to the dropped row (the requester's own `your_poll_vote` goes with it), and
+  overlay READ PER ROW (it dies with the row, and with every row a cut-off or cap never
+  returned — read it once by the erasure's own predicate, place it, and list the leftovers at
+  section level, BUT-2413), and
   a cap applied UPSTREAM of it — so the truncation flag must stay computed from the RAW
   pre-filter fetch. A row filter guarded by a CONTAINER type-check (`if (trail is List)`)
   fails OPEN at the container even when its per-row branch fails closed: an unexpected shape
