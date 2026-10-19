@@ -21170,3 +21170,22 @@ Production fixes were made by the main session; this run only changed tests (no 
 - MEASURED mutation probes (scratch copy, src untouched): `offset <= days` RED 1 (7-back); `WAU_28D = 7` in
   compute RED 2 (7-back, 27-back); re-throwing the raw commit error RED 1 (names no document); guard disabled
   RED 1 (06:00). Suites: repair 20/20, compute 16/16, tsc clean. Verdict pass.
+
+### 2026-10-19 — BUT-2415 dead share collections: digest/winback/rename/metadata cleanup [review]
+- Reviewed staged diff (13 files). Chapters loaded: gdpr-erasure, scheduled-jobs, ci-wiring.
+- Verified: digest share query served by existing `shared_content` (sharedByUserId, contentType,
+  sharedAt ASC); winback by (contentType, sharedToUserIds CONTAINS, sharedAt DESC); new
+  recipe_comments/recipe_ratings ASC composites present. App writer `BaseMetadataRepository.addMetadata`
+  stamps `timestamp` (serverTimestamp) + `expireAt` (+90d), parent always `shared_content`.
+  New `timestamp` fieldOverrides keep the three COLLECTION defaults (ASC/DESC/CONTAINS).
+- Rename write to shared_content fires `onMenuDishCreatorWrite` (retry:true) once per doc; Admin SDK
+  authType stops it at `isPersonAuth`, zero reads.
+- MEASURED (scratch probe, src untouched): `servingComposite` returned true for a collectionGroup
+  equality on an un-overridden field, a collectionGroup range, and a two-orderBy shape with no
+  matching composite. No current caller sends those shapes.
+- Suites: dead-share-collections 4/4, send-activity-digest 15/15, winback-context 14/14,
+  on-profile-updated 14/14, cleanup integration 12/12 (emulator), tsc clean.
+- `cleanupSharedContentMetadata` onSchedule has no timeoutSeconds (pre-existing) -> 60s; 8-min guard dead.
+- Not verified: prod residue under shared_recipes/shared_menus/shared_shopping_lists metadata
+  subcollections (old job swept them; new one skips and re-reads them).
+- Verdict pass (0 blocking); Medium: helper fail-open, legacy-residue measurement, timeout.
