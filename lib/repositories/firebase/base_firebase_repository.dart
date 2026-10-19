@@ -100,7 +100,7 @@ abstract class BaseFirebaseRepository<T>
       final docId = getId(entity);
       final canCreate = await validateCreatePermission(userId, entity);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
         operation: 'create',
@@ -140,7 +140,7 @@ abstract class BaseFirebaseRepository<T>
       final entity = fromFirestore(doc);
       final canRead = await validateReadPermission(userId, id, entity);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
         operation: 'read',
@@ -180,7 +180,7 @@ abstract class BaseFirebaseRepository<T>
         final entity = fromFirestore(doc);
         final canRead = await validateReadPermission(userId, doc.id, entity);
 
-        await logPermissionCheck(
+        logPermissionCheck(
           userId: userId,
           resource: '${T.toString()}/${doc.id}',
           operation: 'readAll',
@@ -210,7 +210,7 @@ abstract class BaseFirebaseRepository<T>
       final docId = getId(entity);
       final canUpdate = await validateUpdatePermission(userId, docId, entity);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
         operation: 'update',
@@ -240,7 +240,7 @@ abstract class BaseFirebaseRepository<T>
       final userId = requireCurrentUserId();
       final canDelete = await validateDeletePermission(userId, id);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
         operation: 'delete',
@@ -425,7 +425,7 @@ abstract class BaseFirebaseRepository<T>
       final entity = fromFirestore(doc);
       final canRead = await validateReadPermission(userId, id, entity);
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
         operation: 'read',

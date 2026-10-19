@@ -142,7 +142,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
         // This collection only. The per-user repository keeps BUT-1981's
         // reduction: its gate is a tautology that never recorded a decision
         // which could have gone the other way.
-        await logPermissionCheck(
+        logPermissionCheck(
           // The AUTHENTICATED actor, not the caller-supplied one — an
           // `audit_logs` create whose uid does not match the caller is refused
           // by the rules, so a divergent actor would lose the row silently.
@@ -166,7 +166,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
       // The GRANTED row (ADR-0010). Server-verifiable in a way the edit trail
       // is not: `audit_logs` refuses a create whose uid does not match the
       // caller, so this row cannot name anybody but its writer.
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: actorId,
         resource: '$collectionName/${plan.id}',
         operation: 'save',

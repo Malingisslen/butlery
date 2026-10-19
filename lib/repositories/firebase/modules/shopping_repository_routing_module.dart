@@ -78,12 +78,7 @@ class ShoppingRepositoryRoutingModule {
   })
   validateRequiredFields;
 
-  /// BUT-1741: `Future<void>`, not `void`. The injected implementation
-  /// (`PermissionValidationMixin.logPermissionCheck`) is async, and a `void`
-  /// parameter type accepts it while silently discarding the future — an audit
-  /// write that fails then surfaces as an unhandled async error nobody
-  /// attributes to the shopping list. Every call site awaits.
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -183,7 +178,7 @@ class ShoppingRepositoryRoutingModule {
       ),
     );
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'create',
@@ -282,7 +277,7 @@ class ShoppingRepositoryRoutingModule {
     );
     if (write.isNotEmpty) await docRef.update(write);
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -397,7 +392,7 @@ class ShoppingRepositoryRoutingModule {
         return mutated;
       });
 
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',
@@ -509,7 +504,7 @@ class ShoppingRepositoryRoutingModule {
           .catchError((Object e) => _offline.onReplayRejected(uid, listId, e)),
     );
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',

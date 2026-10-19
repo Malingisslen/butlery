@@ -79,8 +79,6 @@ void main() {
   setUp(() {
     calls = [];
     module = ShoppingOfflineWriteModule(
-      // BUT-1741: `async` because the module's callback type is
-      // `Future<void> Function(...)` — a `void` closure no longer type-checks.
       logPermissionCheck:
           ({
             required String userId,

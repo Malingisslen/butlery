@@ -87,7 +87,7 @@ class FirebaseDinerProfileRepository
     // (emulator-proven); this repo check is the client-side first line.
     final userId = requireCurrentUserId();
     final canUpdate = await validateUpdatePermission(userId, entity.id, entity);
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: '$collectionName/${entity.id}',
       operation: 'update',

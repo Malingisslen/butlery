@@ -87,7 +87,7 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
       // decision in the audit trail (the auto-id `collection.add` path skipped
       // both — every custom write must validate + log, per lib/repositories/CLAUDE.md).
       final canCreate = await validateCreatePermission(userId, entry);
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: 'FeedbackEntry/${entry.id}',
         operation: 'create',

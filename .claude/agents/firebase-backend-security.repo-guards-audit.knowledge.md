@@ -37,9 +37,8 @@
   `update(` callers and where their copy comes from before crediting "field-level".
 - A guard set is scoped to a method's callers; promoting it to a public INTERFACE
   invalidates that scope — review the promotion and its sibling as one change, require
-  guard parity. An injected `void Function({...})` callback silently drops the `await` on a
-  `Future<void>`-returning `logPermissionCheck` (Dart void-covariance) — declare it
-  `Future<void> Function({...})` and await, only once the sink can't throw.
+  guard parity. `PermissionValidationMixin.logPermissionCheck` is `void` and its injected
+  callbacks are `void Function({...})`, so the type refuses an `await` on it (BUT-1748).
 - `requireCurrentUserId()` then `logPermissionCheck(granted:true)` with no real check
   forges the trail. A guard logging `granted:true` BEFORE the write forges it a second way:
   where every SIBLING guard in the file is refusal-only and the METHOD logs the grant after

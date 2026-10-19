@@ -100,8 +100,6 @@ ShoppingRepositoryRoutingModule _routing(
             throw SecurityViolationException('missing required field');
           }
         },
-    // BUT-1741: the module's callback is `Future<void> Function(...)`, so a
-    // plain `void` closure no longer type-checks here.
     logPermissionCheck:
         ({
           required String userId,
@@ -109,7 +107,7 @@ ShoppingRepositoryRoutingModule _routing(
           required String operation,
           required bool granted,
           String? details,
-        }) async {
+        }) {
           permissionCalls?.add(
             _PermissionCall(userId, resource, operation, granted, details),
           );
@@ -182,13 +180,9 @@ UnifiedShoppingList _collabList({
 }
 
 void main() {
-  // BUT-1741 acceptance 3. The injected audit sink is async, and a `void`
-  // parameter type ACCEPTED the async implementation while dropping its
-  // future — so a failing audit write escaped as an unhandled async error
-  // nobody could attribute to a shopping list, and the call reported success.
-  // Now the callback is `Future<void> Function(...)` and every call site
-  // awaits, so a throwing sink surfaces at the caller. Written per write path,
-  // because the covariance opt-out was per call site.
+  // The callback is `void`, so the module cannot await it: a sink that throws
+  // synchronously must still reach the caller on every write path, and must not
+  // be caught on the way.
   group('a throwing audit write surfaces rather than vanishing', () {
     Object failingSink() => StateError('audit sink is down');
 

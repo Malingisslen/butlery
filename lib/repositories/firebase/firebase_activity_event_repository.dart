@@ -77,7 +77,7 @@ class FirebaseActivityEventRepository
     final userId = requireCurrentUserId();
     final canCreate = await validateCreatePermission(userId, event);
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: '$collectionName/${event.id}',
       operation: 'create',

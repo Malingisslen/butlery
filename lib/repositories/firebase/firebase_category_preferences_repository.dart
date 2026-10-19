@@ -128,7 +128,7 @@ class FirebaseCategoryPreferencesRepository
     required String resource,
     required String operation,
   }) async {
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       resource: resource,
       operation: operation,

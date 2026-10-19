@@ -340,7 +340,7 @@ class FirebaseShoppingRepository
         // Base class owns the audit repo as a private field; the console
         // log path in logPermissionCheck still runs with a null audit repo,
         // which is sufficient for the collaborative-delete gate.
-        await logPermissionCheck(
+        logPermissionCheck(
           userId: userId,
           resource: 'UnifiedShoppingList/$id (collaborative)',
           operation: 'delete',

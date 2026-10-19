@@ -135,7 +135,7 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
       );
 
       final canCreate = await validateCreatePermission(userId, event);
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: userId,
         resource: '$collectionName/${eventRef.id}',
         operation: 'logCookEvent',
@@ -170,7 +170,7 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
   Future<void> _requireSelf(String userId, String operation) async {
     final requesterId = requireCurrentUserId();
     final granted = requesterId == userId;
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: requesterId,
       resource: '$collectionName/$userId',
       operation: operation,

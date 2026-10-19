@@ -393,7 +393,7 @@ mixin PermissionValidationMixin {
   /// [details] Optional additional context
   /// [auditRepository] Optional repository for persistent audit logging
   /// [metadata] Optional metadata for persistent audit logs (IP address, device info, etc.)
-  Future<void> logPermissionCheck({
+  void logPermissionCheck({
     required String userId,
     required String resource,
     required String operation,
@@ -401,7 +401,7 @@ mixin PermissionValidationMixin {
     String? details,
     FirebaseAuditRepository? auditRepository,
     Map<String, dynamic>? metadata,
-  }) async {
+  }) {
     // ALWAYS log to console for development visibility
     final message =
         'Permission ${granted ? 'GRANTED' : 'DENIED'}: '
@@ -431,11 +431,6 @@ mixin PermissionValidationMixin {
 
         // Fire-and-forget persistent logging
         // Note: We don't await this to avoid blocking application operations.
-        // BUT-1741: `unawaited` says so out loud. A bare expression statement
-        // discarding a future reads identically to the bug this ticket fixed
-        // in the shopping modules — a dropped future whose rejection escapes as
-        // an unhandled async error — and the only thing separating the two is
-        // the `catchError` below, which is easy to delete by accident.
         unawaited(
           auditRepository
               .logPermissionCheck(

@@ -182,7 +182,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
           await fileRef.delete();
 
           if (logAudit) {
-            await logPermissionCheck(
+            logPermissionCheck(
               userId: currentUserId ?? 'system',
               resource: 'storage/${fileRef.fullPath}',
               operation: 'delete',
@@ -217,7 +217,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
       await ref.delete();
 
       if (logAudit) {
-        await logPermissionCheck(
+        logPermissionCheck(
           userId: currentUserId ?? 'system',
           resource: 'storage/$path',
           operation: 'delete',
@@ -253,7 +253,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
 
     // Check authentication
     if (currentUser == null) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: 'anonymous',
         resource: 'storage/$path',
         operation: operation,
@@ -270,7 +270,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
 
     // Validate user is accessing their own path
     if (userId != currentUser) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUser,
         resource: 'storage/$path',
         operation: operation,
@@ -288,7 +288,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
 
     // Validate path starts with users/{userId}/
     if (!path.startsWith('users/$userId/')) {
-      await logPermissionCheck(
+      logPermissionCheck(
         userId: currentUser,
         resource: 'storage/$path',
         operation: operation,
@@ -305,7 +305,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
     }
 
     // Log successful permission check
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: currentUser,
       resource: 'storage/$path',
       operation: operation,

@@ -103,7 +103,7 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuBallot>
       if (identical(next, current)) return;
       final allowed = await validateUpdatePermission(userId, userId, next);
       if (!allowed) {
-        await logPermissionCheck(
+        logPermissionCheck(
           userId: userId,
           resource: 'MenuBallot/$menuId/$userId',
           operation: 'update',

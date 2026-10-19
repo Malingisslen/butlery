@@ -214,7 +214,7 @@ class FirebaseHouseholdAllergenShareRepository
         stored.userId == userId &&
         entity.householdId == stored.householdId &&
         await _householdRepository.isMember(stored.householdId, userId);
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: userId,
       // Spelled like the base class's `'${T}/id'`, so one query over
       // audit_logs finds a share's whole history instead of half of it.
@@ -383,7 +383,7 @@ class FirebaseHouseholdAllergenShareRepository
         // A body that disagrees with its path is the forgery shape, not a
         // parse hiccup — it belongs in the audit trail, not only in a
         // device-local log line nobody will ever read.
-        await logPermissionCheck(
+        logPermissionCheck(
           userId: userId,
           resource: 'HouseholdAllergenShare/${doc.id}',
           operation: 'read',

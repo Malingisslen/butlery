@@ -53,10 +53,7 @@ class ShoppingItemOperationsModule {
   })
   validateRequiredFields;
 
-  /// BUT-1741: `Future<void>`, not `void`. The injected implementation is
-  /// async; a `void` parameter type accepts it and then drops the future, so a
-  /// failing audit write becomes an unhandled async error. Every call awaits.
-  final Future<void> Function({
+  final void Function({
     required String userId,
     required String resource,
     required String operation,
@@ -259,7 +256,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'add',
@@ -363,7 +360,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_add',
@@ -425,7 +422,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'update',
@@ -539,7 +536,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_update',
@@ -591,7 +588,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'remove',
@@ -635,7 +632,7 @@ class ShoppingItemOperationsModule {
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
-    await logPermissionCheck(
+    logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_remove',
