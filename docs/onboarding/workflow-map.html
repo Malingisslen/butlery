@@ -1482,6 +1482,12 @@
       "path": "functions/src/feedback/on-report-created.ts"
     },
     {
+      "id": "cf-menu-dish-creator",
+      "label": "onMenuDishCreatorWrite — rättens skapare kontrolleras (BUT-2352)",
+      "context": "cloud-function",
+      "path": "functions/src/moderation/on-menu-dish-creator.ts"
+    },
+    {
       "id": "cf-moderate-upload",
       "label": "moderateUpload — magic-byte-kontroll",
       "context": "cloud-function",
@@ -4809,6 +4815,20 @@
           "to": "ds-shared-content",
           "payload": "skapa delad-meny-dokument i shared_content (contentType 'menu') + ett mottagningskvitto per vän. BUT-1775: mottagarlistan skrivs nu även som sharedToUserIds — utan den är den delade menyn både oläsbar och oexporterbar för mottagarna — och sharedByDisplayName/standardtiteln bygger på profilnamnet, inte Auth-kontots namn. Delningsdokumentet, kvittona och stämplarna shared_content och received_menu skrivs i EN batch.",
           "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "ds-shared-content",
+          "to": "cf-menu-dish-creator",
+          "payload": "varje skrivning av en person på shared_content: nya createdBy på rätter i menuSnapshot (inte skrivarens eget uid, inte oförändrade) kontrolleras mot users/{createdBy}/recipes/{rätt-id}",
+          "transport": "Firestore trigger (onDocumentWrittenWithAuthContext)",
+          "verified": true
+        },
+        {
+          "from": "cf-menu-dish-creator",
+          "to": "ds-shared-content",
+          "payload": "tar bort createdBy när receptet saknas, skapare eller titel skiljer, skrivaren inte får läsa receptet eller personen anmält rätten som \"inte min rätt\"; i en transaktion som läser om menyn",
+          "transport": "Firestore transaction",
           "verified": true
         },
         {

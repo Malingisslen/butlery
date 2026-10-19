@@ -328,6 +328,7 @@ export { onAdminGranted, onAdminRevoked } from "./admin/sync-admin-claim";
 export { onReportCreated } from "./feedback/on-report-created";
 export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
 export { onReportDecision } from "./moderation/on-report-decision";
+export { onMenuDishCreatorWrite } from "./moderation/on-menu-dish-creator";
 export { getMyReportOutcomes } from "./moderation/my-report-outcomes";
 // BUT-2353: the owner's decisions, and appeals from both parties.
 export { getMyContentDecisions } from "./moderation/my-content-decisions";

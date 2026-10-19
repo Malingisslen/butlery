@@ -6393,3 +6393,32 @@ service-level ones `recipe_comments` uses.
   == {}`.
 - **Deploy order: functions before rules.** The `message_reactions` step, its probe legs and
   the export must be live before the rules let a participant write a reaction.
+## BUT-2352 — a server check on dish creators in shared menus (2026-10-19)
+
+- **SUPERSEDES "`createdBy` stays forgeable" in the BUT-2339 entry**, which reads: "A member
+  can still write any uid into `menuSnapshot`, so an opted-in adult's name can appear on a dish
+  they did not make until it is reported." Malin chose "Serverkontroll" on 2026-10-19. The rules
+  are unchanged. `onMenuDishCreatorWrite` runs on every write to `shared_content/{id}` and
+  checks those with `contentType: 'menu'` made by a signed-in person (`isPersonAuth`). It
+  compares each dish's (`id`, `createdBy`, `title`) with the menu before the write. A
+  `createdBy` that is not the writer's own uid and whose triple is new is kept only when
+  `users/{createdBy}/recipes/{id}` exists with the same `createdBy` and `title` (in `core`, or
+  flat on an older recipe), the writer's uid is a key of its `socialData.memberPermissions`,
+  and the named person has no `reports` row with `contentType: 'menu_dish'` and
+  `reason: 'misattribution'` on that menu and dish. Otherwise a transaction re-reads the menu
+  and removes `createdBy` from every dish that still carries that triple.
+- **Also SUPERSEDES, in the same entry, "A client holding the menu from before the removal can
+  write the uid back with a whole-menu save, BUT-1971's shape."** Such a save adds the triple
+  again, and the reporter's misattribution report makes the trigger remove it.
+- **What it leaves open:**
+  - The name shows from the write until the trigger has run.
+  - A triple already on the menu before the write is not checked, so a name written before
+    the trigger was deployed stays until its dish changes.
+  - Writes by the Admin SDK are not checked.
+  - Above `MAX_CREDIT_CHECKS` (40) new triples in one write, the rest are removed unchecked.
+  - Of the dish's text only the title is compared; a changed description, ingredient or
+    instruction under a backed name keeps the name.
+  - `realtime_resources` and other menu collections are not covered.
+- **Cost:** a write that adds no new name reads nothing. Each checked triple is one recipe
+  read (batched with `getAll`), plus one `reports` query per named person whose recipe backs
+  the name.
