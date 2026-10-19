@@ -1,7 +1,7 @@
 /**
  * Pooled ratings Stage A — mirror CF unit tests (Increment 2).
  *
- * Proves the acceptance criteria from tasks/pooled-ratings-plan.md plus the
+ * Proves the acceptance criteria from tasks/archive/pooled-ratings-plan.md plus the
  * fixes from the 2026-07-03 xhigh review:
  *   AC2  a client-written poolKey CANNOT route a vote — server recomputes it.
  *   AC3  one vote per uid per pool regardless of copy count (decision 4).

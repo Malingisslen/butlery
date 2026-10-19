@@ -3,11 +3,10 @@
  * TTL cleanup scheduled function core (`cleanupSharedContentMetadataCore`).
  *
  * The job deletes metadata subcollection docs (views/engagements/dismissals)
- * under shared_recipes / shared_menus / shared_shopping_lists whose
- * `timestamp` is older than 90 days. The `onSchedule` wrapper can't be invoked
- * directly, so we exercise the extracted core against a REAL Firestore
- * emulator — parent pagination and the per-subcollection cutoff query run for
- * real.
+ * under shared_content whose `timestamp` is older than 90 days. The
+ * `onSchedule` wrapper can't be invoked directly, so we exercise the extracted
+ * core against a REAL Firestore emulator — the collection-group cutoff query
+ * runs for real.
  *
  * Admin SDK bypasses rules → seeding is plain writes. Pointing Admin at the
  * emulator only needs `FIRESTORE_EMULATOR_HOST` set BEFORE
@@ -73,14 +72,14 @@ async function run_(): Promise<void> {
     return admin.firestore.Timestamp.fromDate(d);
   };
 
-  // ── Seed each of the three parent collections with one shared doc carrying
-  //    an OLD metadata entry (100 days) and a FRESH one (1 day) in the
-  //    `views` subcollection. We also seed a fresh `engagements` entry to
-  //    confirm fresh data in other subcollections survives. ──
+  // ── Seed one share of each content type, each carrying an OLD metadata
+  //    entry (100 days) and a FRESH one (1 day) in the `views` subcollection.
+  //    We also seed a fresh `engagements` entry to confirm fresh data in other
+  //    subcollections survives. ──
   const parents = [
-    { col: "shared_recipes", id: `sr-${RUN}` },
-    { col: "shared_menus", id: `sm-${RUN}` },
-    { col: "shared_shopping_lists", id: `ssl-${RUN}` },
+    { col: "shared_content", id: `recipe-${RUN}` },
+    { col: "shared_content", id: `menu-${RUN}` },
+    { col: "shared_content", id: `list-${RUN}` },
   ];
 
   const oldRefs: admin.firestore.DocumentReference[] = [];
@@ -89,7 +88,6 @@ async function run_(): Promise<void> {
 
   for (const p of parents) {
     const parentRef = db.collection(p.col).doc(p.id);
-    // Parent doc must exist for the orderBy __name__ scan to enumerate it.
     await parentRef.set({ seeded: true });
 
     const oldView = parentRef.collection("views").doc(`old-${RUN}`);
@@ -105,12 +103,25 @@ async function run_(): Promise<void> {
     freshEngagementRefs.push(freshEng);
   }
 
+  // An old `views` row under another collection is not shared-content
+  // metadata, so the collection-group sweep must leave it.
+  const strayOld = db
+    .collection("not_shared_content")
+    .doc(`p-${RUN}`)
+    .collection("views")
+    .doc(`old-${RUN}`);
+  await strayOld.set({ timestamp: daysAgo(100), uid: "viewer" });
+
   // ── Run the core ──
   const res = await cleanupSharedContentMetadataCore(db);
 
   // ── Effect assertions ──
+  check(
+    "an old views row outside shared_content is kept",
+    (await strayOld.get()).exists,
+  );
   for (let i = 0; i < parents.length; i++) {
-    const col = parents[i].col;
+    const col = `${parents[i].col}/${parents[i].id}`;
     check(
       `${col}: old view (>90d) is deleted`,
       !(await oldRefs[i].get()).exists,
@@ -127,7 +138,7 @@ async function run_(): Promise<void> {
 
   // ── Return-summary assertion: 3 old views deleted ──
   check(
-    "returns totalDeleted of at least 3 (one old view per parent collection)",
+    "returns totalDeleted of at least 3 (one old view per share)",
     typeof res.totalDeleted === "number" && res.totalDeleted >= 3,
     JSON.stringify(res),
   );

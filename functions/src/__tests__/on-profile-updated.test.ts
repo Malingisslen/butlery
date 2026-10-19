@@ -428,6 +428,29 @@ void (async () => {
       },
     },
     {
+      name: "BUT-2415: a rename reaches the sharer's name on their shares only",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.sharedContent]: [
+            {
+              id: "s1",
+              data: { sharedByUserId: UID, sharedByDisplayName: "Anna", contentType: "recipe" },
+            },
+            {
+              id: "s2",
+              data: { sharedByUserId: OTHER, sharedByDisplayName: "Keep", contentType: "menu" },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Anna", "Annika", null, null);
+
+        const [mine, theirs] = fake.store[Collections.sharedContent];
+        assertEqual(mine.data.sharedByDisplayName, "Annika", "own share renamed");
+        assertEqual(theirs.data.sharedByDisplayName, "Keep", "other sharer's share kept");
+      },
+    },
+    {
       name: "avatar-only change skips the name-only collections",
       fn: async () => {
         const fake = makeFakeDb({

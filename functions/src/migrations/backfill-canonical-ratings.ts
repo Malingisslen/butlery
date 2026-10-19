@@ -1,6 +1,6 @@
 /**
  * Pooled ratings ("Butlery-betyget") — one-shot BACKFILL of pre-existing
- * `recipe_ratings` into the pool event store. See tasks/pooled-ratings-plan.md
+ * `recipe_ratings` into the pool event store. See tasks/archive/pooled-ratings-plan.md
  * decision 14 and tasks/todo.md Increment 8.
  *
  * The Stage-A mirror (`../ratings/canonical-rating-aggregation.ts`) only fires on

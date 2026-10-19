@@ -1,6 +1,6 @@
 /**
  * Stage A of the pooled-ratings pipeline ("Butlery-betyget") — the
- * server-authoritative mirror. See tasks/pooled-ratings-plan.md (decisions
+ * server-authoritative mirror. See tasks/archive/pooled-ratings-plan.md (decisions
  * 2, 4, 7) and tasks/todo.md Increment 2.
  *
  * On every write to a `recipe_ratings/{ratingId}` doc (the 'alla' rating, one

@@ -519,9 +519,55 @@
         { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "recipe_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipe_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
+    {
+      "collectionGroup": "views",
+      "fieldPath": "timestamp",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "engagements",
+      "fieldPath": "timestamp",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
+      "collectionGroup": "dismissals",
+      "fieldPath": "timestamp",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
     {
       "collectionGroup": "recipes",
       "fieldPath": "core.ingredientsNormalized",

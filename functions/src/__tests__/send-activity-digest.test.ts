@@ -25,7 +25,15 @@
 import {
   sendPushToUserRespectingPreferences,
 } from "../shared/preference-aware-push";
-import { wantsActivityDigest } from "../analytics/send-activity-digest";
+import {
+  digestActivityQueries,
+  wantsActivityDigest,
+} from "../analytics/send-activity-digest";
+import {
+  makeRecordingDb,
+  recorded,
+  servingComposite,
+} from "./_query-index-coverage";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -222,7 +230,33 @@ async function runTests(): Promise<void> {
     `  ${wired ? "PASS" : "FAIL"}  the scheduler skips users through wantsActivityDigest`
   );
 
-  const total = scenarios.length + frequencyCases.length + 1;
+  // Every count runs inside one Promise.all per user, so a single query
+  // without its composite throws FAILED_PRECONDITION and ends the whole run.
+  const queries = digestActivityQueries(
+    makeRecordingDb() as never,
+    "uShape",
+    {} as never,
+  );
+  const queryNames = Object.keys(queries) as Array<keyof typeof queries>;
+  for (const name of queryNames) {
+    const rec = recorded(queries[name]);
+    const ok = servingComposite(rec);
+    if (!ok) failed++;
+    console.log(
+      `  ${ok ? "PASS" : "FAIL"}  the ${name} count on ${rec.path.join("/")} has its index`
+    );
+  }
+  const shares = recorded(queries.shares);
+  const sharesLive =
+    shares.path.join("/") === "shared_content" &&
+    shares.filters.some((f) => f.field === "contentType" && f.op === "==");
+  if (!sharesLive) failed++;
+  console.log(
+    `  ${sharesLive ? "PASS" : "FAIL"}  the share count reads recipe shares in shared_content`
+  );
+
+  const total =
+    scenarios.length + frequencyCases.length + 1 + queryNames.length + 1;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

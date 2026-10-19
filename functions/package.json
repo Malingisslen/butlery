@@ -224,6 +224,7 @@
     "test:rate-limiter-ordering": "ts-node src/__tests__/rate-limiter-withratelimit-ordering.test.ts",
     "test:validate-limit": "ts-node src/__tests__/validate-limit.test.ts",
     "test:winback-context": "ts-node src/__tests__/winback-context.test.ts",
+    "test:dead-share-collections": "ts-node src/__tests__/dead-share-collections.test.ts",
     "test:rules:acquisition": "ts-node src/__tests__/acquisition-rules.test.ts",
     "test:rules:overwritten-versions": "ts-node src/__tests__/overwritten-versions-rules.test.ts",
     "test:rules:recipe-suggestions": "ts-node src/__tests__/recipe-suggestions-rules.test.ts",

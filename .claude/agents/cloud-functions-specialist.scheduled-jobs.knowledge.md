@@ -31,6 +31,17 @@
   N does not, per window (`wau7d` 7, `wau28d` 28). A fixture three days apart leaves
   `offset <= days` and `WAU_28D = 7` green, and the wrong delta is permanent: the
   re-run sees no false left to flip.
+- **A collection-group sweep that PATH-scopes rows after the read re-reads every
+  skipped row on every run** — under `orderBy(timestamp)` skipped rows older than
+  the in-scope ones are read first and can use up the run's real timeout (an
+  `onSchedule` without `timeoutSeconds` gets 60s). Log the
+  skipped count so the first prod run measures it. Narrowing a sweep off a DEAD
+  parent spelling turns "deleted at N days" into "kept forever" for its residue.
+- **`servingComposite` (`__tests__/_query-index-coverage.ts`) checks COLLECTION-
+  scope composites only** — it answers "served" for any `collectionGroup` shape
+  without a range+equality pair (single-field auto indexes are collection-scoped,
+  so those need a `fieldOverrides` COLLECTION_GROUP entry) and ignores every
+  `orderBy` after the first. Pin a group query's override separately.
 - **Auth `UserRecord.metadata` times are `toUTCString()` strings, whole seconds.** A
   fake built the same way rounds a "1 ms short of N days" boundary fixture ONTO the
   line; step a boundary by 1000 ms. A sweep module importing
