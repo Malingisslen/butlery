@@ -129,7 +129,9 @@ class QueuedChange {
   /// An album of cook-snap photos: one item whose [id] is the snap's id and
   /// which is retried and thrown away as a whole.
   bool get isCookSnapGroup =>
-      kind == QueuedChangeKind.image && entityType == cookSnapEntityType;
+      kind == QueuedChangeKind.image &&
+      entityType == cookSnapEntityType &&
+      entityId != null;
 
   /// A recipe the server has never had: the entry creates it, so the recipe
   /// exists only on this phone. Throwing the entry away throws the recipe

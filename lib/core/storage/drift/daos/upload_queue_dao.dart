@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart'
     show encodeDependsOn;
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart'
+    show SyncQueueEntityType;
 import 'package:butlery/core/storage/drift/tables/upload_queue.dart';
 
 part 'upload_queue_dao.g.dart';
@@ -144,6 +146,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
                 firstFailedAt: const Value(null),
               ),
             );
+    if (written > 0) _cancelledInFlight.remove(id);
     return written > 0;
   }
 
@@ -210,13 +213,78 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
-  /// Cancel an upload
-  Future<void> cancelUpload(String id) {
-    return (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
+  /// Rows cancelled while their upload was in flight. Afterwards they look
+  /// like any cancelled row, but the upload still needs them to record where
+  /// the image landed. Memory is enough: an upload cannot outlive the process.
+  final Set<String> _cancelledInFlight = {};
+
+  /// Cancel an upload. A row that holds no address in Storage goes with it
+  /// ([dropIfBare]), so a thrown-away photo leaves no caption, recipe name or
+  /// author behind. A row mid-upload stays: the upload in flight still needs
+  /// it to record where the image landed.
+  Future<void> cancelUpload(String id) => transaction(() async {
+    final before = await getUpload(id);
+    await (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
       const UploadQueueEntriesCompanion(
         status: Value('cancelled'),
+        // Caption, recipe name and the recipe author's uid are of no use to a
+        // row that is only waiting for its Storage take-back.
+        metadata: Value(null),
       ),
     );
+    if (before == null) return;
+    if (before.status == 'uploading') {
+      _cancelledInFlight.add(id);
+    } else {
+      await dropIfBare(id);
+    }
+  });
+
+  /// Deletes the cancelled row [id] when it holds no address in Storage. A
+  /// cancelled photo of a cook-snap album is what tells its still-live
+  /// siblings that the album is dead, so it stays while one of them is live;
+  /// once none is, the album's other bare cancelled rows go with it.
+  Future<void> dropIfBare(String id, {bool uploadFinished = false}) async {
+    if (uploadFinished) _cancelledInFlight.remove(id);
+    final row = await getUpload(id);
+    if (row == null || row.status != 'cancelled' || row.uploadedUrl != null) {
+      return;
+    }
+    final snapId = row.entityId;
+    if (row.entityType != SyncQueueEntityType.cookSnap || snapId == null) {
+      await markCompleted(id);
+      return;
+    }
+    final group = await getGroup(row.userId, row.entityType!, snapId);
+    if (group.any((r) => r.status != 'cancelled' && r.status != 'completed')) {
+      return;
+    }
+    await (delete(uploadQueueEntries)..where(
+          (e) =>
+              e.uploadedUrl.isNull() &
+              e.id.isIn([
+                for (final r in group)
+                  if (r.status == 'cancelled' &&
+                      r.uploadedUrl == null &&
+                      !_cancelledInFlight.contains(r.id))
+                    r.id,
+              ]),
+        ))
+        .go();
+  }
+
+  /// [dropIfBare] for every cancelled row of [userId], or of every user when
+  /// it is null. For rows cancelled while their upload was in flight, which
+  /// [cancelUpload] had to leave; only called when no upload is in flight.
+  Future<void> dropCancelledWithoutImage([String? userId]) async {
+    _cancelledInFlight.clear();
+    final query = select(uploadQueueEntries)
+      ..where((e) => e.status.equals('cancelled') & e.uploadedUrl.isNull());
+    if (userId != null) query.where((e) => e.userId.equals(userId));
+    final rows = await query.get();
+    for (final row in rows) {
+      await dropIfBare(row.id);
+    }
   }
 
   /// Remove completed and cancelled uploads older than given duration

@@ -6,6 +6,7 @@
 // the rest of the app has registered.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -20,8 +21,13 @@ import 'package:butlery/services/offline/offline_purge_store.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queued_image_transport.dart';
 import 'package:butlery/services/offline/upload_completion.dart';
+import 'package:butlery/services/offline/unsent_image_discard.dart';
 import 'package:butlery/services/offline/upload_queue_processor.dart';
 import 'package:butlery/services/user_service.dart';
+
+/// Local only: runs at startup for every user on the device, signed in or not.
+Future<void> sweepUnsentImages(AppDatabase database) =>
+    sweepExpiredUnsent(database, clock.now());
 
 UploadQueueProcessor buildUploadQueueProcessor({
   required AppDatabase database,

@@ -80,6 +80,16 @@
 - **An ORDERING fix (resolve A before B) is mutation-dead whenever the suite INJECTS A** — the
   testable constructor param resolves A synchronously, hiding a reverted fire-and-forget order
   (BUT-1838).
+- **A process-memory guard set (`_cancelledInFlight`-style) is consulted by only ONE branch of its
+  reader, and the fixture's entity type decides whether that branch runs.** Here only the
+  cook-snap group path of `dropIfBare` reads the set; every `recipe`-typed fixture deletes via
+  `markCompleted` regardless, so a `.clear()` in the pass-start sweep is deletable-green until a
+  cook-snap row is cancelled mid-upload, never finishes, and a pass is expected to drop it. Grade
+  the clear/remove sites by which fixture type reaches the read (BUT-2294 PR 5c).
+- **Changing a status assertion to `row == null` is the intended contract change only when the
+  SAME suite keeps a `status == 'cancelled'` case for each reason a row must survive** (address in
+  Storage, mid-upload, live album sibling). Check those three survive before agreeing the
+  mass-edit is not weakening (BUT-2294 PR 5c).
 ### Disposal & lifecycle guard idioms (BaseViewModel family)
 - `BaseViewModel` already guards disposal twice — only test a subclass's OWN guard when it protects an
   observable effect no base guard blocks.
