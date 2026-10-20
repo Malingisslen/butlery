@@ -13,6 +13,7 @@ import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 
+import '../../../infrastructure/helpers/synthetic_jpeg.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 FirebaseStorageRepository _repo(
@@ -131,6 +132,40 @@ void main() {
         expect(result, tiny);
       },
     );
+
+    test('a small JPEG leaves without its Exif APP1 segment', () async {
+      final repo = _repo(MockFirebaseStorage());
+      final input = syntheticJpeg();
+      expect(input.length, lessThan(UploadConstants.skipCompressionThreshold));
+
+      final result = await repo.compressImageBytes(input);
+
+      expect(hasMetadataSegment(result), isFalse);
+      expect(containsBytes(result, gpsPayload), isFalse);
+      expect(containsBytes(result, scanData), isTrue);
+    });
+  });
+
+  group('compressImageBytes — plugin failure falls back to a stripped copy', () {
+    test('a large JPEG whose re-encode throws still loses its Exif', () async {
+      final repo = _repo(MockFirebaseStorage());
+      // Above the threshold so the re-encode is attempted; the plugin has no
+      // platform channel under unit tests, so it throws into the fallback.
+      final padding = Uint8List(UploadConstants.skipCompressionThreshold + 10);
+      final input = jpegOf([
+        [0xFF, 0xD8],
+        segment(0xE1, gpsPayload),
+        segment(0xDA, [1, 1, 0, 0, 0x3F, 0]),
+        padding,
+        [0xFF, 0xD9],
+      ]);
+
+      final result = await repo.compressImageBytes(input);
+
+      expect(hasMetadataSegment(result), isFalse);
+      expect(containsBytes(result, gpsPayload), isFalse);
+      expect(result.length, greaterThan(padding.length));
+    });
   });
 
   // BUT-1027 (acceptance #1 of BUT-1023): the inline catch block in

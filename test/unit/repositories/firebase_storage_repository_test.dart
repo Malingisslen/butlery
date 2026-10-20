@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/synthetic_jpeg.dart';
 // production_mocks supplies FakeAuthRepository / MockFile / MockUuid / FakeUser.
 // The Firebase Storage SDK mocks now come from firebase_storage_mocks (above).
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -75,6 +76,22 @@ void main() {
         expect(mockStorage.storedDataMap.get(path), imageData);
         expect(result, isNotNull);
         expect(result, contains(path));
+      });
+
+      test('a JPEG sent straight to uploadImageData is stored without its '
+          'Exif segment', () async {
+        const path = 'users/$testUserId/recipes/r1/heirloom/scan.jpg';
+
+        await repository.uploadImageData(
+          imageData: syntheticJpeg(),
+          userId: testUserId,
+          path: path,
+        );
+
+        final stored = mockStorage.storedDataMap.get(path)!;
+        expect(hasMetadataSegment(stored), isFalse);
+        expect(containsBytes(stored, gpsPayload), isFalse);
+        expect(containsBytes(stored, scanData), isTrue);
       });
 
       test('records custom metadata and required uploadedBy stamp', () async {
