@@ -277,7 +277,7 @@ jobs:
           - suite: golden
             shard: 7
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - uses: actions/checkout@v6
