@@ -58,6 +58,8 @@ const RUN = Date.now().toString(36);
 const UPLOADER = `uploader-${RUN}`;
 const GOOD_PATH = `users/${UPLOADER}/recipes/good-${RUN}.jpg`;
 const EVIL_PATH = `users/${UPLOADER}/recipes/evil-${RUN}.jpg`;
+const GONE_PATH = `users/${UPLOADER}/recipes/gone-${RUN}.jpg`;
+const loggedErrors: unknown[][] = [];
 
 // Genuine JPEG head (FF D8 FF E0 + JFIF marker), padded past the 32-byte
 // ranged read the CF performs.
@@ -149,6 +151,16 @@ test("SVG spoofed as image/jpeg: audit_logs row records the rejection", async ()
   );
 });
 
+// I5: an image the owner deleted before the trigger read it is not an error.
+test("object deleted before it was read: nothing logged as an error, no audit row", async () => {
+  assert(
+    loggedErrors.length === 0,
+    `a 404 must not be logged at error level, got ${JSON.stringify(loggedErrors)}`,
+  );
+  const rows = await auditRowsFor(GONE_PATH);
+  assert(rows.length === 0, `expected zero audit rows, got ${rows.length}`);
+});
+
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
@@ -196,6 +208,20 @@ async function run(): Promise<void> {
   });
   await moderateUpload.run(makeEvent(GOOD_PATH));
   await moderateUpload.run(makeEvent(EVIL_PATH));
+
+  // Never uploaded, so the ranged read answers 404 exactly as it does for an
+  // image the owner deleted first.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { logger } = require("firebase-functions/logger");
+  const originalError = logger.error;
+  logger.error = (...args: unknown[]) => {
+    loggedErrors.push(args);
+  };
+  try {
+    await moderateUpload.run(makeEvent(GONE_PATH));
+  } finally {
+    logger.error = originalError;
+  }
 
   let failed = 0;
   for (const t of tests) {

@@ -1,6 +1,14 @@
 # cloud-functions-specialist — chapter: data-pipelines
 
 
+### Storage triggers (storage/)
+- **A Storage object NAME is PII** — `users/{uid}/…`, `feedback/{uid}/…` carry the uid, and a
+  raw `ApiError` repeats the name. Log `bucket` + `errorCodeOf(err)`, never `name`/`err`. A 404
+  on the `onObjectFinalized` head read means the owner deleted first: `info` + return. The
+  trigger declares no `retry`, so return-vs-throw changes nothing for redelivery. A log-hygiene
+  test must capture EVERY level it claims (a stub on `logger.error` alone cannot see an
+  `info`/`warn` that leaks the name).
+
 ### TS↔Dart parity twins (canonical-pool-key.ts et al.)
 - Case-insensitive triggers need per-letter classes, not `/i`. Module-scope
   `/g` regexes are stateful with `.test()`/`.exec()` in long-lived isolates.
