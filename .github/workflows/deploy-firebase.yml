@@ -47,7 +47,9 @@ on:
         description: "What to deploy"
         type: choice
         default: all
-        options: [all, rules, indexes, functions, storage]
+        # `verify` deploys nothing: it proves the sign-in and the guard, and reads
+        # the project back (the first dispatch against a new project, BUT-2427).
+        options: [all, rules, indexes, functions, storage, verify]
       environment:
         description: "Which project to deploy to"
         type: choice
@@ -114,6 +116,11 @@ jobs:
       FUNCTIONS_ONLY: ${{ github.event.inputs.functions_only || '' }}
       DEPLOY_ENV: ${{ inputs.environment || 'production' }}
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      # 'true' while a NEW project is first filled (BUT-2427): its functions go
+      # in over many runs, the smoke gate is red until the last batch, and an
+      # auto-rollback or a retire loop would act on a half-built project.
+      # Removed from the environment after the first fully green smoke gate.
+      BRING_UP: ${{ vars.BRING_UP }}
 
     steps:
       - name: Checkout code
@@ -263,9 +270,10 @@ jobs:
           REGION=europe-west1
           mkdir -p rollback-baseline
 
-          # firebase uses ADC; gcloud needs an explicit SA activation. The WIF
-          # login already pointed gcloud at its credential file.
-          if [ "$DEPLOY_ENV" = "production" ]; then
+          # firebase uses ADC; a key file needs an explicit gcloud activation. A
+          # WIF login sets CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE and needs none,
+          # whichever environment it runs in.
+          if [ -z "${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-}" ]; then
             gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 \
               || echo "::warning::gcloud SA activation failed — Cloud Run revision capture may be empty"
           fi
@@ -326,7 +334,7 @@ jobs:
       # Production only. The list is a record of what production once ran; a
       # `--force` delete loop has no business in any other project.
       - name: Retire the merged scheduler functions and finished one-shots (idempotent)
-        if: env.DEPLOY_ENV == 'production' && (env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all')
+        if: env.DEPLOY_ENV == 'production' && env.BRING_UP != 'true' && (env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all')
         run: |
           set -uo pipefail
           for f in detectLapsedUsers sendWeeklyActivityDigest trackDayNRetention \
@@ -345,12 +353,34 @@ jobs:
 
       - name: Deploy
         id: deploy
+        env:
+          FEEDBACK_EMAIL_TO: ${{ secrets.FEEDBACK_EMAIL_TO }}
+          FEEDBACK_EMAIL_FROM: ${{ secrets.FEEDBACK_EMAIL_FROM }}
+          FEEDBACK_DASHBOARD_URL: ${{ secrets.FEEDBACK_DASHBOARD_URL }}
         run: |
           set -euo pipefail
           PROJECT="$FIREBASE_PROJECT_ID"
           : > reached-targets.txt
+          # The functions read these from `functions/.env.<project>`, which is
+          # gitignored and so absent in CI. Without it `onFeedbackCreated` skips
+          # every mail and logs only at info level (BUT-2420).
+          write_functions_env() {
+            local k v
+            for k in FEEDBACK_EMAIL_TO FEEDBACK_EMAIL_FROM; do
+              [ -n "${!k}" ] || { echo "::error::Environment secret $k is empty for '$DEPLOY_ENV'." >&2; exit 1; }
+            done
+            : > "functions/.env.$PROJECT"
+            for k in FEEDBACK_EMAIL_TO FEEDBACK_EMAIL_FROM FEEDBACK_DASHBOARD_URL; do
+              v="${!k}"
+              [ -n "$v" ] || continue
+              case "$v" in *$'\n'*) echo "::error::$k holds a newline." >&2; exit 1 ;; esac
+              printf '%s=%s\n' "$k" "$v" >> "functions/.env.$PROJECT"
+            done
+            echo "Wrote functions/.env.$PROJECT with keys: $(cut -d= -f1 "functions/.env.$PROJECT" | tr '\n' ' ')"
+          }
           deploy_one() {
             local t="$1"
+            case "$t" in functions*) write_functions_env ;; esac
             echo "Deploying: $t"
             # `--force` is REQUIRED, not convenience. The CLI refuses to deploy a
             # codebase containing ANY function with a failure policy unless it is
@@ -419,6 +449,9 @@ jobs:
               fi
               ;;
             storage)  deploy_one "storage" ;;
+            verify)
+              gcloud projects describe "$PROJECT" --format="value(projectId,projectNumber,lifecycleState)"
+              ;;
             all)
               deploy_one "firestore"
               deploy_one "functions"
@@ -602,7 +635,7 @@ jobs:
       # Production only: a failed staging deploy is left as it failed, for
       # someone to read, and nothing is re-released into it automatically.
       - name: Auto-rollback on deploy failure
-        if: env.DEPLOY_ENV == 'production' && (steps.deploy.outcome == 'failure' || steps.smoke.outcome == 'failure')
+        if: env.DEPLOY_ENV == 'production' && env.BRING_UP != 'true' && (steps.deploy.outcome == 'failure' || steps.smoke.outcome == 'failure')
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
@@ -612,7 +645,9 @@ jobs:
           echo "::warning::Deploy failed — attempting auto-rollback. Verify the previous ref (${PREV_DEPLOY_REF:-<none>}) was actually healthy; rollback does NOT prove the prior version was good."
           echo "Targets completed before failure: $(cat reached-targets.txt 2>/dev/null | tr '\n' ' ')"
 
-          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 || true
+          if [ -z "${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-}" ]; then
+            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 || true
+          fi
           gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
 
           # 1. Functions — traffic-swap each captured service to its prior revision.
