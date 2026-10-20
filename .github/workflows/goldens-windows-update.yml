@@ -1,0 +1,57 @@
+name: Goldens (Windows) update
+
+# The widget goldens are compared on windows-latest only (see
+# test/widget/golden/golden_helper.dart). This renders them on that runner and
+# uploads them as an artifact. It never pushes anything: a push made with
+# GITHUB_TOKEN starts no workflow runs. Fetch the artifact with
+# `gh run download`, look at every PNG against the one in the repo, and push
+# them yourself.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or SHA to render'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with test.yml, so the PNGs match what the cross-os job compares.
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  render:
+    name: render goldens (windows)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Render the widget goldens
+        shell: bash
+        run: flutter test --update-goldens test/widget/golden test/widget/menu/calendar_weekly_menu_widget_test.dart test/widget/common/tappable_wrapper_test.dart --reporter=expanded
+
+      - name: Upload the PNGs
+        uses: actions/upload-artifact@v7
+        with:
+          name: goldens-windows-${{ github.run_id }}
+          path: |
+            test/widget/golden/goldens/
+            test/widget/menu/goldens/
+            test/widget/common/goldens/
+          if-no-files-found: error

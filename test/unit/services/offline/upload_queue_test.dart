@@ -17,6 +17,7 @@ import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -154,7 +155,10 @@ void main() {
     final id = await queueImage('r1');
 
     final row = (await uploadRow(id))!;
-    expect(row.localPath, startsWith('${root.path}/$uid/'));
+    expect(
+      row.localPath,
+      startsWith('${p.join(root.path, uid)}${p.separator}'),
+    );
     expect(File(row.localPath).existsSync(), isTrue);
     expect(row.entityId, 'r1');
     expect(row.fileSizeBytes, 3);
