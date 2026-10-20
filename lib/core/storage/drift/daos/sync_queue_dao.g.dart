@@ -6,4 +6,15 @@ part of 'sync_queue_dao.dart';
 mixin _$SyncQueueDaoMixin on DatabaseAccessor<AppDatabase> {
   $SyncQueueEntriesTable get syncQueueEntries =>
       attachedDatabase.syncQueueEntries;
+  SyncQueueDaoManager get managers => SyncQueueDaoManager(this);
+}
+
+class SyncQueueDaoManager {
+  final _$SyncQueueDaoMixin _db;
+  SyncQueueDaoManager(this._db);
+  $$SyncQueueEntriesTableTableManager get syncQueueEntries =>
+      $$SyncQueueEntriesTableTableManager(
+        _db.attachedDatabase,
+        _db.syncQueueEntries,
+      );
 }

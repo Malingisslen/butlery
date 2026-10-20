@@ -51,7 +51,7 @@ Full text of the BSD 3-Clause License: https://opensource.org/licenses/BSD-3-Cla
 Other licenses
 ================================================================================
 
-  - sqlcipher_flutter_libs / sqlcipher (BSD-style — Zetetic LLC).
+  - SQLite3MultipleCiphers (MIT), built by the sqlite3 package.
   - flutter_onnxruntime (MIT).
   - whisper_ggml_plus 1.5.2 (MIT; bundles whisper.cpp 1.8.3, MIT, (c) Georgi
     Gerganov — pinned exactly per the kb-whisper voice plan's supply-chain
