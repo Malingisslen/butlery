@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:clock/clock.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/cook_snap.dart';
@@ -124,8 +125,8 @@ class CookSnapUploadCompletion implements UploadCompletion {
         final meta = _metaOf(group.first);
         _announce(
           snap,
-          recipeAuthorId: meta['recipeAuthorId'] as String? ?? '',
-          recipeName: meta['recipeName'] as String? ?? '',
+          recipeAuthorId: (meta['recipeAuthorId'] as String?).orEmpty(),
+          recipeName: (meta['recipeName'] as String?).orEmpty(),
           senderName: snap.userDisplayName,
         );
       }
