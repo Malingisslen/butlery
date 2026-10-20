@@ -261,6 +261,19 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 200,
   },
+  // BUT-1528: the moderator's closed-report list and reopening (admin only).
+  listClosedReports: {
+    maxTokens: 60,
+    refillRate: 60,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 400,
+  },
+  reopenReport: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
   reportContent: {

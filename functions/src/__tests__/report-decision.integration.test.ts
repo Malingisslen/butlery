@@ -127,8 +127,8 @@ async function contents(): Promise<void> {
   );
   const keys = Object.keys(row ?? {}).sort().join(",");
   check(
-    "the record holds exactly the seven fields",
-    keys === "contentType,decidedAt,decision,expireAt,moderatorId,motivation,rule",
+    "the record holds exactly the eight fields",
+    keys === "contentType,decidedAt,decision,expireAt,moderatorId,motivation,revision,rule",
     keys,
   );
   const serialized = JSON.stringify(row);

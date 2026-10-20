@@ -21256,3 +21256,47 @@ Production fixes were made by the main session; this run only changed tests (no 
 - Probes: 12 mutants, all red after two initially non-compiling mutants (TS2339 narrowing,
   TS6133 unused import) were replaced with compiling ones.
 - Gap: the `deps.ownerExists ?? accountExists` default is unpinned (no Auth emulator).
+
+## 2026-10-20 — BUT-1528 gate review (re-added strike expiry)
+- A strike re-added when a reopened report's decision changes to an action took
+  `expireAt = report.createdAt + 180d`. The reports create rule only requires
+  `createdAt`, so a reporter could plant a far-future value. Fixed by clamping to the
+  decision time; pinned by an emulator case and a compiling mutant that reddens it.
+
+## 2026-10-20 — BUT-1528 gate review (late evidence delete after a reopen)
+- `onReportEvidenceLifecycle` deleted the report's text copy on closed-transition
+  without re-reading the report. A reopen re-captures the copy, so a retried close event
+  landing after it would wipe the reopened case's evidence. Fixed by re-reading the
+  report (skip when no longer closed) and by deleting any stale copy inside the reopen
+  transaction; both pinned by emulator cases with compiling mutants.
+
+## 2026-10-20 — BUT-1528 gate review (lists offering a refused appeal)
+- Widening `getMyReportOutcomes`/`getMyContentDecisions` to reopened cases and revised
+  no-action decisions made the app offer "Överklaga" on rows `submitAppeal` always refuses.
+  Fixed with a shared `appealAdmits` used by both, an `appealable` field the app honours,
+  and emulator plus widget tests with compiling mutants.
+
+## 2026-10-20 — BUT-1528 gate review (App Check scan window)
+- reopenReport and listClosedReports use non-async handlers; the App Check guard scans from the options to the next `async`. One flag per file today, so the check still bites (probed in memory by the reviewer).
+
+## 2026-10-20 — BUT-1528 gate review batch 5 (paging check vacuous on a fresh emulator) [test-vacuity]
+- `report-reopen.integration.test.ts` "paging never repeats a row" walks `nextCursor` pages
+  of `runListClosedReportsWithDb`, but the suite seeds fewer decision records than
+  `PAGE_SIZE` (50) before `listing()`. MEASURED: a scratch copy of the suite with a fresh
+  `PROJECT_ID` printed `pages=0 firstPageRows=13 nextCursor=null`, 59/59 green — so in CI
+  (fresh emulator per job) the loop never runs and `startAfter`/`nextCursor`/`encodeCursor`
+  are unpinned. On the persisted local emulator older runs' rows push it past 50, which is
+  why local runs looked exercised. Filed High.
+- Also unpinned there: `HISTORY_MAX` slice, the changed record's moved `expireAt`, and the
+  owner notice on a no_action → action change (`strikes(decision)` half of
+  `revisedNoticesFor`).
+- Knowledge edit: added the fresh-vs-persisted emulator principle to the core card's test
+  seams; moved the "TTL field is INERT without a policy" bullet verbatim from the core card
+  to the ci-wiring chapter to stay under the core cap.
+- Noted: the gdpr-erasure chapter was already over its 20,000-char cap (20,699) in the
+  working tree before this review.
+- Re-review (same day): `listing()` now seeds `PAGE_SIZE + 5` records at one `decidedAt` and
+  asserts `pages > 0` plus every seeded id seen once. A fresh-`PROJECT_ID` scratch copy ran
+  64/64 with "paging reads past the first page" passing, so the page boundary now sits on the
+  document-id tiebreak in CI too. The three Medium gaps are pinned (owner K3 notice,
+  `nextHistory` cap, changed `expireAt`). Verdict pass.

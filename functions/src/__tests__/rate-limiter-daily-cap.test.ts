@@ -37,6 +37,13 @@ import {
   RateLimitConfig,
 } from "../middleware/rate_limiter";
 import { MAX_BATCH_NOTIFICATIONS } from "../notifications/send-notification";
+import { RATE_LIMIT_KEY as ANSWER_APPEAL_KEY } from "../moderation/answer-appeal";
+import { RATE_LIMIT_KEY as LIST_CLOSED_REPORTS_KEY } from "../moderation/list-closed-reports";
+import { RATE_LIMIT_KEY as LIST_OPEN_APPEALS_KEY } from "../moderation/list-open-appeals";
+import { RATE_LIMIT_KEY as MY_CONTENT_DECISIONS_KEY } from "../moderation/my-content-decisions";
+import { RATE_LIMIT_KEY as MY_REPORT_OUTCOMES_KEY } from "../moderation/my-report-outcomes";
+import { RATE_LIMIT_KEY as REOPEN_REPORT_KEY } from "../moderation/reopen-report";
+import { RATE_LIMIT_KEY as SUBMIT_APPEAL_KEY } from "../moderation/submit-appeal";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
 const cappedConfig: RateLimitConfig = {
@@ -57,6 +64,19 @@ const NOON_UTC = new Date(Date.UTC(2026, 6, 7, 12, 0, 0));
 const TODAY_KEY = "2026-6-7"; // getUTCMonth() is 0-based, matching production.
 
 const cases: UnitCase[] = [
+  {
+    // These keys reach `enforceRateLimit` through `deps`, where no source
+    // scan sees them; a misspelt one would fall back to the default limit.
+    name: "every moderation callable's RATE_LIMIT_KEY has its own config",
+    fn: async () => {
+      for (const key of [
+        ANSWER_APPEAL_KEY, LIST_CLOSED_REPORTS_KEY, LIST_OPEN_APPEALS_KEY, MY_CONTENT_DECISIONS_KEY,
+        MY_REPORT_OUTCOMES_KEY, REOPEN_REPORT_KEY, SUBMIT_APPEAL_KEY,
+      ]) {
+        assertEqual(Object.prototype.hasOwnProperty.call(RATE_LIMIT_CONFIGS, key), true, key);
+      }
+    },
+  },
   {
     name: "under the cap: allowed, counter carried forward for increment",
     fn: async () => {
@@ -383,6 +403,9 @@ const cases: UnitCase[] = [
         submitAppeal: [5, 10],
         listOpenAppeals: [30, 200],
         answerAppeal: [30, 200],
+        // BUT-1528.
+        listClosedReports: [60, 400],
+        reopenReport: [30, 200],
       };
       for (const [name, [perHour, perDay]] of Object.entries(expected)) {
         const cfg = RATE_LIMIT_CONFIGS[name];
@@ -453,6 +476,8 @@ const cases: UnitCase[] = [
         "submitAppeal",
         "listOpenAppeals",
         "answerAppeal",
+        "listClosedReports",
+        "reopenReport",
         "exportModerationAppeals",
         "exportErasureResidue",
         "reportContent",

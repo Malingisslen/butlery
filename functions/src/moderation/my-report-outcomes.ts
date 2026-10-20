@@ -1,5 +1,5 @@
 /**
- * BUT-2222: tells a reporter what was decided on their closed reports, so
+ * BUT-2222: tells a reporter what was decided on their reports, so
  * "Mina anmälningar" can say it in words.
  *
  * The decision lives in `moderation_decisions/{reportId}` (BUT-2330), which no
@@ -18,6 +18,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS } from "./report-status";
+import { roundOf } from "./decision-revision";
 import { MODERATION_DECISIONS } from "./report-decision";
 import { readAppeals } from "./appeals";
 import { APPEAL_FIELDS, DECISION_FIELDS, Outcome, outcomeFrom } from "./decision-outcome";
@@ -77,12 +78,16 @@ export async function runGetMyReportOutcomesWithDb(
     .collection(REPORTS)
     .where("reporterId", "==", uid)
     .orderBy("createdAt", "desc")
-    .select("status")
+    .select("status", "reviewRound")
     .limit(MAX_REPORTS)
     .get();
 
+  const closed = new Set(
+    reports.docs.filter((doc) => isClosedReportStatus(doc.get("status"))).map((doc) => doc.id),
+  );
   const closedIds = reports.docs
-    .filter((doc) => isClosedReportStatus(doc.get("status")))
+    // BUT-1528: a reopened case keeps showing the decision it last had.
+    .filter((doc) => isClosedReportStatus(doc.get("status")) || roundOf(doc.data()) > 0)
     .map((doc) => doc.id);
   if (closedIds.length === 0) return { outcomes: [] };
 
@@ -95,7 +100,10 @@ export async function runGetMyReportOutcomesWithDb(
 
   const outcomes: ReportOutcome[] = [];
   decisions.forEach((snap, i) => {
-    const outcome = outcomeFrom(snap, appeals.get(closedIds[i]));
+    const outcome = outcomeFrom(snap, appeals.get(closedIds[i]), {
+      role: "reporter",
+      closed: closed.has(closedIds[i]),
+    });
     if (outcome) outcomes.push(outcome);
   });
   return { outcomes };

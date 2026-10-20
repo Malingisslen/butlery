@@ -57,6 +57,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "submitAppeal", // moderation/submit-appeal.ts — BUT-2353 a party appeals a decision
   "listOpenAppeals", // moderation/list-open-appeals.ts — BUT-2353 requireAdmin, called from the app's moderator screen
   "answerAppeal", // moderation/answer-appeal.ts — BUT-2353 requireAdmin, called from the app's moderator screen
+  "listClosedReports", // moderation/list-closed-reports.ts — BUT-1528 requireAdmin, called from the app's moderator screen
+  "reopenReport", // moderation/reopen-report.ts — BUT-1528 requireAdmin, called from the app's moderator screen
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts

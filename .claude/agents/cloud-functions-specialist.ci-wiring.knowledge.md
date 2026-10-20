@@ -21,6 +21,10 @@
   `run`/`failed`/`check`/exit harness plus its `test:*` line or it runs
   nowhere. Never write how MANY places pin the value: the Dart side pins the
   same masked literal in more than one test.
+- **A TTL field is INERT without a policy** — `fieldOverrides` `"ttl": true` +
+  `firebase deploy --only firestore:indexes`. `--force` deletes every live
+  override absent from the file; only `gcloud firestore fields ttls list`
+  proves ACTIVE vs DECLARED.
 - Post-deploy smoke: `firebase functions:list --json` + grep stable names.
   `deploy` exiting 0 does not prove callability; a run concluding `failure`
   does not prove the DEPLOY step failed.
@@ -54,3 +58,4 @@
   truncated while the same run redirected to a file was complete. A no-uid-in-logs test
   patches `process.stdout/stderr.write`; patching `console.*` captured nothing from
   `firebase-functions/logger`.
+- A callable whose handler is not `async` lets the App Check guard's scan run on to the next `async` in the file, so a second `enforceAppCheck: true` before that point could hide the flag's removal; keep one callable per file or make the handler `async`.

@@ -6515,3 +6515,24 @@ acquisition attribution.
   updated. Not the contents, not a URL and not the custom metadata a download token lives in.
   Above 2000 objects the section declines with `erasure-residue-too-large`, listed in pages that
   stop at 2001. The known gap `stored_file_contents` says the files themselves are not included.
+
+## SUPERSEDES the field list of the BUT-2330 decision record (BUT-1528, 2026-10-20)
+
+Retires: "keeps `moderation_decisions/{reportId}` with the decision, the rule, the time and the
+moderator" and "removes it 365 days after the decision", as a complete description of the record.
+
+- `reopenReport` (admin callable) moves a closed report to `actioned`, sets `reviewRound` and
+  `reopenedAt`, and puts the recorded action back as `moderatorAction`. It refuses a report with
+  any appeal, a report whose `reporterId` or `contentOwnerId` is gone, and one without a record.
+- The next close records the round as `revision`. A changed decision moves the previous
+  `{decision, rule, motivation, decidedAt, moderatorId}` into `history` (at most 10, so earlier
+  moderators' uids stay on the record), sets `revisedAt`, and moves `decidedAt` and `expireAt`;
+  an unchanged one sets `reconfirmedAt` and moves neither.
+- The reporter can read `moderatorAction`, `reviewRound` and `reopenedAt` on their own report
+  again while it is reopened, as BUT-2330 already accepts for the first takedown.
+- A strike follows the decision (Malin, K1): a close with no action removes the
+  `report_history` row written at filing, and a later action re-adds it only within 180 days of
+  the report's `createdAt`, with that expiry. Older no-action closes are not backfilled.
+- Close, reopen, decision change and appeal answer each write an `audit_logs` row naming the
+  moderator and the report id, kept by the 180-day purge.
+- `firestore.rules` adds `reviewRound` and `reopenedAt` to the reports update `cannotModify` list.

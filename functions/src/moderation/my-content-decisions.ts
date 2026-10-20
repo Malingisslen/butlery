@@ -2,11 +2,10 @@
  * BUT-2353: tells a person what was decided about THEIR content — the owner's
  * side of "Mina anmälningar", under "Beslut om mitt innehåll".
  *
- * Only reports that name the caller as `contentOwnerId`, are closed, and led
- * to something being done count. A misattribution report is left out: its
+ * A misattribution report is left out: its
  * reporter is the person the dish named, and the sharer is accused of nothing
  * (ADR-0029). The reporter is never part of the answer; the report is read
- * with a `status` projection, so no reporter field is even fetched.
+ * with a projection, so no reporter field is even fetched.
  *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
@@ -15,6 +14,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS } from "./report-status";
+import { roundOf } from "./decision-revision";
 import { MODERATION_DECISIONS } from "./report-decision";
 import { readAppeals } from "./appeals";
 import { APPEAL_FIELDS, DECISION_FIELDS, Outcome, outcomeFrom } from "./decision-outcome";
@@ -75,12 +75,16 @@ export async function runGetMyContentDecisionsWithDb(
     .collection(REPORTS)
     .where("contentOwnerId", "==", uid)
     .orderBy("createdAt", "desc")
-    .select("status")
+    .select("status", "reviewRound")
     .limit(MAX_REPORTS)
     .get();
 
+  const closed = new Set(
+    reports.docs.filter((doc) => isClosedReportStatus(doc.get("status"))).map((doc) => doc.id),
+  );
   const closedIds = reports.docs
-    .filter((doc) => isClosedReportStatus(doc.get("status")))
+    // BUT-1528: a reopened case keeps showing the decision it last had.
+    .filter((doc) => isClosedReportStatus(doc.get("status")) || roundOf(doc.data()) > 0)
     .map((doc) => doc.id);
   if (closedIds.length === 0) return { decisions: [] };
 
@@ -93,8 +97,12 @@ export async function runGetMyContentDecisionsWithDb(
 
   const decisions: ContentDecision[] = [];
   records.forEach((snap, i) => {
-    const outcome = outcomeFrom(snap, appeals.get(closedIds[i]));
-    if (!outcome || outcome.decision === "no_action") return;
+    const outcome = outcomeFrom(snap, appeals.get(closedIds[i]), {
+      role: "owner",
+      closed: closed.has(closedIds[i]),
+    });
+    // A decision changed to no action stays.
+    if (!outcome || (outcome.decision === "no_action" && !outcome.revised)) return;
     const rule = snap.get("rule");
     if (rule === "misattribution") return;
     const contentType = snap.get("contentType");

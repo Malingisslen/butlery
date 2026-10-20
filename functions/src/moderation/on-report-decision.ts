@@ -57,8 +57,8 @@ export async function handleReportDecision(
   await deps.push(notices);
 }
 
-// retry:true — the write is create-once, so a redelivery is a no-op, and
-// without a retry a transient failure would lose the record for good.
+// retry:true — without a retry a transient failure would lose the record
+// for good.
 export const onReportDecision = onDocumentUpdatedWithAuthContext(
   { document: "reports/{reportId}", retry: true },
   (event) => {

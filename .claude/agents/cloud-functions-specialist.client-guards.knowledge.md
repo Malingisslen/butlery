@@ -67,3 +67,9 @@
   === 0`): a pre-upgrade anonymous ID token stays valid until expiry and nothing checks revocation.
 - **Pin gate-before-limiter on the REAL callable** (`.run(request)`, `enforceRateLimit` swapped for
   a sentinel-thrower) with an eligible-caller control that MUST reach the sentinel.
+- **A list callable that feeds an action button returns the action's admission predicate,
+  computed by the function the action callable uses** (`appealAdmits`): widening the list
+  otherwise offers an action that is always refused.
+- **A retention anchor read from a client-written field must be clamped to the server
+  clock** (`min(field, now)`): `reports.createdAt` is required by the create rule but not
+  pinned to `request.time`, so a forged future value would stretch a TTL indefinitely.
