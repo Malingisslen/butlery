@@ -596,4 +596,22 @@ void main() {
       expect(savedImages(), ['a']);
     });
   });
+
+  group('deleteRecipe keeps the photos for the trash (BUT-2409)', () {
+    test('moves the recipe to the trash without deleting its photos', () async {
+      when(
+        () => mockRecipeService.deleteRecipe('r1'),
+      ).thenAnswer((_) async => true);
+      when(() => mockState.originalRecipe).thenReturn(
+        RecipeFactory.build(id: 'r1', imageUrls: ['a', 'b']),
+      );
+      when(() => mockPermissionManager.canDelete).thenReturn(true);
+      when(() => mockImageManager.clearAllImages()).thenAnswer((_) async {});
+
+      final deleted = await manager.deleteRecipe();
+
+      expect(deleted, isTrue);
+      verifyNever(() => mockImageManager.clearAllImages());
+    });
+  });
 }
