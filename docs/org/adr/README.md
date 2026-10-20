@@ -46,6 +46,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0033](ADR-0033-new-prod-project-conditions.md) — a new production project in the EU replaces `butlery-app-1`: the old deploy key stays until retirement day and is then revoked and deleted together, the Storage bucket follows the `moderateUpload` trigger into europe-west1, and Malin's card decisions are recorded — resolved by synthesis (BUT-451 follow-up, 2026-10-20).
 - [ADR-0032](ADR-0032-malins-real-account-in-staging.md) — Malin signs in to staging with her real Google account; staging is recorded as a place where personal data is processed, with production's TTLs and erasure cascade — escalated to Malin (BUT-451, 2026-10-20).
 - [ADR-0031](ADR-0031-staging-mirrors-every-scheduled-job.md) — Staging runs every scheduled job production runs; privacy over cost, within the 50 kr budget (BUT-451, 2026-10-20).
 - [ADR-0030](ADR-0030-a-group-owners-export-leaves-out-the-joiners-verdicts.md) — The household export widens to every diner profile and rating only for the sole remaining member; a group owner with joiners keeps today's section, since the joiners' private verdicts the teardown deletes are theirs (Art. 15(4)) — priority order, over the DPO's exact-mirror ask (BUT-2414, 2026-10-20).
