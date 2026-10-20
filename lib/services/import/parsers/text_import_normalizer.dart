@@ -92,6 +92,7 @@ class TextImportNormalizer {
     // HIGH-10: Use PUA character for decimal marker in regex
     result = result.replaceAllMapped(
       RegExp(
+        // swedish-boundary-ok: the interpolation sits inside a character class, away from \b, which follows ASCII 'klyft'
         '([a-zåäöA-ZÅÄÖ]{2,})(\\d+(?:[$_decimalMarker,]\\d+)?\\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|klyft)\\b)',
         caseSensitive: false,
       ),

@@ -111,6 +111,7 @@ class ContentFilterService extends BaseService {
     // Inputs are lowercased by [_normalize] before matching, so the regex
     // doesn't need `caseSensitive: false`. Words above are stored in
     // canonical lowercase form.
+    // swedish-boundary-ok: entries are ASCII, pinned by dynamic_boundary_inputs_test
     return RegExp('\\b(?:$patterns)\\b');
   }
 

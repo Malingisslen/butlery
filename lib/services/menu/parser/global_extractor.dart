@@ -24,6 +24,7 @@ String extractDayFormatPins(
     final dayWord = dayEntry.key;
     // Support both "måndag pasta" and "måndag: pasta"
     final pattern = RegExp(
+      // swedish-boundary-ok: the \b is leading
       '\\b${RegExp.escape(dayWord)}[:\\s]+([a-zåäö]+)',
       caseSensitive: false,
     );
@@ -236,6 +237,7 @@ void sweepVerbObjects(
     final verb = verbEntry.key;
     final tag = verbEntry.value;
     final pattern = RegExp(
+      // swedish-boundary-ok: the \b is leading
       '\\b${RegExp.escape(verb)}\\s+([a-zåäö]+)'
       r'(?:\s+(\d+|en|två|tre|fyra|fem)\s*(?:dagar|gånger|ganger))?',
     );
