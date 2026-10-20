@@ -300,11 +300,22 @@ void main() {
         await db.uploadQueueDao.cancelUpload(objectId);
         throw StateError('lost connection');
       },
+      deleteUploaded: (UploadedImage image) async {
+        taken.add(image.url);
+        return true;
+      },
+      completions: {'cook_snap': handler},
       random: MidRandom(),
     );
 
     await pass();
 
+    expect(handler.completed, isEmpty);
+    expect(
+      taken,
+      isEmpty,
+      reason: 'the upload failed, so nothing is in Storage',
+    );
     expect(
       await row('a'),
       isNull,
