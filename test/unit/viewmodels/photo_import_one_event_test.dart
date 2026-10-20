@@ -143,7 +143,14 @@ void main() {
   tearDown(() async {
     viewModel.dispose();
     image_store.debugDraftImageDirOverride = null;
-    if (draftDir.existsSync()) draftDir.deleteSync(recursive: true);
+    // Windows refuses to delete a file another handle still holds (errno 32)
+    // and the OS clears the temp folder anyway, so a refused cleanup must not
+    // fail the test that already passed.
+    try {
+      if (draftDir.existsSync()) draftDir.deleteSync(recursive: true);
+    } on FileSystemException {
+      // Left for the OS.
+    }
     final getIt = GetIt.instance;
     if (getIt.isRegistered<ImportRateLimiter>()) {
       getIt.unregister<ImportRateLimiter>();
