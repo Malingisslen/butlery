@@ -34,7 +34,9 @@ class PendingChanges {
   /// Recipe writes in the sync queue, permanent failures included.
   final int recipeChanges;
 
-  /// Images waiting in the upload queue, permanent failures included.
+  /// Uploads waiting in the upload queue, permanent failures included. A
+  /// cook snap's album is one, and counts from the first photo queued until
+  /// the snap is created (photos already in Storage included).
   final int imageUploads;
 
   /// Every change that has not reached the server.

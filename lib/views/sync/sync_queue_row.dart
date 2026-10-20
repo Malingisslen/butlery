@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   final subject = change.subject;
+  if (change.isCookSnapGroup) return l10n.syncQueueCookSnap(change.photoCount);
   if (change.kind == QueuedChangeKind.image) {
     return subject == null
         ? l10n.syncQueueImage

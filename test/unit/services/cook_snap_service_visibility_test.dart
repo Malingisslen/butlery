@@ -140,7 +140,7 @@ void main() {
 
   // recipeAuthorId == current user → the author-notification branch (and its
   // NotificationService resolution) stays out of the flow under test.
-  Future<CookSnap?> addSnap({CookSnapVisibility? visibility}) {
+  Future<CookSnapAddResult?> addSnap({CookSnapVisibility? visibility}) {
     return service.addCookSnap(
       recipeId: 'recipe-1',
       recipeAuthorId: _testUserId,

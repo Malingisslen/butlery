@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/cook_snap.dart';
@@ -78,5 +79,62 @@ void main() {
     verify(
       () => service.watchCookSnaps(any(), limit: any(named: 'limit')),
     ).called(1);
+  });
+
+  group('addSnap', () {
+    Future<CookSnapAddOutcome> add() => viewModel.addSnap(
+      source: ImageSource.gallery,
+    );
+
+    void serviceAnswers(Future<CookSnapAddResult?> Function() answer) {
+      when(
+        () => service.addCookSnap(
+          recipeId: any(named: 'recipeId'),
+          recipeAuthorId: any(named: 'recipeAuthorId'),
+          recipeName: any(named: 'recipeName'),
+          source: any(named: 'source'),
+          caption: any(named: 'caption'),
+          visibility: any(named: 'visibility'),
+        ),
+      ).thenAnswer((_) => answer());
+    }
+
+    setUpAll(() {
+      registerFallbackValue(ImageSource.gallery);
+      registerFallbackValue(CookSnapVisibility.sameAsRecipe);
+    });
+
+    test(
+      'a snap queued offline is reported as queued and is not an error',
+      () async {
+        // Proves: the screen can tell "kept for later" from a failure and show
+        // its own message instead of the upload error.
+        serviceAnswers(() async => const CookSnapAddResult.queued());
+
+        expect(await add(), CookSnapAddOutcome.queuedOffline);
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.isUploading, isFalse);
+      },
+    );
+
+    test('a created snap is reported as added', () async {
+      serviceAnswers(() async => CookSnapAddResult.created(_snap('s1')));
+
+      expect(await add(), CookSnapAddOutcome.added);
+    });
+
+    test('a cancelled pick is not added and is not an error', () async {
+      serviceAnswers(() async => null);
+
+      expect(await add(), CookSnapAddOutcome.notAdded);
+      expect(viewModel.hasError, isFalse);
+    });
+
+    test('a failure is not added and sets the error', () async {
+      serviceAnswers(() async => throw Exception('boom'));
+
+      expect(await add(), CookSnapAddOutcome.notAdded);
+      expect(viewModel.hasError, isTrue);
+    });
   });
 }

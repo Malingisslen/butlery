@@ -13,17 +13,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
-import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
-import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/offline/cook_snap_group_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+
+export 'package:butlery/services/offline/queued_recipe_copy.dart';
 
 /// Upload statuses that still count as waiting, as in
 /// AppDatabase.watchQueueCounts. "uploaded" is in Storage but not yet used,
@@ -97,7 +97,7 @@ Future<List<QueuedChange>> readQueuedChanges(
         waitsOnEarlier: !row.permanentlyFailed && waits(row.dependsOn),
         nextAttemptAt: row.permanentlyFailed ? null : row.nextAttemptAt,
       ),
-    for (final row in uploadRows)
+    for (final row in uploadRows.where((r) => !isCookSnapRow(r)))
       QueuedChange(
         kind: QueuedChangeKind.image,
         id: row.id,
@@ -109,13 +109,21 @@ Future<List<QueuedChange>> readQueuedChanges(
         needsUser: row.permanentlyFailed,
         reason: QueuedChangeReason.parse(row.lastError),
         waitsOnEarlier: !row.permanentlyFailed && waits(row.dependsOn),
+        entityType: row.entityType,
+        entityId: row.entityId,
       ),
+    for (final group in cookSnapGroups(uploadRows).values)
+      cookSnapChange(group, waits),
   ];
 }
 
 /// "Försök igen": the entry leaves "Väntar på dig" and the queue sends it
 /// again from the start. Nothing is deleted.
-Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
+Future<void> retryQueuedChange(
+  AppDatabase db,
+  QueuedChange change, {
+  String? userId,
+}) async {
   switch (change.kind) {
     case QueuedChangeKind.recipe:
       await (db.update(
@@ -130,6 +138,8 @@ Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {
           firstFailedAt: Value(null),
         ),
       );
+    case QueuedChangeKind.image when change.isCookSnapGroup:
+      await retryCookSnapGroup(db, userId!, change.entityId!);
     case QueuedChangeKind.image:
       await (db.update(
         db.uploadQueueEntries,
@@ -176,11 +186,14 @@ Future<String?> discardQueuedChange(
   final cancelledFiles = <String>[];
   String? discardedRecipeId;
   await db.transaction(() async {
-    final chain = await db.markChainPermanentlyFailed(
-      userId,
-      change.id,
-      reason: QueuedChangeReason.dependencyFailed.code,
-    );
+    // A cook-snap group's id is the snap's, which no row or dependsOn names.
+    final chain = change.isCookSnapGroup
+        ? <String>{change.id}
+        : await db.markChainPermanentlyFailed(
+            userId,
+            change.id,
+            reason: QueuedChangeReason.dependencyFailed.code,
+          );
     switch (change.kind) {
       case QueuedChangeKind.recipe:
         final entry =
@@ -216,6 +229,21 @@ Future<String?> discardQueuedChange(
           }
           await db.recipeDao.deleteRecipe(entry.recipeId, userId);
         }
+      case QueuedChangeKind.image when change.isCookSnapGroup:
+        // A snap with fewer photos than the user took is not what they sent,
+        // so the album goes as one.
+        final group = await db.uploadQueueDao.getGroup(
+          userId,
+          SyncQueueEntityType.cookSnap,
+          change.entityId!,
+        );
+        for (final photo in group) {
+          if (photo.status == 'completed' || photo.status == 'cancelled') {
+            continue;
+          }
+          await db.uploadQueueDao.cancelUpload(photo.id);
+          cancelledFiles.add(photo.localPath);
+        }
       case QueuedChangeKind.image:
         final upload =
             await (db.select(db.uploadQueueEntries)..where(
@@ -239,101 +267,6 @@ Future<void> _deleteQuietly(String path) async {
   } on FileSystemException {
     // Already gone.
   }
-}
-
-/// "Spara som kopia" (produktregler.md:188): the device's content of the
-/// recipe [change] writes is kept as a new recipe of the user's own, queued
-/// as a create, and the failed entry leaves the queue. The recipe's other
-/// entries stay as they are.
-///
-/// The copy gets a new id ([newId], else a UUID v4), is the user's personal
-/// recipe (no sharing, created by her) and keeps everything else, the shared
-/// description included; its title is [copyTitle] of the original's (Q6-14 =
-/// C: "(kopia)" appended, so the user sees which one is the copy). One
-/// transaction: either the copy is queued and the failure is gone, or
-/// nothing changed. Throws [StateError] when the device has no copy of the
-/// recipe to keep; the failure then stays.
-Future<String> saveQueuedChangeAsCopy(
-  AppDatabase db,
-  String userId,
-  QueuedChange change, {
-  String? newId,
-  String Function(String title)? copyTitle,
-}) {
-  if (change.kind != QueuedChangeKind.recipe) {
-    throw ArgumentError.value(change.kind, 'change.kind', 'not a recipe');
-  }
-  return db.transaction(() async {
-    final entry =
-        await (db.select(db.syncQueueEntries)..where(
-              (e) => e.userId.equals(userId) & e.opId.equals(change.id),
-            ))
-            .getSingleOrNull();
-    if (entry == null) throw StateError('The change is no longer queued');
-    final stored = await db.recipeDao.getRecipe(entry.recipeId, userId);
-    if (stored == null) throw StateError('The device has no copy to keep');
-
-    final id = newId ?? const Uuid().v4();
-    final copy = ownCopyOfRecipeJson(
-      jsonDecode(stored.recipeJson) as Map<String, dynamic>,
-      id: id,
-      userId: userId,
-      copyTitle: copyTitle,
-    );
-    await db.recipeDao.upsertRecipe(
-      id: id,
-      userId: userId,
-      recipeJson: jsonEncode(copy),
-      needsSync: true,
-    );
-    await db.syncQueueDao.enqueue(
-      userId: userId,
-      recipeId: id,
-      operation: SyncOperation.create,
-    );
-    await (db.delete(
-      db.syncQueueEntries,
-    )..where((e) => e.id.equals(entry.id))).go();
-    return id;
-  });
-}
-
-/// A stored recipe as the user's own new recipe [id]: personal, created by
-/// [userId], with no sharing, collaboration or offline state carried over.
-/// Reads the stored shape through [Recipe.fromJson], so a nested or a flat
-/// record both work.
-///
-/// Q6-14 = C (produktbeslut 2026-09-27b): the shared description
-/// (socialData.descriptionCollaborative) comes along, and the title is
-/// [copyTitle] of the original's when given. Who the recipe was shared with
-/// (memberPermissions, grants and the share groups in categoryIds) does not:
-/// the copy is private, and a group id without a grant would be a revoke row
-/// that matches nobody (RecipeShareGrants.mergeCategoryIds).
-Map<String, dynamic> ownCopyOfRecipeJson(
-  Map<String, dynamic> stored, {
-  required String id,
-  required String userId,
-  String Function(String title)? copyTitle,
-}) {
-  final recipe = Recipe.fromJson(stored);
-  final now = clock.now().toIso8601String();
-  final core = recipe.core.toJson()
-    ..['id'] = id
-    ..['createdBy'] = userId
-    ..['isPublic'] = false
-    ..['createdAt'] = now
-    ..['updatedAt'] = now;
-  if (copyTitle != null) core['title'] = copyTitle(recipe.title);
-  final sharedDescription = recipe.socialData?.descriptionCollaborative;
-  return Recipe.fromJson({
-    'core': core,
-    'type': RecipeType.personal.index,
-    if (sharedDescription != null && sharedDescription.isNotEmpty)
-      'socialData': RecipeSocialData(
-        ownerId: userId,
-        descriptionCollaborative: sharedDescription,
-      ).toJson(),
-  }).toJson();
 }
 
 /// The recipe-image budget: "Receptbild, komprimerad ≤ 250 kB, långsida

@@ -194,7 +194,11 @@ class OfflineSyncQueueSource extends SyncQueueSource {
     final signedIn = _signedIn();
     if (signedIn == null) return;
     final offline = signedIn.offline;
-    await retryQueuedChange(offline.database, change);
+    await retryQueuedChange(
+      offline.database,
+      change,
+      userId: signedIn.userId,
+    );
     await offline.refreshSyncState();
     if (offline.isOnline) unawaited(offline.syncNow());
   }

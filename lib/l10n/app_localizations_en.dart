@@ -13604,6 +13604,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapErrorUpload => 'Could not upload photo';
 
   @override
+  String get cookSnapQueuedOffline =>
+      'Your photos will be sent when you are back online';
+
+  @override
   String get cookSnapErrorDelete => 'Could not delete photo';
 
   @override
@@ -16982,6 +16986,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncQueueImage => 'A photo';
+
+  @override
+  String syncQueueCookSnap(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Cooking photos ($count photos)',
+      one: 'Cooking photos (1 photo)',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get syncQueueReasonNotFound => 'The recipe no longer exists';

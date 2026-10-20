@@ -132,6 +132,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   bool get isSyncing => _isSyncManagerReady ? _syncManager.isSyncing : false;
   String? get currentUserId => _currentUserId;
 
+  /// The device storage behind the queue, for writers of other entities (a
+  /// cook snap's photos). Valid once [isQueueReady].
+  OfflineUserStorage get userStorage => _userStorage;
+
   /// Access to the Drift database for direct DAO operations
   AppDatabase get database {
     if (!_isInitializationReady) {
