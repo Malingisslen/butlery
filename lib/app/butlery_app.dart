@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/app/auth/auth_wrapper.dart';
+import 'package:butlery/app/session_activity_detector.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
@@ -795,11 +796,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     ];
 
     // Wrap MaterialApp with GestureDetector for universal activity tracking (session timeout)
-    return GestureDetector(
-      onTap: () => _sessionTimeoutService?.recordActivity(),
-      onPanDown: (_) => _sessionTimeoutService?.recordActivity(),
-      onScaleStart: (_) => _sessionTimeoutService?.recordActivity(),
-      behavior: HitTestBehavior.translucent,
+    return SessionActivityDetector(
+      onActivity: () => _sessionTimeoutService?.recordActivity(),
       child: MaterialApp(
         navigatorKey: appNavigatorKey,
         navigatorObservers: observers,
