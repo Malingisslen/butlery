@@ -76,6 +76,8 @@ class ModerationOutcome {
     this.appeal,
     this.contentType,
     this.reason,
+    this.revised = false,
+    this.appealable = true,
   });
 
   final String reportId;
@@ -89,10 +91,18 @@ class ModerationOutcome {
   final ContentType? contentType;
   final String? reason;
 
+  /// The decision was changed when the case was reopened.
+  final bool revised;
+
+  /// False when the server would refuse an appeal whatever the deadline:
+  /// the case is reopened, or the owner's decision is no action.
+  final bool appealable;
+
   ModerationMotivation? get motivation =>
       ModerationMotivation.fromWire(motivationKey);
 
   bool canAppeal(DateTime now) =>
+      appealable &&
       appeal == null &&
       (appealDeadline == null || !now.isAfter(appealDeadline!));
 
@@ -105,6 +115,8 @@ class ModerationOutcome {
     appeal: appeal,
     contentType: contentType,
     reason: reason,
+    revised: revised,
+    appealable: appealable,
   );
 
   /// Null for a row without a usable id or decision.
@@ -123,6 +135,9 @@ class ModerationOutcome {
       appeal: ModerationAppeal.fromMap(raw['appeal']),
       contentType: type == null ? null : ContentType.fromWire(type),
       reason: _str(raw['reason']),
+      revised: raw['revised'] == true,
+      // A server older than BUT-1528 does not send it.
+      appealable: raw['appealable'] != false,
     );
   }
 }

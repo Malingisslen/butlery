@@ -101,27 +101,35 @@ class ModeratorReviewViewModel extends BaseViewModel {
   bool isMinorOwner(ContentReport report) =>
       _minorOwners[report.contentOwnerId] ?? false;
 
+  // A reopened report gets a fresh copy of the content, so each round has
+  // its own entry.
+  static String _evidenceKey(ContentReport r) => '${r.id}#${r.reviewRound}';
+
   ReportEvidenceState evidenceFor(ContentReport report) =>
-      _evidence[report.id] ?? const ReportEvidenceLoading();
+      _evidence[_evidenceKey(report)] ?? const ReportEvidenceLoading();
 
   Future<void> _resolveEvidence(List<ContentReport> reports) async {
-    final pending = reports
-        .map((r) => r.id)
-        .where(
-          (id) =>
-              id.isNotEmpty &&
-              // No document yet is asked again: the server writes the copy
-              // seconds after the report appears on this stream.
-              _evidence[id] is! ReportEvidenceLoaded &&
-              !_evidenceLookupsInFlight.contains(id),
-        )
-        .toSet();
+    final pending = {
+      for (final r in reports)
+        if (r.id.isNotEmpty &&
+            // No document yet is asked again: the server writes the copy
+            // seconds after the report appears on this stream.
+            _evidence[_evidenceKey(r)] is! ReportEvidenceLoaded &&
+            !_evidenceLookupsInFlight.contains(_evidenceKey(r)))
+          _evidenceKey(r): r,
+    };
     if (pending.isEmpty) return;
-    _evidenceLookupsInFlight.addAll(pending);
+    _evidenceLookupsInFlight.addAll(pending.keys);
 
     final resolved = await Future.wait(
-      pending.map(
-        (id) async => (id, await _reportService.getReportEvidence(id)),
+      pending.entries.map(
+        (e) async => (
+          e.key,
+          await _reportService.getReportEvidence(
+            e.value.id,
+            round: e.value.reviewRound,
+          ),
+        ),
       ),
     );
     if (isDisposed) return;
@@ -197,6 +205,15 @@ class ModeratorReviewViewModel extends BaseViewModel {
   }) => _act(
     'Moderator close failed',
     () => _reportService.closeReport(report, motivation: motivation),
+  );
+
+  /// Closes a reopened report with its decision unchanged.
+  Future<bool> keepDecision(ContentReport report) => close(report);
+
+  /// Closes a reopened report as "Ingen åtgärd"; both people are told.
+  Future<bool> changeToNoAction(ContentReport report) => _act(
+    'Moderator change to no action failed',
+    () => _reportService.closeWithNoAction(report),
   );
 
   /// What the close will record: the takedown already made, else no action.

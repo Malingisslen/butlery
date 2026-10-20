@@ -16862,5 +16862,219 @@
   },
   "@personalTagCouldNotMove": {
     "description": "Spår D: failure when moving a tag to a group fails."
+  },
+  "moderatorTabClosed": "Closed",
+  "@moderatorTabClosed": {
+    "description": "BUT-1528: third moderator tab, decided reports."
+  },
+  "loadingClosedReports": "Fetching closed reports …",
+  "@loadingClosedReports": {
+    "description": "BUT-1528: loading text of the Stängda tab."
+  },
+  "moderatorClosedLoadFailed": "Could not fetch closed reports",
+  "@moderatorClosedLoadFailed": {
+    "description": "BUT-1528: error state of the Stängda tab."
+  },
+  "moderatorClosedEmpty": "No closed reports yet.",
+  "@moderatorClosedEmpty": {
+    "description": "BUT-1528: empty state of the Stängda tab."
+  },
+  "moderatorClosedThisWeek": "This week",
+  "@moderatorClosedThisWeek": {
+    "description": "BUT-1528: group heading, decided in the last 7 days."
+  },
+  "moderatorClosedEarlier": "Earlier",
+  "@moderatorClosedEarlier": {
+    "description": "BUT-1528: group heading, decided more than 7 days ago."
+  },
+  "moderatorClosedShowMore": "Show more",
+  "@moderatorClosedShowMore": {
+    "description": "BUT-1528: loads the next page of closed reports."
+  },
+  "moderatorClosedMoreFailed": "Could not fetch more reports.",
+  "@moderatorClosedMoreFailed": {
+    "description": "BUT-1528: failure snackbar, what happened."
+  },
+  "moderatorClosedListUnchanged": "The list you see is unchanged.",
+  "@moderatorClosedListUnchanged": {
+    "description": "BUT-1528: failure snackbar, what is kept."
+  },
+  "moderatorDecisionContentRemoved": "Content removed",
+  "@moderatorDecisionContentRemoved": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorDecisionProfileHidden": "Profile hidden",
+  "@moderatorDecisionProfileHidden": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorDecisionNoAction": "No action",
+  "@moderatorDecisionNoAction": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorByYou": "You",
+  "@moderatorByYou": {
+    "description": "BUT-1528: the signed-in moderator made the decision."
+  },
+  "moderatorByOther": "Another moderator",
+  "@moderatorByOther": {
+    "description": "BUT-1528: another moderator made the decision."
+  },
+  "moderatorByAuto": "Automatic",
+  "@moderatorByAuto": {
+    "description": "BUT-1528: the decision was made automatically."
+  },
+  "moderatorPillAppealed": "Appealed",
+  "@moderatorPillAppealed": {
+    "description": "BUT-1528: pill on a closed report that has an appeal."
+  },
+  "decisionStatusRevised": "Reviewed again",
+  "@decisionStatusRevised": {
+    "description": "BUT-1528: pill on a decision that was changed or reconfirmed on review."
+  },
+  "moderatorClosedSheetTitle": "Decision",
+  "@moderatorClosedSheetTitle": {
+    "description": "BUT-1528: title of the closed report sheet."
+  },
+  "moderatorClosedRowDecision": "Decision",
+  "@moderatorClosedRowDecision": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedRowRule": "Rule",
+  "@moderatorClosedRowRule": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedRowAbout": "Applies to",
+  "@moderatorClosedRowAbout": {
+    "description": "BUT-1528: sheet row label, the content type."
+  },
+  "moderatorClosedRowDecided": "Decided",
+  "@moderatorClosedRowDecided": {
+    "description": "BUT-1528: sheet row label, date and time."
+  },
+  "moderatorClosedRowModerator": "Moderator",
+  "@moderatorClosedRowModerator": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedHistoryTitle": "Earlier decisions",
+  "@moderatorClosedHistoryTitle": {
+    "description": "BUT-1528: sheet section with the history."
+  },
+  "moderatorClosedNote": "No text from the report is kept after the decision. If you reopen the case it goes to the queue, and the decision stands until you make a new one.",
+  "@moderatorClosedNote": {
+    "description": "BUT-1528: short note in the closed report sheet."
+  },
+  "moderatorClosedReopen": "Reopen",
+  "@moderatorClosedReopen": {
+    "description": "BUT-1528: reopen button and confirm button."
+  },
+  "moderatorClosedRemovedBand": "Removed content cannot be restored. If you change the decision the warning is removed and the person is told.",
+  "@moderatorClosedRemovedBand": {
+    "description": "BUT-1528: band in the sheet of a content_removed decision."
+  },
+  "moderatorReopenBlockAppealed": "The decision has been appealed. The review happens through the appeal, so the case cannot be reopened.",
+  "@moderatorReopenBlockAppealed": {
+    "description": "BUT-1528: reopenBlock appealed."
+  },
+  "moderatorReopenBlockGone": "The report no longer exists, so the case cannot be reopened.",
+  "@moderatorReopenBlockGone": {
+    "description": "BUT-1528: reopenBlock report_gone."
+  },
+  "moderatorReopenBlockNotClosed": "The case is already in the queue.",
+  "@moderatorReopenBlockNotClosed": {
+    "description": "BUT-1528: reopenBlock not_closed."
+  },
+  "moderatorReopenBlockReporterErased": "The person who reported has deleted their account, so the case cannot be reopened.",
+  "@moderatorReopenBlockReporterErased": {
+    "description": "BUT-1528: reopenBlock reporter_erased."
+  },
+  "moderatorReopenBlockOwnerErased": "The person the report is about has deleted their account, so there is nobody to decide about.",
+  "@moderatorReopenBlockOwnerErased": {
+    "description": "BUT-1528: reopenBlock owner_erased."
+  },
+  "moderatorReopenBlockNoDecision": "The decision is not stored yet, so the case cannot be reopened.",
+  "@moderatorReopenBlockNoDecision": {
+    "description": "BUT-1528: reopenBlock no_decision."
+  },
+  "moderatorReopenConfirmTitle": "Reopen the case?",
+  "@moderatorReopenConfirmTitle": {
+    "description": "BUT-1528: confirm dialog title."
+  },
+  "moderatorReopenConfirmBody": "It goes to Reports first. Nothing changes and nobody is told until you make a new decision.",
+  "@moderatorReopenConfirmBody": {
+    "description": "BUT-1528: confirm dialog body."
+  },
+  "moderatorReopened": "The case is now in Reports.",
+  "@moderatorReopened": {
+    "description": "BUT-1528: success snackbar after reopening."
+  },
+  "moderatorReopenFailed": "The case could not be reopened.",
+  "@moderatorReopenFailed": {
+    "description": "BUT-1528: failure snackbar, what happened."
+  },
+  "moderatorReopenFailedKept": "The decision is unchanged.",
+  "@moderatorReopenFailedKept": {
+    "description": "BUT-1528: failure snackbar, what is kept."
+  },
+  "moderatorReopenedPill": "Reopened",
+  "@moderatorReopenedPill": {
+    "description": "BUT-1528: pill on a reopened report in the queue."
+  },
+  "moderatorPreviousDecision": "Earlier decision: {decision}",
+  "@moderatorPreviousDecision": {
+    "description": "BUT-1528: line on a reopened report.",
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorEvidenceNowHeadingAt": "The content now · {time}",
+  "@moderatorEvidenceNowHeadingAt": {
+    "description": "BUT-1528: evidence heading of a reopened report when the capture time is known.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorEvidenceNowHeading": "The content now",
+  "@moderatorEvidenceNowHeading": {
+    "description": "BUT-1528: evidence heading of a reopened report."
+  },
+  "moderatorKeepDecision": "Keep the decision",
+  "@moderatorKeepDecision": {
+    "description": "BUT-1528: closes a reopened report with its decision unchanged."
+  },
+  "moderatorChangeToNoAction": "Change to No action",
+  "@moderatorChangeToNoAction": {
+    "description": "BUT-1528: changes the decision of a reopened report."
+  },
+  "moderatorChangeConfirmTitle": "Change to No action?",
+  "@moderatorChangeConfirmTitle": {
+    "description": "BUT-1528: confirm dialog title."
+  },
+  "moderatorChangeConfirmBodyProfile": "The profile is shown again, the warning is removed and both are told about the new decision.",
+  "@moderatorChangeConfirmBodyProfile": {
+    "description": "BUT-1528: confirm dialog body, hidden profile."
+  },
+  "moderatorChangeConfirmBodyRemoved": "The warning is removed and both are told about the new decision. The content cannot be restored.",
+  "@moderatorChangeConfirmBodyRemoved": {
+    "description": "BUT-1528: confirm dialog body, removed content."
+  },
+  "moderatorChangeConfirm": "Change",
+  "@moderatorChangeConfirm": {
+    "description": "BUT-1528: confirm button of the change dialog."
+  },
+  "moderatorDecisionKept": "The decision stands. Nobody was told.",
+  "@moderatorDecisionKept": {
+    "description": "BUT-1528: snackbar after keeping the decision."
+  },
+  "moderatorDecisionChanged": "The decision was changed. The warning was removed.",
+  "@moderatorDecisionChanged": {
+    "description": "BUT-1528: snackbar after changing the decision."
+  },
+  "decisionRevisedNoActionOutcome": "No action. The decision was changed on review and the warning is removed.",
+  "@decisionRevisedNoActionOutcome": {
+    "description": "BUT-1528: outcome of a revised no_action decision in the owner's list."
   }
 }

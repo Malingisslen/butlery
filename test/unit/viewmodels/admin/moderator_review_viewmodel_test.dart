@@ -53,7 +53,7 @@ void main() {
         () => mockService.deleteReportedContent(any()),
       ).thenAnswer((_) async => true);
       when(
-        () => mockService.getReportEvidence(any()),
+        () => mockService.getReportEvidence(any(), round: any(named: 'round')),
       ).thenAnswer((_) async => (evidence: null));
       vm = ModeratorReviewViewModel(reportService: mockService);
     });
@@ -274,10 +274,15 @@ void main() {
           () => mockService.watchOpenReports(),
         ).thenAnswer((_) => controller.stream);
         when(
-          () => mockService.getReportEvidence('r1'),
+          () => mockService.getReportEvidence('r1', round: any(named: 'round')),
         ).thenAnswer((_) async => (evidence: evidence));
         var lateCalls = 0;
-        when(() => mockService.getReportEvidence('r-late')).thenAnswer(
+        when(
+          () => mockService.getReportEvidence(
+            'r-late',
+            round: any(named: 'round'),
+          ),
+        ).thenAnswer(
           (_) async =>
               lateCalls++ == 0 ? (evidence: null) : (evidence: lateEvidence),
         );
@@ -298,8 +303,90 @@ void main() {
         final turned = vm.evidenceFor(late);
         expect(turned, isA<ReportEvidenceLoaded>());
         expect((turned as ReportEvidenceLoaded).evidence, same(lateEvidence));
-        verify(() => mockService.getReportEvidence('r1')).called(1);
-        verify(() => mockService.getReportEvidence('r-late')).called(2);
+        verify(
+          () => mockService.getReportEvidence('r1', round: any(named: 'round')),
+        ).called(1);
+        verify(
+          () => mockService.getReportEvidence(
+            'r-late',
+            round: any(named: 'round'),
+          ),
+        ).called(2);
+      });
+
+      test('a reopened report gets its own evidence lookup per round '
+          '(BUT-1528)', () async {
+        final base = _report(contentType: ContentType.recipe);
+        final reopened = ContentReport(
+          id: base.id,
+          reporterId: base.reporterId,
+          contentType: base.contentType,
+          contentId: base.contentId,
+          reason: base.reason,
+          createdAt: base.createdAt,
+          reviewRound: 1,
+        );
+        final controller = StreamController<List<ContentReport>>();
+        addTearDown(controller.close);
+        when(
+          () => mockService.watchOpenReports(),
+        ).thenAnswer((_) => controller.stream);
+        const first = ReportEvidence(
+          reportId: 'r1',
+          outcome: EvidenceOutcome.captured,
+          text: [('title', 'Då')],
+        );
+        const now = ReportEvidence(
+          reportId: 'r1',
+          outcome: EvidenceOutcome.captured,
+          text: [('title', 'Nu')],
+        );
+        when(
+          () => mockService.getReportEvidence('r1', round: 0),
+        ).thenAnswer((_) async => (evidence: first));
+        when(
+          () => mockService.getReportEvidence('r1', round: 1),
+        ).thenAnswer((_) async => (evidence: now));
+
+        vm.startListening();
+        controller.add([base]);
+        await pumpEventQueue();
+        expect(vm.evidenceFor(reopened), isA<ReportEvidenceLoading>());
+
+        controller.add([reopened]);
+        await pumpEventQueue();
+
+        final loaded = vm.evidenceFor(reopened) as ReportEvidenceLoaded;
+        expect(loaded.evidence, same(now));
+        expect(
+          (vm.evidenceFor(base) as ReportEvidenceLoaded).evidence,
+          same(first),
+        );
+        verify(() => mockService.getReportEvidence('r1', round: 0)).called(1);
+        verify(() => mockService.getReportEvidence('r1', round: 1)).called(1);
+      });
+
+      test('keepDecision closes as it stands; changeToNoAction closes with '
+          'no action (BUT-1528)', () async {
+        final report = _report(contentType: ContentType.profile);
+        when(
+          () => mockService.closeReport(
+            any(),
+            motivation: any(named: 'motivation'),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockService.closeWithNoAction(any()),
+        ).thenAnswer((_) async => false);
+
+        expect(await vm.keepDecision(report), isTrue);
+        verify(
+          () => mockService.closeReport(report, motivation: null),
+        ).called(1);
+        verifyNever(() => mockService.closeWithNoAction(any()));
+
+        expect(await vm.changeToNoAction(report), isFalse);
+        verify(() => mockService.closeWithNoAction(report)).called(1);
       });
 
       test('notifies when evidence resolves, not when a re-asked None stays '
@@ -311,7 +398,7 @@ void main() {
           () => mockService.watchOpenReports(),
         ).thenAnswer((_) => controller.stream);
         when(
-          () => mockService.getReportEvidence('r1'),
+          () => mockService.getReportEvidence('r1', round: any(named: 'round')),
         ).thenAnswer((_) async => (evidence: null));
 
         var notifications = 0;
@@ -324,11 +411,15 @@ void main() {
         // that stays None must add nothing on top of that baseline.
         controller.add([report]);
         await pumpEventQueue();
-        verify(() => mockService.getReportEvidence('r1')).called(2);
+        verify(
+          () => mockService.getReportEvidence('r1', round: any(named: 'round')),
+        ).called(2);
         final baseline = notifications;
         expect(baseline, greaterThan(0));
 
-        when(() => mockService.getReportEvidence('r1')).thenAnswer(
+        when(
+          () => mockService.getReportEvidence('r1', round: any(named: 'round')),
+        ).thenAnswer(
           (_) async => (
             evidence: const ReportEvidence(
               reportId: 'r1',
@@ -358,7 +449,10 @@ void main() {
             () => mockService.watchOpenReports(),
           ).thenAnswer((_) => controller.stream);
           var call = 0;
-          when(() => mockService.getReportEvidence('r1')).thenAnswer(
+          when(
+            () =>
+                mockService.getReportEvidence('r1', round: any(named: 'round')),
+          ).thenAnswer(
             (_) async => call++ == 0 ? null : (evidence: null),
           );
 
@@ -370,7 +464,10 @@ void main() {
           controller.add([report]);
           await pumpEventQueue();
           expect(vm.evidenceFor(report), isA<ReportEvidenceNone>());
-          verify(() => mockService.getReportEvidence('r1')).called(2);
+          verify(
+            () =>
+                mockService.getReportEvidence('r1', round: any(named: 'round')),
+          ).called(2);
         },
       );
     });
@@ -418,7 +515,7 @@ void main() {
         () => mockService.isMinorAccount(any()),
       ).thenAnswer((_) async => false);
       when(
-        () => mockService.getReportEvidence(any()),
+        () => mockService.getReportEvidence(any(), round: any(named: 'round')),
       ).thenAnswer((_) async => (evidence: null));
       vm = ModeratorReviewViewModel(reportService: mockService);
     });

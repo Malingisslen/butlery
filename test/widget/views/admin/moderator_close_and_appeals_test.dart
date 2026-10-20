@@ -79,7 +79,7 @@ void main() {
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
     when(
-      () => reports.getReportEvidence(any()),
+      () => reports.getReportEvidence(any(), round: any(named: 'round')),
     ).thenAnswer((_) async => (evidence: null));
     when(
       () => reports.closeReport(any(), motivation: any(named: 'motivation')),

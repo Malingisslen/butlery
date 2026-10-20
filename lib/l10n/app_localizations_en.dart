@@ -20608,4 +20608,174 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalTagCouldNotMove => 'We could not move the tag.';
+
+  @override
+  String get moderatorTabClosed => 'Closed';
+
+  @override
+  String get loadingClosedReports => 'Fetching closed reports …';
+
+  @override
+  String get moderatorClosedLoadFailed => 'Could not fetch closed reports';
+
+  @override
+  String get moderatorClosedEmpty => 'No closed reports yet.';
+
+  @override
+  String get moderatorClosedThisWeek => 'This week';
+
+  @override
+  String get moderatorClosedEarlier => 'Earlier';
+
+  @override
+  String get moderatorClosedShowMore => 'Show more';
+
+  @override
+  String get moderatorClosedMoreFailed => 'Could not fetch more reports.';
+
+  @override
+  String get moderatorClosedListUnchanged => 'The list you see is unchanged.';
+
+  @override
+  String get moderatorDecisionContentRemoved => 'Content removed';
+
+  @override
+  String get moderatorDecisionProfileHidden => 'Profile hidden';
+
+  @override
+  String get moderatorDecisionNoAction => 'No action';
+
+  @override
+  String get moderatorByYou => 'You';
+
+  @override
+  String get moderatorByOther => 'Another moderator';
+
+  @override
+  String get moderatorByAuto => 'Automatic';
+
+  @override
+  String get moderatorPillAppealed => 'Appealed';
+
+  @override
+  String get decisionStatusRevised => 'Reviewed again';
+
+  @override
+  String get moderatorClosedSheetTitle => 'Decision';
+
+  @override
+  String get moderatorClosedRowDecision => 'Decision';
+
+  @override
+  String get moderatorClosedRowRule => 'Rule';
+
+  @override
+  String get moderatorClosedRowAbout => 'Applies to';
+
+  @override
+  String get moderatorClosedRowDecided => 'Decided';
+
+  @override
+  String get moderatorClosedRowModerator => 'Moderator';
+
+  @override
+  String get moderatorClosedHistoryTitle => 'Earlier decisions';
+
+  @override
+  String get moderatorClosedNote =>
+      'No text from the report is kept after the decision. If you reopen the case it goes to the queue, and the decision stands until you make a new one.';
+
+  @override
+  String get moderatorClosedReopen => 'Reopen';
+
+  @override
+  String get moderatorClosedRemovedBand =>
+      'Removed content cannot be restored. If you change the decision the warning is removed and the person is told.';
+
+  @override
+  String get moderatorReopenBlockAppealed =>
+      'The decision has been appealed. The review happens through the appeal, so the case cannot be reopened.';
+
+  @override
+  String get moderatorReopenBlockGone =>
+      'The report no longer exists, so the case cannot be reopened.';
+
+  @override
+  String get moderatorReopenBlockNotClosed =>
+      'The case is already in the queue.';
+
+  @override
+  String get moderatorReopenBlockReporterErased =>
+      'The person who reported has deleted their account, so the case cannot be reopened.';
+
+  @override
+  String get moderatorReopenBlockOwnerErased =>
+      'The person the report is about has deleted their account, so there is nobody to decide about.';
+
+  @override
+  String get moderatorReopenBlockNoDecision =>
+      'The decision is not stored yet, so the case cannot be reopened.';
+
+  @override
+  String get moderatorReopenConfirmTitle => 'Reopen the case?';
+
+  @override
+  String get moderatorReopenConfirmBody =>
+      'It goes to Reports first. Nothing changes and nobody is told until you make a new decision.';
+
+  @override
+  String get moderatorReopened => 'The case is now in Reports.';
+
+  @override
+  String get moderatorReopenFailed => 'The case could not be reopened.';
+
+  @override
+  String get moderatorReopenFailedKept => 'The decision is unchanged.';
+
+  @override
+  String get moderatorReopenedPill => 'Reopened';
+
+  @override
+  String moderatorPreviousDecision(String decision) {
+    return 'Earlier decision: $decision';
+  }
+
+  @override
+  String moderatorEvidenceNowHeadingAt(String time) {
+    return 'The content now · $time';
+  }
+
+  @override
+  String get moderatorEvidenceNowHeading => 'The content now';
+
+  @override
+  String get moderatorKeepDecision => 'Keep the decision';
+
+  @override
+  String get moderatorChangeToNoAction => 'Change to No action';
+
+  @override
+  String get moderatorChangeConfirmTitle => 'Change to No action?';
+
+  @override
+  String get moderatorChangeConfirmBodyProfile =>
+      'The profile is shown again, the warning is removed and both are told about the new decision.';
+
+  @override
+  String get moderatorChangeConfirmBodyRemoved =>
+      'The warning is removed and both are told about the new decision. The content cannot be restored.';
+
+  @override
+  String get moderatorChangeConfirm => 'Change';
+
+  @override
+  String get moderatorDecisionKept => 'The decision stands. Nobody was told.';
+
+  @override
+  String get moderatorDecisionChanged =>
+      'The decision was changed. The warning was removed.';
+
+  @override
+  String get decisionRevisedNoActionOutcome =>
+      'No action. The decision was changed on review and the warning is removed.';
 }

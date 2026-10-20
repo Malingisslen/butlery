@@ -643,6 +643,19 @@ void main() {
         reason: 'served from the cache, not re-read',
       );
     });
+
+    test('a reopened round is read again inside the 1-minute window', () async {
+      final evidenceDocs = fakeFirestore.collection(
+        FirestoreCollections.reportEvidence,
+      );
+      await evidenceDocs.doc('r1').set({'outcome': 'missing'});
+      await service.getReportEvidence('r1');
+      await evidenceDocs.doc('r1').set({'outcome': 'captured'});
+
+      final next = await service.getReportEvidence('r1', round: 1);
+
+      expect(next!.evidence!.outcome, EvidenceOutcome.captured);
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────
@@ -966,6 +979,54 @@ void main() {
           .get();
       expect(after.data()?['status'], 'closed');
       expect(after.data()?['motivation'], 'removed_spam');
+    });
+
+    test('closeWithNoAction removes the standing action and closes in one '
+        'update (BUT-1528)', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rx')
+          .set({
+            'status': 'actioned',
+            'moderatorAction': 'profile_hidden',
+            'reviewRound': 1,
+            'reporterId': reporterUid,
+          });
+      final report = sampleReport(id: 'rx', status: ReportStatus.actioned);
+
+      final ok = await service.closeWithNoAction(report);
+
+      expect(ok, isTrue);
+      final after =
+          (await fakeFirestore
+                  .collection(FirestoreCollections.reports)
+                  .doc('rx')
+                  .get())
+              .data()!;
+      expect(after['status'], 'closed');
+      expect(after.containsKey('moderatorAction'), isFalse);
+      expect(after['reviewRound'], 1);
+      expect(after['reporterId'], reporterUid);
+    });
+
+    test('closeWithNoAction refuses a report that is already closed', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rc2')
+          .set({'status': 'closed', 'moderatorAction': 'profile_hidden'});
+
+      final ok = await service.closeWithNoAction(
+        sampleReport(id: 'rc2', status: ReportStatus.closed),
+      );
+
+      expect(ok, isFalse);
+      final after = await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rc2')
+          .get();
+      expect(after.data()?['moderatorAction'], 'profile_hidden');
     });
 
     test('without a motivation no motivation key is written', () async {

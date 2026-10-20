@@ -8,8 +8,10 @@ import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/views/admin/moderator_labels.dart';
 import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
+import 'package:butlery/viewmodels/admin/moderator_closed_viewmodel.dart';
 import 'package:butlery/views/admin/moderator_close_sheet.dart';
 import 'package:butlery/views/admin/moderator_evidence_section.dart';
+import 'package:butlery/views/admin/moderator_reopened_section.dart';
 import 'package:butlery/views/admin/moderator_review_tabs.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -45,6 +47,7 @@ class ModeratorReviewView extends StatefulWidget {
 class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   late final ModeratorReviewViewModel _vm;
   late final ModeratorAppealsViewModel _appealsVm;
+  late final ModeratorClosedViewModel _closedVm;
   late final ReportService _reportService;
   bool _appealsRequested = false;
 
@@ -55,6 +58,9 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
     _appealsVm = ModeratorAppealsViewModel(
       service: ServiceLocator.get<ModerationAppealsService>(),
     );
+    _closedVm = ModeratorClosedViewModel(
+      service: ServiceLocator.get<ModerationAppealsService>(),
+    );
     _reportService = ServiceLocator.get<ReportService>();
   }
 
@@ -62,6 +68,7 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   void dispose() {
     _vm.dispose();
     _appealsVm.dispose();
+    _closedVm.dispose();
     super.dispose();
   }
 
@@ -94,6 +101,9 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
               ),
               ChangeNotifierProvider<ModeratorAppealsViewModel>.value(
                 value: _appealsVm,
+              ),
+              ChangeNotifierProvider<ModeratorClosedViewModel>.value(
+                value: _closedVm,
               ),
             ],
             child: const ModeratorReviewTabs(reports: _ReportsList()),
@@ -197,6 +207,10 @@ class _ReportCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (report.isReopened) ...[
+                const ReopenedPill(),
+                const SizedBox(width: AppDimensions.space4),
+              ],
               StatusPill(label: _statusLabel(l10n).toUpperCase()),
             ],
           ),
@@ -205,6 +219,8 @@ class _ReportCard extends StatelessWidget {
             moderatorReasonLabel(l10n, report.reason),
             style: AppTextStyles.titleMedium,
           ),
+          if (report.isReopened)
+            PreviousDecisionLine(decision: vm.decisionFor(report)),
           if (report.description != null && report.description!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.space4),
@@ -232,7 +248,10 @@ class _ReportCard extends StatelessWidget {
             ),
           if (evidence is! ReportEvidenceLoading) ...[
             const SizedBox(height: AppDimensions.space8),
-            ModeratorEvidenceSection(state: evidence),
+            ModeratorEvidenceSection(
+              state: evidence,
+              reopened: report.isReopened,
+            ),
           ],
           // BUT-1609: moderation on a minor's account carries extra care
           // (GDPR/child-safety) — surface it before any action is taken.
@@ -255,6 +274,9 @@ class _ReportCard extends StatelessWidget {
     ModeratorReviewViewModel vm,
     AppLocalizations l10n,
   ) {
+    if (report.isReopened && report.moderatorAction != null) {
+      return ReopenedActions(report: report, vm: vm);
+    }
     final open = report.status != ReportStatus.closed;
     final advance = ActionButtons.outlinedButton(
       context,

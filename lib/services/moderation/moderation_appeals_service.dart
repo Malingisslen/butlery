@@ -1,6 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/models/social/closed_report.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 
 /// Why an appeal was refused, mapped from the callable's error codes.
@@ -32,8 +33,18 @@ class AnswerAppealException implements Exception {
   String toString() => 'AnswerAppealException($failure)';
 }
 
+/// `reopenReport` was refused; [block] is null for any other failure.
+class ReopenReportException implements Exception {
+  const ReopenReportException(this.block);
+  final ReopenBlock? block;
+
+  @override
+  String toString() => 'ReopenReportException($block)';
+}
+
 /// The appeal callables: `submitAppeal` for the two parties, and the
-/// admin-only `listOpenAppeals` / `answerAppeal`.
+/// admin-only `listOpenAppeals` / `answerAppeal`, `listClosedReports` and
+/// `reopenReport`.
 class ModerationAppealsService extends BaseService {
   ModerationAppealsService({required FirebaseFunctions functions})
     : _functions = functions;
@@ -117,4 +128,34 @@ class ModerationAppealsService extends BaseService {
               : AnswerFailure.other,
         _ => AnswerFailure.other,
       };
+
+  /// One page of decided reports, newest decision first. Pass the previous
+  /// page's [ClosedReportsPage.nextCursor] to read the next one.
+  Future<ClosedReportsPage> listClosedReports({String? cursor}) async {
+    final result = await _callable(
+      'listClosedReports',
+    ).call<Map<dynamic, dynamic>>({'cursor': ?cursor});
+    final rows = result.data['reports'];
+    final next = result.data['nextCursor'];
+    return ClosedReportsPage(
+      reports: rows is List
+          ? [for (final row in rows) ?ClosedReport.fromMap(row)]
+          : const [],
+      nextCursor: next is String && next.isNotEmpty ? next : null,
+    );
+  }
+
+  /// Throws [ReopenReportException] on a refusal.
+  Future<void> reopenReport(String reportId) async {
+    try {
+      await _callable(
+        'reopenReport',
+      ).call<Map<dynamic, dynamic>>({'reportId': reportId});
+    } on FirebaseFunctionsException catch (e) {
+      throw ReopenReportException(reopenBlockFor(e));
+    }
+  }
+
+  static ReopenBlock? reopenBlockFor(FirebaseFunctionsException e) =>
+      e.code == 'failed-precondition' ? ReopenBlock.fromWire(e.message) : null;
 }

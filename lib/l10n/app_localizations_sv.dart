@@ -20441,4 +20441,174 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get personalTagCouldNotMove => 'Vi kunde inte flytta taggen.';
+
+  @override
+  String get moderatorTabClosed => 'Stängda';
+
+  @override
+  String get loadingClosedReports => 'Hämtar stängda anmälningar …';
+
+  @override
+  String get moderatorClosedLoadFailed =>
+      'Kunde inte hämta stängda anmälningar';
+
+  @override
+  String get moderatorClosedEmpty => 'Inga stängda anmälningar än.';
+
+  @override
+  String get moderatorClosedThisWeek => 'Den här veckan';
+
+  @override
+  String get moderatorClosedEarlier => 'Tidigare';
+
+  @override
+  String get moderatorClosedShowMore => 'Visa fler';
+
+  @override
+  String get moderatorClosedMoreFailed => 'Kunde inte hämta fler anmälningar.';
+
+  @override
+  String get moderatorClosedListUnchanged => 'Listan du ser är oförändrad.';
+
+  @override
+  String get moderatorDecisionContentRemoved => 'Innehållet borttaget';
+
+  @override
+  String get moderatorDecisionProfileHidden => 'Profilen dold';
+
+  @override
+  String get moderatorDecisionNoAction => 'Ingen åtgärd';
+
+  @override
+  String get moderatorByYou => 'Du';
+
+  @override
+  String get moderatorByOther => 'Annan moderator';
+
+  @override
+  String get moderatorByAuto => 'Automatiskt';
+
+  @override
+  String get moderatorPillAppealed => 'Överklagad';
+
+  @override
+  String get decisionStatusRevised => 'Omprövat';
+
+  @override
+  String get moderatorClosedSheetTitle => 'Beslut';
+
+  @override
+  String get moderatorClosedRowDecision => 'Beslut';
+
+  @override
+  String get moderatorClosedRowRule => 'Regel';
+
+  @override
+  String get moderatorClosedRowAbout => 'Gäller';
+
+  @override
+  String get moderatorClosedRowDecided => 'Beslutat';
+
+  @override
+  String get moderatorClosedRowModerator => 'Moderator';
+
+  @override
+  String get moderatorClosedHistoryTitle => 'Tidigare beslut';
+
+  @override
+  String get moderatorClosedNote =>
+      'Ingen text från anmälan sparas efter beslutet. Öppnar du ärendet igen läggs det i kön, och beslutet står kvar tills du fattar ett nytt.';
+
+  @override
+  String get moderatorClosedReopen => 'Öppna igen';
+
+  @override
+  String get moderatorClosedRemovedBand =>
+      'Borttaget innehåll kan inte återställas. Ändrar du beslutet tas varningen bort och personen får besked.';
+
+  @override
+  String get moderatorReopenBlockAppealed =>
+      'Beslutet har överklagats. Omprövningen sker genom överklagan, så ärendet kan inte öppnas igen.';
+
+  @override
+  String get moderatorReopenBlockGone =>
+      'Anmälan finns inte längre, så ärendet kan inte öppnas igen.';
+
+  @override
+  String get moderatorReopenBlockNotClosed => 'Ärendet ligger redan i kön.';
+
+  @override
+  String get moderatorReopenBlockReporterErased =>
+      'Den som anmälde har raderat sitt konto, så ärendet kan inte öppnas igen.';
+
+  @override
+  String get moderatorReopenBlockOwnerErased =>
+      'Personen anmälan gäller har raderat sitt konto, så det finns ingen att fatta ett nytt beslut om.';
+
+  @override
+  String get moderatorReopenBlockNoDecision =>
+      'Beslutet är inte sparat än, så ärendet kan inte öppnas igen.';
+
+  @override
+  String get moderatorReopenConfirmTitle => 'Öppna ärendet igen?';
+
+  @override
+  String get moderatorReopenConfirmBody =>
+      'Det läggs först i Rapporter. Inget ändras och ingen får besked förrän du fattar ett nytt beslut.';
+
+  @override
+  String get moderatorReopened => 'Ärendet ligger nu i Rapporter.';
+
+  @override
+  String get moderatorReopenFailed => 'Ärendet kunde inte öppnas igen.';
+
+  @override
+  String get moderatorReopenFailedKept => 'Beslutet är oförändrat.';
+
+  @override
+  String get moderatorReopenedPill => 'Öppnad igen';
+
+  @override
+  String moderatorPreviousDecision(String decision) {
+    return 'Tidigare beslut: $decision';
+  }
+
+  @override
+  String moderatorEvidenceNowHeadingAt(String time) {
+    return 'Innehållet nu · $time';
+  }
+
+  @override
+  String get moderatorEvidenceNowHeading => 'Innehållet nu';
+
+  @override
+  String get moderatorKeepDecision => 'Behåll beslutet';
+
+  @override
+  String get moderatorChangeToNoAction => 'Ändra till Ingen åtgärd';
+
+  @override
+  String get moderatorChangeConfirmTitle => 'Ändra till Ingen åtgärd?';
+
+  @override
+  String get moderatorChangeConfirmBodyProfile =>
+      'Profilen visas igen, varningen tas bort och båda får besked om det nya beslutet.';
+
+  @override
+  String get moderatorChangeConfirmBodyRemoved =>
+      'Varningen tas bort och båda får besked om det nya beslutet. Innehållet går inte att återställa.';
+
+  @override
+  String get moderatorChangeConfirm => 'Ändra';
+
+  @override
+  String get moderatorDecisionKept => 'Beslutet står kvar. Ingen fick besked.';
+
+  @override
+  String get moderatorDecisionChanged =>
+      'Beslutet ändrades. Varningen togs bort.';
+
+  @override
+  String get decisionRevisedNoActionOutcome =>
+      'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.';
 }

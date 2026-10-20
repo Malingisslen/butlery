@@ -229,6 +229,24 @@ void main() {
     expect(find.text(sv.myReportsStatusClosed.toUpperCase()), findsNothing);
   });
 
+  testWidgets('a changed decision carries the Omprövat pill beside its '
+      'status', (tester) async {
+    await pump(
+      tester,
+      [_report('5', ReportStatus.closed), _report('6', ReportStatus.closed)],
+      outcomes: {
+        '5': const ModerationOutcome(
+          reportId: '5',
+          decision: ModeratorDecision.noAction,
+          revised: true,
+        ),
+        '6': _outcome('6', ModeratorDecision.noAction),
+      },
+    );
+
+    expect(find.text(sv.decisionStatusRevised.toUpperCase()), findsOneWidget);
+  });
+
   testWidgets('"Jag vill överklaga" shows only where an appeal can still be '
       'made, and opens the form for the reporter', (tester) async {
     final pushed = <RouteSettings>[];

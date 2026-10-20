@@ -171,7 +171,7 @@ final reviewAdminHosts = <String, StateHost>{
       );
       when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
       when(
-        () => reports.getReportEvidence(any()),
+        () => reports.getReportEvidence(any(), round: any(named: 'round')),
       ).thenAnswer((_) async => (evidence: null));
       when(appeals.listOpenAppeals).thenAnswer((_) async => []);
       TestServiceLocator.registerMock<ReportService>(reports);
