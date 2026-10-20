@@ -50,7 +50,7 @@ function selectIds(ids) {
   document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
   if (!els.length) { clearSelection(); return; }
   els.forEach(n => n.setAttribute('data-lab-selected', ''));
-  selected = { el: els[0], extras: els.slice(1), mode: null };
+  selected = { el: els[0], extras: els.slice(1), mode: null, onlyView: true };
   openTab('part');
   showPart(false);
 }

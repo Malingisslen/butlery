@@ -77,6 +77,8 @@ function spaceSummary(st, out) {
     if (st[key] !== d[key]) spacing[name] = st[key];
   }
   if (Object.keys(spacing).length) out.spacing = spacing;
+  const perView = Object.fromEntries(Object.entries(st.viewSpace || {}).filter(([, o]) => Object.keys(o).length).map(([v, o]) => [`screen${+v + 1}`, o]));
+  if (Object.keys(perView).length) out.spacingPerScreen = perView;
   const icons = {};
   if (st.iconSize !== 100) icons.sizePercent = st.iconSize;
   if (st.iconStroke) icons.strokeWidth = st.iconStroke;
@@ -158,8 +160,7 @@ function applyIcons() {
 }
 
 // ---- Spacing overlay: boxes for every block and the gap between neighbours ----
-// With "drag the spacing" on, every gap is a handle for the global slider that sets it, so one drag
-// changes that spacing in the whole app.
+// With "drag the spacing" on, every gap is a handle for that spacing in the screen it sits in.
 let spaceDrag = false;
 let spaceBig = true; // one size of gap at a time keeps the screens readable
 const BIG_GAP = 12;
@@ -188,8 +189,8 @@ function drawOverlay() {
       const r = body.getBoundingClientRect();
       const m = parseFloat(getComputedStyle(body).paddingLeft);
       if (m) {
-        tag(r.left, r.top, m, 28, spaceDrag ? state.margin : Math.round(m), 'side', 'margin', 'x', 1);
-        tag(r.right - m, r.top, m, 28, spaceDrag ? state.margin : Math.round(m), 'side', 'margin', 'x', -1);
+        tag(r.left, r.top, m, 28, spaceDrag ? viewSpaceValue(phone, 'margin') : Math.round(m), 'side', 'margin', 'x', 1);
+        tag(r.right - m, r.top, m, 28, spaceDrag ? viewSpaceValue(phone, 'margin') : Math.round(m), 'side', 'margin', 'x', -1);
       }
     }
     const groups = [...phone.querySelectorAll('.b-body, .b-section, .b-chips, .b-btnrow')];
@@ -237,7 +238,11 @@ function drawOverlay() {
     }
   }
 }
-// A drag on a gap handle moves the global slider by the pointer's travel along the gap's axis.
+// A drag on a gap handle sets that spacing for the screen it was grabbed in (and the screen it is linked to),
+// by the pointer's travel along the gap's axis. The global sliders stay the way to change every screen.
+function viewSpaceValue(phone, key) {
+  return state.viewSpace?.[phone.dataset.view]?.[key] ?? state[key];
+}
 function wireSpaceDrag() {
   const screens = document.getElementById('screens');
   screens.addEventListener('pointerdown', e => {
@@ -246,15 +251,17 @@ function wireSpaceDrag() {
     e.preventDefault(); e.stopPropagation();
     const { spaceKey: key, spaceAxis: axis } = h.dataset, sign = +h.dataset.spaceSign;
     if (key === 'part') return dragPartGap(e, h, axis);
-    const input = document.getElementById(key);
+    const input = document.getElementById(key), phone = h.closest('.phone'), view = phone.dataset.view;
     const shown = parseFloat(h.textContent.replace(/[^\d.-]/g, '')) || 0;
-    // A slider left at its original reads from the gap that was grabbed; one already set is the start.
-    const from = key === 'margin' || state[key] !== SPACE_DEFAULTS[key] && state[key] ? state[key] : shown, at = axis === 'y' ? e.clientY : e.clientX;
+    // A spacing left at its original reads from the gap that was grabbed; one already set is the start.
+    const set = key === 'margin' || viewSpaceValue(phone, key) !== SPACE_DEFAULTS[key] && viewSpaceValue(phone, key);
+    const from = set ? viewSpaceValue(phone, key) : shown, at = axis === 'y' ? e.clientY : e.clientX;
     const move = ev => {
       const v = Math.round(from + sign * ((axis === 'y' ? ev.clientY : ev.clientX) - at));
       const next = Math.min(+input.max, Math.max(+input.min, v));
-      if (next === state[key]) return;
-      state[key] = next; input.value = next; showValue(key); markSliders(); render();
+      if (next === viewSpaceValue(phone, key)) return;
+      for (const w of linkedViews(view)) ((state.viewSpace ||= {})[w] ||= {})[key] = next;
+      render();
     };
     const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
     addEventListener('pointermove', move);
@@ -268,14 +275,15 @@ function wireSpaceDrag() {
 function dragPartGap(e, h, axis) {
   const el = h.closest('.phone').querySelector(`[data-lab-id="${h.dataset.partId}"]`);
   if (!el) return;
+  const view = +el.closest('.phone').dataset.view;
   const partOf = (node, edge) => {
     const base = selectorFor(node, false);
     if (base === '.phone') return null;
-    const sel = `${base}:not(:${edge}-child)`, key = `both|${sel}`;
-    return state.parts[key] ||= { sel, mode: 'both', props: {} };
+    const sel = `${base}:not(:${edge}-child)`;
+    return linkedViews(view).map(v => state.parts[`both|v${v}|${sel}`] ||= { sel, mode: 'both', props: {}, view: v });
   };
-  const part = partOf(el, 'first'), prev = el.previousElementSibling;
-  if (!part) return;
+  const parts = partOf(el, 'first'), prev = el.previousElementSibling;
+  if (!parts) return;
   const cs = getComputedStyle(el), flow = /flex|grid/.test(getComputedStyle(el.parentElement).display);
   const mtNow = parseFloat(axis === 'y' ? cs.marginTop : cs.marginLeft) || 0;
   const r = el.getBoundingClientRect(), pr = prev.getBoundingClientRect();
@@ -288,9 +296,9 @@ function dragPartGap(e, h, axis) {
   const at = axis === 'y' ? e.clientY : e.clientX;
   const move = ev => {
     const v = Math.min(64, Math.max(-16, Math.round(from + (axis === 'y' ? ev.clientY : ev.clientX) - at)));
-    if (part.props[prop] === v) return;
-    part.props[prop] = v;
-    if (prevPart) prevPart.props.mB = 0;
+    if (parts[0].props[prop] === v) return;
+    for (const p of parts) p.props[prop] = v;
+    for (const p of prevPart || []) p.props.mB = 0;
     render();
   };
   const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };

@@ -54,7 +54,7 @@ const LAB_BASE = '2026-10-17.2';
 const defaults = () => ({
   font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,
-  moves: [], free: {}, removed: {}, copies: [], adds: [], texts: {}, notes: [], roleColors: {}, ...SPACE_DEFAULTS,
+  moves: [], free: {}, removed: {}, copies: [], adds: [], texts: {}, notes: [], roleColors: {}, viewSpace: {}, ...SPACE_DEFAULTS,
 });
 let state = defaults();
 const clone = st => JSON.parse(JSON.stringify(st));
@@ -186,14 +186,16 @@ const STATE_LABELS = [['', 'Normal'], ['hover', 'Hovring'], ['press', 'Tryck'], 
 function partsCss(st, scope) {
   let css = '';
   for (const [key, { sel, mode, props, view, state }] of Object.entries(st.parts)) {
-    const phone = view != null ? `${MODE_SCOPE[mode]}[data-view="${view}"]` : MODE_SCOPE[mode];
-    const base = scoped(sel === '.phone' ? phone : `${phone} ${sel.replace(/^\.phone /, '')}`, scope);
-    const targets = state ? [...STATE_SELECTORS[state].map(x => base + x), `${base}[data-lab-state="${state}"]`] : [base];
+    const phones = view != null ? linkedViews(view).map(v => `${MODE_SCOPE[mode]}[data-view="${v}"]`) : [MODE_SCOPE[mode]];
     const decls = declsFor(st, props, partBase[key]);
-    if (decls) css += `${targets.join(',')}{${important(decls)}}`;
-    if (!state && props.hover) css += `${base}:hover{${important(HOVER_CSS[props.hover])}}`;
-    if (!state && props.press) css += `${base}:active{${important(PRESS_CSS[props.press])}}`;
-    for (const t of targets) css += childRules(t, props);
+    for (const phone of phones) {
+      const base = scoped(sel === '.phone' ? phone : `${phone} ${sel.replace(/^\.phone /, '')}`, scope);
+      const targets = state ? [...STATE_SELECTORS[state].map(x => base + x), `${base}[data-lab-state="${state}"]`] : [base];
+      if (decls) css += `${targets.join(',')}{${important(decls)}}`;
+      if (!state && props.hover) css += `${base}:hover{${important(HOVER_CSS[props.hover])}}`;
+      if (!state && props.press) css += `${base}:active{${important(PRESS_CSS[props.press])}}`;
+      for (const t of targets) css += childRules(t, props);
+    }
   }
   return css;
 }
@@ -228,7 +230,7 @@ function buildCss(st, scope = '') {
   for (const { selector, px } of radii) {
     css += `${scoped(selector, scope)}{border-radius:${px === '12px' ? st.card : st.control}px}`;
   }
-  return css + roleCss(st, scope) + extraCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
+  return css + roleCss(st, scope) + extraCss(st, scope) + viewSpaceCss(st, scope) + freeCss(st, scope) + partsCss(st, scope);
 }
 // Free moves: an exact pixel offset (older saved ones are margins).
 function freeCss(st, scope) {

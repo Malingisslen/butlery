@@ -470,7 +470,7 @@ function wireExtras() {
   for (const [name, patch] of Object.entries(SPACE_PRESETS)) {
     const b = document.createElement('button');
     b.type = 'button'; b.textContent = name;
-    b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
+    b.onclick = () => { Object.assign(state, { ...SPACE_DEFAULTS, viewSpace: {}, overlay: state.overlay, iconStyle: state.iconStyle, iconLib: state.iconLib, iconSize: state.iconSize, iconStroke: state.iconStroke }, patch); syncUi(); };
     $('space-presets').append(b);
   }
   $('clear-moves').onclick = () => { state.moves = []; state.free = {}; state.removed = {}; state.copies = []; state.adds = []; state.texts = {}; replayLayout(); showMoves(); render(); };
@@ -513,6 +513,7 @@ wireNotes();
 wireRoles();
 wireScreens();
 wireViewTools();
+wireSteppers();
 wireType();
 wireEffects();
 wireExtras();
