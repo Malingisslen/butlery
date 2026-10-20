@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Participant management for realtime resources.
@@ -30,7 +31,7 @@ class RealtimeParticipants {
     ResourcePermission newPermission,
   ) {
     if (!participants.containsKey(userId)) {
-      throw ArgumentError('User $userId is not a participant');
+      throw ArgumentError('User ${userId.maskedUserId} is not a participant');
     }
 
     final updated = Map<String, ResourcePermission>.from(participants);
