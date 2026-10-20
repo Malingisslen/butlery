@@ -14,8 +14,10 @@ import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/offline/comment_upload_completion.dart';
 import 'package:butlery/services/offline/cook_snap_upload_completion.dart';
 import 'package:butlery/services/offline/offline_purge_store.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
@@ -40,6 +42,11 @@ UploadQueueProcessor buildUploadQueueProcessor({
     deleteUploaded: deleteQueuedImage,
     ensureSession: (userId) => refreshUploadSession(userId, storage),
     completions: {
+      SyncQueueEntityType.comment: CommentUploadCompletion(
+        database: database,
+        storage: storage,
+        repository: () => ServiceLocator.get<CommentsRepository>(),
+      ),
       SyncQueueEntityType.cookSnap: CookSnapUploadCompletion(
         database: database,
         storage: storage,

@@ -27,6 +27,21 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
     List<String> imageUrls = const [],
   });
 
+  /// The write the offline upload queue makes for a comment whose photos are
+  /// in Storage, under the id the queue fixed when the comment was written.
+  /// Waits for the server and throws while the recipe's ownership is unknown.
+  Future<RecipeComment> createQueuedComment({
+    required String commentId,
+    required String recipeId,
+    required String userId,
+    required String content,
+    String? parentCommentId,
+    List<String> imageUrls = const [],
+  });
+
+  /// Whether the signed-in user's comment [commentId] is on the server.
+  Future<bool> ownCommentExists(String commentId);
+
   /// Update an existing comment
   Future<void> updateComment(String commentId, String newContent);
 

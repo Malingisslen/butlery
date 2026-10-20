@@ -54,7 +54,12 @@ void main() {
       ),
     );
 
-    final uploaded = await uploadQueuedImage('/device/a.jpg', 'u1', 'row-1');
+    final uploaded = await uploadQueuedImage(
+      '/device/a.jpg',
+      'u1',
+      'row-1',
+      'users/u1/recipes',
+    );
 
     expect(uploaded, (
       url: 'https://img/row-1.jpg',
@@ -83,11 +88,61 @@ void main() {
       ).thenAnswer((_) async => null);
 
       await expectLater(
-        () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1'),
+        () => uploadQueuedImage(
+          '/device/a.jpg',
+          'u1',
+          'row-1',
+          'users/u1/recipes',
+        ),
         throwsStateError,
       );
     },
   );
+
+  test('a comment photo goes to the comment folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedCommentImage(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-2.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/b.jpg',
+      'u1',
+      'row-2',
+      'users/u1/comment_images',
+    );
+
+    expect(uploaded, (url: 'https://img/row-2.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedCommentImage(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-2',
+      ),
+    ).called(1);
+    verifyNever(
+      () => storage.uploadImageFile(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    );
+  });
+
+  test('a folder that is not one of the user\'s own image folders uploads '
+      'nothing', () async {
+    for (final folder in ['users/u2/recipes', 'users/u1/avatars', '']) {
+      await expectLater(
+        () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1', folder),
+        throwsStateError,
+      );
+    }
+    verifyZeroInteractions(storage);
+  });
 
   test('taking an image back asks the storage service to delete its '
       'address and passes its answer on', () async {

@@ -69,6 +69,7 @@ void main() {
     String localPath,
     String userId,
     String objectId,
+    String targetPath,
   ) async {
     final failure = uploadFailure;
     if (failure != null) throw failure;
