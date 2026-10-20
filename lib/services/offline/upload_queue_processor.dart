@@ -8,6 +8,7 @@ library;
 
 import 'dart:math';
 
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -19,6 +20,9 @@ import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/sync_queue_reader.dart'
+    show discardQueuedChange, readQueuedChanges;
+import 'package:butlery/services/offline/unsent_image_expiry.dart';
 import 'package:butlery/services/offline/upload_completion.dart';
 
 /// The upload statuses a pass picks up. "uploading" is only ever seen at the
@@ -64,9 +68,59 @@ class UploadQueueProcessor {
   ///
   /// An image still in Storage for a row that no longer uses it counts too:
   /// taking it back is a pass's work.
+  ///
+  /// A photo that waited out its 30 days counts as well: a pass is what
+  /// throws it away.
   Future<bool> hasPending(String userId) async =>
       (await _sendable(userId)).isNotEmpty ||
-      (await _unusedUploads(userId)).isNotEmpty;
+      (await _unusedUploads(userId)).isNotEmpty ||
+      (await _expiredFailures(userId, clock.now())).isNotEmpty;
+
+  /// Throws away what has waited for the user longer than
+  /// [kUnsentImageKeep], whatever it belongs to: a cook-snap album goes whole,
+  /// by the same path as the user's "Släng". Returns how many items went.
+  ///
+  /// The image a row had already put in Storage stays on the cancelled row
+  /// until [_takeBackUnused] has taken it back, so a failed take-back is
+  /// tried again by the next pass.
+  Future<int> discardExpired(String userId, {required DateTime now}) async {
+    if ((await _expiredFailures(userId, now)).isEmpty) return 0;
+    var discarded = 0;
+    for (final change in await readQueuedChanges(_db, userId)) {
+      final since = change.unsentSince;
+      if (change.kind != QueuedChangeKind.image ||
+          !change.needsUser ||
+          since == null ||
+          !unsentImageExpired(since, now)) {
+        continue;
+      }
+      await discardQueuedChange(_db, userId, change);
+      discarded++;
+    }
+    return discarded;
+  }
+
+  Future<List<UploadQueueEntry>> _expiredFailures(
+    String userId,
+    DateTime now,
+  ) async {
+    final failed =
+        await (_db.select(_db.uploadQueueEntries)..where(
+              (e) =>
+                  e.userId.equals(userId) &
+                  e.permanentlyFailed.equals(true) &
+                  e.status.isNotIn(const ['completed', 'cancelled']),
+            ))
+            .get();
+    return [
+      for (final row in failed)
+        if (unsentImageExpired(
+          unsentImageSince(row.firstFailedAt, row.queuedAt),
+          now,
+        ))
+          row,
+    ];
+  }
 
   /// The earliest time an upload waiting for its retry may be tried again.
   Future<DateTime?> earliestRetry(String userId) async {
@@ -103,6 +157,7 @@ class UploadQueueProcessor {
     required bool Function() isCurrentUser,
     bool force = false,
   }) async {
+    await discardExpired(userId, now: now);
     await _takeBackUnused(userId);
     final ids = await _db.queuedOpIds(userId);
     var sent = 0;

@@ -28,6 +28,7 @@ QueuedChange _change(
   bool needsUser = false,
   QueuedChangeReason reason = QueuedChangeReason.unknown,
   bool waits = false,
+  DateTime? unsentSince,
 }) => QueuedChange(
   kind: kind,
   id: id,
@@ -37,6 +38,7 @@ QueuedChange _change(
   needsUser: needsUser,
   reason: reason,
   waitsOnEarlier: waits,
+  unsentSince: unsentSince,
 );
 
 Widget _app(ThemeData theme, {String? backTo}) => MaterialApp(
@@ -225,6 +227,24 @@ void main() {
     await tester.pump(const Duration(seconds: 8));
     await tester.pumpAndSettle();
     expect(source.discarded, [a]);
+  });
+
+  testWidgets('an unsent photo in Väntar på dig says when it is thrown away '
+      'by itself; a recipe write says nothing', (tester) async {
+    source.set([
+      _change(
+        'img',
+        kind: QueuedChangeKind.image,
+        op: QueuedOperation.upload,
+        needsUser: true,
+        unsentSince: _now.subtract(const Duration(days: 29)),
+      ),
+      _change('recipe', needsUser: true),
+    ]);
+    await pump(tester, AppTheme.lightTheme);
+
+    expect(find.text(_sv.syncQueueAutoDiscard(1)), findsOneWidget);
+    expect(find.textContaining('Slängs automatiskt'), findsOneWidget);
   });
 
   testWidgets('Ångra within the window keeps the change', (tester) async {

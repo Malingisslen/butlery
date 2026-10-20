@@ -3,6 +3,8 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:clock/clock.dart';
+
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -278,6 +280,15 @@ class AppDatabase extends _$AppDatabase {
             lastError: error,
           ),
         );
+        // The 30 days an unsent photo waits start at its first failure; a row
+        // that failed on its first try, or only because what it depends on
+        // did, never recorded one.
+        await (update(uploadQueueEntries)..where(
+              (e) => e.id.isIn(uploadIds) & e.firstFailedAt.isNull(),
+            ))
+            .write(
+              UploadQueueEntriesCompanion(firstFailedAt: Value(clock.now())),
+            );
       }
       if (rootReason != null) {
         await (update(syncQueueEntries)..where(

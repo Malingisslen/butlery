@@ -203,6 +203,65 @@ void main() {
       expect((await db.watchQueueCounts(uid).first).waiting, 2);
     });
 
+    test('an album counts its 30 days from its OLDEST failed photo, and a '
+        'photo that has not failed starts nothing', () async {
+      final ids = await queueSnap('snap-1');
+      await db.uploadQueueDao.markPermanentlyFailed(ids[1], reason: 'x');
+      await db.uploadQueueDao.markPermanentlyFailed(ids[2], reason: 'x');
+      final early = t0.subtract(const Duration(days: 10));
+      await (db.update(db.uploadQueueEntries)
+            ..where((e) => e.id.equals(ids[2])))
+          .write(UploadQueueEntriesCompanion(firstFailedAt: Value(early)));
+      // ids[0] was queued before both and has not failed: it must not count.
+      await (db.update(
+        db.uploadQueueEntries,
+      )..where((e) => e.id.equals(ids[0]))).write(
+        UploadQueueEntriesCompanion(
+          queuedAt: Value(t0.subtract(const Duration(days: 40))),
+        ),
+      );
+
+      final album = (await readQueuedChanges(db, uid)).single;
+
+      expect(album.unsentSince, early);
+    });
+
+    test('Väntar på dig tells an unsent photo how many days are left, in '
+        'Swedish and English, and says nothing for a recipe write', () async {
+      await queueRecipeImage('img-1');
+      await db.uploadQueueDao.markPermanentlyFailed('img-1', reason: 'x');
+      final image = (await readQueuedChanges(db, uid)).single;
+      String? at(Duration d, AppLocalizations l10n) => withClock(
+        Clock.fixed(t0.add(d)),
+        () => describeAutoDiscard(l10n, image),
+      );
+
+      expect(
+        at(const Duration(days: 1), AppLocalizationsSv()),
+        'Slängs automatiskt om 29 dagar',
+      );
+      expect(
+        at(const Duration(days: 29), AppLocalizationsSv()),
+        'Slängs automatiskt om 1 dag',
+      );
+      expect(
+        at(const Duration(days: 30), AppLocalizationsSv()),
+        'Slängs automatiskt i dag',
+      );
+      expect(
+        at(const Duration(days: 29), AppLocalizationsEn()),
+        'Will be discarded automatically in 1 day',
+      );
+      final queued = QueuedChange(
+        kind: QueuedChangeKind.recipe,
+        id: 'op',
+        operation: QueuedOperation.update,
+        queuedAt: t0,
+        needsUser: true,
+      );
+      expect(describeAutoDiscard(AppLocalizationsSv(), queued), isNull);
+    });
+
     test('another user\'s album is not listed', () async {
       await queueSnap('snap-x', user: 'u2');
 
@@ -299,6 +358,25 @@ void main() {
       expect(after.values.every((r) => r.firstFailedAt == null), isTrue);
       final again = (await readQueuedChanges(db, uid)).single;
       expect(again.needsUser, isFalse);
+    });
+
+    test('Försök igen on a single photo starts its 30 days over', () async {
+      await queueRecipeImage('img-1');
+      await db.uploadQueueDao.markPermanentlyFailed('img-1', reason: 'x');
+      await (db.update(db.uploadQueueEntries)).write(
+        UploadQueueEntriesCompanion(
+          firstFailedAt: Value(t0.subtract(const Duration(days: 28))),
+          nextAttemptAt: Value(t0),
+        ),
+      );
+      final image = (await readQueuedChanges(db, uid)).single;
+
+      await retryQueuedChange(db, image, userId: uid);
+
+      final after = (await rows()).single;
+      expect(after.permanentlyFailed, isFalse);
+      expect(after.firstFailedAt, isNull);
+      expect(after.nextAttemptAt, isNull);
     });
 
     test('Försök igen retries only the signed-in user\'s album when another '
