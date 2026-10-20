@@ -26,3 +26,17 @@ jobs:
         run: bash tools/check_test_weakening.sh --self-test
       - name: Check this PR's commits
         run: bash tools/check_test_weakening.sh --range "origin/${{ github.base_ref }}" "${{ github.event.pull_request.head.sha }}"
+
+  # BUT-1888: a widget test that takes one of our widgets out of the tree and asserts only its
+  # props proves a value was set, not that anything was drawn (BUT-1780 shipped green that way).
+  # Ratchet on tools/prop_only_widget_tests_baseline.json: a NEW such test fails.
+  prop-only-widget-tests:
+    name: Widget tests assert what renders
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Guard self-test
+        run: node --test tools/check_prop_only_widget_tests.test.mjs
+      - name: Forbid new prop-only widget tests
+        run: node tools/check_prop_only_widget_tests.mjs --check
