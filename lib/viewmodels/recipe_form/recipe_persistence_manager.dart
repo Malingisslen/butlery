@@ -467,9 +467,10 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
     final result = await safeExecute<bool>(
       () async {
+        // The photos stay: a deleted recipe sits in the trash and a restore
+        // needs them. The server removes them when the trash copy goes.
         await _recipeService.deleteRecipe(_state.originalRecipe!.id);
 
-        await _imageManager.clearAllImages();
         AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');
 
         return true;
