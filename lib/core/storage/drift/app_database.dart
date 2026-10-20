@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
@@ -8,11 +7,11 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:sqlite3/sqlite3.dart' show Database;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
-import 'package:sqlite3/open.dart';
 // The generated sync-queue table creates each opId with Uuid (tables/sync_queue.dart).
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -398,58 +397,46 @@ const _secureStorage = FlutterSecureStorage(
 /// Storage key for the database encryption key
 const _dbEncryptionKeyName = 'drift_db_encryption_key';
 
-/// Opens a connection to the encrypted SQLite database using SQLCipher
+/// Opens a connection to the encrypted SQLite database (SQLite3MultipleCiphers,
+/// selected by the `hooks` block in pubspec.yaml).
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    // Use SQLCipher native library instead of default sqlite3
-    await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
-    open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
-    // package:sqlite3 looks for SQLCipher in the process on iOS, where the
-    // system sqlite3 answers first and has no cipher. The Podfile builds
-    // SQLCipher as its own framework so it can be opened by name.
-    open.overrideFor(
-      OperatingSystem.iOS,
-      () => DynamicLibrary.open('SQLCipher.framework/SQLCipher'),
-    );
-
     final dbFolder = await getApplicationDocumentsDirectory();
     // Use a new filename to avoid conflicts with old unencrypted database
     final file = File(p.join(dbFolder.path, 'butlery_drift_encrypted.sqlite'));
 
-    // Get or generate the encryption key
     final encryptionKey = await _getDatabaseEncryptionKey();
 
-    // Use NativeDatabase (not createInBackground) because background isolates
-    // don't inherit the open.overrideFor SQLCipher library override
     return NativeDatabase(
       file,
-      setup: (db) {
-        // SQLite PRAGMAs are parsed at compile time and do NOT support
-        // parameter binding (`PRAGMA key = ?` raises "syntax error near ?").
-        // Use the literal-string form. The encryption key is base64Url-encoded
-        // (alphabet `[A-Za-z0-9_-=]`), so it contains no characters that need
-        // SQL escaping — but we escape single quotes defensively in case the
-        // key generator ever changes format.
-        final escapedKey = encryptionKey.replaceAll("'", "''");
-        db.execute("PRAGMA key = '$escapedKey'");
-
-        // Verify SQLCipher is actually loaded (not stock SQLite). If
-        // libsqlcipher.so failed to load for the device ABI, the override
-        // silently falls back to stock sqlite3 and the database opens
-        // *unencrypted* — fail loudly here instead of silently degrading.
-        final cipherVersionRow = db.select('PRAGMA cipher_version').firstOrNull;
-        final cipherVersion = (cipherVersionRow?.values.first?.toString())
-            .orEmpty();
-        if (cipherVersion.isEmpty) {
-          throw StateError(
-            'SQLCipher library failed to load — database would open unencrypted. '
-            'Check that libsqlcipher.so is present in the APK for this device '
-            'ABI (run "unzip -l <apk> | grep libsqlcipher.so").',
-          );
-        }
-      },
+      setup: (db) => configureDatabaseEncryption(db, encryptionKey),
     );
   });
+}
+
+/// Keys [db] in the file format the previous SQLCipher build wrote, so files
+/// already on devices still open.
+@visibleForTesting
+void configureDatabaseEncryption(Database db, String encryptionKey) {
+  // Stock SQLite ignores unknown PRAGMAs, so a build without the cipher
+  // library would open the file unencrypted. `PRAGMA cipher` only answers
+  // when the cipher library is the one loaded — fail loudly instead.
+  final cipherRow = db.select('PRAGMA cipher').firstOrNull;
+  if ((cipherRow?.values.first?.toString()).orEmpty().isEmpty) {
+    throw StateError(
+      'SQLite3MultipleCiphers is not loaded — database would open '
+      'unencrypted. Check the `hooks: user_defines: sqlite3: source: '
+      'sqlite3mc` block in pubspec.yaml.',
+    );
+  }
+  db.execute("PRAGMA cipher = 'sqlcipher'");
+  db.execute('PRAGMA legacy = 4');
+  // PRAGMAs do not support parameter binding (`PRAGMA key = ?` raises
+  // "syntax error near ?"), so the key goes in as a literal. It is
+  // base64Url-encoded, so it needs no SQL escaping; quotes are escaped anyway
+  // in case the generator ever changes format.
+  final escapedKey = encryptionKey.replaceAll("'", "''");
+  db.execute("PRAGMA key = '$escapedKey'");
 }
 
 /// Gets or generates the database encryption key from secure storage

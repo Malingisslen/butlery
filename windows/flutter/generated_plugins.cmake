@@ -20,7 +20,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   record_windows
   share_plus
-  sqlcipher_flutter_libs
   url_launcher_windows
 )
 

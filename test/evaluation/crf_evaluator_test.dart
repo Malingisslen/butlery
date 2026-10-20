@@ -12,7 +12,7 @@ import 'dart:io';
 
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// A single golden test case with BIO labels and expected fields.
 class CrfGoldenEntry {

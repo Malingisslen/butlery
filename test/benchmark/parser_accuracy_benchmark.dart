@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 
 /// Fixture entry representing a single benchmark test case.

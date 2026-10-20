@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Architecture compliance tests that validate MVVM + Repository pattern.
 /// Runs in CI to ensure architectural rules don't regress.

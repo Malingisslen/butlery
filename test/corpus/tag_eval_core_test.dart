@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/corpus/corpus_paths.dart';
 import '../../tools/corpus/tag_eval_core.dart';

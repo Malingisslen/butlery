@@ -19,7 +19,7 @@
 		Required-reason APIs used by Butlery's own code (first-party).
 		SDKs that ship their own PrivacyInfo.xcprivacy (Firebase, shared_preferences,
 		path_provider, image_picker, url_launcher, connectivity_plus, device_info_plus,
-		package_info_plus, permission_handler, sqflite/sqlcipher, flutter_secure_storage,
+		package_info_plus, permission_handler, sqflite/sqlite3, flutter_secure_storage,
 		file_picker) have their manifests auto-merged by Xcode at build time —
 		we must NOT duplicate their reasons here.
 	-->
@@ -46,7 +46,7 @@
 			  timestamps that are surfaced to the user (e.g. recipe photo
 			  metadata).
 			  3B52.1 — cached_network_image, flutter_image_compress, and
-			  sqlcipher_flutter_libs read mtimes to manage app-internal
+			  the sqlite3 package read mtimes to manage app-internal
 			  caches (LRU eviction by file age) — does not leave the device.
 		-->
 		<dict>

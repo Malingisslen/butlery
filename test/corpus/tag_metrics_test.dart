@@ -1,7 +1,7 @@
 @TestOn('vm')
 library;
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/corpus/tag_metrics.dart';
 import '../../tools/corpus/tag_models.dart';

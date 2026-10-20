@@ -8,4 +8,20 @@ mixin _$CacheDaoMixin on DatabaseAccessor<AppDatabase> {
       attachedDatabase.jsonCacheEntries;
   $ParseCacheEntriesTable get parseCacheEntries =>
       attachedDatabase.parseCacheEntries;
+  CacheDaoManager get managers => CacheDaoManager(this);
+}
+
+class CacheDaoManager {
+  final _$CacheDaoMixin _db;
+  CacheDaoManager(this._db);
+  $$JsonCacheEntriesTableTableManager get jsonCacheEntries =>
+      $$JsonCacheEntriesTableTableManager(
+        _db.attachedDatabase,
+        _db.jsonCacheEntries,
+      );
+  $$ParseCacheEntriesTableTableManager get parseCacheEntries =>
+      $$ParseCacheEntriesTableTableManager(
+        _db.attachedDatabase,
+        _db.parseCacheEntries,
+      );
 }

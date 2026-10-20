@@ -1,5 +1,5 @@
 import 'package:sembast/sembast_memory.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 // Import the web stub directly (not via conditional export) for unit testing.
 // This works because the stub file has no dart:html dependency — it only uses

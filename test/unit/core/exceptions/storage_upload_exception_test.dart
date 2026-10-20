@@ -7,7 +7,7 @@
 library;
 
 import 'package:butlery/core/exceptions/storage_upload_exception.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('StorageUploadException', () {

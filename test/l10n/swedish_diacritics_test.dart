@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Guards against the diacritic-stripping regression found in the pre-release
 /// audit (2026-06-20), where a whole block of `app_sv.arb` lost every å/ä/ö
