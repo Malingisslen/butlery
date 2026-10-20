@@ -147,9 +147,9 @@ function throwingFetch(err: Error): typeof fetch {
   }) as unknown as typeof fetch;
 }
 
-const PROJECT_ID = process.env.GCLOUD_PROJECT
-  || process.env.GOOGLE_CLOUD_PROJECT
-  || "butlery-app-1";
+// The validator has no project fallback, so the suite pins its own.
+process.env.GCLOUD_PROJECT = "butlery-test";
+const PROJECT_ID = process.env.GCLOUD_PROJECT;
 const BUCKET_HOST = `${PROJECT_ID}.firebasestorage.app`;
 const GOOD_URL =
   `https://firebasestorage.googleapis.com/v0/b/${BUCKET_HOST}` +
@@ -589,6 +589,29 @@ async function testIntegration(): Promise<void> {
   }
 }
 
+function testMissingProjectEnvThrows(): void {
+  console.log("\n[0] missing project id fails closed");
+  const saved = {
+    g: process.env.GCLOUD_PROJECT,
+    c: process.env.GOOGLE_CLOUD_PROJECT,
+  };
+  delete process.env.GCLOUD_PROJECT;
+  delete process.env.GOOGLE_CLOUD_PROJECT;
+  let threw = false;
+  try {
+    isAllowedOcrHost(GOOD_URL);
+  } catch {
+    threw = true;
+  }
+  process.env.GCLOUD_PROJECT = saved.g;
+  if (saved.c === undefined) delete process.env.GOOGLE_CLOUD_PROJECT;
+  else process.env.GOOGLE_CLOUD_PROJECT = saved.c;
+  record(
+    "no project env → isAllowedOcrHost throws",
+    threw ? { ok: true } : { ok: false }
+  );
+}
+
 // =============================================================================
 // Driver
 // =============================================================================
@@ -597,6 +620,7 @@ async function main(): Promise<void> {
   console.log("BUT-425: OCR URL validation tests");
   console.log("=================================");
 
+  testMissingProjectEnvThrows();
   testHostAllowlist();
   await testHappyPath();
   await testRejectedHost();

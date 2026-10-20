@@ -50,6 +50,15 @@
   READ (e.g. a hot shared doc touched only on a new id), wrap the store in a `Proxy`
   whose `runTransaction` passes a `tx` with a recording `get`.
 
+### Project-pinned allowlists (shared/ocr-url-validator.ts)
+- **An allowlist derived from the project id has no hardcoded project fallback** — a literal
+  pins the bucket to one project in every other environment. `getProjectId()` throws when
+  `GCLOUD_PROJECT` and `GOOGLE_CLOUD_PROJECT` are both unset, as `gemini-client.ts`
+  `resolveProjectId` already does. In `runOcrRecipeImage` the validator runs ABOVE the
+  handler's `try`, so the throw leaves as a plain Error (`internal` to the client), emits no
+  `ocr_recipe_image.complete` row, and never reaches `performOcr`. A suite calling the
+  validator sets its own `GCLOUD_PROJECT` at module top.
+
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
   override doc is live — ship a matching prod-doc update. A new prompt field

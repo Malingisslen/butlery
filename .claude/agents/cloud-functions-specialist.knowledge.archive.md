@@ -21309,3 +21309,6 @@ Production fixes were made by the main session; this run only changed tests (no 
 
 ### 2026-10-20 — BUT-451 admin scripts take --project [data-pipelines]
 - Every `admin/` script now reaches Firebase only through `initializeAdminApp()` → `requireProject`; the hardcoded production id in `seed-tag-configs.ts` and `sync-ingredients.ts` is gone.
+
+### 2026-10-20 — BUT-2437 OCR validator drops 'butlery-app-1' fallback [review]
+Reviewed the uncommitted diff to functions/src/shared/ocr-url-validator.ts and functions/src/__tests__/ocr-validation.test.ts. getProjectId() now throws when GCLOUD_PROJECT/GOOGLE_CLOUD_PROJECT are unset. Caller runOcrRecipeImage calls validateImageUrl outside its try, so the throw propagates as a plain Error and onCall maps it to `internal`; performOcr is never reached (fail-closed), but emitTiming is skipped on that path. gemini-client.ts resolveProjectId already threw on the same absence. Grep found no other reader of the fallback. Verified: tsc --noEmit clean; `test:ocr-validation` 22/22 with both env vars unset; a mutant that put the fallback back failed only "no project env → isAllowedOcrHost throws" (21/22); file restored byte-identical (git hash-object). Principle folded into the data-pipelines chapter under "Project-pinned allowlists".
