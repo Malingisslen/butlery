@@ -41,7 +41,7 @@ void main() {
     processor = UploadQueueProcessor(
       database: db,
       storage: OfflineUserStorage(database: db, uploadsRoot: () async => root),
-      upload: (path, userId, objectId) async {
+      upload: (path, userId, objectId, targetPath) async {
         if (objectId == 'p2') throw const SocketException('flaky');
         return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
       },
