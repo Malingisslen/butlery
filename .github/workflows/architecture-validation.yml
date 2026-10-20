@@ -122,6 +122,14 @@ jobs:
     - name: Forbid growth in duplicated or unreachable code
       run: node tools/code_hygiene.mjs --check
 
+    # BUT-2030: an ARB key nothing in lib/ names is dead the day its last caller goes, and
+    # nothing else notices. Ratchet on tools/dead_surface_baseline.json: a NEW unused key
+    # fails, the existing backlog never does. The method half of the tool only reports.
+    - name: Forbid new unused ARB keys
+      run: |
+        node --test tools/check_dead_surface.test.mjs
+        node tools/check_dead_surface.mjs --check
+
     # BUT-1746: a literal null in a Firestore `.where()` builds NO condition —
     # the call compiles, reads as a filter, and degrades the query into an
     # unfiltered read of the whole collection. Four such sites shipped. The
