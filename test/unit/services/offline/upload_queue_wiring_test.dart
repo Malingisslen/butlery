@@ -11,7 +11,7 @@ import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
-import 'package:butlery/services/offline/cook_snap_upload_completion.dart';
+import 'package:butlery/services/offline/cook_snap_queue_metadata.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/upload_queue_wiring.dart';
 import 'package:butlery/services/user_service.dart';

@@ -18,21 +18,6 @@ import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/upload_completion.dart';
 
-/// What the snap is, kept on each of its rows when it is queued.
-Map<String, Object?> cookSnapQueueMetadata({
-  required String recipeId,
-  required String recipeAuthorId,
-  required String recipeName,
-  required CookSnapVisibility visibility,
-  String? caption,
-}) => {
-  'recipeId': recipeId,
-  'recipeAuthorId': recipeAuthorId,
-  'recipeName': recipeName,
-  'visibility': visibility.name,
-  'caption': ?caption,
-};
-
 /// The name and picture the snap shows for its author.
 typedef CookSnapAuthor = ({String displayName, String? avatarUrl});
 

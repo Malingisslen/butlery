@@ -13,7 +13,11 @@ Stream<List<QueuedChange>> watchQueuedChanges(AppDatabase db, String userId) =>
     Stream.value(const []);
 
 /// Nothing to retry on the web.
-Future<void> retryQueuedChange(AppDatabase db, QueuedChange change) async {}
+Future<void> retryQueuedChange(
+  AppDatabase db,
+  QueuedChange change, {
+  String? userId,
+}) async {}
 
 /// Nothing to discard on the web.
 Future<String?> discardQueuedChange(

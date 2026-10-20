@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -15,15 +16,29 @@ import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/offline/cook_snap_queue_metadata.dart';
+import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
+
+/// What [CookSnapService.addCookSnap] did with the picked photos.
+class CookSnapAddResult {
+  const CookSnapAddResult.created(CookSnap this.snap) : queued = false;
+
+  /// The photos are on the device and the snap is created when they are all up.
+  const CookSnapAddResult.queued() : snap = null, queued = true;
+
+  final CookSnap? snap;
+  final bool queued;
+}
 
 class CookSnapService extends BaseService {
   final CookSnapRepository _repository;
@@ -44,9 +59,11 @@ class CookSnapService extends BaseService {
   /// user may pick up to [CookSnap.maxPhotos] photos (an album); the camera
   /// path always yields a single photo. The first photo is the album cover.
   ///
-  /// Returns the created CookSnap, or null if the user cancelled or an error
-  /// occurred.
-  Future<CookSnap?> addCookSnap({
+  /// Offline, the photos are queued on the device instead and the snap is
+  /// created once they are all up ([CookSnapAddResult.queued]).
+  ///
+  /// Returns null if the user cancelled or an error occurred.
+  Future<CookSnapAddResult?> addCookSnap({
     required String recipeId,
     required String recipeAuthorId,
     required String recipeName,
@@ -55,16 +72,19 @@ class CookSnapService extends BaseService {
     bool allowMultiple = false,
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) async {
-    return executeServiceOperation<CookSnap?>(
+    return executeServiceOperation<CookSnapAddResult?>(
       () async {
-        // Check connectivity
-        final connectivity =
-            ServiceLocator.get<ConnectivityMonitoringService>();
-        if (!connectivity.isConnectedToInternet) {
+        final online = ServiceLocator.get<ConnectivityMonitoringService>()
+            .isConnectedToInternet;
+        // Refused before the picker opens, so photos are never picked only to
+        // be lost (the web has no queue).
+        final offline = ServiceLocator.tryGet<OfflineService>();
+        if (!online && !(offline?.isQueueReady ?? false)) {
           throw Exception('Cannot upload photos while offline');
         }
 
-        // Validate caption — gate via ContentFilterService.ensureClean to
+        // Validate caption — at queue time too, so a refused caption never
+        // waits in the queue. Gate via ContentFilterService.ensureClean to
         // share the canonical pre-publish path with recipe titles, group
         // names, and profile bios (BUT-517).
         var validCaption = caption;
@@ -101,6 +121,22 @@ class CookSnapService extends BaseService {
         final permissionService = ServiceLocator.get<PermissionService>();
         final userId = permissionService.currentUserId;
         if (userId == null) throw Exception('Not authenticated');
+
+        if (!online) {
+          // The author's name and picture are read when the snap is created,
+          // from the profile then, not stored with the photos now.
+          await _queueOffline(
+            offline!,
+            files: files,
+            userId: userId,
+            recipeId: recipeId,
+            recipeAuthorId: recipeAuthorId,
+            recipeName: recipeName,
+            visibility: visibility,
+            caption: validCaption,
+          );
+          return const CookSnapAddResult.queued();
+        }
 
         // Upload each photo, preserving pick order (cover first). The first
         // photo's thumbnail is used as the album thumbnail.
@@ -146,10 +182,39 @@ class CookSnapService extends BaseService {
           senderName: profile?.displayName ?? '?',
         );
 
-        return snap;
+        return CookSnapAddResult.created(snap);
       },
       operationName: 'addCookSnap',
     );
+  }
+
+  Future<void> _queueOffline(
+    OfflineService offline, {
+    required List<File> files,
+    required String userId,
+    required String recipeId,
+    required String recipeAuthorId,
+    required String recipeName,
+    required CookSnapVisibility visibility,
+    required String? caption,
+  }) async {
+    // List order is pick order; the cover is the first photo.
+    await offline.userStorage.queueImageGroupForUser(
+      imagePaths: [for (final file in files) file.path],
+      entityType: cookSnapEntityType,
+      entityId: const Uuid().v4(),
+      userId: userId,
+      targetPath: 'users/$userId/recipes',
+      metadata: cookSnapQueueMetadata(
+        recipeId: recipeId,
+        recipeAuthorId: recipeAuthorId,
+        recipeName: recipeName,
+        visibility: visibility,
+        caption: caption,
+      ),
+    );
+    await offline.refreshSyncState();
+    AppLogger.info('CookSnap for recipe $recipeId queued offline');
   }
 
   /// What follows a snap that has reached the server: the feed event and the

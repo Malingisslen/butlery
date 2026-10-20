@@ -181,9 +181,11 @@ class AppDatabase extends _$AppDatabase {
   /// [UploadQueueDao.getRetryableUploads], so the count cannot tell an
   /// upload with retries left from one that has run out (open question for
   /// when the count is surfaced, produktregler.md:188-189).
+  ///
+  /// A cook snap's album counts once ([queueCountsSql]).
   Stream<QueueCounts> watchQueueCounts(String userId) {
     return customSelect(
-      _queueCountsSql,
+      queueCountsSql,
       variables: [Variable.withString(userId)],
       readsFrom: {syncQueueEntries, uploadQueueEntries},
     ).watchSingle().map(
@@ -198,21 +200,6 @@ class AppDatabase extends _$AppDatabase {
   /// number across the sync and upload queues ([QueueCounts.waiting]).
   Stream<int> watchPendingCount(String userId) =>
       watchQueueCounts(userId).map((c) => c.waiting).distinct();
-
-  static const String _queueCountsSql = """
-SELECT
-  (SELECT COUNT(*) FROM sync_queue_entries
-     WHERE user_id = ?1 AND permanently_failed = 0)
-  + (SELECT COUNT(*) FROM upload_queue_entries
-     WHERE user_id = ?1 AND permanently_failed = 0
-       AND status IN ('pending', 'uploading', 'uploaded', 'failed'))
-    AS draining,
-  (SELECT COUNT(*) FROM sync_queue_entries
-     WHERE user_id = ?1 AND permanently_failed = 1)
-  + (SELECT COUNT(*) FROM upload_queue_entries
-     WHERE user_id = ?1 AND permanently_failed = 1
-       AND status NOT IN ('completed', 'cancelled')) AS needs_user
-""";
 
   /// Marks the operation [opId] and every entry that depends on it, directly
   /// or through another entry, as permanently failed — in both queues and

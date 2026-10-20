@@ -9025,6 +9025,10 @@
   },
   "cookSnapErrorLoad": "Kunde inte ladda foton",
   "cookSnapErrorUpload": "Kunde inte ladda upp foto",
+  "cookSnapQueuedOffline": "Dina bilder skickas när du är online igen",
+  "@cookSnapQueuedOffline": {
+    "description": "BUT-2294: snackbar when a cook-snap album is added with no connection; the photos are kept on the device and the snap is created when they are all up."
+  },
   "cookSnapErrorDelete": "Kunde inte radera bilden",
   "cookSnapDelete": "Radera bilden",
   "cookSnapDeletedUndoMessage": "Bilden raderas – ångra?",
@@ -12365,6 +12369,15 @@
   "syncQueueImage": "En bild",
   "@syncQueueImage": {
     "description": "P6-T6 (PQ-17, P4-U19): a queued upload with no known recipe."
+  },
+  "syncQueueCookSnap": "{count, plural, =1{Matlagningsfoton (1 bild)} other{Matlagningsfoton ({count} bilder)}}",
+  "@syncQueueCookSnap": {
+    "description": "BUT-2294: a queued cook-snap album in Väntar på synk. The album is one item whatever the number of photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "syncQueueReasonNotFound": "Receptet finns inte längre",
   "@syncQueueReasonNotFound": {

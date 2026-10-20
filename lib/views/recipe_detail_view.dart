@@ -1031,7 +1031,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       visibility = choice;
     }
 
-    vm.addSnap(source: source, visibility: visibility);
+    final outcome = await vm.addSnap(source: source, visibility: visibility);
+    if (outcome == CookSnapAddOutcome.queuedOffline && context.mounted) {
+      SnackBarUtils.showInfo(context, context.l10n.cookSnapQueuedOffline);
+    }
   }
 
   Map<String, String> _friendDisplayNames() {
