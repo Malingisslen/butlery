@@ -31,6 +31,19 @@ enum CompletionOutcome {
   targetGone,
 }
 
+/// Thrown by a handler that must wait before it may write again, for a limit
+/// the server enforces on its own (the five seconds between two cook snaps).
+/// Unlike any other throw it is not a failed attempt: the row keeps its retry
+/// count and is tried again after [wait].
+class CompletionDeferred implements Exception {
+  const CompletionDeferred(this.wait);
+
+  final Duration wait;
+
+  @override
+  String toString() => 'CompletionDeferred(${wait.inSeconds}s)';
+}
+
 /// The statuses of a row the queue still sends.
 const _liveStatuses = ['pending', 'uploading', 'uploaded', 'failed'];
 

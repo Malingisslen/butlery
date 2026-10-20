@@ -416,7 +416,13 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
       // Extract reference from URL
       final ref = storage.refFromURL(imageUrl);
-      await ref.delete();
+      try {
+        await ref.delete();
+      } on FirebaseException catch (e) {
+        // An object that is already gone is what the caller wanted; reporting
+        // failure would make the offline queue retry its take-back for ever.
+        if (e.code != 'object-not-found') rethrow;
+      }
 
       AppLogger.info('Image deleted from storage: $imageUrl');
 

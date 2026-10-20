@@ -20,6 +20,7 @@ class OfflineSyncManager {
     Future<void> Function(String recipeId, String userId)? onTagRecipe,
     void Function(String recipeId)? onRecipeSent,
     RecipeConflictCallback? onRecipeConflict,
+    Object? uploads,
     QueuedImageUploader? uploadImage,
     UploadedImageDeleter? deleteUploadedImage,
     OfflineUserStorage? userStorage,

@@ -15,6 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/offline/queued_image_copy.dart';
 
 /// Handles user-specific storage operations for offline service
 /// Now uses Drift database instead of Hive
@@ -24,6 +25,7 @@ class OfflineUserStorage {
   final SyncQueueDao _syncQueueDao;
   final UploadQueueDao _uploadQueueDao;
   final Future<Directory> Function() _uploadsRoot;
+  final QueuedImageCopier _copyImage;
 
   /// [uploadsRoot] is where queued images are kept on the device until they
   /// reach the server; by default a folder in the app's documents, which
@@ -31,11 +33,13 @@ class OfflineUserStorage {
   OfflineUserStorage({
     required AppDatabase database,
     Future<Directory> Function()? uploadsRoot,
+    QueuedImageCopier? copyImage,
   }) : _database = database,
        _recipeDao = database.recipeDao,
        _syncQueueDao = database.syncQueueDao,
        _uploadQueueDao = database.uploadQueueDao,
-       _uploadsRoot = uploadsRoot ?? _defaultUploadsRoot;
+       _uploadsRoot = uploadsRoot ?? _defaultUploadsRoot,
+       _copyImage = copyImage ?? copyWithoutLocation;
 
   static Future<Directory> _defaultUploadsRoot() async => Directory(
     p.join((await getApplicationDocumentsDirectory()).path, 'offline_uploads'),
@@ -189,9 +193,7 @@ class OfflineUserStorage {
     final id = const Uuid().v4();
     final folder = Directory(p.join((await _uploadsRoot()).path, userId));
     await folder.create(recursive: true);
-    final copy = await image.copy(
-      p.join(folder.path, '$id${p.extension(image.path)}'),
-    );
+    final copy = await _copyImage(image, p.join(folder.path, id));
     final createOpId = await _syncQueueDao.pendingCreateOpId(userId, recipeId);
     await _uploadQueueDao.queueUpload(
       id: id,
@@ -205,6 +207,59 @@ class OfflineUserStorage {
     );
     AppLogger.info('📷 Image queued for recipe $recipeId');
     return id;
+  }
+
+  /// Keeps copies of [imagePaths] on the device and queues their upload as
+  /// one group of [entityType] named [entityId] (a cook snap's photos). Each
+  /// row carries its place in the group as `order` beside [metadata], which
+  /// is the same for all of them. Returns the rows' ids in the given order.
+  Future<List<String>> queueImageGroupForUser({
+    required List<String> imagePaths,
+    required String entityType,
+    required String entityId,
+    required String userId,
+    required String targetPath,
+    required Map<String, Object?> metadata,
+  }) async {
+    final folder = Directory(p.join((await _uploadsRoot()).path, userId));
+    await folder.create(recursive: true);
+    final ids = [for (final _ in imagePaths) const Uuid().v4()];
+    final copies = <File>[];
+    try {
+      for (var order = 0; order < ids.length; order++) {
+        copies.add(
+          await _copyImage(
+            File(imagePaths[order]),
+            p.join(folder.path, ids[order]),
+          ),
+        );
+      }
+      await _database.transaction(() async {
+        for (var order = 0; order < ids.length; order++) {
+          await _uploadQueueDao.queueUpload(
+            id: ids[order],
+            userId: userId,
+            localPath: copies[order].path,
+            targetPath: targetPath,
+            fileSizeBytes: await copies[order].length(),
+            entityId: entityId,
+            entityType: entityType,
+            metadata: jsonEncode({...metadata, 'order': order}),
+          );
+        }
+      });
+    } catch (_) {
+      // A group is queued whole or not at all, and a copy nothing points at
+      // (one half written included) would stay on the device unseen.
+      for (final entry in folder.listSync()) {
+        if (ids.contains(p.basenameWithoutExtension(entry.path))) {
+          await deleteUploadFile(entry.path);
+        }
+      }
+      rethrow;
+    }
+    AppLogger.info('📷 ${ids.length} images queued for $entityType');
+    return ids;
   }
 
   /// Removes a queued image's copy from the device. A copy that is already

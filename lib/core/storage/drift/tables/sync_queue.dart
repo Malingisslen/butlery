@@ -82,4 +82,7 @@ class SyncQueueEntries extends Table {
 abstract final class SyncQueueEntityType {
   /// A recipe; [SyncQueueEntries.recipeId] is its id.
   static const String recipe = 'recipe';
+
+  /// A cook snap; the upload queue's `entityId` is the snap's id (BUT-2294).
+  static const String cookSnap = 'cook_snap';
 }

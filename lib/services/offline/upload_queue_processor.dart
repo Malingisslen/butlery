@@ -187,6 +187,15 @@ class UploadQueueProcessor {
               thumbnailUrl: row.uploadedThumbnailUrl,
             ), thenDropRow: true);
         }
+      } on CompletionDeferred catch (deferred) {
+        final rowId = row.id;
+        await (_db.update(
+          _db.uploadQueueEntries,
+        )..where((e) => e.id.equals(rowId))).write(
+          UploadQueueEntriesCompanion(
+            nextAttemptAt: Value(now.add(deferred.wait)),
+          ),
+        );
       } catch (e) {
         AppLogger.error(
           '❌ Bilden kunde inte användas: ${queueErrorCode(e)}',

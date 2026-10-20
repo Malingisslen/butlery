@@ -28,6 +28,11 @@ abstract class CookSnapRepository extends Repository<CookSnap> {
   /// Adds a new cook snap.
   Future<CookSnap> addCookSnap(CookSnap snap);
 
+  /// Whether the signed-in user's snap [snapId] is on the server. A plain read
+  /// of an absent snap is refused by the rules, so this is a query for the
+  /// owner's own document, which the rules can tell is theirs.
+  Future<bool> ownSnapExists(String snapId);
+
   /// Deletes a cook snap.
   Future<void> deleteCookSnap(String snapId);
 

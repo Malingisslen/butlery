@@ -139,35 +139,50 @@ class CookSnapService extends BaseService {
 
         AppLogger.success('CookSnap added for recipe $recipeId');
 
-        // Emit activity event (fire-and-forget)
-        try {
-          ServiceLocator.get<ActivityFeedService>().emitEvent(
-            ActivityEventType.cooked,
-            recipeId,
-            recipeName,
-            extraData: {
-              'photoUrl': snap.photoUrl,
-              // BUT-949: full album so the feed can render a carousel.
-              'photoUrls': snap.photoUrls,
-              'caption': ?validCaption,
-            },
-          );
-        } catch (_) {}
-
-        // Notify recipe author (if not self)
-        if (recipeAuthorId != userId) {
-          _notifyRecipeAuthor(
-            recipeAuthorId: recipeAuthorId,
-            recipeId: recipeId,
-            senderName: profile?.displayName ?? '?',
-            recipeName: recipeName,
-          );
-        }
+        announceCookSnap(
+          snap,
+          recipeAuthorId: recipeAuthorId,
+          recipeName: recipeName,
+          senderName: profile?.displayName ?? '?',
+        );
 
         return snap;
       },
       operationName: 'addCookSnap',
     );
+  }
+
+  /// What follows a snap that has reached the server: the feed event and the
+  /// note to the recipe's author. Shared with the offline queue, which sends
+  /// the snap later.
+  void announceCookSnap(
+    CookSnap snap, {
+    required String recipeAuthorId,
+    required String recipeName,
+    required String senderName,
+  }) {
+    try {
+      ServiceLocator.get<ActivityFeedService>().emitEvent(
+        ActivityEventType.cooked,
+        snap.recipeId,
+        recipeName,
+        extraData: {
+          'photoUrl': snap.photoUrl,
+          // BUT-949: full album so the feed can render a carousel.
+          'photoUrls': snap.photoUrls,
+          'caption': ?snap.caption,
+        },
+      );
+    } catch (_) {}
+
+    if (recipeAuthorId != snap.userId) {
+      _notifyRecipeAuthor(
+        recipeAuthorId: recipeAuthorId,
+        recipeId: snap.recipeId,
+        senderName: senderName,
+        recipeName: recipeName,
+      );
+    }
   }
 
   /// Deletes a cook snap and its storage files.

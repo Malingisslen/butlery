@@ -95,7 +95,10 @@ class CookSnap {
     return cleaned.length > maxPhotos ? cleaned.sublist(0, maxPhotos) : cleaned;
   }
 
+  /// [id] is given by the offline queue, which names the snap when it is
+  /// queued so that sending it twice is the same snap.
   factory CookSnap.create({
+    String? id,
     required String recipeId,
     required String userId,
     required String userDisplayName,
@@ -107,7 +110,7 @@ class CookSnap {
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) {
     return CookSnap(
-      id: const Uuid().v4(),
+      id: id ?? const Uuid().v4(),
       recipeId: recipeId,
       userId: userId,
       userDisplayName: userDisplayName,
