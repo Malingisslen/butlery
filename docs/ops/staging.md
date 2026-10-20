@@ -48,6 +48,10 @@ the same phone, with a STAGING banner. Analytics and Crashlytics are off in it. 
 built by `build-staging-apk.yml` (dispatch only, from `main`, signed with the upload key,
 short artifact retention).
 
+A password-reset link from staging opens in the browser, not the app: no
+`assetlinks.json` naming `se.butlery.app.staging` is published on the staging Hosting
+site.
+
 `android/app/src/staging/google-services.json` is gitignored; CI decodes it from the
 `staging` environment secret `GOOGLE_SERVICES_JSON_STAGING_BASE64`. Regenerate both
 whenever a SHA or sign-in provider changes:
@@ -84,6 +88,11 @@ These are set by hand, so they drift unless someone checks them:
   `IDENTITY_TOOLKIT_API_KEY` (staging's own browser key), `FEEDBACK_EMAIL_API_KEY` set to
   a placeholder so no feedback mail is sent.
 - The Android API key is restricted to `se.butlery.app.staging` and its SHA-1s.
+- IAM: the Pub/Sub, Eventarc, Storage and default compute service agents hold the roles a
+  functions deploy asks for. The deploy service account cannot grant them, so a deploy
+  that prints `gcloud projects add-iam-policy-binding` lines needs them run by hand. For
+  the same reason the default compute service account holds
+  `roles/secretmanager.secretAccessor` on each of the three secrets, granted by hand.
 
 ## Cost
 
@@ -91,7 +100,8 @@ Budget "Butlery staging max 50 kr": alerts to the billing account's owner at 50 
 100 % of 50 kr, plus a forecast alert. The alert stops nothing. If staging costs more
 than 50 kr a month two months in a row, scale it down or delete it.
 
-Artifact Registry: keep the cleanup policy that retains the two newest images.
+Artifact Registry: `gcf-artifacts` in europe-west1 carries production's cleanup policy
+(`firebase-functions-cleanup`, deletes images older than one day).
 
 ## Backups
 

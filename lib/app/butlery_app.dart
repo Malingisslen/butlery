@@ -17,6 +17,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
+import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/constants/routes.dart' as app_routes;
@@ -64,6 +65,7 @@ import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
+import 'package:butlery/widgets/staging_banner.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -843,23 +845,26 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           // `core/keyboard/app_actions.dart` compensates by disabling itself
           // while a text field has focus. Hoisting this above `MaterialApp`
           // inverts that ordering and silently makes the guard pointless.
-          return ButleryAppFocusRing(
-            child: MaintenanceModeGate(
-              child: AppKeyboardLayer(
-                child: SafeArea(
-                  top: false, // Let AppBar handle top
-                  bottom: true, // Always protect bottom from system nav bar
-                  left: false,
-                  right: false,
-                  child: FeedbackAwareScaffoldMessenger(
-                    child: Stack(
-                      children: [
-                        RepaintBoundary(
-                          key: feedbackRepaintBoundaryKey,
-                          child: clampedChild,
-                        ),
-                        const FeedbackFAB(),
-                      ],
+          return StagingBanner(
+            env: FirebaseEnv.current,
+            child: ButleryAppFocusRing(
+              child: MaintenanceModeGate(
+                child: AppKeyboardLayer(
+                  child: SafeArea(
+                    top: false, // Let AppBar handle top
+                    bottom: true, // Always protect bottom from system nav bar
+                    left: false,
+                    right: false,
+                    child: FeedbackAwareScaffoldMessenger(
+                      child: Stack(
+                        children: [
+                          RepaintBoundary(
+                            key: feedbackRepaintBoundaryKey,
+                            child: clampedChild,
+                          ),
+                          const FeedbackFAB(),
+                        ],
+                      ),
                     ),
                   ),
                 ),

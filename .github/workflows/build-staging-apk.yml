@@ -1,0 +1,116 @@
+name: Build Staging APK
+
+# The Android `staging` flavor (se.butlery.app.staging), talking to Firebase
+# project butlery-app-staging, built on demand for installing beside the
+# production app.
+#
+# The APK is signed with the production UPLOAD key (same KEYSTORE_* secrets as
+# build-validation.yml), so freeRASP's pinned certificate hash matches. That
+# makes the artifact a prod-signed binary, which is why this workflow only runs
+# by hand, only from main, behind the `staging` environment, and keeps the
+# artifact for three days.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+
+    steps:
+    - name: Refuse anything but main
+      env:
+        REF: ${{ github.ref }}
+      run: |
+        if [ "$REF" != "refs/heads/main" ]; then
+          echo "::error::Staging APKs are built from main only (got $REF)."
+          exit 1
+        fi
+
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+
+    # Same build-time keys as build-validation.yml. ENV is passed on the
+    # command line instead, so this file cannot select production.
+    - name: Create .env from secrets
+      run: |
+        cat > .env << 'ENVEOF'
+        OCR_API_KEY=${{ secrets.OCR_API_KEY }}
+        OCR_API_URL=${{ secrets.OCR_API_URL }}
+        FREE_RASP_TEAM_ID=${{ secrets.FREE_RASP_TEAM_ID }}
+        ENVEOF
+
+    - name: Decode staging google-services.json
+      env:
+        GOOGLE_SERVICES_JSON_STAGING_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_STAGING_BASE64 }}
+      run: |
+        mkdir -p android/app/src/staging
+        echo "$GOOGLE_SERVICES_JSON_STAGING_BASE64" | base64 -d > android/app/src/staging/google-services.json
+        test -s android/app/src/staging/google-services.json || { echo "::error::GOOGLE_SERVICES_JSON_STAGING_BASE64 missing or empty in the staging environment"; exit 1; }
+        grep -q '"project_id": *"butlery-app-staging"' android/app/src/staging/google-services.json || { echo "::error::the staging google-services.json does not belong to butlery-app-staging"; exit 1; }
+
+    - name: Decode release keystore
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+        test -s android/app/upload-keystore.jks || { echo "::error::KEYSTORE_BASE64 missing or empty"; exit 1; }
+        : "${KEYSTORE_PASSWORD:?::error::KEYSTORE_PASSWORD secret missing}"
+        : "${KEY_PASSWORD:?::error::KEY_PASSWORD secret missing}"
+        : "${KEY_ALIAS:?::error::KEY_ALIAS secret missing}"
+        cat > android/key.properties << EOF
+        storePassword=$KEYSTORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=upload-keystore.jks
+        EOF
+
+    - name: Build staging APK
+      env:
+        CI: 'true'
+      run: |
+        flutter build apk --flavor staging --release --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env --dart-define=ENV=staging
+
+    - name: Verify package and signature
+      run: |
+        APK=build/app/outputs/flutter-apk/app-staging-release.apk
+        test -s "$APK" || { echo "::error::APK missing at $APK"; exit 1; }
+        BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+        PACKAGE=$("$BUILD_TOOLS/aapt2" dump packagename "$APK")
+        echo "Package: $PACKAGE"
+        [ "$PACKAGE" = "se.butlery.app.staging" ] || { echo "::error::expected se.butlery.app.staging, got $PACKAGE"; exit 1; }
+        CERTS=$("$BUILD_TOOLS/apksigner" verify --print-certs "$APK")
+        echo "$CERTS" | grep "certificate DN"
+        if echo "$CERTS" | grep -qi "Android Debug"; then
+          echo "::error::APK is signed with the debug key"
+          exit 1
+        fi
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: butlery-staging-${{ github.sha }}.apk
+        path: build/app/outputs/flutter-apk/app-staging-release.apk
+        retention-days: 3
+        if-no-files-found: error

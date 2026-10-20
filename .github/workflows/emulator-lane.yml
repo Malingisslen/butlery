@@ -149,7 +149,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: flutter test integration_test/emulator_lane_test.dart -d emulator-5554 --dart-define=USE_EMULATOR=true --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2 --reporter=expanded
+          script: flutter test integration_test/emulator_lane_test.dart --flavor prod -d emulator-5554 --dart-define=USE_EMULATOR=true --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2 --reporter=expanded
 
       - name: Emulator log
         if: failure()

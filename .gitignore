@@ -57,6 +57,7 @@ app.*.map.json
 google-services.json
 GoogleService-Info.plist
 android/app/google-services.json
+android/app/src/staging/google-services.json
 ios/Runner/GoogleService-Info.plist
 service-account-key.json
 *firebase-adminsdk*.json

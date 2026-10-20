@@ -75,6 +75,7 @@ jobs:
             '**/*.mocks.dart' \
             '**/mock_*.dart' \
             'lib/firebase_options.dart' \
+            'lib/firebase_options_staging.dart' \
             'lib/l10n/**' \
             'lib/theme/**' \
             --ignore-errors unused \

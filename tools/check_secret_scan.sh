@@ -39,8 +39,14 @@ fi
 # accounts. Extended for Stripe and Slack by BUT-812; carried here verbatim.
 PATTERN='(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|sk_live_[A-Za-z0-9]{24,}|sk_test_[A-Za-z0-9]{24,}|xoxb-[0-9]+-[0-9]+-[A-Za-z0-9]+|hooks\.slack\.com/services/T[A-Z0-9]+/B[A-Z0-9]+/[A-Za-z0-9]+|-----BEGIN (RSA|EC) PRIVATE KEY|npm_[a-zA-Z0-9]{36}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|ghs_[a-zA-Z0-9]{36}|"type":[[:space:]]*"service_account")'
 
-# The standard FlutterFire file ships client-side API keys by design.
-EXCLUDE='firebase_options.dart'
+# FlutterFire files (production's firebase_options.dart and
+# firebase_options_staging.dart) ship client-side API keys by design.
+is_excluded() {
+  case "${1##*/}" in
+    firebase_options.dart | firebase_options_staging.dart) return 0 ;;
+  esac
+  return 1
+}
 
 if [ "$SELF_TEST" -eq 1 ]; then
   FIXTURE_DIR=$(mktemp -d)
@@ -54,6 +60,9 @@ if [ "$SELF_TEST" -eq 1 ]; then
   printf 'const k = "not a credential";\n' > "$FIXTURE_DIR/clean.dart"
   printf 'const apiKey = "AIza%s";\n' "0123456789012345678901234567890abcd" \
     > "$FIXTURE_DIR/firebase_options.dart"
+  mkdir "$FIXTURE_DIR/lib"
+  cp "$FIXTURE_DIR/firebase_options.dart" \
+    "$FIXTURE_DIR/lib/firebase_options_staging.dart"
 
   GUARD="${BASH_SOURCE[0]}"
   FAILURES=0
@@ -68,6 +77,9 @@ if [ "$SELF_TEST" -eq 1 ]; then
   CLEAN_RC=$?
   bash "$GUARD" "$FIXTURE_DIR/firebase_options.dart" >/dev/null 2>&1
   EXCLUDED_RC=$?
+  bash "$GUARD" "$FIXTURE_DIR/lib/firebase_options_staging.dart" \
+    >/dev/null 2>&1
+  STAGING_EXCLUDED_RC=$?
   bash "$GUARD" >/dev/null 2>&1
   NO_ARGS_RC=$?
   SECRET_SCAN_PROBE_FORCE_GREP_RC=2 bash "$GUARD" "$FIXTURE_DIR/clean.dart" \
@@ -79,7 +91,8 @@ if [ "$SELF_TEST" -eq 1 ]; then
     >/dev/null 2>&1
   SEAM_ABUSE_RC=$?
 
-  for rc in "$LEAKY_RC" "$CLEAN_RC" "$EXCLUDED_RC" "$NO_ARGS_RC" \
+  for rc in "$LEAKY_RC" "$CLEAN_RC" "$EXCLUDED_RC" "$STAGING_EXCLUDED_RC" \
+            "$NO_ARGS_RC" \
             "$OUTAGE_RC" "$SEAM_ABUSE_RC"; do
     if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
       echo "SELF-TEST FAIL: the guard could not be run (exit $rc)." >&2
@@ -104,6 +117,11 @@ if [ "$SELF_TEST" -eq 1 ]; then
 
     if [ "$EXCLUDED_RC" -ne 0 ]; then
       echo "SELF-TEST FAIL: firebase_options.dart was not excluded." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
+
+    if [ "$STAGING_EXCLUDED_RC" -ne 0 ]; then
+      echo "SELF-TEST FAIL: lib/firebase_options_staging.dart was not excluded." >&2
       FAILURES=$((FAILURES + 1))
     fi
 
@@ -141,9 +159,7 @@ fi
 
 TARGETS=()
 for f in "$@"; do
-  case "$f" in
-    *"$EXCLUDE") continue ;;
-  esac
+  is_excluded "$f" && continue
   # A staged path can name a file that no longer exists on disk (a staged
   # delete). grep would report that as an error, and an error must not read as
   # "no secrets" — skipping it here keeps the two outcomes distinguishable.

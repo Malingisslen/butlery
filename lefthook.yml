@@ -15,7 +15,7 @@ pre-commit:
       priority: 1
 
     # Scan staged files for credential shapes. The pattern, the
-    # firebase_options.dart exclusion and the exit contract live in the script,
+    # firebase_options*.dart exclusion and the exit contract live in the script,
     # which carries a --self-test that `script-guard-tests` runs.
     #
     # BUT-2061/BUT-1921: this was an inline `run:` string until 2026-09-11 and

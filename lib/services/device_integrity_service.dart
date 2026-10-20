@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart'
         TargetPlatform,
         visibleForTesting;
 import 'package:freerasp/freerasp.dart';
+import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// freeRASP credentials.
@@ -81,14 +82,14 @@ class DeviceIntegrityService {
 
     try {
       // Must match runtime applicationId / bundleIdentifier verbatim —
-      // Android `BuildConfig.APPLICATION_ID` is `se.butlery.app`
-      // (android/app/build.gradle.kts:34) and iOS `Bundle.main.bundleIdentifier`
-      // is `se.butlery.app` (ios/Runner.xcodeproj/project.pbxproj). The prior
+      // Android's differs per flavor, so it comes from FirebaseEnv, and iOS
+      // `Bundle.main.bundleIdentifier` is `se.butlery.app`
+      // (ios/Runner.xcodeproj/project.pbxproj). The prior
       // `com.butlery.app` value caused freerasp's package check to silently
       // never compare, defeating tampering detection. (BUT-761)
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
-          packageName: 'se.butlery.app',
+          packageName: FirebaseEnv.current.androidPackageName,
           signingCertHashes: [_kTalsecAndroidCertHash],
         ),
         iosConfig: IOSConfig(

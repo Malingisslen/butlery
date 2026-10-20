@@ -68,7 +68,7 @@ void main() {
         ),
         isNull,
       );
-      const lookAlike = '${PasswordResetLink.linkDomain}.evil.example';
+      final lookAlike = '${PasswordResetLink.linkDomain}.evil.example';
       expect(
         PasswordResetLink.parse(_action('resetPassword', host: lookAlike)),
         isNull,

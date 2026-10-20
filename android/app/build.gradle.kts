@@ -41,6 +41,26 @@ android {
         multiDexEnabled = true
     }
 
+    // `prod` is the store app on butlery-app-1. `staging` installs beside it
+    // and talks to butlery-app-staging; build it with
+    // `--flavor staging --dart-define=ENV=staging` (lib/core/bootstrap/firebase_env.dart).
+    // Each flavor's google-services.json: prod's at android/app/, staging's
+    // at android/app/src/staging/. Both flavors sign with the release config.
+    flavorDimensions += "env"
+    productFlavors {
+        create("prod") {
+            dimension = "env"
+            isDefault = true
+            manifestPlaceholders["authLinkHost"] = "butlery-app-1.firebaseapp.com"
+        }
+        create("staging") {
+            dimension = "env"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            manifestPlaceholders["authLinkHost"] = "butlery-app-staging.firebaseapp.com"
+        }
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
@@ -83,6 +103,31 @@ android {
             )
         }
     }
+}
+
+// A build without --flavor (a plain `flutter run`) must stay production, as it
+// was before flavors existed. Gradle's `assembleDebug` would build both
+// flavors, and the staging one has no google-services.json outside CI, so only
+// prod is built then, and its APK is also copied to the unflavored name the
+// Flutter tool looks for.
+val flavorRequested = gradle.startParameter.taskNames.any {
+    Regex("(?i)(prod|staging)").containsMatchIn(it)
+}
+
+if (!flavorRequested) {
+    androidComponents {
+        beforeVariants(selector().withFlavor("env" to "staging")) { it.enable = false }
+    }
+    tasks.matching { it.name in setOf("assembleDebug", "assembleProfile", "assembleRelease") }
+        .configureEach {
+            val mode = name.removePrefix("assemble").lowercase()
+            val apkDir = layout.buildDirectory.dir("outputs/flutter-apk")
+            doLast {
+                val dir = apkDir.get().asFile
+                val prodApk = dir.resolve("app-prod-$mode.apk")
+                if (prodApk.exists()) prodApk.copyTo(dir.resolve("app-$mode.apk"), overwrite = true)
+            }
+        }
 }
 
 flutter {

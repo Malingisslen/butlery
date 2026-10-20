@@ -24,12 +24,12 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/emulator_bootstrap.dart';
+import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
 
 // DI modules + bootstrap stages (shared with admin_main.dart)
 import 'package:butlery/core/bootstrap/app_modules.dart';
 
-import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/monitoring/web_error_reporter.dart';
@@ -89,15 +89,10 @@ Future<void> main() async {
         // daily dev work is unaffected. See docs/operations/cert-pin-rotation.md.
         CertPinConfig.assertReleaseModeSafety();
 
+        // Throws on an unknown --dart-define=ENV, before anything connects.
+        final firebaseEnv = FirebaseEnv.current;
         if (EmulatorBootstrap.enabled) EmulatorBootstrap.prepare();
-        // Initialize Firebase with configuration from compile-time --dart-define
-        await Firebase.initializeApp(
-          options: EmulatorBootstrap.enabled
-              ? EmulatorBootstrap.options(
-                  DefaultFirebaseOptions.currentPlatform,
-                )
-              : DefaultFirebaseOptions.currentPlatform,
-        );
+        await Firebase.initializeApp(options: firebaseEnv.options());
         if (EmulatorBootstrap.enabled) await EmulatorBootstrap.configure();
 
         // BUT-2292: the SDK retries a failing upload for 10 minutes, and the
@@ -121,7 +116,9 @@ Future<void> main() async {
         await Future.wait([
           if (!kIsWeb)
             FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-          if (!EmulatorBootstrap.enabled)
+          // The reCAPTCHA site key below belongs to the production project,
+          // so web App Check is not activated against staging.
+          if (!EmulatorBootstrap.enabled && !(kIsWeb && firebaseEnv.isStaging))
             FirebaseAppCheck.instance.activate(
               providerWeb: ReCaptchaV3Provider(
                 '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
@@ -233,7 +230,11 @@ Future<void> _enableCollectionIfConsented() async {
       logTag: 'EnableCollectionIfConsented',
     );
 
-    final analyticsEnabled = hasConsent && !kDebugMode;
+    // Staging never collects, whatever the test account consented to.
+    final allowsTelemetry = FirebaseEnv.current.allowsTelemetry;
+    final analyticsEnabled = hasConsent && !kDebugMode && allowsTelemetry;
+    final crashlyticsEnabled = hasConsent && !kDebugMode && allowsTelemetry;
+    final performanceEnabled = hasConsent && allowsTelemetry;
 
     // Analytics (all platforms — Firebase Analytics supports web + mobile)
     try {
@@ -247,10 +248,10 @@ Future<void> _enableCollectionIfConsented() async {
     if (!kIsWeb) {
       await Future.wait([
         FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-          hasConsent && !kDebugMode,
+          crashlyticsEnabled,
         ),
         FirebasePerformance.instance.setPerformanceCollectionEnabled(
-          hasConsent,
+          performanceEnabled,
         ),
       ]);
     }
@@ -259,7 +260,7 @@ Future<void> _enableCollectionIfConsented() async {
     // route web errors through the `logWebError` callable instead.
     // Same consent gate as native — install only after consent is
     // confirmed and skip in debug to avoid noise in dev.
-    if (kIsWeb && hasConsent && !kDebugMode) {
+    if (kIsWeb && hasConsent && !kDebugMode && allowsTelemetry) {
       try {
         final consentService = bootstrap.container.get<ConsentService>();
         WebErrorReporter(consentService: consentService).install();
@@ -272,7 +273,7 @@ Future<void> _enableCollectionIfConsented() async {
     AppLogger.info(
       'Collection consent: analytics=$hasConsent → '
       'Analytics=$analyticsEnabled, '
-      'Crashlytics=${hasConsent && !kDebugMode}, Performance=$hasConsent',
+      'Crashlytics=$crashlyticsEnabled, Performance=$performanceEnabled',
     );
   } catch (e) {
     // Consent check failed — leave collection disabled (safe default)

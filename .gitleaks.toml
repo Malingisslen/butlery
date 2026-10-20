@@ -9,7 +9,7 @@ useDefault = true
 description = "Public-by-design client config + secret-shaped test fixtures"
 paths = [
   # FlutterFire-generated client config: Firebase web/app keys ship in every bundle.
-  '''lib/firebase_options\.dart''',
+  '''lib/firebase_options(_staging)?\.dart''',
   # PII-scrubber and logger tests contain fake keys BY PURPOSE (they test redaction).
   '''functions/src/__tests__/pii-scrubber\.test\.ts''',
   '''test/unit/services/llm/pii_scrubber_test\.dart''',

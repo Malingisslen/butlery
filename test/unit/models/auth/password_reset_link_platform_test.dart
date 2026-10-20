@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/bootstrap/firebase_env.dart';
 import 'package:butlery/models/auth/password_reset_link.dart';
 
 const _linksPath = '/__/auth/links';
@@ -16,16 +17,34 @@ void main() {
     final manifest = File(
       'android/app/src/main/AndroidManifest.xml',
     ).readAsStringSync();
-    expect(
-      manifest,
-      contains('android:host="${PasswordResetLink.linkDomain}"'),
-    );
+    const hostPlaceholder = r'${authLinkHost}';
+    expect(manifest, contains('android:host="$hostPlaceholder"'));
     expect(manifest, contains('android:pathPrefix="$_linksPath"'));
     final filter = RegExp(
       r'<intent-filter[^>]*>(?:(?!</intent-filter>)[\s\S])*'
-      '${RegExp.escape(PasswordResetLink.linkDomain)}',
+      '${RegExp.escape(hostPlaceholder)}',
     ).firstMatch(manifest)!.group(0)!;
     expect(filter, contains('android:autoVerify="true"'));
+  });
+
+  test('each Android flavor fills the host with its own project', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+    for (final (flavor, define) in [('prod', ''), ('staging', 'staging')]) {
+      final host = FirebaseEnv.resolve(define, emulator: false).authLinkHost;
+      final block = RegExp(
+        r'create\("' + flavor + r'"\)\s*\{[^}]*\}',
+      ).firstMatch(gradle)?.group(0);
+      expect(block, isNotNull, reason: flavor);
+      expect(
+        block,
+        contains('manifestPlaceholders["authLinkHost"] = "$host"'),
+        reason: flavor,
+      );
+    }
+    expect(
+      FirebaseEnv.resolve('', emulator: false).authLinkHost,
+      PasswordResetLink.linkDomain,
+    );
   });
 
   test('both iOS builds claim the link domain', () {

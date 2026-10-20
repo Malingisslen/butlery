@@ -1,3 +1,5 @@
+import 'package:butlery/core/bootstrap/firebase_env.dart';
+
 /// The "glömt lösenord" link as the app receives it (BUT-2170, flow 06
 /// `glömt lösenord → återställ → sätt nytt`).
 ///
@@ -13,14 +15,16 @@ class PasswordResetLink {
   /// Firebase's one-time action code (`oobCode`).
   final String code;
 
-  /// The Hosting domain Firebase builds the mobile link on. Its two
-  /// association files live in `web/.well-known/`, which that site serves.
-  static const String linkDomain = 'butlery-app-1.firebaseapp.com';
+  /// The Hosting domain Firebase builds the mobile link on, per Firebase
+  /// project. Production's two association files live in `web/.well-known/`,
+  /// which that site serves.
+  static String get linkDomain => FirebaseEnv.current.authLinkHost;
 
   /// Where Firebase sends someone who finishes on its own page instead.
-  static const String continueUrl = 'https://$linkDomain/';
+  static String get continueUrl => 'https://$linkDomain/';
 
-  static const String androidPackageName = 'se.butlery.app';
+  static String get androidPackageName =>
+      FirebaseEnv.current.androidPackageName;
   static const String iOSBundleId = 'se.butlery.app';
 
   static const String _mobileLinkPath = '/__/auth/links';
