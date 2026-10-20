@@ -6,14 +6,20 @@
 // the rest of the app has registered.
 library;
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline/cook_snap_upload_completion.dart';
+import 'package:butlery/services/offline/offline_purge_store.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queued_image_transport.dart';
+import 'package:butlery/services/offline/upload_completion.dart';
 import 'package:butlery/services/offline/upload_queue_processor.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -26,6 +32,7 @@ UploadQueueProcessor buildUploadQueueProcessor({
     storage: storage,
     upload: uploadQueuedImage,
     deleteUploaded: deleteQueuedImage,
+    ensureSession: (userId) => refreshUploadSession(userId, storage),
     completions: {
       SyncQueueEntityType.cookSnap: CookSnapUploadCompletion(
         database: database,
@@ -58,4 +65,41 @@ UploadQueueProcessor buildUploadQueueProcessor({
       ),
     },
   );
+}
+
+/// Forces a fresh sign-in token before a queued upload is sent, so a token
+/// that outlived its account does not let a late upload through. An erased
+/// account ends the pass and its queue is dropped; a disabled or expired one
+/// only ends the pass. Failing to reach the server is not an answer: the
+/// upload that follows reports it.
+Future<void> refreshUploadSession(
+  String userId,
+  OfflineUserStorage storage, {
+  OfflinePurgeStore? purgeStore,
+}) async {
+  final user = ServiceLocator.get<AuthRepository>().currentUser;
+  // Another account is signed in: the pass stops at its own current-user check.
+  if (user == null || user.uid != userId) return;
+  try {
+    await user.getIdToken(true);
+  } on FirebaseAuthException catch (e) {
+    switch (e.code) {
+      case 'user-not-found':
+        // Recorded first, so a clear that fails is finished at the next start.
+        final owed = purgeStore ?? OfflinePurgeStore();
+        await owed.record(userId);
+        await storage.clearUserData(userId);
+        await owed.forget(userId);
+        throw const SessionEnded();
+      case 'user-disabled':
+      case 'user-token-expired':
+      case 'invalid-user-token':
+        // A disabled account can be enabled again, and its unsent work with it.
+        throw const SessionEnded();
+      default:
+        AppLogger.warning('Token refresh before upload failed: ${e.code}');
+    }
+  } catch (_) {
+    AppLogger.warning('Token refresh before upload failed');
+  }
 }

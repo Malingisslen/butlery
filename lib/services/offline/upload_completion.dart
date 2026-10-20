@@ -31,6 +31,12 @@ enum CompletionOutcome {
   targetGone,
 }
 
+/// Thrown by the session check when the account behind the queue can no
+/// longer write (deleted, disabled, or its sign-in expired): the pass stops.
+class SessionEnded implements Exception {
+  const SessionEnded();
+}
+
 /// Thrown by a handler that must wait before it may write again, for a limit
 /// the server enforces on its own (the five seconds between two cook snaps).
 /// Unlike any other throw it is not a failed attempt: the row keeps its retry
