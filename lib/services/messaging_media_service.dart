@@ -164,14 +164,10 @@ class MessagingMediaService extends BaseService {
       final imageUrl = result.url!;
       AppLogger.success('✅ Image uploaded with automatic retry: $imageUrl');
 
-      // Get filename for display
-      final fileName = path.basename(imagePath);
-
       // Send image message
       await _messagingService.sendImageMessage(
         conversationId: conversationId,
         imageUrl: imageUrl,
-        caption: fileName,
       );
 
       AppLogger.success('✅ Image message sent');
