@@ -234,18 +234,42 @@ jobs:
   # on a deterministic JSON suite). The `views (windows)` infra flake
   # (BUT-1192) lives here now, off the per-commit critical path.
   cross-os:
-    name: ${{ matrix.suite }} (${{ matrix.os }})
+    name: ${{ matrix.suite }} (${{ matrix.os }})${{ (matrix.suite == 'unit' || matrix.suite == 'widget') && format(' shard {0}/6', matrix.shard) || '' }}
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
         suite: [unit, widget, views, golden]
+        # Sized from run 39320319820 (`gh run view 39320319820`): a third of
+        # unit did not finish inside the old limit on macOS or Windows. Only
+        # unit and widget are split; views and golden run as one shard.
+        shard: [0, 1, 2, 3, 4, 5]
         exclude:
           - os: windows-latest
             suite: golden
+          - suite: views
+            shard: 1
+          - suite: views
+            shard: 2
+          - suite: views
+            shard: 3
+          - suite: views
+            shard: 4
+          - suite: views
+            shard: 5
+          - suite: golden
+            shard: 1
+          - suite: golden
+            shard: 2
+          - suite: golden
+            shard: 3
+          - suite: golden
+            shard: 4
+          - suite: golden
+            shard: 5
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v6
@@ -273,11 +297,15 @@ jobs:
       # than special-casing one cell: any cross-OS leg can take an infra flake.
       - name: Run ${{ matrix.suite }} tests
         shell: bash
+        env:
+          TOTAL_SHARDS: ${{ (matrix.suite == 'unit' || matrix.suite == 'widget') && 6 || 1 }}
         run: |
-          echo "Running test/${{ matrix.suite }} on ${{ matrix.os }}..."
+          echo "Running test/${{ matrix.suite }} shard ${{ matrix.shard }} of ${TOTAL_SHARDS} on ${{ matrix.os }}..."
           max_attempts=2
           attempt=1
-          until flutter test test/${{ matrix.suite }} --reporter=expanded; do
+          until flutter test test/${{ matrix.suite }} \
+            --total-shards "${TOTAL_SHARDS}" --shard-index ${{ matrix.shard }} \
+            --reporter=expanded; do
             if [ "$attempt" -ge "$max_attempts" ]; then
               echo "::error::test/${{ matrix.suite }} on ${{ matrix.os }} failed after ${max_attempts} attempts"
               exit 1
@@ -291,7 +319,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.suite }}-test-results-${{ matrix.os }}
+          name: ${{ matrix.suite }}-test-results-${{ matrix.os }}-${{ matrix.shard }}
           path: test_results/
 
       - name: Report job duration
@@ -299,7 +327,7 @@ jobs:
         shell: bash
         env:
           BUDGET_MIN: 30
-          JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
+          JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }}) shard ${{ matrix.shard }}"
         run: |
           JOB_END=$(date +%s)
           DURATION_SEC=$((JOB_END - JOB_START))
