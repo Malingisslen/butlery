@@ -12159,6 +12159,15 @@
       }
     }
   },
+  "syncQueueAutoDiscard": "{days, plural, =0{Will be discarded automatically today} =1{Will be discarded automatically in 1 day} other{Will be discarded automatically in {days} days}}",
+  "@syncQueueAutoDiscard": {
+    "description": "BUT-2294: on a card in Waiting to sync, how long until a photo that could not be sent is thrown away automatically (30 days after it first failed).",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "syncQueueIndicatorA11y": "{count, plural, =1{1 change is waiting for you. Open Waiting to sync} other{{count} changes are waiting for you. Open Waiting to sync}}",
   "@syncQueueIndicatorA11y": {
     "description": "P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).",

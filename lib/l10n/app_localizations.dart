@@ -26038,6 +26038,12 @@ abstract class AppLocalizations {
   /// **'{days, plural, =1{1 dygn} other{{days} dygn}}'**
   String syncQueueAgeDays(int days);
 
+  /// BUT-2294: on a card in Väntar på dig, how long until a photo that could not be sent is thrown away automatically (30 days after it first failed).
+  ///
+  /// In sv, this message translates to:
+  /// **'{days, plural, =0{Slängs automatiskt i dag} =1{Slängs automatiskt om 1 dag} other{Slängs automatiskt om {days} dagar}}'**
+  String syncQueueAutoDiscard(int days);
+
   /// P6-T6 (PQ-17, P4-U19): the saffron top-bar counter, shown only when something needs the user (PQ-04 = B).
   ///
   /// In sv, this message translates to:

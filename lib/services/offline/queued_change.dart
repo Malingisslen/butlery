@@ -81,6 +81,7 @@ class QueuedChange {
     this.entityType,
     this.entityId,
     this.photoCount = 1,
+    this.unsentSince,
   });
 
   final QueuedChangeKind kind;
@@ -120,6 +121,10 @@ class QueuedChange {
   /// The photos in the group this item stands for; 1 for everything but a
   /// cook-snap album, whose rows are one item to the user.
   final int photoCount;
+
+  /// Where the 30 days an unsent image waits start ([unsentImageSince]); set
+  /// for an image that waits for the user, null for everything else.
+  final DateTime? unsentSince;
 
   /// An album of cook-snap photos: one item whose [id] is the snap's id and
   /// which is retried and thrown away as a whole.
@@ -171,7 +176,8 @@ class QueuedChange {
       other.nextAttemptAt == nextAttemptAt &&
       other.entityType == entityType &&
       other.entityId == entityId &&
-      other.photoCount == photoCount;
+      other.photoCount == photoCount &&
+      other.unsentSince == unsentSince;
 
   @override
   int get hashCode => Object.hash(
@@ -187,6 +193,7 @@ class QueuedChange {
     entityType,
     entityId,
     photoCount,
+    unsentSince,
   );
 }
 

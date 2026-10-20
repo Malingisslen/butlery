@@ -10,6 +10,7 @@ import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/unsent_image_expiry.dart';
 
 bool isCookSnapRow(UploadQueueEntry row) =>
     row.entityType == SyncQueueEntityType.cookSnap && row.entityId != null;
@@ -45,6 +46,12 @@ QueuedChange cookSnapChange(
     entityType: SyncQueueEntityType.cookSnap,
     entityId: first.entityId,
     photoCount: rows.length,
+    // One photo that waited out the period takes the whole album with it.
+    unsentSince: failed.isEmpty
+        ? null
+        : failed
+              .map((r) => unsentImageSince(r.firstFailedAt, r.queuedAt))
+              .reduce((a, b) => b.isBefore(a) ? b : a),
   );
 }
 

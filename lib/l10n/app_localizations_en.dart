@@ -17085,6 +17085,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String syncQueueAutoDiscard(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Will be discarded automatically in $days days',
+      one: 'Will be discarded automatically in 1 day',
+      zero: 'Will be discarded automatically today',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String syncQueueIndicatorA11y(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

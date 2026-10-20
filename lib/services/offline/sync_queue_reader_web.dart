@@ -16,7 +16,7 @@ Stream<List<QueuedChange>> watchQueuedChanges(AppDatabase db, String userId) =>
 Future<void> retryQueuedChange(
   AppDatabase db,
   QueuedChange change, {
-  String? userId,
+  required String userId,
 }) async {}
 
 /// Nothing to discard on the web.

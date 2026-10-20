@@ -36,4 +36,14 @@ void main() {
     expect(en, contains('Count, anonymously and per day'));
     expect(en, contains('Anonymous daily channel count'));
   });
+
+  test('the privacy policy names the temporary storage of unsent photos', () {
+    final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
+    final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
+
+    expect(sv, contains('Matbilder som väntar på att skickas'));
+    expect(sv, contains('slängs automatiskt efter 30 dagar'));
+    expect(en, contains('Food photos waiting to be sent'));
+    expect(en, contains('thrown away automatically after 30 days'));
+  });
 }

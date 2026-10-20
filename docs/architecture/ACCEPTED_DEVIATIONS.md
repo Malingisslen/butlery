@@ -6515,3 +6515,22 @@ acquisition attribution.
   updated. Not the contents, not a URL and not the custom metadata a download token lives in.
   Above 2000 objects the section declines with `erasure-residue-too-large`, listed in pages that
   stop at 2001. The known gap `stored_file_contents` says the files themselves are not included.
+
+## BUT-2294 — cook-snap albums go through the offline queue, and unsent photos expire after 30 days (2026-10-20)
+
+- **SUPERSEDES the F3-1 clause** "Only recipes, their tagging and recipe images go through the
+  queue (Malin, 2026-10-05, F3-1 = A)". `CookSnapService` queues a snap taken offline as a
+  group of upload rows (`queueImageGroupForUser`, entity type `cook_snap`), and the queue
+  creates the snap once every photo is in Storage. A photo of the album that failed for good
+  keeps the snap from being created. Chat images, comment images and profile pictures are NOT
+  queued yet: nothing but the recipe-image and the cook-snap callers writes to the upload
+  queue. Shopping lists, pantry, weekly menu, profile and chat writes are unchanged.
+- **A photo that failed for good ("Väntar på dig") is thrown away automatically 30 days after
+  it first failed (Malin, 2026-10-20).** `UploadQueueProcessor.discardExpired` runs at the start
+  of every pass, for every kind of upload row (recipe images and cook-snap photos today). The
+  30 days count from `firstFailedAt`, or from `queuedAt` for a row with none. A cook-snap album
+  goes whole, by the path of the user's "Släng"; the device copies are deleted and an image
+  already in Storage is taken back by the same pass. "Väntar på dig" shows "Slängs automatiskt
+  om N dagar" before it happens. A device with no connection runs no pass, so a photo that
+  expires offline is thrown away at the next pass after it reconnects. Retrying a photo starts
+  its 30 days over. The privacy policy (1.18.0) names the 30 days for food photos.
