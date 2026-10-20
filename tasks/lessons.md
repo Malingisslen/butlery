@@ -4726,3 +4726,9 @@ Date: 2026-10-18
 Trigger: BUT-2379. `CommentUtilities._commentsRepository` var `static final` och band den första testets mock för hela processen. Med felet återställt rodnade bara provet som råkade köra först; raderings-provet gick grönt i hela filen och rodnade bara körd ensam.
 Rule: När en hjälpare håller sitt repo i en `static final`, bevisar bara ETT prov per process en revert-sond. Slå upp repot per anrop och låt provet sätta det (`overrideRepository`), och sondera varje prov i hela filens körning, inte ensamt.
 Example: 2026-10-18 — `CommentUtilities.repositoryOverride`; båda proven rodnar nu i hela filen med den gamla koden återställd.
+
+### Skriv aldrig en ny testfil utan att först kolla att sökvägen är ledig (2026-10-20)
+Date: 2026-10-20
+Trigger: BUT-2294 PR3. En ny testfil skrevs med `Write` på `test/unit/services/offline/clear_user_data_test.dart`, som redan fanns med tre BUT-2296-prov. Verktyget skrev över filen tyst, och tre granskare godkände commiten eftersom de såg den nya filen, inte vad som försvann.
+Rule: Kör `git ls-files <sökväg>` (eller `ls`) innan `Write` på en ny testfil, och läs `git show --stat` efter commiten: rader borttagna i en fil du tror är ny betyder att den fanns.
+Example: 2026-10-20 — återställd byte för byte i en egen incheckning, de nya proven flyttade till `queue_clear_race_test.dart`.

@@ -226,6 +226,23 @@ class UploadQueueProcessor {
     }
   }
 
+  /// Takes every image [userId]'s rows still hold in Storage back out, for a
+  /// clear of the user's data: the rows go right after, so a failed
+  /// take-back is not retried.
+  Future<void> takeBackAllUploaded(String userId) async {
+    final rows =
+        await (_db.select(_db.uploadQueueEntries)..where(
+              (e) => e.userId.equals(userId) & e.uploadedUrl.isNotNull(),
+            ))
+            .get();
+    for (final row in rows) {
+      await _takeBack(row.id, (
+        url: row.uploadedUrl!,
+        thumbnailUrl: row.uploadedThumbnailUrl,
+      ));
+    }
+  }
+
   /// Takes [image] out of Storage. When it cannot be, its address is kept on
   /// the row [rowId] so a later pass tries again; with [thenDropRow] the row
   /// goes once the image is gone. True when the image is gone.
