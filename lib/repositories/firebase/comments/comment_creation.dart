@@ -174,7 +174,7 @@ mixin CommentCreation on BaseFirebaseRepository<RecipeComment> {
       throw SecurityViolationException('Comment content cannot be empty');
     }
 
-    if (content.length > 2000) {
+    if (content.length > RecipeComment.maxContentLength) {
       throw SecurityViolationException(
         'Comment content exceeds maximum length of 2000 characters',
       );

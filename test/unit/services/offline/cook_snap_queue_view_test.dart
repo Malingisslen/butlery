@@ -129,12 +129,12 @@ void main() {
         final changes = await readQueuedChanges(db, uid);
 
         expect(changes, hasLength(2));
-        final album = changes.singleWhere((c) => c.isCookSnapGroup);
+        final album = changes.singleWhere((c) => c.isImageGroup);
         expect(album.id, 'snap-1');
         expect(album.photoCount, 3);
         expect(album.kind, QueuedChangeKind.image);
         expect(album.queuedAt, t0.add(const Duration(seconds: 5)));
-        final image = changes.singleWhere((c) => !c.isCookSnapGroup);
+        final image = changes.singleWhere((c) => !c.isImageGroup);
         expect(image.id, 'img-1');
         expect(image.photoCount, 1);
         expect(image.entityType, SyncQueueEntityType.recipe);

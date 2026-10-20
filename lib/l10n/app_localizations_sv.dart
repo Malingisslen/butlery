@@ -16879,6 +16879,21 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String syncQueueComment(String recipe) {
+    return 'Kommentar på $recipe';
+  }
+
+  @override
+  String get syncQueueCommentUnnamed => 'Kommentar';
+
+  @override
+  String get syncQueueReasonCommentFailed => 'Kommentaren kunde inte skickas.';
+
+  @override
+  String get commentQueuedOffline =>
+      'Kommentaren skickas när du är online igen.';
+
+  @override
   String get syncQueueReasonNotFound => 'Receptet finns inte längre';
 
   @override

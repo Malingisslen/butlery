@@ -361,6 +361,23 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  /// Whether [userId] has any unsent group of [entityType] (a comment's
+  /// photos), however far it has come. A group that is thrown away or whose
+  /// record is complete no longer counts.
+  Future<bool> hasLiveGroup(String userId, String entityType) async {
+    final row =
+        await (select(uploadQueueEntries)
+              ..where(
+                (e) =>
+                    e.userId.equals(userId) &
+                    e.entityType.equals(entityType) &
+                    e.status.isNotIn(const ['completed', 'cancelled']),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   /// Remove all uploads for an entity
   Future<void> removeUploadsForEntity(String entityId, String entityType) {
     return (delete(uploadQueueEntries)..where(

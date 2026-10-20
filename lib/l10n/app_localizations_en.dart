@@ -16999,6 +16999,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String syncQueueComment(String recipe) {
+    return 'Comment on $recipe';
+  }
+
+  @override
+  String get syncQueueCommentUnnamed => 'Comment';
+
+  @override
+  String get syncQueueReasonCommentFailed => 'The comment could not be sent.';
+
+  @override
+  String get commentQueuedOffline =>
+      'The comment will be sent when you\'re online again.';
+
+  @override
   String get syncQueueReasonNotFound => 'The recipe no longer exists';
 
   @override

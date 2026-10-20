@@ -441,6 +441,6 @@ void main() {
       entityType: cookSnapEntityType,
     );
 
-    expect(change.isCookSnapGroup, isFalse);
+    expect(change.isImageGroup, isFalse);
   });
 }

@@ -21,7 +21,7 @@ import 'package:image/image.dart' as img;
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
-import 'package:butlery/services/offline/cook_snap_group_queue.dart';
+import 'package:butlery/services/offline/image_group_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline/unsent_image_expiry.dart';
 
@@ -99,7 +99,7 @@ Future<List<QueuedChange>> readQueuedChanges(
         waitsOnEarlier: !row.permanentlyFailed && waits(row.dependsOn),
         nextAttemptAt: row.permanentlyFailed ? null : row.nextAttemptAt,
       ),
-    for (final row in uploadRows.where((r) => !isCookSnapRow(r)))
+    for (final row in uploadRows.where((r) => !isImageGroupRow(r)))
       QueuedChange(
         kind: QueuedChangeKind.image,
         id: row.id,
@@ -121,8 +121,8 @@ Future<List<QueuedChange>> readQueuedChanges(
               )
             : null,
       ),
-    for (final group in cookSnapGroups(uploadRows).values)
-      cookSnapChange(group, waits),
+    for (final group in imageGroups(uploadRows).values)
+      imageGroupChange(group, waits),
   ];
 }
 
@@ -147,8 +147,8 @@ Future<void> retryQueuedChange(
           firstFailedAt: Value(null),
         ),
       );
-    case QueuedChangeKind.image when change.isCookSnapGroup:
-      await retryCookSnapGroup(db, userId, change.entityId!);
+    case QueuedChangeKind.image when change.isImageGroup:
+      await retryImageGroup(db, userId, change.entityType!, change.entityId!);
     case QueuedChangeKind.image:
       await (db.update(
         db.uploadQueueEntries,
@@ -199,8 +199,8 @@ Future<String?> discardQueuedChange(
   final cancelledFiles = <String>[];
   String? discardedRecipeId;
   await db.transaction(() async {
-    // A cook-snap group's id is the snap's, which no row or dependsOn names.
-    final chain = change.isCookSnapGroup
+    // A group's id is the snap's or comment's, which no row or dependsOn names.
+    final chain = change.isImageGroup
         ? <String>{change.id}
         : await db.markChainPermanentlyFailed(
             userId,
@@ -242,12 +242,12 @@ Future<String?> discardQueuedChange(
           }
           await db.recipeDao.deleteRecipe(entry.recipeId, userId);
         }
-      case QueuedChangeKind.image when change.isCookSnapGroup:
-        // A snap with fewer photos than the user took is not what they sent,
-        // so the album goes as one.
+      case QueuedChangeKind.image when change.isImageGroup:
+        // A snap or comment with fewer photos than the user took is not what
+        // they sent, so the group goes as one.
         final group = await db.uploadQueueDao.getGroup(
           userId,
-          SyncQueueEntityType.cookSnap,
+          change.entityType!,
           change.entityId!,
         );
         for (final photo in group) {

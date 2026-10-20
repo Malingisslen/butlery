@@ -6584,3 +6584,21 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
 - The 30 days restart at "Försök igen" and "Försök mindre" through `retriedAt` (schema 7), apart
   from `firstFailedAt`, which a retry and an upload both clear to start the 24 h limit over. The
   count is `retriedAt ?? firstFailedAt ?? queuedAt`.
+
+## BUT-2294 — comments with photos go through the offline queue (2026-10-20)
+
+- **SUPERSEDES** "Chat images, comment images and profile pictures are NOT queued yet" for
+  comment images only. `CommentFormWidget` offline with photos calls
+  `SocialCommentsManager.queueCommentOffline`, which queues the photos as a group of upload rows
+  (entity type `comment`, id = the comment's id, target `users/{uid}/comment_images`) with the
+  text, the reply target and the recipe's name on each row. `CommentUploadCompletion` creates
+  the comment under that id once every photo is in Storage. Chat images and profile pictures
+  are still NOT queued.
+- A comment without photos still goes through Firestore's own queue. A user has one unsent
+  comment at a time: while a comment's photos wait on the device, another comment, with or
+  without photos, gets `commentWaitingForNetwork` and nothing is queued, because the server
+  refuses a second comment within 5 s.
+- A comment's photos are one item in "Väntar på synk" ("Kommentar på {recept}"), in the counts
+  and in the sign-out warning; "Försök igen" and "Släng" act on all of them, and the 30 days
+  throw the comment away whole. The card for a comment that failed for good says "Kommentaren
+  kunde inte skickas." whatever the cause. The text of a comment thrown away is not kept.

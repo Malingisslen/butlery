@@ -42,6 +42,10 @@ class OfflineUserStorage {
     required Map<String, Object?> metadata,
   }) async => const [];
 
+  Future<void> deleteUploadFile(String path) async {}
+
+  Future<bool> hasQueuedGroup(String userId, String entityType) async => false;
+
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 
   Future<bool> retagRecipeForUser(

@@ -1,9 +1,11 @@
-// lib/services/offline/cook_snap_group_queue.dart
+// lib/services/offline/image_group_queue.dart
 //
-// BUT-2294: a cook snap's photos are one row each in the upload queue but ONE
-// item to the user. Split out of sync_queue_reader.dart to keep that file under
-// the size limit.
+// BUT-2294: a cook snap's or a comment's photos are one row each in the upload
+// queue but ONE item to the user. Split out of sync_queue_reader.dart to keep
+// that file under the size limit.
 library;
+
+import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
@@ -13,24 +15,37 @@ import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline/unsent_image_expiry.dart';
 
-bool isCookSnapRow(UploadQueueEntry row) =>
-    row.entityType == SyncQueueEntityType.cookSnap && row.entityId != null;
+bool isImageGroupRow(UploadQueueEntry row) =>
+    SyncQueueEntityType.grouped.contains(row.entityType) &&
+    row.entityId != null;
 
-Map<String, List<UploadQueueEntry>> cookSnapGroups(
-  List<UploadQueueEntry> rows,
-) {
+/// The groups by type and id, so a comment and a cook snap that happen to
+/// share an id stay two items.
+Map<String, List<UploadQueueEntry>> imageGroups(List<UploadQueueEntry> rows) {
   final groups = <String, List<UploadQueueEntry>>{};
-  for (final row in rows.where(isCookSnapRow)) {
-    (groups[row.entityId!] ??= []).add(row);
+  for (final row in rows.where(isImageGroupRow)) {
+    (groups['${row.entityType}/${row.entityId}'] ??= []).add(row);
   }
   return groups;
 }
 
-/// The photos of one cook snap as ONE item. The queue marks a failure on the
-/// row that failed and leaves its siblings as they are, so the album needs the
-/// user as soon as any photo does, and it waits for the user until the whole
-/// album is retried or thrown away.
-QueuedChange cookSnapChange(
+/// What the list calls a comment's recipe, from the metadata the comment
+/// was queued with.
+String? _recipeNameOf(UploadQueueEntry row) {
+  try {
+    final meta = jsonDecode(row.metadata ?? '{}');
+    final name = meta is Map<String, dynamic> ? meta['recipeName'] : null;
+    return name is String ? name : null;
+  } on FormatException {
+    return null;
+  }
+}
+
+/// The photos of one cook snap or comment as ONE item. The queue marks a
+/// failure on the row that failed and leaves its siblings as they are, so the
+/// group needs the user as soon as any photo does, and it waits for the user
+/// until the whole group is retried or thrown away.
+QueuedChange imageGroupChange(
   List<UploadQueueEntry> rows,
   bool Function(String? stored) waits,
 ) {
@@ -44,10 +59,13 @@ QueuedChange cookSnapChange(
     needsUser: failed.isNotEmpty,
     reason: QueuedChangeReason.parse(failed.firstOrNull?.lastError),
     waitsOnEarlier: failed.isEmpty && rows.any((r) => waits(r.dependsOn)),
-    entityType: SyncQueueEntityType.cookSnap,
+    subject: first.entityType == SyncQueueEntityType.comment
+        ? _recipeNameOf(first)
+        : null,
+    entityType: first.entityType,
     entityId: first.entityId,
     photoCount: rows.length,
-    // One photo that waited out the period takes the whole album with it.
+    // One photo that waited out the period takes the whole group with it.
     unsentSince: failed.isEmpty
         ? null
         : failed
@@ -62,20 +80,21 @@ QueuedChange cookSnapChange(
   );
 }
 
-/// Every photo of the album goes back into the queue. One that is already in
+/// Every photo of the group goes back into the queue. One that is already in
 /// Storage keeps its status, so it is not uploaded a second time.
-Future<void> retryCookSnapGroup(
+Future<void> retryImageGroup(
   AppDatabase db,
   String userId,
-  String snapId,
+  String entityType,
+  String entityId,
 ) {
   return db.transaction(() async {
     final inGroup = db.update(db.uploadQueueEntries)
       ..where(
         (e) =>
             e.userId.equals(userId) &
-            e.entityType.equals(SyncQueueEntityType.cookSnap) &
-            e.entityId.equals(snapId) &
+            e.entityType.equals(entityType) &
+            e.entityId.equals(entityId) &
             e.status.isNotIn(const ['completed', 'cancelled']),
       );
     await inGroup.write(
@@ -91,8 +110,8 @@ Future<void> retryCookSnapGroup(
     await (db.update(db.uploadQueueEntries)..where(
           (e) =>
               e.userId.equals(userId) &
-              e.entityType.equals(SyncQueueEntityType.cookSnap) &
-              e.entityId.equals(snapId) &
+              e.entityType.equals(entityType) &
+              e.entityId.equals(entityId) &
               e.uploadedUrl.isNull() &
               e.status.isNotIn(const ['completed', 'cancelled']),
         ))
