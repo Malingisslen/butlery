@@ -89,6 +89,7 @@ import {
   deleteUserSubcollections,
   deleteUserProfile,
   USER_MODERATION,
+  userStoragePrefix,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
 import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
@@ -623,7 +624,7 @@ export async function deleteUserStorageFiles(
   uid: string,
 ): Promise<boolean> {
   try {
-    await storage.bucket().deleteFiles({ prefix: `users/${uid}/` });
+    await storage.bucket().deleteFiles({ prefix: userStoragePrefix(uid) });
     return true;
   } catch (err) {
     logger.error("[requestAccountDeletion] storage delete failed", { err });

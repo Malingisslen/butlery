@@ -6492,3 +6492,26 @@ acquisition attribution.
 - **Unchanged:** the WRITE half of the BUT-1832 entry. A message whose `metadata` is a map
   without `poll` still accepts a vote, and a late joiner can still cast one in a poll from before
   they joined.
+
+## BUT-2414 — Malin's three export choices (2026-10-20)
+
+- The Art. 15 export does not show where the requester's uid sits on other people's documents: a rating's or comment's `recipeOwnerId`, a comment's
+  `sharedWithUserIds` and a recipe's `memberPermissions` key naming them. Not the rows and not a
+  count (Malin: "Inte alls"). The basis is Art. 15(4): the documents are other people's. Account
+  deletion removes the uid there (`rating_recipe_owner`, `comment_recipe_owner`,
+  `comment_shared_with`, `recipe_member_permissions`), and `exportErasureResidue`'s known gap
+  `others_documents` tells the requester what is left out.
+- Household export (`FamilyExportManager`, Malin: "Behåll koden"): the creator gets every diner
+  profile of the household, a member who joined gets the ones they entered, and verdicts are the
+  requester's own or the ones they entered. It widens in one case:
+  a sole remaining member's household section carries every diner profile and family rating
+  (`isSoleMember`: `memberUserIds == [uid]`, the condition `deleteFamilyData` tears a household down on when no one
+  remains), including those a departed member left, with that member's uid as stored. The
+  creator of a group-linked household with joiners left keeps the narrow verdicts although the
+  teardown deletes the joiners' too (ADR-0030). `docs/security/family-data-retention.md` and the
+  family-rating DPIA R4 say the same.
+- `storage_files` (Malin: "Lista filerna") lists the objects under `userStoragePrefix(uid)`, the
+  folder `deleteUserStorageFiles` empties: path inside the folder, size, content type, created and
+  updated. Not the contents, not a URL and not the custom metadata a download token lives in.
+  Above 2000 objects the section declines with `erasure-residue-too-large`, listed in pages that
+  stop at 2001. The known gap `stored_file_contents` says the files themselves are not included.

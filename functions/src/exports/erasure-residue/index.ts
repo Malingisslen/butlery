@@ -9,9 +9,6 @@
  * failure is `erasure-residue-read-failed`. Either is that section's
  * `error_code`, and the other sections still ship.
  *
- * Left out on purpose, awaiting Malin's decisions: other people's documents
- * that carry the requester's uid, household data, and Storage files.
- *
  * Region: inherits europe-west1 via `setGlobalOptions` in index.ts.
  */
 
@@ -24,7 +21,13 @@ import { ACCOUNT_SECTIONS, SectionDef } from "./account-sections";
 import { SOCIAL_SECTIONS } from "./social-sections";
 import { MESSAGE_SECTIONS } from "./messages-section";
 import { REALTIME_LEGACY_SECTIONS } from "./realtime-legacy-sections";
-import { RESPONSE_TOO_LARGE_ERROR_CODE, SectionResult, runSection } from "./project";
+import { STORAGE_SECTIONS } from "./storage-section";
+import {
+  FileLister,
+  RESPONSE_TOO_LARGE_ERROR_CODE,
+  SectionResult,
+  runSection,
+} from "./project";
 
 export {
   TOO_LARGE_ERROR_CODE,
@@ -44,6 +47,7 @@ export const SECTIONS: readonly SectionDef[] = [
   ...SOCIAL_SECTIONS,
   ...MESSAGE_SECTIONS,
   ...REALTIME_LEGACY_SECTIONS,
+  ...STORAGE_SECTIONS,
 ];
 
 /** What erasure removes that these sections do not show. */
@@ -56,8 +60,11 @@ export const KNOWN_GAPS: readonly string[] = [
     "you left are not exported",
   "legacy_rows_projected: rows in collections no current app version writes " +
     "are exported with their identifying fields only",
-  "others_documents_households_storage: other people's documents that carry " +
-    "your user id, household data and stored files are not in this export",
+  "others_documents: where your user id appears on other people's recipes, " +
+    "ratings and comments is not in this export; deleting your account " +
+    "removes it there",
+  "stored_file_contents: the files in your storage folder are listed by " +
+    "name, size and dates; the files themselves are not in this export",
 ];
 
 export interface ExportErasureResidueResponse {
@@ -102,15 +109,16 @@ export const exportErasureResidue = onCall(
     }),
 );
 
-/** Test seam — accepts an injected Firestore and section list. */
+/** Test seam — accepts an injected Firestore, section list and bucket. */
 export async function runExportErasureResidueWithDb(
   database: admin.firestore.Firestore,
   uid: string,
   sections: readonly SectionDef[] = SECTIONS,
+  bucket: () => FileLister = () => admin.storage().bucket(),
 ): Promise<ExportErasureResidueResponse> {
   const results = await Promise.all(
     sections.map((section) =>
-      runSection(section.name, uid, () => section.read(database, uid)),
+      runSection(section.name, uid, () => section.read(database, uid, bucket)),
     ),
   );
   const response: ExportErasureResidueResponse = {

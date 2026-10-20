@@ -46,6 +46,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0030](ADR-0030-a-group-owners-export-leaves-out-the-joiners-verdicts.md) — The household export widens to every diner profile and rating only for the sole remaining member; a group owner with joiners keeps today's section, since the joiners' private verdicts the teardown deletes are theirs (Art. 15(4)) — priority order, over the DPO's exact-mirror ask (BUT-2414, 2026-10-20).
 - [ADR-0029](ADR-0029-a-misattributed-dish-loses-the-reporters-name-at-once.md) — "Det här är inte min rätt" removes the reporter's own uid from that dish at once and still goes to a moderator; only `misattribution` skips the strike and the erasure hold; no re-consent, since no build carried the old toggle text; CTO priority order (2026-10-10).
 - [ADR-0028](ADR-0028-list-admins-manage-members.md) — A shared-list admin may manage members as the owner may, never the owner; the map is bounded at 200 keys; no friendship check on added keys; CTO priority order (2026-10-09).
 - [ADR-0026](ADR-0026-an-admin-may-delete-a-trash-copy-but-not-read-it.md) — An admin may delete a recipe's trash copy but not read it, so a recipe reported after its owner deleted it cannot be restored; user safety over the DBA's owner-only delete (2026-10-09).

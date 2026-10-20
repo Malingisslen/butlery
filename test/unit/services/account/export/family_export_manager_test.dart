@@ -2,7 +2,8 @@
 ///
 /// Subject: a user's export includes the household's diner profiles (shared
 /// data they co-control) but only the family verdicts that are THEIRS or that
-/// THEY entered — never another member's private verdict.
+/// THEY entered — never another member's private verdict while that member
+/// remains. A sole remaining member gets every profile and verdict.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -379,6 +380,167 @@ void main() {
     final out = await manager.exportFamily(_malin);
 
     expect(out['diner_profiles_count'], 2);
+  });
+
+  group('a sole remaining member gets everything account deletion removes '
+      '(BUT-2414)', () {
+    Future<void> seedHousehold({
+      required String id,
+      required List<String> memberIds,
+      required String createdBy,
+      String? sourceGroupOwnerId,
+    }) => fs
+        .collection('households')
+        .doc(id)
+        .set(
+          Household(
+            id: id,
+            name: Household.defaultName,
+            members: [
+              for (final m in memberIds)
+                HouseholdMember(
+                  userId: m,
+                  permission: SharedListPermission.admin,
+                  addedAt: DateTime.utc(2026, 3, 1),
+                ),
+            ],
+            createdBy: createdBy,
+            createdAt: DateTime.utc(2026, 3, 1),
+            updatedAt: DateTime.utc(2026, 3, 1),
+            sourceGroupId: sourceGroupOwnerId == null ? null : 'g1',
+            sourceGroupOwnerId: sourceGroupOwnerId,
+          ).toFirestore(),
+        );
+
+    // What a member who has since left leaves behind: a profile they entered,
+    // their own verdict, and one they entered for that profile.
+    Future<void> seedLeftBehind(String householdId) async {
+      await fs
+          .collection(FirestoreCollections.dinerProfiles)
+          .doc('gone-guest')
+          .set(
+            DinerProfile.create(
+              householdId: householdId,
+              name: 'Gammal gäst',
+              ageBand: DinerAgeBand.adult,
+              createdBy: 'user-gone',
+            ).toFirestore(),
+          );
+      for (final r in [
+        FamilyRating.create(
+          recipeId: _recipe,
+          householdId: householdId,
+          memberId: 'user-gone',
+          memberType: HouseholdMemberType.user,
+          stars: 1,
+          enteredByUid: 'user-gone',
+        ),
+        FamilyRating.create(
+          recipeId: _recipe,
+          householdId: householdId,
+          memberId: 'gone-guest',
+          memberType: HouseholdMemberType.profile,
+          stars: 3,
+          enteredByUid: 'user-gone',
+        ),
+      ]) {
+        await fs
+            .collection(FirestoreCollections.familyRatings)
+            .doc(r.id)
+            .set(r.toFirestore());
+      }
+    }
+
+    Map<String, dynamic> section(Map<String, dynamic> out, String id) =>
+        out['household_id'] == id
+        ? out
+        : (out['other_households'] as List)
+              .cast<Map<String, dynamic>>()
+              .firstWhere(
+                (h) => h['household_id'] == id,
+              );
+
+    test(
+      'the sole member who created it gets every profile and rating',
+      () async {
+        await seedHousehold(
+          id: 'hh-alone',
+          memberIds: [_malin],
+          createdBy: _malin,
+        );
+        await seedLeftBehind('hh-alone');
+
+        final alone = section(await manager.exportFamily(_malin), 'hh-alone');
+
+        expect(alone['diner_profiles_count'], 1);
+        expect(alone['family_ratings_count'], 2);
+        expect(
+          (alone['family_ratings'] as List).map((r) => (r as Map)['memberId']),
+          containsAll(<String>['user-gone', 'gone-guest']),
+        );
+      },
+    );
+
+    test('a sole member who did not create it gets every profile and rating '
+        'too', () async {
+      await seedHousehold(
+        id: 'hh-alone',
+        memberIds: [_malin],
+        createdBy: 'user-gone',
+      );
+      await seedLeftBehind('hh-alone');
+
+      final alone = section(await manager.exportFamily(_malin), 'hh-alone');
+
+      expect(alone['diner_profiles_count'], 1);
+      expect(alone['family_ratings_count'], 2);
+    });
+
+    test('the owner of a group-linked household with a joiner left does not '
+        'get the joiner\'s verdicts (ADR-0030)', () async {
+      await seedHousehold(
+        id: _hh,
+        memberIds: [_malin, _johan],
+        createdBy: _malin,
+        sourceGroupOwnerId: _malin,
+      );
+
+      final out = await manager.exportFamily(_malin);
+
+      expect(out['family_ratings_count'], 2);
+      expect(
+        (out['family_ratings'] as List).map((r) => (r as Map)['memberId']),
+        isNot(contains(_johan)),
+      );
+    });
+
+    test('isSoleMember: exactly one member, and it is the requester', () {
+      Household of(List<String> ids) => Household(
+        id: 'h',
+        name: Household.defaultName,
+        members: [
+          for (final m in ids)
+            HouseholdMember(
+              userId: m,
+              permission: SharedListPermission.admin,
+              addedAt: DateTime.utc(2026, 3, 1),
+            ),
+        ],
+        createdBy: ids.isEmpty ? 'x' : ids.first,
+        createdAt: DateTime.utc(2026, 3, 1),
+        updatedAt: DateTime.utc(2026, 3, 1),
+      );
+      expect(FamilyExportManager.isSoleMember(of([_malin]), _malin), isTrue);
+      expect(FamilyExportManager.isSoleMember(of([_johan]), _malin), isFalse);
+      expect(
+        FamilyExportManager.isSoleMember(of([_malin, _johan]), _malin),
+        isFalse,
+      );
+      expect(
+        FamilyExportManager.isSoleMember(of([_malin, _malin]), _malin),
+        isFalse,
+      );
+    });
   });
 
   test('a single household exports no other_households key', () async {

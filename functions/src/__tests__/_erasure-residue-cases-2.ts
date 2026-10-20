@@ -6,6 +6,7 @@
 
 import { FakeFirestore } from "./_fake-firestore";
 import { OTHER, STRAY, SectionCase, T0, T0_ISO, THIRD, UID } from "./_erasure-residue-cases";
+import { stageFile } from "./_erasure-residue-bucket";
 
 function many(db: FakeFirestore, n: number, path: (i: number) => string, data: object): void {
   for (let i = 0; i < n; i++) db.seed(path(i), { ...data });
@@ -217,5 +218,39 @@ export const CASES_2: SectionCase[] = [
     },
     check: ([row]) => expect(Object.keys(row).join() === "shareId", "only the id"),
     overCap: (db) => many(db, ROWS, (i) => `shared_content/x${i}`, { sharedWith: [UID] }),
+  },
+  {
+    section: "storage_files",
+    idKey: "path",
+    rows: ["recipes/r1/photo.jpg"],
+    seed: (db) => {
+      stageFile(db, `users/${UID}/recipes/r1/photo.jpg`, {
+        size: "123",
+        contentType: "image/jpeg",
+        timeCreated: T0_ISO,
+        updated: T0_ISO,
+        mediaLink: "stray-value",
+        metadata: { firebaseStorageDownloadTokens: "token-secret" },
+      });
+      stageFile(db, `users/${UID}/recipes/`);
+      stageFile(db, `users/${UID}x/sibling.jpg`);
+      stageFile(db, `users/${OTHER}/theirs.jpg`);
+    },
+    check: ([row]) => {
+      expect(
+        JSON.stringify(row) ===
+          JSON.stringify({
+            path: "recipes/r1/photo.jpg",
+            size: 123,
+            contentType: "image/jpeg",
+            timeCreated: T0_ISO,
+            updated: T0_ISO,
+          }),
+        `the five fields only: ${JSON.stringify(row)}`,
+      );
+    },
+    overCap: (db) => {
+      for (let i = 0; i < ROWS; i++) stageFile(db, `users/${UID}/f${i}.jpg`);
+    },
   },
 ];
