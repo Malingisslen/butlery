@@ -48,16 +48,18 @@ export const ALLOWED_OCR_CONTENT_TYPES: ReadonlySet<string> = new Set([
 const HEAD_TIMEOUT_MS = 5000;
 
 /**
- * Project ID resolution mirrors `gemini-client.ts`. Cloud Functions sets
- * `GCLOUD_PROJECT`; some envs use `GOOGLE_CLOUD_PROJECT`. Fall back to the
- * known production project so unit tests don't need env wiring.
+ * Cloud Functions sets `GCLOUD_PROJECT`; some envs use `GOOGLE_CLOUD_PROJECT`.
+ * A missing id throws: a hardcoded fallback would silently pin the allowlist
+ * to the wrong bucket after the project changes.
  */
 function getProjectId(): string {
-  return (
-    process.env.GCLOUD_PROJECT ||
-    process.env.GOOGLE_CLOUD_PROJECT ||
-    "butlery-app-1"
-  );
+  const id = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
+  if (!id) {
+    throw new Error(
+      "ocr-url-validator: GCLOUD_PROJECT/GOOGLE_CLOUD_PROJECT is not set"
+    );
+  }
+  return id;
 }
 
 /** The bucket host for the new-style Firebase Storage domain. */
