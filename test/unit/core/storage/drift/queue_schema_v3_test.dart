@@ -362,7 +362,7 @@ void main() {
     test('every count is zero and every stream emits once', () async {
       final stub = web.AppDatabase();
 
-      expect(stub.schemaVersion, 6);
+      expect(stub.schemaVersion, 7);
       expect(await stub.watchQueueCounts('u1').first, QueueCounts.empty);
       expect(await stub.watchPendingCount('u1').first, 0);
       expect(await stub.syncQueueDao.watchPendingCount('u1').first, 0);

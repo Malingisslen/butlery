@@ -2266,6 +2266,17 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _retriedAtMeta = const VerificationMeta(
+    'retriedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> retriedAt = GeneratedColumn<DateTime>(
+    'retried_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2288,6 +2299,7 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
     firstFailedAt,
     uploadedUrl,
     uploadedThumbnailUrl,
+    retriedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2454,6 +2466,12 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         ),
       );
     }
+    if (data.containsKey('retried_at')) {
+      context.handle(
+        _retriedAtMeta,
+        retriedAt.isAcceptableOrUnknown(data['retried_at']!, _retriedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2543,6 +2561,10 @@ class $UploadQueueEntriesTable extends UploadQueueEntries
         DriftSqlType.string,
         data['${effectivePrefix}uploaded_thumbnail_url'],
       ),
+      retriedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}retried_at'],
+      ),
     );
   }
 
@@ -2621,6 +2643,11 @@ class UploadQueueEntry extends DataClass
 
   /// Download URL of its thumbnail, when the upload made one.
   final String? uploadedThumbnailUrl;
+
+  /// When the user last chose "Försök igen" or "Försök mindre" on it, or null
+  /// if never. Apart from [firstFailedAt], which a retry and an upload both
+  /// clear to start the 24 h limit over.
+  final DateTime? retriedAt;
   const UploadQueueEntry({
     required this.id,
     required this.userId,
@@ -2642,6 +2669,7 @@ class UploadQueueEntry extends DataClass
     this.firstFailedAt,
     this.uploadedUrl,
     this.uploadedThumbnailUrl,
+    this.retriedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2685,6 +2713,9 @@ class UploadQueueEntry extends DataClass
     }
     if (!nullToAbsent || uploadedThumbnailUrl != null) {
       map['uploaded_thumbnail_url'] = Variable<String>(uploadedThumbnailUrl);
+    }
+    if (!nullToAbsent || retriedAt != null) {
+      map['retried_at'] = Variable<DateTime>(retriedAt);
     }
     return map;
   }
@@ -2731,6 +2762,9 @@ class UploadQueueEntry extends DataClass
       uploadedThumbnailUrl: uploadedThumbnailUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(uploadedThumbnailUrl),
+      retriedAt: retriedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(retriedAt),
     );
   }
 
@@ -2762,6 +2796,7 @@ class UploadQueueEntry extends DataClass
       uploadedThumbnailUrl: serializer.fromJson<String?>(
         json['uploadedThumbnailUrl'],
       ),
+      retriedAt: serializer.fromJson<DateTime?>(json['retriedAt']),
     );
   }
   @override
@@ -2788,6 +2823,7 @@ class UploadQueueEntry extends DataClass
       'firstFailedAt': serializer.toJson<DateTime?>(firstFailedAt),
       'uploadedUrl': serializer.toJson<String?>(uploadedUrl),
       'uploadedThumbnailUrl': serializer.toJson<String?>(uploadedThumbnailUrl),
+      'retriedAt': serializer.toJson<DateTime?>(retriedAt),
     };
   }
 
@@ -2812,6 +2848,7 @@ class UploadQueueEntry extends DataClass
     Value<DateTime?> firstFailedAt = const Value.absent(),
     Value<String?> uploadedUrl = const Value.absent(),
     Value<String?> uploadedThumbnailUrl = const Value.absent(),
+    Value<DateTime?> retriedAt = const Value.absent(),
   }) => UploadQueueEntry(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -2841,6 +2878,7 @@ class UploadQueueEntry extends DataClass
     uploadedThumbnailUrl: uploadedThumbnailUrl.present
         ? uploadedThumbnailUrl.value
         : this.uploadedThumbnailUrl,
+    retriedAt: retriedAt.present ? retriedAt.value : this.retriedAt,
   );
   UploadQueueEntry copyWithCompanion(UploadQueueEntriesCompanion data) {
     return UploadQueueEntry(
@@ -2886,6 +2924,7 @@ class UploadQueueEntry extends DataClass
       uploadedThumbnailUrl: data.uploadedThumbnailUrl.present
           ? data.uploadedThumbnailUrl.value
           : this.uploadedThumbnailUrl,
+      retriedAt: data.retriedAt.present ? data.retriedAt.value : this.retriedAt,
     );
   }
 
@@ -2911,13 +2950,14 @@ class UploadQueueEntry extends DataClass
           ..write('nextAttemptAt: $nextAttemptAt, ')
           ..write('firstFailedAt: $firstFailedAt, ')
           ..write('uploadedUrl: $uploadedUrl, ')
-          ..write('uploadedThumbnailUrl: $uploadedThumbnailUrl')
+          ..write('uploadedThumbnailUrl: $uploadedThumbnailUrl, ')
+          ..write('retriedAt: $retriedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     userId,
     localPath,
@@ -2938,7 +2978,8 @@ class UploadQueueEntry extends DataClass
     firstFailedAt,
     uploadedUrl,
     uploadedThumbnailUrl,
-  );
+    retriedAt,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2962,7 +3003,8 @@ class UploadQueueEntry extends DataClass
           other.nextAttemptAt == this.nextAttemptAt &&
           other.firstFailedAt == this.firstFailedAt &&
           other.uploadedUrl == this.uploadedUrl &&
-          other.uploadedThumbnailUrl == this.uploadedThumbnailUrl);
+          other.uploadedThumbnailUrl == this.uploadedThumbnailUrl &&
+          other.retriedAt == this.retriedAt);
 }
 
 class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
@@ -2986,6 +3028,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
   final Value<DateTime?> firstFailedAt;
   final Value<String?> uploadedUrl;
   final Value<String?> uploadedThumbnailUrl;
+  final Value<DateTime?> retriedAt;
   final Value<int> rowid;
   const UploadQueueEntriesCompanion({
     this.id = const Value.absent(),
@@ -3008,6 +3051,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.firstFailedAt = const Value.absent(),
     this.uploadedUrl = const Value.absent(),
     this.uploadedThumbnailUrl = const Value.absent(),
+    this.retriedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UploadQueueEntriesCompanion.insert({
@@ -3031,6 +3075,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     this.firstFailedAt = const Value.absent(),
     this.uploadedUrl = const Value.absent(),
     this.uploadedThumbnailUrl = const Value.absent(),
+    this.retriedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -3059,6 +3104,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Expression<DateTime>? firstFailedAt,
     Expression<String>? uploadedUrl,
     Expression<String>? uploadedThumbnailUrl,
+    Expression<DateTime>? retriedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3083,6 +3129,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       if (uploadedUrl != null) 'uploaded_url': uploadedUrl,
       if (uploadedThumbnailUrl != null)
         'uploaded_thumbnail_url': uploadedThumbnailUrl,
+      if (retriedAt != null) 'retried_at': retriedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3108,6 +3155,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
     Value<DateTime?>? firstFailedAt,
     Value<String?>? uploadedUrl,
     Value<String?>? uploadedThumbnailUrl,
+    Value<DateTime?>? retriedAt,
     Value<int>? rowid,
   }) {
     return UploadQueueEntriesCompanion(
@@ -3131,6 +3179,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
       firstFailedAt: firstFailedAt ?? this.firstFailedAt,
       uploadedUrl: uploadedUrl ?? this.uploadedUrl,
       uploadedThumbnailUrl: uploadedThumbnailUrl ?? this.uploadedThumbnailUrl,
+      retriedAt: retriedAt ?? this.retriedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3200,6 +3249,9 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
         uploadedThumbnailUrl.value,
       );
     }
+    if (retriedAt.present) {
+      map['retried_at'] = Variable<DateTime>(retriedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3229,6 +3281,7 @@ class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
           ..write('firstFailedAt: $firstFailedAt, ')
           ..write('uploadedUrl: $uploadedUrl, ')
           ..write('uploadedThumbnailUrl: $uploadedThumbnailUrl, ')
+          ..write('retriedAt: $retriedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4315,6 +4368,7 @@ typedef $$UploadQueueEntriesTableCreateCompanionBuilder =
       Value<DateTime?> firstFailedAt,
       Value<String?> uploadedUrl,
       Value<String?> uploadedThumbnailUrl,
+      Value<DateTime?> retriedAt,
       Value<int> rowid,
     });
 typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
@@ -4339,6 +4393,7 @@ typedef $$UploadQueueEntriesTableUpdateCompanionBuilder =
       Value<DateTime?> firstFailedAt,
       Value<String?> uploadedUrl,
       Value<String?> uploadedThumbnailUrl,
+      Value<DateTime?> retriedAt,
       Value<int> rowid,
     });
 
@@ -4448,6 +4503,11 @@ class $$UploadQueueEntriesTableFilterComposer
 
   ColumnFilters<String> get uploadedThumbnailUrl => $composableBuilder(
     column: $table.uploadedThumbnailUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get retriedAt => $composableBuilder(
+    column: $table.retriedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4560,6 +4620,11 @@ class $$UploadQueueEntriesTableOrderingComposer
     column: $table.uploadedThumbnailUrl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get retriedAt => $composableBuilder(
+    column: $table.retriedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UploadQueueEntriesTableAnnotationComposer
@@ -4652,6 +4717,9 @@ class $$UploadQueueEntriesTableAnnotationComposer
     column: $table.uploadedThumbnailUrl,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get retriedAt =>
+      $composableBuilder(column: $table.retriedAt, builder: (column) => column);
 }
 
 class $$UploadQueueEntriesTableTableManager
@@ -4714,6 +4782,7 @@ class $$UploadQueueEntriesTableTableManager
                 Value<DateTime?> firstFailedAt = const Value.absent(),
                 Value<String?> uploadedUrl = const Value.absent(),
                 Value<String?> uploadedThumbnailUrl = const Value.absent(),
+                Value<DateTime?> retriedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion(
                 id: id,
@@ -4736,6 +4805,7 @@ class $$UploadQueueEntriesTableTableManager
                 firstFailedAt: firstFailedAt,
                 uploadedUrl: uploadedUrl,
                 uploadedThumbnailUrl: uploadedThumbnailUrl,
+                retriedAt: retriedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4760,6 +4830,7 @@ class $$UploadQueueEntriesTableTableManager
                 Value<DateTime?> firstFailedAt = const Value.absent(),
                 Value<String?> uploadedUrl = const Value.absent(),
                 Value<String?> uploadedThumbnailUrl = const Value.absent(),
+                Value<DateTime?> retriedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UploadQueueEntriesCompanion.insert(
                 id: id,
@@ -4782,6 +4853,7 @@ class $$UploadQueueEntriesTableTableManager
                 firstFailedAt: firstFailedAt,
                 uploadedUrl: uploadedUrl,
                 uploadedThumbnailUrl: uploadedThumbnailUrl,
+                retriedAt: retriedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

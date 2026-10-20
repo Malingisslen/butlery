@@ -362,7 +362,7 @@ Butlery is a mobile application and does not use browser cookies. Instead, we us
 - **Authentication tokens:** Secure tokens managed by Firebase Auth to keep you logged in
 - **Encrypted local database:** Your recipes and data are cached locally using AES-256 encrypted storage (SQLCipher) for offline access
 - **Secure storage:** Sensitive data (encryption keys) is stored in platform-provided secure storage (iOS Keychain / Android Keystore)
-- **Food photos waiting to be sent:** Photos you take while offline are kept temporarily on your phone until they have been sent or you throw them away. A photo that could not be sent is thrown away automatically after 30 days. The photo is shown to others only after it has been sent.
+- **Food photos waiting to be sent:** Photos you take while offline are kept temporarily on your phone until they have been sent or you throw them away. A photo that has not been sent is thrown away automatically after 30 days. The photo is shown to others only after it has been sent.
 
 You can manage data processing consent in: **Profile > Account Management > Manage consents**
 

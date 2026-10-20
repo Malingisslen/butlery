@@ -600,11 +600,15 @@ void main() {
           );
 
       final smaller = _jpeg(40, 30);
-      await retrySmallerQueuedChange(
-        db,
-        'u1',
-        change,
-        shrink: (path) async => smaller,
+      final retriedAt = t0.add(const Duration(hours: 2));
+      await withClock(
+        Clock.fixed(retriedAt),
+        () => retrySmallerQueuedChange(
+          db,
+          'u1',
+          change,
+          shrink: (path) async => smaller,
+        ),
       );
 
       final row = (await db.select(db.uploadQueueEntries).get()).single;
@@ -615,6 +619,7 @@ void main() {
       expect(row.status, 'pending');
       expect(row.nextAttemptAt, isNull, reason: 'sent at the next pass');
       expect(row.firstFailedAt, isNull, reason: 'a new 24 h limit');
+      expect(row.retriedAt, retriedAt, reason: 'the 30 days start over');
       expect(
         original.existsSync(),
         isFalse,

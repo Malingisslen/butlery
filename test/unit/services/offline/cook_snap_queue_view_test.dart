@@ -344,7 +344,11 @@ void main() {
       final album = (await readQueuedChanges(db, uid)).single;
       expect(album.needsUser, isTrue);
 
-      await retryQueuedChange(db, album, userId: uid);
+      final retriedAt = t0.add(const Duration(days: 1));
+      await withClock(
+        Clock.fixed(retriedAt),
+        () => retryQueuedChange(db, album, userId: uid),
+      );
 
       final after = {for (final r in await rows()) r.id: r};
       expect(after.values.every((r) => !r.permanentlyFailed), isTrue);
@@ -355,6 +359,7 @@ void main() {
       expect(after[ids[2]]!.lastError, isNull);
       expect(after.values.every((r) => r.retryCount == 0), isTrue);
       expect(after.values.every((r) => r.nextAttemptAt == null), isTrue);
+      expect(after.values.every((r) => r.retriedAt == retriedAt), isTrue);
       expect(after.values.every((r) => r.firstFailedAt == null), isTrue);
       final again = (await readQueuedChanges(db, uid)).single;
       expect(again.needsUser, isFalse);
@@ -371,11 +376,15 @@ void main() {
       );
       final image = (await readQueuedChanges(db, uid)).single;
 
-      await retryQueuedChange(db, image, userId: uid);
+      await withClock(
+        Clock.fixed(t0),
+        () => retryQueuedChange(db, image, userId: uid),
+      );
 
       final after = (await rows()).single;
       expect(after.permanentlyFailed, isFalse);
       expect(after.firstFailedAt, isNull);
+      expect(after.retriedAt, t0, reason: 'the 30 days start at the retry');
       expect(after.nextAttemptAt, isNull);
     });
 

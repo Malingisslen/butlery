@@ -5,6 +5,7 @@
 // the size limit.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -50,7 +51,13 @@ QueuedChange cookSnapChange(
     unsentSince: failed.isEmpty
         ? null
         : failed
-              .map((r) => unsentImageSince(r.firstFailedAt, r.queuedAt))
+              .map(
+                (r) => unsentImageSince(
+                  r.firstFailedAt,
+                  r.queuedAt,
+                  retriedAt: r.retriedAt,
+                ),
+              )
               .reduce((a, b) => b.isBefore(a) ? b : a),
   );
 }
@@ -72,12 +79,13 @@ Future<void> retryCookSnapGroup(
             e.status.isNotIn(const ['completed', 'cancelled']),
       );
     await inGroup.write(
-      const UploadQueueEntriesCompanion(
-        permanentlyFailed: Value(false),
-        retryCount: Value(0),
-        lastError: Value(null),
-        nextAttemptAt: Value(null),
-        firstFailedAt: Value(null),
+      UploadQueueEntriesCompanion(
+        permanentlyFailed: const Value(false),
+        retryCount: const Value(0),
+        lastError: const Value(null),
+        nextAttemptAt: const Value(null),
+        firstFailedAt: const Value(null),
+        retriedAt: Value(clock.now()),
       ),
     );
     await (db.update(db.uploadQueueEntries)..where(
