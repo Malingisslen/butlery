@@ -34,7 +34,7 @@ BUCKET="${CRF_STORAGE_BUCKET:-butlery-app-1.firebasestorage.app}"
 
 echo "=== Stage 1: Export corrections from Firestore ==="
 cd "$PROJECT_ROOT/functions"
-npx ts-node src/admin/export-corrections.ts
+npx ts-node src/admin/export-corrections.ts --project butlery-app-1
 cd "$PROJECT_ROOT"
 
 echo ""

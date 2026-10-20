@@ -44,8 +44,8 @@
  *
  * Usage:
  *   cd functions
- *   npm run reset-user-data:dry-run   # preview what gets deleted
- *   npm run reset-user-data           # live; asks for the phrase
+ *   npm run reset-user-data:dry-run -- --project <id>   # preview what gets deleted
+ *   npm run reset-user-data -- --project <id>           # live; asks for the phrase
  */
 
 import * as admin from "firebase-admin";

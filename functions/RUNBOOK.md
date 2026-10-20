@@ -2,6 +2,8 @@
 
 Operations notes for things that aren't deploy-time code.
 
+Deploying to the staging project first: `docs/ops/staging.md`.
+
 ## parse_events TTL policy (BUT-1478) — REQUIRED for the 30-day retention claim
 
 `logParseEvent` stamps every `parse_events` doc with an `expireAt` timestamp
@@ -28,8 +30,8 @@ so events written before BUT-1478 shipped would otherwise be retained forever:
 
 ```
 cd functions
-npm run backfill-parse-event-expiry:dry-run   # counts, no writes
-npm run backfill-parse-event-expiry           # stamps expireAt = timestamp + 30d
+npm run backfill-parse-event-expiry:dry-run -- --project butlery-app-1   # counts, no writes
+npm run backfill-parse-event-expiry -- --project butlery-app-1           # stamps expireAt = timestamp + 30d
 ```
 
 Docs already past their 30-day window get a past `expireAt` and are reaped by

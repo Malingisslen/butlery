@@ -4,6 +4,8 @@ Runs the web app against the local emulator suite, so user journeys can be walke
 end with throwaway accounts. Plan it serves:
 `/mnt/project-files/anvandarresor/kontroll-av-alla-resor-2026-10-05.md` (project files).
 
+A real cloud project for trying changes before production is `docs/ops/staging.md`.
+
 ## Start
 
 ```bash

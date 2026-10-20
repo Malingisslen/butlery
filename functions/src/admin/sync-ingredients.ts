@@ -3,16 +3,16 @@
  *
  * Prerequisites:
  *   1. Login to Firebase: firebase login
- *   2. Set project: firebase use butlery-app-1
- *   3. Set GOOGLE_APPLICATION_CREDENTIALS to service account key, OR
- *   4. Run: gcloud auth application-default login
+ *   2. Set GOOGLE_APPLICATION_CREDENTIALS to service account key, OR
+ *   3. Run: gcloud auth application-default login
  *
  * Usage:
  *   cd functions
- *   npm run sync-ingredients:dry-run   # Preview changes
- *   npm run sync-ingredients -- --force  # Apply changes
+ *   npm run sync-ingredients:dry-run -- --project <id>   # Preview changes
+ *   npm run sync-ingredients -- --project <id> --force   # Apply changes
  *
  * Options:
+ *   --project    Required; the target project (see admin/require-project.ts)
  *   --dry-run    Preview changes without applying
  *   --force      Skip confirmation prompts
  *   --verbose    Show detailed logging
@@ -32,15 +32,10 @@ import {
   VALID_GROUP_PREFIXES,
   VALID_PROPERTIES,
 } from "./sync-ingredients-core";
+import { initializeAdminApp } from "./admin-init";
+import { PRODUCTION_PROJECT } from "./require-project";
 
-const PROJECT_ID = "butlery-app-1";
-
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: PROJECT_ID,
-  });
-}
+const projectId = initializeAdminApp().options.projectId;
 
 const db = admin.firestore();
 
@@ -126,7 +121,7 @@ function loadCsv(filePath: string): IngredientRow[] {
   if (malformed.length > 0) {
     console.log(
       `\n❌ ${malformed.length} malformed CSV row(s) (lines ${malformed.join(", ")}).` +
-      "\n   A skipped row would be treated as removed and soft-deleted in production." +
+      "\n   A skipped row would be treated as removed and soft-deleted." +
       "\n   Fix the Sheet cells (usually a line break inside a quoted cell) and re-export."
     );
     process.exit(1);
@@ -308,7 +303,10 @@ function writeReportFile(report: SyncReport, options: Options): string | null {
   fs.mkdirSync(reportsDir, { recursive: true });
   const stamp = report.generatedAt.replace(/[:.]/g, "-");
   const suffix = options.dryRun ? "-dryrun" : "";
-  const reportPath = path.join(reportsDir, `sync-${stamp}${suffix}.json`);
+  // The reports folder is tracked; a run against any other project must not
+  // read as a production sync.
+  const target = projectId === PRODUCTION_PROJECT ? "" : `-${projectId}`;
+  const reportPath = path.join(reportsDir, `sync-${stamp}${target}${suffix}.json`);
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
   return reportPath;
 }

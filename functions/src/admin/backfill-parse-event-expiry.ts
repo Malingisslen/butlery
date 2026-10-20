@@ -15,8 +15,8 @@
  * functions/RUNBOOK.md ("Firestore TTL policies").
  *
  * Usage (from functions/):
- *   npm run backfill-parse-event-expiry:dry-run   # count only, no writes
- *   npm run backfill-parse-event-expiry           # stamp missing expireAt
+ *   npm run backfill-parse-event-expiry:dry-run -- --project <id>   # count only, no writes
+ *   npm run backfill-parse-event-expiry -- --project <id>           # stamp missing expireAt
  */
 
 import * as admin from "firebase-admin";

@@ -7,6 +7,9 @@ Operational runbook for Firestore data protection in `butlery-app-1`.
 
 ---
 
+The staging project (`butlery-app-staging`) has no backups or PITR on purpose; see
+`docs/ops/staging.md`.
+
 ## Why this matters
 
 Without PITR (Point-in-Time Recovery) or scheduled exports, any accidental delete, bad

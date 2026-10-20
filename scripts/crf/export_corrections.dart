@@ -18,14 +18,15 @@ import 'lib/annotation_engine.dart';
 void main(List<String> args) {
   final inputPath =
       _getArg(args, '--input') ?? 'scripts/crf/data/corrections.json';
-  final outputPath = _getArg(args, '--output') ??
+  final outputPath =
+      _getArg(args, '--output') ??
       'scripts/crf/data/corrections_training.conll';
 
   final inputFile = File(inputPath);
   if (!inputFile.existsSync()) {
     stderr.writeln('Input file not found: $inputPath');
     stderr.writeln(
-      'Run: cd functions && npx ts-node src/admin/export-corrections.ts',
+      'Run: cd functions && npx ts-node src/admin/export-corrections.ts --project butlery-app-1',
     );
     exit(1);
   }
@@ -84,14 +85,14 @@ void main(List<String> args) {
   stderr.writeln('  Skipped (no name token): $skippedNoName');
 
   stderr.writeln('  By correction type:');
-  for (final entry in typeCounts.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key))) {
+  for (final entry
+      in typeCounts.entries.toList()..sort((a, b) => a.key.compareTo(b.key))) {
     stderr.writeln('    ${entry.key}: ${entry.value}');
   }
 
   stderr.writeln('  Label distribution:');
-  for (final entry in labelCounts.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key))) {
+  for (final entry
+      in labelCounts.entries.toList()..sort((a, b) => a.key.compareTo(b.key))) {
     stderr.writeln('    ${entry.key}: ${entry.value}');
   }
 
@@ -128,14 +129,16 @@ void _validateConll(String path) {
     final parts = line.split('\t');
     if (parts.length != 2) {
       stderr.writeln(
-          '  VALIDATION ERROR line ${i + 1}: expected 2 tab-separated columns, got ${parts.length}');
+        '  VALIDATION ERROR line ${i + 1}: expected 2 tab-separated columns, got ${parts.length}',
+      );
       errors++;
       continue;
     }
 
     if (!validLabels.contains(parts[1])) {
       stderr.writeln(
-          '  VALIDATION ERROR line ${i + 1}: invalid label "${parts[1]}"');
+        '  VALIDATION ERROR line ${i + 1}: invalid label "${parts[1]}"',
+      );
       errors++;
     }
   }
@@ -144,8 +147,9 @@ void _validateConll(String path) {
   if (errors == 0) {
     stderr.writeln('\nValidation PASSED: $sequences sequences, $tokens tokens');
   } else {
-    stderr
-        .writeln('\nValidation FAILED: $errors errors in $sequences sequences');
+    stderr.writeln(
+      '\nValidation FAILED: $errors errors in $sequences sequences',
+    );
     exit(1);
   }
 }

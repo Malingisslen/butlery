@@ -33,8 +33,8 @@
  *
  * Usage:
  *   cd functions
- *   npx ts-node src/admin/migrate-friend-categories.ts            # dry run
- *   npx ts-node src/admin/migrate-friend-categories.ts --live
+ *   npx ts-node src/admin/migrate-friend-categories.ts --project <id>          # dry run
+ *   npx ts-node src/admin/migrate-friend-categories.ts --project <id> --live
  */
 
 import * as admin from "firebase-admin";

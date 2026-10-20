@@ -16,11 +16,11 @@ name: Model Version Guard
 #   download its JSON key, and add it as the GitHub secret
 #   `MODELS_RO_SA_KEY`. Concretely:
 #
-#   1. In Google Cloud Console for project butlery-app-1, create a service
+#   1. In Google Cloud Console for the production project, create a service
 #      account, e.g. "models-ro-ci".
 #   2. Grant it READ-ONLY access to the model objects only — grant
 #      "Storage Object Viewer" (roles/storage.objectViewer) on the bucket
-#      gs://butlery-app-1.firebasestorage.app (optionally scope tighter to
+#      gs://<production project id>.firebasestorage.app (optionally scope tighter to
 #      the models/ prefix via an IAM condition on resource name).
 #   3. Create a JSON key for that service account and download it.
 #   4. In GitHub: repo Settings → Secrets and variables → Actions → New

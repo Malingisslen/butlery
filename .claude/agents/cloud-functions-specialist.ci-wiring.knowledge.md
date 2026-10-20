@@ -54,3 +54,4 @@
   truncated while the same run redirected to a file was complete. A no-uid-in-logs test
   patches `process.stdout/stderr.write`; patching `console.*` captured nothing from
   `firebase-functions/logger`.
+- **A guard on how CI names a project must parse every spelling the CLI and actions accept** — `--project`, `-P`, `firebase use`, and action `projectId:`/`project_id:` inputs; a guard reading one spelling passes the others.

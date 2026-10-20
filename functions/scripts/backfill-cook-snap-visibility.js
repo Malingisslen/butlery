@@ -12,14 +12,15 @@
  * updated firestore.rules + the new client. Idempotent — re-running is a
  * no-op once all docs carry the field.
  *
- * Usage (from functions/):
+ * Usage (from functions/, after `npm run build`):
  *   GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> \
- *     node scripts/backfill-cook-snap-visibility.js [--dry-run]
+ *     node scripts/backfill-cook-snap-visibility.js --project <id> [--dry-run]
  */
 
 const admin = require("firebase-admin");
+const { requireProject } = require("../lib/admin/require-project");
 
-admin.initializeApp();
+admin.initializeApp({ projectId: requireProject() });
 const db = admin.firestore();
 
 const DRY_RUN = process.argv.includes("--dry-run");

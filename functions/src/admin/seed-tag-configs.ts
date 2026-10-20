@@ -10,21 +10,15 @@
  *
  * Usage:
  *   cd functions
- *   npm run seed-tag-configs
+ *   npm run seed-tag-configs -- --project <id>
  */
 
 import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
+import { initializeAdminApp } from "./admin-init";
 
-const PROJECT_ID = "butlery-app-1";
-
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: PROJECT_ID,
-  });
-}
+initializeAdminApp();
 
 const db = admin.firestore();
 

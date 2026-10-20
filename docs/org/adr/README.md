@@ -46,6 +46,8 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0032](ADR-0032-malins-real-account-in-staging.md) — Malin signs in to staging with her real Google account; staging is recorded as a place where personal data is processed, with production's TTLs and erasure cascade — escalated to Malin (BUT-451, 2026-10-20).
+- [ADR-0031](ADR-0031-staging-mirrors-every-scheduled-job.md) — Staging runs every scheduled job production runs; privacy over cost, within the 50 kr budget (BUT-451, 2026-10-20).
 - [ADR-0030](ADR-0030-a-group-owners-export-leaves-out-the-joiners-verdicts.md) — The household export widens to every diner profile and rating only for the sole remaining member; a group owner with joiners keeps today's section, since the joiners' private verdicts the teardown deletes are theirs (Art. 15(4)) — priority order, over the DPO's exact-mirror ask (BUT-2414, 2026-10-20).
 - [ADR-0029](ADR-0029-a-misattributed-dish-loses-the-reporters-name-at-once.md) — "Det här är inte min rätt" removes the reporter's own uid from that dish at once and still goes to a moderator; only `misattribution` skips the strike and the erasure hold; no re-consent, since no build carried the old toggle text; CTO priority order (2026-10-10).
 - [ADR-0028](ADR-0028-list-admins-manage-members.md) — A shared-list admin may manage members as the owner may, never the owner; the map is bounded at 200 keys; no friendship check on added keys; CTO priority order (2026-10-09).

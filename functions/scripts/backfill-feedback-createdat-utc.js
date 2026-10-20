@@ -22,23 +22,21 @@
  * USAGE (run by a human with prod credentials — this is the Tier-D ops step):
  *   # Auth: either GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccount.json,
  *   # or `gcloud auth application-default login` with access to the project.
- *   cd functions
- *   node scripts/backfill-feedback-createdat-utc.js                 # dry run (default)
- *   node scripts/backfill-feedback-createdat-utc.js --commit        # apply
- *   node scripts/backfill-feedback-createdat-utc.js --project butlery-app-1 --commit
+ *   cd functions && npm run build
+ *   node scripts/backfill-feedback-createdat-utc.js --project <id>            # dry run (default)
+ *   node scripts/backfill-feedback-createdat-utc.js --project <id> --commit   # apply
  */
 
 'use strict';
 
 const admin = require('firebase-admin');
+const { requireProject } = require('../lib/admin/require-project');
 
 const args = process.argv.slice(2);
 const COMMIT = args.includes('--commit');
-const projectIdx = args.indexOf('--project');
-const PROJECT_ID =
-  projectIdx !== -1 && args[projectIdx + 1] ? args[projectIdx + 1] : undefined;
 
-admin.initializeApp(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
+const PROJECT_ID = requireProject();
+admin.initializeApp({ projectId: PROJECT_ID });
 const db = admin.firestore();
 
 /**
@@ -104,9 +102,7 @@ function stockholmWallTimeToUtcIso(zoneless) {
 
 async function main() {
   console.log(
-    `[backfill-feedback-createdat-utc] mode=${COMMIT ? 'COMMIT' : 'DRY-RUN'}${
-      PROJECT_ID ? ` project=${PROJECT_ID}` : ''
-    }`,
+    `[backfill-feedback-createdat-utc] mode=${COMMIT ? 'COMMIT' : 'DRY-RUN'} project=${PROJECT_ID}`,
   );
 
   const snap = await db.collection('feedback').get();

@@ -18,7 +18,7 @@
  *
  * Usage:
  *   cd functions
- *   npx ts-node src/admin/export-corrections.ts [--output path/to/output.json]
+ *   npx ts-node src/admin/export-corrections.ts --project <id> [--output path/to/output.json]
  *
  * Default output: ../scripts/crf/data/corrections.json
  */

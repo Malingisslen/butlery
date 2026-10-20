@@ -21256,3 +21256,12 @@ Production fixes were made by the main session; this run only changed tests (no 
 - Probes: 12 mutants, all red after two initially non-compiling mutants (TS2339 narrowing,
   TS6133 unused import) were replaced with compiling ones.
 - Gap: the `deps.ownerExists ?? accountExists` default is unpinned (no Auth emulator).
+
+## 2026-10-20 — BUT-451 (struck from data-pipelines chapter)
+- Struck verbatim: "(`admin-init.ts` hardcodes prod)". `admin-init.ts` now takes the project from `--project` via `requireProject`.
+
+### 2026-10-20 — BUT-451 deploy-project-guard spelling gap [ci-wiring]
+- The first guard read only `--project`; `-P`, `firebase use` and `projectId:` passed. Widened and mutation-probed (each spelling reddens; `grep -P` stays green).
+
+### 2026-10-20 — BUT-451 admin scripts take --project [data-pipelines]
+- Every `admin/` script now reaches Firebase only through `initializeAdminApp()` → `requireProject`; the hardcoded production id in `seed-tag-configs.ts` and `sync-ingredients.ts` is gone.

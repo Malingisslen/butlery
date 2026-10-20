@@ -16,7 +16,7 @@
 # First run: the site `butlery-legal` must exist in the project. The job tries
 # to create it and carries on if it already exists; if the id is taken by
 # another Firebase project the create step fails loudly — pick another id in
-# .firebaserc (`targets.butlery-app-1.hosting.legal`) and rerun.
+# .firebaserc (`targets.<project id>.hosting.legal`) and rerun.
 name: Deploy Hosting (legal pages)
 
 on:
@@ -38,6 +38,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 10
     steps:
       - name: Refuse without the confirmation word
@@ -83,23 +85,30 @@ jobs:
             echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured (see deploy-firebase.yml header)." >&2
             exit 1
           fi
+          # The environment's variable, the `.firebaserc` production alias and
+          # the key must all name the same project before anything runs.
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
 
       - name: Ensure the legal site exists
         run: |
-          SITE=$(jq -r '.targets["butlery-app-1"].hosting.legal[0]' .firebaserc)
+          SITE=$(jq -r --arg p "$FIREBASE_PROJECT_ID" '.targets[$p].hosting.legal[0]' .firebaserc)
           test -n "$SITE" && test "$SITE" != "null" || { echo "::error::no legal hosting target in .firebaserc" >&2; exit 1; }
           echo "SITE=$SITE" >> "$GITHUB_ENV"
           # The CLI prints each site as "projects/<n>/sites/<id>".
-          if firebase hosting:sites:list --project butlery-app-1 --json | grep -q "/sites/$SITE\""; then
+          if firebase hosting:sites:list --project "$FIREBASE_PROJECT_ID" --json | grep -q "/sites/$SITE\""; then
             echo "Site $SITE exists."
           else
-            firebase hosting:sites:create "$SITE" --project butlery-app-1 --non-interactive
+            firebase hosting:sites:create "$SITE" --project "$FIREBASE_PROJECT_ID" --non-interactive
           fi
 
       - name: Deploy hosting target legal
         run: |
-          firebase deploy --only hosting:legal --project butlery-app-1 --non-interactive \
+          firebase deploy --only hosting:legal --project "$FIREBASE_PROJECT_ID" --non-interactive \
             --message "legal pages ${GITHUB_SHA::7} via deploy-hosting.yml"
           echo "Published: https://${SITE}.web.app/privacy-sv.html"

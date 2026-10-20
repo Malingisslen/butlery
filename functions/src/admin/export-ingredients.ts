@@ -11,7 +11,7 @@
  *
  * Usage:
  *   cd functions
- *   npx ts-node src/admin/export-ingredients.ts
+ *   npx ts-node src/admin/export-ingredients.ts --project <id>
  */
 
 import * as admin from "firebase-admin";
