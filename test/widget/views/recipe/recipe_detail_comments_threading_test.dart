@@ -239,6 +239,7 @@ void main() {
     await tester.tap(find.text('Kommentarer'));
     await tester.pumpAndSettle();
 
+    // props-only: the name is a hand-off to the offline queue and is never drawn; the form's own test checks what it queues
     expect(
       tester
           .widget<CommentFormWidget>(find.byType(CommentFormWidget))
