@@ -7,7 +7,6 @@ import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
-import 'package:butlery/services/offline/comment_queue_metadata.dart';
 import 'package:butlery/services/offline/comment_upload_completion.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queued_image_uploader.dart';
@@ -163,12 +162,12 @@ void main() {
         entityId: commentId,
         userId: uid,
         targetPath: 'users/$uid/comment_images',
-        metadata: commentQueueMetadata(
-          recipeId: 'recipe-1',
-          recipeName: 'Kladdkaka',
-          text: text,
-          parentCommentId: parent,
-        ),
+        metadata: {
+          'recipeId': 'recipe-1',
+          'recipeName': 'Kladdkaka',
+          'text': text,
+          'parentCommentId': ?parent,
+        },
       ),
     );
   }
