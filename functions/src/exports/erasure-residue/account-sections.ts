@@ -14,6 +14,7 @@ import {
 } from "../../account/mfa-recovery-attempts";
 import {
   Allowlist,
+  FileLister,
   Row,
   cappedDocs,
   project,
@@ -24,7 +25,11 @@ import {
 /** One section: its response key and its reader. */
 export interface SectionDef {
   name: string;
-  read: (database: admin.firestore.Firestore, uid: string) => Promise<Row[]>;
+  read: (
+    database: admin.firestore.Firestore,
+    uid: string,
+    bucket: () => FileLister,
+  ) => Promise<Row[]>;
 }
 
 /** The row cap a section declines above unless it names its own. */

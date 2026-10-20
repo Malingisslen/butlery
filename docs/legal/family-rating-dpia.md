@@ -110,9 +110,11 @@
 - **Residual:** Low–Medium pending the DPO ruling.
 
 ### R4 — Export discloses a child's data to a co-controlling adult
-- **What happens:** an adult's Art. 15/20 data export includes the household's
-  diner profiles, the child's allergen data, and the guardian-consent record
-  (incl. the consenting guardian's uid).
+- **What happens:** the household's creator's Art. 15/20 data export includes
+  all of its diner profiles, a member who joined gets the profiles they entered,
+  and a sole remaining member gets every profile and family rating (BUT-2414),
+  with the child's allergen data and the guardian-consent record (incl. the
+  consenting guardian's uid).
 - **Assessment:** the exporting adult is a **joint controller** of the shared
   household data, so this is portability of data they co-control — not a leak to
   a stranger. **[DPO]** confirms acceptability and whether it needs disclosure

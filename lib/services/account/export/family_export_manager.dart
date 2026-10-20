@@ -18,11 +18,12 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// Phase 5 item 14): the non-account diner profiles the user manages, plus the
 /// family verdicts that concern the user.
 ///
-/// Scoping note: diner profiles are household-shared data the user co-controls
-/// (children/guests), so all of the household's profiles are included. Family
-/// ratings are scoped to THIS user — verdicts that are theirs (`memberId`) or
-/// that they physically entered (`enteredByUid`) — so a user's export never
-/// leaks another household member's private verdict.
+/// Scoping note: a household's creator gets all of its diner profiles, and a
+/// member who joined gets the ones they entered. Family ratings are scoped to
+/// THIS user — verdicts that are theirs (`memberId`) or that they physically
+/// entered (`enteredByUid`). A sole remaining member gets every profile and
+/// every rating instead, because account deletion removes all of them
+/// (BUT-2414, Malin 2026-10-20).
 ///
 /// DPIA note: this export legitimately carries a child's special-category
 /// (Art. 9 allergen) data and the guardian-consent record (incl. guardian UID)
@@ -160,18 +161,21 @@ class FamilyExportManager {
     String userId,
   ) async {
     final householdId = household.id;
+    final sole = isSoleMember(household, userId);
     // The children of a household the requester JOINED are the host's family,
     // not data about the requester; only the ones they entered themselves are.
     final diners = [
       for (final d in await _diners.getByHousehold(householdId))
-        if (household.createdBy == userId || d.createdBy == userId) d,
+        if (sole || household.createdBy == userId || d.createdBy == userId) d,
     ];
 
     // Only the caller's own / caller-entered verdicts — never another
-    // member's private rating.
+    // member's private rating while another member remains.
     final all = await _familyRatings.getForHousehold(householdId);
     final mine = all
-        .where((r) => r.memberId == userId || r.enteredByUid == userId)
+        .where(
+          (r) => sole || r.memberId == userId || r.enteredByUid == userId,
+        )
         .toList();
 
     return {
@@ -206,6 +210,16 @@ class FamilyExportManager {
           e.key: e.value.toMap(),
       },
     };
+  }
+
+  /// The condition `deleteFamilyData` (`functions/src/account/cascade/
+  /// family.ts`) tears a household down on when no one else remains. Its
+  /// other teardown case, the creator of a group-linked household with
+  /// joiners left, is deliberately not mirrored: those verdicts are the
+  /// joiners' (ADR-0030).
+  static bool isSoleMember(Household household, String userId) {
+    final ids = household.memberUserIds;
+    return ids.length == 1 && ids.single == userId;
   }
 
   Map<String, dynamic> _utcStamps(

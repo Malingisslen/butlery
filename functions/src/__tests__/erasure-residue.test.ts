@@ -28,6 +28,7 @@ import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { makeRecordingDb, servingComposite, RecordedQuery } from "./_query-index-coverage";
 import { CASES, OTHER, SectionCase, UID } from "./_erasure-residue-cases";
 import { CASES_2 } from "./_erasure-residue-cases-2";
+import { bucketOf, stageFile, stagedBucket } from "./_erasure-residue-bucket";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const residue = require("../exports/erasure-residue") as typeof import("../exports/erasure-residue");
@@ -73,7 +74,7 @@ function sectionDef(name: string) {
 }
 
 async function runOne(db: FakeFirestore, name: string) {
-  const out = await residue.runExportErasureResidueWithDb(db.db, UID, [sectionDef(name)]);
+  const out = await residue.runExportErasureResidueWithDb(db.db, UID, [sectionDef(name)], bucketOf(db));
   return out.sections[name];
 }
 
@@ -148,7 +149,7 @@ const isolationCases: UnitCase[] = ALL_CASES.map((c) => ({
     const othersFail = residue.SECTIONS.map((s) =>
       s.name === c.section ? s : { name: s.name, read: failing },
     );
-    const out = await residue.runExportErasureResidueWithDb(db.db, UID, othersFail);
+    const out = await residue.runExportErasureResidueWithDb(db.db, UID, othersFail, bucketOf(db));
     assertEqual(rowsOf(out.sections[c.section], c.section).length, c.rows.length, "own rows");
     for (const name of SECTION_NAMES.filter((n) => n !== c.section)) {
       assertEqual(
@@ -160,7 +161,7 @@ const isolationCases: UnitCase[] = ALL_CASES.map((c) => ({
     const onlyThisFails = residue.SECTIONS.map((s) =>
       s.name === c.section ? { name: s.name, read: failing } : s,
     );
-    const second = await residue.runExportErasureResidueWithDb(db.db, UID, onlyThisFails);
+    const second = await residue.runExportErasureResidueWithDb(db.db, UID, onlyThisFails, bucketOf(db));
     assertEqual(
       second.sections[c.section] && "error_code" in second.sections[c.section],
       true,
@@ -172,6 +173,83 @@ const isolationCases: UnitCase[] = ALL_CASES.map((c) => ({
 }));
 
 const handlerCases: UnitCase[] = [
+  {
+    name: "storage_files: a folder over the cap declines without being listed whole",
+    fn: async () => {
+      const db = fakeDb();
+      for (let i = 0; i < 5000; i++) stageFile(db, `users/${UID}/f${i}.jpg`);
+      assertEqual(
+        JSON.stringify(await runOne(db, "storage_files")),
+        JSON.stringify({ error_code: residue.TOO_LARGE_ERROR_CODE }),
+        "declined",
+      );
+      const listed = stagedBucket(db).calls.reduce((n, c) => n + c.returned, 0);
+      assertEqual(listed, MAX_SECTION_ROWS + 1, "objects listed");
+    },
+  },
+  {
+    name: "storage_files: a folder of placeholders alone declines at its scan bound",
+    fn: async () => {
+      const db = fakeDb();
+      for (let i = 0; i < 6000; i++) stageFile(db, `users/${UID}/d${i}/`);
+      assertEqual(
+        JSON.stringify(await runOne(db, "storage_files")),
+        JSON.stringify({ error_code: residue.TOO_LARGE_ERROR_CODE }),
+        "declined",
+      );
+      const listed = stagedBucket(db).calls.reduce((n, c) => n + c.returned, 0);
+      assertTrue(listed <= 2 * MAX_SECTION_ROWS + 1000, `listed ${listed}`);
+    },
+  },
+  {
+    name: "storage_files: a uid holding a slash lists nothing, and deletion deletes nothing",
+    fn: async () => {
+      const db = fakeDb();
+      stageFile(db, "users/a/b/photo.jpg");
+      const out = await residue.runExportErasureResidueWithDb(
+        db.db, "a/b", [sectionDef("storage_files")], bucketOf(db),
+      );
+      assertEqual(
+        JSON.stringify(out.sections.storage_files),
+        JSON.stringify({ error_code: residue.READ_FAILED_ERROR_CODE }),
+        "export refused",
+      );
+      assertEqual(stagedBucket(db).calls.length, 0, "no listing");
+      const deleted: string[] = [];
+      const storage = {
+        bucket: () => ({
+          deleteFiles: async (q: { prefix: string }) => void deleted.push(q.prefix),
+        }),
+      };
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { deleteUserStorageFiles } = require("../account/request-account-deletion") as typeof import("../account/request-account-deletion");
+      const ok = await deleteUserStorageFiles(storage as unknown as admin.storage.Storage, "a/b");
+      assertEqual(ok, false, "reported as failed");
+      assertEqual(deleted.length, 0, "nothing deleted");
+    },
+  },
+  {
+    name: "storage_files: the folder listed is the folder account deletion empties",
+    fn: async () => {
+      const db = fakeDb();
+      await runOne(db, "storage_files");
+      const deleted: string[] = [];
+      const storage = {
+        bucket: () => ({
+          deleteFiles: async (q: { prefix: string }) => void deleted.push(q.prefix),
+        }),
+      };
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { deleteUserStorageFiles } = require("../account/request-account-deletion") as typeof import("../account/request-account-deletion");
+      await deleteUserStorageFiles(storage as unknown as admin.storage.Storage, UID);
+      assertEqual(
+        JSON.stringify(stagedBucket(db).calls.map((c) => c.prefix)),
+        JSON.stringify(deleted),
+        "same prefix",
+      );
+      assertEqual(deleted[0], `users/${UID}/`, "the user's folder, slash-terminated");
+    },
+  },
   {
     // The in-memory parent filter rejects these rows too, so only a count past
     // the raw bound tells the query's documentId range apart from its absence.
@@ -196,7 +274,7 @@ const handlerCases: UnitCase[] = [
         if (n !== "participants") return group(n);
         throw Object.assign(new Error("FAILED_PRECONDITION"), { code: 9 });
       };
-      const out = await residue.runExportErasureResidueWithDb(db.db, UID);
+      const out = await residue.runExportErasureResidueWithDb(db.db, UID, residue.SECTIONS, bucketOf(db));
       assertEqual(
         JSON.stringify(out.sections.conversation_roster_rows),
         JSON.stringify({ error_code: residue.READ_FAILED_ERROR_CODE }),
@@ -211,7 +289,7 @@ const handlerCases: UnitCase[] = [
       const db = fakeDb();
       db.seed("tag_overrides_log/t1", { userId: UID, tag: "x".repeat(residue.MAX_RESPONSE_BYTES) });
       db.seed(`guest_quotas/${UID}`, { calls: 2 });
-      const out = await residue.runExportErasureResidueWithDb(db.db, UID);
+      const out = await residue.runExportErasureResidueWithDb(db.db, UID, residue.SECTIONS, bucketOf(db));
       assertEqual(
         JSON.stringify(out.sections.tag_overrides_log),
         JSON.stringify({ error_code: residue.RESPONSE_TOO_LARGE_ERROR_CODE }),
@@ -245,7 +323,7 @@ const handlerCases: UnitCase[] = [
           sectionDef("tag_overrides_log"),
           sectionDef("guest_quota"),
           { name: "fails", read: failing },
-        ]);
+        ], bucketOf(db));
       } finally {
         streams.forEach((s, i) => (s.write = saved[i]));
       }
@@ -370,6 +448,8 @@ const indexCases: UnitCase[] = [
       const out = await residue.runExportErasureResidueWithDb(
         db as unknown as admin.firestore.Firestore,
         UID,
+        residue.SECTIONS,
+        bucketOf(new FakeFirestore()),
       );
       // A section that throws on the recording db records no query shape, so
       // the ones that do are named here: single-document reads and listDocuments.

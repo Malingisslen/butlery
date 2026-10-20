@@ -78,9 +78,11 @@ signal + notice lead-time are part of what the DPO confirms.
 
 ## Disclosure / portability note
 
-Per Art. 15/20, a co-controlling adult's data export
-(`FamilyExportManager`, Phase 5 item 14) includes the household's diner profiles
-— **including a child's Art. 9 allergen data and the guardian-consent record**.
+Per Art. 15/20, the data export (`FamilyExportManager`, Phase 5 item 14) gives a
+household's creator all of its diner profiles, a member who joined the profiles
+they entered, and a sole remaining member every profile and family rating
+(BUT-2414) — **including a child's Art. 9 allergen data and the guardian-consent
+record**. Verdicts are otherwise the requester's own or the ones they entered.
 This third-party-special-category disclosure to a joint controller is a
 documented condition the DPIA must explicitly cover (it surfaces only
 already-consented stored data; it introduces no new consent collection).

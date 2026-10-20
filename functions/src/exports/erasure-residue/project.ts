@@ -33,6 +33,27 @@ export type Row = Record<string, unknown>;
 
 export type SectionResult = { rows: Row[] } | { error_code: string };
 
+/** One object a Storage listing returns, as far as a section reads it. */
+export interface ListedFile {
+  name: string;
+  metadata: {
+    size?: string | number;
+    contentType?: string;
+    timeCreated?: string;
+    updated?: string;
+  };
+}
+
+/** The one Storage call a section makes, so tests can stage a bucket. */
+export interface FileLister {
+  getFiles(query: {
+    prefix: string;
+    autoPaginate: false;
+    maxResults: number;
+    pageToken?: string;
+  }): Promise<[ListedFile[], { pageToken?: string } | null | undefined, ...unknown[]]>;
+}
+
 /** Thrown by a section that is over one of its bounds. */
 export class Decline extends Error {
   constructor(

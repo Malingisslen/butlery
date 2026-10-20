@@ -139,3 +139,4 @@ export {
   deleteChatGroupMemberships,
 } from "./cascade/chat-groups";
 export { probeResidualData } from "./cascade/residual-probe";
+export { userStoragePrefix } from "./cascade/storage";
