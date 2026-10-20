@@ -195,6 +195,11 @@ async function rejectAndAudit(
   });
 }
 
+function errorCodeOf(err: unknown): number | string | null {
+  const code = (err as { code?: unknown } | null)?.code;
+  return typeof code === "number" || typeof code === "string" ? code : null;
+}
+
 /** What the handler reads and writes through, so the unit suite can fake it. */
 export interface ModerateUploadDeps {
   db: admin.firestore.Firestore;
@@ -270,10 +275,19 @@ export async function handleFinalizedObject(
       .download({ start: 0, end: HEAD_BYTES - 1 });
     head = downloaded;
   } catch (err) {
+    // The object name carries the uploader's uid, and the full error repeats it.
+    const errorCode = errorCodeOf(err);
+    if (errorCode === 404 || errorCode === "404") {
+      // The owner may delete an image before this trigger reads it; with
+      // nothing left to review there is nothing to report.
+      logger.info("[moderateUpload] object deleted before it was read", {
+        bucket: bucketName,
+      });
+      return;
+    }
     logger.error("[moderateUpload] failed to read head bytes", {
       bucket: bucketName,
-      name,
-      err,
+      errorCode,
     });
     // Fail open — don't punish the user for a transient Admin SDK glitch.
     // The Storage rule already enforced the contentType allow-list at

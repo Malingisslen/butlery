@@ -21228,6 +21228,20 @@ Production fixes were made by the main session; this run only changed tests (no 
 - `assertGuardTriggersCoverItsDartInputs` accepts lib/ paths only; a docs input needs its own
   trigger check (erasure-export-coverage.test.ts checks ACCEPTED_DEVIATIONS.md directly).
 
+### 2026-10-20 — moderateUpload 404 on head read is "gone", not an error [BUT-2410]
+- Change reviewed: the head-byte `download` catch in `storage/moderate-upload.ts` now answers
+  `errorCodeOf(err) === 404 | "404"` with `logger.info` (bucket only) + return; other failures
+  log `logger.error` with `bucket` + `errorCode`, dropping `name` and raw `err`.
+- Retry: `moderateUpload` declares no `retry`, and the old catch already returned, so neither
+  branch changes redelivery. A 404 for a missing BUCKET would also land in the info branch;
+  the bucket comes from the event, so not treated as a finding.
+- Test I5 stubs only `logger.error`; old code reddens it (name logged at error). Not pinned:
+  the non-404 branch's redaction (no scenario reaches it), and the comment's "stays out of
+  whatever is logged" (info/warn not captured).
+- Sibling log lines in `rejectAndAudit` still log `name` / `uploaderUid` / raw `err` in
+  cleartext — pre-existing, outside this diff.
+- Integration suite not run by the reviewer (no emulators in the sandbox; SKIP exit 0);
+  unit `test:moderate-upload` 14/14, `tsc --noEmit` clean.
 
 ### 2026-10-20 — BUT-2294 PR C: post-erasure upload backstop in moderateUpload [storage, gdpr]
 - Built `functions/src/storage/erased-owner-upload.ts` and called it from a new injectable
