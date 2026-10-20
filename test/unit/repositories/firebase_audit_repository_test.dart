@@ -36,35 +36,39 @@ void main() {
     });
 
     group('logPermissionCheck - Write Operations', () {
-      // NOTE: logPermissionCheck catches all errors silently
-      // (fire-and-forget), so these assert only that (1) the method completes
-      // and (2) the model produces the right data shape.
-
-      test('should complete without throwing for granted check', () async {
-        // Act & Assert - fire-and-forget should never throw
-        await expectLater(
-          repository.logPermissionCheck(
-            userId: 'user-123',
-            operation: 'read',
-            resourceType: 'recipe',
-            resourceId: 'recipe-456',
-            granted: true,
-          ),
-          completes,
+      test('writes a granted check to audit_logs with its actor', () async {
+        await repository.logPermissionCheck(
+          userId: 'user-123',
+          operation: 'read',
+          resourceType: 'recipe',
+          resourceId: 'recipe-456',
+          granted: true,
         );
+
+        final rows = await fakeFirestore.collection('audit_logs').get();
+        expect(rows.docs, hasLength(1));
+        final row = rows.docs.single.data();
+        expect(row['userId'], 'user-123');
+        expect(row['operation'], 'read');
+        expect(row['resourceType'], 'recipe');
+        expect(row['resourceId'], 'recipe-456');
+        expect(row['granted'], isTrue);
       });
 
-      test('should complete without throwing for denied check', () async {
-        // Act & Assert
-        await expectLater(
-          repository.logPermissionCheck(
-            userId: 'user-123',
-            operation: 'delete',
-            resourceType: 'recipe',
-            granted: false,
-          ),
-          completes,
+      test('writes a denied check as denied, not granted', () async {
+        await repository.logPermissionCheck(
+          userId: 'user-123',
+          operation: 'delete',
+          resourceType: 'recipe',
+          granted: false,
         );
+
+        final rows = await fakeFirestore.collection('audit_logs').get();
+        expect(rows.docs, hasLength(1));
+        final row = rows.docs.single.data();
+        expect(row['userId'], 'user-123');
+        expect(row['operation'], 'delete');
+        expect(row['granted'], isFalse);
       });
 
       test('should produce correct Firestore data shape with metadata', () {
