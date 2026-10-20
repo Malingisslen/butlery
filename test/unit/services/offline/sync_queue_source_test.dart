@@ -108,6 +108,40 @@ void main() {
   });
 
   settledTests();
+  test(
+    'Försök igen on a cook-snap album puts its photos back in the queue',
+    () async {
+      // Proves: the source hands the signed-in user to the album retry.
+      when(() => auth.currentUserId).thenReturn('u1');
+      when(() => offline.isOnline).thenReturn(false);
+      for (var i = 0; i < 2; i++) {
+        await db.uploadQueueDao.queueUpload(
+          id: 'photo-$i',
+          userId: 'u1',
+          localPath: '/p$i.jpg',
+          targetPath: 'users/u1/recipes',
+          fileSizeBytes: 1,
+          entityId: 'snap-1',
+          entityType: SyncQueueEntityType.cookSnap,
+        );
+        await db.uploadQueueDao.markPermanentlyFailed(
+          'photo-$i',
+          reason: 'retries-exhausted',
+        );
+      }
+      final source = OfflineSyncQueueSource(
+        offlineService: offline,
+        authRepository: auth,
+      );
+      final album = (await source.watchChanges().first).needsUser.single;
+
+      await source.retry(album);
+
+      final rows = await db.select(db.uploadQueueEntries).get();
+      expect(rows.every((r) => !r.permanentlyFailed), isTrue);
+      expect((await source.watchChanges().first).needsUser, isEmpty);
+    },
+  );
 }
 
 /// An offline service that can go on- and offline, for watchSettled.

@@ -11,6 +11,16 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
+enum CookSnapAddOutcome {
+  /// Cancelled or failed; a failure also sets the view model's error.
+  notAdded,
+  added,
+
+  /// No connection: the photos wait on the device and the snap is created
+  /// when they are all up. Not an error.
+  queuedOffline,
+}
+
 /// Provides cook snap state for a single recipe.
 ///
 /// Created per-recipe via factory registration in DI.
@@ -64,12 +74,12 @@ class CookSnapViewModel extends BaseViewModel {
     _startWatching();
   }
 
-  Future<bool> addSnap({
+  Future<CookSnapAddOutcome> addSnap({
     required ImageSource source,
     String? caption,
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) async {
-    if (_isUploading) return false;
+    if (_isUploading) return CookSnapAddOutcome.notAdded;
 
     _isUploading = true;
     notifyListeners();
@@ -83,11 +93,14 @@ class CookSnapViewModel extends BaseViewModel {
         caption: caption,
         visibility: visibility,
       );
-      return snap != null;
+      if (snap == null) return CookSnapAddOutcome.notAdded;
+      return snap.queued
+          ? CookSnapAddOutcome.queuedOffline
+          : CookSnapAddOutcome.added;
     } catch (e) {
       AppLogger.error('Failed to add cook snap: $e');
       setError(AppLocale.current.cookSnapErrorUpload);
-      return false;
+      return CookSnapAddOutcome.notAdded;
     } finally {
       _isUploading = false;
       notifyListeners();

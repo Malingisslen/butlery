@@ -45,3 +45,32 @@ class QueueCounts {
   String toString() =>
       'QueueCounts(draining: $draining, needsUser: $needsUser)';
 }
+
+/// The SQL behind `AppDatabase.watchQueueCounts`. The unit is an item as the
+/// user sees it: a sync row, an upload row, or a cook snap's whole album (its
+/// rows share the snap's id as `entity_id`). An album with any photo
+/// permanently failed is one `needs_user`, never one of each, because the
+/// queue marks the photo that failed and leaves its siblings alone.
+const String queueCountsSql = """
+WITH upload_items AS (
+  SELECT MAX(permanently_failed) AS failed
+  FROM upload_queue_entries
+  WHERE user_id = ?1
+    AND ((permanently_failed = 0
+          AND status IN ('pending', 'uploading', 'uploaded', 'failed'))
+      OR (permanently_failed = 1
+          AND status NOT IN ('completed', 'cancelled')))
+  GROUP BY CASE
+    WHEN entity_type = 'cook_snap' AND entity_id IS NOT NULL
+      THEN 'g:' || entity_id
+    ELSE 'r:' || id
+  END
+)
+SELECT
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 0)
+  + (SELECT COUNT(*) FROM upload_items WHERE failed = 0) AS draining,
+  (SELECT COUNT(*) FROM sync_queue_entries
+     WHERE user_id = ?1 AND permanently_failed = 1)
+  + (SELECT COUNT(*) FROM upload_items WHERE failed = 1) AS needs_user
+""";

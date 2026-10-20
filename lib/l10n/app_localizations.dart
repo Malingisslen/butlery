@@ -20843,6 +20843,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte ladda upp foto'**
   String get cookSnapErrorUpload;
 
+  /// BUT-2294: snackbar when a cook-snap album is added with no connection; the photos are kept on the device and the snap is created when they are all up.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina bilder skickas när du är online igen'**
+  String get cookSnapQueuedOffline;
+
   /// No description provided for @cookSnapErrorDelete.
   ///
   /// In sv, this message translates to:
@@ -25905,6 +25911,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'En bild'**
   String get syncQueueImage;
+
+  /// BUT-2294: a queued cook-snap album in Väntar på synk. The album is one item whatever the number of photos.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Matlagningsfoton (1 bild)} other{Matlagningsfoton ({count} bilder)}}'**
+  String syncQueueCookSnap(int count);
 
   /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
   ///

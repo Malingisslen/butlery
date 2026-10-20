@@ -13507,6 +13507,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapErrorUpload => 'Kunde inte ladda upp foto';
 
   @override
+  String get cookSnapQueuedOffline =>
+      'Dina bilder skickas när du är online igen';
+
+  @override
   String get cookSnapErrorDelete => 'Kunde inte radera bilden';
 
   @override
@@ -16862,6 +16866,17 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get syncQueueImage => 'En bild';
+
+  @override
+  String syncQueueCookSnap(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Matlagningsfoton ($count bilder)',
+      one: 'Matlagningsfoton (1 bild)',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get syncQueueReasonNotFound => 'Receptet finns inte längre';

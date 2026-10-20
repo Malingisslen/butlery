@@ -72,6 +72,9 @@ import 'helpers/view_test_helpers.dart';
 /// choice actually produce" — consistent with the BUT-1214 service-level pin.
 class _FakeCookSnapService extends Fake implements CookSnapService {
   int addCalls = 0;
+
+  /// What the next add answers with; null keeps the default created snap.
+  CookSnapAddResult? nextResult;
   String? lastRecipeId;
   ImageSource? lastSource;
   CookSnapVisibility? lastVisibility;
@@ -81,7 +84,7 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
       Stream.value(const <CookSnap>[]);
 
   @override
-  Future<CookSnap?> addCookSnap({
+  Future<CookSnapAddResult?> addCookSnap({
     required String recipeId,
     required String recipeAuthorId,
     required String recipeName,
@@ -94,11 +97,14 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
     lastRecipeId = recipeId;
     lastSource = source;
     lastVisibility = visibility;
-    return CookSnap.create(
-      recipeId: recipeId,
-      userId: _testUserId,
-      userDisplayName: 'Test User',
-      photoUrl: 'https://example.com/snap.jpg',
+    if (nextResult != null) return nextResult;
+    return CookSnapAddResult.created(
+      CookSnap.create(
+        recipeId: recipeId,
+        userId: _testUserId,
+        userDisplayName: 'Test User',
+        photoUrl: 'https://example.com/snap.jpg',
+      ),
     );
   }
 }
@@ -534,6 +540,29 @@ void main() {
             reason: 'cancel must not upload anything',
           );
         });
+      });
+
+      testWidgets('a snap queued offline tells the user the photos wait', (
+        tester,
+      ) async {
+        // Proves: the queued result is shown as a message, not as an error or
+        // silence; an ordinary add shows no such message.
+        cookSnapService.nextResult = const CookSnapAddResult.queued();
+        await startAddSnapFlow(tester);
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(
+          find.text(l10nOf(tester).cookSnapQueuedOffline),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('a created snap shows no offline message', (tester) async {
+        await startAddSnapFlow(tester);
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(cookSnapService.addCalls, 1);
+        expect(find.text(l10nOf(tester).cookSnapQueuedOffline), findsNothing);
       });
 
       testWidgets(

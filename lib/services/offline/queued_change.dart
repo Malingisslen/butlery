@@ -15,6 +15,11 @@ enum QueuedChangeKind {
   image,
 }
 
+/// The upload queue's entity type of a cook snap's photos. Equal to
+/// SyncQueueEntityType.cookSnap (a test pins it), kept here so this
+/// database-free model does not import the Drift tables.
+const String cookSnapEntityType = 'cook_snap';
+
 /// What a recipe write does, as the queue stores it (SyncOperation).
 enum QueuedOperation { create, update, delete, tag, upload }
 
@@ -73,6 +78,9 @@ class QueuedChange {
     this.reason = QueuedChangeReason.unknown,
     this.waitsOnEarlier = false,
     this.nextAttemptAt,
+    this.entityType,
+    this.entityId,
+    this.photoCount = 1,
   });
 
   final QueuedChangeKind kind;
@@ -102,6 +110,22 @@ class QueuedChange {
   /// has not failed (produktregler.md:188; #synkko "nästa försök om 8 s").
   final DateTime? nextAttemptAt;
 
+  /// What an image row belongs to (SyncQueueEntityType), so the view can name
+  /// it. Null for a recipe write.
+  final String? entityType;
+
+  /// The recipe or cook snap an image row belongs to.
+  final String? entityId;
+
+  /// The photos in the group this item stands for; 1 for everything but a
+  /// cook-snap album, whose rows are one item to the user.
+  final int photoCount;
+
+  /// An album of cook-snap photos: one item whose [id] is the snap's id and
+  /// which is retried and thrown away as a whole.
+  bool get isCookSnapGroup =>
+      kind == QueuedChangeKind.image && entityType == cookSnapEntityType;
+
   /// A recipe the server has never had: the entry creates it, so the recipe
   /// exists only on this phone. Throwing the entry away throws the recipe
   /// away, so "Släng" asks first ([discardAsksFirst]).
@@ -121,6 +145,7 @@ class QueuedChange {
   bool get canTrySmaller =>
       needsUser &&
       kind == QueuedChangeKind.image &&
+      !isCookSnapGroup &&
       reason == QueuedChangeReason.tooLarge;
 
   /// "Släng ändringen" (produktregler.md:188), on every permanent failure.
@@ -143,7 +168,10 @@ class QueuedChange {
       other.needsUser == needsUser &&
       other.reason == reason &&
       other.waitsOnEarlier == waitsOnEarlier &&
-      other.nextAttemptAt == nextAttemptAt;
+      other.nextAttemptAt == nextAttemptAt &&
+      other.entityType == entityType &&
+      other.entityId == entityId &&
+      other.photoCount == photoCount;
 
   @override
   int get hashCode => Object.hash(
@@ -156,6 +184,9 @@ class QueuedChange {
     reason,
     waitsOnEarlier,
     nextAttemptAt,
+    entityType,
+    entityId,
+    photoCount,
   );
 }
 
