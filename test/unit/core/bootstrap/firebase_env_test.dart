@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/bootstrap/emulator_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firebase_env.dart';
+import 'package:butlery/firebase_options_staging.dart' as staging_options;
 
 void main() {
   group('FirebaseEnv.resolve', () {
@@ -89,6 +90,17 @@ void main() {
 
     test('staging options point at the staging project', () {
       expect(staging.options().projectId, staging.projectId);
+    });
+
+    test('staging web options point at the staging project', () {
+      expect(
+        staging_options.DefaultFirebaseOptions.web.projectId,
+        staging.projectId,
+      );
+      expect(
+        staging_options.DefaultFirebaseOptions.web.authDomain,
+        staging.authLinkHost,
+      );
     });
 
     test('emulator options are built on production and moved to demo', () {

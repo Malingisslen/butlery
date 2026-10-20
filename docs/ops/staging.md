@@ -48,6 +48,11 @@ the same phone, with a STAGING banner. Analytics and Crashlytics are off in it. 
 built by `build-staging-apk.yml` (dispatch only, from `main`, signed with the upload key,
 short artifact retention).
 
+In the browser, start the app against staging with
+`flutter run -d chrome --dart-define=ENV=staging`. Its browser key accepts only
+`localhost` and staging's own Hosting domains, and web App Check is not activated against
+staging.
+
 A password-reset link from staging opens in the browser, not the app: no
 `assetlinks.json` naming `se.butlery.app.staging` is published on the staging Hosting
 site.
@@ -85,9 +90,11 @@ These are set by hand, so they drift unless someone checks them:
 - `system/config`: kill switches on, LLM caps deliberately low
   (`globalHourlyLimit`, `globalDailyLimit`, `guestDailyImportLimit`).
 - Secret Manager: `MFA_RECOVERY_PEPPER` (its own random value),
-  `IDENTITY_TOOLKIT_API_KEY` (staging's own browser key), `FEEDBACK_EMAIL_API_KEY` set to
+  `IDENTITY_TOOLKIT_API_KEY` (staging's own server key), `FEEDBACK_EMAIL_API_KEY` set to
   a placeholder so no feedback mail is sent.
 - The Android API key is restricted to `se.butlery.app.staging` and its SHA-1s.
+- The browser key is restricted to referrers; the functions use a separate
+  Identity Toolkit server key, held in `IDENTITY_TOOLKIT_API_KEY`, as in production.
 - IAM: the Pub/Sub, Eventarc, Storage and default compute service agents hold the roles a
   functions deploy asks for. The deploy service account cannot grant them, so a deploy
   that prints `gcloud projects add-iam-policy-binding` lines needs them run by hand. For

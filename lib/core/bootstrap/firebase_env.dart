@@ -2,8 +2,8 @@
 /// `--dart-define=ENV`.
 ///
 /// No define means production, so a plain `flutter run` reaches production
-/// with no flags. `ENV=staging` selects `butlery-app-staging` and must be
-/// paired with the Android `staging` flavor, whose package id and
+/// with no flags. `ENV=staging` selects `butlery-app-staging`; on Android it
+/// must be paired with the `staging` flavor, whose package id and
 /// google-services.json belong to that project. Any other value stops the
 /// start: a typo must not silently fall back to production.
 library;
