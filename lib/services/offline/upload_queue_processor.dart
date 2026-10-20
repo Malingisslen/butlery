@@ -34,8 +34,10 @@ class UploadQueueProcessor {
     required QueuedImageUploader upload,
     UploadedImageDeleter? deleteUploaded,
     Map<String, UploadCompletion> completions = const {},
+    Future<void> Function(String userId)? ensureSession,
     Random? random,
   }) : _db = database,
+       _ensureSession = ensureSession,
        _upload = upload,
        _deleteUploaded = deleteUploaded,
        _completions = {
@@ -52,6 +54,11 @@ class UploadQueueProcessor {
   final UploadedImageDeleter? _deleteUploaded;
   final Map<String, UploadCompletion> _completions;
   final Random? _random;
+
+  /// Run before a row is sent: refreshes the sign-in so a write is not made
+  /// on a token that outlived the account, and throws [SessionEnded] when the
+  /// account can no longer write.
+  final Future<void> Function(String userId)? _ensureSession;
 
   /// Whether [userId] has an upload the queue still sends.
   ///
@@ -132,6 +139,14 @@ class UploadQueueProcessor {
       var row = await _stillQueued(listed.id, userId);
       if (row == null) continue;
 
+      try {
+        await _ensureSession?.call(userId);
+      } on SessionEnded {
+        return sent;
+      }
+      // The refresh took time: the account may have changed meanwhile.
+      if (!isCurrentUser()) break;
+
       if (row.status != 'uploaded') {
         await _db.uploadQueueDao.markUploading(row.id);
         final UploadedImage uploaded;
@@ -141,8 +156,11 @@ class UploadQueueProcessor {
           AppLogger.error(
             '❌ Bilduppladdning misslyckades: ${queueErrorCode(e)}',
           );
-          // A row thrown away meanwhile stays thrown away.
+          // A row thrown away meanwhile stays thrown away, and a refusal
+          // that came from the account changing under the upload says
+          // nothing about the row.
           if (await _stillQueued(row.id, userId) == null) continue;
+          if (!isCurrentUser()) continue;
           await _recordFailure(row, userId, e, now, status: 'failed');
           continue;
         }
@@ -200,6 +218,7 @@ class UploadQueueProcessor {
         AppLogger.error(
           '❌ Bilden kunde inte användas: ${queueErrorCode(e)}',
         );
+        if (!isCurrentUser()) continue;
         await _recordFailure(row, userId, e, now, status: 'uploaded');
       }
     }
