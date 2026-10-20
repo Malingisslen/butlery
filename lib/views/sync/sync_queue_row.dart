@@ -27,7 +27,12 @@ import 'package:butlery/widgets/common/surfaces/butlery_outlined_box.dart';
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
   final subject = change.subject;
-  if (change.isCookSnapGroup) return l10n.syncQueueCookSnap(change.photoCount);
+  if (change.isCommentGroup) {
+    return subject == null
+        ? l10n.syncQueueCommentUnnamed
+        : l10n.syncQueueComment(subject);
+  }
+  if (change.isImageGroup) return l10n.syncQueueCookSnap(change.photoCount);
   if (change.kind == QueuedChangeKind.image) {
     return subject == null
         ? l10n.syncQueueImage
@@ -45,14 +50,16 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
 
 /// Why [change] waits for the user, in the words produktregler.md:188 names.
 String describeQueuedReason(AppLocalizations l10n, QueuedChange change) =>
-    switch (change.reason) {
-      QueuedChangeReason.notFound => l10n.syncQueueReasonNotFound,
-      QueuedChangeReason.permissionDenied => l10n.syncQueueReasonPermission,
-      QueuedChangeReason.tooLarge => l10n.syncQueueReasonTooLarge,
-      QueuedChangeReason.dependencyFailed => l10n.syncQueueReasonDependency,
-      QueuedChangeReason.retriesExhausted => l10n.syncQueueReasonExpired,
-      QueuedChangeReason.unknown => l10n.syncQueueReasonUnknown,
-    };
+    change.isCommentGroup
+    ? l10n.syncQueueReasonCommentFailed
+    : switch (change.reason) {
+        QueuedChangeReason.notFound => l10n.syncQueueReasonNotFound,
+        QueuedChangeReason.permissionDenied => l10n.syncQueueReasonPermission,
+        QueuedChangeReason.tooLarge => l10n.syncQueueReasonTooLarge,
+        QueuedChangeReason.dependencyFailed => l10n.syncQueueReasonDependency,
+        QueuedChangeReason.retriesExhausted => l10n.syncQueueReasonExpired,
+        QueuedChangeReason.unknown => l10n.syncQueueReasonUnknown,
+      };
 
 /// When [change] is sent again after a failed attempt, as #synkko writes it
 /// ("nästa försök om 8 s"), or null when no retry time lies ahead. Rounded

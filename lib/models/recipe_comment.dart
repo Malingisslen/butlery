@@ -55,6 +55,9 @@ class RecipeComment {
   /// guardrail).
   static const int maxImageUrls = 3;
 
+  /// The longest comment text, which the server rules enforce too.
+  static const int maxContentLength = 2000;
+
   RecipeComment({
     required this.id,
     required this.recipeId,

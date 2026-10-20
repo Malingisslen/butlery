@@ -25918,6 +25918,30 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Matlagningsfoton (1 bild)} other{Matlagningsfoton ({count} bilder)}}'**
   String syncQueueCookSnap(int count);
 
+  /// BUT-2294: a queued comment with photos in Väntar på synk. The comment is one item whatever the number of photos.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar på {recipe}'**
+  String syncQueueComment(String recipe);
+
+  /// BUT-2294: a queued comment whose recipe's name the device did not keep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get syncQueueCommentUnnamed;
+
+  /// BUT-2294: why a queued comment waits for the user, whatever the cause. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren kunde inte skickas.'**
+  String get syncQueueReasonCommentFailed;
+
+  /// BUT-2294: snackbar after a comment with photos was queued on the device because there is no connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren skickas när du är online igen.'**
+  String get commentQueuedOffline;
+
   /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
   ///
   /// In sv, this message translates to:

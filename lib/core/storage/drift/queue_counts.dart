@@ -47,10 +47,11 @@ class QueueCounts {
 }
 
 /// The SQL behind `AppDatabase.watchQueueCounts`. The unit is an item as the
-/// user sees it: a sync row, an upload row, or a cook snap's whole album (its
-/// rows share the snap's id as `entity_id`). An album with any photo
-/// permanently failed is one `needs_user`, never one of each, because the
-/// queue marks the photo that failed and leaves its siblings alone.
+/// user sees it: a sync row, an upload row, or a cook snap's or comment's whole
+/// group of photos (its rows share the snap's or comment's id as `entity_id`).
+/// A group with any photo permanently failed is one `needs_user`, never one of
+/// each, because the queue marks the photo that failed and leaves its siblings
+/// alone. The group types are SyncQueueEntityType.grouped (a test pins them).
 const String queueCountsSql = """
 WITH upload_items AS (
   SELECT MAX(permanently_failed) AS failed
@@ -61,8 +62,8 @@ WITH upload_items AS (
       OR (permanently_failed = 1
           AND status NOT IN ('completed', 'cancelled')))
   GROUP BY CASE
-    WHEN entity_type = 'cook_snap' AND entity_id IS NOT NULL
-      THEN 'g:' || entity_id
+    WHEN entity_type IN ('cook_snap', 'comment') AND entity_id IS NOT NULL
+      THEN 'g:' || entity_type || '/' || entity_id
     ELSE 'r:' || id
   END
 )

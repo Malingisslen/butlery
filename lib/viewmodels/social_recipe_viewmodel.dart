@@ -96,6 +96,18 @@ class SocialRecipeViewModel extends ChangeNotifier {
     await _commentsManager.postComment(recipeId, imageUrls: imageUrls);
   }
 
+  Future<void> queueCommentOffline(
+    String recipeId, {
+    required String recipeName,
+    required List<String> imagePaths,
+  }) async {
+    await _commentsManager.queueCommentOffline(
+      recipeId,
+      recipeName: recipeName,
+      imagePaths: imagePaths,
+    );
+  }
+
   void setReplyTo(String commentId) {
     _commentsManager.setReplyTo(commentId);
   }

@@ -272,6 +272,11 @@ class OfflineUserStorage {
     }
   }
 
+  /// Whether [userId] has a queued group of [entityType] still on its way
+  /// to the server.
+  Future<bool> hasQueuedGroup(String userId, String entityType) =>
+      _uploadQueueDao.hasLiveGroup(userId, entityType);
+
   /// Whether the device holds a write of the recipe the server has not
   /// confirmed.
   Future<bool> hasUnsentWrite(String recipeId, String userId) =>
