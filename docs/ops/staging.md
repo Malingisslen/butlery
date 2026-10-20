@@ -89,9 +89,15 @@ These are set by hand, so they drift unless someone checks them:
 - Remote Config: the same parameters as production.
 - `system/config`: kill switches on, LLM caps deliberately low
   (`globalHourlyLimit`, `globalDailyLimit`, `guestDailyImportLimit`).
+- Storage: the default bucket `butlery-app-staging.firebasestorage.app` in europe-west1,
+  with object versioning and the 30-day noncurrent-version rule
+  (`infrastructure/storage/setup-storage-versioning.sh`).
 - Secret Manager: `MFA_RECOVERY_PEPPER` (its own random value),
   `IDENTITY_TOOLKIT_API_KEY` (staging's own server key), `FEEDBACK_EMAIL_API_KEY` set to
   a placeholder so no feedback mail is sent.
+- GitHub environment secrets `FEEDBACK_EMAIL_TO` and `FEEDBACK_EMAIL_FROM`: the deploy
+  writes them to `functions/.env.butlery-app-staging` before every functions deploy and
+  refuses to deploy functions if either is empty.
 - The Android API key is restricted to `se.butlery.app.staging` and its SHA-1s.
 - The browser key is restricted to referrers; the functions use a separate
   Identity Toolkit server key, held in `IDENTITY_TOOLKIT_API_KEY`, as in production.
@@ -126,7 +132,7 @@ where a real person's data is processed:
   while testing.
 - **Recipients/processors:** Google Cloud/Firebase and Vertex AI (EU), as in production.
   Feedback mail is not sent.
-- **Location:** Firestore in europe-west3; Storage in US-CENTRAL1, mirroring production.
+- **Location:** Firestore in europe-west3; Storage in europe-west1.
 - **Erasure:** the same TTLs and account-deletion cascade as production run in staging.
 
 ## Tearing it down
