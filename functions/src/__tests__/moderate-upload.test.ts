@@ -32,14 +32,21 @@ if (!admin.apps.length) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { detectFormat, resolveUploaderUid } = require("../storage/moderate-upload");
+const {
+  detectFormat,
+  resolveUploaderUid,
+  handleFinalizedObject,
+} = require("../storage/moderate-upload");
+import { hashUid } from "../shared/hash-uid";
+import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
+import { accountExists } from "../social/sync-block-mirror";
 
 interface TestCase {
   name: string;
-  fn: () => void;
+  fn: () => void | Promise<void>;
 }
 const tests: TestCase[] = [];
-function test(name: string, fn: () => void): void {
+function test(name: string, fn: () => void | Promise<void>): void {
   tests.push({ name, fn });
 }
 
@@ -141,13 +148,242 @@ test("BUT-780: empty / unknown path returns null", () => {
   assertEqual(resolveUploaderUid({}, "models/some-model.bin"), null);
 });
 
-function run(): void {
+// ----- BUT-2294: uploads that land after the owner's erasure -----
+
+const JPEG_HEAD = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+const ERASED = "erasedUid123";
+const LIVE = "liveUid456";
+
+interface Harness {
+  deletes: string[];
+  downloads: string[];
+  audits: Record<string, unknown>[];
+  ownerLookups: string[];
+  markerReads: string[];
+  deps: Record<string, unknown>;
+}
+
+/**
+ * A fake that records every verb the handler can call and THROWS on anything
+ * else, so a collection the handler was not expected to touch fails loudly.
+ */
+function harness(opts: {
+  gone?: string[];
+  authError?: string;
+  markers?: Record<string, Record<string, unknown>>;
+  markerError?: string;
+}): Harness {
+  const h: Harness = {
+    deletes: [],
+    downloads: [],
+    audits: [],
+    ownerLookups: [],
+    markerReads: [],
+    deps: {},
+  };
+  const db = {
+    collection(name: string) {
+      if (name === "erasures_in_progress") {
+        return {
+          doc(id: string) {
+            return {
+              async get() {
+                h.markerReads.push(id);
+                if (opts.markerError) {
+                  throw Object.assign(new Error("marker"), {
+                    code: opts.markerError,
+                  });
+                }
+                const data = opts.markers?.[id];
+                return {
+                  exists: data !== undefined,
+                  get: (f: string) => data?.[f],
+                };
+              },
+            };
+          },
+        };
+      }
+      if (name === "audit_logs") {
+        return {
+          async add(row: Record<string, unknown>) {
+            h.audits.push(row);
+          },
+        };
+      }
+      throw new Error(`unexpected collection ${name}`);
+    },
+  };
+  const bucket = {
+    file(name: string) {
+      return {
+        async delete() {
+          h.deletes.push(name);
+        },
+        async download() {
+          h.downloads.push(name);
+          return [JPEG_HEAD];
+        },
+      };
+    },
+  };
+  h.deps = {
+    db,
+    bucket: () => bucket,
+    ownerExists: async (uid: string) => {
+      h.ownerLookups.push(uid);
+      if (opts.authError) {
+        throw Object.assign(new Error("auth"), { code: opts.authError });
+      }
+      return !(opts.gone ?? []).includes(uid);
+    },
+  };
+  return h;
+}
+
+function jpegAt(name: string, metadata?: Record<string, string>) {
+  return { bucket: "b", name, contentType: "image/jpeg", metadata };
+}
+
+test("BUT-2294: object of an account Auth no longer has is deleted, audited, never downloaded", async () => {
+  const h = harness({ gone: [ERASED] });
+  const name = `users/${ERASED}/cook_snaps/s1/p.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "deletes");
+  assertEqual(h.downloads.length, 0, "a doomed object must not be read");
+  assertEqual(h.audits.length, 1, "audit rows");
+  const row = h.audits[0];
+  assertEqual(row.operation, "storage_upload_after_erasure", "operation");
+  assertEqual(row.granted, false, "granted");
+  assertEqual(row.userIdHash, hashUid(ERASED), "userIdHash");
+  assertEqual("userId" in row, false, "no raw userId field");
+  assertEqual(
+    JSON.stringify(row).includes(ERASED),
+    false,
+    "the erased uid appears nowhere in the row"
+  );
+  assertEqual(
+    row.resourceId,
+    `users/${hashUid(ERASED)}/cook_snaps/s1/p.jpg`,
+    "resourceId"
+  );
+  const meta = row.metadata as Record<string, unknown>;
+  assertEqual(meta.reason, "erased", "reason");
+  assertEqual(meta.deleted, true, "deleted");
+});
+
+test("BUT-2294: live account with no marker keeps the object and moderation runs", async () => {
+  const h = harness({});
+  const name = `users/${LIVE}/recipes/r1.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(JSON.stringify(h.downloads), JSON.stringify([name]), "downloads");
+  assertEqual(JSON.stringify(h.ownerLookups), JSON.stringify([LIVE]), "lookups");
+  assertEqual(JSON.stringify(h.markerReads), JSON.stringify([LIVE]), "marker reads");
+});
+
+test("BUT-2294: a counting erasure marker deletes even while Auth still has the account", async () => {
+  const h = harness({ markers: { [LIVE]: { startedAtMs: Date.now() - 1000 } } });
+  const name = `users/${LIVE}/recipes/r1.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "deletes");
+  assertEqual(h.downloads.length, 0, "downloads");
+  assertEqual(h.audits.length, 1, "audit rows");
+  assertEqual(
+    (h.audits[0].metadata as Record<string, unknown>).reason,
+    "erasure_underway",
+    "reason"
+  );
+});
+
+test("BUT-2294: a marker past its window does not delete a live account's object", async () => {
+  const h = harness({
+    markers: {
+      [LIVE]: { startedAtMs: Date.now() - ERASURE_MARKER_WINDOW_MS - 60_000 },
+    },
+  });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r1.jpg`), h.deps);
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(h.downloads.length, 1, "downloads");
+});
+
+test("BUT-2294: an Auth error other than not-found fails OPEN (object kept)", async () => {
+  const h = harness({ authError: "auth/internal-error" });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r1.jpg`), h.deps);
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(h.downloads.length, 1, "moderation still runs");
+});
+
+test("BUT-2294: a marker read error fails OPEN for a live account", async () => {
+  const h = harness({ markerError: "unavailable" });
+  await handleFinalizedObject(jpegAt(`users/${LIVE}/recipes/r1.jpg`), h.deps);
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(h.audits.length, 0, "audit rows");
+  assertEqual(h.downloads.length, 1, "moderation still runs");
+});
+
+test("BUT-2294: Auth not-found still deletes when the marker read fails", async () => {
+  const h = harness({ gone: [ERASED], markerError: "unavailable" });
+  const name = `users/${ERASED}/recipes/r1.jpg`;
+  await handleFinalizedObject(jpegAt(name), h.deps);
+  assertEqual(JSON.stringify(h.deletes), JSON.stringify([name]), "deletes");
+});
+
+test("BUT-2294: the PATH owner decides, never metadata.uploadedBy", async () => {
+  const h = harness({ gone: [ERASED] });
+  const name = `users/${LIVE}/recipes/r1.jpg`;
+  await handleFinalizedObject(jpegAt(name, { uploadedBy: ERASED }), h.deps);
+  assertEqual(h.deletes.length, 0, "deletes");
+  assertEqual(JSON.stringify(h.ownerLookups), JSON.stringify([LIVE]), "lookups");
+});
+
+test("BUT-2294: objects outside users/ trigger no owner lookup", async () => {
+  for (const name of [
+    `feedback/${ERASED}/shot.png`,
+    "shared/recipes/r1/cover.jpg",
+    `models/${ERASED}/m.bin`,
+  ]) {
+    const h = harness({ gone: [ERASED] });
+    await handleFinalizedObject(
+      { ...jpegAt(name), metadata: { uploadedBy: ERASED } },
+      h.deps
+    );
+    assertEqual(h.ownerLookups.length, 0, `auth lookups for ${name}`);
+    assertEqual(h.markerReads.length, 0, `marker reads for ${name}`);
+    assertEqual(h.deletes.length, 0, `deletes for ${name}`);
+  }
+});
+
+test("BUT-2294: through accountExists, auth/user-not-found deletes and auth/internal-error keeps", async () => {
+  const notFound = harness({});
+  notFound.deps.ownerExists = (uid: string) =>
+    accountExists(uid, async () => {
+      throw Object.assign(new Error("gone"), { code: "auth/user-not-found" });
+    });
+  const name = `users/${ERASED}/recipes/r1.jpg`;
+  await handleFinalizedObject(jpegAt(name), notFound.deps);
+  assertEqual(JSON.stringify(notFound.deletes), JSON.stringify([name]), "not-found deletes");
+
+  const transient = harness({});
+  transient.deps.ownerExists = (uid: string) =>
+    accountExists(uid, async () => {
+      throw Object.assign(new Error("flaky"), { code: "auth/internal-error" });
+    });
+  await handleFinalizedObject(jpegAt(name), transient.deps);
+  assertEqual(transient.deletes.length, 0, "internal-error keeps");
+  assertEqual(transient.downloads.length, 1, "internal-error still moderates");
+});
+
+async function run(): Promise<void> {
   console.log("BUT-780: moderateUpload unit tests\n");
   console.log("===================================\n");
   let failed = 0;
   for (const t of tests) {
     try {
-      t.fn();
+      await t.fn();
       console.log(`  PASS  ${t.name}`);
     } catch (err) {
       failed++;
@@ -162,4 +398,7 @@ function run(): void {
   if (failed > 0) process.exit(1);
 }
 
-run();
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

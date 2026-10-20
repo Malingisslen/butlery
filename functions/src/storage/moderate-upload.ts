@@ -28,6 +28,7 @@ import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import type { Bucket } from "@google-cloud/storage";
+import { deleteIfOwnerErased } from "./erased-owner-upload";
 
 // First few bytes of supported formats. Source:
 // - JPEG:  FF D8 FF
@@ -144,7 +145,8 @@ interface RejectArgs {
 
 async function rejectAndAudit(
   args: RejectArgs,
-  bucketHandle: Bucket
+  bucketHandle: Bucket,
+  db: admin.firestore.Firestore
 ): Promise<void> {
   const file = bucketHandle.file(args.name);
   try {
@@ -170,7 +172,7 @@ async function rejectAndAudit(
     });
   }
 
-  await admin.firestore().collection("audit_logs").add({
+  await db.collection("audit_logs").add({
     userId: args.uploaderUid ?? "unknown",
     operation: "storage_upload_rejected",
     resourceType: "storage_object",
@@ -193,94 +195,136 @@ async function rejectAndAudit(
   });
 }
 
+/** What the handler reads and writes through, so the unit suite can fake it. */
+export interface ModerateUploadDeps {
+  db: admin.firestore.Firestore;
+  bucket: (name: string) => Bucket;
+  /** Seam: the unit suite has no Auth emulator. */
+  ownerExists?: (uid: string) => Promise<boolean>;
+}
+
+export async function handleFinalizedObject(
+  obj: StorageEvent["data"],
+  deps: ModerateUploadDeps
+): Promise<void> {
+  const name = obj.name;
+  if (!name) return; // pathologically empty event; nothing to act on.
+
+  // ML models bucket prefix is read-only and only written by ops tooling
+  // (signed-in admin context). Skip; nothing to validate at the byte level
+  // and downloading large model files just to no-op is wasteful.
+  if (name.startsWith("models/")) return;
+
+  const bucketName = obj.bucket;
+
+  // BUT-2294: an upload that lands after its owner's erasure is deleted
+  // before anything else runs — before the byte download, which would read
+  // a doomed object, and before `rejectAndAudit`, whose row would carry the
+  // erased uid. The owner comes from the PATH alone (no metadata), because
+  // `uploadedBy` is client-written.
+  const pathOwner = name.startsWith("users/")
+    ? resolveUploaderUid(undefined, name)
+    : null;
+  if (
+    pathOwner !== null &&
+    (await deleteIfOwnerErased(
+      { bucketName, name, uid: pathOwner },
+      {
+        db: deps.db,
+        bucket: deps.bucket(bucketName),
+        ownerExists: deps.ownerExists,
+      },
+    ))
+  ) {
+    return;
+  }
+
+  const contentType = obj.contentType;
+  const uploaderUid = resolveUploaderUid(obj.metadata, name);
+
+  const declared = contentTypeToFormat(contentType);
+  if (declared === null) {
+    // The Storage rule should have rejected this at write time. If we
+    // see it here, either the rule was bypassed (admin SDK upload) or
+    // the rule changed without the CF being updated. Reject in both
+    // cases — keep the two layers in agreement.
+    await rejectAndAudit(
+      {
+        bucket: bucketName,
+        name,
+        contentType,
+        uploaderUid,
+        reason: "unsupported_content_type",
+      },
+      deps.bucket(bucketName),
+      deps.db
+    );
+    return;
+  }
+
+  const bucket = deps.bucket(bucketName);
+  let head: Buffer;
+  try {
+    const [downloaded] = await bucket
+      .file(name)
+      .download({ start: 0, end: HEAD_BYTES - 1 });
+    head = downloaded;
+  } catch (err) {
+    logger.error("[moderateUpload] failed to read head bytes", {
+      bucket: bucketName,
+      name,
+      err,
+    });
+    // Fail open — don't punish the user for a transient Admin SDK glitch.
+    // The Storage rule already enforced the contentType allow-list at
+    // write time, so the worst case here is a missing CF audit row.
+    return;
+  }
+
+  const detected = detectFormat(head);
+  if (detected === null) {
+    await rejectAndAudit(
+      {
+        bucket: bucketName,
+        name,
+        contentType,
+        uploaderUid,
+        reason: "magic_byte_unrecognized",
+      },
+      bucket,
+      deps.db
+    );
+    return;
+  }
+
+  if (detected !== declared) {
+    await rejectAndAudit(
+      {
+        bucket: bucketName,
+        name,
+        contentType,
+        uploaderUid,
+        reason: `magic_byte_mismatch_declared_${declared}_actual_${detected}`,
+      },
+      bucket,
+      deps.db
+    );
+    return;
+  }
+
+  // Happy path — content type matches the bytes. No further action;
+  // SafeSearch (deferred) would slot in here when added.
+}
+
 export const moderateUpload = onObjectFinalized(
   {
     region: "europe-west1",
     memory: "256MiB",
     timeoutSeconds: 60,
   },
-  async (event: StorageEvent) => {
-    const obj = event.data;
-    const name = obj.name;
-    if (!name) return; // pathologically empty event; nothing to act on.
-
-    // ML models bucket prefix is read-only and only written by ops tooling
-    // (signed-in admin context). Skip; nothing to validate at the byte level
-    // and downloading large model files just to no-op is wasteful.
-    if (name.startsWith("models/")) return;
-
-    const bucketName = obj.bucket;
-    const contentType = obj.contentType;
-    const uploaderUid = resolveUploaderUid(obj.metadata, name);
-
-    const declared = contentTypeToFormat(contentType);
-    if (declared === null) {
-      // The Storage rule should have rejected this at write time. If we
-      // see it here, either the rule was bypassed (admin SDK upload) or
-      // the rule changed without the CF being updated. Reject in both
-      // cases — keep the two layers in agreement.
-      await rejectAndAudit(
-        {
-          bucket: bucketName,
-          name,
-          contentType,
-          uploaderUid,
-          reason: "unsupported_content_type",
-        },
-        admin.storage().bucket(bucketName)
-      );
-      return;
-    }
-
-    const bucket = admin.storage().bucket(bucketName);
-    let head: Buffer;
-    try {
-      const [downloaded] = await bucket
-        .file(name)
-        .download({ start: 0, end: HEAD_BYTES - 1 });
-      head = downloaded;
-    } catch (err) {
-      logger.error("[moderateUpload] failed to read head bytes", {
-        bucket: bucketName,
-        name,
-        err,
-      });
-      // Fail open — don't punish the user for a transient Admin SDK glitch.
-      // The Storage rule already enforced the contentType allow-list at
-      // write time, so the worst case here is a missing CF audit row.
-      return;
-    }
-
-    const detected = detectFormat(head);
-    if (detected === null) {
-      await rejectAndAudit(
-        {
-          bucket: bucketName,
-          name,
-          contentType,
-          uploaderUid,
-          reason: "magic_byte_unrecognized",
-        },
-        bucket
-      );
-      return;
-    }
-
-    if (detected !== declared) {
-      await rejectAndAudit(
-        {
-          bucket: bucketName,
-          name,
-          contentType,
-          uploaderUid,
-          reason: `magic_byte_mismatch_declared_${declared}_actual_${detected}`,
-        },
-        bucket
-      );
-      return;
-    }
-
-    // Happy path — content type matches the bytes. No further action;
-    // SafeSearch (deferred) would slot in here when added.
-  }
+  async (event: StorageEvent) =>
+    handleFinalizedObject(event.data, {
+      db: admin.firestore(),
+      bucket: (name) => admin.storage().bucket(name),
+    })
 );

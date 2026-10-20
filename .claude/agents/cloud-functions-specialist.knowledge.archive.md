@@ -21227,3 +21227,18 @@ Production fixes were made by the main session; this run only changed tests (no 
   reddens only when the range is deleted (probe verified).
 - `assertGuardTriggersCoverItsDartInputs` accepts lib/ paths only; a docs input needs its own
   trigger check (erasure-export-coverage.test.ts checks ACCEPTED_DEVIATIONS.md directly).
+
+
+### 2026-10-20 — BUT-2294 PR C: post-erasure upload backstop in moderateUpload [storage, gdpr]
+- Built `functions/src/storage/erased-owner-upload.ts` and called it from a new injectable
+  `handleFinalizedObject` in `moderate-upload.ts`. Path-uid only; Auth via `accountExists`
+  (sync-block-mirror) and marker via `erasureUnderway` (hold-shares-on-block), read in
+  parallel with `Promise.allSettled`.
+- Audit uid choice: `userIdHash: hashUid(uid)`, no `userId`, `resourceId` with the uid
+  segment hashed. Precedent: `writeComplianceAudit` (userIdHash in audit_logs). Cascade rows
+  keep raw uids under ADR-0014, but those are written DURING erasure and are a decided call.
+- Verified: Firestore Node SDK `collection().doc("..")`, `"."`, `"__x__"`, 2000-char ids do
+  NOT throw synchronously (struck a comment that claimed one would).
+- Probes: 12 mutants, all red after two initially non-compiling mutants (TS2339 narrowing,
+  TS6133 unused import) were replaced with compiling ones.
+- Gap: the `deps.ownerExists ?? accountExists` default is unpinned (no Auth emulator).
