@@ -14,6 +14,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
+import 'package:butlery/core/utils/jpeg_exif_stripper.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 /// BUT-1027: extracted from `FirebaseStorageRepository.uploadImageData` so
@@ -304,8 +305,10 @@ class FirebaseStorageRepository extends BaseStorageRepository
             path,
           );
 
+          // Last stop for every image upload: callers such as the heirloom
+          // scans send camera bytes that never pass through compression.
           final uploadTask = storageRef.putData(
-            imageData,
+            stripJpegMetadata(imageData),
             SettableMetadata(
               contentType: contentType,
               cacheControl: cacheControl,
@@ -521,7 +524,9 @@ class FirebaseStorageRepository extends BaseStorageRepository
         AppLogger.info(
           '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
         );
-        return bytes;
+        // Skipping the re-encode must not skip the Exif strip, or the GPS of
+        // every small photo would be uploaded.
+        return stripJpegMetadata(bytes);
       }
 
       AppLogger.info(
@@ -563,8 +568,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
       return compressed;
     } catch (e) {
-      AppLogger.error('Image compression failed, using original: $e');
-      return bytes;
+      AppLogger.error('Image compression failed, stripping original: $e');
+      return stripJpegMetadata(bytes);
     }
   }
 

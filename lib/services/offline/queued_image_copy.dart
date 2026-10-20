@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
 
+import 'package:butlery/core/utils/jpeg_exif_stripper.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Writes a copy of [source] at [destinationBase] plus an extension and
@@ -18,8 +19,8 @@ typedef QueuedImageCopier =
     Future<File> Function(File source, String destinationBase);
 
 /// A JPEG copy without EXIF (location included), turned upright. A picture the
-/// platform cannot re-encode is copied as it is: losing the user's photo to
-/// protect its metadata would be the worse outcome.
+/// platform cannot re-encode is still copied: losing the user's photo would be
+/// the worse outcome.
 Future<File> copyWithoutLocation(File source, String destinationBase) async {
   try {
     final stripped = await FlutterImageCompress.compressAndGetFile(
@@ -34,5 +35,6 @@ Future<File> copyWithoutLocation(File source, String destinationBase) async {
   } catch (e) {
     AppLogger.warning('Bilden kunde inte göras om utan platsdata: $e');
   }
-  return source.copy('$destinationBase${p.extension(source.path)}');
+  final fallback = File('$destinationBase${p.extension(source.path)}');
+  return fallback.writeAsBytes(stripJpegMetadata(await source.readAsBytes()));
 }

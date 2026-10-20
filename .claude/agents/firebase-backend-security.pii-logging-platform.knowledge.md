@@ -111,4 +111,12 @@
   exactly ONE low-level write method so one validation gate covers every entry point. A
   negative-permission storage test asserting only `isNull` proves nothing — assert the side
   effect directly (bytes did NOT land at the foreign path), paired with a positive control.
+- A metadata STRIPPER (Exif/GPS) is graded like a sanitizer exemption: by what it KEEPS. A
+  marker DENYLIST (APP1/APP3/APP13) passes every APPn it does not name — APP11 JUMBF/C2PA,
+  APP12, COM — so ask for a keep-ALLOWLIST (JFIF, ICC, Adobe, a rebuilt Orientation-only
+  Exif). Walk every branch that copies UNREAD bytes (a segment whose length runs past EOF,
+  the scan tail with no EOI) — "cut at the break" is false on any branch that passes the
+  rest on verbatim. A "never uploaded with GPS" comment is a universal over FORMATS: HEIC,
+  PNG `eXIf` and WebP `EXIF` pass a JPEG-only stripper untouched, so grade it per format
+  and per upload sink (`putData` callers outside the one funnel, OCR uploads).
 
