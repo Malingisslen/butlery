@@ -7,6 +7,8 @@ import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/sync_queue_reader.dart'
+    show readQueuedChanges, retryQueuedChange;
 import 'package:butlery/services/offline/upload_completion.dart';
 import 'package:butlery/services/offline/unsent_image_discard.dart';
 import 'package:butlery/services/offline/upload_queue_processor.dart';
@@ -70,6 +72,7 @@ void main() {
     String? url,
     String? entityId,
     String entityType = 'recipe',
+    bool failedForGood = true,
   }) async {
     final file = File('${root.path}/$id.jpg')..writeAsBytesSync([1]);
     await withClock(
@@ -85,7 +88,7 @@ void main() {
         metadata: '{"caption":"hemligt"}',
       ),
     );
-    if (failedAt != null) {
+    if (failedAt != null && failedForGood) {
       await db.uploadQueueDao.markPermanentlyFailed(id, reason: 'x');
       await (db.update(
         db.uploadQueueEntries,
@@ -161,6 +164,92 @@ void main() {
 
       expect(await row('p1'), isNull);
       expect(await row('p2'), isNull);
+    });
+
+    test('discards a photo queued 31 days ago that never failed for good '
+        '(an offline phone), with its device copy', () async {
+      final copy = await queue(
+        'never-tried',
+        'u1',
+        failedAt: old,
+        failedForGood: false,
+      );
+
+      expect(await sweepExpiredUnsent(db, t0), 1);
+
+      expect(await row('never-tried'), isNull);
+      expect(File(copy).existsSync(), isFalse);
+    });
+
+    test('a photo queued 31 days ago whose first failed try was 29 days ago '
+        'starts over from that try and stays', () async {
+      final copy = await queue(
+        'retried',
+        'u1',
+        failedAt: old,
+        failedForGood: false,
+      );
+      await (db.update(db.uploadQueueEntries)
+            ..where((e) => e.id.equals('retried')))
+          .write(UploadQueueEntriesCompanion(firstFailedAt: Value(recent)));
+
+      expect(await sweepExpiredUnsent(db, t0), 0);
+
+      expect((await row('retried'))!.status, isNot('cancelled'));
+      expect(File(copy).existsSync(), isTrue);
+    });
+
+    test(
+      'an album goes whole when one photo never failed and is old',
+      () async {
+        await queue(
+          'a1',
+          'u1',
+          failedAt: old,
+          failedForGood: false,
+          entityType: 'cook_snap',
+          entityId: 'snap',
+        );
+        await queue('a2', 'u1', entityType: 'cook_snap', entityId: 'snap');
+
+        await sweepExpiredUnsent(db, t0);
+
+        expect(await row('a1'), isNull);
+        expect(await row('a2'), isNull);
+      },
+    );
+
+    test('"Försök igen" on a photo queued 40 days ago starts its 30 days '
+        'over, for a single photo and for an album', () async {
+      final single = await queue('single', 'u1', failedAt: old);
+      await queue(
+        'al1',
+        'u1',
+        failedAt: old,
+        entityType: 'cook_snap',
+        entityId: 'snap',
+      );
+      await (db.update(db.uploadQueueEntries)).write(
+        UploadQueueEntriesCompanion(
+          queuedAt: Value(t0.subtract(const Duration(days: 40))),
+        ),
+      );
+
+      await withClock(Clock.fixed(t0), () async {
+        for (final change in await readQueuedChanges(db, 'u1')) {
+          await retryQueuedChange(db, change, userId: 'u1');
+        }
+      });
+
+      expect(await sweepExpiredUnsent(db, t0), 0);
+      expect((await row('single'))!.status, isNot('cancelled'));
+      expect((await row('al1'))!.status, isNot('cancelled'));
+      expect(File(single).existsSync(), isTrue);
+      expect(
+        await sweepExpiredUnsent(db, t0.add(const Duration(days: 31))),
+        2,
+        reason: 'the new 30 days do run out',
+      );
     });
 
     test('never throws, even when the database is unusable', () async {

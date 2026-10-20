@@ -6567,3 +6567,20 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
 - The app stores the download URL (token) of a comment image on the comment and renders that
   URL, which does not go through Storage rules. Anyone who holds the URL can still read the
   image, as with cook-snap photos.
+
+## BUT-2294 — every unsent photo expires after 30 days, not only the ones that failed for good (2026-10-20)
+
+- SUPERSEDES: "A photo that failed for good ("Väntar på dig") is thrown away automatically 30
+  days after it first failed". **Malin decided 2026-10-20 ("Ja, alla"):** a photo that is not
+  completed or cancelled is thrown away 30 days after `firstFailedAt`, or after `queuedAt` for a
+  row that never failed, whether or not it ever failed for good.
+- A row still retrying when the 30 days pass is marked failed for good (`expired`) and then goes
+  by the same path as before: an album whole, device copies deleted, an image already in Storage
+  taken back by the next pass of that user.
+- The "Slängs automatiskt om N dagar" notice still shows only on "Väntar på dig" (a photo that
+  failed for good), because only those rows carry `unsentSince`. A photo still waiting for a
+  connection is thrown away at 30 days without the notice. The privacy policy (sv and en)
+  now says "en bild som inte har skickats" instead of "som inte gick att skicka".
+- The 30 days restart at "Försök igen" and "Försök mindre" through `retriedAt` (schema 7), apart
+  from `firstFailedAt`, which a retry and an upload both clear to start the 24 h limit over. The
+  count is `retriedAt ?? firstFailedAt ?? queuedAt`.

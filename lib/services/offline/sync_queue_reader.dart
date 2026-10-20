@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
@@ -113,7 +114,11 @@ Future<List<QueuedChange>> readQueuedChanges(
         entityType: row.entityType,
         entityId: row.entityId,
         unsentSince: row.permanentlyFailed
-            ? unsentImageSince(row.firstFailedAt, row.queuedAt)
+            ? unsentImageSince(
+                row.firstFailedAt,
+                row.queuedAt,
+                retriedAt: row.retriedAt,
+              )
             : null,
       ),
     for (final group in cookSnapGroups(uploadRows).values)
@@ -148,14 +153,15 @@ Future<void> retryQueuedChange(
       await (db.update(
         db.uploadQueueEntries,
       )..where((e) => e.id.equals(change.id))).write(
-        const UploadQueueEntriesCompanion(
-          permanentlyFailed: Value(false),
-          status: Value('pending'),
-          retryCount: Value(0),
-          lastError: Value(null),
-          nextAttemptAt: Value(null),
-          // The 30 days an unsent photo waits start over with the retry.
-          firstFailedAt: Value(null),
+        UploadQueueEntriesCompanion(
+          permanentlyFailed: const Value(false),
+          status: const Value('pending'),
+          retryCount: const Value(0),
+          lastError: const Value(null),
+          nextAttemptAt: const Value(null),
+          // A new 24 h limit, and the 30 days an unsent photo waits start over.
+          firstFailedAt: const Value(null),
+          retriedAt: Value(clock.now()),
         ),
       );
   }
@@ -385,6 +391,7 @@ Future<void> retrySmallerQueuedChange(
       lastError: const Value(null),
       nextAttemptAt: const Value(null),
       firstFailedAt: const Value(null),
+      retriedAt: Value(clock.now()),
     ),
   );
   // BUT-2295: the queue now points at the smaller copy.

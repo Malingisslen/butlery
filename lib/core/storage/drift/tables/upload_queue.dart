@@ -95,6 +95,13 @@ class UploadQueueEntries extends Table {
   /// Download URL of its thumbnail, when the upload made one.
   TextColumn get uploadedThumbnailUrl => text().nullable()();
 
+  // ── Schema 7: where the 30 days of an unsent photo restart (BUT-2294).
+
+  /// When the user last chose "Försök igen" or "Försök mindre" on it, or null
+  /// if never. Apart from [firstFailedAt], which a retry and an upload both
+  /// clear to start the 24 h limit over.
+  DateTimeColumn get retriedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

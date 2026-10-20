@@ -6,8 +6,6 @@
 // was switched away from.
 library;
 
-import 'package:drift/drift.dart';
-
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
@@ -16,40 +14,48 @@ import 'package:butlery/services/offline/sync_queue_reader.dart'
     show discardQueuedChange, readQueuedChanges;
 import 'package:butlery/services/offline/unsent_image_expiry.dart';
 
-/// The rows that failed for good and have waited out the whole period, for
-/// [userId] or, when it is null, for every user.
+/// The unsent rows that have waited out the whole period, whether or not they
+/// ever failed for good (Malin 2026-10-20), for [userId] or, when it is null,
+/// for every user.
 Future<List<UploadQueueEntry>> expiredUnsentRows(
   AppDatabase db,
   DateTime now, {
   String? userId,
 }) async {
   final query = db.select(db.uploadQueueEntries)
-    ..where(
-      (e) =>
-          e.permanentlyFailed.equals(true) &
-          e.status.isNotIn(const ['completed', 'cancelled']),
-    );
+    ..where((e) => e.status.isNotIn(const ['completed', 'cancelled']));
   if (userId != null) query.where((e) => e.userId.equals(userId));
-  final failed = await query.get();
+  final unsent = await query.get();
   return [
-    for (final row in failed)
+    for (final row in unsent)
       if (unsentImageExpired(
-        unsentImageSince(row.firstFailedAt, row.queuedAt),
+        unsentImageSince(
+          row.firstFailedAt,
+          row.queuedAt,
+          retriedAt: row.retriedAt,
+        ),
         now,
       ))
         row,
   ];
 }
 
-/// Discards what [userId] has waiting for the user for longer than the
-/// period, by the path of the user's "Släng"; a cook-snap album goes whole.
-/// Returns how many items went.
+/// Discards what [userId] has waiting for longer than the period, by the path
+/// of the user's "Släng"; a cook-snap album goes whole. A row that was still
+/// retrying is first marked failed for good, which is what puts it on that
+/// path. Returns how many items went.
 Future<int> discardExpiredUnsent(
   AppDatabase db,
   String userId,
   DateTime now,
 ) async {
-  if ((await expiredUnsentRows(db, now, userId: userId)).isEmpty) return 0;
+  final expired = await expiredUnsentRows(db, now, userId: userId);
+  if (expired.isEmpty) return 0;
+  for (final row in expired) {
+    if (!row.permanentlyFailed) {
+      await db.uploadQueueDao.markPermanentlyFailed(row.id, reason: 'expired');
+    }
+  }
   var discarded = 0;
   for (final change in await readQueuedChanges(db, userId)) {
     final since = change.unsentSince;

@@ -130,6 +130,18 @@
   save denied. Before calling a granted `logPermissionCheck` after such a write an orphan
   trail row, check that it passes `auditRepository:`. Without it the row only reaches the
   device log.
+- An expiry clock anchored on `a ?? b` (`firstFailedAt ?? queuedAt`) is only "restarted" by a
+  writer that SETS `a`; every writer that NULLS it (a user retry, a `markUploaded` reset)
+  silently re-anchors on the older `b`. A state filter on the expiry query (`permanentlyFailed`)
+  can be what hid that — widening the query exposes every nulling writer, and a user's own
+  "retry" past day 30 from `b` then deletes the row at the next pass, before it is sent. Grep
+  every writer of the anchor field for `Value(null)` whenever the expiry query loses a filter,
+  and drive retry-then-expire in a test. Patching only the retry writers to set `a = now` is
+  not enough when `a` has a SECOND job: `firstFailedAt` is also the 24 h retry-window anchor
+  and is nulled again by `markUploaded`, so the patch both re-opens the hole (an album member
+  that uploads, then waits for a sibling, re-anchors on `queuedAt`) and stamps a retry window
+  that can already be over at the first attempt. One column, one meaning: give the expiry its
+  own never-nulled anchor.
 - Per-item analytics loops over a REPLACEMENT set double-count on regeneration — log once
   with a count. A consent check with no in-flight dedupe means N fire-and-forget events on a
   cold cache issue N concurrent reads — wrap the whole emit in one `unawaited(...)`.

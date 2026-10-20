@@ -62,8 +62,10 @@ class AppDatabase extends _$AppDatabase {
   /// 5: the same two columns on the upload queue (BUT-2162).
   /// 6: the upload step's result on the upload queue, and the `uploaded`
   /// status (BUT-2294).
+  /// 7: when an unsent photo was last retried by the user, so its 30 days can
+  /// start over (BUT-2294).
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -84,6 +86,7 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) await _migrateSyncQueueToV4(m);
           if (from < 5) await _migrateUploadQueueToV5(m);
           if (from < 6) await _migrateUploadQueueToV6(m);
+          if (from < 7) await _migrateUploadQueueToV7(m);
         }
       },
       beforeOpen: (details) async {
@@ -133,6 +136,8 @@ class AppDatabase extends _$AppDatabase {
           // Schema 6: the table is rebuilt in its current shape.
           uploadQueueEntries.uploadedUrl,
           uploadQueueEntries.uploadedThumbnailUrl,
+          // Schema 7: the table is rebuilt in its current shape.
+          uploadQueueEntries.retriedAt,
         ],
       ),
     );
@@ -163,6 +168,12 @@ class AppDatabase extends _$AppDatabase {
       uploadQueueEntries,
       uploadQueueEntries.uploadedThumbnailUrl,
     );
+  }
+
+  /// Schema 6 → 7: no row has been retried by the user yet, so every row's 30
+  /// days count from where they did before.
+  Future<void> _migrateUploadQueueToV7(Migrator m) async {
+    await m.addColumn(uploadQueueEntries, uploadQueueEntries.retriedAt);
   }
 
   /// A random UUID v4 per row, in SQL, so migrated opIds have the same
