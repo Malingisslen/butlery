@@ -49,7 +49,7 @@ Det här är **bara en plan** (BUT-451). Ingen appkod, inga regler, inga Firebas
 
 ⑥ **Region och spegling.** Staging speglar prod: Firestore europe-west3, compute europe-west1, samma regler/index/TTL, **alla 17 schemajobb** (paritet för raderingskaskad och gallring; ~17 kr/mån, uppskattning enligt E). **Ingen** PITR, **inga** backuper.
 
-⑦ **Kostnadstak** *[panel: FinOps, Security]*. Budgetlarm vid 50/100/200 % av 300 kr (larmet stoppar inget — det sägs rakt ut), LLM-tak i stagings `system/config` **och** kontroll i koden att callables faktiskt vägrar när taket är nått (bevis F6), Vertex-kvot per projekt, API-nyckel begränsad till paket `se.butlery.app.staging` + SHA, Artifact Registry-städpolicy (behåll 2 versioner), tear-down-regel: > 100 kr/mån två månader i rad → skala ner eller radera.
+⑦ **Kostnadstak** *[panel: FinOps, Security]*. Budgetlarm vid 50/100 % av 50 kr (Malin 2026-10-20) (larmet stoppar inget — det sägs rakt ut), LLM-tak i stagings `system/config` **och** kontroll i koden att callables faktiskt vägrar när taket är nått (bevis F6), Vertex-kvot per projekt, API-nyckel begränsad till paket `se.butlery.app.staging` + SHA, Artifact Registry-städpolicy (behåll 2 versioner), tear-down-regel: > 50 kr/mån två månader i rad → skala ner eller radera.
 
 ⑧ **Malins konto i staging — Beslutat (Malin 2026-10-20): riktiga Google-kontot.** Konsekvens: staging håller en verklig persons uppgifter och skrivs in i Art. 30-registret med gallring (samma TTL som prod) och radering (kaskaden körs i staging, bevis F11). Analytics/Crashlytics stängs av i staging-flavorn så inga enhets-id:n hamnar utanför policyns räckvidd. Övriga konton är syntetiska `test+N@butlery.se`.
 
