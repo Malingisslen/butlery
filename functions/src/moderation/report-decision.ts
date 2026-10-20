@@ -19,6 +19,15 @@ import * as admin from "firebase-admin";
 import { isClosedReportStatus, REPORTS, reportCountsAgainstOwner } from "./report-status";
 import { resolveMotivation } from "./motivation";
 import { Notice, ownerNotice, reporterNotice, stageNotice } from "./moderation-notices";
+import {
+  applyStrikeFollowUp,
+  nextHistory,
+  readStrikeFollowUp,
+  revisionOf,
+  roundOf,
+  stageModerationAudit,
+  strikes,
+} from "./decision-revision";
 
 export const MODERATION_DECISIONS = "moderation_decisions";
 
@@ -65,6 +74,12 @@ export function closesReport(before: Data | undefined, after: Data | undefined):
   return isClosedReportStatus(after.status) && !isClosedReportStatus(before.status);
 }
 
+/** The decision a stored record holds; a malformed one reads as no action. */
+function recordedDecision(record: Data | undefined): Decision {
+  const value = record?.decision;
+  return (MODERATOR_ACTIONS as readonly unknown[]).includes(value) ? (value as Decision) : "no_action";
+}
+
 export function decisionFrom(report: Data): Decision {
   const action = report.moderatorAction;
   return (MODERATOR_ACTIONS as readonly unknown[]).includes(action)
@@ -90,17 +105,23 @@ export interface DecisionResult {
 }
 
 /** Fields the close carries for this function and that it takes off the report. */
-const CLOSE_STAMPS = ["moderatorAction", "motivation"];
+const CLOSE_STAMPS = ["moderatorAction", "motivation", "reopenedDecision"];
 
 /**
- * Writes the record for [reportId] once, and takes `moderatorAction` and
- * `motivation` off the report in the same transaction: a closed report has no
- * TTL and names both people, so leaving them there would keep the decision
+ * Writes the record for [reportId] once per round, and takes `moderatorAction`
+ * and `motivation` off the report in the same transaction: a closed report has
+ * no TTL and names both people, so leaving them there would keep the decision
  * indefinitely beside them.
  *
- * The decision is read from the event's copy of the report, not the stored
- * one, so a redelivery after the fields are gone still records what the close
- * saw. A redelivery that finds the row leaves it: the first close decides.
+ * The decision and the round are read from the event's copy of the report, not
+ * the stored one, so a redelivery after the fields are gone still records what
+ * the close saw. A redelivery that finds the round already recorded leaves the
+ * record, and takes the stamps off only while the stored report is still that
+ * closed round: after a reopen they are the stamps the reopen put back.
+ *
+ * A later round (BUT-1528, `decision-revision.ts`) that keeps the decision
+ * only notes when it was confirmed; one that changes it moves the old one into
+ * `history`, tells both people and makes the strike follow the new decision.
  *
  * The people told are read from the STORED report: an erasure between the
  * close and this run has nulled or deleted it, and a notice must not put an
@@ -114,35 +135,83 @@ export async function recordDecision(
   const reason = report.reason;
   const contentType = report.contentType;
   const decision = decisionFrom(report);
+  const round = roundOf(report);
   const isPerson = isPersonAuth(authType);
+  const moderatorId = isPerson && typeof authId === "string" && authId.length > 0 ? authId : null;
   const decisionRef = db.collection(MODERATION_DECISIONS).doc(reportId);
   const reportRef = db.collection(REPORTS).doc(reportId);
 
   return db.runTransaction(async (tx) => {
     const [existing, stored] = await Promise.all([tx.get(decisionRef), tx.get(reportRef)]);
-    const stamps = CLOSE_STAMPS.filter((key) => stored.exists && stored.get(key) !== undefined);
+    const storedData = stored.data();
+    const sameClosedRound =
+      stored.exists && isClosedReportStatus(storedData?.status) && roundOf(storedData) === round;
+    const stamps = sameClosedRound
+      ? CLOSE_STAMPS.filter((key) => stored.get(key) !== undefined)
+      : [];
+    const record = existing.data();
+    const done = existing.exists && revisionOf(record) >= round;
+
+    const previous = done || !existing.exists ? null : recordedDecision(record);
+    const changed = previous !== null && previous !== decision;
+    // Every read happens before the first write.
+    const strike =
+      done || (previous !== null && !changed)
+        ? null
+        : await readStrikeFollowUp(db, tx, reportId, storedData, previous, decision, decidedAt);
+
     if (stamps.length > 0) {
       tx.update(
         reportRef,
         Object.fromEntries(stamps.map((key) => [key, admin.firestore.FieldValue.delete()])),
       );
     }
-    if (existing.exists) return { outcome: "already_recorded", notices: [] };
+    if (done) return { outcome: "already_recorded", notices: [] };
 
-    tx.create(decisionRef, {
+    const decidedAtTs = admin.firestore.Timestamp.fromDate(decidedAt);
+    const fields = {
       decision,
       rule: typeof reason === "string" && RULES.includes(reason) ? reason : "other",
       motivation: resolveMotivation(decision, reason, report.motivation),
       contentType:
         typeof contentType === "string" && CONTENT_TYPES.includes(contentType) ? contentType : null,
-      decidedAt: admin.firestore.Timestamp.fromDate(decidedAt),
-      moderatorId: isPerson && typeof authId === "string" && authId.length > 0 ? authId : null,
+      decidedAt: decidedAtTs,
+      moderatorId,
+      revision: round,
       expireAt: admin.firestore.Timestamp.fromDate(
         new Date(decidedAt.getTime() + DECISION_RETENTION_DAYS * 24 * 60 * 60 * 1000),
       ),
+    };
+
+    let notices: Notice[] = [];
+    if (previous === null) {
+      tx.set(decisionRef, fields);
+      notices = noticesFor(reportId, decision, reason, storedData);
+    } else if (changed) {
+      tx.set(decisionRef, {
+        ...fields,
+        history: nextHistory(record ?? {}),
+        revisedAt: decidedAtTs,
+      });
+      notices = revisedNoticesFor(reportId, round, previous, decision, reason, storedData);
+    } else {
+      // Same decision: the appeal window and the retention stay where the
+      // decision the people were told about put them.
+      tx.update(decisionRef, { revision: round, reconfirmedAt: decidedAtTs });
+    }
+    const effects = applyStrikeFollowUp(tx, strike);
+    stageModerationAudit(db, tx, {
+      actorUid: moderatorId,
+      operation:
+        previous === null
+          ? "moderation_decision_recorded"
+          : changed
+            ? "moderation_decision_changed"
+            : "moderation_decision_reconfirmed",
+      reportId,
+      metadata: { from: previous, to: decision, revision: round, ...effects },
     });
 
-    const notices = noticesFor(reportId, decision, reason, stored.data());
     for (const notice of notices) stageNotice(db, tx, notice, decidedAt);
     return { outcome: "recorded", notices };
   });
@@ -172,6 +241,36 @@ function noticesFor(
     ownerId.length > 0
   ) {
     notices.push(ownerNotice(reportId, ownerId));
+  }
+  return notices;
+}
+
+/**
+ * A changed decision tells the reporter, and the owner whenever either
+ * decision touched their content: lifting a restriction is news to them too.
+ * A misattribution case never tells the owner (ADR-0029).
+ */
+function revisedNoticesFor(
+  reportId: string,
+  round: number,
+  previous: Decision,
+  decision: Decision,
+  reason: unknown,
+  stored: Data | undefined,
+): Notice[] {
+  const notices: Notice[] = [];
+  const reporterId = stored?.reporterId;
+  if (typeof reporterId === "string" && reporterId.length > 0) {
+    notices.push(reporterNotice(reportId, reporterId, round));
+  }
+  const ownerId = stored?.contentOwnerId;
+  if (
+    (strikes(previous) || strikes(decision)) &&
+    reportCountsAgainstOwner(reason) &&
+    typeof ownerId === "string" &&
+    ownerId.length > 0
+  ) {
+    notices.push(ownerNotice(reportId, ownerId, round));
   }
   return notices;
 }

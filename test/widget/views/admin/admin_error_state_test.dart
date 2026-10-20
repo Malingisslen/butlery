@@ -57,7 +57,7 @@ void main() {
       when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
       when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
       when(
-        () => reports.getReportEvidence(any()),
+        () => reports.getReportEvidence(any(), round: any(named: 'round')),
       ).thenAnswer((_) async => (evidence: null));
       GetIt.instance.registerSingleton<ReportService>(reports);
       final appeals = _MockAppealsService();

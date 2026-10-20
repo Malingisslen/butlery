@@ -16897,5 +16897,219 @@
   "personalTagCouldNotMove": "Vi kunde inte flytta taggen.",
   "@personalTagCouldNotMove": {
     "description": "Spår D: failure when moving a tag to a group fails."
+  },
+  "moderatorTabClosed": "Stängda",
+  "@moderatorTabClosed": {
+    "description": "BUT-1528: third moderator tab, decided reports."
+  },
+  "loadingClosedReports": "Hämtar stängda anmälningar …",
+  "@loadingClosedReports": {
+    "description": "BUT-1528: loading text of the Stängda tab."
+  },
+  "moderatorClosedLoadFailed": "Kunde inte hämta stängda anmälningar",
+  "@moderatorClosedLoadFailed": {
+    "description": "BUT-1528: error state of the Stängda tab."
+  },
+  "moderatorClosedEmpty": "Inga stängda anmälningar än.",
+  "@moderatorClosedEmpty": {
+    "description": "BUT-1528: empty state of the Stängda tab."
+  },
+  "moderatorClosedThisWeek": "Den här veckan",
+  "@moderatorClosedThisWeek": {
+    "description": "BUT-1528: group heading, decided in the last 7 days."
+  },
+  "moderatorClosedEarlier": "Tidigare",
+  "@moderatorClosedEarlier": {
+    "description": "BUT-1528: group heading, decided more than 7 days ago."
+  },
+  "moderatorClosedShowMore": "Visa fler",
+  "@moderatorClosedShowMore": {
+    "description": "BUT-1528: loads the next page of closed reports."
+  },
+  "moderatorClosedMoreFailed": "Kunde inte hämta fler anmälningar.",
+  "@moderatorClosedMoreFailed": {
+    "description": "BUT-1528: failure snackbar, what happened."
+  },
+  "moderatorClosedListUnchanged": "Listan du ser är oförändrad.",
+  "@moderatorClosedListUnchanged": {
+    "description": "BUT-1528: failure snackbar, what is kept."
+  },
+  "moderatorDecisionContentRemoved": "Innehållet borttaget",
+  "@moderatorDecisionContentRemoved": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorDecisionProfileHidden": "Profilen dold",
+  "@moderatorDecisionProfileHidden": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorDecisionNoAction": "Ingen åtgärd",
+  "@moderatorDecisionNoAction": {
+    "description": "BUT-1528: a moderator's decision, short form."
+  },
+  "moderatorByYou": "Du",
+  "@moderatorByYou": {
+    "description": "BUT-1528: the signed-in moderator made the decision."
+  },
+  "moderatorByOther": "Annan moderator",
+  "@moderatorByOther": {
+    "description": "BUT-1528: another moderator made the decision."
+  },
+  "moderatorByAuto": "Automatiskt",
+  "@moderatorByAuto": {
+    "description": "BUT-1528: the decision was made automatically."
+  },
+  "moderatorPillAppealed": "Överklagad",
+  "@moderatorPillAppealed": {
+    "description": "BUT-1528: pill on a closed report that has an appeal."
+  },
+  "decisionStatusRevised": "Omprövat",
+  "@decisionStatusRevised": {
+    "description": "BUT-1528: pill on a decision that was changed or reconfirmed on review."
+  },
+  "moderatorClosedSheetTitle": "Beslut",
+  "@moderatorClosedSheetTitle": {
+    "description": "BUT-1528: title of the closed report sheet."
+  },
+  "moderatorClosedRowDecision": "Beslut",
+  "@moderatorClosedRowDecision": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedRowRule": "Regel",
+  "@moderatorClosedRowRule": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedRowAbout": "Gäller",
+  "@moderatorClosedRowAbout": {
+    "description": "BUT-1528: sheet row label, the content type."
+  },
+  "moderatorClosedRowDecided": "Beslutat",
+  "@moderatorClosedRowDecided": {
+    "description": "BUT-1528: sheet row label, date and time."
+  },
+  "moderatorClosedRowModerator": "Moderator",
+  "@moderatorClosedRowModerator": {
+    "description": "BUT-1528: sheet row label."
+  },
+  "moderatorClosedHistoryTitle": "Tidigare beslut",
+  "@moderatorClosedHistoryTitle": {
+    "description": "BUT-1528: sheet section with the history."
+  },
+  "moderatorClosedNote": "Ingen text från anmälan sparas efter beslutet. Öppnar du ärendet igen läggs det i kön, och beslutet står kvar tills du fattar ett nytt.",
+  "@moderatorClosedNote": {
+    "description": "BUT-1528: short note in the closed report sheet."
+  },
+  "moderatorClosedReopen": "Öppna igen",
+  "@moderatorClosedReopen": {
+    "description": "BUT-1528: reopen button and confirm button."
+  },
+  "moderatorClosedRemovedBand": "Borttaget innehåll kan inte återställas. Ändrar du beslutet tas varningen bort och personen får besked.",
+  "@moderatorClosedRemovedBand": {
+    "description": "BUT-1528: band in the sheet of a content_removed decision."
+  },
+  "moderatorReopenBlockAppealed": "Beslutet har överklagats. Omprövningen sker genom överklagan, så ärendet kan inte öppnas igen.",
+  "@moderatorReopenBlockAppealed": {
+    "description": "BUT-1528: reopenBlock appealed."
+  },
+  "moderatorReopenBlockGone": "Anmälan finns inte längre, så ärendet kan inte öppnas igen.",
+  "@moderatorReopenBlockGone": {
+    "description": "BUT-1528: reopenBlock report_gone."
+  },
+  "moderatorReopenBlockNotClosed": "Ärendet ligger redan i kön.",
+  "@moderatorReopenBlockNotClosed": {
+    "description": "BUT-1528: reopenBlock not_closed."
+  },
+  "moderatorReopenBlockReporterErased": "Den som anmälde har raderat sitt konto, så ärendet kan inte öppnas igen.",
+  "@moderatorReopenBlockReporterErased": {
+    "description": "BUT-1528: reopenBlock reporter_erased."
+  },
+  "moderatorReopenBlockOwnerErased": "Personen anmälan gäller har raderat sitt konto, så det finns ingen att fatta ett nytt beslut om.",
+  "@moderatorReopenBlockOwnerErased": {
+    "description": "BUT-1528: reopenBlock owner_erased."
+  },
+  "moderatorReopenBlockNoDecision": "Beslutet är inte sparat än, så ärendet kan inte öppnas igen.",
+  "@moderatorReopenBlockNoDecision": {
+    "description": "BUT-1528: reopenBlock no_decision."
+  },
+  "moderatorReopenConfirmTitle": "Öppna ärendet igen?",
+  "@moderatorReopenConfirmTitle": {
+    "description": "BUT-1528: confirm dialog title."
+  },
+  "moderatorReopenConfirmBody": "Det läggs först i Rapporter. Inget ändras och ingen får besked förrän du fattar ett nytt beslut.",
+  "@moderatorReopenConfirmBody": {
+    "description": "BUT-1528: confirm dialog body."
+  },
+  "moderatorReopened": "Ärendet ligger nu i Rapporter.",
+  "@moderatorReopened": {
+    "description": "BUT-1528: success snackbar after reopening."
+  },
+  "moderatorReopenFailed": "Ärendet kunde inte öppnas igen.",
+  "@moderatorReopenFailed": {
+    "description": "BUT-1528: failure snackbar, what happened."
+  },
+  "moderatorReopenFailedKept": "Beslutet är oförändrat.",
+  "@moderatorReopenFailedKept": {
+    "description": "BUT-1528: failure snackbar, what is kept."
+  },
+  "moderatorReopenedPill": "Öppnad igen",
+  "@moderatorReopenedPill": {
+    "description": "BUT-1528: pill on a reopened report in the queue."
+  },
+  "moderatorPreviousDecision": "Tidigare beslut: {decision}",
+  "@moderatorPreviousDecision": {
+    "description": "BUT-1528: line on a reopened report.",
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorEvidenceNowHeadingAt": "Innehållet nu · {time}",
+  "@moderatorEvidenceNowHeadingAt": {
+    "description": "BUT-1528: evidence heading of a reopened report when the capture time is known.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorEvidenceNowHeading": "Innehållet nu",
+  "@moderatorEvidenceNowHeading": {
+    "description": "BUT-1528: evidence heading of a reopened report."
+  },
+  "moderatorKeepDecision": "Behåll beslutet",
+  "@moderatorKeepDecision": {
+    "description": "BUT-1528: closes a reopened report with its decision unchanged."
+  },
+  "moderatorChangeToNoAction": "Ändra till Ingen åtgärd",
+  "@moderatorChangeToNoAction": {
+    "description": "BUT-1528: changes the decision of a reopened report."
+  },
+  "moderatorChangeConfirmTitle": "Ändra till Ingen åtgärd?",
+  "@moderatorChangeConfirmTitle": {
+    "description": "BUT-1528: confirm dialog title."
+  },
+  "moderatorChangeConfirmBodyProfile": "Profilen visas igen, varningen tas bort och båda får besked om det nya beslutet.",
+  "@moderatorChangeConfirmBodyProfile": {
+    "description": "BUT-1528: confirm dialog body, hidden profile."
+  },
+  "moderatorChangeConfirmBodyRemoved": "Varningen tas bort och båda får besked om det nya beslutet. Innehållet går inte att återställa.",
+  "@moderatorChangeConfirmBodyRemoved": {
+    "description": "BUT-1528: confirm dialog body, removed content."
+  },
+  "moderatorChangeConfirm": "Ändra",
+  "@moderatorChangeConfirm": {
+    "description": "BUT-1528: confirm button of the change dialog."
+  },
+  "moderatorDecisionKept": "Beslutet står kvar. Ingen fick besked.",
+  "@moderatorDecisionKept": {
+    "description": "BUT-1528: snackbar after keeping the decision."
+  },
+  "moderatorDecisionChanged": "Beslutet ändrades. Varningen togs bort.",
+  "@moderatorDecisionChanged": {
+    "description": "BUT-1528: snackbar after changing the decision."
+  },
+  "decisionRevisedNoActionOutcome": "Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.",
+  "@decisionRevisedNoActionOutcome": {
+    "description": "BUT-1528: outcome of a revised no_action decision in the owner's list."
   }
 }

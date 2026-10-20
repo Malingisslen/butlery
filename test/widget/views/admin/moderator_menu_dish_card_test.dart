@@ -67,7 +67,9 @@ void main() {
     ContentReport r, {
     bool? claimed,
   }) async {
-    when(() => reports.getReportEvidence('r1')).thenAnswer(
+    when(
+      () => reports.getReportEvidence('r1', round: any(named: 'round')),
+    ).thenAnswer(
       (_) async => (
         evidence: ReportEvidence(
           reportId: 'r1',

@@ -90,6 +90,31 @@ void main() {
       );
     });
 
+    test('the server can say a row is not appealable', () {
+      final deadline = DateTime.utc(2027, 4, 10);
+      final refused = ModerationOutcome.fromMap({
+        'reportId': 'a',
+        'decision': 'no_action',
+        'appealDeadline': deadline.toIso8601String(),
+        'appealable': false,
+      })!;
+      expect(refused.canAppeal(DateTime.utc(2027, 1, 1)), isFalse);
+      expect(
+        refused
+            .withAppeal(
+              const ModerationAppeal(status: AppealStatus.open, text: 'x'),
+            )
+            .appealable,
+        isFalse,
+      );
+      final older = ModerationOutcome.fromMap({
+        'reportId': 'a',
+        'decision': 'no_action',
+        'appealDeadline': deadline.toIso8601String(),
+      })!;
+      expect(older.canAppeal(DateTime.utc(2027, 1, 1)), isTrue);
+    });
+
     test('rows without id or a known decision are dropped', () {
       expect(ModerationOutcome.fromMap({'decision': 'no_action'}), isNull);
       expect(

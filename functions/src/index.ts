@@ -335,6 +335,8 @@ export { getMyContentDecisions } from "./moderation/my-content-decisions";
 export { submitAppeal } from "./moderation/submit-appeal";
 export { listOpenAppeals } from "./moderation/list-open-appeals";
 export { answerAppeal } from "./moderation/answer-appeal";
+export { listClosedReports } from "./moderation/list-closed-reports";
+export { reopenReport } from "./moderation/reopen-report";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

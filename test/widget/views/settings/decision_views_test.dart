@@ -40,6 +40,8 @@ ModerationOutcome _outcome({
   ModerationAppeal? appeal,
   ContentType? type,
   String? reason,
+  bool revised = false,
+  bool appealable = true,
 }) => ModerationOutcome(
   reportId: 'r1',
   decision: decision,
@@ -49,6 +51,8 @@ ModerationOutcome _outcome({
   appeal: appeal,
   contentType: type,
   reason: reason,
+  revised: revised,
+  appealable: appealable,
 );
 
 ContentReport _report() => ContentReport(
@@ -188,6 +192,17 @@ void main() {
 
       expect(find.text(_sv.decisionAppealLink), findsNothing);
       expect(find.text(_sv.appealWindowClosedInfo), findsOneWidget);
+    });
+
+    testWidgets('a row the server will not admit offers no appeal and does '
+        'not claim the window closed', (tester) async {
+      await pumpApp(
+        tester,
+        detail(AppealRole.reporter, _outcome(appealable: false)),
+      );
+
+      expect(find.text(_sv.decisionAppealLink), findsNothing);
+      expect(find.text(_sv.appealWindowClosedInfo), findsNothing);
     });
 
     testWidgets('an open appeal shows the own text and "granskas igen"', (
@@ -360,6 +375,31 @@ void main() {
       final args = pushed.last.arguments! as DecisionDetailArgs;
       expect(args.role, AppealRole.owner);
       expect(args.reportId, 'r1');
+    });
+
+    testWidgets('a revised no-action row says the warning is gone and carries '
+        'the Omprövat pill', (tester) async {
+      when(() => outcomes.getMyContentDecisions()).thenAnswer(
+        (_) async => [
+          _outcome(
+            decision: ModeratorDecision.noAction,
+            type: ContentType.profile,
+            reason: 'harassment',
+            revised: true,
+          ),
+        ],
+      );
+      await pumpApp(tester, const MyContentDecisionsView());
+
+      expect(
+        find.text(_sv.decisionStatusRevised.toUpperCase()),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(_sv.decisionRevisedNoActionOutcome),
+        findsOneWidget,
+      );
+      expect(find.text(_sv.decisionStatusDecided.toUpperCase()), findsNothing);
     });
 
     testWidgets('the appeal link opens the form for the owner', (tester) async {

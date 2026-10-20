@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show FieldValue;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -214,9 +215,14 @@ class ReportService extends BaseService {
   /// Returns `(evidence: null)` for a report with NO document and `null`
   /// when the lookup itself FAILED, so the caller can retry instead of
   /// showing "no copy" for a blip. A failure is not cached.
-  Future<({ReportEvidence? evidence})?> getReportEvidence(String reportId) {
+  Future<({ReportEvidence? evidence})?> getReportEvidence(
+    String reportId, {
+    int round = 0,
+  }) {
     return getCachedOrExecute<({ReportEvidence? evidence})>(
-      'reportEvidence_$reportId',
+      // BUT-1528: a reopen deletes the copy and takes a new one, so each
+      // round is read on its own.
+      'reportEvidence_${reportId}_$round',
       () async {
         final snap = await _firestore
             .collection(FirestoreCollections.reportEvidence)
@@ -301,6 +307,28 @@ class ReportService extends BaseService {
             return true;
           },
           operationName: 'Close report',
+          requiresAuth: true,
+        ) ??
+        false;
+  }
+
+  /// Closes a reopened report with "Ingen åtgärd" (BUT-1528): the standing
+  /// `moderatorAction` is removed in the same update that closes it, so the
+  /// server records the changed decision and tells both people.
+  Future<bool> closeWithNoAction(ContentReport report) async {
+    if (report.status == ReportStatus.closed) return false;
+    return await executeServiceOperation(
+          () async {
+            await _firestore
+                .collection(FirestoreCollections.reports)
+                .doc(report.id)
+                .update({
+                  'moderatorAction': FieldValue.delete(),
+                  'status': ReportStatus.closed.wireName,
+                });
+            return true;
+          },
+          operationName: 'Close report with no action',
           requiresAuth: true,
         ) ??
         false;

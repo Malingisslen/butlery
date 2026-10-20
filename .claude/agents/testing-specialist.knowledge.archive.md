@@ -40303,3 +40303,6 @@ Writing common_dialog_actions_test / dialog_factory_test / destructive_confirmat
 - `StreamController.close()` on a controller that never got a listener never completes; do not await it in tearDown (30 s timeout).
 - `BaseViewModel.setError` is not cleared by `setLoading`/stream emission; only `clearError` does, so `retryLoad` asserting `hasError == false` right after the call pins the `clearError` line.
 - A callback seam reached through a route pop (`editRecipe` -> `onRecipeUpdated`) is pinned by letting the pushed route set service state and pop `true`, then reading the rendered ingredient text.
+
+## 2026-10-20 — BUT-1528 testing gate (evidence cache per round)
+- The VM keyed evidence `id#round`, but ReportService cached `reportEvidence_<id>` for a minute, so a reopen within a minute showed the old copy; the mocked-service VM test could not see it. Fixed with a round-aware service key; both seams pinned and probed red.

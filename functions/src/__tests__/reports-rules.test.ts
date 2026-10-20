@@ -19,7 +19,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp } from "firebase/firestore";
+import { deleteField, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -153,6 +153,77 @@ test(
         status: "new",
       })
     );
+  }
+);
+
+// BUT-1528: only the `reopenReport` function reopens a case and sets its round.
+test(
+  "admin client cannot reopen a closed report; closed -> closed still allowed",
+  async () => {
+    const reportId = "r-reopen-client";
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`reports/${reportId}`).set({
+        reporterId: USER_A_UID,
+        contentType: "message",
+        contentId: "m1",
+        reason: "harassment",
+        status: "closed",
+        createdAt: new Date(),
+      });
+    });
+    const ref = env.authenticatedContext(ADMIN_UID).firestore().doc(`reports/${reportId}`);
+    await assertSucceeds(ref.update({ status: "closed" }));
+    await assertFails(ref.update({ status: "closed", reviewRound: 1 }));
+    await assertFails(ref.update({ status: "actioned" }));
+  }
+);
+
+test(
+  "on a reopened report the admin client can close and drop the action, but not touch the round",
+  async () => {
+    const reportId = "r-reopened";
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`reports/${reportId}`).set({
+        reporterId: USER_A_UID,
+        contentType: "profile",
+        contentId: USER_B_UID,
+        reason: "harassment",
+        status: "actioned",
+        moderatorAction: "profile_hidden",
+        reviewRound: 1,
+        reopenedAt: new Date("2026-10-20T10:00:00Z"),
+        reopenedDecision: "profile_hidden",
+        createdAt: new Date(),
+      });
+    });
+    const ref = env.authenticatedContext(ADMIN_UID).firestore().doc(`reports/${reportId}`);
+    await assertFails(ref.update({ reviewRound: 0 }));
+    await assertFails(ref.update({ reopenedAt: new Date() }));
+    await assertFails(ref.update({ status: "closed", reviewRound: 2 }));
+    await assertFails(ref.update({ reviewRound: deleteField() }));
+    await assertFails(ref.update({ reopenedAt: deleteField() }));
+    await assertFails(ref.update({ reopenedDecision: "no_action" }));
+    await assertFails(ref.update({ reopenedDecision: deleteField() }));
+    await assertSucceeds(ref.update({ moderatorAction: deleteField() }));
+    await assertSucceeds(ref.update({ status: "closed" }));
+
+    // The app's "Ändra till Ingen åtgärd" close is one write.
+    const second = "r-reopened-2";
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`reports/${second}`).set({
+        reporterId: USER_A_UID,
+        contentType: "profile",
+        contentId: USER_B_UID,
+        reason: "harassment",
+        status: "actioned",
+        moderatorAction: "profile_hidden",
+        reviewRound: 1,
+        reopenedAt: new Date("2026-10-20T10:00:00Z"),
+        createdAt: new Date(),
+      });
+    });
+    const ref2 = env.authenticatedContext(ADMIN_UID).firestore().doc(`reports/${second}`);
+    await assertSucceeds(ref2.update({ moderatorAction: deleteField(), status: "closed" }));
   }
 );
 
@@ -722,6 +793,16 @@ test("BUT-2330: a report filed with a moderatorAction is refused, without it acc
   await assertFails(
     dishReport(db, "m-dish-forged", { moderatorAction: "profile_hidden" }).commit()
   );
+});
+
+test("BUT-1528: a report filed with a round or a reopen time is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  const recipe = { contentType: "recipe", reason: "abuse" };
+  await assertSucceeds(plainReport(db, "rr-ok", recipe).commit());
+  await assertFails(plainReport(db, "rr-round", { ...recipe, reviewRound: 1 }).commit());
+  await assertFails(plainReport(db, "rr-round0", { ...recipe, reviewRound: 0 }).commit());
+  await assertFails(plainReport(db, "rr-reopened", { ...recipe, reopenedAt: new Date() }).commit());
+  await assertFails(plainReport(db, "rr-decision", { ...recipe, reopenedDecision: "no_action" }).commit());
 });
 
 async function run(): Promise<void> {

@@ -15,7 +15,7 @@ import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS, reportCountsAgainstOwner } from "./report-status";
 import { DECISION_RETENTION_DAYS, MODERATION_DECISIONS } from "./report-decision";
-import { isDecision } from "./decision-outcome";
+import { appealAdmits, isDecision } from "./decision-outcome";
 import {
   APPEAL_TEXT_MAX,
   APPEAL_TEXT_MIN,
@@ -118,14 +118,11 @@ export async function runSubmitAppealWithDb(
 
     const decidedAt = decision.get("decidedAt");
     const kind = decision.get("decision");
-    // The owner list shows only decisions that did something; a dismissed
-    // report gives the owner nothing to appeal.
     if (
-      !isClosedReportStatus(data?.status) ||
       !decision.exists ||
       !(decidedAt instanceof admin.firestore.Timestamp) ||
       !isDecision(kind) ||
-      (role === "owner" && kind === "no_action")
+      !appealAdmits(role, isClosedReportStatus(data?.status), kind)
     ) {
       throw new HttpsError("not-found", "no_decision");
     }

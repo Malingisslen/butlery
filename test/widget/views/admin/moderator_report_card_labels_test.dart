@@ -72,7 +72,9 @@ void main() {
     when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
-    when(() => reports.getReportEvidence(any())).thenAnswer(
+    when(
+      () => reports.getReportEvidence(any(), round: any(named: 'round')),
+    ).thenAnswer(
       (_) async => (
         evidence: ReportEvidence(
           reportId: 'r1',

@@ -218,10 +218,9 @@ from `(err as {code?}).code`.
   `test:*`/suite in `package.json`, and `app-check-enforcement.test.ts`'s
   classification (`ADMIN_EXEMPT` only if the handler's FIRST statement
   checks the admin claim); a deletion is the same in reverse.
-- **A TTL field is INERT without a policy** — `fieldOverrides` `"ttl": true` +
-  `firebase deploy --only firestore:indexes`. `--force` deletes every live
-  override absent from the file; only `gcloud firestore fields ttls list`
-  proves ACTIVE vs DECLARED.
+- **CI's emulator is FRESH per job; a local one PERSISTS** — a paging/dedup
+  check over a suite's own seeds never sees page 2 in CI below `PAGE_SIZE`,
+  while old rows exercise it locally. Seed past it; assert `pages > 0`.
 - **`expireAt`/`expiresAt` is a retention CLAIM, not retention — sweep ALL at
   once.** The NAME must match every writer of the same target; the anchor must
   cover the whole collection GROUP; the TTL must exceed the READER's window.

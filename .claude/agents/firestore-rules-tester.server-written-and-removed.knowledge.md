@@ -79,3 +79,4 @@
   per doc — an admin-only collection-group grant also grants a direct `get()` on any
   single scoped doc; there is no way to express "query but not direct-get" in this shape.
 
+- A server-only field pinned by an update rule's `cannotModify` is server-only only once the CREATE rule refuses it too: on a collection without a create `hasOnly` (`reports`), each new server field joins the create deny (BUT-1528: `reviewRound`/`reopenedAt`).

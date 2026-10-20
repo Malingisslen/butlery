@@ -5,7 +5,7 @@
  */
 
 import * as admin from "firebase-admin";
-import { appealDeadlineFrom, AppealStatus } from "./appeals";
+import { appealDeadlineFrom, AppealRole, AppealStatus } from "./appeals";
 import { Decision, MODERATOR_ACTIONS } from "./report-decision";
 import { resolveMotivation } from "./motivation";
 
@@ -25,10 +25,24 @@ export interface Outcome {
   /** ISO-8601, `APPEAL_WINDOW_DAYS` after `decidedAt`. */
   appealDeadline: string;
   appeal: AppealView | null;
+  /** BUT-1528: the decision was changed when the case was reopened. */
+  revised: boolean;
+  appealable: boolean;
+}
+
+/**
+ * The part of `submitAppeal`'s admission the lists can know: a reopened case
+ * is decided again before anyone appeals, and a dismissed report gives the
+ * owner nothing to appeal.
+ */
+export function appealAdmits(role: AppealRole, closed: boolean, decision: Decision): boolean {
+  return closed && !(role === "owner" && decision === "no_action");
 }
 
 /** The decision fields an outcome is built from; read with this mask. */
-export const DECISION_FIELDS = ["decision", "motivation", "rule", "contentType", "decidedAt"];
+export const DECISION_FIELDS = [
+  "decision", "motivation", "rule", "contentType", "decidedAt", "revisedAt",
+];
 export const APPEAL_FIELDS = ["status", "text", "createdAt", "answeredAt"];
 
 export function isDecision(value: unknown): value is Decision {
@@ -65,6 +79,7 @@ function appealViewFrom(snap: admin.firestore.DocumentSnapshot | undefined): App
 export function outcomeFrom(
   decisionSnap: admin.firestore.DocumentSnapshot,
   appealSnap: admin.firestore.DocumentSnapshot | undefined,
+  admission: { role: AppealRole; closed: boolean },
 ): Outcome | null {
   if (!decisionSnap.exists) return null;
   const decision = decisionSnap.get("decision");
@@ -77,5 +92,7 @@ export function outcomeFrom(
     decidedAt: decidedAt.toDate().toISOString(),
     appealDeadline: appealDeadlineFrom(decidedAt.toDate()).toISOString(),
     appeal: appealViewFrom(appealSnap),
+    revised: decisionSnap.get("revisedAt") instanceof admin.firestore.Timestamp,
+    appealable: appealAdmits(admission.role, admission.closed, decision),
   };
 }

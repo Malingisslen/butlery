@@ -85,6 +85,15 @@ class ContentReport {
   /// removed by the server at close. Never written by the client.
   final ModeratorDecision? moderatorAction;
 
+  /// How many times the case has been reopened; 0 for one never reopened.
+  /// Written only by the `reopenReport` function.
+  final int reviewRound;
+  final DateTime? reopenedAt;
+
+  /// The decision a reopen put up for review, written by `reopenReport`.
+  /// Unlike [moderatorAction] a takedown in the new round does not change it.
+  final ModeratorDecision? reopenedDecision;
+
   const ContentReport({
     required this.id,
     required this.reporterId,
@@ -98,7 +107,12 @@ class ContentReport {
     this.guidelineVersion,
     this.moderatorAction,
     this.dishId,
+    this.reviewRound = 0,
+    this.reopenedAt,
+    this.reopenedDecision,
   });
+
+  bool get isReopened => reviewRound > 0;
 
   /// The reporter deleted their account while the case was open: the server
   /// nulls `reporterId` and keeps the report (Malin, 2026-09-18), which
@@ -145,6 +159,11 @@ class ContentReport {
         SerializationUtils.safeNullableString(data, 'moderatorAction'),
       ),
       dishId: SerializationUtils.safeNullableString(data, 'dishId'),
+      reviewRound: SerializationUtils.safeInt(data, 'reviewRound'),
+      reopenedAt: SerializationUtils.safeDateTime(data, 'reopenedAt'),
+      reopenedDecision: ModeratorDecision.fromWire(
+        SerializationUtils.safeNullableString(data, 'reopenedDecision'),
+      ),
     );
   }
 
@@ -196,6 +215,9 @@ class ContentReport {
       guidelineVersion: guidelineVersion,
       moderatorAction: moderatorAction,
       dishId: dishId,
+      reviewRound: reviewRound,
+      reopenedAt: reopenedAt,
+      reopenedDecision: reopenedDecision,
     );
   }
 }

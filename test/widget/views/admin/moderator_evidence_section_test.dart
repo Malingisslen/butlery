@@ -64,7 +64,7 @@ void main() {
     ({ReportEvidence? evidence})? result,
   ) async {
     when(
-      () => reports.getReportEvidence('r1'),
+      () => reports.getReportEvidence('r1', round: any(named: 'round')),
     ).thenAnswer((_) async => result);
     await tester.pumpWidget(
       createLocalizedTestApp(

@@ -298,6 +298,8 @@ class _AppealBlock extends StatelessWidget {
     AppLocalizations l10n,
     ModerationOutcome outcome,
   ) {
+    // A reopened case or a lifted decision has no window to close.
+    if (!outcome.appealable) return const SizedBox.shrink();
     if (!outcome.canAppeal(DateTime.now())) {
       return _note(context, ButleryIcons.info, l10n.appealWindowClosedInfo);
     }

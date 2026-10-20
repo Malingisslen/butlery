@@ -114,3 +114,6 @@
 - `handleFinalizedObject(obj, deps)` is the seam; `moderate-upload.integration.test.ts` runs
   without an Auth emulator, so its `users/` objects reach moderation through the fail-open
   branch, not the "live" one.
+- **A `retry: true` trigger that deletes on a status TRANSITION must re-read the stored
+  state before deleting once any path can reverse that transition** (`reopenReport` vs
+  the evidence lifecycle), or a late delivery destroys what the reversal re-created.

@@ -52,11 +52,19 @@ export function routeForRole(role: AppealRole): NotificationRoute {
   return role === "reporter" ? REPORTS_ROUTE : CONTENT_DECISIONS_ROUTE;
 }
 
-export function reporterNotice(reportId: string, userId: string): Notice {
+/**
+ * A round after the first (BUT-1528) gets its own row, so the first decision's
+ * row is not overwritten, and says that the decision changed.
+ */
+function roundSuffix(round: number): string {
+  return round > 0 ? `_r${round}` : "";
+}
+
+export function reporterNotice(reportId: string, userId: string, round = 0): Notice {
   return {
-    id: `moderation_${noticeKey(reportId)}_reporter`,
+    id: `moderation_${noticeKey(reportId)}_reporter${roundSuffix(round)}`,
     userId,
-    title: "Din anmälan är avgjord",
+    title: round > 0 ? "Beslutet om din anmälan har ändrats" : "Din anmälan är avgjord",
     body: "Tryck för att läsa beslutet.",
     route: REPORTS_ROUTE,
     targetId: reportId,
@@ -64,11 +72,11 @@ export function reporterNotice(reportId: string, userId: string): Notice {
   };
 }
 
-export function ownerNotice(reportId: string, userId: string): Notice {
+export function ownerNotice(reportId: string, userId: string, round = 0): Notice {
   return {
-    id: `moderation_${noticeKey(reportId)}_owner`,
+    id: `moderation_${noticeKey(reportId)}_owner${roundSuffix(round)}`,
     userId,
-    title: "Det finns ett beslut om ditt innehåll",
+    title: round > 0 ? "Ett beslut om ditt innehåll har ändrats" : "Det finns ett beslut om ditt innehåll",
     body: "Tryck för att läsa beslutet.",
     route: CONTENT_DECISIONS_ROUTE,
     targetId: reportId,

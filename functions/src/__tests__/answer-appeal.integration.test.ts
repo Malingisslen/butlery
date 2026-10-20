@@ -131,6 +131,14 @@ async function answering(): Promise<void> {
     JSON.stringify(row),
   );
   check("the answer returns that notice for the push", result.notices.length === 1);
+  const audit = (await db.collection("audit_logs").where("resourceId", "==", upheld.id).get()).docs;
+  check(
+    "the answer writes one audit row naming the moderator, never a party",
+    audit.map((d) => d.get("operation")).join() === "moderation_appeal_answered" &&
+      audit[0].get("userId") === ADMIN &&
+      !JSON.stringify(audit[0].data()).includes(upheld.owner) &&
+      !JSON.stringify(audit[0].data()).includes(upheld.reporter),
+  );
   check(
     "upholding touches no strike",
     (await get(`user_moderation/${upheld.owner}`))?.totalReports === 3 &&

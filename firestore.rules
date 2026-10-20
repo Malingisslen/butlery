@@ -4180,8 +4180,8 @@ service cloud.firestore {
             || request.resource.data.contentType == 'menu_dish')
         // BUT-2330: `moderatorAction` is stamped by a moderator's takedown,
         // so a reporter must not be able to file a report that already
-        // carries one.
-        && !('moderatorAction' in request.resource.data.keys())
+        // carries one. BUT-1528: the same for the reopen's round and time.
+        && !request.resource.data.keys().hasAny(['moderatorAction', 'reviewRound', 'reopenedAt', 'reopenedDecision'])
         && (
           request.resource.data.reason == 'misattribution'
           || !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
@@ -4191,8 +4191,11 @@ service cloud.firestore {
       // Admin-only, forward-only state machine:
       //   new -> in_review -> actioned -> closed
       // Reject backward transitions and mutations of immutable identity fields.
+      // BUT-1528: `reviewRound` and `reopenedAt` are written only by the
+      // `reopenReport` function.
       allow update: if isAdmin()
-        && cannotModify(['reporterId', 'contentType', 'contentId', 'dishId', 'createdAt'])
+        && cannotModify(['reporterId', 'contentType', 'contentId', 'dishId', 'createdAt',
+                          'reviewRound', 'reopenedAt', 'reopenedDecision'])
         && (
           (resource.data.status == 'new'
              && request.resource.data.status in ['new', 'in_review'])

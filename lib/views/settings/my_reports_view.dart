@@ -14,6 +14,7 @@ import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_list_scaffold.dart';
 import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_outcome_labels.dart';
+import 'package:butlery/widgets/social/revised_pill.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
 
 /// "Mina rapporter" — the user's submitted moderation reports and their
@@ -103,7 +104,10 @@ class _MyReportsContent extends StatelessWidget {
               if (open) l10n.appealUnderReview,
             ].join(' ')
           : null,
-      status: _badge(context, report, outcome),
+      status: withRevisedPill(
+        _badge(context, report, outcome),
+        revised: outcome?.revised ?? false,
+      ),
       onAppeal:
           outcome != null &&
               outcome.appeal == null &&

@@ -31371,6 +31371,312 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vi kunde inte flytta taggen.'**
   String get personalTagCouldNotMove;
+
+  /// BUT-1528: third moderator tab, decided reports.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stängda'**
+  String get moderatorTabClosed;
+
+  /// BUT-1528: loading text of the Stängda tab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar stängda anmälningar …'**
+  String get loadingClosedReports;
+
+  /// BUT-1528: error state of the Stängda tab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta stängda anmälningar'**
+  String get moderatorClosedLoadFailed;
+
+  /// BUT-1528: empty state of the Stängda tab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga stängda anmälningar än.'**
+  String get moderatorClosedEmpty;
+
+  /// BUT-1528: group heading, decided in the last 7 days.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här veckan'**
+  String get moderatorClosedThisWeek;
+
+  /// BUT-1528: group heading, decided more than 7 days ago.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidigare'**
+  String get moderatorClosedEarlier;
+
+  /// BUT-1528: loads the next page of closed reports.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa fler'**
+  String get moderatorClosedShowMore;
+
+  /// BUT-1528: failure snackbar, what happened.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta fler anmälningar.'**
+  String get moderatorClosedMoreFailed;
+
+  /// BUT-1528: failure snackbar, what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan du ser är oförändrad.'**
+  String get moderatorClosedListUnchanged;
+
+  /// BUT-1528: a moderator's decision, short form.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet borttaget'**
+  String get moderatorDecisionContentRemoved;
+
+  /// BUT-1528: a moderator's decision, short form.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen dold'**
+  String get moderatorDecisionProfileHidden;
+
+  /// BUT-1528: a moderator's decision, short form.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen åtgärd'**
+  String get moderatorDecisionNoAction;
+
+  /// BUT-1528: the signed-in moderator made the decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du'**
+  String get moderatorByYou;
+
+  /// BUT-1528: another moderator made the decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Annan moderator'**
+  String get moderatorByOther;
+
+  /// BUT-1528: the decision was made automatically.
+  ///
+  /// In sv, this message translates to:
+  /// **'Automatiskt'**
+  String get moderatorByAuto;
+
+  /// BUT-1528: pill on a closed report that has an appeal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagad'**
+  String get moderatorPillAppealed;
+
+  /// BUT-1528: pill on a decision that was changed or reconfirmed on review.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omprövat'**
+  String get decisionStatusRevised;
+
+  /// BUT-1528: title of the closed report sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut'**
+  String get moderatorClosedSheetTitle;
+
+  /// BUT-1528: sheet row label.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut'**
+  String get moderatorClosedRowDecision;
+
+  /// BUT-1528: sheet row label.
+  ///
+  /// In sv, this message translates to:
+  /// **'Regel'**
+  String get moderatorClosedRowRule;
+
+  /// BUT-1528: sheet row label, the content type.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäller'**
+  String get moderatorClosedRowAbout;
+
+  /// BUT-1528: sheet row label, date and time.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutat'**
+  String get moderatorClosedRowDecided;
+
+  /// BUT-1528: sheet row label.
+  ///
+  /// In sv, this message translates to:
+  /// **'Moderator'**
+  String get moderatorClosedRowModerator;
+
+  /// BUT-1528: sheet section with the history.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidigare beslut'**
+  String get moderatorClosedHistoryTitle;
+
+  /// BUT-1528: short note in the closed report sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen text från anmälan sparas efter beslutet. Öppnar du ärendet igen läggs det i kön, och beslutet står kvar tills du fattar ett nytt.'**
+  String get moderatorClosedNote;
+
+  /// BUT-1528: reopen button and confirm button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna igen'**
+  String get moderatorClosedReopen;
+
+  /// BUT-1528: band in the sheet of a content_removed decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttaget innehåll kan inte återställas. Ändrar du beslutet tas varningen bort och personen får besked.'**
+  String get moderatorClosedRemovedBand;
+
+  /// BUT-1528: reopenBlock appealed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet har överklagats. Omprövningen sker genom överklagan, så ärendet kan inte öppnas igen.'**
+  String get moderatorReopenBlockAppealed;
+
+  /// BUT-1528: reopenBlock report_gone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälan finns inte längre, så ärendet kan inte öppnas igen.'**
+  String get moderatorReopenBlockGone;
+
+  /// BUT-1528: reopenBlock not_closed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ärendet ligger redan i kön.'**
+  String get moderatorReopenBlockNotClosed;
+
+  /// BUT-1528: reopenBlock reporter_erased.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den som anmälde har raderat sitt konto, så ärendet kan inte öppnas igen.'**
+  String get moderatorReopenBlockReporterErased;
+
+  /// BUT-1528: reopenBlock owner_erased.
+  ///
+  /// In sv, this message translates to:
+  /// **'Personen anmälan gäller har raderat sitt konto, så det finns ingen att fatta ett nytt beslut om.'**
+  String get moderatorReopenBlockOwnerErased;
+
+  /// BUT-1528: reopenBlock no_decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet är inte sparat än, så ärendet kan inte öppnas igen.'**
+  String get moderatorReopenBlockNoDecision;
+
+  /// BUT-1528: confirm dialog title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna ärendet igen?'**
+  String get moderatorReopenConfirmTitle;
+
+  /// BUT-1528: confirm dialog body.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det läggs först i Rapporter. Inget ändras och ingen får besked förrän du fattar ett nytt beslut.'**
+  String get moderatorReopenConfirmBody;
+
+  /// BUT-1528: success snackbar after reopening.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ärendet ligger nu i Rapporter.'**
+  String get moderatorReopened;
+
+  /// BUT-1528: failure snackbar, what happened.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ärendet kunde inte öppnas igen.'**
+  String get moderatorReopenFailed;
+
+  /// BUT-1528: failure snackbar, what is kept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet är oförändrat.'**
+  String get moderatorReopenFailedKept;
+
+  /// BUT-1528: pill on a reopened report in the queue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppnad igen'**
+  String get moderatorReopenedPill;
+
+  /// BUT-1528: line on a reopened report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidigare beslut: {decision}'**
+  String moderatorPreviousDecision(String decision);
+
+  /// BUT-1528: evidence heading of a reopened report when the capture time is known.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet nu · {time}'**
+  String moderatorEvidenceNowHeadingAt(String time);
+
+  /// BUT-1528: evidence heading of a reopened report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet nu'**
+  String get moderatorEvidenceNowHeading;
+
+  /// BUT-1528: closes a reopened report with its decision unchanged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll beslutet'**
+  String get moderatorKeepDecision;
+
+  /// BUT-1528: changes the decision of a reopened report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra till Ingen åtgärd'**
+  String get moderatorChangeToNoAction;
+
+  /// BUT-1528: confirm dialog title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra till Ingen åtgärd?'**
+  String get moderatorChangeConfirmTitle;
+
+  /// BUT-1528: confirm dialog body, hidden profile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen visas igen, varningen tas bort och båda får besked om det nya beslutet.'**
+  String get moderatorChangeConfirmBodyProfile;
+
+  /// BUT-1528: confirm dialog body, removed content.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varningen tas bort och båda får besked om det nya beslutet. Innehållet går inte att återställa.'**
+  String get moderatorChangeConfirmBodyRemoved;
+
+  /// BUT-1528: confirm button of the change dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get moderatorChangeConfirm;
+
+  /// BUT-1528: snackbar after keeping the decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet står kvar. Ingen fick besked.'**
+  String get moderatorDecisionKept;
+
+  /// BUT-1528: snackbar after changing the decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet ändrades. Varningen togs bort.'**
+  String get moderatorDecisionChanged;
+
+  /// BUT-1528: outcome of a revised no_action decision in the owner's list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen åtgärd. Beslutet ändrades efter omprövning och varningen är borttagen.'**
+  String get decisionRevisedNoActionOutcome;
 }
 
 class _AppLocalizationsDelegate

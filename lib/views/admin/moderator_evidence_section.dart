@@ -11,7 +11,15 @@ import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 /// so no markdown and no link detection.
 class ModeratorEvidenceSection extends StatelessWidget {
   final ReportEvidenceState state;
-  const ModeratorEvidenceSection({required this.state, super.key});
+  const ModeratorEvidenceSection({
+    required this.state,
+    this.reopened = false,
+    super.key,
+  });
+
+  /// The copy was taken when the case was reopened, so it shows the content
+  /// as it is now rather than as it was when reported.
+  final bool reopened;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +35,19 @@ class ModeratorEvidenceSection extends StatelessWidget {
     }
 
     final capturedAt = evidence.capturedAt;
-    final heading = capturedAt == null
-        ? l10n.moderatorEvidenceHeading
-        : l10n.moderatorEvidenceHeadingAt(
-            ContextualTimeFormatter.dateTime(
-              capturedAt,
-              localeName: l10n.localeName,
-            ),
+    final time = capturedAt == null
+        ? null
+        : ContextualTimeFormatter.dateTime(
+            capturedAt,
+            localeName: l10n.localeName,
           );
+    final heading = reopened
+        ? (time == null
+              ? l10n.moderatorEvidenceNowHeading
+              : l10n.moderatorEvidenceNowHeadingAt(time))
+        : (time == null
+              ? l10n.moderatorEvidenceHeading
+              : l10n.moderatorEvidenceHeadingAt(time));
 
     final String? outcomeLine = switch (evidence.outcome) {
       EvidenceOutcome.captured => null,

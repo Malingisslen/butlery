@@ -32,6 +32,7 @@ import {
   stageNotice,
 } from "./moderation-notices";
 import { applyReversal, readReversal, ReversalEffects } from "./appeal-reversal";
+import { stageModerationAudit } from "./decision-revision";
 
 export const RATE_LIMIT_KEY = "answerAppeal";
 
@@ -137,6 +138,12 @@ export async function runAnswerAppealWithDb(
       status: outcome,
       answeredAt: admin.firestore.Timestamp.fromDate(now),
       answeredBy: adminUid,
+    });
+    stageModerationAudit(db, tx, {
+      actorUid: adminUid,
+      operation: "moderation_appeal_answered",
+      reportId,
+      metadata: { role, outcome, ...effects },
     });
     const notices = appellant ? [appealAnsweredNotice(appealId, reportId, role, appellant)] : [];
     for (const notice of notices) stageNotice(db, tx, notice, now);

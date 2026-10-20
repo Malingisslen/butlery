@@ -6299,3 +6299,6 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Probe (throwaway sed copy, env-less suite): field gate -> `request.auth.uid == voterId` reddened 54/56: the owner's filtered collection-group query and the voterId-missing-id-is-caller's case.
 - Runs: collection-group-wildcards 56/56, poll-votes 62/62.
 - Gotcha: a Bash heredoc appending this entry was refused by require-review-before-commit because the body named the git verb beside backticks; write the entry with Write and append the file.
+
+## 2026-10-20 — BUT-1528 rules gate (create path left open)
+- The update rule pinned `reviewRound`/`reopenedAt`, but `reports` create had no keys check beyond `moderatorAction`; both measured ALLOW on create. Fixed with `keys().hasAny([...])`; each key probed red on its own.

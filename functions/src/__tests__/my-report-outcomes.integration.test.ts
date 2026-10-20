@@ -125,7 +125,7 @@ async function main(): Promise<void> {
     outcomes.every(
       (o) =>
         Object.keys(o).sort().join(",") ===
-        "appeal,appealDeadline,decidedAt,decision,motivation,reportId",
+        "appeal,appealDeadline,appealable,decidedAt,decision,motivation,reportId,revised",
     ),
     JSON.stringify(outcomes[0]),
   );

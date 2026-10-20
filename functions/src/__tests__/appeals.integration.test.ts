@@ -276,7 +276,7 @@ async function ownerList(): Promise<void> {
   check(
     "a row carries the outcome plus contentType and reason",
     Object.keys(row ?? {}).sort().join(",") ===
-      "appeal,appealDeadline,contentType,decidedAt,decision,motivation,reason,reportId" &&
+      "appeal,appealDeadline,appealable,contentType,decidedAt,decision,motivation,reason,reportId,revised" &&
       row?.contentType === "recipe" && row?.reason === "spam",
     JSON.stringify(row),
   );

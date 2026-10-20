@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/decision_detail_args.dart';
 import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart';
@@ -13,6 +14,7 @@ import 'package:butlery/widgets/social/decision_labels.dart';
 import 'package:butlery/widgets/social/decision_list_scaffold.dart';
 import 'package:butlery/widgets/social/decision_row.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
+import 'package:butlery/widgets/social/revised_pill.dart';
 
 /// "Beslut om mitt innehåll" — decisions about the user's own content. The
 /// server never names the reporter, and the content itself is already gone
@@ -92,6 +94,8 @@ class _Content extends StatelessWidget {
     ];
     final appealed = decision.appeal;
     final open = appealed?.status == AppealStatus.open;
+    final revisedNoAction =
+        decision.revised && decision.decision == ModeratorDecision.noAction;
     return DecisionRow(
       key: ValueKey('decision-${decision.reportId}'),
       contentType: type,
@@ -100,25 +104,34 @@ class _Content extends StatelessWidget {
           : decisionSubject(l10n, type, owner: true),
       subtitle: lines.isEmpty ? null : lines.join(' · '),
       outcome: [
-        l10n.decisionOutcomeSentence(decisionHeadline(l10n, decision.decision)),
+        revisedNoAction
+            ? l10n.decisionRevisedNoActionOutcome
+            : l10n.decisionOutcomeSentence(
+                decisionHeadline(l10n, decision.decision),
+              ),
         if (open) l10n.appealUnderReview,
       ].join(' '),
       status: appealed == null
-          ? UnifiedBadge.status(
-              label: l10n.decisionStatusDecided,
-              icon: ButleryIcons.circleCheck,
-              tone: BadgeTone.neutral,
-            )
-          : open
-          ? UnifiedBadge.status(
-              label: l10n.decisionStatusAppealed,
-              icon: ButleryIcons.search,
-              tone: BadgeTone.warning,
-            )
-          : UnifiedBadge.status(
-              label: l10n.myReportsStatusClosed,
-              icon: ButleryIcons.circleCheck,
-              tone: BadgeTone.neutral,
+          ? decision.revised
+                ? const RevisedPill()
+                : UnifiedBadge.status(
+                    label: l10n.decisionStatusDecided,
+                    icon: ButleryIcons.circleCheck,
+                    tone: BadgeTone.neutral,
+                  )
+          : withRevisedPill(
+              open
+                  ? UnifiedBadge.status(
+                      label: l10n.decisionStatusAppealed,
+                      icon: ButleryIcons.search,
+                      tone: BadgeTone.warning,
+                    )
+                  : UnifiedBadge.status(
+                      label: l10n.myReportsStatusClosed,
+                      icon: ButleryIcons.circleCheck,
+                      tone: BadgeTone.neutral,
+                    ),
+              revised: decision.revised,
             ),
       onAppeal: appealed == null && decision.canAppeal(DateTime.now())
           ? () async {
