@@ -4732,3 +4732,9 @@ Date: 2026-10-20
 Trigger: BUT-2294 PR3. En ny testfil skrevs med `Write` på `test/unit/services/offline/clear_user_data_test.dart`, som redan fanns med tre BUT-2296-prov. Verktyget skrev över filen tyst, och tre granskare godkände commiten eftersom de såg den nya filen, inte vad som försvann.
 Rule: Kör `git ls-files <sökväg>` (eller `ls`) innan `Write` på en ny testfil, och läs `git show --stat` efter commiten: rader borttagna i en fil du tror är ny betyder att den fanns.
 Example: 2026-10-20 — återställd byte för byte i en egen incheckning, de nya proven flyttade till `queue_clear_race_test.dart`.
+
+### På webben tar en skärmstor tap-nod varje klick som saknar egen nod (2026-10-20)
+Date: 2026-10-20
+Trigger: BUT-2426. Villkorsrutan ignorerade klick i webbläsaren medan texten fungerade. Fyra rena provsidor (varje skärm för sig, olika bredd och pixeltäthet) visade inget fel; felet fanns först när jag körde den riktiga appen med `flutter run -d web-server` och drev den med Playwright.
+Rule: Ett fel som bara syns i appens skal kräver skalet. Kör riktiga appen, fråga webbläsaren `document.elementFromPoint` vid klickpunkten och lista alla `flt-semantics` med `pointer-events: all` som täcker den. Ett `GestureDetector` över hela appen utan `excludeFromSemantics: true` ger en skärmstor tap-nod som tar klick från varje kontroll som ritas utanför tillgänglighetsträdet.
+Example: 2026-10-20 — `SessionActivityDetector`; två prov rodnar när `excludeFromSemantics` tas bort.
