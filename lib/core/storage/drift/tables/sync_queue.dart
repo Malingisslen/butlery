@@ -85,4 +85,12 @@ abstract final class SyncQueueEntityType {
 
   /// A cook snap; the upload queue's `entityId` is the snap's id (BUT-2294).
   static const String cookSnap = 'cook_snap';
+
+  /// A comment with photos; the upload queue's `entityId` is the comment's id
+  /// (BUT-2294).
+  static const String comment = 'comment';
+
+  /// The types whose photos are rows of one group named after the thing they
+  /// belong to, created once every photo is in Storage.
+  static const Set<String> grouped = {cookSnap, comment};
 }

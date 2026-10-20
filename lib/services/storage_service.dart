@@ -322,6 +322,35 @@ class StorageService extends BaseService
     }
   }
 
+  /// The offline queue's comment photo: the same folder and checks as
+  /// [uploadCommentImage], named after the queue row so a repeat overwrites,
+  /// and no thumbnail (a comment shows the photo itself).
+  Future<String?> uploadQueuedCommentImage(
+    File imageFile,
+    String userId, {
+    required String objectId,
+  }) async {
+    try {
+      final offline = ServiceLocator.tryGet<OfflineService>();
+      if (offline != null && !offline.isOnline) {
+        throw const StorageUploadException(
+          'network-request-failed',
+          'No internet connection available',
+        );
+      }
+      return await _repository.uploadImage(
+        imageFile: imageFile,
+        userId: userId,
+        path: 'users/$userId/comment_images/$objectId.jpg',
+      );
+    } on StorageUploadException {
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Upload queued comment image failed: $e');
+      return null;
+    }
+  }
+
   /// Get storage information for a user
   Future<StorageInfo?> getUserStorageInfo(String userId) async {
     return await executeServiceOperation<StorageInfo?>(

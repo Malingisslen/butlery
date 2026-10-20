@@ -183,7 +183,12 @@ class UploadQueueProcessor {
         await _db.uploadQueueDao.markUploading(row.id);
         final UploadedImage uploaded;
         try {
-          uploaded = await _upload(row.localPath, userId, row.id);
+          uploaded = await _upload(
+            row.localPath,
+            userId,
+            row.id,
+            row.targetPath,
+          );
         } catch (e) {
           AppLogger.error(
             '❌ Bilduppladdning misslyckades: ${queueErrorCode(e)}',

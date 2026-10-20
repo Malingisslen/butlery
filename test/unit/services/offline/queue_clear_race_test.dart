@@ -66,12 +66,18 @@ void main() {
       authRepository: auth,
       isOnlineNow: () => false,
       random: MidRandom(),
-      uploadImage: (String localPath, String userId, String objectId) async {
-        events.add('upload started');
-        await uploadGate?.future;
-        events.add('upload done');
-        return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
-      },
+      uploadImage:
+          (
+            String localPath,
+            String userId,
+            String objectId,
+            String targetPath,
+          ) async {
+            events.add('upload started');
+            await uploadGate?.future;
+            events.add('upload done');
+            return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
+          },
       deleteUploadedImage: (UploadedImage image) async {
         taken.add(image.url);
         if (deleterHangs) return Completer<bool>().future;

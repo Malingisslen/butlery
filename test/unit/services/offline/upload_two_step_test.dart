@@ -76,14 +76,20 @@ void main() {
     processor = UploadQueueProcessor(
       database: db,
       storage: OfflineUserStorage(database: db, uploadsRoot: () async => root),
-      upload: (String localPath, String userId, String objectId) async {
-        uploads.add((localPath, objectId));
-        await onUpload?.call(objectId);
-        return (
-          url: 'https://img/$objectId.jpg',
-          thumbnailUrl: 'https://img/${objectId}_thumb.jpg',
-        );
-      },
+      upload:
+          (
+            String localPath,
+            String userId,
+            String objectId,
+            String targetPath,
+          ) async {
+            uploads.add((localPath, objectId));
+            await onUpload?.call(objectId);
+            return (
+              url: 'https://img/$objectId.jpg',
+              thumbnailUrl: 'https://img/${objectId}_thumb.jpg',
+            );
+          },
       deleteUploaded: (UploadedImage image) async {
         taken.add(image.url);
         return deleteSucceeds;
@@ -296,7 +302,7 @@ void main() {
     processor = UploadQueueProcessor(
       database: db,
       storage: OfflineUserStorage(database: db, uploadsRoot: () async => root),
-      upload: (path, userId, objectId) async {
+      upload: (path, userId, objectId, targetPath) async {
         await db.uploadQueueDao.cancelUpload(objectId);
         throw StateError('lost connection');
       },
