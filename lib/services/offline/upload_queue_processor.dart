@@ -20,9 +20,7 @@ import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
 import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_change.dart';
-import 'package:butlery/services/offline/sync_queue_reader.dart'
-    show discardQueuedChange, readQueuedChanges;
-import 'package:butlery/services/offline/unsent_image_expiry.dart';
+import 'package:butlery/services/offline/unsent_image_discard.dart';
 import 'package:butlery/services/offline/upload_completion.dart';
 
 /// The upload statuses a pass picks up. "uploading" is only ever seen at the
@@ -83,44 +81,13 @@ class UploadQueueProcessor {
   /// The image a row had already put in Storage stays on the cancelled row
   /// until [_takeBackUnused] has taken it back, so a failed take-back is
   /// tried again by the next pass.
-  Future<int> discardExpired(String userId, {required DateTime now}) async {
-    if ((await _expiredFailures(userId, now)).isEmpty) return 0;
-    var discarded = 0;
-    for (final change in await readQueuedChanges(_db, userId)) {
-      final since = change.unsentSince;
-      if (change.kind != QueuedChangeKind.image ||
-          !change.needsUser ||
-          since == null ||
-          !unsentImageExpired(since, now)) {
-        continue;
-      }
-      await discardQueuedChange(_db, userId, change);
-      discarded++;
-    }
-    return discarded;
-  }
+  Future<int> discardExpired(String userId, {required DateTime now}) =>
+      discardExpiredUnsent(_db, userId, now);
 
   Future<List<UploadQueueEntry>> _expiredFailures(
     String userId,
     DateTime now,
-  ) async {
-    final failed =
-        await (_db.select(_db.uploadQueueEntries)..where(
-              (e) =>
-                  e.userId.equals(userId) &
-                  e.permanentlyFailed.equals(true) &
-                  e.status.isNotIn(const ['completed', 'cancelled']),
-            ))
-            .get();
-    return [
-      for (final row in failed)
-        if (unsentImageExpired(
-          unsentImageSince(row.firstFailedAt, row.queuedAt),
-          now,
-        ))
-          row,
-    ];
-  }
+  ) => expiredUnsentRows(_db, now, userId: userId);
 
   /// The earliest time an upload waiting for its retry may be tried again.
   Future<DateTime?> earliestRetry(String userId) async {
@@ -157,7 +124,17 @@ class UploadQueueProcessor {
     required bool Function() isCurrentUser,
     bool force = false,
   }) async {
-    await discardExpired(userId, now: now);
+    try {
+      await discardExpired(userId, now: now);
+    } catch (e) {
+      // A failed discard must not stall the sends; the next pass tries again.
+      AppLogger.error(
+        '❌ Gamla osända bilder kunde inte slängas: ${queueErrorCode(e)}',
+      );
+    }
+    // No upload of this user is in flight at the start of a pass, so a row
+    // cancelled mid-upload that never got an address can go.
+    await _dropAbandoned(userId);
     await _takeBackUnused(userId);
     final ids = await _db.queuedOpIds(userId);
     var sent = 0;
@@ -277,7 +254,20 @@ class UploadQueueProcessor {
         await _recordFailure(row, userId, e, now, status: 'uploaded');
       }
     }
+    // A discarded album leaves its bare cancelled photos behind while its last
+    // row is still live; none is in flight now.
+    await _dropAbandoned(userId);
     return sent;
+  }
+
+  Future<void> _dropAbandoned(String userId) async {
+    try {
+      await _db.uploadQueueDao.dropCancelledWithoutImage(userId);
+    } catch (e) {
+      AppLogger.error(
+        '❌ Avbrutna bilder kunde inte rensas: ${queueErrorCode(e)}',
+      );
+    }
   }
 
   /// The row as it is now, or null when it is gone, thrown away, waiting for
@@ -373,6 +363,8 @@ class UploadQueueProcessor {
         uploadedThumbnailUrl: const Value(null),
       ),
     );
+    // A thrown-away row whose image is gone has nothing left to keep.
+    await _db.uploadQueueDao.dropIfBare(rowId, uploadFinished: true);
   }
 
   Future<List<UploadQueueEntry>> _sendable(String userId) {

@@ -63,7 +63,7 @@ void main() {
   late List<String> taken;
   late bool deleteSucceeds;
   late UploadQueueProcessor processor;
-  void Function(String objectId)? onUpload;
+  Future<void> Function(String objectId)? onUpload;
 
   setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
@@ -78,7 +78,7 @@ void main() {
       storage: OfflineUserStorage(database: db, uploadsRoot: () async => root),
       upload: (String localPath, String userId, String objectId) async {
         uploads.add((localPath, objectId));
-        onUpload?.call(objectId);
+        await onUpload?.call(objectId);
         return (
           url: 'https://img/$objectId.jpg',
           thumbnailUrl: 'https://img/${objectId}_thumb.jpg',
@@ -157,8 +157,7 @@ void main() {
     expect(sent, 0);
     expect(handler.completed, isEmpty);
     expect(taken, ['https://img/a.jpg']);
-    expect((await row('a'))!.status, 'cancelled');
-    expect((await row('a'))!.uploadedUrl, isNull);
+    expect(await row('a'), isNull, reason: 'cancelled and nothing in Storage');
   });
 
   test('a failed use of an uploaded image is retried without uploading '
@@ -223,7 +222,7 @@ void main() {
     await pass(after: const Duration(minutes: 2));
 
     expect(taken, ['https://img/a.jpg', 'https://img/a.jpg']);
-    expect((await row('a'))!.uploadedUrl, isNull);
+    expect(await row('a'), isNull);
     expect(uploads, hasLength(1));
   });
 
@@ -278,7 +277,7 @@ void main() {
     await pass(after: const Duration(minutes: 1));
 
     expect(taken, ['https://img/a.jpg', 'https://img/a.jpg']);
-    expect((await row('a'))!.uploadedUrl, isNull);
+    expect(await row('a'), isNull);
     expect(await processor.hasPending(uid), isFalse);
   });
 
@@ -301,14 +300,29 @@ void main() {
         await db.uploadQueueDao.cancelUpload(objectId);
         throw StateError('lost connection');
       },
+      deleteUploaded: (UploadedImage image) async {
+        taken.add(image.url);
+        return true;
+      },
+      completions: {'cook_snap': handler},
       random: MidRandom(),
     );
 
     await pass();
 
-    final cancelled = (await row('a'))!;
-    expect(cancelled.status, 'cancelled');
-    expect(cancelled.retryCount, 0);
+    expect(handler.completed, isEmpty);
+    expect(
+      taken,
+      isEmpty,
+      reason: 'the upload failed, so nothing is in Storage',
+    );
+    expect(
+      await row('a'),
+      isNull,
+      reason:
+          'neither revived as failed nor kept: it was cancelled mid-upload '
+          'and holds no address, so the pass ends by dropping it',
+    );
   });
 
   test('an image whose recipe is gone from the device is taken back and the '

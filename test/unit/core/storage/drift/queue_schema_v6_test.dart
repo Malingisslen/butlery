@@ -128,6 +128,7 @@ void main() {
     test('markUploaded writes nothing for a row thrown away meanwhile, so a '
         'discard cannot be undone by the upload finishing', () async {
       await queue('a');
+      await db.uploadQueueDao.markUploading('a');
       await db.uploadQueueDao.cancelUpload('a');
 
       final written = await db.uploadQueueDao.markUploaded(
@@ -136,9 +137,9 @@ void main() {
       );
 
       expect(written, isFalse);
-      final row = (await db.uploadQueueDao.getUpload('a'))!;
-      expect(row.status, 'cancelled');
-      expect(row.uploadedUrl, isNull);
+      final after = await db.uploadQueueDao.getUpload('a');
+      expect(after!.status, 'cancelled');
+      expect(after.uploadedUrl, isNull);
       expect(await db.uploadQueueDao.markUploaded('nope', url: 'u'), isFalse);
     });
 

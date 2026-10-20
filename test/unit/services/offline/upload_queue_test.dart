@@ -382,7 +382,7 @@ void main() {
 
     await storage.queueDeleteForUser('r1', uid);
 
-    expect((await uploadRow(id))!.status, 'cancelled');
+    expect(await uploadRow(id), isNull);
     expect(File(copy).existsSync(), isFalse);
 
     await pass();

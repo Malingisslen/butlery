@@ -447,7 +447,7 @@ void main() {
 
       final after = {for (final r in await rows()) r.id: r};
       for (final id in ids) {
-        expect(after[id]!.status, 'cancelled', reason: id);
+        expect(after[id], isNull, reason: id);
       }
       for (final id in other) {
         expect(after[id]!.status, isNot('cancelled'), reason: id);

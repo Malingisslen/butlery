@@ -482,7 +482,7 @@ void main() {
     await pass();
 
     for (final id in ids) {
-      expect((await row(id))!.status, 'cancelled');
+      expect(await row(id), isNull, reason: 'nothing left once taken back');
     }
     for (final path in copies) {
       expect(File(path).existsSync(), isFalse);
@@ -517,7 +517,7 @@ void main() {
       expect((await row(ids.single))!.status, isNot('cancelled'));
 
       await pass(after: const Duration(days: 30));
-      expect((await row(ids.single))!.status, 'cancelled');
+      expect(await row(ids.single), isNull);
     },
   );
 
@@ -537,7 +537,7 @@ void main() {
     );
     await pass();
 
-    expect((await row(id))!.status, 'cancelled');
+    expect(await row(id), isNull);
     expect(File(copy).existsSync(), isFalse);
   });
 

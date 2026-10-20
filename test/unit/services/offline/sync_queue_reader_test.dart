@@ -240,8 +240,8 @@ void main() {
       expect(left.single.reason, QueuedChangeReason.dependencyFailed);
       final photo = await (db.select(
         db.uploadQueueEntries,
-      )..where((e) => e.id.equals('photo'))).getSingle();
-      expect(photo.status, 'cancelled');
+      )..where((e) => e.id.equals('photo'))).getSingleOrNull();
+      expect(photo, isNull);
       final counts = await db.watchQueueCounts('u1').first;
       expect(counts.needsUser, 1);
     },

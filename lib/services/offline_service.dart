@@ -310,6 +310,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       signedInUserId: _authRepository.currentUserId,
     );
 
+    // Local only, and before any pass can start: a photo of an account that
+    // is signed out waits for no pass.
+    await sweepUnsentImages(_initialization.database);
+
     _syncManager = OfflineSyncManager(
       database: _initialization.database,
       authRepository: _authRepository,
