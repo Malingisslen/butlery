@@ -4181,7 +4181,7 @@ service cloud.firestore {
         // BUT-2330: `moderatorAction` is stamped by a moderator's takedown,
         // so a reporter must not be able to file a report that already
         // carries one. BUT-1528: the same for the reopen's round and time.
-        && !request.resource.data.keys().hasAny(['moderatorAction', 'reviewRound', 'reopenedAt'])
+        && !request.resource.data.keys().hasAny(['moderatorAction', 'reviewRound', 'reopenedAt', 'reopenedDecision'])
         && (
           request.resource.data.reason == 'misattribution'
           || !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
@@ -4195,7 +4195,7 @@ service cloud.firestore {
       // `reopenReport` function.
       allow update: if isAdmin()
         && cannotModify(['reporterId', 'contentType', 'contentId', 'dishId', 'createdAt',
-                          'reviewRound', 'reopenedAt'])
+                          'reviewRound', 'reopenedAt', 'reopenedDecision'])
         && (
           (resource.data.status == 'new'
              && request.resource.data.status in ['new', 'in_review'])

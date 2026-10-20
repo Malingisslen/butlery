@@ -216,6 +216,12 @@ class ModeratorReviewViewModel extends BaseViewModel {
     () => _reportService.closeWithNoAction(report),
   );
 
+  /// The decision put up for review still stands, so the card offers keeping
+  /// or dropping it rather than the usual takedown and close.
+  bool standsAsReopened(ContentReport report) =>
+      report.moderatorAction != null &&
+      report.moderatorAction == report.reopenedDecision;
+
   /// What the close will record: the takedown already made, else no action.
   ModeratorDecision decisionFor(ContentReport report) =>
       report.moderatorAction ?? ModeratorDecision.noAction;

@@ -135,9 +135,11 @@ void main() {
         'reviewRound': 2,
         'reopenedAt': Timestamp.fromDate(DateTime.utc(2026, 10, 20, 10)),
         'moderatorAction': 'profile_hidden',
+        'reopenedDecision': 'no_action',
       });
 
       expect(r!.reviewRound, 2);
+      expect(r.reopenedDecision, ModeratorDecision.noAction);
       expect(r.isReopened, isTrue);
       expect(r.reopenedAt!.toUtc(), DateTime.utc(2026, 10, 20, 10));
       expect(r.moderatorAction, ModeratorDecision.profileHidden);
@@ -149,6 +151,7 @@ void main() {
       expect(r!.reviewRound, 0);
       expect(r.isReopened, isFalse);
       expect(r.reopenedAt, isNull);
+      expect(r.reopenedDecision, isNull);
     });
 
     test(
@@ -160,18 +163,24 @@ void main() {
         final reopened = (await parse({
           'reviewRound': 3,
           'reopenedAt': Timestamp.fromDate(DateTime.utc(2026, 10, 20)),
+          'reopenedDecision': 'content_removed',
         }))!;
         final copy = reopened.copyWith(status: ReportStatus.closed);
         expect(copy.reviewRound, 3);
+        expect(copy.reopenedDecision, ModeratorDecision.contentRemoved);
         expect(copy.reopenedAt?.toUtc(), DateTime.utc(2026, 10, 20));
       },
     );
 
     test('the round is never written back by the client', () async {
-      final r = (await parse({'reviewRound': 3}))!;
+      final r = (await parse({
+        'reviewRound': 3,
+        'reopenedDecision': 'no_action',
+      }))!;
 
       expect(r.toFirestore().containsKey('reviewRound'), isFalse);
       expect(r.toFirestore().containsKey('reopenedAt'), isFalse);
+      expect(r.toFirestore().containsKey('reopenedDecision'), isFalse);
     });
   });
 

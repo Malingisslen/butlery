@@ -25,6 +25,7 @@ ContentReport _report({
   String reason = 'spam',
   ReportStatus status = ReportStatus.newReport,
   ModeratorDecision? action,
+  int reviewRound = 0,
 }) => ContentReport(
   id: id,
   reporterId: 'reporter1',
@@ -35,6 +36,7 @@ ContentReport _report({
   createdAt: DateTime.utc(2026, 5, 4),
   guidelineVersion: '2026-02-28',
   moderatorAction: action,
+  reviewRound: reviewRound,
 );
 
 void main() {
@@ -206,6 +208,21 @@ void main() {
         await vm.load();
 
         verifyNever(() => outcomes.getMyReportOutcomeDetails());
+      });
+
+      test('a reopened report alone still loads its last decision', () async {
+        when(() => service.getMyReports()).thenAnswer(
+          (_) async => [
+            _report(id: 'again', status: ReportStatus.actioned, reviewRound: 1),
+          ],
+        );
+        when(() => outcomes.getMyReportOutcomeDetails()).thenAnswer(
+          (_) async => const {},
+        );
+
+        await vm.load();
+
+        verify(() => outcomes.getMyReportOutcomeDetails()).called(1);
       });
     });
   });

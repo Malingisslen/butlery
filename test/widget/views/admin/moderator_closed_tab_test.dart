@@ -48,7 +48,10 @@ ClosedReport _closed(
   reopenBlock: block,
 );
 
-ContentReport _reopened({ModeratorDecision? action}) => ContentReport(
+ContentReport _reopened({
+  ModeratorDecision? action,
+  ModeratorDecision? reopenedDecision,
+}) => ContentReport(
   id: 'r1',
   reporterId: 'reporter',
   contentType: ContentType.profile,
@@ -60,6 +63,7 @@ ContentReport _reopened({ModeratorDecision? action}) => ContentReport(
   moderatorAction: action,
   reviewRound: 1,
   reopenedAt: DateTime(2026, 10, 20),
+  reopenedDecision: reopenedDecision ?? action ?? ModeratorDecision.noAction,
 );
 
 void main() {
@@ -501,6 +505,30 @@ void main() {
       expect(
         find.text(_sv.moderatorPreviousDecision(_sv.moderatorDecisionNoAction)),
         findsOneWidget,
+      );
+      expect(find.text(_sv.moderatorKeepDecision), findsNothing);
+      expect(find.byTooltip(_sv.moderatorCloseTooltip), findsOneWidget);
+    });
+
+    testWidgets('a takedown in the new round of a no-action case keeps the '
+        'usual close and the true earlier decision', (tester) async {
+      await pumpView(
+        tester,
+        _reopened(
+          action: ModeratorDecision.profileHidden,
+          reopenedDecision: ModeratorDecision.noAction,
+        ),
+      );
+
+      expect(
+        find.text(_sv.moderatorPreviousDecision(_sv.moderatorDecisionNoAction)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          _sv.moderatorPreviousDecision(_sv.moderatorDecisionProfileHidden),
+        ),
+        findsNothing,
       );
       expect(find.text(_sv.moderatorKeepDecision), findsNothing);
       expect(find.byTooltip(_sv.moderatorCloseTooltip), findsOneWidget);

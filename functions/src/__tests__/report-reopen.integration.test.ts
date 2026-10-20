@@ -156,6 +156,7 @@ async function reopening(): Promise<void> {
   check("reopen starts round 1", round === 1 && report?.reviewRound === 1);
   check("the case is back in the queue as actioned", report?.status === "actioned");
   check("the standing action is put back on the report", report?.moderatorAction === "profile_hidden");
+  check("the reopen names the decision under review", report?.reopenedDecision === "profile_hidden");
   check(
     "nothing else changes: the profile stays hidden and the strike stays",
     (await get(`public_profiles/${c.owner}`))?.isHidden === true &&
@@ -198,7 +199,8 @@ async function reopening(): Promise<void> {
   check(
     "a late round-0 delivery records nothing and leaves the reopened stamp",
     round0.outcome === "already_recorded" &&
-      (await get(`reports/${c.id}`))?.moderatorAction === "profile_hidden",
+      (await get(`reports/${c.id}`))?.moderatorAction === "profile_hidden" &&
+      (await get(`reports/${c.id}`))?.reopenedDecision === "profile_hidden",
   );
 }
 
@@ -252,7 +254,8 @@ async function unchanged(): Promise<void> {
   );
   check(
     "the stamps come off the closed report",
-    (await get(`reports/${c.id}`))?.moderatorAction === undefined,
+    (await get(`reports/${c.id}`))?.moderatorAction === undefined &&
+      (await get(`reports/${c.id}`))?.reopenedDecision === undefined,
   );
   check(
     "the strike is untouched",
@@ -272,6 +275,10 @@ async function changedToNoAction(): Promise<void> {
   const { result } = await closeAgain(c.id);
   const row = await get(`${MODERATION_DECISIONS}/${c.id}`);
   check("a changed decision is recorded", result.outcome === "recorded" && row?.decision === "no_action");
+  check(
+    "the changed close takes the decision under review off the report",
+    (await get(`reports/${c.id}`))?.reopenedDecision === undefined,
+  );
   check(
     "the old decision moves into history with its moderator and time",
     Array.isArray(row?.history) && row?.history.length === 1 &&
@@ -332,6 +339,7 @@ async function changedToAction(): Promise<void> {
   const c = await decidedCase(null);
   await runReopenReportWithDb(db, MODERATOR, c.id);
   check("a no-action case reopens without a stamp", (await get(`reports/${c.id}`))?.moderatorAction === undefined);
+  check("a no-action reopen names no_action as under review", (await get(`reports/${c.id}`))?.reopenedDecision === "no_action");
   const reporterView = await runGetMyReportOutcomesWithDb(db, c.reporter);
   check(
     "the reporter keeps seeing the last decision while the case is reopened",

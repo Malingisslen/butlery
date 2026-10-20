@@ -130,6 +130,9 @@ export async function runReopenReportWithDb(
       reviewRound: round,
       reopenedAt: admin.firestore.Timestamp.fromDate(now),
       moderatorAction: standing ? action : admin.firestore.FieldValue.delete(),
+      // A takedown this round also stamps moderatorAction, so the app needs
+      // the decision being reviewed apart from it.
+      reopenedDecision: typeof action === "string" ? action : admin.firestore.FieldValue.delete(),
     });
     // A copy the close has not deleted yet would read as this round's.
     tx.delete(db.collection(REPORT_EVIDENCE).doc(reportId));

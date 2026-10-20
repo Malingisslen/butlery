@@ -219,8 +219,9 @@ class _ReportCard extends StatelessWidget {
             moderatorReasonLabel(l10n, report.reason),
             style: AppTextStyles.titleMedium,
           ),
-          if (report.isReopened)
-            PreviousDecisionLine(decision: vm.decisionFor(report)),
+          if (report.reopenedDecision case final previous?
+              when report.isReopened)
+            PreviousDecisionLine(decision: previous),
           if (report.description != null && report.description!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.space4),
@@ -274,7 +275,7 @@ class _ReportCard extends StatelessWidget {
     ModeratorReviewViewModel vm,
     AppLocalizations l10n,
   ) {
-    if (report.isReopened && report.moderatorAction != null) {
+    if (report.isReopened && vm.standsAsReopened(report)) {
       return ReopenedActions(report: report, vm: vm);
     }
     final open = report.status != ReportStatus.closed;

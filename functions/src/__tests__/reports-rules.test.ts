@@ -192,6 +192,7 @@ test(
         moderatorAction: "profile_hidden",
         reviewRound: 1,
         reopenedAt: new Date("2026-10-20T10:00:00Z"),
+        reopenedDecision: "profile_hidden",
         createdAt: new Date(),
       });
     });
@@ -201,6 +202,8 @@ test(
     await assertFails(ref.update({ status: "closed", reviewRound: 2 }));
     await assertFails(ref.update({ reviewRound: deleteField() }));
     await assertFails(ref.update({ reopenedAt: deleteField() }));
+    await assertFails(ref.update({ reopenedDecision: "no_action" }));
+    await assertFails(ref.update({ reopenedDecision: deleteField() }));
     await assertSucceeds(ref.update({ moderatorAction: deleteField() }));
     await assertSucceeds(ref.update({ status: "closed" }));
 
@@ -799,6 +802,7 @@ test("BUT-1528: a report filed with a round or a reopen time is refused", async 
   await assertFails(plainReport(db, "rr-round", { ...recipe, reviewRound: 1 }).commit());
   await assertFails(plainReport(db, "rr-round0", { ...recipe, reviewRound: 0 }).commit());
   await assertFails(plainReport(db, "rr-reopened", { ...recipe, reopenedAt: new Date() }).commit());
+  await assertFails(plainReport(db, "rr-decision", { ...recipe, reopenedDecision: "no_action" }).commit());
 });
 
 async function run(): Promise<void> {

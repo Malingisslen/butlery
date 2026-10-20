@@ -90,6 +90,10 @@ class ContentReport {
   final int reviewRound;
   final DateTime? reopenedAt;
 
+  /// The decision a reopen put up for review, written by `reopenReport`.
+  /// Unlike [moderatorAction] a takedown in the new round does not change it.
+  final ModeratorDecision? reopenedDecision;
+
   const ContentReport({
     required this.id,
     required this.reporterId,
@@ -105,6 +109,7 @@ class ContentReport {
     this.dishId,
     this.reviewRound = 0,
     this.reopenedAt,
+    this.reopenedDecision,
   });
 
   bool get isReopened => reviewRound > 0;
@@ -156,6 +161,9 @@ class ContentReport {
       dishId: SerializationUtils.safeNullableString(data, 'dishId'),
       reviewRound: SerializationUtils.safeInt(data, 'reviewRound'),
       reopenedAt: SerializationUtils.safeDateTime(data, 'reopenedAt'),
+      reopenedDecision: ModeratorDecision.fromWire(
+        SerializationUtils.safeNullableString(data, 'reopenedDecision'),
+      ),
     );
   }
 
@@ -209,6 +217,7 @@ class ContentReport {
       dishId: dishId,
       reviewRound: reviewRound,
       reopenedAt: reopenedAt,
+      reopenedDecision: reopenedDecision,
     );
   }
 }

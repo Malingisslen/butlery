@@ -105,7 +105,7 @@ export interface DecisionResult {
 }
 
 /** Fields the close carries for this function and that it takes off the report. */
-const CLOSE_STAMPS = ["moderatorAction", "motivation"];
+const CLOSE_STAMPS = ["moderatorAction", "motivation", "reopenedDecision"];
 
 /**
  * Writes the record for [reportId] once per round, and takes `moderatorAction`

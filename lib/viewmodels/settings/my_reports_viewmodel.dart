@@ -44,7 +44,10 @@ class MyReportsViewModel extends BaseViewModel {
   Future<Map<String, ModerationOutcome>> _loadOutcomes(
     List<ContentReport> reports,
   ) async {
-    if (!reports.any((r) => r.status == ReportStatus.closed)) return const {};
+    // A reopened report keeps showing its last decision until it is closed.
+    if (!reports.any((r) => r.status == ReportStatus.closed || r.isReopened)) {
+      return const {};
+    }
     try {
       return await _outcomesService.getMyReportOutcomeDetails();
     } catch (e) {
