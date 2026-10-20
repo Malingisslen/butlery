@@ -6558,3 +6558,12 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   om N dagar" before it happens. A device with no connection runs no pass, so a photo that
   expires offline is thrown away at the next pass after it reconnects. Retrying a photo starts
   its 30 days over. The privacy policy (1.18.0) names the 30 days for food photos.
+
+## BUT-2411 — a comment image is read through its download URL, not by path (2026-10-20)
+
+- `users/{authorId}/comment_images/{imageId}` has no read limb any more: only the author reads
+  or lists it by path (the user wildcard). Before, any signed-in account could read a known path
+  and list an author's folder, which showed images of comments never created or discarded.
+- The app stores the download URL (token) of a comment image on the comment and renders that
+  URL, which does not go through Storage rules. Anyone who holds the URL can still read the
+  image, as with cook-snap photos.
