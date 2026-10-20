@@ -373,7 +373,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       return;
     }
 
-    await _userStorage.clearUserData(userId);
+    Future<void> clear() => _userStorage.clearUserData(userId);
+    await (_isSyncManagerReady
+        ? _syncManager.clearUserData(userId, clear)
+        : clear());
     await _purgeStore.forget(userId);
     await refreshSyncState();
   }
