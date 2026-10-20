@@ -331,6 +331,28 @@ void main() {
     );
 
     test(
+      'ownSnapExists is true for the signed-in user\'s own snap, and false '
+      'for an absent id and for somebody else\'s snap',
+      () async {
+        await seedSnaps(recipeId: 'r1', userIds: [viewer, 'someone-else']);
+
+        expect(
+          await repo.ownSnapExists(
+            'snap-$viewer-${CookSnapVisibility.sameAsRecipe}',
+          ),
+          isTrue,
+        );
+        expect(
+          await repo.ownSnapExists(
+            'snap-someone-else-${CookSnapVisibility.sameAsRecipe}',
+          ),
+          isFalse,
+        );
+        expect(await repo.ownSnapExists('no-such-snap'), isFalse);
+      },
+    );
+
+    test(
       'watchCookSnaps cancellation cancels every inner chunk subscription '
       '(no leaks)',
       () async {

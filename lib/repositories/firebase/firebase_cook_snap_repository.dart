@@ -190,6 +190,17 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   }
 
   @override
+  Future<bool> ownSnapExists(String snapId) async {
+    final userId = requireCurrentUserId();
+    final found = await collection
+        .where('userId', isEqualTo: userId)
+        .where(FieldPath.documentId, isEqualTo: snapId)
+        .limit(1)
+        .get(const GetOptions(source: Source.server));
+    return found.docs.isNotEmpty;
+  }
+
+  @override
   Future<void> deleteCookSnap(String snapId) async {
     final userId = requireCurrentUserId();
     final doc = await collection.doc(snapId).get();

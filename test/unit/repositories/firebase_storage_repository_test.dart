@@ -335,6 +335,27 @@ void main() {
         expect(mockStorage.storedDataMap.keys, isEmpty);
       });
 
+      test('an object that is already gone counts as deleted, any other '
+          'failure to delete does not', () async {
+        final url =
+            'https://firebasestorage.googleapis.com/v0/b/b/o/users%2F$testUserId%2Frecipes%2Fimage.jpg';
+        FirebaseStorageRepository repositoryFailingWith(String code) =>
+            FirebaseStorageRepository(
+              storage: _StorageFailingToDelete(code),
+              uuid: mockUuid,
+              authRepository: mockAuthRepository,
+            );
+
+        expect(
+          await repositoryFailingWith('object-not-found').deleteImage(url),
+          isTrue,
+        );
+        expect(
+          await repositoryFailingWith('unauthorized').deleteImage(url),
+          isFalse,
+        );
+      });
+
       test('returns false when the current user does not own the file', () async {
         // Someone else's file — deleteImage rejects on permission check.
         const url =
@@ -518,4 +539,24 @@ class _ProgressSnapshot implements TaskSnapshot {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Storage whose objects all fail to delete with the given SDK error code.
+class _StorageFailingToDelete extends Fake implements FirebaseStorage {
+  _StorageFailingToDelete(this.code);
+
+  final String code;
+
+  @override
+  Reference refFromURL(String url) => _FailingRef(code);
+}
+
+class _FailingRef extends Fake implements Reference {
+  _FailingRef(this.code);
+
+  final String code;
+
+  @override
+  Future<void> delete() =>
+      Future.error(FirebaseException(plugin: 'firebase_storage', code: code));
 }

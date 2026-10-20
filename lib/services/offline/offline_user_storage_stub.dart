@@ -33,6 +33,15 @@ class OfflineUserStorage {
     String userId,
   ) async => '';
 
+  Future<List<String>> queueImageGroupForUser({
+    required List<String> imagePaths,
+    required String entityType,
+    required String entityId,
+    required String userId,
+    required String targetPath,
+    required Map<String, Object?> metadata,
+  }) async => const [];
+
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 
   Future<bool> retagRecipeForUser(

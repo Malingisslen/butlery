@@ -43,7 +43,8 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
 import 'package:butlery/services/offline/offline_purge_store.dart';
-import 'package:butlery/services/offline/queued_image_transport.dart';
+import 'package:butlery/services/offline/upload_queue_wiring.dart'
+    if (dart.library.html) 'package:butlery/services/offline/upload_queue_wiring_stub.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -322,8 +323,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onRecipeConflict: (local, remote) =>
           ServiceLocator.tryGet<RealtimeSyncService>()
               ?.announceQueuedRecipeConflict(local, remote),
-      uploadImage: uploadQueuedImage,
-      deleteUploadedImage: deleteQueuedImage,
+      uploads: buildUploadQueueProcessor(
+        database: _initialization.database,
+        storage: _userStorage,
+      ),
       userStorage: _userStorage,
       // A retry timer that fires offline waits for the reconnect pass.
       isOnlineNow: () => isOnline,
