@@ -34,8 +34,8 @@
  *
  * Usage:
  *   cd functions
- *   npx ts-node src/admin/migrate-report-history.ts            # dry run
- *   npx ts-node src/admin/migrate-report-history.ts --live
+ *   npx ts-node src/admin/migrate-report-history.ts --project <id>          # dry run
+ *   npx ts-node src/admin/migrate-report-history.ts --project <id> --live
  */
 
 import * as admin from "firebase-admin";

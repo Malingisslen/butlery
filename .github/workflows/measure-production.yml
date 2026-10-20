@@ -1,4 +1,4 @@
-# BUT-2278, BUT-2260, BUT-2031, BUT-1814 and BUT-2332: read-only measurements against butlery-app-1.
+# BUT-2278, BUT-2260, BUT-2031, BUT-1814 and BUT-2332: read-only measurements against production.
 #
 # Writes nothing to Firestore or anywhere else in the project. Prints counts
 # only, never a uid or a log line's text, because the onUserDeleted error line
@@ -19,6 +19,8 @@ jobs:
     name: Read-only counts
     runs-on: ubuntu-latest
     environment: production
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 15
 
     steps:
@@ -44,9 +46,16 @@ jobs:
             echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
             exit 1
           fi
+          # The environment's variable, the `.firebaserc` production alias and
+          # the key must all name the same project before anything runs.
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
-          echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
 
       - name: "BUT-2278, BUT-2260 and BUT-2332: minor profiles, recipe cache, group owners"
         working-directory: functions
@@ -58,11 +67,11 @@ jobs:
           gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
           # Only timestamps are read; the message text names the deleted user.
           if out=$(gcloud logging read '"Social cleanup failed for user"' \
-                --project butlery-app-1 --freshness=3650d \
+                --project "$FIREBASE_PROJECT_ID" --freshness=3650d \
                 --format='value(timestamp)' 2>"$RUNNER_TEMP/logging.err"); then
             count=$(printf '%s' "$out" | grep -c . || true)
             oldest=$(gcloud logging read 'resource.labels.function_name="onUserDeleted"' \
-                --project butlery-app-1 --freshness=3650d --order=asc --limit=1 \
+                --project "$FIREBASE_PROJECT_ID" --freshness=3650d --order=asc --limit=1 \
                 --format='value(timestamp)' 2>/dev/null || true)
             {
               echo "social_cleanup_failures=$count"
@@ -80,7 +89,7 @@ jobs:
           # These log lines carry chain, task, durationMs and error codes only.
           if gcloud logging read \
                 'jsonPayload.message=("maintenance.task_complete" OR "maintenance.task_failed" OR "maintenance.task_skipped" OR "maintenance.chain_complete")' \
-                --project butlery-app-1 --freshness=30d --limit=20000 \
+                --project "$FIREBASE_PROJECT_ID" --freshness=30d --limit=20000 \
                 --format=json >"$RUNNER_TEMP/chain.json" 2>"$RUNNER_TEMP/logging.err"; then
             jq -r '
               def pct(p): (sort | .[((length - 1) * p | floor)]);

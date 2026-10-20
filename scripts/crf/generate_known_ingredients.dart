@@ -1,7 +1,7 @@
 /// Generates lib/constants/known_ingredients.dart from Firebase export.
 ///
 /// Two-step pipeline (Firebase = source of truth):
-///   1. Export: cd functions && npx ts-node src/admin/export-ingredients.ts
+///   1. Export: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1
 ///   2. Generate: dart run scripts/crf/generate_known_ingredients.dart
 ///
 /// The generated file provides offline fallback for CRF feature extraction.
@@ -20,7 +20,6 @@ const _groupToCategory = {
   'protein/seafood': 'seafood',
   'protein/plant-based': 'other',
   'protein': 'meat', // fallback for unmapped protein subcategories
-
   // Vegetable groups
   'vegetable': 'vegetables',
 
@@ -83,7 +82,8 @@ void main() {
   if (!file.existsSync()) {
     stderr.writeln('Error: $inputPath not found.');
     stderr.writeln(
-        'Run first: cd functions && npx ts-node src/admin/export-ingredients.ts');
+      'Run first: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1',
+    );
     exit(1);
   }
 
@@ -98,7 +98,8 @@ void main() {
   for (final item in json) {
     final swedish = (item['swedish'] as String).toLowerCase().trim();
     final group = item['group'] as String? ?? '';
-    final aliases = (item['aliasesSv'] as List<dynamic>?)
+    final aliases =
+        (item['aliasesSv'] as List<dynamic>?)
             ?.map((a) => (a as String).toLowerCase().trim())
             .where((a) => a.isNotEmpty)
             .toList() ??
@@ -196,18 +197,22 @@ void main() {
   final buf = StringBuffer();
 
   buf.writeln(
-      '/// Static ingredient registry generated from Firebase Firestore.');
+    '/// Static ingredient registry generated from Firebase Firestore.',
+  );
   buf.writeln('///');
   buf.writeln('/// AUTO-GENERATED — do not edit manually.');
   buf.writeln('/// Regenerate with:');
   buf.writeln(
-      '///   1. cd functions && npx ts-node src/admin/export-ingredients.ts');
+    '///   1. cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1',
+  );
   buf.writeln('///   2. dart run scripts/crf/generate_known_ingredients.dart');
   buf.writeln('///');
   buf.writeln(
-      '/// This serves as offline fallback for CRF parsing. At runtime,');
+    '/// This serves as offline fallback for CRF parsing. At runtime,',
+  );
   buf.writeln(
-      '/// [IngredientRegistryService] enriches with live Firestore data.');
+    '/// [IngredientRegistryService] enriches with live Firestore data.',
+  );
   buf.writeln('class KnownIngredients {');
   buf.writeln('  KnownIngredients._();');
   buf.writeln();
@@ -264,7 +269,8 @@ void main() {
   buf.writeln();
 
   buf.writeln(
-      '  /// Check if ingredient is a compound name that should not be split');
+    '  /// Check if ingredient is a compound name that should not be split',
+  );
   buf.writeln('  static bool isCompoundName(String ingredient) {');
   buf.writeln('    return compoundNames.contains(ingredient.toLowerCase());');
   buf.writeln('  }');
@@ -278,7 +284,8 @@ void main() {
   for (final cat in usedCategories) {
     final fieldName = categoryToField[cat]!;
     buf.writeln(
-        "    if ($fieldName.contains(lower)) return '${cat == 'nuts_seeds' ? 'nuts_seeds' : cat}';");
+      "    if ($fieldName.contains(lower)) return '${cat == 'nuts_seeds' ? 'nuts_seeds' : cat}';",
+    );
   }
   buf.writeln();
   buf.writeln('    return null;');
@@ -288,7 +295,8 @@ void main() {
   // Write getIngredientsInCategory
   buf.writeln('  /// Get all ingredients in a category');
   buf.writeln(
-      '  static Set<String>? getIngredientsInCategory(String category) {');
+    '  static Set<String>? getIngredientsInCategory(String category) {',
+  );
   buf.writeln('    switch (category.toLowerCase()) {');
   for (final cat in usedCategories) {
     final fieldName = categoryToField[cat]!;

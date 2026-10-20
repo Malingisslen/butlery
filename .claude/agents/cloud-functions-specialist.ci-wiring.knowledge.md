@@ -59,3 +59,4 @@
   patches `process.stdout/stderr.write`; patching `console.*` captured nothing from
   `firebase-functions/logger`.
 - A callable whose handler is not `async` lets the App Check guard's scan run on to the next `async` in the file, so a second `enforceAppCheck: true` before that point could hide the flag's removal; keep one callable per file or make the handler `async`.
+- **A guard on how CI names a project must parse every spelling the CLI and actions accept** — `--project`, `-P`, `firebase use`, and action `projectId:`/`project_id:` inputs; a guard reading one spelling passes the others.

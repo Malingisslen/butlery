@@ -54,6 +54,11 @@ on:
       - "lib/models/unified/shopping_row_snapshot.dart"
       # BUT-2414: `erasure-export-coverage.test.ts` quotes decisions from it.
       - "docs/architecture/ACCEPTED_DEVIATIONS.md"
+      # BUT-451: `deploy-project-guard.test.ts` reads every workflow, the
+      # project aliases and the scripts that could copy data between projects.
+      - ".github/workflows/**"
+      - ".firebaserc"
+      - "scripts/**"
   pull_request:
     # A draft gets no CI; marking it ready for review starts the run.
     types: [opened, synchronize, reopened, ready_for_review]
@@ -77,6 +82,9 @@ on:
       - "lib/models/unified/unified_shopping_item.dart"
       - "lib/models/unified/shopping_row_snapshot.dart"
       - "docs/architecture/ACCEPTED_DEVIATIONS.md"
+      - ".github/workflows/**"
+      - ".firebaserc"
+      - "scripts/**"
   workflow_dispatch:
 
 concurrency:

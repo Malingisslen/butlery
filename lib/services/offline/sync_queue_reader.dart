@@ -22,6 +22,7 @@ import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/services/offline/cook_snap_group_queue.dart';
 import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline/unsent_image_expiry.dart';
 
 export 'package:butlery/services/offline/queued_recipe_copy.dart';
 
@@ -111,6 +112,9 @@ Future<List<QueuedChange>> readQueuedChanges(
         waitsOnEarlier: !row.permanentlyFailed && waits(row.dependsOn),
         entityType: row.entityType,
         entityId: row.entityId,
+        unsentSince: row.permanentlyFailed
+            ? unsentImageSince(row.firstFailedAt, row.queuedAt)
+            : null,
       ),
     for (final group in cookSnapGroups(uploadRows).values)
       cookSnapChange(group, waits),
@@ -122,7 +126,7 @@ Future<List<QueuedChange>> readQueuedChanges(
 Future<void> retryQueuedChange(
   AppDatabase db,
   QueuedChange change, {
-  String? userId,
+  required String userId,
 }) async {
   switch (change.kind) {
     case QueuedChangeKind.recipe:
@@ -139,7 +143,7 @@ Future<void> retryQueuedChange(
         ),
       );
     case QueuedChangeKind.image when change.isCookSnapGroup:
-      await retryCookSnapGroup(db, userId!, change.entityId!);
+      await retryCookSnapGroup(db, userId, change.entityId!);
     case QueuedChangeKind.image:
       await (db.update(
         db.uploadQueueEntries,
@@ -149,6 +153,9 @@ Future<void> retryQueuedChange(
           status: Value('pending'),
           retryCount: Value(0),
           lastError: Value(null),
+          nextAttemptAt: Value(null),
+          // The 30 days an unsent photo waits start over with the retry.
+          firstFailedAt: Value(null),
         ),
       );
   }

@@ -462,7 +462,7 @@ async function main(): Promise<void> {
       `  1. Review candidates — filter out composed dishes and verify group mappings\n` +
       `  2. Add properties (allergens, diet flags)\n` +
       `  3. Append approved rows to Butlery_Ingredients_INGREDIENTS.csv\n` +
-      `  4. Run: npm run sync-ingredients -- --force\n` +
+      `  4. Run: npm run sync-ingredients -- --project <id> --force\n` +
       `  5. Run full CRF pipeline to retrain`
   );
 }

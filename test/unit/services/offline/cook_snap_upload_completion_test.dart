@@ -72,6 +72,7 @@ void main() {
   late List<String> taken;
   late Set<String> uploadFails;
   late bool profileLoaded;
+  late bool takeBackWorks;
   late UploadQueueProcessor processor;
 
   setUp(() async {
@@ -87,6 +88,7 @@ void main() {
     taken = [];
     uploadFails = {};
     profileLoaded = true;
+    takeBackWorks = true;
     processor = UploadQueueProcessor(
       database: db,
       storage: storage,
@@ -99,7 +101,7 @@ void main() {
       },
       deleteUploaded: (UploadedImage image) async {
         taken.add(image.url);
-        return true;
+        return takeBackWorks;
       },
       completions: {
         SyncQueueEntityType.cookSnap: CookSnapUploadCompletion(
@@ -422,6 +424,121 @@ void main() {
         'https://img/${ids[1]}.jpg',
       ]),
     );
+  });
+
+  test('a snap is not created while a photo of the album sits in Väntar på '
+      'dig, even when that photo is already in Storage', () async {
+    final (_, ids) = await queueSnap('snap-1');
+    for (final id in ids) {
+      await db.uploadQueueDao.markUploaded(
+        id,
+        url: 'https://img/$id.jpg',
+        thumbnailUrl: 'https://img/${id}_thumb.jpg',
+      );
+    }
+    await db.uploadQueueDao.markPermanentlyFailed(
+      ids.last,
+      reason: 'dependency-failed',
+    );
+    // A take-back that fails leaves the failed photo marked `uploaded`, with
+    // its address kept; without that the pass resets its status to `failed`
+    // and the status alone would hold the snap back.
+    takeBackWorks = false;
+
+    await pass();
+
+    expect((await row(ids.last))!.status, 'uploaded');
+    expect(repository.created, isEmpty);
+    expect(announced, isEmpty);
+    expect(await row(ids.first), isNotNull);
+    expect((await row(ids.last))!.permanentlyFailed, isTrue);
+  });
+
+  Future<void> failForGood(String id, {DateTime? firstFailedAt}) async {
+    await db.uploadQueueDao.markPermanentlyFailed(
+      id,
+      reason: 'retries-exhausted',
+    );
+    await (db.update(
+      db.uploadQueueEntries,
+    )..where((e) => e.id.equals(id))).write(
+      UploadQueueEntriesCompanion(firstFailedAt: Value(firstFailedAt)),
+    );
+  }
+
+  test('an album with a photo that failed for good 30 days ago is thrown '
+      'away whole: copies deleted, Storage taken back, no snap', () async {
+    final (_, ids) = await queueSnap('snap-1', photos: 3);
+    await db.uploadQueueDao.markUploaded(
+      ids.first,
+      url: 'https://img/${ids.first}.jpg',
+    );
+    await failForGood(
+      ids.last,
+      firstFailedAt: t0.subtract(const Duration(days: 30)),
+    );
+    final copies = [for (final id in ids) (await row(id))!.localPath];
+
+    await pass();
+
+    for (final id in ids) {
+      expect((await row(id))!.status, 'cancelled');
+    }
+    for (final path in copies) {
+      expect(File(path).existsSync(), isFalse);
+    }
+    expect(taken, ['https://img/${ids.first}.jpg']);
+    expect(repository.created, isEmpty);
+  });
+
+  test('an album whose photo failed for good 29 days ago is left for the '
+      'user', () async {
+    final (_, ids) = await queueSnap('snap-1', photos: 2);
+    await failForGood(
+      ids.last,
+      firstFailedAt: t0.subtract(const Duration(days: 29)),
+    );
+
+    await pass();
+
+    for (final id in ids) {
+      expect((await row(id))!.status, isNot('cancelled'));
+    }
+    expect(File((await row(ids.first))!.localPath).existsSync(), isTrue);
+  });
+
+  test(
+    'a row without a first-failure time counts from when it was queued',
+    () async {
+      final (_, ids) = await queueSnap('snap-1', photos: 1);
+      await failForGood(ids.single);
+
+      await pass(after: const Duration(days: 29));
+      expect((await row(ids.single))!.status, isNot('cancelled'));
+
+      await pass(after: const Duration(days: 30));
+      expect((await row(ids.single))!.status, 'cancelled');
+    },
+  );
+
+  test('a recipe image that failed for good 31 days ago goes too, and a '
+      'pass is owed for it', () async {
+    final source = File('${root.path}/recipe.jpg')..writeAsBytesSync([1]);
+    final id = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueRecipeImageForUser(source.path, 'r1', uid),
+    );
+    await failForGood(id, firstFailedAt: t0.subtract(const Duration(days: 31)));
+    final copy = (await row(id))!.localPath;
+
+    expect(
+      await withClock(Clock.fixed(t0), () => processor.hasPending(uid)),
+      isTrue,
+    );
+    await pass();
+
+    expect((await row(id))!.status, 'cancelled');
+    expect(File(copy).existsSync(), isFalse);
   });
 
   test('a snap thrown away before it was created is never created', () async {

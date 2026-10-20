@@ -19,7 +19,7 @@
  *
  * Usage:
  *   cd functions
- *   npx ts-node src/admin/export-llm-samples.ts [--mode extract] [--output path/to/output.json]
+ *   npx ts-node src/admin/export-llm-samples.ts --project <id> [--mode extract] [--output path/to/output.json]
  *
  * --mode narrows to a single call type ('extract' | 'enhance' | 'spoken' |
  *        'ingredientLines' | 'ocr'); omitted exports every mode.

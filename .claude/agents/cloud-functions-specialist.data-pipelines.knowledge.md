@@ -62,8 +62,8 @@
 - **A hand-run script's delete/keep OVERLAP guard no-ops the WHOLE script in
   silence** (`reset-user-data.ts`); repairing it removes the header's only
   enforcement, so the durable barrier is a HUMAN step nothing can pre-satisfy: a
-  typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`
-  (`admin-init.ts` hardcodes prod). Its Auth-wipe phase fires
+  typed `CONFIRMATION_PHRASE`, `!dryRun`-scoped, above the first `runPhases(`.
+  Its Auth-wipe phase fires
   `onUserDeleted`, which writes into collections Phase 2 is concurrently deleting.
 - **A run-time REPORT of "what no list decides" reads EVERY register the deleters
   use** (one erased by its OWN tier step — `pantry` — is in no list and fires on

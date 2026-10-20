@@ -77,7 +77,7 @@ class CookSnapUploadCompletion implements UploadCompletion {
     var group = await _group(userId, snapId);
     if (!_isLive(group, row.id, userId)) return CompletionOutcome.discarded;
     final albumDead = group.any((r) => r.status == 'cancelled');
-    if (!albumDead && group.any((r) => r.status != 'uploaded')) {
+    if (!albumDead && _siblingNotReady(group)) {
       return CompletionOutcome.waitingForGroup;
     }
 
@@ -93,7 +93,7 @@ class CookSnapUploadCompletion implements UploadCompletion {
       if (group.any((r) => r.status == 'cancelled')) {
         return _discardAlbum(group, row);
       }
-      if (group.any((r) => r.status != 'uploaded')) {
+      if (_siblingNotReady(group)) {
         return CompletionOutcome.waitingForGroup;
       }
       final snap = _snapOf(group, userId);
@@ -125,6 +125,12 @@ class CookSnapUploadCompletion implements UploadCompletion {
     }
     return CompletionOutcome.done;
   }
+
+  /// A permanent failure leaves the row's status as it was, so `uploaded`
+  /// alone does not mean the photo is ready: the snap must not be created
+  /// while any photo of the album waits for the user.
+  bool _siblingNotReady(List<UploadQueueEntry> group) =>
+      group.any((r) => r.status != 'uploaded' || r.permanentlyFailed);
 
   /// One photo thrown away takes the album with it: a snap with fewer photos
   /// than the user took is not what they sent. The queue takes this row's

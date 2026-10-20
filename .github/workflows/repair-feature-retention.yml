@@ -35,6 +35,8 @@ jobs:
     name: Repair cooked/shared flags
     runs-on: ubuntu-latest
     environment: production
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 30
 
     steps:
@@ -64,9 +66,16 @@ jobs:
             echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured." >&2
             exit 1
           fi
+          # The environment's variable, the `.firebaserc` production alias and
+          # the key must all name the same project before anything runs.
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
-          echo "GOOGLE_CLOUD_PROJECT=butlery-app-1" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=$FIREBASE_PROJECT_ID" >> "$GITHUB_ENV"
 
       - name: Run repair
         working-directory: functions

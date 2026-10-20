@@ -1,12 +1,15 @@
 # Reset-user-data runbook (BUT-2028)
 
-`functions/src/admin/reset-user-data.ts` wipes user data from the **production**
-project (`admin-init.ts` hardcodes it — there is no environment switch). This
-runbook covers what can go wrong quietly.
+`functions/src/admin/reset-user-data.ts` wipes user data from the project named
+by `--project` (`butlery-app-1` or `butlery-app-staging`). There is no default:
+without the flag, or with a `GOOGLE_CLOUD_PROJECT`/`GCLOUD_PROJECT` or a
+service-account key naming a different project, it refuses before connecting
+(`functions/src/admin/require-project.ts`). This runbook covers what can go
+wrong quietly.
 
 ## TL;DR
 
-- Preview: `cd functions && npm run reset-user-data:dry-run`. Changes nothing,
+- Preview: `cd functions && npm run reset-user-data:dry-run -- --project <id>`. Changes nothing,
   sets no flag, prints no verdict.
 - A live run asks you to type a phrase in full before it deletes anything. That
   prompt is the last human step. A test holds one shortcut shut: no script in
@@ -112,7 +115,7 @@ clean bill of health for the whole database.
 
 ```
 cd functions
-npm run reset-user-data:dry-run
+npm run reset-user-data:dry-run -- --project <id>
 ```
 
 Read the unknown-collection section. Anything it names is either a collection
@@ -130,7 +133,7 @@ every run.
 
 Two steps this leaves for a person, neither of which the report performs:
 
-- `npx ts-node src/admin/migrate-friend-categories.ts` (dry run) and then
+- `npx ts-node src/admin/migrate-friend-categories.ts --project <id>` (dry run) and then
   `--live` moves any `users/{uid}/friendCategories` row onto the live spelling.
   Until it runs, such a row is deleted by the cascade rather than exported —
   see the BUT-2044 entries in `docs/architecture/ACCEPTED_DEVIATIONS.md`.

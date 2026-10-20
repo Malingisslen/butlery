@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
+import 'package:butlery/services/offline/unsent_image_expiry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -65,6 +66,16 @@ String? describeNextAttempt(AppLocalizations l10n, QueuedChange change) {
   final seconds = (left.inMilliseconds / 1000).ceil();
   if (seconds < 60) return l10n.syncQueueNextAttemptSeconds(seconds);
   return l10n.syncQueueNextAttemptMinutes((seconds / 60).ceil());
+}
+
+/// How long until an unsent photo is thrown away by itself, or null for a
+/// change that is not one. The notice comes before the removal, so the user
+/// can retry or keep a copy first.
+String? describeAutoDiscard(AppLocalizations l10n, QueuedChange change) {
+  final since = change.unsentSince;
+  if (change.kind != QueuedChangeKind.image || !change.needsUser) return null;
+  if (since == null) return null;
+  return l10n.syncQueueAutoDiscard(unsentImageDaysLeft(since, clock.now()));
 }
 
 /// How long [change] has waited ("ålder", produktregler.md:190), written as
@@ -144,6 +155,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final what = describeQueuedChange(l10n, change);
+    final autoDiscard = describeAutoDiscard(l10n, change);
     final trySmaller = change.canTrySmaller ? onTrySmaller : null;
     final saveAsCopy = change.canSaveAsCopy ? onSaveAsCopy : null;
     return ButleryOutlinedBox(
@@ -171,6 +183,15 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
               color: cs.error,
             ),
           ),
+          if (autoDiscard != null) ...[
+            const SizedBox(height: AppDimensions.space4),
+            Text(
+              autoDiscard,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: AppDimensions.space8),
           Wrap(
             spacing: AppDimensions.space8,

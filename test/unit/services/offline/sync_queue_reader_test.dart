@@ -144,7 +144,7 @@ void main() {
     final failed = (await readQueuedChanges(db, 'u1')).single;
     expect(failed.needsUser, isTrue);
 
-    await retryQueuedChange(db, failed);
+    await retryQueuedChange(db, failed, userId: 'u1');
 
     final again = (await readQueuedChanges(db, 'u1')).single;
     expect(again.needsUser, isFalse);
@@ -406,7 +406,11 @@ void main() {
       reason: 'retries-exhausted',
     );
 
-    await retryQueuedChange(db, (await readQueuedChanges(db, 'u1')).single);
+    await retryQueuedChange(
+      db,
+      (await readQueuedChanges(db, 'u1')).single,
+      userId: 'u1',
+    );
 
     final after = (await db.select(db.syncQueueEntries).get()).single;
     expect(after.permanentlyFailed, isFalse);

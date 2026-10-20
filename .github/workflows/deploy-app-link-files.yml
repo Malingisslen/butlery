@@ -26,6 +26,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -59,9 +61,20 @@ jobs:
             echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured (see deploy-firebase.yml)." >&2
             exit 1
           fi
+          # The environment's variable, the `.firebaserc` production alias and
+          # the key must all name the same project before anything runs.
+          [ -n "$FIREBASE_PROJECT_ID" ] || { echo "::error::vars.FIREBASE_PROJECT_ID is empty for the production environment." >&2; exit 1; }
+          [ "$FIREBASE_PROJECT_ID" = "$(jq -r '.projects.production // empty' .firebaserc)" ] \
+            || { echo "::error::vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the production alias in .firebaserc." >&2; exit 1; }
+          [ "$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')" = "$FIREBASE_PROJECT_ID" ] \
+            || { echo "::error::The service-account key does not belong to $FIREBASE_PROJECT_ID." >&2; exit 1; }
+          # The `app` hosting target's site, as `firebase deploy` would resolve it.
+          SITE=$(jq -r --arg p "$FIREBASE_PROJECT_ID" '.targets[$p].hosting.app[0] // empty' .firebaserc)
+          [ -n "$SITE" ] || { echo "::error::no app hosting target for $FIREBASE_PROJECT_ID in .firebaserc" >&2; exit 1; }
+          echo "SITE=$SITE" >> "$GITHUB_ENV"
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
           python3 tools/hosting/patch_live_files.py \
-            --site butlery-app-1 --key "$RUNNER_TEMP/sa.json" \
+            --site "$SITE" --key "$RUNNER_TEMP/sa.json" \
             ${{ inputs.dry_run && '--dry-run' || '' }} \
             /.well-known/assetlinks.json=web/.well-known/assetlinks.json \
             /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association \
@@ -71,7 +84,7 @@ jobs:
       - name: Check what the site serves
         if: ${{ !inputs.dry_run }}
         run: |
-          for host in butlery-app-1.firebaseapp.com butlery-app-1.web.app; do
+          for host in "$SITE.firebaseapp.com" "$SITE.web.app"; do
             curl -fsS "https://$host/.well-known/assetlinks.json" | grep -q D5:5E:2C
             curl -fsS "https://$host/.well-known/apple-app-site-association" | grep -q F6SFW9MP8T
             curl -fsS "https://$host/.well-known/security.txt" | grep -q "^Contact: mailto:security@butlery.se"
