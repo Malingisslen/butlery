@@ -1,139 +1,216 @@
-// BUT-2296: "Logga ut och släng" and account deletion empty the device
-// through OfflineUserStorage.clearUserData. A failure there must reach the
-// caller, and a success must leave nothing of the user behind.
+// BUT-2294 (G1): clearing a user's data ("Logga ut och släng", account
+// deletion) must not race a pass that is publishing the same images, and
+// must take back what the queue already put in Storage.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/offline/queued_image_uploader.dart';
+import 'package:butlery/services/offline/queued_recipe_writer.dart';
+import 'package:clock/clock.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import 'queue_harness.dart' show MidRandom, QueueHarness;
+
+/// Accepts every recipe write, so the queued images can go up after it.
+class _Writer implements QueuedRecipeWriter {
+  @override
+  Future<int> create(Recipe recipe) async => 0;
+
+  @override
+  Future<int> update(Recipe recipe) async => (recipe.rev ?? 0) + 1;
+
+  @override
+  Future<void> delete(String recipeId) async {}
+}
 
 void main() {
+  const uid = 'u1';
+  final t0 = DateTime(2026, 10, 20, 8);
+
   late AppDatabase db;
   late Directory root;
+  late OfflineUserStorage storage;
+  late OfflineSyncManager manager;
+  late List<String> events;
+  late List<String> taken;
+  Completer<void>? uploadGate;
+  var deleterHangs = false;
 
-  setUpAll(() async => BaseUnitTest.setupUnit());
+  setUpAll(() async {
+    await BaseUnitTest.setupUnit();
+    QueueHarness.registerFallbacks();
+  });
 
   setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
-    root = await Directory.systemTemp.createTemp('uploads');
+    root = await Directory.systemTemp.createTemp('clear_user');
+    storage = OfflineUserStorage(database: db, uploadsRoot: () async => root);
+    events = [];
+    taken = [];
+    uploadGate = null;
+    deleterHangs = false;
+    final auth = FakeAuthRepository()
+      ..setAuthState(user: FakeUser(), userId: uid, isAuthenticated: true);
+    manager = OfflineSyncManager(
+      database: db,
+      authRepository: auth,
+      isOnlineNow: () => false,
+      random: MidRandom(),
+      uploadImage: (String localPath, String userId, String objectId) async {
+        events.add('upload started');
+        await uploadGate?.future;
+        events.add('upload done');
+        return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
+      },
+      deleteUploadedImage: (UploadedImage image) async {
+        taken.add(image.url);
+        if (deleterHangs) return Completer<bool>().future;
+        return true;
+      },
+      recipeWriter: _Writer(),
+      clearPatience: const Duration(milliseconds: 200),
+      userStorage: storage,
+    );
   });
 
   tearDown(() async {
+    manager.dispose();
     await db.close();
-    if (root.existsSync()) await root.delete(recursive: true);
+    await root.delete(recursive: true);
   });
 
-  Future<void> seed(OfflineUserStorage storage, String uid) async {
-    await storage.saveRecipeForUser(
-      RecipeFactory.build(id: 'r-$uid'),
-      uid,
-      operation: SyncOperation.create,
-      queueTagging: false,
+  Future<void> pass() => withClock(
+    Clock.fixed(t0),
+    () => manager.syncPendingChanges(isOnline: true),
+  );
+
+  Future<void> queueImage(String recipeId) async {
+    await withClock(
+      Clock.fixed(t0),
+      () => storage.saveRecipeForUser(
+        RecipeFactory.build(id: recipeId, createdBy: uid),
+        uid,
+        operation: SyncOperation.create,
+        queueTagging: false,
+      ),
     );
-    await db
-        .into(db.jsonCacheEntries)
-        .insert(
-          JsonCacheEntriesCompanion.insert(
-            boxName: 'box',
-            userId: uid,
-            key: 'json',
-            value: '{}',
-            cachedAt: DateTime(2026, 10, 7),
-          ),
-        );
-    await db
-        .into(db.parseCacheEntries)
-        .insert(
-          ParseCacheEntriesCompanion.insert(
-            cacheKey: 'parse-$uid',
-            userId: uid,
-            recipeJson: '{}',
-            parserVersion: '1',
-            source: 'text',
-            cachedAt: DateTime(2026, 10, 7),
-          ),
-        );
-    await db.uploadQueueDao.queueUpload(
-      id: 'up-$uid',
-      userId: uid,
-      localPath: '/x.jpg',
-      targetPath: 'x/x.jpg',
-      fileSizeBytes: 1,
+    final picked = File('${Directory.systemTemp.path}/clear-$recipeId.jpg')
+      ..writeAsBytesSync([1, 2, 3]);
+    addTearDown(() {
+      if (picked.existsSync()) picked.deleteSync();
+    });
+    await withClock(
+      Clock.fixed(t0),
+      () => storage.queueRecipeImageForUser(picked.path, recipeId, uid),
     );
   }
 
-  test('clears every table and the image copies of that user only', () async {
-    final storage = OfflineUserStorage(
-      database: db,
-      uploadsRoot: () async => root,
-    );
-    await seed(storage, 'anna');
-    await seed(storage, 'bo');
-    final copies = Directory('${root.path}/anna')..createSync();
-    File('${copies.path}/a.jpg').writeAsBytesSync([1]);
+  test('a clear waits for the pass in flight and runs after it', () async {
+    await queueImage('r1');
+    uploadGate = Completer<void>();
+    final running = pass();
+    await pumpEventQueue();
+    expect(events, ['upload started']);
 
-    await storage.clearUserData('anna');
+    final cleared = manager.clearUserData(uid, () async {
+      events.add('clear');
+    });
+    await pumpEventQueue();
+    expect(events, ['upload started'], reason: 'the clear must still wait');
 
-    final owners = {
-      'recipes': (await db.select(db.offlineRecipes).get()).map(
-        (r) => r.userId,
-      ),
-      'sync': (await db.select(db.syncQueueEntries).get()).map((r) => r.userId),
-      'json': (await db.select(db.jsonCacheEntries).get()).map((r) => r.userId),
-      'upload':
-          (await db
-                  .select(
-                    db.uploadQueueEntries,
-                  )
-                  .get())
-              .map((r) => r.userId),
-      'parse':
-          (await db
-                  .select(
-                    db.parseCacheEntries,
-                  )
-                  .get())
-              .map((r) => r.userId),
-    };
-    owners.forEach(
-      (table, uids) => expect(uids.toSet(), {'bo'}, reason: table),
-    );
-    expect(copies.existsSync(), isFalse);
+    uploadGate!.complete();
+    await running;
+    await cleared;
+
+    expect(events, ['upload started', 'upload done', 'clear']);
   });
 
-  test('a failed image delete reaches the caller', () async {
-    final storage = OfflineUserStorage(
-      database: db,
-      uploadsRoot: () async => throw const FileSystemException('denied'),
-    );
+  test('no pass starts while the data is being cleared', () async {
+    await queueImage('r1');
+    final inClear = Completer<void>();
+    final releaseClear = Completer<void>();
 
-    await expectLater(
-      storage.clearUserData('anna'),
-      throwsA(isA<FileSystemException>()),
-    );
+    final cleared = manager.clearUserData(uid, () async {
+      inClear.complete();
+      await releaseClear.future;
+    });
+    await inClear.future;
+    await pass();
+
+    expect(events, isEmpty, reason: 'nothing may upload during a clear');
+
+    releaseClear.complete();
+    await cleared;
+    await pass();
+
+    expect(events, ['upload started', 'upload done']);
+  });
+
+  test('images the queue already put in Storage are taken back before the '
+      'rows are cleared', () async {
+    await queueImage('r1');
+    final row = (await db.select(db.uploadQueueEntries).get()).single;
+    await db.uploadQueueDao.markUploaded(row.id, url: 'https://img/r1.jpg');
+
+    await manager.clearUserData(uid, () async {
+      events.add('clear');
+      expect(taken, ['https://img/r1.jpg']);
+    });
+
+    expect(events, ['clear']);
   });
 
   test(
-    'a failed database delete reaches the caller and clears nothing',
+    'a second clear ending does not reopen the gate for the first',
     () async {
-      final storage = OfflineUserStorage(
-        database: db,
-        uploadsRoot: () async => root,
-      );
-      await seed(storage, 'anna');
-      await db.customStatement(
-        'DROP TABLE ${db.parseCacheEntries.actualTableName}',
-      );
+      await queueImage('r1');
+      final inFirst = Completer<void>();
+      final releaseFirst = Completer<void>();
 
-      await expectLater(storage.clearUserData('anna'), throwsA(anything));
-      expect(await db.select(db.offlineRecipes).get(), isNotEmpty);
-      expect(await db.select(db.syncQueueEntries).get(), isNotEmpty);
+      final first = manager.clearUserData(uid, () async {
+        inFirst.complete();
+        await releaseFirst.future;
+      });
+      await inFirst.future;
+      await manager.clearUserData(uid, () async {});
+      await pass();
+
+      expect(events, isEmpty, reason: 'the first clear is still running');
+
+      releaseFirst.complete();
+      await first;
     },
   );
+
+  test('a clear does not hang on a take-back that never answers', () async {
+    await queueImage('r1');
+    final row = (await db.select(db.uploadQueueEntries).get()).single;
+    await db.uploadQueueDao.markUploaded(row.id, url: 'https://img/r1.jpg');
+    deleterHangs = true;
+
+    await manager.clearUserData(uid, () async => events.add('clear'));
+
+    expect(events, ['clear']);
+  });
+
+  test('a clear does not hang on a pass that never ends', () async {
+    await queueImage('r1');
+    uploadGate = Completer<void>();
+    unawaited(pass());
+    await pumpEventQueue();
+
+    await manager.clearUserData(uid, () async => events.add('clear'));
+
+    expect(events, ['upload started', 'clear']);
+  });
 }

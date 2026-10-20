@@ -49,5 +49,10 @@ class OfflineSyncManager {
     );
   }
 
+  Future<void> clearUserData(
+    String userId,
+    Future<void> Function() clear,
+  ) => clear();
+
   void dispose() {}
 }

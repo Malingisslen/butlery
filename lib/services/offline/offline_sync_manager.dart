@@ -52,6 +52,15 @@ class OfflineSyncManager {
   /// Uses a Completer-based mutex pattern for thread-safe sync.
   Completer<void>? _syncLock;
 
+  /// How many clears of a user's data are running, so no pass starts on rows
+  /// that are about to go.
+  int _clearing = 0;
+
+  /// How long a clear waits for the pass in flight, and then for the images
+  /// to be taken back out of Storage, before it goes on. Erasing on the device
+  /// must not hang on the network.
+  final Duration clearPatience;
+
   /// Whether the device is online now, read when a retry timer fires. Null
   /// reads as online.
   final bool Function()? _isOnlineNow;
@@ -84,6 +93,7 @@ class OfflineSyncManager {
     Random? random,
     this.recipeWriter,
     this.sendTimeout = const Duration(seconds: 30),
+    this.clearPatience = const Duration(seconds: 10),
     QueuedImageUploader? uploadImage,
     UploadedImageDeleter? deleteUploadedImage,
     OfflineUserStorage? userStorage,
@@ -162,7 +172,7 @@ class OfflineSyncManager {
       return;
     }
 
-    if (!isOnline || !await _hasWork(userId)) return;
+    if (!isOnline || _clearing > 0 || !await _hasWork(userId)) return;
 
     // Acquire async lock - if another sync is in progress, wait for it.
     // A loop, because several callers can wait on the same pass: only the
@@ -172,7 +182,7 @@ class OfflineSyncManager {
       while (_syncLock != null) {
         await _syncLock!.future;
       }
-      if (_disposed) return;
+      if (_disposed || _clearing > 0) return;
       // After waiting, check if we still need to sync
       if (!await _hasWork(userId) || _syncLock != null) {
         AppLogger.debug('🔄 SYNC: No pending changes after wait, skipping');
@@ -180,7 +190,7 @@ class OfflineSyncManager {
       }
     }
 
-    if (_disposed) return;
+    if (_disposed || _clearing > 0) return;
 
     // Create new lock - this atomically prevents new sync operations
     _syncLock = Completer<void>();
@@ -444,6 +454,32 @@ class OfflineSyncManager {
       synced: min(_lastPassSent, itemsToSync),
       total: itemsToSync,
     );
+  }
+
+  /// Runs [clear] for [userId] with the queue standing still: no new pass
+  /// starts, the one in flight finishes first, and the images the queue put
+  /// in Storage are taken back before their rows go. Without this a pass
+  /// could publish a picture the user just threw away.
+  Future<void> clearUserData(
+    String userId,
+    Future<void> Function() clear,
+  ) async {
+    _clearing++;
+    try {
+      try {
+        // A pass that outlives the wait re-reads its row after the upload and
+        // before using the image, finds it gone and takes the image back.
+        while (_syncLock != null) {
+          await _syncLock!.future.timeout(clearPatience);
+        }
+        await uploads?.takeBackAllUploaded(userId).timeout(clearPatience);
+      } on TimeoutException {
+        AppLogger.warning('Rensningen väntade inte klart på kön');
+      }
+      await clear();
+    } finally {
+      _clearing--;
+    }
   }
 
   void dispose() {
