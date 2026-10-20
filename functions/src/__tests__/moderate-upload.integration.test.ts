@@ -152,10 +152,14 @@ test("SVG spoofed as image/jpeg: audit_logs row records the rejection", async ()
 });
 
 // I5: an image the owner deleted before the trigger read it is not an error.
-test("object deleted before it was read: nothing logged as an error, no audit row", async () => {
+test("object deleted before it was read: the head read is not logged as an error, no audit row", async () => {
+  // Other error lines (the owner check needs Auth, which this lane lacks) are not this scenario's.
+  const headReadErrors = loggedErrors.filter(
+    (args) => args[0] === "[moderateUpload] failed to read head bytes",
+  );
   assert(
-    loggedErrors.length === 0,
-    `a 404 must not be logged at error level, got ${JSON.stringify(loggedErrors)}`,
+    headReadErrors.length === 0,
+    `a 404 must not be logged at error level, got ${JSON.stringify(headReadErrors)}`,
   );
   const rows = await auditRowsFor(GONE_PATH);
   assert(rows.length === 0, `expected zero audit rows, got ${rows.length}`);

@@ -101,3 +101,16 @@
 - Export/mining: verify FIELD PARITY against the writer. Best test is a
   PRIVACY WHITELIST — seed adversarial PII-shaped fields, assert the exported
   key set is EXACTLY allow-listed.
+
+### Storage finalize triggers (storage/)
+- **A post-erasure upload backstop decides on the PATH uid, never `metadata.uploadedBy`**
+  (client-written). `storage/erased-owner-upload.ts`: gone = `accountExists` false
+  (`auth/user-not-found`/`auth/invalid-uid`) OR `erasureUnderway(marker)` on
+  `erasures_in_progress/{uid}` — reuse that helper, never re-derive staleness. A definite
+  "gone" from either source wins over an error on the other; otherwise any error KEEPS the
+  object (fail open). Runs before the byte download and before `rejectAndAudit`. Its
+  `audit_logs` row carries `userIdHash` only and the uid segment of `resourceId` hashed —
+  a raw uid written after erasure is residue nothing will erase.
+- `handleFinalizedObject(obj, deps)` is the seam; `moderate-upload.integration.test.ts` runs
+  without an Auth emulator, so its `users/` objects reach moderation through the fail-open
+  branch, not the "live" one.
