@@ -22,6 +22,9 @@ body { margin: 0; background: var(--butlery-palette-paper-soft); font-family: 'B
 .panel input[type=range] { flex: 1; min-width: 0; }
 .panel input[type=color] { width: 36px; height: 28px; padding: 0; border: 1px solid #7d897c; border-radius: 6px; background: none; }
 .panel .val { flex: 0 0 52px; text-align: right; color: #627061; }
+.panel .step { flex: 0 0 auto; width: 26px; height: 26px; padding: 0; line-height: 1; font-size: 16px; }
+.panel .val[contenteditable] { cursor: text; border-bottom: 1px dashed #b9c4b6; outline: none; }
+.panel .val[contenteditable]:focus { border-bottom-color: #2f5d3a; color: #17251d; }
 .panel select { flex: 1; padding: 6px; }
 .panel .changed { font-weight: 700; }
 .panel .row { display: flex; gap: 8px; margin-top: 8px; }

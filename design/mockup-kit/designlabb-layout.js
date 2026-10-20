@@ -240,7 +240,7 @@ function likeTargets(el) {
   if (sel === '.phone' || sel.includes(':nth-child') || picked.some(o => o !== el && selectorFor(o, false) === sel)) return [el];
   const targets = new Set([el]);
   for (const ph of document.querySelectorAll('#screens .phone')) {
-    if (ph.dataset.theme === 'dark' || (selected.onlyView && ph !== own)) continue;
+    if (ph.dataset.theme === 'dark' || (selected.onlyView && !sameView(ph.dataset.view, own.dataset.view))) continue;
     let hits = [];
     try { hits = [...ph.querySelectorAll(sel.replace(/^\.phone /, ''))].filter(n => n.dataset.labId); } catch { /* a selector the browser refuses matches nothing */ }
     if (!hits.length && ph !== own) { const t = sameByText(el, own, ph); if (t) hits = [t]; }
@@ -250,7 +250,7 @@ function likeTargets(el) {
 }
 function freeSet(el, ox, oy) {
   if (!el.dataset.labId) return;
-  const targets = likeTargets(el), grp = targets.length > 1 ? `${selectorFor(el, false)}|${selected.onlyView ? el.closest('.phone').dataset.view : ''}` : null;
+  const targets = likeTargets(el), grp = targets.length > 1 ? `${selectorFor(el, false)}|${selected.onlyView ? linkedViews(el.closest('.phone').dataset.view)[0] : ''}` : null;
   // The picked part lands exactly on (ox, oy); the like parts move by the same step from where each is.
   const own = freeOffset(el), dx = ox - own.ox, dy = oy - own.oy;
   for (const t of targets) {

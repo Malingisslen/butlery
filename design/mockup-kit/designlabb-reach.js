@@ -66,3 +66,36 @@ function measureFixedRows() {
     if (row) FIXED_ROWS[cls] = parseFloat(getComputedStyle(row).height);
   }
 }
+
+// Spacing set from inside a view belongs to that view. The first two screens are the same view (Hem and
+// Mina recept share one file), so they follow each other; every other screen stands alone.
+const LINKED_VIEWS = [[0, 1]];
+const linkedViews = v => LINKED_VIEWS.find(g => g.includes(+v)) || [+v];
+const sameView = (a, b) => linkedViews(a).includes(+b);
+const VIEW_SPACE_KEYS = ['margin', 'sectionGap', 'rowPad', 'blockGap', 'chipGap', 'rowInner'];
+
+function viewSpaceCss(st, scope) {
+  let css = '';
+  for (const [v, o] of Object.entries(st.viewSpace || {})) {
+    const phone = `.phone[data-view="${v}"]`;
+    const rule = (sel, decls) => `${scoped(sel.split(',').map(x => `${phone} ${x}`).join(','), scope)}{${important(decls)}}`;
+    if (o.rowPad != null) {
+      css += rule('.b-row,.mr-item', `padding-top:${o.rowPad}px;padding-bottom:${o.rowPad}px`);
+      for (const [cls, h] of Object.entries(FIXED_ROWS)) css += rule(cls, `height:${+(h + 2 * (o.rowPad - 10)).toFixed(2)}px`);
+    }
+    if (o.sectionGap != null) {
+      css += rule('.b-section', `padding-top:${o.sectionGap}px`);
+      css += rule('.ik-sec,.sk-sec', `margin-top:${o.sectionGap}px`);
+    }
+    if (o.blockGap != null) css += rule('.b-body > * + *:not(.b-section)', `margin-top:${o.blockGap}px`);
+    if (o.chipGap != null) css += rule('.b-chips,.b-btnrow,.b-field,.mr-chips', `gap:${o.chipGap}px`);
+    if (o.rowInner != null) css += rule('.b-row,.mr-item,.ik-item,.sk-item', `gap:${o.rowInner}px`);
+    if (o.margin != null) {
+      css += `${scoped(phone, scope)}{--page-margin:${o.margin}px}`;
+      for (const [tag, prop] of Object.entries({ pl: 'padding-left', pr: 'padding-right', ml: 'margin-left', mr: 'margin-right' })) {
+        css += `${scoped(`${phone} [data-lab-margin~="${tag}"]`, scope)}{${prop}:${o.margin}px !important}`;
+      }
+    }
+  }
+  return css;
+}

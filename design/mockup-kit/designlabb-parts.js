@@ -65,7 +65,7 @@ function markMatches(sel, view, keep) {
   if (sel === '.phone') return { n: 0, views: 0 };
   let list = [];
   try { list = [...document.querySelectorAll(`#screens .phone ${sel.replace(/^\.phone /, '')}`)]; } catch { /* a selector the browser refuses matches nothing */ }
-  if (view != null) list = list.filter(n => n.closest('.phone').dataset.view == view);
+  if (view != null) list = list.filter(n => sameView(view, n.closest('.phone').dataset.view));
   list.forEach(n => n.setAttribute('data-lab-match', ''));
   const light = list.filter(n => n.closest('.phone').dataset.theme !== 'dark');
   return { n: light.length, views: new Set(light.map(n => n.closest('.phone').dataset.view)).size };
@@ -643,7 +643,7 @@ function wireMarquee(screens) {
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     if (!hit.length) { clearSelection(); return; }
     hit.forEach(n => n.setAttribute('data-lab-selected', ''));
-    selected = { el: hit[0], extras: hit.slice(1), mode: null };
+    selected = { el: hit[0], extras: hit.slice(1), mode: null, onlyView: true };
     openTab('part');
     showPart(false);
   });
@@ -681,7 +681,7 @@ function wireScreens() {
     if (selected?.el.isConnected && selected.el.contains(e.target) && !selected.el.classList.contains('phone')) el = parentPart(selected.el);
     document.querySelectorAll('[data-lab-selected]').forEach(n => n.removeAttribute('data-lab-selected'));
     el.setAttribute('data-lab-selected', '');
-    selected = { el, mode: null };
+    selected = { el, mode: null, onlyView: true };
     openTab('part');
     showPart(false);
     adviceForPart(el);

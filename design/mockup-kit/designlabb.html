@@ -802,7 +802,8 @@
 <label><input type="checkbox" id="overlay"><span>Rita ut avstånd och marginaler i px</span></label>
 <label><input type="checkbox" id="spacedrag"><span>Dra avstånden direkt i vyn</span></label>
 <div class="chips" id="spacesize" hidden><button type="button" class="on" data-size="big">Stora avstånd</button><button type="button" data-size="small">Små avstånd</button></div>
-<p class="hint">Avstånden får pilar, stora (12 px och mer) eller små åt gången. Dra i en pil så ändras just det avståndet i hela appen, på samma sätt som reglaget ovanför.</p>
+<p class="hint">Avstånden får pilar, stora (12 px och mer) eller små åt gången. Dra i en pil så ändras just det avståndet i den skärmen du drar i. De två första skärmarna är samma vy och följer varandra, alla andra står för sig. Reglagen ovanför ändrar alla skärmar.</p>
+<div class="row"><button class="ghost" id="viewspace-clear" type="button">Ta bort avstånd satta i skärmarna</button></div>
 </section>
 <section class="pane" data-pane="icons">
 <h2>Ikonbibliotek</h2>
@@ -1293,6 +1294,7 @@
 <script src="designlabb-notes.js"></script>
 <script src="designlabb-core.js"></script>
 <script src="designlabb-reach.js"></script>
+<script src="designlabb-steppers.js"></script>
 <script src="designlabb-roles.js"></script>
 <script src="designlabb-palette.js"></script>
 <script src="designlabb-warn.js"></script>
