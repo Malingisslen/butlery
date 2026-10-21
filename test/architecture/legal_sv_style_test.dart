@@ -41,9 +41,11 @@ void main() {
     final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
     final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
 
-    expect(sv, contains('Matbilder som väntar på att skickas'));
+    expect(sv, contains('Bilder som väntar på att skickas'));
+    expect(sv, contains('chattbilder och profilbild'));
     expect(sv, contains('slängs automatiskt efter 30 dagar'));
-    expect(en, contains('Food photos waiting to be sent'));
+    expect(en, contains('Images waiting to be sent'));
+    expect(en, contains('chat images and a profile picture'));
     expect(en, contains('thrown away automatically after 30 days'));
   });
 }
