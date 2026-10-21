@@ -171,6 +171,14 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     return _permissionService.isGroupAdmin(_group!.id);
   }
 
+  /// Whether [group] holds anyone besides the current user. A new group's
+  /// roster is only its owner, so an empty `friendUserIds` is never the case
+  /// to test for.
+  bool hasOtherMembers(FriendCategory group) {
+    final currentUserId = _permissionService.currentUserId;
+    return group.friendUserIds.any((id) => id != currentUserId);
+  }
+
   /// Whether current user can leave this group.
   bool get canLeaveGroup {
     if (_group == null) return false;
