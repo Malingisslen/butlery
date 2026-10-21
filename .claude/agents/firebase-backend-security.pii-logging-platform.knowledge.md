@@ -50,7 +50,11 @@
   Never assume "stays on the device"; think before logging an exception whose text embeds a
   query built from a uid (a `memberPermissions.<uid>` index-hint URL is the realistic
   shape). A Dart-core throw (`StateError`, `Exception`) is NOT covered by the exception
-  classes that mask in `toString()` — mask at the throw site.
+  classes that mask in `toString()` — mask at the throw site. The offline queue's device
+  folder is `offline_uploads/<uid>/`, so a `FileSystemException` from any queue call (disk
+  full, copy failure) carries the raw uid in its `path`. A new
+  `AppLogger.error(msg, e)` around such a call is a leak; log `queueErrorCode(e)` in the
+  message instead, as `clearUserData` and the processor do.
 - On WEB Crashlytics is skipped, so `WebErrorReporter` is the only sink, and a "mask the
   message, leave the STACK readable" carve-out there does not hold: a web `StackTrace`
   is the JS engine's `Error.stack`, whose HEAD line is the exception's own `toString()` —

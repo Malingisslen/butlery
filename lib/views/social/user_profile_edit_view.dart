@@ -162,7 +162,14 @@ class _UserProfileEditViewContentState
 
       if (success) {
         AppLogger.info('🎨 VIEW: Upload success, showing success message');
-        SnackBarUtils.showSuccess(context, context.l10n.profileAvatarUploaded);
+        // A picture kept for later was not uploaded; the line under it says
+        // when it is saved.
+        if (viewModel.pendingAvatarPath == null) {
+          SnackBarUtils.showSuccess(
+            context,
+            context.l10n.profileAvatarUploaded,
+          );
+        }
       } else {
         final errorMsg =
             viewModel.error ?? context.l10n.profileCouldNotUploadAvatar;
@@ -187,7 +194,12 @@ class _UserProfileEditViewContentState
 
     if (mounted) {
       if (success) {
-        SnackBarUtils.showSuccess(context, context.l10n.profileSaved);
+        SnackBarUtils.showSuccess(
+          context,
+          viewModel.avatarWaitsForConnection
+              ? context.l10n.profileAvatarQueuedOffline
+              : context.l10n.profileSaved,
+        );
         Navigator.pop(context);
       } else {
         SnackBarUtils.showFailure(

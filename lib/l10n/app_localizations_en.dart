@@ -4395,6 +4395,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncQueueReasonChatImageFailed => 'The image could not be sent.';
 
   @override
+  String get syncQueueAvatar => 'New profile picture';
+
+  @override
+  String get syncQueueReasonAvatarFailed =>
+      'The profile picture could not be changed.';
+
+  @override
+  String get profileAvatarWaitsForConnection => 'Saved when you\'re online';
+
+  @override
+  String get profileAvatarQueuedOffline =>
+      'Your profile picture changes when you\'re online again.';
+
+  @override
+  String get profileAvatarQueueFailed =>
+      'The profile was saved, but the new picture could not be kept for later. Choose it again.';
+
+  @override
   String get messagingImagePending => 'Image on its way …';
 
   @override

@@ -35,6 +35,16 @@ const List<Duration> kQueueRetrySchedule = [
 /// attempt before it becomes a permanent failure.
 const Duration kQueueMaxRetryAge = Duration(hours: 24);
 
+/// Thrown by a handler whose row has failed as often as that kind of item is
+/// worth: it waits for the user like any permanent failure, with the reason
+/// the 24 h run-out gives.
+class QueueAttemptsExhausted implements Exception {
+  const QueueAttemptsExhausted();
+
+  @override
+  String toString() => 'QueueAttemptsExhausted';
+}
+
 /// ± this fraction of each step is jitter, so devices that come back online
 /// together do not retry in step. The same ±25 % as RetryHelper
 /// (retry_helper.dart), the app's other backoff.
@@ -106,6 +116,9 @@ QueuedChangeReason? permanentFailureReason(Object error) {
     return QueuedChangeReason.permissionDenied;
   }
   if (error is ValidationException) return QueuedChangeReason.unknown;
+  if (error is QueueAttemptsExhausted) {
+    return QueuedChangeReason.retriesExhausted;
+  }
   if (error is! FirebaseException) return null;
   return _permanentReasonForCode(error.code);
 }

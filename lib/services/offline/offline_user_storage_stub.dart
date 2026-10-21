@@ -40,6 +40,7 @@ class OfflineUserStorage {
     required String userId,
     required String targetPath,
     required Map<String, Object?> metadata,
+    bool replaceWaiting = false,
   }) async => const [];
 
   Future<void> deleteUploadFile(String path) async {}

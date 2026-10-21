@@ -2851,6 +2851,26 @@
   "@syncQueueReasonChatImageFailed": {
     "description": "BUT-2294: why a queued chat image waits for the user, whatever the cause; a refusal is not explained. The card offers Försök igen and Släng."
   },
+  "syncQueueAvatar": "Ny profilbild",
+  "@syncQueueAvatar": {
+    "description": "BUT-2294: a queued profile picture in the waiting list."
+  },
+  "syncQueueReasonAvatarFailed": "Profilbilden kunde inte bytas.",
+  "@syncQueueReasonAvatarFailed": {
+    "description": "BUT-2294: why a queued profile picture waits for the user, whatever the cause. The card offers Försök igen and Släng."
+  },
+  "profileAvatarWaitsForConnection": "Sparas när du är online",
+  "@profileAvatarWaitsForConnection": {
+    "description": "BUT-2294: under the profile picture chosen without a connection, until the form is saved."
+  },
+  "profileAvatarQueuedOffline": "Profilbilden byts när du är online igen.",
+  "@profileAvatarQueuedOffline": {
+    "description": "BUT-2294: snackbar after the profile was saved with a picture that waits for a connection."
+  },
+  "profileAvatarQueueFailed": "Profilen sparades, men den nya bilden kunde inte sparas till senare. Välj den igen.",
+  "@profileAvatarQueueFailed": {
+    "description": "BUT-2294: error when the rest of the profile saved but the picture could not be queued on the device."
+  },
   "messagingImagePending": "Bild på väg …",
   "@messagingImagePending": {
     "description": "BUT-2294: what the others see in place of a chat image whose picture has not arrived yet."

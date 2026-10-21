@@ -339,6 +339,14 @@ class StorageService extends BaseService
     required String objectId,
   }) => _uploadQueuedPhoto(imageFile, userId, 'chat_images', objectId);
 
+  /// The offline queue's profile picture, in the user's avatar folder, named
+  /// after the queue row so a repeat overwrites, with no thumbnail.
+  Future<String?> uploadQueuedAvatar(
+    File imageFile,
+    String userId, {
+    required String objectId,
+  }) => _uploadQueuedPhoto(imageFile, userId, 'avatars', objectId);
+
   Future<String?> _uploadQueuedPhoto(
     File imageFile,
     String userId,
