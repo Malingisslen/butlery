@@ -2,16 +2,14 @@
  * Vertex AI Gemini client configuration and Swedish recipe prompts.
  *
  * This module provides:
- * - Vertex AI client pinned to the `eu` multi-region (GDPR Chapter V — EU data
- *   residency; see BUT-1187 for the europe-west1 → eu move)
+ * - Vertex AI client pinned to VERTEX_LOCATION (GDPR Chapter V — EU data residency)
  * - Service-account auth via Application Default Credentials (no API key)
  * - Swedish-language prompts for recipe extraction
  * - Response type definitions and schema enforcement
  * - JSON Schema for server-side structured output validation
  *
  * Migration note (BUT-614): switched from Google AI Studio (generativelanguage.googleapis.com,
- * US egress) to Vertex AI (originally europe-west1; now the `eu` multi-region per
- * BUT-1187 — see VERTEX_LOCATION). All prompts, schemas,
+ * US egress) to Vertex AI (see VERTEX_LOCATION). All prompts, schemas,
  * parsers, and exported function signatures are preserved so call sites are unchanged.
  */
 
@@ -28,20 +26,14 @@ import { logger } from "firebase-functions/logger";
 export const PROMPT_VERSION = "3.3.0";
 
 /**
- * Vertex AI region — EU data residency (BUT-607, BUT-1187).
- *
- * `eu` multi-region (not single-region europe-west1). Rationale: when
- * gemini-2.0-flash-001 was retired (BUT-1187), the current Gemini 2.5-series
- * models are not reliably served in the europe-west1 *single* region, but ARE
- * available on the `eu` multi-region endpoint — which still keeps all data
- * within EU geography (Chapter V satisfied; covered by the Vertex AI DPA). This
- * preserves GDPR residency while restoring model availability.
+ * Vertex AI region — EU data residency (BUT-607).
  *
  * NOTE: model×region availability is project-allowlist dependent and changes
- * often. Confirm the chosen TEXT_MODEL is served on `eu` for THIS project at
- * deploy time (Cloud Logging: jsonPayload.modelId="<model>" with non-zero count).
+ * often. Confirm the chosen TEXT_MODEL is served on VERTEX_LOCATION for THIS
+ * project at deploy time (Cloud Logging: jsonPayload.modelId="<model>" with
+ * non-zero count).
  */
-export const VERTEX_LOCATION = "eu";
+export const VERTEX_LOCATION = "europe-west1";
 
 // Singleton client instance — keyed by resolved project id so test overrides
 // (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.
@@ -866,12 +858,6 @@ function validateDifficulty(
  * deliberately do not set `thinkingConfig` (keeps cost/latency at the 2.0-flash
  * tier).
  *
- * Paired with the VERTEX_LOCATION europe-west1 → `eu` move (above): 2.5-series
- * models are not reliably served in europe-west1 single-region, so the region
- * change is part of the same fix. DEPLOY-TIME CHECK: if THIS project does not
- * serve `gemini-2.5-flash-lite` on `eu`, fall back to `gemini-2.5-flash`
- * (broader availability, ~higher cost + thinking) — flip this one constant.
- *
  * `MODEL_ID` is exported separately so analytics events can stamp the
  * actual model used per call (rather than re-deriving it from a name).
  */
@@ -887,7 +873,7 @@ export const MAX_TOKENS = 2000;
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;
 
-// Gemini 2.5 Flash-Lite pricing per 1M tokens (Vertex AI, `eu` multi-region).
+// Gemini 2.5 Flash-Lite pricing per 1M tokens (Vertex AI).
 // BUT-1479 (closes the BUT-1187 TODO): verified 2026-07-07 against Google's
 // published Gemini 2.5 Flash-Lite pricing — input $0.10/M, output $0.40/M,
 // unchanged (no drift). Re-verify if falling back to gemini-2.5-flash, which

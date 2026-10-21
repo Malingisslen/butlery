@@ -313,7 +313,7 @@ export async function runStructureRecipe(
       `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`
     );
 
-    // Call Vertex AI Gemini (`eu` multi-region, EU residency — BUT-1187)
+    // Call Vertex AI Gemini (EU residency — see VERTEX_LOCATION)
     const result = await model.generateContent({
       contents: [
         { role: "user", parts: [{ text: userPrompt }] },

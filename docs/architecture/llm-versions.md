@@ -38,12 +38,10 @@ snapshot. The decision criteria:
    sample of recent prompts (sample 50–100 calls from the past month).
 3. **No regression on the prompt-changelog gate** (HIGH-AI8) — the candidate
    model must respect the schema-enforced JSON output without tightening.
-4. **Vertex AI region still EU-resident** (`eu` multi-region as of BUT-1187;
-   was `europe-west1` single-region). Model×region availability is
-   project-allowlist dependent and changes often — verify the candidate model
-   is actually served on the configured region for THIS project before pinning
-   (2.5-series models are not reliably served in europe-west1 single-region,
-   which is why the endpoint moved to the `eu` multi-region).
+4. **Vertex AI region still EU-resident** (`VERTEX_LOCATION` in `gemini-client.ts`).
+   Model×region availability is project-allowlist dependent and changes often —
+   verify the candidate model is actually served on the configured region for
+   THIS project before pinning.
 
 If all four pass, bump in a single PR that:
 
