@@ -125,8 +125,9 @@ class RecipeSharingManager {
   }) async {
     try {
       // BUT-2169: nothing new is shared across a block, in either direction.
+      if (!_hasRecipients(memberIds)) return null;
       memberIds = await BlockedUserFilter.shareRecipients(memberIds);
-      if (memberIds.isEmpty) {
+      if (!_hasOtherThanSharer(memberIds)) {
         return null;
       }
       AppLogger.info('🔄 Starting recipe share process for recipe: $recipeId');
@@ -356,8 +357,9 @@ class RecipeSharingManager {
   }) async {
     try {
       // Before the copy exists, so a share nobody can receive leaves no copy.
+      if (!_hasRecipients(memberIds)) return null;
       memberIds = await BlockedUserFilter.shareRecipients(memberIds);
-      if (memberIds.isEmpty) {
+      if (!_hasOtherThanSharer(memberIds)) {
         return null;
       }
       AppLogger.info('🔄 Duplicating and sharing recipe: $recipeId');
@@ -522,6 +524,20 @@ class RecipeSharingManager {
     }
 
     return true;
+  }
+
+  /// A group's roster always contains its own owner, so "nobody but you" is a
+  /// new group's ordinary state. Refused here, before any copy of the recipe
+  /// exists, rather than reported as a share that worked.
+  bool _hasRecipients(List<String> memberIds) {
+    if (_hasOtherThanSharer(memberIds)) return true;
+    _onShareError?.call(AppLocale.current.groupNoMembersToShare);
+    return false;
+  }
+
+  bool _hasOtherThanSharer(List<String> memberIds) {
+    final currentUserId = _getCurrentUserId();
+    return memberIds.any((id) => id != currentUserId);
   }
 
   /// Grants [memberIds] access to an already-collaborative [recipe] and records
