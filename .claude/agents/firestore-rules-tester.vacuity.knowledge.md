@@ -175,3 +175,12 @@
   input. Measured (BUT-1904): the three original tests survived that mutant whole; the case
   that killed it was the sender writing the field itself. Pin the field-moving payload
   beside the field-preserving one on every pre-state conjunct, immutability guards included.
+- **A one-shot gate keyed on a CLIENT-WRITABLE flag must be tested from the state the attacker
+  can RE-ARM, not from the state the app leaves behind.** `isPendingImage(resource.data)` is
+  `pendingImage == true && imageUrl == null` (BUT-2294). The suite's "never re-pointed" deny was
+  seeded with no `pendingImage` at all, so the flag conjunct refused it, and deleting
+  `imageUrl == null` left 179/179 green. But the same limb's unchanged-value arm lets the
+  sender write `pendingImage: true` back onto a filled message, and the re-point is then
+  ALLOWED under that mutant and DENIED under the real rules. When a gate has two pre-state
+  conjuncts, ask which ones the caller can satisfy with an earlier allowed write. Seed the
+  fixture in that state, or reach it with the real allowed write first.

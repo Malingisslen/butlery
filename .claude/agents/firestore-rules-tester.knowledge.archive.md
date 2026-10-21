@@ -6302,3 +6302,17 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 
 ## 2026-10-20 — BUT-1528 rules gate (create path left open)
 - The update rule pinned `reviewRound`/`reopenedAt`, but `reports` create had no keys check beyond `moderatorAction`; both measured ALLOW on create. Fixed with `keys().hasAny([...])`; each key probed red on its own.
+
+## 2026-10-20 — BUT-2294 PR 8 (C-R1) rules gate: chat-image placeholder fill-in
+- Staged diff: `imageUrlOf`, `isPendingImage`, `chatImageAttachOk` plus one conjunct on the messages sender update limb; 14 tests appended to conversations-rules.test.ts.
+- Runs (real rules): conversations 179/179, poll-votes 62/62, cook-snaps-and-message-mod 51/51.
+- Mutants (PROBE_RULES_PATH, 1 match each): drop `meta.get('imageUrl', null) == null` from isPendingImage gives 179/179, NOT killed. Replace the request-side `pendingImage != true` with `true` gives 178/179, killing "the fill-in must clear the placeholder flag" alone. Drop `... is string` gives 179/179, unreachable because `.matches()` on a non-string is itself an evaluation error.
+- Exploit probe, a throwaway file under functions/src/__tests__ deleted by trap. On a filled message the sender writes `metadata.pendingImage: true`, which is ALLOWED by the unchanged-imageUrl arm. A re-point after that is DENIED on real rules and ALLOWED on the imgnull mutant. The one-shot test's fixture has no pendingImage, so it never reaches that conjunct.
+- Foreign bucket `v0/b/evil-bucket.appspot.com/o/users%2F<own uid>%2Fchat_images%2Fx.jpg` is ALLOWED on real rules. The messages create limb has no URL check at all.
+- Also measured on real rules: a placeholder's metadata replaced by a string is ALLOWED. An image message's metadata set to null is DENIED (previously allowed; no client writer sends it: `_markSent`, status/receipt updates, `editMessage` and batch delivered all leave metadata alone). A content edit on an image message is ALLOWED.
+- No `pendingImage` writer exists in lib/ yet. Today's online chat upload writes `users/{uid}/recipes/` (storage_service.dart uploadImageFile), so the future fill-in writer must upload under `chat_images/` or be denied.
+
+## 2026-10-20 — BUT-2294 PR 8 (C-R1) rules gate, round two
+- Regex now pins `butlery-app-(1|staging).firebasestorage.app`; the `is string` conjunct is gone. Runs (real rules): conversations 181/181, poll-votes 62/62, cook-snaps-and-message-mod 51/51.
+- imgnull mutant: 180/181, killing only "a picture cannot be re-pointed even after the sender re-arms the placeholder flag".
+- Bucket mutant `butlery-app-(1|staging)` -> `[A-Za-z0-9._-]+` (suffix `.firebasestorage.app` kept): 181/181, NOT killed. The foreign-bucket test uses `evil-bucket.appspot.com`, which fails the kept suffix either way. JS regex check: `evil-proj.firebasestorage.app` false on real, true on the mutant.

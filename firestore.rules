@@ -2869,6 +2869,45 @@ service cloud.firestore {
           && meta.poll.get('isClosed', false) == true;
       }
 
+      // BUT-2294 (C-R1): a chat image sent without a connection is a placeholder
+      // message (`type: image`, `metadata.pendingImage: true`, no `imageUrl`)
+      // that the app fills in once the picture is up. Membership, the age
+      // gate (which also refuses a guest) and the BUT-2017 block gate are
+      // evaluated NOW, because hours may have passed since the placeholder was
+      // created. It is one-shot (a message that already has a picture is never
+      // re-pointed), touches nothing but `metadata.imageUrl` and
+      // `metadata.pendingImage`, and the URL must be a download URL of one of
+      // the caller's own `users/{uid}/chat_images/` objects in this project's
+      // bucket (production or staging).
+      function imageUrlOf(data) {
+        let meta = data.get('metadata', null);
+        return meta is map ? meta.get('imageUrl', null) : null;
+      }
+
+      function isPendingImage(data) {
+        let meta = data.get('metadata', null);
+        return data.get('type', 'text') == 'image'
+          && meta is map
+          && meta.get('pendingImage', false) == true
+          && meta.get('imageUrl', null) == null;
+      }
+
+      function chatImageAttachOk() {
+        return isPendingImage(resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['metadata'])
+          && request.resource.data.metadata.diff(resource.data.metadata).affectedKeys()
+               .hasOnly(['imageUrl', 'pendingImage'])
+          && request.resource.data.metadata.get('pendingImage', false) != true
+          && request.resource.data.metadata.imageUrl.matches(
+               '^https://firebasestorage\\.googleapis\\.com/v0/b/butlery-app-(1|staging)\\.firebasestorage\\.app/o/users%2F'
+               + request.auth.uid + '%2Fchat_images%2F[A-Za-z0-9._-]+\\?.*$')
+          && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
+          && isAgeCompliant()
+          && (convOf(resource.data.conversationId).data.participantIds.size() != 2
+              || isNotBlockedBy(otherParticipant(convOf(resource.data.conversationId).data.participantIds)))
+          && notBlockedByAnyOf(convOf(resource.data.conversationId).data.participantIds);
+      }
+
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
         && resource.data.get('type', 'text') != 'duplicateBlocked'
@@ -2878,6 +2917,8 @@ service cloud.firestore {
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
         && cannotModify(['senderId', 'conversationId', 'sentAt', 'reactions'])
+        && (imageUrlOf(request.resource.data) == imageUrlOf(resource.data)
+            || chatImageAttachOk())
         // BUT-2246: an edit is a second way to send text. When the edited
         // message is the newest, `syncConversationLastMessage` copies it into
         // the chat-list preview with the Admin SDK, past the `conversations`

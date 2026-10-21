@@ -70,6 +70,14 @@ and malformed shapes when the validator changes.
   server projections fed by another collection's limb) before passing "the preview is gated".
   A gate added to the messages sender limb is graded by `cook-snaps-and-message-mod` and
   `poll-votes` too: their sender-edit allows are the legitimate-path controls.
+- **A Storage download-URL regex in rules that pins `users%2F<uid>%2F<folder>` but leaves the
+  bucket as `[A-Za-z0-9._-]+` admits the same path in ANY bucket**, the attacker's own Firebase
+  project included. Measured ALLOW on the `messages` fill-in (BUT-2294). A rule cannot read
+  the bucket name, so pinning it needs a literal per environment. Also check whether the
+  collection's CREATE limb validates the URL at all. `messages` create does not, which is
+  what keeps the update-side gap from being an escalation. The foreign-bucket deny must use a
+  `<other>.firebasestorage.app` bucket, the shape a new project gets: an `appspot.com` fixture
+  leaves a mutant that keeps the suffix and widens only the project id green.
 - **`isNotBlockedBy` is a bare `exists()` reading no field, and no READ limb in
   `firestore.rules` is block-gated** — a sentence saying a change to the helper would put it
   "on the read side" confuses reading the block doc's FIELDS with the read limb.

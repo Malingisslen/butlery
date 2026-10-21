@@ -6602,3 +6602,19 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   and in the sign-out warning; "Försök igen" and "Släng" act on all of them, and the 30 days
   throw the comment away whole. The card for a comment that failed for good says "Kommentaren
   kunde inte skickas." whatever the cause. The text of a comment thrown away is not kept.
+
+## BUT-2294 — a sender's update that sets a chat image's picture is gated (2026-10-20)
+
+- **SUPERSEDES**, in the BUT-2246 entry, "Updates that change neither key are not gated": a sender's `messages`
+  update that sets or changes `metadata.imageUrl` is allowed only as the fill-in of a placeholder
+  (`type: image`, `metadata.pendingImage: true`, no `imageUrl`). It changes only `metadata.imageUrl`
+  and `metadata.pendingImage`, the URL must be one of the caller's own
+  `users/{uid}/chat_images/` download URLs in this project's bucket (production or staging), and it needs membership of the conversation,
+  `isAgeCompliant()` and the BUT-2017 gate (the caller's mirror in a room, plus an exact `blocks`
+  read in a DM). A message that already has a picture is never re-pointed. Every other sender
+  update, a plain `content` edit included, is gated exactly as before.
+- In a group the block gate is the caller's mirror, which fails open when the mirror is missing
+  and lags a block by a trigger (the BUT-2017 entry); the plan's wish for an exact read per
+  participant is not expressible in rules, because a rule cannot loop over the roster. A DM is
+  exact.
+- An open report on a placeholder does not stop the fill-in.
