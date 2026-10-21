@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/di/modules/trash_registrations.dart';
 import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/trash/trash_service.dart';
@@ -263,6 +264,11 @@ class ContentModule implements DIModule {
         firestoreRepository: app.isRegistered<FirestoreRepository>()
             ? app<FirestoreRepository>()
             : null,
+        removeRecipientsFromOwnShares: (recipeId, userIds) =>
+            app<FirebaseSharedRecipeRepository>().removeRecipientsFromOwnShares(
+              recipeId: recipeId,
+              userIds: userIds,
+            ),
       ),
       dispose: (s) => s.dispose(),
     );

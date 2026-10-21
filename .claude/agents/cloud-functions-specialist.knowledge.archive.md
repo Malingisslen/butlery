@@ -21314,3 +21314,11 @@ Production fixes were made by the main session; this run only changed tests (no 
 - Reviewed the 17 added tests in `conversations-rules.test.ts` (brief said 16; `git diff --cached | grep -c '^+test('` = 17, suite 164 -> 181). Suite ran 181/181 on the local emulator under a fresh `PROBE_PROJECT_ID`; `tsc --noEmit` clean.
 - By reasoning only (no probe run): the "one-shot" and "online image" fixtures both seed `imageUrl` with no `pendingImage`, so each violates two `isPendingImage` conjuncts and deleting `meta.get('pendingImage', false) == true` would leave every test green. Low harm, since the sender can create a placeholder at will. Folded into the "conjunct REPEATED per field" principle as the FIXTURE variant.
 - Every DM fixture puts the sender at `participantIds[0]`, so a `participantIds[1]` mutant at the `chatImageAttachOk` block-gate call site would survive (the existing position principle; L1b/E1b are the sibling precedent). Filed Medium.
+
+### 2026-10-21 — BUT-1815 trim rules tests, gate review [client-guards]
+- Reviewed the 4 added `trim:` tests in `shared-content-block-rules.test.ts`. Suite ran 20/20 on a locally started Firestore emulator.
+- MEASURED with a scratchpad probe copy (fresh PROJECT_ID `probe-trim-attrib`, repo untouched): a recipient holding a member row updating the parent alone with `sharedToUserIds: arrayRemove(<another recipient>)` -> assertSucceeds PASSED; the same recipient deleting `members/<another>` alone -> assertFails PASSED. So "trim: a recipient cannot take another recipient off the row" is green only on the member-row delete; the parent `allow update` has an `isSharedMember` limb with no self-only restriction on shrinking `sharedToUserIds`. Pre-existing rules gap, not introduced by the diff; filed High against the test, rules gap handed off.
+- Stranger solo parent update -> assertFails PASSED (both halves deny for a stranger).
+
+### 2026-10-21 — BUT-1815 trim rules tests, re-review [client-guards]
+- t3 replaced by a solo `members/{gone}` delete by another recipient (staged blob a529845); the same write was measured as assertFails in the earlier probe. Re-review pass. The parent-update `isSharedMember` gap goes to a follow-up ticket per the coordinator.

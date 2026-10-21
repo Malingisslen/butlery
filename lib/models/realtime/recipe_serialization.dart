@@ -283,47 +283,10 @@ class RecipeSerialization {
     return null;
   }
 
-  /// Parse social data from recipe data
   static RecipeSocialData? _deserializeSocialData(Map<String, dynamic> data) {
-    // Check if social data exists
-    final socialData = data['socialData'] as Map<String, dynamic>?;
-    if (socialData == null) return null;
-
-    return RecipeSocialData(
-      ownerId: socialData['ownerId']?.toString(),
-      ownerDisplayName: socialData['ownerDisplayName']?.toString(),
-      memberPermissions: _parsePermissions(socialData['memberPermissions']),
-      allowGuestViewing: SerializationUtils.safeBool(
-        socialData,
-        'allowGuestViewing',
-      ),
-      allowMemberInvites: SerializationUtils.safeBool(
-        socialData,
-        'allowMemberInvites',
-        defaultValue: true,
-      ),
-      categoryIds: _sanitizeStringList(socialData['categoryIds']),
-      descriptionCollaborative: socialData['description']?.toString(),
-    );
-  }
-
-  /// Parse permissions map
-  static Map<String, ResourcePermission>? _parsePermissions(
-    dynamic permissions,
-  ) {
-    if (permissions == null) return null;
-    if (permissions is! Map) return null;
-
-    final result = <String, ResourcePermission>{};
-    for (final entry in permissions.entries) {
-      final permission = ResourcePermission.values.firstWhere(
-        (p) => p.name == entry.value.toString(),
-        orElse: () => ResourcePermission.viewer,
-      );
-      result[entry.key.toString()] = permission;
-    }
-
-    return result;
+    final socialData = data['socialData'];
+    if (socialData is! Map) return null;
+    return RecipeSocialData.fromJson(Map<String, dynamic>.from(socialData));
   }
 
   static List<Map<String, dynamic>> serializeRecipeBatch(List<Recipe> recipes) {

@@ -48,6 +48,18 @@ Recipe _buildCollaborative({
       .build();
 }
 
+final _collabCore = RecipeCore(
+  id: 'collab_ops_1',
+  title: 'Team Recipe',
+  description: 'A collaborative recipe',
+  ingredients: ['x'],
+  instructions: ['y'],
+  mealType: 'Lunch',
+  createdBy: 'user_123',
+  createdAt: DateTime(2025, 1, 1),
+  updatedAt: DateTime(2025, 1, 1),
+);
+
 void main() {
   // -----------------------------------------------------------------------
   // RecipePermissionHelper
@@ -578,4 +590,85 @@ void main() {
       },
     );
   });
+
+  // The manager tests build the manager directly; this group builds the real
+  // operations, so it covers the facade handing the trim on to the manager.
+  group(
+    'SocialRecipeOperations trims the sender\'s shared rows (BUT-1815)',
+    () {
+      late MockUnifiedRecipeService mockParent;
+
+      setUp(() async {
+        await BaseUnitTest.setupUnit();
+        await TestServiceLocator.initialize();
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(MockDIContainer());
+        mockParent = MockUnifiedRecipeService();
+        mockParent.setRecipeState(
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Current User',
+          recipes: [
+            Recipe(
+              core: _collabCore,
+              type: RecipeType.collaborative,
+              socialData: RecipeSocialData(
+                ownerId: 'user_123',
+                ownerDisplayName: 'Owner',
+                memberPermissions: {
+                  'user_123': ResourcePermission.admin,
+                  'user_456': ResourcePermission.editor,
+                },
+              ),
+            ),
+          ],
+          isInitialized: true,
+        );
+      });
+
+      tearDown(() async {
+        app_provider.ServiceLocator.reset();
+        await TestServiceLocator.reset();
+        BaseUnitTest.resetMocks();
+      });
+
+      SocialRecipeOperations build({
+        Future<void> Function(String recipeId, List<String> userIds)? trim,
+      }) => SocialRecipeOperations(
+        getCurrentUserId: () => mockParent.currentUserId,
+        getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+        getRecipes: () => mockParent.recipes,
+        updateRecipe: (_) async => true,
+        createCollaborativeRecipe: mockParent.createCollaborativeRecipe,
+        createPersonalRecipe: mockParent.createPersonalRecipe,
+        ratingsRepository: MockRatingsRepository(),
+        firestoreRepository:
+            app_provider.ServiceLocator.get<FirestoreRepository>(),
+        removeRecipientsFromOwnShares: trim,
+      );
+
+      test('removeMember reaches the injected trim', () async {
+        final calls = <({String recipeId, List<String> userIds})>[];
+
+        final ok = await build(
+          trim: (recipeId, userIds) async {
+            calls.add((recipeId: recipeId, userIds: userIds));
+          },
+        ).removeMember(recipeId: _collabCore.id, userId: 'user_456');
+
+        expect(ok, isTrue);
+        expect(calls, hasLength(1));
+        expect(calls.single.recipeId, _collabCore.id);
+        expect(calls.single.userIds, ['user_456']);
+      });
+
+      test('removeMember succeeds when no trim is injected', () async {
+        final ok = await build().removeMember(
+          recipeId: _collabCore.id,
+          userId: 'user_456',
+        );
+
+        expect(ok, isTrue);
+      });
+    },
+  );
 }

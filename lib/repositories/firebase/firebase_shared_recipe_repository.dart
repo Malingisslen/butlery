@@ -379,6 +379,48 @@ class FirebaseSharedRecipeRepository
     return await deleteSharedContent(recipeId);
   }
 
+  /// Takes [userIds] off every `shared_content` row the current user made of
+  /// [recipeId], so a person whose access was revoked loses the card in
+  /// "Delat med mig" as well as the recipe (BUT-1815).
+  ///
+  /// Two queries because the two writers spell the recipe key differently:
+  /// this repository writes `originalRecipeId`, `RecipeSharingManager` writes
+  /// `recipeId`. Only the sharer's own rows are touched, which is all
+  /// `firestore.rules` lets a client update. Rows another sender made when
+  /// re-sharing stay as they are.
+  Future<void> removeRecipientsFromOwnShares({
+    required String recipeId,
+    required List<String> userIds,
+  }) async {
+    if (userIds.isEmpty) return;
+    final uid = requireCurrentUserId();
+
+    final byKey = await Future.wait(
+      ['originalRecipeId', 'recipeId'].map(
+        (key) => getCollectionRef()
+            .where('sharedByUserId', isEqualTo: uid)
+            .where(key, isEqualTo: recipeId)
+            .get(),
+      ),
+    );
+
+    final rows = {
+      for (final snapshot in byKey)
+        for (final doc in snapshot.docs) doc.id: doc.reference,
+    };
+    if (rows.isEmpty) return;
+
+    // One batch per row, not one across all rows.
+    for (final row in rows.values) {
+      final batch = firestore.batch();
+      batch.update(row, {'sharedToUserIds': FieldValue.arrayRemove(userIds)});
+      for (final userId in userIds) {
+        batch.delete(row.collection(FirestoreCollections.members).doc(userId));
+      }
+      await batch.commit();
+    }
+  }
+
   /// Get unread shared recipes count for user
   @override
   Future<int> getUnreadCountForUser(String userId) async {
