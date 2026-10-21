@@ -135,7 +135,13 @@ void main() {
 
   test('a folder that is not one of the user\'s own image folders uploads '
       'nothing', () async {
-    for (final folder in ['users/u2/recipes', 'users/u1/avatars', '']) {
+    for (final folder in [
+      'users/u2/recipes',
+      'users/u2/chat_images',
+      'users/u2/comment_images',
+      'users/u1/avatars',
+      '',
+    ]) {
       await expectLater(
         () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1', folder),
         throwsStateError,
@@ -156,4 +162,54 @@ void main() {
     expect(gone, isFalse);
     verify(() => storage.deleteImage('https://img/row-1.jpg')).called(1);
   });
+
+  test('a chat photo goes to the chat folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedChatImage(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-3.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/c.jpg',
+      'u1',
+      'row-3',
+      'users/u1/chat_images',
+    );
+
+    expect(uploaded, (url: 'https://img/row-3.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedChatImage(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-3',
+      ),
+    ).called(1);
+  });
+
+  test(
+    'a chat photo that returns nothing is a failure the queue retries',
+    () async {
+      when(
+        () => storage.uploadQueuedChatImage(
+          any(),
+          any(),
+          objectId: any(named: 'objectId'),
+        ),
+      ).thenAnswer((_) async => null);
+
+      await expectLater(
+        () => uploadQueuedImage(
+          '/device/c.jpg',
+          'u1',
+          'row-3',
+          'users/u1/chat_images',
+        ),
+        throwsStateError,
+      );
+    },
+  );
 }

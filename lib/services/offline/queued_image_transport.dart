@@ -24,6 +24,12 @@ Future<UploadedImage> uploadQueuedImage(
     if (url == null) throw StateError('Comment image upload failed');
     return (url: url, thumbnailUrl: null);
   }
+  if (targetPath == 'users/$userId/chat_images') {
+    final url = await ServiceLocator.get<StorageService>()
+        .uploadQueuedChatImage(File(localPath), userId, objectId: objectId);
+    if (url == null) throw StateError('Chat image upload failed');
+    return (url: url, thumbnailUrl: null);
+  }
   if (targetPath != 'users/$userId/recipes') {
     throw StateError('Unknown upload folder for a queued image');
   }
