@@ -21,6 +21,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart';
 
 import '../../infrastructure/factories/mock_factory.dart';
+import '../../infrastructure/mocks/production_mocks.dart' show MockAuthService;
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -58,7 +59,7 @@ SemanticsNode _rootNode(WidgetTester tester) {
   return node;
 }
 
-/// Every node in the semantics tree, root first.
+/// [root] and every node below it, root first.
 List<SemanticsNode> _allNodes(SemanticsNode root) {
   final out = <SemanticsNode>[root];
   root.visitChildren((child) {
@@ -208,20 +209,23 @@ void main() {
       expect(text.style?.fontSize, AppTextStyles.headlineSmall.fontSize);
     });
 
-    testWidgets('wraps tap target in Semantics(label, button: true)', (
+    testWidgets('exposes a semantics node labelled "Skicka feedback"', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
-      await tester.pumpWidget(_wrap(const FeedbackFAB()));
-      await tester.pump();
+      try {
+        await tester.pumpWidget(_wrap(const FeedbackFAB()));
+        await tester.pump();
 
-      // Swedish label: "Skicka feedback". Use a regex-tolerant lookup
-      // (semantic strings can be normalized by the engine).
-      expect(
-        find.bySemanticsLabel(RegExp('Skicka feedback')),
-        findsAtLeastNWidgets(1),
-      );
-      handle.dispose();
+        // Swedish label: "Skicka feedback". Use a regex-tolerant lookup
+        // (semantic strings can be normalized by the engine).
+        expect(
+          find.bySemanticsLabel(RegExp('Skicka feedback')),
+          findsAtLeastNWidgets(1),
+        );
+      } finally {
+        handle.dispose();
+      }
     });
   });
 
@@ -230,7 +234,7 @@ void main() {
       tester,
     ) async {
       await _bindAuth(isAuthenticated: true);
-      final auth = GetIt.instance<AuthService>();
+      final auth = GetIt.instance<AuthService>() as MockAuthService;
 
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
@@ -238,8 +242,8 @@ void main() {
 
       // Flip the mock to unauthenticated and notify. ListenableBuilder
       // should rebuild and the FAB should collapse.
-      (auth as dynamic).setAuthState(isAuthenticated: false);
-      (auth as dynamic).notifyListeners();
+      auth.setAuthState(isAuthenticated: false);
+      auth.notifyListeners();
       await tester.pump();
 
       expect(find.text('!'), findsNothing);
@@ -292,50 +296,54 @@ void main() {
     testWidgets('the node carrying the feedback label is the button, not the '
         'screen', (tester) async {
       final handle = tester.ensureSemantics();
-      await tester.pumpWidget(_appLike(page()));
-      await tester.pump();
+      try {
+        await tester.pumpWidget(_appLike(page()));
+        await tester.pump();
 
-      final root = _rootNode(tester);
-      final labelled = _allNodes(
-        root,
-      ).where((n) => n.label.contains('Skicka feedback')).toList();
+        final root = _rootNode(tester);
+        final labelled = _allNodes(
+          root,
+        ).where((n) => n.label.contains('Skicka feedback')).toList();
 
-      expect(labelled, hasLength(1));
-      // The measured symptom: this rect used to be the whole viewport.
-      expect(labelled.single.rect.width, AppDimensions.minTouchTarget);
-      expect(labelled.single.rect.height, AppDimensions.minTouchTarget);
-      expect(labelled.single.rect.width, lessThan(root.rect.width));
-
-      handle.dispose();
+        expect(labelled, hasLength(1));
+        // The measured symptom: this rect used to be the whole viewport.
+        expect(labelled.single.rect.width, AppDimensions.minTouchTarget);
+        expect(labelled.single.rect.height, AppDimensions.minTouchTarget);
+        expect(labelled.single.rect.width, lessThan(root.rect.width));
+      } finally {
+        handle.dispose();
+      }
     });
 
     testWidgets('the feedback node adopts no other control on the screen', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
-      await tester.pumpWidget(_appLike(page()));
-      await tester.pump();
+      try {
+        await tester.pumpWidget(_appLike(page()));
+        await tester.pump();
 
-      final root = _rootNode(tester);
-      final feedback = _allNodes(
-        root,
-      ).firstWhere((n) => n.label.contains('Skicka feedback'));
+        final root = _rootNode(tester);
+        final feedback = _allNodes(
+          root,
+        ).firstWhere((n) => n.label.contains('Skicka feedback'));
 
-      // The page's button must be reachable WITHOUT descending through the
-      // FAB. Nesting is what let a tap anywhere reach the feedback handler.
-      final underneath = _allNodes(feedback);
-      expect(
-        underneath.any((n) => n.label.contains('Spara recept')),
-        isFalse,
-        reason: 'the page is nested inside the feedback FAB node',
-      );
-      expect(
-        _allNodes(root).any((n) => n.label.contains('Spara recept')),
-        isTrue,
-        reason: 'guards the assertion above from passing vacuously',
-      );
-
-      handle.dispose();
+        // The page's button must be reachable WITHOUT descending through the
+        // FAB. Nesting is what let a tap anywhere reach the feedback handler.
+        final underneath = _allNodes(feedback);
+        expect(
+          underneath.any((n) => n.label.contains('Spara recept')),
+          isFalse,
+          reason: 'the page is nested inside the feedback FAB node',
+        );
+        expect(
+          _allNodes(root).any((n) => n.label.contains('Spara recept')),
+          isTrue,
+          reason: 'guards the assertion above from passing vacuously',
+        );
+      } finally {
+        handle.dispose();
+      }
     });
   });
 
@@ -462,30 +470,6 @@ void main() {
 
       expect(find.text('Andra'), findsNothing);
       expect(find.text('!'), findsOneWidget);
-    });
-  });
-
-  group('FeedbackFAB — global keys', () {
-    test('feedbackRepaintBoundaryKey is a GlobalKey', () {
-      expect(feedbackRepaintBoundaryKey, isA<GlobalKey>());
-    });
-
-    test('appNavigatorKey is a GlobalKey<NavigatorState>', () {
-      expect(appNavigatorKey, isA<GlobalKey<NavigatorState>>());
-    });
-
-    testWidgets('wrapping a subtree under feedbackRepaintBoundaryKey allows '
-        'RenderRepaintBoundary lookup', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: RepaintBoundary(
-            key: feedbackRepaintBoundaryKey,
-            child: const SizedBox(width: 10, height: 10),
-          ),
-        ),
-      );
-      final ro = feedbackRepaintBoundaryKey.currentContext?.findRenderObject();
-      expect(ro, isA<RenderRepaintBoundary>());
     });
   });
 }

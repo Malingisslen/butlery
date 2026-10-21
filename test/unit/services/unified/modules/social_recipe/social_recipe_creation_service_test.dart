@@ -264,6 +264,24 @@ void main() {
         expect(uniqueMembers, contains('user-3'));
       });
 
+      test(
+        'several groups without rosters are refused, nothing is saved',
+        () async {
+          lastSavedRecipe = null;
+
+          final recipeId = await creationService.createCollaborativeRecipe(
+            title: 'Two Groups Test',
+            ingredients: const ['Ingredient'],
+            instructions: const ['Instruction'],
+            initialMembers: [currentUserId, 'mom-uid'],
+            categoryIds: const ['grp-fam', 'grp-friends'],
+          );
+
+          expect(recipeId, isNull);
+          expect(lastSavedRecipe, isNull);
+        },
+      );
+
       /// Replaces an earlier version of this test that asserted the creator
       /// appeared exactly once among `memberPermissions.keys` — unfailable, a
       /// Map cannot hold a duplicate key — and that the map had two entries,

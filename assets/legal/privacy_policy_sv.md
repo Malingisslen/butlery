@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 20 oktober 2026
-**Version:** 1.19.0
+**Senast uppdaterad:** 21 oktober 2026
+**Version:** 1.20.0
 
 ---
 
@@ -363,7 +363,7 @@ Butlery är en mobilapplikation och använder inte webbläsarcookies. Istället 
 - **Autentiseringstoken:** Säkra token hanterade av Firebase Auth för att hålla dig inloggad
 - **Krypterad lokal databas:** Dina recept och data cachas lokalt med AES-256-krypterad lagring (SQLCipher) för offlineåtkomst
 - **Säker lagring:** Känslig data (krypteringsnycklar) lagras i plattformens säkra lagring (iOS Keychain / Android Keystore)
-- **Matbilder som väntar på att skickas:** Bilder du tar utan uppkoppling sparas tillfälligt på din telefon tills de har skickats eller du slänger dem. En bild som inte har skickats slängs automatiskt efter 30 dagar. Bilden syns för andra först när den har skickats.
+- **Bilder som väntar på att skickas:** Bilder du tar eller väljer utan uppkoppling (matbilder, kommentarsbilder, chattbilder och profilbild) sparas tillfälligt i appen på din telefon, utan platsuppgifter, tills de har skickats eller du slänger dem. En bild som inte har skickats slängs automatiskt efter 30 dagar. En chattbild som väntar syns för mottagaren som en ruta utan bild tills den har skickats. Övriga bilder syns för andra först när de har skickats.
 
 Du kan hantera samtycke för databehandling i: **Profil → Kontohantering → Hantera samtycken**
 

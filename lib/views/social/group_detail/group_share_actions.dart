@@ -31,7 +31,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
   Future<void> startMealVotePoll(FriendCategory group) async {
     if (!mounted) return;
 
-    if (group.friendUserIds.isEmpty) {
+    if (!viewModel.hasOtherMembers(group)) {
       SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
@@ -100,11 +100,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
   Future<void> showRecipeSelectionForGroup(FriendCategory group) async {
     if (!mounted) return;
 
-    // Share with all group members by iterating through them
-    // This reuses the existing friend recipe sharing dialog for each member
-    final memberIds = group.friendUserIds;
-
-    if (memberIds.isEmpty) {
+    if (!viewModel.hasOtherMembers(group)) {
       SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
@@ -137,7 +133,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
 
     if (selectedMenu == null || !mounted) return;
 
-    if (group.friendUserIds.isEmpty) {
+    if (!viewModel.hasOtherMembers(group)) {
       SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }
@@ -176,7 +172,7 @@ mixin GroupShareActions<T extends StatefulWidget> on State<T> {
 
     if (selectedList == null || !mounted) return;
 
-    if (group.friendUserIds.isEmpty) {
+    if (!viewModel.hasOtherMembers(group)) {
       SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
       return;
     }

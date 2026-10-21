@@ -198,25 +198,20 @@ void main() {
         // Error is caught internally, message not propagated
       });
 
-      test('should replace existing member permission', () async {
-        // Arrange
+      test('should refuse someone who is already a member', () async {
         const recipeId = 'recipe-1';
         const existingUserId = 'user-3'; // Currently a viewer
-        const newPermission = ResourcePermission.editor;
 
-        // Act
         final result = await membershipService.addMemberToRecipe(
           recipeId,
           existingUserId,
-          newPermission,
+          ResourcePermission.editor,
         );
 
-        // Assert
-        expect(result, isTrue);
-
-        final recipe = testRecipesMap[recipeId];
-        final memberPermissions = recipe?.socialData?.memberPermissions;
-        expect(memberPermissions?[existingUserId], equals(newPermission));
+        expect(result, isFalse);
+        final memberPermissions =
+            testRecipesMap[recipeId]?.socialData?.memberPermissions;
+        expect(memberPermissions?[existingUserId], ResourcePermission.viewer);
       });
     });
 
@@ -427,39 +422,31 @@ void main() {
       });
 
       test(
-        'adding someone reached through a group keeps that reason',
+        'adding someone who is already here through a group changes nothing',
         () async {
           seedWithGrants(
             'recipe-grants',
             {
               currentUserId: ResourcePermission.admin,
               'mom-uid': ResourcePermission.viewer,
-              'dad-uid': ResourcePermission.viewer,
             },
             {
               'mom-uid': ['group:grp-fam'],
-              'dad-uid': ['group:grp-fam'],
             },
           );
 
-          await membershipService.addMemberToRecipe(
+          final result = await membershipService.addMemberToRecipe(
             'recipe-grants',
             'mom-uid',
             ResourcePermission.editor,
           );
 
-          final grants = testRecipesMap['recipe-grants']!.socialData!.grants!;
+          final social = testRecipesMap['recipe-grants']!.socialData!;
+          expect(result, isFalse);
+          expect(social.grants!['mom-uid'], ['group:grp-fam']);
           expect(
-            grants['mom-uid'],
-            ['group:grp-fam', 'direct'],
-            reason:
-                'two separate decisions were made about mom-uid; revoking the '
-                'group may only undo one of them',
-          );
-          expect(
-            grants['dad-uid'],
-            ['group:grp-fam'],
-            reason: 'a member this call never mentions keeps their provenance',
+            social.memberPermissions!['mom-uid'],
+            ResourcePermission.viewer,
           );
         },
       );

@@ -236,40 +236,6 @@ class RecipeFactory {
     );
   }
 
-  /// Convert personal recipe to collaborative
-  static Recipe convertToCollaborative(
-    Recipe personalRecipe, {
-    required String ownerId,
-    required String ownerDisplayName,
-    Map<String, ResourcePermission>? initialMembers,
-    bool allowGuestViewing = false,
-    bool allowMemberInvites = true,
-    String? descriptionCollaborative,
-  }) {
-    if (personalRecipe.type != RecipeType.personal) {
-      throw ArgumentError(
-        'Only personal recipes can be converted to collaborative',
-      );
-    }
-
-    return Recipe(
-      core: personalRecipe.core.copyWith(
-        isPublic: true,
-        createdBy: ownerId,
-      ),
-      type: RecipeType.collaborative,
-      socialData: RecipeSocialData(
-        ownerId: ownerId,
-        ownerDisplayName: ownerDisplayName,
-        memberPermissions: initialMembers ?? {},
-        allowGuestViewing: allowGuestViewing,
-        allowMemberInvites: allowMemberInvites,
-        descriptionCollaborative: descriptionCollaborative,
-      ),
-      offlineData: personalRecipe.offlineData,
-    );
-  }
-
   /// Convert collaborative recipe to realtime
   static Recipe convertToRealtime(
     Recipe collaborativeRecipe, {

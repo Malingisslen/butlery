@@ -257,48 +257,4 @@ void main() {
       expect((await doc().get()).exists, isTrue);
     });
   });
-
-  group('sharing', () {
-    test('addCollaborator lets the creator share a recipe whose ownerId is '
-        'empty', () async {
-      await seed(recipe());
-
-      await repository.addCollaborator('r1', _other);
-
-      final stored = Recipe.fromMap('r1', (await doc().get()).data()!);
-      expect(stored.socialData?.memberPermissions?.keys, contains(_other));
-    });
-
-    test('addCollaborator refuses a recipe someone else created', () async {
-      await seed(recipe(createdBy: _other));
-
-      await expectLater(
-        repository.addCollaborator('r1', 'third-user'),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-
-    // fake_cloud_firestore deep-merges a map on update, so the removed key
-    // cannot be observed in the store; the revision bump proves the removal
-    // got past the owner check and was written.
-    test('removeCollaborator lets the creator unshare a recipe whose ownerId '
-        'is empty', () async {
-      await seed(recipe());
-      await repository.addCollaborator('r1', _other);
-      final before = (await doc().get()).data()!['rev'];
-
-      await repository.removeCollaborator('r1', _other);
-
-      expect((await doc().get()).data()!['rev'], before + 1);
-    });
-
-    test('removeCollaborator refuses a recipe someone else created', () async {
-      await seed(recipe(createdBy: _other));
-
-      await expectLater(
-        repository.removeCollaborator('r1', _other),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-  });
 }

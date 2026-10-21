@@ -78,6 +78,8 @@ class _VoteHostState extends State<_VoteHost>
 }
 
 void main() {
+  setUpAll(() => registerFallbackValue(_group()));
+
   setUp(() {
     GetIt.instance.reset();
     production.ServiceLocator.reset();
@@ -245,6 +247,7 @@ void main() {
 
   testWidgets('the empty-vote CTA opens the add sheet', (tester) async {
     final vm = _MockViewModel();
+    when(() => vm.hasOtherMembers(any())).thenReturn(true);
     when(vm.pickMealVoteSuggestions).thenAnswer((_) async => []);
 
     await tester.pumpWidget(
@@ -257,5 +260,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ButleryAddSheet), findsOneWidget);
+  });
+
+  testWidgets('a group with only the user in it is refused, nothing opens', (
+    tester,
+  ) async {
+    final vm = _MockViewModel();
+    when(() => vm.hasOtherMembers(any())).thenReturn(false);
+
+    await tester.pumpWidget(
+      createLocalizedTestApp(wrapInScaffold: false, child: _VoteHost(vm: vm)),
+    );
+    await tester.tap(find.text('vote'));
+    await tester.pumpAndSettle();
+
+    verify(() => vm.hasOtherMembers(any())).called(1);
+    verifyNever(vm.pickMealVoteSuggestions);
   });
 }

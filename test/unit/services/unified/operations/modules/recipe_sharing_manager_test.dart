@@ -20,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -819,6 +820,144 @@ void main() {
         expect(saved.socialData?.categoryIds, contains('group_a'));
       });
 
+      test(
+        'a re-share to several groups at once is refused, nothing saved',
+        () async {
+          final newId = await sharingManager.shareRecipe(
+            recipeId: 'collab_1',
+            memberIds: ['user_999'],
+            memberDisplayNames: {'user_999': 'New Member'},
+            categoryIds: ['group_a', 'group_b'],
+          );
+
+          expect(newId, isNull);
+          expect(savedRecipes, isEmpty);
+        },
+      );
+
+      test('sharing to a group where only the sharer is a member is refused '
+          'with the group message', () async {
+        String? surfaced;
+        final manager = RecipeSharingManager(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          createCollaborativeRecipe:
+              mockParentService.createCollaborativeRecipe,
+          createPersonalRecipe: mockParentService.createPersonalRecipe,
+          updateRecipe: (recipe) async {
+            savedRecipes.add(recipe);
+            return true;
+          },
+          notificationService: mockNotificationService,
+          onShareError: (msg) => surfaced = msg,
+        );
+
+        final newId = await manager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: [mockParentService.currentUserId!],
+          memberDisplayNames: const {},
+          categoryIds: ['solo_group'],
+        );
+
+        expect(newId, isNull);
+        expect(savedRecipes, isEmpty);
+        expect(surfaced, AppLocale.current.groupNoMembersToShare);
+      });
+
+      test('a roster left with only the sharer once blocked friends are '
+          'dropped leaves no copy and shows no group message', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const {'blocked_friend'}),
+        );
+        var copies = 0;
+        String? surfaced;
+        final manager = RecipeSharingManager(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          createCollaborativeRecipe:
+              mockParentService.createCollaborativeRecipe,
+          createPersonalRecipe:
+              ({
+                required String title,
+                String description = '',
+                List<String> ingredients = const [],
+                List<String> instructions = const [],
+                List<String> imageUrls = const [],
+                String mealType = '',
+                int? portions,
+                int? timeMinutes,
+                double? rating,
+                List<String>? personalTagIds,
+                String? sourceUrl,
+                bool isOwnerCopy = false,
+              }) async {
+                copies++;
+                return 'copy';
+              },
+          updateRecipe: (_) async => true,
+          notificationService: mockNotificationService,
+          onShareError: (msg) => surfaced = msg,
+        );
+
+        final newId = await manager.duplicateAndShareRecipe(
+          recipeId: testPersonalRecipe.id,
+          memberIds: [mockParentService.currentUserId!, 'blocked_friend'],
+          memberDisplayNames: const {},
+          categoryIds: ['some_group'],
+        );
+
+        expect(newId, isNull);
+        expect(copies, 0);
+        expect(surfaced, isNull);
+      });
+
+      test('duplicating for a group with only the sharer leaves no copy '
+          'behind', () async {
+        var copies = 0;
+        final manager = RecipeSharingManager(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          createCollaborativeRecipe:
+              mockParentService.createCollaborativeRecipe,
+          createPersonalRecipe:
+              ({
+                required String title,
+                String description = '',
+                List<String> ingredients = const [],
+                List<String> instructions = const [],
+                List<String> imageUrls = const [],
+                String mealType = '',
+                int? portions,
+                int? timeMinutes,
+                double? rating,
+                List<String>? personalTagIds,
+                String? sourceUrl,
+                bool isOwnerCopy = false,
+              }) async {
+                copies++;
+                return 'copy';
+              },
+          updateRecipe: (_) async => true,
+          notificationService: mockNotificationService,
+        );
+
+        final newId = await manager.duplicateAndShareRecipe(
+          recipeId: testPersonalRecipe.id,
+          memberIds: [mockParentService.currentUserId!],
+          memberDisplayNames: const {},
+          categoryIds: ['solo_group'],
+        );
+
+        expect(newId, isNull);
+        expect(copies, 0);
+      });
+
       test('a re-share from a group names the group on its shared_content '
           'row, so the group page finds it (BUT-2271)', () async {
         when(
@@ -893,34 +1032,6 @@ void main() {
           saved.socialData?.memberPermissions?['user_999'],
           ResourcePermission.editor,
         );
-      });
-
-      test('a group containing only the sharer adds no revocable row', () async {
-        // Every friend category seeds its own owner, so a group you created and
-        // have not populated has exactly this roster. The sharer is skipped, so
-        // NOBODY is granted — and merging the raw group id into `categoryIds`
-        // would put a revoke row in the panel that matches no member's grant.
-        //
-        // Pressing that row: `removeGroup` clears its `categoryIds.contains`
-        // guard, `revokeGroup` takes the empty-grants branch, returns true having
-        // cut nobody, and the snackbar says "Gruppen X har inte längre åtkomst
-        // till receptet." That is BUT-1785 through a different door, and worse —
-        // the copy this ticket replaced at least admitted the members kept access.
-        await sharingManager.shareRecipe(
-          recipeId: 'collab_1',
-          memberIds: ['user_123'],
-          memberDisplayNames: const {'user_123': 'Me'},
-          categoryIds: ['group_solo'],
-        );
-
-        final saved = savedRecipes.single.socialData!;
-        expect(
-          saved.categoryIds ?? const <String>[],
-          isNot(contains('group_solo')),
-          reason:
-              'no grant was written for anyone, so there is nothing to revoke',
-        );
-        expect(saved.grants?.containsKey('user_123'), isNot(isTrue));
       });
 
       test('a re-share never overwrites an existing permission', () async {
@@ -1160,4 +1271,27 @@ class _CapturingRepository extends Fake implements FirestoreRepository {
     });
     return col;
   }
+}
+
+class _StubBlockedUserFilter implements BlockedUserFilter {
+  _StubBlockedUserFilter(this._blocked);
+
+  final Set<String> _blocked;
+
+  @override
+  Future<Set<String>> currentBlockedIds() async => _blocked;
+
+  @override
+  Future<Set<String>> currentBlockedByIds() async => const <String>{};
+
+  @override
+  Future<List<String>> withoutBlocksEitherWay(
+    List<String> recipientIds,
+  ) async => recipientIds.where((id) => !_blocked.contains(id)).toList();
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
