@@ -96,9 +96,8 @@ class _FakeSharedRecipeRepo extends Fake
   }
 }
 
-/// Minimal Fake for `UnifiedFriendsService` exposing only the two surfaces
-/// the production code touches: `getCategoryByIdInternal(id)` and `friends`.
-/// Anything else throws loudly so we notice if the production contract drifts.
+/// Minimal Fake for `UnifiedFriendsService`. Anything not overridden throws
+/// loudly so we notice if the production contract drifts.
 class _FakeFriendsService extends Fake implements UnifiedFriendsService {
   final Map<String, FriendCategory> categoriesById = {};
   final List<UserProfile> friendsSeed = [];
@@ -172,7 +171,7 @@ class _Harness {
 
 /// Wires a `_FakeFriendsService` into the global GetIt instance so
 /// `ServiceLocator.get<UnifiedFriendsService>()` (called from the production
-/// `_resolveGroupMembers`) resolves to our fake. Both production and test
+/// `_resolveGroupMemberIds`) resolves to our fake. Both production and test
 /// ServiceLocators share `GetIt.instance`, so direct registration is enough.
 void _registerFakeFriendsService(_FakeFriendsService fake) {
   final g = GetIt.instance;

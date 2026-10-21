@@ -14,7 +14,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// BUT-1503: outcome of a recipe share, distinguishing "the recipient can open
 /// the recipe" from "the share is also discoverable in inbox/group queries".
@@ -336,9 +335,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       final grantsByUserId = <String, List<String>>{};
 
       for (final groupId in groupIds) {
-        final groupMembers = await _resolveGroupMembers(groupId);
-        allMemberIds.addAll(groupMembers.keys);
-        for (final memberId in groupMembers.keys) {
+        final groupMembers = await _resolveGroupMemberIds(groupId);
+        allMemberIds.addAll(groupMembers);
+        for (final memberId in groupMembers) {
           grantsByUserId
               .putIfAbsent(memberId, () => <String>[])
               .add(RecipeSocialData.groupGrant(groupId));
@@ -477,48 +476,23 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     return RecipeOperationResult.failure(error);
   }
 
-  /// Resolve group IDs to member user IDs and display names
-  /// ✅ FIXED: Integrated with friends service for actual group member resolution
-  Future<Map<String, String>> _resolveGroupMembers(String groupId) async {
+  Future<List<String>> _resolveGroupMemberIds(String groupId) async {
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
-      // Get the group (friend category) by ID
       final group = friendsService.getCategoryByIdInternal(groupId);
       if (group == null) {
         AppLogger.warning('Group $groupId not found');
-        return <String, String>{};
-      }
-
-      AppLogger.debug(
-        'Resolving ${group.friendUserIds.length} members for group "${group.name}"',
-      );
-
-      // Get all friends to map user IDs to display names
-      final allFriends = friendsService.friends;
-      final memberMap = <String, String>{};
-
-      // Resolve each group member ID to display name
-      for (final memberId in group.friendUserIds) {
-        final friend = allFriends.where((f) => f.uid == memberId).firstOrNull;
-        if (friend != null) {
-          memberMap[memberId] = friend.displayName;
-        } else {
-          // Empty so the reader shows "unknown" in its own language.
-          memberMap[memberId] = '';
-          AppLogger.warning(
-            'Friend ${memberId.maskedUserId} not found in friends list',
-          );
-        }
+        return const <String>[];
       }
 
       AppLogger.success(
-        'Resolved ${memberMap.length} group members for group "${group.name}"',
+        'Resolved ${group.friendUserIds.length} group members for group "${group.name}"',
       );
-      return memberMap;
+      return List<String>.of(group.friendUserIds);
     } catch (e) {
       AppLogger.error('Error resolving group members for $groupId: $e');
-      return <String, String>{};
+      return const <String>[];
     }
   }
 }

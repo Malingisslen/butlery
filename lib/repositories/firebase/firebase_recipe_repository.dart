@@ -5,7 +5,6 @@ import 'package:butlery/models/recipe/recipe_ownership.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
@@ -232,7 +231,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// BUT-955: defense-in-depth cap on the share-set size of a Recipe document.
   /// All service-layer share entry points should fail-fast with a localized
   /// error before reaching this guard — but multiple writer paths
-  /// (addMemberToRecipe, addMember, repo.addCollaborator,
+  /// (addMemberToRecipe, addMember,
   /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
   /// every callsite is bypass-prone. This is the chokepoint for every write
   /// THROUGH THIS REPOSITORY.
@@ -365,7 +364,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // BUT-955: cap-guard before read+validation. Catches every writer
         // path that builds an over-cap Recipe and calls update, including
-        // addCollaborator, addMemberToRecipe, etc.
+        // addMemberToRecipe, etc.
         _enforceShareCap(entity);
 
         // First check if recipe exists and user owns it
@@ -1006,111 +1005,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       return recipe.ownerUid == userId;
     } catch (e) {
       return false;
-    }
-  }
-
-  /// Add a collaborator to a recipe
-  Future<void> addCollaborator(String recipeId, String userId) async {
-    final currentUser = requireCurrentUserId();
-
-    // First verify current user owns the recipe
-    final recipe = await read(recipeId);
-    if (recipe == null) {
-      throw ResourceNotFoundException(
-        'Recipe not found',
-        resourceType: 'recipe',
-        resourceId: recipeId,
-      );
-    }
-
-    await validateOwnership(
-      currentUserId: currentUser,
-      resourceOwnerId: recipe.ownerUid.orEmpty(),
-      resourceType: 'recipe',
-      resourceId: recipeId,
-    );
-
-    // Add member with editor permission
-    final currentMembers = (recipe.socialData?.memberPermissions).orEmpty();
-    if (!currentMembers.containsKey(userId)) {
-      final updatedMembers = {
-        ...currentMembers,
-        userId: ResourcePermission.editor,
-      };
-
-      // BUT-1797: every membership writer has to record WHY access was granted,
-      // or a group revoke will later cut someone who was invited individually —
-      // the one outcome the decision forbids. Its remove twin below drops the
-      // whole entry for the mirror reason.
-      final updatedGrants = RecipeShareGrants.add(
-        recipe.socialData?.grants,
-        userId,
-        RecipeSocialData.directGrant,
-      );
-
-      final updatedRecipe = recipe.copyWith(
-        socialData:
-            recipe.socialData?.copyWith(
-              memberPermissions: updatedMembers,
-              grants: updatedGrants,
-            ) ??
-            RecipeSocialData(
-              memberPermissions: updatedMembers,
-              grants: updatedGrants,
-            ),
-      );
-
-      await update(updatedRecipe);
-    }
-  }
-
-  /// Remove a collaborator from a recipe
-  Future<void> removeCollaborator(String recipeId, String userId) async {
-    final currentUser = requireCurrentUserId();
-
-    // First verify current user owns the recipe
-    final recipe = await read(recipeId);
-    if (recipe == null) {
-      throw ResourceNotFoundException(
-        'Recipe not found',
-        resourceType: 'recipe',
-        resourceId: recipeId,
-      );
-    }
-
-    await validateOwnership(
-      currentUserId: currentUser,
-      resourceOwnerId: recipe.ownerUid.orEmpty(),
-      resourceType: 'recipe',
-      resourceId: recipeId,
-    );
-
-    // Remove member from the recipe
-    final currentMembers = (recipe.socialData?.memberPermissions).orEmpty();
-    if (currentMembers.containsKey(userId)) {
-      final updatedMembers = Map<String, ResourcePermission>.from(
-        currentMembers,
-      );
-      updatedMembers.remove(userId);
-
-      // An explicit removal overrides every reason at once, so the whole grants
-      // entry goes with the permission. A stale 'direct' token surviving a
-      // removal is worse than a ghost notification: if that person is later
-      // swept into a group share, revoking the group would RETAIN them on a
-      // reason the owner had already withdrawn.
-      final updatedGrants = RecipeShareGrants.dropMember(
-        recipe.socialData?.grants,
-        userId,
-      );
-
-      final updatedRecipe = recipe.copyWith(
-        socialData: recipe.socialData?.copyWith(
-          memberPermissions: updatedMembers,
-          grants: updatedGrants,
-        ),
-      );
-
-      await update(updatedRecipe);
     }
   }
 

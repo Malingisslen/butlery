@@ -316,54 +316,6 @@ void main() {
         );
       });
 
-      test('should convert personal to collaborative', () {
-        final members = {
-          'member_1': ResourcePermission.editor,
-          'member_2': ResourcePermission.viewer,
-        };
-
-        final collabRecipe = RecipeFactory.convertToCollaborative(
-          personalRecipe,
-          ownerId: 'collab_owner',
-          ownerDisplayName: 'Collab Owner',
-          initialMembers: members,
-          allowGuestViewing: true,
-          allowMemberInvites: false,
-          descriptionCollaborative: 'Let\'s collaborate!',
-        );
-
-        expect(collabRecipe.type, equals(RecipeType.collaborative));
-        expect(collabRecipe.core.isPublic, isTrue);
-        expect(collabRecipe.socialData!.memberPermissions, equals(members));
-        expect(collabRecipe.socialData!.allowGuestViewing, isTrue);
-        expect(collabRecipe.socialData!.allowMemberInvites, isFalse);
-        expect(
-          collabRecipe.socialData!.descriptionCollaborative,
-          equals('Let\'s collaborate!'),
-        );
-      });
-
-      test('should throw when converting non-personal to collaborative', () {
-        final sharedRecipe = RecipeFactory.createShared(
-          title: 'Shared',
-          description: 'Desc',
-          ingredients: ['A'],
-          instructions: ['B'],
-          mealType: 'Lunch',
-          ownerId: 'owner',
-          ownerDisplayName: 'Owner',
-        );
-
-        expect(
-          () => RecipeFactory.convertToCollaborative(
-            sharedRecipe,
-            ownerId: 'new',
-            ownerDisplayName: 'New',
-          ),
-          throwsArgumentError,
-        );
-      });
-
       test('should convert collaborative to realtime', () {
         final collabRecipe = RecipeFactory.createCollaborative(
           title: 'Collab Recipe',

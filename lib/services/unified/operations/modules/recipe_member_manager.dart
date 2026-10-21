@@ -1,7 +1,6 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
 import 'package:butlery/core/utils/stored_display_name.dart';
-import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe/recipe_ownership.dart';
@@ -109,12 +108,7 @@ class RecipeMemberManager {
         permission: permission,
       );
 
-      _logMemberAction(
-        recipeId: recipeId,
-        memberId: memberId,
-        action: 'member_added',
-        permission: permission,
-      );
+      _logMemberAction('member_added');
 
       return true;
     } catch (e) {
@@ -207,11 +201,7 @@ class RecipeMemberManager {
         removedMemberId: memberId,
       );
 
-      _logMemberAction(
-        recipeId: recipeId,
-        memberId: memberId,
-        action: 'member_removed',
-      );
+      _logMemberAction('member_removed');
 
       return true;
     } catch (e) {
@@ -330,11 +320,7 @@ class RecipeMemberManager {
         );
       }
 
-      _logMemberAction(
-        recipeId: recipeId,
-        memberId: groupId,
-        action: 'group_removed',
-      );
+      _logMemberAction('group_removed');
 
       return true;
     } catch (e) {
@@ -422,13 +408,7 @@ class RecipeMemberManager {
 
       AppLogger.success('Successfully updated member permission');
 
-      _logMemberAction(
-        recipeId: recipeId,
-        memberId: memberId,
-        action: 'permission_updated',
-        permission: newPermission,
-        previousPermission: oldPermission,
-      );
+      _logMemberAction('permission_updated');
 
       return true;
     } catch (e) {
@@ -632,34 +612,7 @@ class RecipeMemberManager {
     return userPermission == ResourcePermission.admin;
   }
 
-  /// Log member action for analytics
-  void _logMemberAction({
-    required String recipeId,
-    required String memberId,
-    required String action,
-    ResourcePermission? permission,
-    ResourcePermission? previousPermission,
-  }) {
-    try {
-      final logData = {
-        'recipeId': recipeId,
-        'memberId': memberId,
-        'action': action,
-        'performedBy': _getCurrentUserId(),
-        'timestamp': clock.now().toIso8601String(),
-      };
-
-      if (permission != null) {
-        logData['permission'] = permission.name;
-      }
-
-      if (previousPermission != null) {
-        logData['previousPermission'] = previousPermission.name;
-      }
-
-      AppLogger.info('Member action logged: $action');
-    } catch (e) {
-      AppLogger.warning('Failed to log member action: $e');
-    }
+  void _logMemberAction(String action) {
+    AppLogger.info('Member action logged: $action');
   }
 }
