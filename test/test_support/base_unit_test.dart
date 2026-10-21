@@ -10,7 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 
-import 'base_test.dart';
+import 'base_test_support.dart';
 import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/mocks/firestore_singleton.dart';
 
