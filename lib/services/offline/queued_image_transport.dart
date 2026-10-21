@@ -30,6 +30,15 @@ Future<UploadedImage> uploadQueuedImage(
     if (url == null) throw StateError('Chat image upload failed');
     return (url: url, thumbnailUrl: null);
   }
+  if (targetPath == 'users/$userId/avatars') {
+    final url = await ServiceLocator.get<StorageService>().uploadQueuedAvatar(
+      File(localPath),
+      userId,
+      objectId: objectId,
+    );
+    if (url == null) throw StateError('Avatar upload failed');
+    return (url: url, thumbnailUrl: null);
+  }
   if (targetPath != 'users/$userId/recipes') {
     throw StateError('Unknown upload folder for a queued image');
   }

@@ -6640,3 +6640,24 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
 - The card for a chat image that failed for good says "Bilden kunde inte skickas." whatever the
   cause, so a block or a removal is not explained. The row is named "En bild i en chatt".
 - Several chat images may be unsent at once. Profile images are still not queued.
+
+## BUT-2294 — a profile picture chosen without a connection waits on the device (2026-10-21)
+
+- **SUPERSEDES** "Profile images are still not queued" (this file, the chat-images entry above),
+  and in "a minor's profile save stay strict" (BUT-2290/BUT-2291) the picture only. A picture
+  picked with no connection is kept on the device and queued when the form is saved (entity
+  type `avatar`, `users/{uid}/avatars/`, `entityId` the uid). A user has one waiting at a time:
+  a later pick replaces it, in the same step that queues the new one.
+- Once uploaded, one transaction on `public_profiles/{uid}` sets `avatarUrl` only if the profile
+  still holds the picture the user was looking at (the row records it), and writes nothing else.
+  It uses `update`, so a vanished profile is not recreated, and it never touches `isSearchable`
+  or calls the searchability callable, so it is the same for a minor. A different picture on the
+  profile means someone changed it since: that newer picture stays and the upload is taken back,
+  with no message to the user. Accepted costs: A→B→A elsewhere counts as unchanged, and a device
+  whose profile was already stale at the pick discards conservatively.
+- The rest of the form saves as before (a minor's stays strict). A save that does not name the
+  picture no longer writes `avatarUrl`, so a stale copy cannot revert a newer picture.
+- The picture is tried 8 times after it is uploaded, in addition to the 24 h every row gets,
+  then waits for the user as "Ny profilbild" with "Profilbilden kunde inte bytas.".
+- The previous picture's Storage object is still not removed when it is replaced, online or
+  queued. Separate ticket.

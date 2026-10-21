@@ -6752,6 +6752,36 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte skickas.'**
   String get syncQueueReasonChatImageFailed;
 
+  /// BUT-2294: a queued profile picture in the waiting list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny profilbild'**
+  String get syncQueueAvatar;
+
+  /// BUT-2294: why a queued profile picture waits for the user, whatever the cause. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbilden kunde inte bytas.'**
+  String get syncQueueReasonAvatarFailed;
+
+  /// BUT-2294: under the profile picture chosen without a connection, until the form is saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparas när du är online'**
+  String get profileAvatarWaitsForConnection;
+
+  /// BUT-2294: snackbar after the profile was saved with a picture that waits for a connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbilden byts när du är online igen.'**
+  String get profileAvatarQueuedOffline;
+
+  /// BUT-2294: error when the rest of the profile saved but the picture could not be queued on the device.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen sparades, men den nya bilden kunde inte sparas till senare. Välj den igen.'**
+  String get profileAvatarQueueFailed;
+
   /// BUT-2294: what the others see in place of a chat image whose picture has not arrived yet.
   ///
   /// In sv, this message translates to:

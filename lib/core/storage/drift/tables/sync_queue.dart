@@ -95,6 +95,11 @@ abstract final class SyncQueueEntityType {
   /// message, so it is not a group.
   static const String chatImage = 'chat_image';
 
+  /// A new profile picture chosen without a connection; the upload queue's
+  /// `entityId` is the user's uid, and a user has one such picture waiting at a
+  /// time (BUT-2294). One row, so it is not a group.
+  static const String avatar = 'avatar';
+
   /// The types whose photos are rows of one group named after the thing they
   /// belong to, created once every photo is in Storage.
   static const Set<String> grouped = {cookSnap, comment};

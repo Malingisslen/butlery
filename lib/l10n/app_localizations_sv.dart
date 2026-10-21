@@ -4346,6 +4346,23 @@ class AppLocalizationsSv extends AppLocalizations {
   String get syncQueueReasonChatImageFailed => 'Bilden kunde inte skickas.';
 
   @override
+  String get syncQueueAvatar => 'Ny profilbild';
+
+  @override
+  String get syncQueueReasonAvatarFailed => 'Profilbilden kunde inte bytas.';
+
+  @override
+  String get profileAvatarWaitsForConnection => 'Sparas när du är online';
+
+  @override
+  String get profileAvatarQueuedOffline =>
+      'Profilbilden byts när du är online igen.';
+
+  @override
+  String get profileAvatarQueueFailed =>
+      'Profilen sparades, men den nya bilden kunde inte sparas till senare. Välj den igen.';
+
+  @override
   String get messagingImagePending => 'Bild på väg …';
 
   @override

@@ -213,6 +213,9 @@ class OfflineUserStorage {
   /// one group of [entityType] named [entityId] (a cook snap's photos). Each
   /// row carries its place in the group as `order` beside [metadata], which
   /// is the same for all of them. Returns the rows' ids in the given order.
+  ///
+  /// [replaceWaiting] throws away what [userId] still has waiting of
+  /// [entityType] in the same step, for an item the user has one of at a time.
   Future<List<String>> queueImageGroupForUser({
     required List<String> imagePaths,
     required String entityType,
@@ -220,11 +223,13 @@ class OfflineUserStorage {
     required String userId,
     required String targetPath,
     required Map<String, Object?> metadata,
+    bool replaceWaiting = false,
   }) async {
     final folder = Directory(p.join((await _uploadsRoot()).path, userId));
     await folder.create(recursive: true);
     final ids = [for (final _ in imagePaths) const Uuid().v4()];
     final copies = <File>[];
+    final superseded = <String>[];
     try {
       for (var order = 0; order < ids.length; order++) {
         copies.add(
@@ -235,6 +240,13 @@ class OfflineUserStorage {
         );
       }
       await _database.transaction(() async {
+        if (replaceWaiting) {
+          // One intent per kind of item: a picture chosen later takes the
+          // place of one still waiting, in the same step that queues it.
+          superseded.addAll(
+            await _uploadQueueDao.cancelWaiting(userId, entityType),
+          );
+        }
         for (var order = 0; order < ids.length; order++) {
           await _uploadQueueDao.queueUpload(
             id: ids[order],
@@ -257,6 +269,9 @@ class OfflineUserStorage {
         }
       }
       rethrow;
+    }
+    for (final path in superseded) {
+      await deleteUploadFile(path);
     }
     AppLogger.info('📷 ${ids.length} images queued for $entityType');
     return ids;

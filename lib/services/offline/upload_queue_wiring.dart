@@ -18,6 +18,7 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/offline/avatar_upload_completion.dart';
 import 'package:butlery/services/offline/chat_image_upload_completion.dart';
 import 'package:butlery/services/offline/comment_upload_completion.dart';
 import 'package:butlery/services/offline/cook_snap_upload_completion.dart';
@@ -44,6 +45,19 @@ UploadQueueProcessor buildUploadQueueProcessor({
     deleteUploaded: deleteQueuedImage,
     ensureSession: (userId) => refreshUploadSession(userId, storage),
     completions: {
+      SyncQueueEntityType.avatar: AvatarUploadCompletion(
+        database: database,
+        storage: storage,
+        setAvatar: ({required userId, required expected, required url}) {
+          final users = ServiceLocator.get<UserService>();
+          // Another account signed in since the picture was chosen: the
+          // picture waits for its owner.
+          if (users.currentUserId != userId) {
+            throw StateError('The account of the queued picture is not active');
+          }
+          return users.setQueuedAvatar(expected: expected, url: url);
+        },
+      ),
       SyncQueueEntityType.chatImage: ChatImageUploadCompletion(
         database: database,
         storage: storage,

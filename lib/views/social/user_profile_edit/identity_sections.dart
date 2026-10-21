@@ -1,5 +1,7 @@
 // The avatar and display-name sections of the profile editor.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/avatar_circle.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
@@ -9,6 +11,7 @@ import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/input/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -43,13 +46,29 @@ class ProfileAvatarSection extends StatelessWidget {
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: viewModel.isUploadingAvatar ? null : onUploadAvatar,
-                    child: AvatarCircle(
-                      imageUrl: viewModel.avatarUrl,
-                      displayName: viewModel.displayName.isNotEmpty
-                          ? viewModel.displayName
-                          : l10n.profileNewUser,
-                      size: AvatarCircleSize.header,
-                    ),
+                    child: viewModel.pendingAvatarPath == null
+                        ? AvatarCircle(
+                            imageUrl: viewModel.avatarUrl,
+                            displayName: viewModel.displayName.isNotEmpty
+                                ? viewModel.displayName
+                                : l10n.profileNewUser,
+                            size: AvatarCircleSize.header,
+                          )
+                        : ClipOval(
+                            child: Image.file(
+                              File(viewModel.pendingAvatarPath!),
+                              width: AvatarCircleSize.header.pixels,
+                              height: AvatarCircleSize.header.pixels,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => AvatarCircle(
+                                imageUrl: viewModel.avatarUrl,
+                                displayName: viewModel.displayName.isNotEmpty
+                                    ? viewModel.displayName
+                                    : l10n.profileNewUser,
+                                size: AvatarCircleSize.header,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -58,6 +77,13 @@ class ProfileAvatarSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.space4),
+          if (viewModel.pendingAvatarPath != null)
+            Text(
+              l10n.profileAvatarWaitsForConnection,
+              style: AppTextStyles.captionText.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: AppDimensions.space16,
@@ -66,7 +92,8 @@ class ProfileAvatarSection extends StatelessWidget {
                 onPressed: viewModel.isUploadingAvatar ? null : onUploadAvatar,
                 label: l10n.profileChangePhoto,
               ),
-              if (viewModel.avatarUrl != null)
+              if (viewModel.avatarUrl != null ||
+                  viewModel.pendingAvatarPath != null)
                 ButleryTextButton(
                   onPressed: viewModel.isUploadingAvatar
                       ? null

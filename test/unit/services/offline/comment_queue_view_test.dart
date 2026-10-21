@@ -84,6 +84,7 @@ void main() {
       'and the counts SQL groups exactly those', () {
     expect(commentEntityType, SyncQueueEntityType.comment);
     expect(chatImageEntityType, SyncQueueEntityType.chatImage);
+    expect(avatarEntityType, SyncQueueEntityType.avatar);
     expect(cookSnapEntityType, SyncQueueEntityType.cookSnap);
     expect(imageGroupEntityTypes, SyncQueueEntityType.grouped);
     for (final type in SyncQueueEntityType.grouped) {

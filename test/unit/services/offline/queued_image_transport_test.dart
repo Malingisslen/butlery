@@ -139,7 +139,7 @@ void main() {
       'users/u2/recipes',
       'users/u2/chat_images',
       'users/u2/comment_images',
-      'users/u1/avatars',
+      'users/u2/avatars',
       '',
     ]) {
       await expectLater(
@@ -212,4 +212,48 @@ void main() {
       );
     },
   );
+
+  test('a profile picture goes to the avatar folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedAvatar(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-5.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/a.jpg',
+      'u1',
+      'row-5',
+      'users/u1/avatars',
+    );
+
+    expect(uploaded, (url: 'https://img/row-5.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedAvatar(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-5',
+      ),
+    ).called(1);
+  });
+
+  test('a profile picture that returns nothing is a failure the queue '
+      'retries', () async {
+    when(
+      () => storage.uploadQueuedAvatar(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => null);
+
+    await expectLater(
+      () =>
+          uploadQueuedImage('/device/a.jpg', 'u1', 'row-5', 'users/u1/avatars'),
+      throwsStateError,
+    );
+  });
 }

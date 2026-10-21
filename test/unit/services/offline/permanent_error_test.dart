@@ -208,6 +208,13 @@ void main() {
       },
     );
 
+    test('a row that used up its tries reads as the 24 h run-out does', () {
+      expect(
+        permanentFailureReason(const QueueAttemptsExhausted()),
+        QueuedChangeReason.retriesExhausted,
+      );
+    });
+
     test('"Försök synka nu" does not call a refused change saved', () async {
       await q.queueRecipe('op-1', 'r1');
       q.failWith['r1'] = _error('permission-denied');

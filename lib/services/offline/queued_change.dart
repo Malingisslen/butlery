@@ -25,6 +25,9 @@ const String commentEntityType = 'comment';
 /// in [imageGroupEntityTypes]. Equal to SyncQueueEntityType.chatImage.
 const String chatImageEntityType = 'chat_image';
 
+/// A new profile picture, one row. Equal to SyncQueueEntityType.avatar.
+const String avatarEntityType = 'avatar';
+
 /// The entity types whose photos are one item to the user.
 const Set<String> imageGroupEntityTypes = {
   cookSnapEntityType,
@@ -153,6 +156,10 @@ class QueuedChange {
       kind == QueuedChangeKind.image &&
       entityType == chatImageEntityType &&
       entityId != null;
+
+  /// A new profile picture.
+  bool get isAvatar =>
+      kind == QueuedChangeKind.image && entityType == avatarEntityType;
 
   /// A recipe the server has never had: the entry creates it, so the recipe
   /// exists only on this phone. Throwing the entry away throws the recipe
