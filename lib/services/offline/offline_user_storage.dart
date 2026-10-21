@@ -277,6 +277,24 @@ class OfflineUserStorage {
   Future<bool> hasQueuedGroup(String userId, String entityType) =>
       _uploadQueueDao.hasLiveGroup(userId, entityType);
 
+  /// The device's copy of the picture of chat message [messageId], while the
+  /// queue still holds it, or null. For the sender's own preview only.
+  Future<String?> chatImageCopyPath(String messageId, String userId) async {
+    final rows = await _uploadQueueDao.getUploadsForEntity(
+      messageId,
+      SyncQueueEntityType.chatImage,
+    );
+    for (final row in rows) {
+      if (row.userId == userId &&
+          row.status != 'completed' &&
+          row.status != 'cancelled' &&
+          await File(row.localPath).exists()) {
+        return row.localPath;
+      }
+    }
+    return null;
+  }
+
   /// Whether the device holds a write of the recipe the server has not
   /// confirmed.
   Future<bool> hasUnsentWrite(String recipeId, String userId) =>

@@ -4,6 +4,11 @@
 // that was sent without a connection.
 library;
 
+/// Set on the metadata of a chat image's message until its picture is in
+/// place; the rules let the sender clear it together with setting the
+/// picture, once.
+const String pendingImageMetadataKey = 'pendingImage';
+
 enum PendingImageState {
   /// The message is not on the server and the device holds no write for it.
   absent,

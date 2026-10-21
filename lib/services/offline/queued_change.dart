@@ -21,6 +21,10 @@ enum QueuedChangeKind {
 const String cookSnapEntityType = 'cook_snap';
 const String commentEntityType = 'comment';
 
+/// A chat image is one row named after its placeholder message, so it is not
+/// in [imageGroupEntityTypes]. Equal to SyncQueueEntityType.chatImage.
+const String chatImageEntityType = 'chat_image';
+
 /// The entity types whose photos are one item to the user.
 const Set<String> imageGroupEntityTypes = {
   cookSnapEntityType,
@@ -143,6 +147,12 @@ class QueuedChange {
 
   /// A comment's photos, which the list names after the recipe.
   bool get isCommentGroup => isImageGroup && entityType == commentEntityType;
+
+  /// A chat image, whose message was created when it was sent.
+  bool get isChatImage =>
+      kind == QueuedChangeKind.image &&
+      entityType == chatImageEntityType &&
+      entityId != null;
 
   /// A recipe the server has never had: the entry creates it, so the recipe
   /// exists only on this phone. Throwing the entry away throws the recipe

@@ -15,6 +15,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/storage/drift/queue_counts.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/offline/queued_change.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/offline/sync_queue_reader.dart'
@@ -241,12 +242,24 @@ class OfflineSyncQueueSource extends SyncQueueSource {
       change,
     );
     await signedIn.offline.refreshSyncState();
+    if (change.isChatImage) await _takeDownChatMessage(change.entityId!);
     if (recipeId == null) return;
     // A never-synced recipe went with its create (discardQueuedChange).
     if (change.isNeverSyncedRecipe) {
       signedIn.offline.announceRecipeDropped(recipeId);
     } else {
       signedIn.offline.announceRecipeLeftQueue(recipeId);
+    }
+  }
+
+  /// The message of a thrown-away chat image would otherwise stay as an empty
+  /// "Bild på väg" for the others. Firestore keeps the delete if the device is
+  /// offline, so it reaches the server after the message it removes.
+  Future<void> _takeDownChatMessage(String messageId) async {
+    try {
+      await ServiceLocator.get<MessagingRepository>().deleteMessage(messageId);
+    } catch (e) {
+      AppLogger.warning('SyncQueueSource: chat message not taken down: $e');
     }
   }
 }

@@ -835,6 +835,10 @@
   "chatLoadingImage": "Loading image …",
   "chatImageSent": "Image sent.",
   "chatNoImageSelected": "No image selected",
+  "chatImageQueuedOffline": "The image will be sent when you're online again.",
+  "@chatImageQueuedOffline": {
+    "description": "BUT-2294: snackbar after a chat image was queued on the device because there is no connection."
+  },
   "chatCouldNotSharePhoto": "Couldn't share photo",
   "chatDeleteMessage": "Delete message",
   "statusConnecting": "Connecting …",
@@ -2833,6 +2837,26 @@
   "messagingEdited": "edited",
   "messagingImageLoadError": "Image could not be loaded",
   "messagingImageLoadFailed": "Could not load image",
+  "syncQueueChatImage": "An image in a chat",
+  "@syncQueueChatImage": {
+    "description": "BUT-2294: a queued chat image in the waiting list."
+  },
+  "syncQueueReasonChatImageFailed": "The image could not be sent.",
+  "@syncQueueReasonChatImageFailed": {
+    "description": "BUT-2294: why a queued chat image waits for the user, whatever the cause; a refusal is not explained. The card offers Försök igen and Släng."
+  },
+  "messagingImagePending": "Image on its way …",
+  "@messagingImagePending": {
+    "description": "BUT-2294: what the others see in place of a chat image whose picture has not arrived yet."
+  },
+  "messagingImageWaitingToSend": "Sent when you are online",
+  "@messagingImageWaitingToSend": {
+    "description": "BUT-2294: what the sender sees on a chat image that waits for a connection."
+  },
+  "messagingImageNeverArrived": "The image never arrived",
+  "@messagingImageNeverArrived": {
+    "description": "BUT-2294: a chat image whose picture never arrived within 48 hours."
+  },
   "messagingMenuShared": "Menu shared",
   "messagingRecipeShared": "Recipe shared",
   "messagingShoppingListShared": "Shopping list shared",

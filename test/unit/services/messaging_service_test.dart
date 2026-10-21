@@ -675,6 +675,23 @@ void main() {
           );
         });
 
+        test('image message waiting for its picture', () async {
+          final message = await sent(
+            () => messagingService.sendPendingImageMessage(
+              conversationId: 'c1',
+              messageId: 'm-pending',
+            ),
+          );
+
+          expectProfile(message);
+          expect(message.id, 'm-pending');
+          expect(message.type, MessageType.image);
+          expect(message.content, isEmpty);
+          // Neither a picture nor a caption: the device's file name must not
+          // be sent, and the picture is set later under the rules' one-shot.
+          expect(message.metadata, {'pendingImage': true});
+        });
+
         test('recipe share', () async {
           expectProfile(
             await sent(

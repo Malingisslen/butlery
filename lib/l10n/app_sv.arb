@@ -841,6 +841,10 @@
   "chatLoadingImage": "Laddar bild …",
   "chatImageSent": "Bilden är skickad.",
   "chatNoImageSelected": "Ingen bild vald",
+  "chatImageQueuedOffline": "Bilden skickas när du är online igen.",
+  "@chatImageQueuedOffline": {
+    "description": "BUT-2294: snackbar after a chat image was queued on the device because there is no connection."
+  },
   "chatCouldNotSharePhoto": "Kunde inte dela foto",
   "chatDeleteMessage": "Radera meddelandet",
   "statusConnecting": "Ansluter …",
@@ -2839,6 +2843,26 @@
   "messagingEdited": "redigerad",
   "messagingImageLoadError": "Bild kunde inte laddas",
   "messagingImageLoadFailed": "Kunde inte ladda bild",
+  "syncQueueChatImage": "En bild i en chatt",
+  "@syncQueueChatImage": {
+    "description": "BUT-2294: a queued chat image in the waiting list."
+  },
+  "syncQueueReasonChatImageFailed": "Bilden kunde inte skickas.",
+  "@syncQueueReasonChatImageFailed": {
+    "description": "BUT-2294: why a queued chat image waits for the user, whatever the cause; a refusal is not explained. The card offers Försök igen and Släng."
+  },
+  "messagingImagePending": "Bild på väg …",
+  "@messagingImagePending": {
+    "description": "BUT-2294: what the others see in place of a chat image whose picture has not arrived yet."
+  },
+  "messagingImageWaitingToSend": "Skickas när du är online",
+  "@messagingImageWaitingToSend": {
+    "description": "BUT-2294: what the sender sees on a chat image that waits for a connection."
+  },
+  "messagingImageNeverArrived": "Bilden kom aldrig fram",
+  "@messagingImageNeverArrived": {
+    "description": "BUT-2294: a chat image whose picture never arrived within 48 hours."
+  },
   "messagingMenuShared": "Meny delad",
   "messagingRecipeShared": "Recept delat",
   "messagingShoppingListShared": "Inköpslista delad",
