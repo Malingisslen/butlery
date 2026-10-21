@@ -1,5 +1,7 @@
 # ADR-002: Membership on a collaborative shopping list is changed through one named repository method that declares its base
 
+> Three-digit technical series (`docs/architecture/`). Not `ADR-0002`, the age rule in `docs/org/adr/`.
+
 **Status:** Accepted (2026-07-30)
 **Ticket:** BUT-1726 (recorded retroactively by BUT-1752)
 **Supersedes:** none
@@ -102,7 +104,7 @@ The privileged-key strip sits *after* `requireNoPrivilegeEscalation`, so it only
 owner: a non-owner's plain content edit carrying a stale member map still throws before
 reaching the strip — a false denial of a write the rule would have allowed. The real fix is
 to run the escalation guard against the payload that will actually be written rather than
-against the raw entity.
+against the raw entity. Tracked as BUT-2441.
 
 Separately, this strictening *exposed* (rather than caused) a product gap:
 `canManageShoppingList` grants a non-owner `admin` member management and `leaveList` is
