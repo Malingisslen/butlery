@@ -9,6 +9,7 @@ import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
@@ -154,6 +155,35 @@ class MessageSendingOperations {
       AppLogger.error('Failed to send image message', e);
       rethrow;
     }
+  }
+
+  /// BUT-2294: the message of a chat image that is waiting for a connection.
+  /// It is created now, through Firestore's own queue, so it keeps its place
+  /// among the messages sent after it; the picture is set on it later.
+  Future<void> sendPendingImageMessage({
+    required String conversationId,
+    required String messageId,
+    required Future<void> Function(String, String) clearTypingIndicator,
+  }) async {
+    final currentUser = authRepository.currentUser;
+    if (currentUser == null) {
+      throw AuthenticationException('User must be authenticated');
+    }
+    await messagingRepository.sendMessage(
+      Message(
+        id: messageId,
+        conversationId: conversationId,
+        senderId: currentUser.uid,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
+        content: '',
+        type: MessageType.image,
+        status: MessageStatus.sent,
+        sentAt: clock.now(),
+        metadata: const {pendingImageMetadataKey: true},
+      ),
+    );
+    await clearTypingIndicator(conversationId, currentUser.uid);
   }
 
   /// Send a recipe share message

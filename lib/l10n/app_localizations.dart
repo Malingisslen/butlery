@@ -1742,6 +1742,12 @@ abstract class AppLocalizations {
   /// **'Ingen bild vald'**
   String get chatNoImageSelected;
 
+  /// BUT-2294: snackbar after a chat image was queued on the device because there is no connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden skickas när du är online igen.'**
+  String get chatImageQueuedOffline;
+
   /// No description provided for @chatCouldNotSharePhoto.
   ///
   /// In sv, this message translates to:
@@ -6733,6 +6739,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ladda bild'**
   String get messagingImageLoadFailed;
+
+  /// BUT-2294: a queued chat image in the waiting list.
+  ///
+  /// In sv, this message translates to:
+  /// **'En bild i en chatt'**
+  String get syncQueueChatImage;
+
+  /// BUT-2294: why a queued chat image waits for the user, whatever the cause; a refusal is not explained. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte skickas.'**
+  String get syncQueueReasonChatImageFailed;
+
+  /// BUT-2294: what the others see in place of a chat image whose picture has not arrived yet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild på väg …'**
+  String get messagingImagePending;
+
+  /// BUT-2294: what the sender sees on a chat image that waits for a connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickas när du är online'**
+  String get messagingImageWaitingToSend;
+
+  /// BUT-2294: a chat image whose picture never arrived within 48 hours.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kom aldrig fram'**
+  String get messagingImageNeverArrived;
 
   /// No description provided for @messagingMenuShared.
   ///

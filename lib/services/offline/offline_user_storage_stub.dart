@@ -46,6 +46,9 @@ class OfflineUserStorage {
 
   Future<bool> hasQueuedGroup(String userId, String entityType) async => false;
 
+  Future<String?> chatImageCopyPath(String messageId, String userId) async =>
+      null;
+
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 
   Future<bool> retagRecipeForUser(

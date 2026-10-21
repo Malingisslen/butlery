@@ -6618,3 +6618,25 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   participant is not expressible in rules, because a rule cannot loop over the roster. A DM is
   exact.
 - An open report on a placeholder does not stop the fill-in.
+
+## BUT-2294 — chat images sent without a connection wait on the device (2026-10-21)
+
+- **SUPERSEDES** "chat and profile images are still NOT queued" (this file, the comment-image
+  entry), for chat images. With no connection, `MessagingMediaService` first creates the message
+  through Firestore's own queue (`type: image`, `metadata.pendingImage: true`, empty `content`,
+  no picture and no caption), so the image keeps its place among the texts sent after it, then
+  queues the picture as one upload row (entity type `chat_image`, `users/{uid}/chat_images/`).
+  When the picture is in Storage the sender's update sets `metadata.imageUrl` (see the rules
+  entry above). A photo that cannot be uploaded because the connection went during the upload is
+  queued the same way.
+- The sender sees the message at once with their own copy of the picture and "Skickas när du är
+  online"; everyone else sees "Bild på väg …" until the picture is set. Any client shows a
+  placeholder older than 48 hours as "Bilden kom aldrig fram", except on the sender's own phone
+  while that phone still holds the picture.
+- "Släng" on the queued image deletes the message as well as the picture. The 30-day sweep and a
+  sign-out discard remove only the row and the copy on the device, so the message stays as an
+  empty "Bild på väg …" for the others, shown as "Bilden kom aldrig fram" after 48 hours.
+  Nothing on the server removes a stale placeholder yet.
+- The card for a chat image that failed for good says "Bilden kunde inte skickas." whatever the
+  cause, so a block or a removal is not explained. The row is named "En bild i en chatt".
+- Several chat images may be unsent at once. Profile images are still not queued.

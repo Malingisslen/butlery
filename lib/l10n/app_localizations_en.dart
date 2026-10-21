@@ -1127,6 +1127,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatNoImageSelected => 'No image selected';
 
   @override
+  String get chatImageQueuedOffline =>
+      'The image will be sent when you\'re online again.';
+
+  @override
   String get chatCouldNotSharePhoto => 'Couldn\'t share photo';
 
   @override
@@ -4383,6 +4387,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagingImageLoadFailed => 'Could not load image';
+
+  @override
+  String get syncQueueChatImage => 'An image in a chat';
+
+  @override
+  String get syncQueueReasonChatImageFailed => 'The image could not be sent.';
+
+  @override
+  String get messagingImagePending => 'Image on its way …';
+
+  @override
+  String get messagingImageWaitingToSend => 'Sent when you are online';
+
+  @override
+  String get messagingImageNeverArrived => 'The image never arrived';
 
   @override
   String get messagingMenuShared => 'Menu shared';

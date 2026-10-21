@@ -702,7 +702,7 @@ class ChatActionHandler {
       _showInfoSnackBar(l10n.chatLoadingImage);
 
       // Use MediaService to pick and send image
-      final success = await _mediaService.pickAndSendImage(
+      final outcome = await _mediaService.pickAndSendImage(
         conversationId: conversationId,
         source: source,
         onProgress: (progress) {
@@ -713,10 +713,13 @@ class ChatActionHandler {
         },
       );
 
-      if (success) {
-        _showSuccessSnackBar(l10n.chatImageSent);
-      } else {
-        _showErrorSnackBar(l10n.chatNoImageSelected);
+      switch (outcome) {
+        case ImageSendOutcome.sent:
+          _showSuccessSnackBar(l10n.chatImageSent);
+        case ImageSendOutcome.queued:
+          _showInfoSnackBar(l10n.chatImageQueuedOffline);
+        case ImageSendOutcome.notSent:
+          _showErrorSnackBar(l10n.chatNoImageSelected);
       }
     } catch (e) {
       AppLogger.error('Failed to share photo', e);

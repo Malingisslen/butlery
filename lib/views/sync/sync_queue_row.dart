@@ -33,6 +33,7 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
         : l10n.syncQueueComment(subject);
   }
   if (change.isImageGroup) return l10n.syncQueueCookSnap(change.photoCount);
+  if (change.isChatImage) return l10n.syncQueueChatImage;
   if (change.kind == QueuedChangeKind.image) {
     return subject == null
         ? l10n.syncQueueImage
@@ -52,6 +53,8 @@ String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
 String describeQueuedReason(AppLocalizations l10n, QueuedChange change) =>
     change.isCommentGroup
     ? l10n.syncQueueReasonCommentFailed
+    : change.isChatImage
+    ? l10n.syncQueueReasonChatImageFailed
     : switch (change.reason) {
         QueuedChangeReason.notFound => l10n.syncQueueReasonNotFound,
         QueuedChangeReason.permissionDenied => l10n.syncQueueReasonPermission,

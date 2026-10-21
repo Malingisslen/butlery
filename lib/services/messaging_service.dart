@@ -495,6 +495,18 @@ class MessagingService extends BaseService with StreamManagementMixin {
     );
   }
 
+  /// Create the message of a chat image that waits for a connection
+  Future<void> sendPendingImageMessage({
+    required String conversationId,
+    required String messageId,
+  }) async {
+    return _sendingOps.sendPendingImageMessage(
+      conversationId: conversationId,
+      messageId: messageId,
+      clearTypingIndicator: _clearTypingIndicator,
+    );
+  }
+
   /// Send a recipe share message
   Future<void> sendRecipeShare({
     required String conversationId,

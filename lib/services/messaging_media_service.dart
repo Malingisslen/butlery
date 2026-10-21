@@ -12,6 +12,24 @@ import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline/chat_image_queue_metadata.dart';
+import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:uuid/uuid.dart';
+
+/// How a chat image left the device.
+enum ImageSendOutcome {
+  /// Uploaded and sent.
+  sent,
+
+  /// Without a connection: the message exists, the picture follows when the
+  /// device is online again.
+  queued,
+
+  /// Nothing was sent.
+  notSent,
+}
 
 /// Service for handling media (images) in messaging conversations.
 /// Provides comprehensive media upload and messaging integration including:
@@ -45,13 +63,17 @@ class MessagingMediaService extends BaseService {
   final MessagingService _messagingService;
   final auth_repo.AuthRepository _authRepository;
   final ImagePicker _imagePicker;
+  final OfflineService? Function() _offline;
 
   MessagingMediaService({
     required MessagingService messagingService,
     required auth_repo.AuthRepository authRepository,
     ImageUploadService? uploadService,
     ImagePicker? imagePicker,
-  }) : _uploadService = uploadService ?? ImageUploadService(),
+    OfflineService? Function()? offlineService,
+  }) : _offline =
+           offlineService ?? (() => ServiceLocator.tryGet<OfflineService>()),
+       _uploadService = uploadService ?? ImageUploadService(),
        _messagingService = messagingService,
        _authRepository = authRepository,
        _imagePicker = imagePicker ?? ImagePicker();
@@ -61,8 +83,7 @@ class MessagingMediaService extends BaseService {
   /// [conversationId] Target conversation ID
   /// [source] Image source (camera or gallery)
   /// [onProgress] Optional progress callback (0.0 to 1.0)
-  /// Returns true if successful, false otherwise
-  Future<bool> pickAndSendImage({
+  Future<ImageSendOutcome> pickAndSendImage({
     required String conversationId,
     required ImageSource source,
     Function(double progress)? onProgress,
@@ -82,7 +103,7 @@ class MessagingMediaService extends BaseService {
 
       if (pickedFile == null) {
         AppLogger.info('No image selected');
-        return false;
+        return ImageSendOutcome.notSent;
       }
 
       AppLogger.info('✅ Image picked: ${pickedFile.path}');
@@ -95,7 +116,7 @@ class MessagingMediaService extends BaseService {
       );
     } catch (e) {
       AppLogger.error('❌ Failed to pick and send image', e);
-      return false;
+      return ImageSendOutcome.notSent;
     }
   }
 
@@ -104,8 +125,7 @@ class MessagingMediaService extends BaseService {
   /// [conversationId] Target conversation ID
   /// [imagePath] Local file path of image
   /// [onProgress] Optional progress callback (0.0 to 1.0)
-  /// Returns true if successful, false otherwise
-  Future<bool> uploadAndSendImage({
+  Future<ImageSendOutcome> uploadAndSendImage({
     required String conversationId,
     required String imagePath,
     Function(double progress)? onProgress,
@@ -113,7 +133,7 @@ class MessagingMediaService extends BaseService {
     final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null) {
       AppLogger.error('❌ No authenticated user for image upload');
-      return false;
+      return ImageSendOutcome.notSent;
     }
 
     try {
@@ -122,13 +142,13 @@ class MessagingMediaService extends BaseService {
       final imageFile = File(imagePath);
       if (!await imageFile.exists()) {
         AppLogger.error('❌ Image file does not exist: $imagePath');
-        return false;
+        return ImageSendOutcome.notSent;
       }
 
       final fileSize = await imageFile.length();
       if (fileSize > UploadConstants.maxMessagingImageBytes) {
         AppLogger.error('❌ Image too large: ${fileSize ~/ 1024}KB');
-        return false;
+        return ImageSendOutcome.notSent;
       }
 
       // Validate image format via magic bytes
@@ -142,7 +162,11 @@ class MessagingMediaService extends BaseService {
         AppLogger.error(
           '❌ Unsupported image format: ${path.extension(imagePath)}',
         );
-        return false;
+        return ImageSendOutcome.notSent;
+      }
+
+      if (_mustQueue) {
+        return await _queueImage(conversationId, currentUserId, imagePath);
       }
 
       // Upload to Firebase Storage with automatic retry
@@ -155,10 +179,13 @@ class MessagingMediaService extends BaseService {
       );
 
       if (!result.success || result.url == null || result.url!.isEmpty) {
+        if (_mustQueue) {
+          return await _queueImage(conversationId, currentUserId, imagePath);
+        }
         AppLogger.error(
           '❌ Failed to upload image: ${result.error ?? "no URL returned"}',
         );
-        return false;
+        return ImageSendOutcome.notSent;
       }
 
       final imageUrl = result.url!;
@@ -171,11 +198,50 @@ class MessagingMediaService extends BaseService {
       );
 
       AppLogger.success('✅ Image message sent');
-      return true;
+      return ImageSendOutcome.sent;
     } catch (e) {
       AppLogger.error('❌ Failed to upload and send image', e);
-      return false;
+      return ImageSendOutcome.notSent;
     }
+  }
+
+  /// BUT-2294: without a connection a photo cannot go up.
+  bool get _mustQueue {
+    final offline = _offline();
+    return offline != null && !offline.isOnline && offline.isQueueReady;
+  }
+
+  /// The message is created first, through Firestore's own queue, so the
+  /// picture keeps its place among the texts sent after it; the queue row that
+  /// follows fills in the picture. Creating the row first could let the queue
+  /// find no message and take the picture back.
+  Future<ImageSendOutcome> _queueImage(
+    String conversationId,
+    String userId,
+    String imagePath,
+  ) async {
+    final offline = _offline()!;
+    final messageId = const Uuid().v4();
+    await _messagingService.sendPendingImageMessage(
+      conversationId: conversationId,
+      messageId: messageId,
+    );
+    try {
+      await offline.userStorage.queueImageGroupForUser(
+        imagePaths: [imagePath],
+        entityType: chatImageEntityType,
+        entityId: messageId,
+        userId: userId,
+        targetPath: 'users/$userId/chat_images',
+        metadata: chatImageQueueMetadata(conversationId: conversationId),
+      );
+    } catch (e) {
+      await _messagingService.deleteMessage(messageId);
+      rethrow;
+    }
+    await offline.refreshSyncState();
+    AppLogger.info('Chat image queued offline');
+    return ImageSendOutcome.queued;
   }
 
   /// Pick multiple images and send in conversation.
@@ -206,12 +272,12 @@ class MessagingMediaService extends BaseService {
       // Upload and send each image
       int successCount = 0;
       for (int i = 0; i < pickedFiles.length; i++) {
-        final success = await uploadAndSendImage(
+        final outcome = await uploadAndSendImage(
           conversationId: conversationId,
           imagePath: pickedFiles[i].path,
         );
 
-        if (success) {
+        if (outcome != ImageSendOutcome.notSent) {
           successCount++;
         }
 

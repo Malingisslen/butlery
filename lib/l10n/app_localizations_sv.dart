@@ -1102,6 +1102,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatNoImageSelected => 'Ingen bild vald';
 
   @override
+  String get chatImageQueuedOffline => 'Bilden skickas när du är online igen.';
+
+  @override
   String get chatCouldNotSharePhoto => 'Kunde inte dela foto';
 
   @override
@@ -4335,6 +4338,21 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get messagingImageLoadFailed => 'Kunde inte ladda bild';
+
+  @override
+  String get syncQueueChatImage => 'En bild i en chatt';
+
+  @override
+  String get syncQueueReasonChatImageFailed => 'Bilden kunde inte skickas.';
+
+  @override
+  String get messagingImagePending => 'Bild på väg …';
+
+  @override
+  String get messagingImageWaitingToSend => 'Skickas när du är online';
+
+  @override
+  String get messagingImageNeverArrived => 'Bilden kom aldrig fram';
 
   @override
   String get messagingMenuShared => 'Meny delad';
