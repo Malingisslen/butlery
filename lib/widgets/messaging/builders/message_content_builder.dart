@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
+import 'package:butlery/widgets/messaging/pending_image_bubble.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -229,6 +231,14 @@ class MessageContentBuilder {
   ) {
     final cs = Theme.of(context).colorScheme;
     final imageUrl = (message.metadata?['imageUrl'] as String?).orEmpty();
+
+    if (imageUrl.isEmpty &&
+        message.metadata?[pendingImageMetadataKey] == true) {
+      return PendingImageBubble(
+        message: message,
+        isFromCurrentUser: isFromCurrentUser,
+      );
+    }
 
     if (imageUrl.isEmpty) {
       return Text(

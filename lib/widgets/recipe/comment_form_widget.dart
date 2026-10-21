@@ -44,6 +44,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 class CommentFormWidget extends StatefulWidget {
   final SocialRecipeViewModel socialViewModel;
   final String recipeId;
+
+  /// What the waiting-comment list calls the recipe when the comment has to
+  /// wait on the device (BUT-2294).
+  final String recipeName;
   final Function(String message, {bool isError}) onShowMessage;
   final VoidCallback? onCommentPosted;
 
@@ -55,6 +59,7 @@ class CommentFormWidget extends StatefulWidget {
     super.key,
     required this.socialViewModel,
     required this.recipeId,
+    this.recipeName = '',
     required this.onShowMessage,
     this.onCommentPosted,
     this.voicePermissionGateway = const DefaultPermissionGateway(),
@@ -177,7 +182,47 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     return urls;
   }
 
+  /// BUT-2294: without a connection the photos cannot go up, so the comment
+  /// waits on the device with them and is created once they are in Storage.
+  bool get _mustQueue {
+    if (_selectedImages.isEmpty) return false;
+    final offline = ServiceLocator.tryGet<OfflineService>();
+    return offline != null && !offline.isOnline && offline.isQueueReady;
+  }
+
+  Future<void> _queueWithPhotos() async {
+    try {
+      await widget.socialViewModel.queueCommentOffline(
+        widget.recipeId,
+        recipeName: widget.recipeName,
+        imagePaths: [for (final file in _selectedImages) file.path],
+      );
+    } on CommentAwaitingSendException {
+      if (mounted) widget.onShowMessage(context.l10n.commentWaitingForNetwork);
+      return;
+    } catch (e) {
+      AppLogger.error('CommentFormWidget: could not queue comment ($e)');
+      if (mounted) {
+        widget.onShowMessage(context.l10n.commentCouldNotPost, isError: true);
+      }
+      return;
+    }
+    _controller.clear();
+    await _draftManager.clear();
+    if (!mounted) return;
+    setState(() => _selectedImages.clear());
+    final l10n = context.l10n;
+    widget.onShowMessage(l10n.commentQueuedOffline);
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      l10n.commentQueuedOffline,
+      Directionality.of(context),
+    );
+    widget.onCommentPosted?.call();
+  }
+
   Future<void> _onSendPressed() async {
+    if (_mustQueue) return _queueWithPhotos();
     List<String> imageUrls = const [];
 
     if (_selectedImages.isNotEmpty) {

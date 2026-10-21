@@ -8,9 +8,14 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/services/offline/avatar_queue_metadata.dart';
+import 'package:butlery/services/offline/chat_image_queue_metadata.dart';
 import 'package:butlery/services/offline/cook_snap_queue_metadata.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/upload_queue_wiring.dart';
@@ -39,6 +44,23 @@ class _Repository extends Fake implements CookSnapRepository {
   }
 }
 
+class _Messaging extends Fake implements MessagingRepository {
+  final List<String> attached = [];
+
+  @override
+  Future<PendingImageStatus> pendingImageStatus({
+    required String messageId,
+    required String userId,
+    required String conversationId,
+  }) async => const PendingImageStatus(PendingImageState.waiting);
+
+  @override
+  Future<void> attachPendingImage({
+    required String messageId,
+    required String imageUrl,
+  }) async => attached.add('$messageId:$imageUrl');
+}
+
 class _Announcer extends Fake implements CookSnapService {
   final List<String> announced = [];
 
@@ -65,6 +87,7 @@ void main() {
   late OfflineUserStorage storage;
   late _Repository repository;
   late _Announcer announcer;
+  late _Messaging messaging;
   late MockUserService userService;
 
   setUp(() async {
@@ -79,10 +102,12 @@ void main() {
     );
     repository = _Repository();
     announcer = _Announcer();
+    messaging = _Messaging();
     userService = MockUserService();
     TestServiceLocator.registerMock<CookSnapRepository>(repository);
     TestServiceLocator.registerMock<CookSnapService>(announcer);
     TestServiceLocator.registerMock<UserService>(userService);
+    TestServiceLocator.registerMock<MessagingRepository>(messaging);
   });
 
   tearDown(() async {
@@ -165,5 +190,90 @@ void main() {
     expect(snap.userDisplayName, 'Malin');
     expect(snap.userAvatarUrl, 'https://img/me');
     expect(announcer.announced, ['snap-1:author-1:Kladdkaka:Malin']);
+  });
+
+  test('a chat image is handed to the messaging repository under its message '
+      'id', () async {
+    final file = File('${root.path}/chat.jpg')..writeAsBytesSync([1]);
+    final ids = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueImageGroupForUser(
+        imagePaths: [file.path],
+        entityType: SyncQueueEntityType.chatImage,
+        entityId: 'msg-7',
+        userId: uid,
+        targetPath: 'users/$uid/chat_images',
+        metadata: chatImageQueueMetadata(conversationId: 'conv-1'),
+      ),
+    );
+    final rowId = ids.single;
+    await db.uploadQueueDao.markUploaded(
+      rowId,
+      url: 'https://img/$rowId.jpg',
+      thumbnailUrl: null,
+    );
+
+    await pass();
+
+    expect(messaging.attached, ['msg-7:https://img/$rowId.jpg']);
+    expect(await db.uploadQueueDao.getUpload(rowId), isNull);
+  });
+
+  Future<String> queueAvatar() async {
+    final file = File('${root.path}/me.jpg')..writeAsBytesSync([1]);
+    final ids = await withClock(
+      Clock.fixed(t0),
+      () => storage.queueImageGroupForUser(
+        imagePaths: [file.path],
+        entityType: SyncQueueEntityType.avatar,
+        entityId: uid,
+        userId: uid,
+        targetPath: 'users/$uid/avatars',
+        metadata: avatarQueueMetadata(baseAvatarUrl: 'https://img/old.jpg'),
+      ),
+    );
+    await db.uploadQueueDao.markUploaded(
+      ids.single,
+      url: 'https://img/${ids.single}.jpg',
+      thumbnailUrl: null,
+    );
+    return ids.single;
+  }
+
+  test('a profile picture is put on the profile through the user service, '
+      'against the picture the user saw', () async {
+    final rowId = await queueAvatar();
+    when(() => userService.currentUserId).thenReturn(uid);
+    when(
+      () => userService.setQueuedAvatar(
+        expected: any(named: 'expected'),
+        url: any(named: 'url'),
+      ),
+    ).thenAnswer((_) async => AvatarWriteOutcome.set);
+
+    await pass();
+
+    verify(
+      () => userService.setQueuedAvatar(
+        expected: 'https://img/old.jpg',
+        url: 'https://img/$rowId.jpg',
+      ),
+    ).called(1);
+    expect(await db.uploadQueueDao.getUpload(rowId), isNull);
+  });
+
+  test('a profile picture waits while another account is signed in', () async {
+    final rowId = await queueAvatar();
+    when(() => userService.currentUserId).thenReturn('someone-else');
+
+    await pass();
+
+    verifyNever(
+      () => userService.setQueuedAvatar(
+        expected: any(named: 'expected'),
+        url: any(named: 'url'),
+      ),
+    );
+    expect((await db.uploadQueueDao.getUpload(rowId))!.status, 'uploaded');
   });
 }

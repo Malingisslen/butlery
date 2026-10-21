@@ -12,6 +12,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -572,6 +573,167 @@ void main() {
           );
         },
       );
+
+      test('saveProfile with writeAvatarUrl:false leaves the stored picture, '
+          'and a deliberate null still clears it (BUT-2294)', () async {
+        const userId = 'user-123';
+        await repository.saveProfile(
+          _createUserProfile(userId).copyWith(avatarUrl: 'https://img/new.jpg'),
+        );
+
+        await repository.saveProfile(
+          _createUserProfile(userId).copyWith(
+            displayName: 'Ny',
+            avatarUrl: 'https://img/stale.jpg',
+          ),
+          writeAvatarUrl: false,
+        );
+        var stored = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(stored.data()!['avatarUrl'], 'https://img/new.jpg');
+        expect(stored.data()!['displayName'], 'Ny');
+
+        await repository.saveProfile(
+          _createUserProfile(userId).copyWith(avatarUrl: null),
+        );
+        stored = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(stored.data()!['avatarUrl'], isNull);
+      });
+
+      group('setAvatarIfUnchanged (BUT-2294)', () {
+        const userId = 'user-123';
+
+        Future<void> seed({String? avatarUrl, bool isSearchable = true}) =>
+            _seedUserProfile(fakeFirestore, userId, {
+              ..._createUserProfile(userId).toFirestore()..remove('avatarUrl'),
+              'avatarUrl': ?avatarUrl,
+              'isSearchable': isSearchable,
+            });
+
+        Future<Map<String, dynamic>?> stored() async =>
+            (await fakeFirestore
+                    .collection('public_profiles')
+                    .doc(userId)
+                    .get())
+                .data();
+
+        test('sets the picture when the profile still holds the one the user '
+            'saw, and writes nothing else', () async {
+          await seed(avatarUrl: 'https://img/old.jpg', isSearchable: false);
+          final before = await stored();
+
+          final outcome = await repository.setAvatarIfUnchanged(
+            userId,
+            expected: 'https://img/old.jpg',
+            url: 'https://img/new.jpg',
+          );
+
+          expect(outcome, AvatarWriteOutcome.set);
+          final after = (await stored())!;
+          expect(after['avatarUrl'], 'https://img/new.jpg');
+          expect(
+            {...after}..remove('avatarUrl'),
+            {...before!}..remove('avatarUrl'),
+          );
+        });
+
+        test('no picture before counts as unchanged', () async {
+          await seed();
+
+          expect(
+            await repository.setAvatarIfUnchanged(
+              userId,
+              expected: null,
+              url: 'https://img/new.jpg',
+            ),
+            AvatarWriteOutcome.set,
+          );
+          expect((await stored())!['avatarUrl'], 'https://img/new.jpg');
+        });
+
+        test('an empty stored address counts as no picture', () async {
+          await seed(avatarUrl: '');
+
+          expect(
+            await repository.setAvatarIfUnchanged(
+              userId,
+              expected: null,
+              url: 'https://img/new.jpg',
+            ),
+            AvatarWriteOutcome.set,
+          );
+        });
+
+        test('a picture set meanwhile is left alone', () async {
+          await seed(avatarUrl: 'https://img/elsewhere.jpg');
+
+          final outcome = await repository.setAvatarIfUnchanged(
+            userId,
+            expected: 'https://img/old.jpg',
+            url: 'https://img/new.jpg',
+          );
+
+          expect(outcome, AvatarWriteOutcome.superseded);
+          expect((await stored())!['avatarUrl'], 'https://img/elsewhere.jpg');
+        });
+
+        test('a picture removed meanwhile is not put back', () async {
+          await seed();
+
+          expect(
+            await repository.setAvatarIfUnchanged(
+              userId,
+              expected: 'https://img/old.jpg',
+              url: 'https://img/new.jpg',
+            ),
+            AvatarWriteOutcome.superseded,
+          );
+          expect((await stored())!.containsKey('avatarUrl'), isFalse);
+        });
+
+        test('a repeated send is done and writes nothing', () async {
+          await seed(avatarUrl: 'https://img/new.jpg');
+
+          expect(
+            await repository.setAvatarIfUnchanged(
+              userId,
+              expected: 'https://img/old.jpg',
+              url: 'https://img/new.jpg',
+            ),
+            AvatarWriteOutcome.alreadySet,
+          );
+        });
+
+        test('a missing profile is never created', () async {
+          expect(
+            await repository.setAvatarIfUnchanged(
+              userId,
+              expected: null,
+              url: 'https://img/new.jpg',
+            ),
+            AvatarWriteOutcome.accountGone,
+          );
+          expect(await stored(), isNull);
+        });
+
+        test('only the signed-in user can set their own picture', () async {
+          await seed();
+
+          await expectLater(
+            repository.setAvatarIfUnchanged(
+              'someone-else',
+              expected: null,
+              url: 'https://img/new.jpg',
+            ),
+            throwsA(isA<Exception>()),
+          );
+        });
+      });
 
       test(
         'markActivityFeedHintSeen writes only the flag to the settings '

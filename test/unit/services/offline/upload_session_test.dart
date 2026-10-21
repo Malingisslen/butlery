@@ -85,12 +85,18 @@ void main() {
       return UploadQueueProcessor(
         database: db,
         storage: storage,
-        upload: (String localPath, String userId, String objectId) async {
-          events.add('upload:$objectId');
-          final failure = uploadFails;
-          if (failure != null) throw failure;
-          return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
-        },
+        upload:
+            (
+              String localPath,
+              String userId,
+              String objectId,
+              String targetPath,
+            ) async {
+              events.add('upload:$objectId');
+              final failure = uploadFails;
+              if (failure != null) throw failure;
+              return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
+            },
         ensureSession: ensureSession,
         completions: completions,
         random: MidRandom(),

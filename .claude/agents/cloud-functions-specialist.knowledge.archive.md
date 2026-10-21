@@ -21309,3 +21309,8 @@ Production fixes were made by the main session; this run only changed tests (no 
 
 ### 2026-10-20 — BUT-451 admin scripts take --project [data-pipelines]
 - Every `admin/` script now reaches Firebase only through `initializeAdminApp()` → `requireProject`; the hardcoded production id in `seed-tag-configs.ts` and `sync-ingredients.ts` is gone.
+
+### 2026-10-21 — BUT-2294 PR 8 chat-image fill-in rules tests, gate review [client-guards]
+- Reviewed the 17 added tests in `conversations-rules.test.ts` (brief said 16; `git diff --cached | grep -c '^+test('` = 17, suite 164 -> 181). Suite ran 181/181 on the local emulator under a fresh `PROBE_PROJECT_ID`; `tsc --noEmit` clean.
+- By reasoning only (no probe run): the "one-shot" and "online image" fixtures both seed `imageUrl` with no `pendingImage`, so each violates two `isPendingImage` conjuncts and deleting `meta.get('pendingImage', false) == true` would leave every test green. Low harm, since the sender can create a placeholder at will. Folded into the "conjunct REPEATED per field" principle as the FIXTURE variant.
+- Every DM fixture puts the sender at `participantIds[0]`, so a `participantIds[1]` mutant at the `chatImageAttachOk` block-gate call site would survive (the existing position principle; L1b/E1b are the sibling precedent). Filed Medium.

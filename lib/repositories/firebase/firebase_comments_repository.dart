@@ -5,42 +5,39 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/repositories/firebase/queued_write.dart';
-import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/repositories/firebase/comments/comment_creation.dart';
 import 'package:butlery/repositories/firebase/comments/comment_likes_operations.dart';
 import 'package:butlery/repositories/firebase/comments/comment_visibility_queries.dart';
 
+export 'package:butlery/repositories/firebase/comments/comment_creation.dart'
+    show RecipeAccessValidator;
+
 /// Firebase implementation for recipe comments with threaded replies and like tracking.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
-/// Callback to validate that a user has access to a recipe before commenting.
-/// Returns true if the user can access the recipe.
-typedef RecipeAccessValidator =
-    Future<bool> Function(String recipeId, String userId);
-
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
-    with CommentLikesOperations, CommentVisibilityQueries
+    with CommentLikesOperations, CommentVisibilityQueries, CommentCreation
     implements CommentsRepository {
-  final RecipeAccessValidator? _recipeAccessValidator;
-  final RecipeOwnershipResolver? _recipeOwnershipResolver;
-  final AttributionSource _attribution;
+  @override
+  final RecipeAccessValidator? recipeAccessValidator;
+  @override
+  final RecipeOwnershipResolver? recipeOwnershipResolver;
+  @override
+  final AttributionSource attribution;
 
   FirebaseCommentsRepository({
     super.firestore,
     required super.authRepository,
     super.auditRepository,
     super.timestampProvider,
-    RecipeAccessValidator? recipeAccessValidator,
-    RecipeOwnershipResolver? recipeOwnershipResolver,
+    this.recipeAccessValidator,
+    this.recipeOwnershipResolver,
     AttributionSource? attribution,
-  }) : _recipeAccessValidator = recipeAccessValidator,
-       _recipeOwnershipResolver = recipeOwnershipResolver,
-       _attribution = attribution ?? AttributionSource();
+  }) : attribution = attribution ?? AttributionSource();
 
   @override
   String get collectionName => FirestoreCollections.recipeComments;
@@ -127,161 +124,6 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
       hasMore: snapshot.docs.length == limit,
     );
-  }
-
-  @override
-  Future<RecipeComment> addComment({
-    required String recipeId,
-    required String userId,
-    required String content,
-    String? parentCommentId,
-    List<String> imageUrls = const [],
-  }) async {
-    // Validate user is creating their own comment
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'add comment',
-    );
-
-    // Validate recipe access if validator is configured
-    if (_recipeAccessValidator != null) {
-      final hasAccess = await _recipeAccessValidator(recipeId, currentUser);
-      if (!hasAccess) {
-        throw PermissionDeniedException(
-          'User does not have access to this recipe',
-          resource: 'recipe',
-          operation: 'comment',
-          userId: currentUser,
-        );
-      }
-    }
-
-    // Validate required fields
-    if (content.trim().isEmpty) {
-      throw SecurityViolationException(
-        'Comment content cannot be empty',
-      );
-    }
-
-    if (content.length > 2000) {
-      throw SecurityViolationException(
-        'Comment content exceeds maximum length of 2000 characters',
-      );
-    }
-
-    // BUT-1049: defence-in-depth cap mirroring RecipeComment.maxImageUrls and
-    // the Storage/Firestore rules. The composer enforces this in the UI; this
-    // is the server-side trust boundary.
-    if (imageUrls.length > RecipeComment.maxImageUrls) {
-      throw SecurityViolationException(
-        'Comment image count exceeds maximum of ${RecipeComment.maxImageUrls}',
-      );
-    }
-
-    final displayName = _attribution.displayName;
-
-    // BUT-458: Resolve the recipe-ownership snapshot so we can denormalize
-    // onto the comment doc. Failures are non-blocking — the comment still
-    // writes (without the new fields) and rules fall back to author-only
-    // read. Missing-snapshot is logged for ops visibility.
-    RecipeOwnershipSnapshot? ownership;
-    if (_recipeOwnershipResolver != null) {
-      try {
-        ownership = await _recipeOwnershipResolver(recipeId);
-      } catch (e) {
-        AppLogger.warning(
-          '[Comments] ownership resolver failed for recipe $recipeId: $e — '
-          'comment will write without denorm fields, read falls back to author-only',
-        );
-        ownership = null;
-      }
-    }
-
-    final commentData = <String, dynamic>{
-      'recipeId': recipeId,
-      'authorId': userId,
-      'authorDisplayName': displayName,
-      'text': content,
-      'parentCommentId': parentCommentId,
-      'createdAt': timestampProvider.serverTimestamp(),
-      'updatedAt': timestampProvider.serverTimestamp(),
-      'isDeleted': false,
-      'likesCount': 0,
-      'replyCount': 0,
-      // Always write sharedWithUserIds (even empty) so the rule's `in`
-      // operator does not crash on a missing field.
-      'sharedWithUserIds': ownership?.sharedWithUserIds ?? <String>[],
-    };
-    if (ownership?.recipeOwnerId != null) {
-      commentData['recipeOwnerId'] = ownership!.recipeOwnerId;
-    }
-    // BUT-1049: only emit when populated so legacy text-only docs stay
-    // byte-identical (empty list is interchangeable with absence on reads).
-    if (imageUrls.isNotEmpty) {
-      commentData['imageUrls'] = imageUrls;
-    }
-
-    if (await _hasUnsentComment(userId)) {
-      throw const CommentAwaitingSendException();
-    }
-
-    // Batch write: comment + rate limit doc + parent replyCount increment
-    final batch = firestore.batch();
-    final docRef = collection.doc();
-    batch.set(docRef, commentData);
-    stampRateLimit(
-      batch,
-      firestore,
-      userId: userId,
-      type: 'comments',
-      guardedDocId: docRef.id,
-      timestampProvider: timestampProvider,
-    );
-
-    // Increment parent comment's replyCount when creating a reply
-    if (parentCommentId != null) {
-      batch.update(collection.doc(parentCommentId), {
-        'replyCount': FieldValue.increment(1),
-      });
-    }
-
-    // BUT-2363: offline the commit settles only when the server answers, so
-    // the comment form stayed busy for the whole outage.
-    await awaitOrLeaveQueued(batch.commit(), what: 'comment ${docRef.id}');
-
-    // From the cache, which holds the comment either way.
-    final doc = await docRef.get(const GetOptions(source: Source.cache));
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'recipe_comment',
-      operation: 'create',
-      granted: true,
-      details: 'Recipe: $recipeId',
-    );
-
-    return fromFirestore(doc);
-  }
-
-  /// BUT-2363: whether a comment of [userId]'s is still in Firestore's
-  /// offline queue. Every comment batch writes the burst stamp, so the cached
-  /// stamp has pending writes exactly while one is unsent; read from the
-  /// device's cache, it survives a restart and belongs to one account.
-  Future<bool> _hasUnsentComment(String userId) async {
-    try {
-      final stamp = await firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userRateLimits)
-          .doc('comments')
-          .get(const GetOptions(source: Source.cache));
-      return stamp.metadata.hasPendingWrites;
-    } on FirebaseException {
-      // Not in the cache: nothing of this account's is queued here.
-      return false;
-    }
   }
 
   @override

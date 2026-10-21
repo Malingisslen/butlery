@@ -287,6 +287,138 @@ void main() {
       });
     });
 
+    group('Queued comment image', () {
+      test('goes to the comment folder under the queue row id, with no '
+          'thumbnail', () async {
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+          ),
+        ).thenAnswer((_) async => 'https://storage/row-9.jpg');
+
+        final url = await storageService.uploadQueuedCommentImage(
+          mockFile,
+          'owner-7',
+          objectId: 'row-9',
+        );
+
+        expect(url, 'https://storage/row-9.jpg');
+        verify(
+          () => mockRepository.uploadImage(
+            imageFile: mockFile,
+            userId: 'owner-7',
+            path: 'users/owner-7/comment_images/row-9.jpg',
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        );
+      });
+
+      test('offline throws the typed network error before anything is '
+          'uploaded, so the queue treats it as a retry', () async {
+        final offline = GetIt.instance.get<OfflineService>();
+        when(() => offline.isOnline).thenReturn(false);
+        addTearDown(() => when(() => offline.isOnline).thenReturn(true));
+
+        await expectLater(
+          storageService.uploadQueuedCommentImage(
+            mockFile,
+            'owner-7',
+            objectId: 'row-9',
+          ),
+          throwsA(isA<StorageUploadException>()),
+        );
+        verifyNever(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+          ),
+        );
+      });
+    });
+
+    group('Queued avatar', () {
+      test(
+        'goes to the avatar folder under the row id, with no thumbnail',
+        () async {
+          when(
+            () => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+            ),
+          ).thenAnswer((_) async => 'https://storage/row-8.jpg');
+
+          final url = await storageService.uploadQueuedAvatar(
+            mockFile,
+            'owner-7',
+            objectId: 'row-8',
+          );
+
+          expect(url, 'https://storage/row-8.jpg');
+          verify(
+            () => mockRepository.uploadImage(
+              imageFile: mockFile,
+              userId: 'owner-7',
+              path: 'users/owner-7/avatars/row-8.jpg',
+            ),
+          ).called(1);
+          verifyNever(
+            () => mockRepository.createAndUploadThumbnail(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              originalPath: any(named: 'originalPath'),
+            ),
+          );
+        },
+      );
+    });
+
+    group('Queued chat image', () {
+      test(
+        'goes to the chat folder under the row id, with no thumbnail',
+        () async {
+          when(
+            () => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+            ),
+          ).thenAnswer((_) async => 'https://storage/row-4.jpg');
+
+          final url = await storageService.uploadQueuedChatImage(
+            mockFile,
+            'owner-7',
+            objectId: 'row-4',
+          );
+
+          expect(url, 'https://storage/row-4.jpg');
+          verify(
+            () => mockRepository.uploadImage(
+              imageFile: mockFile,
+              userId: 'owner-7',
+              path: 'users/owner-7/chat_images/row-4.jpg',
+            ),
+          ).called(1);
+          verifyNever(
+            () => mockRepository.createAndUploadThumbnail(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              originalPath: any(named: 'originalPath'),
+            ),
+          );
+        },
+      );
+    });
+
     group('Image Deletion', () {
       test('should delete single image', () async {
         // Arrange

@@ -30,6 +30,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/pushed_route_harness.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/mocks/widget_mocks.dart';
@@ -112,6 +113,37 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(friendsViewModel.blockedUserIds, equals([_them]));
+  });
+
+  testWidgets('blocking leaves the profile, a refused block does not', (
+    tester,
+  ) async {
+    await pumpPushedRoute(
+      tester,
+      builder: (_) => FriendProfileView(friend: _friend),
+    );
+    friendsViewModel.blockSucceeds = false;
+    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blockera'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blockera').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FriendProfileView), findsOneWidget);
+    expect(pushedRouteHost, findsNothing);
+
+    friendsViewModel.blockSucceeds = true;
+    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blockera'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blockera').last);
+    await tester.pumpAndSettle();
+
+    expect(friendsViewModel.blockedUserIds, equals([_them]));
+    expect(pushedRouteHost, findsOneWidget);
+    expect(find.byType(FriendProfileView), findsNothing);
   });
 
   testWidgets('a FRIEND is still offered Blockera', (tester) async {

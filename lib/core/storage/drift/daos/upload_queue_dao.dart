@@ -241,21 +241,22 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
   });
 
   /// Deletes the cancelled row [id] when it holds no address in Storage. A
-  /// cancelled photo of a cook-snap album is what tells its still-live
-  /// siblings that the album is dead, so it stays while one of them is live;
-  /// once none is, the album's other bare cancelled rows go with it.
+  /// cancelled photo of a cook-snap album or a comment is what tells its
+  /// still-live siblings that the group is dead, so it stays while one of them
+  /// is live; once none is, the group's other bare cancelled rows go with it.
   Future<void> dropIfBare(String id, {bool uploadFinished = false}) async {
     if (uploadFinished) _cancelledInFlight.remove(id);
     final row = await getUpload(id);
     if (row == null || row.status != 'cancelled' || row.uploadedUrl != null) {
       return;
     }
-    final snapId = row.entityId;
-    if (row.entityType != SyncQueueEntityType.cookSnap || snapId == null) {
+    final groupId = row.entityId;
+    if (!SyncQueueEntityType.grouped.contains(row.entityType) ||
+        groupId == null) {
       await markCompleted(id);
       return;
     }
-    final group = await getGroup(row.userId, row.entityType!, snapId);
+    final group = await getGroup(row.userId, row.entityType!, groupId);
     if (group.any((r) => r.status != 'cancelled' && r.status != 'completed')) {
       return;
     }
@@ -358,6 +359,42 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
             (e) => OrderingTerm.asc(e.id),
           ]))
         .get();
+  }
+
+  /// Throws away every unfinished row of [entityType] of [userId], one that
+  /// waits for the user included, and returns the device copies they held. The
+  /// caller removes the files once its transaction has committed.
+  Future<List<String>> cancelWaiting(String userId, String entityType) =>
+      transaction(() async {
+        final rows =
+            await (select(uploadQueueEntries)..where(
+                  (e) =>
+                      e.userId.equals(userId) &
+                      e.entityType.equals(entityType) &
+                      e.status.isNotIn(const ['completed', 'cancelled']),
+                ))
+                .get();
+        for (final row in rows) {
+          await cancelUpload(row.id);
+        }
+        return [for (final row in rows) row.localPath];
+      });
+
+  /// Whether [userId] has any unsent group of [entityType] (a comment's
+  /// photos), however far it has come. A group that is thrown away or whose
+  /// record is complete no longer counts.
+  Future<bool> hasLiveGroup(String userId, String entityType) async {
+    final row =
+        await (select(uploadQueueEntries)
+              ..where(
+                (e) =>
+                    e.userId.equals(userId) &
+                    e.entityType.equals(entityType) &
+                    e.status.isNotIn(const ['completed', 'cancelled']),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
   }
 
   /// Remove all uploads for an entity

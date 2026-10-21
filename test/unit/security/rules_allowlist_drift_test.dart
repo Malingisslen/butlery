@@ -586,9 +586,13 @@ void main() {
     // last two are diff restrictions outside the payload comparison.
     // BUT-1997 added users/{uid}/acquisition: one keys().hasOnly on create,
     // guarded in allowlists.
+    // BUT-2294 added the fill-in of an offline chat image's placeholder: one
+    // affectedKeys().hasOnly(['metadata']) over the message's diff and one
+    // affectedKeys().hasOnly(['imageUrl', 'pendingImage']) over the metadata
+    // map's diff, both diff restrictions outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      59,
+      61,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

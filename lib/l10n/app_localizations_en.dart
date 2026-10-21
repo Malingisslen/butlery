@@ -1127,6 +1127,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatNoImageSelected => 'No image selected';
 
   @override
+  String get chatImageQueuedOffline =>
+      'The image will be sent when you\'re online again.';
+
+  @override
   String get chatCouldNotSharePhoto => 'Couldn\'t share photo';
 
   @override
@@ -4383,6 +4387,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagingImageLoadFailed => 'Could not load image';
+
+  @override
+  String get syncQueueChatImage => 'An image in a chat';
+
+  @override
+  String get syncQueueReasonChatImageFailed => 'The image could not be sent.';
+
+  @override
+  String get syncQueueAvatar => 'New profile picture';
+
+  @override
+  String get syncQueueReasonAvatarFailed =>
+      'The profile picture could not be changed.';
+
+  @override
+  String get profileAvatarWaitsForConnection => 'Saved when you\'re online';
+
+  @override
+  String get profileAvatarQueuedOffline =>
+      'Your profile picture changes when you\'re online again.';
+
+  @override
+  String get profileAvatarQueueFailed =>
+      'The profile was saved, but the new picture could not be kept for later. Choose it again.';
+
+  @override
+  String get messagingImagePending => 'Image on its way …';
+
+  @override
+  String get messagingImageWaitingToSend => 'Sent when you are online';
+
+  @override
+  String get messagingImageNeverArrived => 'The image never arrived';
 
   @override
   String get messagingMenuShared => 'Menu shared';
@@ -16997,6 +17034,21 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String syncQueueComment(String recipe) {
+    return 'Comment on $recipe';
+  }
+
+  @override
+  String get syncQueueCommentUnnamed => 'Comment';
+
+  @override
+  String get syncQueueReasonCommentFailed => 'The comment could not be sent.';
+
+  @override
+  String get commentQueuedOffline =>
+      'The comment will be sent when you\'re online again.';
 
   @override
   String get syncQueueReasonNotFound => 'The recipe no longer exists';

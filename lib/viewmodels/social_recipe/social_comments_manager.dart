@@ -5,6 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/mixins/disposal_guard_mixin.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:uuid/uuid.dart';
+import 'package:butlery/services/offline/comment_queue_metadata.dart';
+import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -170,11 +175,11 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
     notifyListeners();
   }
 
-  Future<void> postComment(
-    String recipeId, {
-    List<String> imageUrls = const [],
-  }) async {
-    if (_newCommentText.trim().isEmpty) return;
+  /// The text to send, or null when nothing may be sent: the field is empty,
+  /// the account is too new or the text is refused. A refusal sets the error
+  /// the form shows.
+  String? _textToSend() {
+    if (_newCommentText.trim().isEmpty) return null;
 
     // BUT-1419: client-side mirror of the server isAccountMatured() gate.
     // Comments are now maturity-gated (like DMs/friend-requests) to close the
@@ -184,7 +189,7 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
     if (!isAccountMatured) {
       _commentsError = AppLocale.current.newAccountSocialBlockedComment;
       notifyListeners();
-      return;
+      return null;
     }
 
     // BUT-1393: gate comment text through the canonical profanity filter before
@@ -200,8 +205,31 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
       if (!result.isClean) {
         _commentsError = result.reason;
         notifyListeners();
-        return;
+        return null;
       }
+    }
+    return _newCommentText.trim();
+  }
+
+  /// BUT-2294: a comment whose photos wait on the device is the user's one
+  /// unsent comment, like one waiting in Firestore's own queue, because the
+  /// server refuses a second comment within 5 s.
+  Future<bool> _hasQueuedComment(String userId) async {
+    final offline = ServiceLocator.tryGet<OfflineService>();
+    if (offline == null || !offline.isQueueReady) return false;
+    return offline.userStorage.hasQueuedGroup(userId, commentEntityType);
+  }
+
+  Future<void> postComment(
+    String recipeId, {
+    List<String> imageUrls = const [],
+  }) async {
+    final text = _textToSend();
+    if (text == null) return;
+
+    final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    if (userId != null && await _hasQueuedComment(userId)) {
+      throw const CommentAwaitingSendException();
     }
 
     _isPostingComment = true;
@@ -210,7 +238,7 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
     try {
       final commentId = await _recipeService.social.addComment(
         recipeId: recipeId,
-        content: _newCommentText.trim(),
+        content: text,
         parentCommentId: _replyToCommentId,
         imageUrls: imageUrls,
       );
@@ -237,6 +265,50 @@ class SocialCommentsManager extends ChangeNotifier with DisposalGuardMixin {
       _isPostingComment = false;
       notifyListeners();
     }
+  }
+
+  /// BUT-2294: with no connection, a comment that carries photos waits on
+  /// the device with them and is created once they are all in Storage. Throws
+  /// [CommentAwaitingSendException] when another comment of the user's still
+  /// waits.
+  Future<void> queueCommentOffline(
+    String recipeId, {
+    required String recipeName,
+    required List<String> imagePaths,
+  }) async {
+    final text = _textToSend();
+    if (text == null) return;
+    if (text.length > RecipeComment.maxContentLength ||
+        imagePaths.isEmpty ||
+        imagePaths.length > RecipeComment.maxImageUrls) {
+      throw ArgumentError('A queued comment needs 1-3 photos and ≤2000 chars');
+    }
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    final offline = ServiceLocator.get<OfflineService>();
+    if (userId == null) throw StateError('Not authenticated');
+    if (await _hasQueuedComment(userId)) {
+      throw const CommentAwaitingSendException();
+    }
+
+    await offline.userStorage.queueImageGroupForUser(
+      imagePaths: imagePaths,
+      entityType: commentEntityType,
+      entityId: const Uuid().v4(),
+      userId: userId,
+      targetPath: 'users/$userId/comment_images',
+      metadata: commentQueueMetadata(
+        recipeId: recipeId,
+        recipeName: recipeName,
+        text: text,
+        parentCommentId: _replyToCommentId,
+      ),
+    );
+    await offline.refreshSyncState();
+    _newCommentText = '';
+    _replyToCommentId = null;
+    _isReplying = false;
+    notifyListeners();
+    AppLogger.info('Comment for recipe $recipeId queued offline');
   }
 
   void setReplyTo(String commentId) {

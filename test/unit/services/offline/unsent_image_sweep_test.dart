@@ -48,7 +48,7 @@ void main() {
     processor = UploadQueueProcessor(
       database: db,
       storage: OfflineUserStorage(database: db, uploadsRoot: () async => root),
-      upload: (path, userId, objectId) async {
+      upload: (path, userId, objectId, targetPath) async {
         uploaded.add(objectId);
         return (url: 'https://img/$objectId.jpg', thumbnailUrl: null);
       },
@@ -340,7 +340,7 @@ void main() {
           database: db,
           uploadsRoot: () async => root,
         ),
-        upload: (path, userId, objectId) async =>
+        upload: (path, userId, objectId, targetPath) async =>
             (url: 'https://img/$objectId.jpg', thumbnailUrl: null),
         deleteUploaded: (image) async => true,
         completions: {SyncQueueEntityType.cookSnap: _TargetGone()},
@@ -441,6 +441,6 @@ void main() {
       entityType: cookSnapEntityType,
     );
 
-    expect(change.isCookSnapGroup, isFalse);
+    expect(change.isImageGroup, isFalse);
   });
 }

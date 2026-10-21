@@ -15,10 +15,24 @@ enum QueuedChangeKind {
   image,
 }
 
-/// The upload queue's entity type of a cook snap's photos. Equal to
-/// SyncQueueEntityType.cookSnap (a test pins it), kept here so this
-/// database-free model does not import the Drift tables.
+/// The upload queue's entity types of a cook snap's and a comment's photos.
+/// Equal to SyncQueueEntityType.cookSnap and .comment (a test pins them), kept
+/// here so this database-free model does not import the Drift tables.
 const String cookSnapEntityType = 'cook_snap';
+const String commentEntityType = 'comment';
+
+/// A chat image is one row named after its placeholder message, so it is not
+/// in [imageGroupEntityTypes]. Equal to SyncQueueEntityType.chatImage.
+const String chatImageEntityType = 'chat_image';
+
+/// A new profile picture, one row. Equal to SyncQueueEntityType.avatar.
+const String avatarEntityType = 'avatar';
+
+/// The entity types whose photos are one item to the user.
+const Set<String> imageGroupEntityTypes = {
+  cookSnapEntityType,
+  commentEntityType,
+};
 
 /// What a recipe write does, as the queue stores it (SyncOperation).
 enum QueuedOperation { create, update, delete, tag, upload }
@@ -115,23 +129,37 @@ class QueuedChange {
   /// it. Null for a recipe write.
   final String? entityType;
 
-  /// The recipe or cook snap an image row belongs to.
+  /// The recipe, cook snap or comment an image row belongs to.
   final String? entityId;
 
   /// The photos in the group this item stands for; 1 for everything but a
-  /// cook-snap album, whose rows are one item to the user.
+  /// cook-snap album or a comment's photos, whose rows are one item to the
+  /// user.
   final int photoCount;
 
   /// Where the 30 days an unsent image waits start ([unsentImageSince]); set
   /// for an image that waits for the user, null for everything else.
   final DateTime? unsentSince;
 
-  /// An album of cook-snap photos: one item whose [id] is the snap's id and
-  /// which is retried and thrown away as a whole.
-  bool get isCookSnapGroup =>
+  /// The photos of a cook snap or a comment: one item whose [id] is the
+  /// snap's or comment's id and which is retried and thrown away as a whole.
+  bool get isImageGroup =>
       kind == QueuedChangeKind.image &&
-      entityType == cookSnapEntityType &&
+      imageGroupEntityTypes.contains(entityType) &&
       entityId != null;
+
+  /// A comment's photos, which the list names after the recipe.
+  bool get isCommentGroup => isImageGroup && entityType == commentEntityType;
+
+  /// A chat image, whose message was created when it was sent.
+  bool get isChatImage =>
+      kind == QueuedChangeKind.image &&
+      entityType == chatImageEntityType &&
+      entityId != null;
+
+  /// A new profile picture.
+  bool get isAvatar =>
+      kind == QueuedChangeKind.image && entityType == avatarEntityType;
 
   /// A recipe the server has never had: the entry creates it, so the recipe
   /// exists only on this phone. Throwing the entry away throws the recipe
@@ -152,7 +180,7 @@ class QueuedChange {
   bool get canTrySmaller =>
       needsUser &&
       kind == QueuedChangeKind.image &&
-      !isCookSnapGroup &&
+      !isImageGroup &&
       reason == QueuedChangeReason.tooLarge;
 
   /// "Släng ändringen" (produktregler.md:188), on every permanent failure.

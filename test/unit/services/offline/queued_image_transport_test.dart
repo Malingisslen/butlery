@@ -54,7 +54,12 @@ void main() {
       ),
     );
 
-    final uploaded = await uploadQueuedImage('/device/a.jpg', 'u1', 'row-1');
+    final uploaded = await uploadQueuedImage(
+      '/device/a.jpg',
+      'u1',
+      'row-1',
+      'users/u1/recipes',
+    );
 
     expect(uploaded, (
       url: 'https://img/row-1.jpg',
@@ -83,11 +88,67 @@ void main() {
       ).thenAnswer((_) async => null);
 
       await expectLater(
-        () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1'),
+        () => uploadQueuedImage(
+          '/device/a.jpg',
+          'u1',
+          'row-1',
+          'users/u1/recipes',
+        ),
         throwsStateError,
       );
     },
   );
+
+  test('a comment photo goes to the comment folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedCommentImage(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-2.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/b.jpg',
+      'u1',
+      'row-2',
+      'users/u1/comment_images',
+    );
+
+    expect(uploaded, (url: 'https://img/row-2.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedCommentImage(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-2',
+      ),
+    ).called(1);
+    verifyNever(
+      () => storage.uploadImageFile(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    );
+  });
+
+  test('a folder that is not one of the user\'s own image folders uploads '
+      'nothing', () async {
+    for (final folder in [
+      'users/u2/recipes',
+      'users/u2/chat_images',
+      'users/u2/comment_images',
+      'users/u2/avatars',
+      '',
+    ]) {
+      await expectLater(
+        () => uploadQueuedImage('/device/a.jpg', 'u1', 'row-1', folder),
+        throwsStateError,
+      );
+    }
+    verifyZeroInteractions(storage);
+  });
 
   test('taking an image back asks the storage service to delete its '
       'address and passes its answer on', () async {
@@ -100,5 +161,99 @@ void main() {
 
     expect(gone, isFalse);
     verify(() => storage.deleteImage('https://img/row-1.jpg')).called(1);
+  });
+
+  test('a chat photo goes to the chat folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedChatImage(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-3.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/c.jpg',
+      'u1',
+      'row-3',
+      'users/u1/chat_images',
+    );
+
+    expect(uploaded, (url: 'https://img/row-3.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedChatImage(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-3',
+      ),
+    ).called(1);
+  });
+
+  test(
+    'a chat photo that returns nothing is a failure the queue retries',
+    () async {
+      when(
+        () => storage.uploadQueuedChatImage(
+          any(),
+          any(),
+          objectId: any(named: 'objectId'),
+        ),
+      ).thenAnswer((_) async => null);
+
+      await expectLater(
+        () => uploadQueuedImage(
+          '/device/c.jpg',
+          'u1',
+          'row-3',
+          'users/u1/chat_images',
+        ),
+        throwsStateError,
+      );
+    },
+  );
+
+  test('a profile picture goes to the avatar folder under the row id, with no '
+      'thumbnail', () async {
+    when(
+      () => storage.uploadQueuedAvatar(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => 'https://img/row-5.jpg');
+
+    final uploaded = await uploadQueuedImage(
+      '/device/a.jpg',
+      'u1',
+      'row-5',
+      'users/u1/avatars',
+    );
+
+    expect(uploaded, (url: 'https://img/row-5.jpg', thumbnailUrl: null));
+    verify(
+      () => storage.uploadQueuedAvatar(
+        any(that: isA<File>()),
+        'u1',
+        objectId: 'row-5',
+      ),
+    ).called(1);
+  });
+
+  test('a profile picture that returns nothing is a failure the queue '
+      'retries', () async {
+    when(
+      () => storage.uploadQueuedAvatar(
+        any(),
+        any(),
+        objectId: any(named: 'objectId'),
+      ),
+    ).thenAnswer((_) async => null);
+
+    await expectLater(
+      () =>
+          uploadQueuedImage('/device/a.jpg', 'u1', 'row-5', 'users/u1/avatars'),
+      throwsStateError,
+    );
   });
 }

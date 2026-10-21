@@ -24,7 +24,10 @@
   `users/{uid}/counters`: every deny that steps recipes AND total together stays
   green when the menus, shopping-list or total conjunct is deleted. One deny per
   field, each moving exactly that field. A `field = "…"` default parameter on the
-  write helper is the tell that the other fields were never sent.
+  write helper is the tell that the other fields were never sent. The same holds for a
+  stored FIXTURE: a seeded row that breaks two conjuncts of one predicate pins neither
+  (`isPendingImage` on `messages`: a row with `imageUrl` set AND no `pendingImage` flag).
+  Seed one row per conjunct, each breaking only that one.
 - **An `is string` deny needs a payload only that conjunct refuses.** Beside
   `x.size() <= N`, a NUMBER is refused by `size()`'s evaluation error too, so deleting
   `is string` stays green; a one-element LIST passes `size()` and isolates it.

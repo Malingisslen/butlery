@@ -146,8 +146,8 @@ const allowlists = <Allowlist>[
     mustContain: 'authorDisplayName',
     anchor: 'match /recipe_comments/{commentId}',
     writer:
-        'lib/repositories/firebase/firebase_comments_repository.dart '
-        'addComment — the commentData map and its two conditional keys',
+        'lib/repositories/firebase/comments/comment_creation.dart '
+        '_commentData — the map and its two conditional keys',
   ),
   Allowlist(
     label: 'recipe_ratings create',

@@ -17,6 +17,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
+import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -228,5 +229,22 @@ void main() {
     expect(find.text('rot'), findsOneWidget);
     expect(find.text('svar'), findsOneWidget);
     expect(find.text('svar på svar'), findsOneWidget);
+  });
+
+  testWidgets('the comment form is given the recipe\'s name, which a comment '
+      'that has to wait on the device is listed under', (tester) async {
+    final vm = _stubbedVm([_comment('a', 'rot')]);
+
+    await tester.pumpWidget(_commentsApp(vm));
+    await tester.tap(find.text('Kommentarer'));
+    await tester.pumpAndSettle();
+
+    // props-only: the name is a hand-off to the offline queue and is never drawn; the form's own test checks what it queues
+    expect(
+      tester
+          .widget<CommentFormWidget>(find.byType(CommentFormWidget))
+          .recipeName,
+      'Pannkakor',
+    );
   });
 }

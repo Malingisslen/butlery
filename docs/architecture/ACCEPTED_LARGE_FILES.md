@@ -245,7 +245,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `performance_monitoring_service.dart` | 524 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
 | `social_group_detail_viewmodel.dart` | 616 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 738 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
-| `user_profile_viewmodel.dart` | 582 | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
+| `user_profile_viewmodel.dart` | — | Profile form VM: fields, avatar upload, privacy settings and live Swedish validation share one form-state object |
 | `recipe_detail_metadata.dart` | 541 | Inline metadata row (time, portions, rating, badges) — one cohesive widget plus its state |
 | `shopping_list_operations.dart` | 500 | Static dialog builders for shopping-list management on a namespace class with no state, plus the private `_ConvertToCollaborativeDialog` widget and its state. The two conversion dialogs share `_warnConversionIncomplete` |
 

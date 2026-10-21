@@ -92,13 +92,21 @@ void main() {
     processor = UploadQueueProcessor(
       database: db,
       storage: storage,
-      upload: (String localPath, String userId, String objectId) async {
-        if (uploadFails.contains(objectId)) throw firestoreError('unavailable');
-        return (
-          url: 'https://img/$objectId.jpg',
-          thumbnailUrl: 'https://img/${objectId}_thumb.jpg',
-        );
-      },
+      upload:
+          (
+            String localPath,
+            String userId,
+            String objectId,
+            String targetPath,
+          ) async {
+            if (uploadFails.contains(objectId)) {
+              throw firestoreError('unavailable');
+            }
+            return (
+              url: 'https://img/$objectId.jpg',
+              thumbnailUrl: 'https://img/${objectId}_thumb.jpg',
+            );
+          },
       deleteUploaded: (UploadedImage image) async {
         taken.add(image.url);
         return takeBackWorks;

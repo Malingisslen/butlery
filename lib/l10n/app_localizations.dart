@@ -1742,6 +1742,12 @@ abstract class AppLocalizations {
   /// **'Ingen bild vald'**
   String get chatNoImageSelected;
 
+  /// BUT-2294: snackbar after a chat image was queued on the device because there is no connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden skickas när du är online igen.'**
+  String get chatImageQueuedOffline;
+
   /// No description provided for @chatCouldNotSharePhoto.
   ///
   /// In sv, this message translates to:
@@ -6733,6 +6739,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ladda bild'**
   String get messagingImageLoadFailed;
+
+  /// BUT-2294: a queued chat image in the waiting list.
+  ///
+  /// In sv, this message translates to:
+  /// **'En bild i en chatt'**
+  String get syncQueueChatImage;
+
+  /// BUT-2294: why a queued chat image waits for the user, whatever the cause; a refusal is not explained. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte skickas.'**
+  String get syncQueueReasonChatImageFailed;
+
+  /// BUT-2294: a queued profile picture in the waiting list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny profilbild'**
+  String get syncQueueAvatar;
+
+  /// BUT-2294: why a queued profile picture waits for the user, whatever the cause. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbilden kunde inte bytas.'**
+  String get syncQueueReasonAvatarFailed;
+
+  /// BUT-2294: under the profile picture chosen without a connection, until the form is saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparas när du är online'**
+  String get profileAvatarWaitsForConnection;
+
+  /// BUT-2294: snackbar after the profile was saved with a picture that waits for a connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbilden byts när du är online igen.'**
+  String get profileAvatarQueuedOffline;
+
+  /// BUT-2294: error when the rest of the profile saved but the picture could not be queued on the device.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen sparades, men den nya bilden kunde inte sparas till senare. Välj den igen.'**
+  String get profileAvatarQueueFailed;
+
+  /// BUT-2294: what the others see in place of a chat image whose picture has not arrived yet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild på väg …'**
+  String get messagingImagePending;
+
+  /// BUT-2294: what the sender sees on a chat image that waits for a connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickas när du är online'**
+  String get messagingImageWaitingToSend;
+
+  /// BUT-2294: a chat image whose picture never arrived within 48 hours.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kom aldrig fram'**
+  String get messagingImageNeverArrived;
 
   /// No description provided for @messagingMenuShared.
   ///
@@ -25917,6 +25983,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Matlagningsfoton (1 bild)} other{Matlagningsfoton ({count} bilder)}}'**
   String syncQueueCookSnap(int count);
+
+  /// BUT-2294: a queued comment with photos in Väntar på synk. The comment is one item whatever the number of photos.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar på {recipe}'**
+  String syncQueueComment(String recipe);
+
+  /// BUT-2294: a queued comment whose recipe's name the device did not keep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get syncQueueCommentUnnamed;
+
+  /// BUT-2294: why a queued comment waits for the user, whatever the cause. The card offers Försök igen and Släng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren kunde inte skickas.'**
+  String get syncQueueReasonCommentFailed;
+
+  /// BUT-2294: snackbar after a comment with photos was queued on the device because there is no connection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren skickas när du är online igen.'**
+  String get commentQueuedOffline;
 
   /// P6-T6 (PQ-17, P4-U19): produktregler.md:189.
   ///

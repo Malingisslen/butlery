@@ -332,6 +332,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   CommentFormWidget(
                     socialViewModel: vm,
                     recipeId: widget.recipe.id,
+                    recipeName: widget.recipe.title,
                     onShowMessage: _showMessage,
                     onCommentPosted: widget.onCommentPosted,
                   ),

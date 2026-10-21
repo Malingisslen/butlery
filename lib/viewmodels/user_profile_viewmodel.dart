@@ -9,6 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/offline/avatar_queue_metadata.dart';
+import 'package:butlery/services/offline/queue_retry_policy.dart'
+    show queueErrorCode;
+import 'package:butlery/services/offline/queued_change.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -25,6 +30,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UserService _userService;
   final ImagePickerService _imagePickerService;
   final ImageUploadService _uploadService;
+  final OfflineService? Function() _offlineService;
 
   static const maxCuisineAffinities = 5;
   static const maxBioLength = 160;
@@ -43,8 +49,11 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     this._userService,
     this._imagePickerService, {
     ImageUploadService? uploadService,
+    OfflineService? Function()? offlineService,
   }) : _uploadService =
-           uploadService ?? ServiceLocator.get<ImageUploadService>() {
+           uploadService ?? ServiceLocator.get<ImageUploadService>(),
+       _offlineService =
+           offlineService ?? (() => ServiceLocator.tryGet<OfflineService>()) {
     _loadCurrentProfile();
     _userService.addListener(_onUserServiceChanged);
   }
@@ -86,6 +95,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Change detection via field-by-field comparison (UserProfile.== only checks uid)
   bool get hasUnsavedChanges {
+    if (_pendingAvatarPath != null) return true;
     if (_originalProfile == null && _editedProfile == null) return false;
     if (_originalProfile == null && _editedProfile != null) {
       // New profile scenario — has changes if any meaningful field is set.
@@ -254,6 +264,21 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// would silently wipe the stored setting.
   bool _householdSizeEdited = false;
 
+  /// True only after the user chose or removed the picture THIS editing
+  /// session; an untouched save leaves the stored picture alone, so a stale
+  /// copy in memory can never overwrite a newer one.
+  bool _avatarEdited = false;
+
+  /// BUT-2294: a picture chosen without a connection. It is queued on the
+  /// device when the form is saved; until then the stored picture is unchanged
+  /// and the form only previews this one.
+  String? _pendingAvatarPath;
+  String? get pendingAvatarPath => _pendingAvatarPath;
+
+  /// Whether the last successful save left a picture waiting for a connection.
+  bool get avatarWaitsForConnection => _avatarQueuedBySave;
+  bool _avatarQueuedBySave = false;
+
   /// BUT-1322: set the household-size default. Null clears back to "recipe
   /// default"; out-of-range values are ignored (the stepper clamps too, this
   /// guards programmatic callers).
@@ -310,6 +335,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         throw Exception(_operationError);
       }
 
+      if (_mustQueueAvatar) return _keepForLater(imageFile.path);
+
       final bytes = await imageFile.readAsBytes();
 
       final result = await _uploadService.uploadImageFromBytes(
@@ -319,8 +346,13 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         prefix: 'avatar',
       );
 
+      if (!result.success && _mustQueueAvatar) {
+        return _keepForLater(imageFile.path);
+      }
       if (result.success && result.url != null) {
         _editedProfile = _editedProfile?.copyWith(avatarUrl: result.url);
+        _avatarEdited = true;
+        _pendingAvatarPath = null;
         AppLogger.success('Avatar uploaded with automatic retry support');
         return true;
       } else {
@@ -338,8 +370,27 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
+  /// BUT-2294: without a connection a picture cannot go up.
+  bool get _mustQueueAvatar {
+    final offline = _offlineService();
+    return offline != null && !offline.isOnline && offline.isQueueReady;
+  }
+
+  /// Holds the chosen picture for [saveProfile] to queue. The stored picture
+  /// stays what the profile has, and is not written by that save.
+  bool _keepForLater(String path) {
+    _pendingAvatarPath = path;
+    _editedProfile = _editedProfile?.copyWith(
+      avatarUrl: _originalProfile?.avatarUrl,
+    );
+    _avatarEdited = false;
+    return true;
+  }
+
   void removeAvatar() {
     _editedProfile = _editedProfile?.copyWith(avatarUrl: null);
+    _avatarEdited = true;
+    _pendingAvatarPath = null;
     notifyListeners();
   }
 
@@ -385,11 +436,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // BUT-1322: captured before the save syncs _originalProfile, so the
     // set/changed analytics below compares against the persisted value.
     final previousHouseholdSize = _originalProfile?.householdSize;
+    final pendingAvatar = _pendingAvatarPath;
+    // What the form showed, which it keeps while there are unsaved changes.
+    final baseAvatarUrl = _originalProfile?.avatarUrl;
+    _avatarQueuedBySave = false;
 
     return await safeExecute(() async {
           final updatedProfile = await _userService.createOrUpdateProfile(
             displayName: edited.displayName,
-            avatarUrl: edited.avatarUrl,
+            avatarUrl: _avatarEdited
+                ? edited.avatarUrl
+                : UserService.avatarUntouched,
             isSearchable: edited.isSearchable,
             allowEmailSearch: edited.allowEmailSearch,
             cookingSkillLevel: edited.cookingSkillLevel,
@@ -418,6 +475,19 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
               );
             }
             _householdSizeEdited = false;
+            _avatarEdited = false;
+            if (pendingAvatar != null) {
+              final queued = await _queueAvatar(pendingAvatar, baseAvatarUrl);
+              _originalProfile = updatedProfile;
+              _editedProfile = updatedProfile;
+              if (!queued) {
+                _operationError = AppLocale.current.profileAvatarQueueFailed;
+                notifyListeners();
+                return false;
+              }
+              _pendingAvatarPath = null;
+              _avatarQueuedBySave = true;
+            }
             // Sync both profiles to the fresh server response
             _originalProfile = updatedProfile;
             _editedProfile = updatedProfile;
@@ -447,8 +517,39 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         false;
   }
 
+  /// The picture chosen without a connection becomes one waiting row, in place
+  /// of any earlier one. False when it could not be kept on the device.
+  Future<bool> _queueAvatar(String path, String? baseAvatarUrl) async {
+    final offline = _offlineService();
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (offline == null || !offline.isQueueReady || userId == null) {
+      return false;
+    }
+    try {
+      await offline.userStorage.queueImageGroupForUser(
+        imagePaths: [path],
+        entityType: avatarEntityType,
+        entityId: userId,
+        userId: userId,
+        targetPath: 'users/$userId/avatars',
+        metadata: avatarQueueMetadata(baseAvatarUrl: baseAvatarUrl),
+        replaceWaiting: true,
+      );
+      await offline.refreshSyncState();
+      return true;
+    } catch (e) {
+      // The error is not passed on: a file error's path holds the uid.
+      AppLogger.error(
+        'Could not queue the profile picture: ${queueErrorCode(e)}',
+      );
+      return false;
+    }
+  }
+
   void resetForm() {
     _editedProfile = _originalProfile;
+    _avatarEdited = false;
+    _pendingAvatarPath = null;
     clearError();
     _clearValidationErrors();
     notifyListeners();
@@ -506,6 +607,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (profile != null) {
       _originalProfile = profile;
       _editedProfile = profile;
+      _avatarEdited = false;
+      _pendingAvatarPath = null;
     } else {
       // No profile yet — create a minimal editable shell preserving any existing edits.
       // This prevents avatar loss during initialization race conditions.

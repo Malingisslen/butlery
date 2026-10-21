@@ -6584,3 +6584,80 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
 - The 30 days restart at "Försök igen" and "Försök mindre" through `retriedAt` (schema 7), apart
   from `firstFailedAt`, which a retry and an upload both clear to start the 24 h limit over. The
   count is `retriedAt ?? firstFailedAt ?? queuedAt`.
+
+## BUT-2294 — comments with photos go through the offline queue (2026-10-20)
+
+- **SUPERSEDES** "Chat images, comment images and profile pictures are NOT queued yet" for
+  comment images only. `CommentFormWidget` offline with photos calls
+  `SocialCommentsManager.queueCommentOffline`, which queues the photos as a group of upload rows
+  (entity type `comment`, id = the comment's id, target `users/{uid}/comment_images`) with the
+  text, the reply target and the recipe's name on each row. `CommentUploadCompletion` creates
+  the comment under that id once every photo is in Storage. Chat images and profile pictures
+  are still NOT queued.
+- A comment without photos still goes through Firestore's own queue. A user has one unsent
+  comment at a time: while a comment's photos wait on the device, another comment, with or
+  without photos, gets `commentWaitingForNetwork` and nothing is queued, because the server
+  refuses a second comment within 5 s.
+- A comment's photos are one item in "Väntar på synk" ("Kommentar på {recept}"), in the counts
+  and in the sign-out warning; "Försök igen" and "Släng" act on all of them, and the 30 days
+  throw the comment away whole. The card for a comment that failed for good says "Kommentaren
+  kunde inte skickas." whatever the cause. The text of a comment thrown away is not kept.
+
+## BUT-2294 — a sender's update that sets a chat image's picture is gated (2026-10-20)
+
+- **SUPERSEDES**, in the BUT-2246 entry, "Updates that change neither key are not gated": a sender's `messages`
+  update that sets or changes `metadata.imageUrl` is allowed only as the fill-in of a placeholder
+  (`type: image`, `metadata.pendingImage: true`, no `imageUrl`). It changes only `metadata.imageUrl`
+  and `metadata.pendingImage`, the URL must be one of the caller's own
+  `users/{uid}/chat_images/` download URLs in this project's bucket (production or staging), and it needs membership of the conversation,
+  `isAgeCompliant()` and the BUT-2017 gate (the caller's mirror in a room, plus an exact `blocks`
+  read in a DM). A message that already has a picture is never re-pointed. Every other sender
+  update, a plain `content` edit included, is gated exactly as before.
+- In a group the block gate is the caller's mirror, which fails open when the mirror is missing
+  and lags a block by a trigger (the BUT-2017 entry); the plan's wish for an exact read per
+  participant is not expressible in rules, because a rule cannot loop over the roster. A DM is
+  exact.
+- An open report on a placeholder does not stop the fill-in.
+
+## BUT-2294 — chat images sent without a connection wait on the device (2026-10-21)
+
+- **SUPERSEDES** "chat and profile images are still NOT queued" (this file, the comment-image
+  entry), for chat images. With no connection, `MessagingMediaService` first creates the message
+  through Firestore's own queue (`type: image`, `metadata.pendingImage: true`, empty `content`,
+  no picture and no caption), so the image keeps its place among the texts sent after it, then
+  queues the picture as one upload row (entity type `chat_image`, `users/{uid}/chat_images/`).
+  When the picture is in Storage the sender's update sets `metadata.imageUrl` (see the rules
+  entry above). A photo that cannot be uploaded because the connection went during the upload is
+  queued the same way.
+- The sender sees the message at once with their own copy of the picture and "Skickas när du är
+  online"; everyone else sees "Bild på väg …" until the picture is set. Any client shows a
+  placeholder older than 48 hours as "Bilden kom aldrig fram", except on the sender's own phone
+  while that phone still holds the picture.
+- "Släng" on the queued image deletes the message as well as the picture. The 30-day sweep and a
+  sign-out discard remove only the row and the copy on the device, so the message stays as an
+  empty "Bild på väg …" for the others, shown as "Bilden kom aldrig fram" after 48 hours.
+  Nothing on the server removes a stale placeholder yet.
+- The card for a chat image that failed for good says "Bilden kunde inte skickas." whatever the
+  cause, so a block or a removal is not explained. The row is named "En bild i en chatt".
+- Several chat images may be unsent at once. Profile images are still not queued.
+
+## BUT-2294 — a profile picture chosen without a connection waits on the device (2026-10-21)
+
+- **SUPERSEDES** "Profile images are still not queued" (this file, the chat-images entry above),
+  and in "a minor's profile save stay strict" (BUT-2290/BUT-2291) the picture only. A picture
+  picked with no connection is kept on the device and queued when the form is saved (entity
+  type `avatar`, `users/{uid}/avatars/`, `entityId` the uid). A user has one waiting at a time:
+  a later pick replaces it, in the same step that queues the new one.
+- Once uploaded, one transaction on `public_profiles/{uid}` sets `avatarUrl` only if the profile
+  still holds the picture the user was looking at (the row records it), and writes nothing else.
+  It uses `update`, so a vanished profile is not recreated, and it never touches `isSearchable`
+  or calls the searchability callable, so it is the same for a minor. A different picture on the
+  profile means someone changed it since: that newer picture stays and the upload is taken back,
+  with no message to the user. Accepted costs: A→B→A elsewhere counts as unchanged, and a device
+  whose profile was already stale at the pick discards conservatively.
+- The rest of the form saves as before (a minor's stays strict). A save that does not name the
+  picture no longer writes `avatarUrl`, so a stale copy cannot revert a newer picture.
+- The picture is tried 8 times after it is uploaded, in addition to the 24 h every row gets,
+  then waits for the user as "Ny profilbild" with "Profilbilden kunde inte bytas.".
+- The previous picture's Storage object is still not removed when it is replaced, online or
+  queued. Separate ticket.

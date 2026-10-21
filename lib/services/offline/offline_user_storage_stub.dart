@@ -40,7 +40,15 @@ class OfflineUserStorage {
     required String userId,
     required String targetPath,
     required Map<String, Object?> metadata,
+    bool replaceWaiting = false,
   }) async => const [];
+
+  Future<void> deleteUploadFile(String path) async {}
+
+  Future<bool> hasQueuedGroup(String userId, String entityType) async => false;
+
+  Future<String?> chatImageCopyPath(String messageId, String userId) async =>
+      null;
 
   Future<bool> hasUnsentWrite(String recipeId, String userId) async => false;
 

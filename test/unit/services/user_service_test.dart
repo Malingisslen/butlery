@@ -9,6 +9,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -307,6 +308,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as UserProfile);
@@ -374,6 +376,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as UserProfile);
@@ -432,6 +435,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer(
           (_) async {},
@@ -451,9 +455,73 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).called(1);
       });
+
+      test('a save that never mentions the picture keeps it and does not write '
+          'it, so a stale copy cannot revert a newer one', () async {
+        final withPicture = testProfile.copyWith(
+          avatarUrl: 'https://img/old.jpg',
+        );
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => withPicture);
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
+          ),
+        ).thenAnswer((_) async {});
+
+        final result = await userService.createOrUpdateProfile(
+          displayName: 'Updated Name',
+        );
+
+        expect(result?.avatarUrl, 'https://img/old.jpg');
+        verify(
+          () => mockUserRepository.saveProfile(
+            any(that: isA<UserProfile>()),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: false,
+          ),
+        ).called(1);
+      });
+
+      test(
+        'a save that names the picture writes it, and null clears it',
+        () async {
+          final withPicture = testProfile.copyWith(
+            avatarUrl: 'https://img/old.jpg',
+          );
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => withPicture);
+          when(
+            () => mockUserRepository.saveProfile(
+              any(),
+              writeHouseholdSize: any(named: 'writeHouseholdSize'),
+              writeAvatarUrl: any(named: 'writeAvatarUrl'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final cleared = await userService.createOrUpdateProfile(
+            displayName: 'Updated Name',
+            avatarUrl: null,
+          );
+
+          expect(cleared?.avatarUrl, isNull);
+          verify(
+            () => mockUserRepository.saveProfile(
+              any(that: isA<UserProfile>()),
+              writeHouseholdSize: any(named: 'writeHouseholdSize'),
+              writeAvatarUrl: true,
+            ),
+          ).called(1);
+        },
+      );
 
       test('a profile the service CREATES is settings-merged: it wrote the '
           'first settings doc itself, so the menu must not floor the first '
@@ -462,6 +530,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -497,6 +566,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         );
       });
@@ -513,6 +583,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((_) async {});
       });
@@ -537,6 +608,7 @@ void main() {
                     () => mockUserRepository.saveProfile(
                       captureAny(),
                       writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                      writeAvatarUrl: any(named: 'writeAvatarUrl'),
                     ),
                   ).captured.single
                   as UserProfile;
@@ -565,6 +637,7 @@ void main() {
                   () => mockUserRepository.saveProfile(
                     captureAny(),
                     writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                    writeAvatarUrl: any(named: 'writeAvatarUrl'),
                   ),
                 ).captured.single
                 as UserProfile;
@@ -583,12 +656,121 @@ void main() {
                   () => mockUserRepository.saveProfile(
                     captureAny(),
                     writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                    writeAvatarUrl: any(named: 'writeAvatarUrl'),
                   ),
                 ).captured.single
                 as UserProfile;
         expect(saved.householdSize, isNull);
         expect(userService.currentUserProfile?.householdSize, isNull);
       });
+    });
+
+    group('setQueuedAvatar (BUT-2294)', () {
+      const url = 'https://img/new.jpg';
+
+      Future<void> signInWithPicture() async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => testProfile.copyWith(avatarUrl: 'https://img/old.jpg'),
+        );
+        await userService.retryLoadProfile();
+      }
+
+      for (final outcome in [
+        AvatarWriteOutcome.set,
+        AvatarWriteOutcome.alreadySet,
+      ]) {
+        test('$outcome brings the in-memory profile along', () async {
+          await signInWithPicture();
+          when(
+            () => mockUserRepository.setAvatarIfUnchanged(
+              'test_user_123',
+              expected: 'https://img/old.jpg',
+              url: url,
+            ),
+          ).thenAnswer((_) async => outcome);
+
+          var notified = 0;
+          userService.addListener(() => notified++);
+
+          final result = await userService.setQueuedAvatar(
+            expected: 'https://img/old.jpg',
+            url: url,
+          );
+
+          expect(result, outcome);
+          expect(userService.currentUserProfile?.avatarUrl, url);
+          expect(notified, 1);
+          expect(
+            (await userService.getUserProfile('test_user_123'))?.avatarUrl,
+            url,
+          );
+        });
+      }
+
+      test('a different account signed in meanwhile keeps its own profile and '
+          'cache', () async {
+        await signInWithPicture();
+        when(
+          () => mockUserRepository.setAvatarIfUnchanged(
+            'test_user_123',
+            expected: 'https://img/old.jpg',
+            url: url,
+          ),
+        ).thenAnswer((_) async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer(
+            (_) async => UserProfile(
+              uid: 'someone-else',
+              displayName: 'Other',
+              email: 'other@example.com',
+              joinedAt: DateTime(2026),
+              lastActiveAt: DateTime(2026),
+            ),
+          );
+          await userService.retryLoadProfile();
+          return AvatarWriteOutcome.set;
+        });
+
+        await userService.setQueuedAvatar(
+          expected: 'https://img/old.jpg',
+          url: url,
+        );
+
+        expect(userService.currentUserProfile?.uid, 'someone-else');
+        expect(userService.currentUserProfile?.avatarUrl, isNull);
+      });
+
+      for (final outcome in [
+        AvatarWriteOutcome.superseded,
+        AvatarWriteOutcome.accountGone,
+      ]) {
+        test('$outcome leaves the in-memory profile alone', () async {
+          await signInWithPicture();
+          when(
+            () => mockUserRepository.setAvatarIfUnchanged(
+              'test_user_123',
+              expected: 'https://img/old.jpg',
+              url: url,
+            ),
+          ).thenAnswer((_) async => outcome);
+
+          await userService.setQueuedAvatar(
+            expected: 'https://img/old.jpg',
+            url: url,
+          );
+
+          expect(
+            userService.currentUserProfile?.avatarUrl,
+            'https://img/old.jpg',
+          );
+        });
+      }
     });
 
     group('Activity-feed hint flag (BUT-1220)', () {
@@ -602,6 +784,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -625,6 +808,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -654,6 +838,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         );
       });
@@ -670,6 +855,7 @@ void main() {
             () => mockUserRepository.saveProfile(
               any(),
               writeHouseholdSize: any(named: 'writeHouseholdSize'),
+              writeAvatarUrl: any(named: 'writeAvatarUrl'),
             ),
           );
         },
@@ -1875,6 +2061,7 @@ void main() {
           () => mockUserRepository.saveProfile(
             any(),
             writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            writeAvatarUrl: any(named: 'writeAvatarUrl'),
           ),
         ).thenAnswer((_) async {});
 
