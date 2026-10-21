@@ -970,6 +970,118 @@ void main() {
               'wipe it',
         );
       });
+
+      Object? avatarPassedOnSave() => verify(
+        () => mockUserService.createOrUpdateProfile(
+          displayName: any(named: 'displayName'),
+          avatarUrl: captureAny(named: 'avatarUrl'),
+          isSearchable: any(named: 'isSearchable'),
+          allowEmailSearch: any(named: 'allowEmailSearch'),
+          cookingSkillLevel: any(named: 'cookingSkillLevel'),
+          cuisineAffinities: any(named: 'cuisineAffinities'),
+          bio: any(named: 'bio'),
+          showOnlineStatus: any(named: 'showOnlineStatus'),
+          shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+          householdSize: any(named: 'householdSize'),
+        ),
+      ).captured.single;
+
+      test('a save that left the picture alone passes the untouched sentinel, '
+          'so a stale copy cannot overwrite a newer picture', () async {
+        registerAnalytics();
+        viewModel.updateDisplayName('New Name');
+
+        expect(await viewModel.saveProfile(), isTrue);
+
+        expect(
+          identical(avatarPassedOnSave(), UserService.avatarUntouched),
+          isTrue,
+        );
+      });
+
+      test('a picture the user chose is saved once, and the save after it '
+          'leaves the picture alone', () async {
+        registerAnalytics();
+        final mockFile = MockFile();
+        when(() => mockFile.path).thenReturn('/test/path/image.jpg');
+        when(
+          () => mockFile.readAsBytes(),
+        ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async => mockFile);
+        when(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: any(named: 'userId'),
+            fileName: any(named: 'fileName'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenAnswer((_) async => UploadResult.success('https://img/new.jpg'));
+        expect(await viewModel.uploadAvatar(), isTrue);
+
+        expect(await viewModel.saveProfile(), isTrue);
+        expect(avatarPassedOnSave(), 'https://img/new.jpg');
+
+        clearInteractions(mockUserService);
+        viewModel.updateDisplayName('Another Name');
+        expect(await viewModel.saveProfile(), isTrue);
+        expect(
+          identical(avatarPassedOnSave(), UserService.avatarUntouched),
+          isTrue,
+        );
+      });
+
+      test('a picture chosen and then discarded by a form reset is not '
+          'written by the next save', () async {
+        registerAnalytics();
+        final mockFile = MockFile();
+        when(() => mockFile.path).thenReturn('/test/path/image.jpg');
+        when(
+          () => mockFile.readAsBytes(),
+        ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async => mockFile);
+        when(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: any(named: 'userId'),
+            fileName: any(named: 'fileName'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenAnswer((_) async => UploadResult.success('https://img/new.jpg'));
+        expect(await viewModel.uploadAvatar(), isTrue);
+
+        viewModel.resetForm();
+        viewModel.updateDisplayName('New Name');
+        expect(await viewModel.saveProfile(), isTrue);
+
+        expect(
+          identical(avatarPassedOnSave(), UserService.avatarUntouched),
+          isTrue,
+        );
+      });
+
+      test('removing the picture is passed as a deliberate null', () async {
+        registerAnalytics();
+        viewModel.removeAvatar();
+
+        expect(await viewModel.saveProfile(), isTrue);
+
+        expect(avatarPassedOnSave(), isNull);
+      });
     });
 
     group('Display Name Availability', () {

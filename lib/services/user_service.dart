@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/foundation.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -82,6 +83,11 @@ class UserService extends ChangeNotifier
   /// setting whenever the settings sub-doc read was degraded (fetchProfile
   /// swallows a failed sub-doc fetch into null).
   static const Object householdSizeUntouched = _unset;
+
+  /// "Leave the profile picture as it is": the default of [createOrUpdateProfile]'s
+  /// `avatarUrl`, so a save that is about something else neither clears the
+  /// picture nor writes the copy this device holds back over a newer one.
+  static const Object avatarUntouched = _unset;
 
   bool _termsPending = false;
 
@@ -178,7 +184,7 @@ class UserService extends ChangeNotifier
   /// Create or update user profile
   Future<UserProfile?> createOrUpdateProfile({
     required String displayName,
-    String? avatarUrl,
+    Object? avatarUrl = _unset,
     bool? isSearchable,
     bool? allowEmailSearch,
     CookingSkillLevel? cookingSkillLevel,
@@ -216,7 +222,9 @@ class UserService extends ChangeNotifier
         // so other callers (auto-creation, social handler) don't wipe them.
         profile = existingProfile.copyWith(
           displayName: displayName,
-          avatarUrl: avatarUrl,
+          avatarUrl: identical(avatarUrl, _unset)
+              ? existingProfile.avatarUrl
+              : avatarUrl as String?,
           isSearchable: isSearchable,
           allowEmailSearch: allowEmailSearch,
           lastActiveAt: clock.now(),
@@ -256,7 +264,7 @@ class UserService extends ChangeNotifier
           uid: user.uid,
           displayName: displayName,
           email: user.email.orEmpty(),
-          avatarUrl: avatarUrl,
+          avatarUrl: identical(avatarUrl, _unset) ? null : avatarUrl as String?,
           isSearchable: isSearchable ?? true,
           allowEmailSearch: allowEmailSearch ?? false,
           publicRecipeCount: 0,
@@ -310,6 +318,7 @@ class UserService extends ChangeNotifier
       await _repository.saveProfile(
         profile,
         writeHouseholdSize: !identical(householdSize, _unset),
+        writeAvatarUrl: !identical(avatarUrl, _unset),
       );
 
       // BUT-1629: [UserProfile.toFirestore] forces `isSearchable:false` for a
@@ -1044,6 +1053,35 @@ class UserService extends ChangeNotifier
     }
   }
 
+  /// BUT-2294: puts a profile picture that waited on the device onto the
+  /// profile, unless the profile holds a different picture than [expected]
+  /// (see [UserRepository.setAvatarIfUnchanged]). Brings the in-memory profile
+  /// and its cache along when the picture is now the profile's.
+  Future<AvatarWriteOutcome> setQueuedAvatar({
+    required String? expected,
+    required String url,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) throw StateError('No current user for avatar');
+    final outcome = await _repository.setAvatarIfUnchanged(
+      userId,
+      expected: expected,
+      url: url,
+    );
+    final held = _currentUserProfile;
+    // The account may have changed while the transaction ran.
+    if (held != null &&
+        held.uid == userId &&
+        (outcome == AvatarWriteOutcome.set ||
+            outcome == AvatarWriteOutcome.alreadySet)) {
+      final updated = held.copyWith(avatarUrl: url);
+      _currentUserProfile = updated;
+      _cacheProfile(userId, updated);
+      notifyListeners();
+    }
+    return outcome;
+  }
+
   /// Mark onboarding as completed for the current user.
   Future<void> markOnboardingComplete() async {
     final userId = currentUserId;
@@ -1057,6 +1095,7 @@ class UserService extends ChangeNotifier
         updated,
         writeHouseholdSize:
             false, // onboarding never edits it (BUT-1322 review)
+        writeAvatarUrl: false,
       );
 
       _currentUserProfile = updated;
@@ -1239,6 +1278,7 @@ class UserService extends ChangeNotifier
     await _repository.saveProfile(
       updated,
       writeHouseholdSize: false, // onboarding never edits it (BUT-1322 review)
+      writeAvatarUrl: false,
     );
 
     _currentUserProfile = updated;

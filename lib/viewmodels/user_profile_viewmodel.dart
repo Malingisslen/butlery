@@ -254,6 +254,11 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// would silently wipe the stored setting.
   bool _householdSizeEdited = false;
 
+  /// True only after the user chose or removed the picture THIS editing
+  /// session; an untouched save leaves the stored picture alone, so a stale
+  /// copy in memory can never overwrite a newer one.
+  bool _avatarEdited = false;
+
   /// BUT-1322: set the household-size default. Null clears back to "recipe
   /// default"; out-of-range values are ignored (the stepper clamps too, this
   /// guards programmatic callers).
@@ -321,6 +326,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
       if (result.success && result.url != null) {
         _editedProfile = _editedProfile?.copyWith(avatarUrl: result.url);
+        _avatarEdited = true;
         AppLogger.success('Avatar uploaded with automatic retry support');
         return true;
       } else {
@@ -340,6 +346,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   void removeAvatar() {
     _editedProfile = _editedProfile?.copyWith(avatarUrl: null);
+    _avatarEdited = true;
     notifyListeners();
   }
 
@@ -389,7 +396,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return await safeExecute(() async {
           final updatedProfile = await _userService.createOrUpdateProfile(
             displayName: edited.displayName,
-            avatarUrl: edited.avatarUrl,
+            avatarUrl: _avatarEdited
+                ? edited.avatarUrl
+                : UserService.avatarUntouched,
             isSearchable: edited.isSearchable,
             allowEmailSearch: edited.allowEmailSearch,
             cookingSkillLevel: edited.cookingSkillLevel,
@@ -418,6 +427,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
               );
             }
             _householdSizeEdited = false;
+            _avatarEdited = false;
             // Sync both profiles to the fresh server response
             _originalProfile = updatedProfile;
             _editedProfile = updatedProfile;
@@ -449,6 +459,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   void resetForm() {
     _editedProfile = _originalProfile;
+    _avatarEdited = false;
     clearError();
     _clearValidationErrors();
     notifyListeners();
@@ -506,6 +517,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (profile != null) {
       _originalProfile = profile;
       _editedProfile = profile;
+      _avatarEdited = false;
     } else {
       // No profile yet — create a minimal editable shell preserving any existing edits.
       // This prevents avatar loss during initialization race conditions.
