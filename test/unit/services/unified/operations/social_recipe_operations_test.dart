@@ -18,7 +18,6 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
@@ -60,19 +59,6 @@ final _collabCore = RecipeCore(
   createdAt: DateTime(2025, 1, 1),
   updatedAt: DateTime(2025, 1, 1),
 );
-
-class _RecordingSharedRecipeRepository extends Fake
-    implements FirebaseSharedRecipeRepository {
-  final calls = <({String recipeId, List<String> userIds})>[];
-
-  @override
-  Future<void> removeRecipientsFromOwnShares({
-    required String recipeId,
-    required List<String> userIds,
-  }) async {
-    calls.add((recipeId: recipeId, userIds: userIds));
-  }
-}
 
 void main() {
   // -----------------------------------------------------------------------
@@ -605,9 +591,8 @@ void main() {
     );
   });
 
-  // The manager tests inject their own callback and the repository tests call
-  // the method directly; this group builds the real operations over the
-  // locator, so it covers the closure joining the two.
+  // The manager tests build the manager directly; this group builds the real
+  // operations, so it covers the facade handing the trim on to the manager.
   group(
     'SocialRecipeOperations trims the sender\'s shared rows (BUT-1815)',
     () {
@@ -646,7 +631,9 @@ void main() {
         BaseUnitTest.resetMocks();
       });
 
-      SocialRecipeOperations build() => SocialRecipeOperations(
+      SocialRecipeOperations build({
+        Future<void> Function(String recipeId, List<String> userIds)? trim,
+      }) => SocialRecipeOperations(
         getCurrentUserId: () => mockParent.currentUserId,
         getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
         getRecipes: () => mockParent.recipes,
@@ -656,34 +643,32 @@ void main() {
         ratingsRepository: MockRatingsRepository(),
         firestoreRepository:
             app_provider.ServiceLocator.get<FirestoreRepository>(),
+        removeRecipientsFromOwnShares: trim,
       );
 
-      test('removeMember reaches the registered repository', () async {
-        final repo = _RecordingSharedRecipeRepository();
-        TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(repo);
+      test('removeMember reaches the injected trim', () async {
+        final calls = <({String recipeId, List<String> userIds})>[];
 
+        final ok = await build(
+          trim: (recipeId, userIds) async {
+            calls.add((recipeId: recipeId, userIds: userIds));
+          },
+        ).removeMember(recipeId: _collabCore.id, userId: 'user_456');
+
+        expect(ok, isTrue);
+        expect(calls, hasLength(1));
+        expect(calls.single.recipeId, _collabCore.id);
+        expect(calls.single.userIds, ['user_456']);
+      });
+
+      test('removeMember succeeds when no trim is injected', () async {
         final ok = await build().removeMember(
           recipeId: _collabCore.id,
           userId: 'user_456',
         );
 
         expect(ok, isTrue);
-        expect(repo.calls, hasLength(1));
-        expect(repo.calls.single.recipeId, _collabCore.id);
-        expect(repo.calls.single.userIds, ['user_456']);
       });
-
-      test(
-        'removeMember still succeeds when no repository is registered',
-        () async {
-          final ok = await build().removeMember(
-            recipeId: _collabCore.id,
-            userId: 'user_456',
-          );
-
-          expect(ok, isTrue);
-        },
-      );
     },
   );
 }

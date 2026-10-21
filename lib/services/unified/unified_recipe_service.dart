@@ -78,6 +78,8 @@ class UnifiedRecipeService
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
   final FirestoreRepository _firestoreRepository;
+  final Future<void> Function(String recipeId, List<String> userIds)?
+  _removeRecipientsFromOwnShares;
 
   // BUT-1360: Upper bound on the web cold-start direct Firebase fetch so a
   // stalled/offline `.get()` can never leave the loading skeleton spinning.
@@ -219,7 +221,10 @@ class UnifiedRecipeService
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
-  }) : _firestoreRepository =
+    Future<void> Function(String recipeId, List<String> userIds)?
+    removeRecipientsFromOwnShares,
+  }) : _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares,
+       _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
        _firestore =
            (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
@@ -433,6 +438,7 @@ class UnifiedRecipeService
     // BUT-1056: surface share-cap rejection from the RecipeSharingManager
     // path through the same error sink the UI already observes.
     onShareError: _setError,
+    removeRecipientsFromOwnShares: _removeRecipientsFromOwnShares,
   );
 
   void _initializeLegacyInterfaces() {

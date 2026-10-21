@@ -9,7 +9,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused modules
@@ -48,6 +47,8 @@ class SocialRecipeOperations {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
     void Function(String)? onShareError,
+    Future<void> Function(String recipeId, List<String> userIds)?
+    removeRecipientsFromOwnShares,
   }) : _getCurrentUserId = getCurrentUserId,
        _getRecipes = getRecipes,
        _ratingsRepository = ratingsRepository,
@@ -69,13 +70,7 @@ class SocialRecipeOperations {
       getRecipes: getRecipes,
       updateRecipe: updateRecipe,
       notificationService: _notificationService,
-      removeRecipientsFromOwnShares: (recipeId, userIds) async {
-        await ServiceLocator.tryGet<FirebaseSharedRecipeRepository>()
-            ?.removeRecipientsFromOwnShares(
-              recipeId: recipeId,
-              userIds: userIds,
-            );
-      },
+      removeRecipientsFromOwnShares: removeRecipientsFromOwnShares,
     );
     _commentsManager = RecipeCommentsManager(
       getCurrentUserId: getCurrentUserId,
