@@ -13,8 +13,14 @@
 
 import * as fs from "fs";
 
-export const PRODUCTION_PROJECT = "butlery-app-1";
+export const PRODUCTION_PROJECT = "butlery-prod";
 export const STAGING_PROJECT = "butlery-app-staging";
+/**
+ * The production project being replaced (BUT-2427). It stays administrable
+ * until it is deleted, because its test accounts go through the deletion
+ * cascade first; the deletion commit removes it from the allowlist.
+ */
+export const RETIRING_PRODUCTION_PROJECT = "butlery-app-1";
 
 /**
  * An allowlist rather than a pattern: a `demo-` project, a typo, or a third
@@ -23,6 +29,7 @@ export const STAGING_PROJECT = "butlery-app-staging";
 export const ADMIN_PROJECTS: readonly string[] = [
   PRODUCTION_PROJECT,
   STAGING_PROJECT,
+  RETIRING_PRODUCTION_PROJECT,
 ];
 
 /** Environment variables Google client libraries read a project id from. */

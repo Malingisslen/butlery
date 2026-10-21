@@ -22,6 +22,7 @@ import {
   projectFlagValues,
   requireProject,
   RequireProjectOptions,
+  RETIRING_PRODUCTION_PROJECT,
   STAGING_PROJECT,
 } from "../admin/require-project";
 
@@ -137,8 +138,15 @@ function testAllowlist(): void {
     "staging passes the default allowlist",
   );
   assert(
-    ADMIN_PROJECTS.length === 2,
-    "the default allowlist holds exactly the two projects",
+    requireProject({
+      argv: ["--project", RETIRING_PRODUCTION_PROJECT],
+      env: {},
+    }) === RETIRING_PRODUCTION_PROJECT,
+    "the retiring production project passes the default allowlist",
+  );
+  assert(
+    ADMIN_PROJECTS.length === 3,
+    "the default allowlist holds exactly the three projects",
   );
   refuses(
     { argv: ["--project", "demo-x"] },
@@ -193,7 +201,7 @@ function testKeyFile(): void {
       readFile,
     },
     /key for "butlery-app-staging"/,
-    "butlery-app-1 with a staging key is refused",
+    "production with a staging key is refused",
   );
   refuses(
     {
@@ -201,7 +209,7 @@ function testKeyFile(): void {
       env: { GOOGLE_APPLICATION_CREDENTIALS: "prod.json" },
       readFile,
     },
-    /key for "butlery-app-1"/,
+    /key for "butlery-prod"/,
     "staging with a production key is refused",
   );
   refuses(

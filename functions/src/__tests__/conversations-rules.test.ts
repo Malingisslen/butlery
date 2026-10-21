@@ -3364,10 +3364,15 @@ test("BUT-2398: a message created carrying another person's reaction is denied",
 const CI_SENDER = `ci-sender-${RUN}`;
 const CI_OTHER = `ci-other-${RUN}`;
 const CI_THIRD = `ci-third-${RUN}`;
-const CI_BUCKET = "https://firebasestorage.googleapis.com/v0/b/butlery-app-1.firebasestorage.app/o";
+const CI_BUCKET = "https://firebasestorage.googleapis.com/v0/b/butlery-prod.firebasestorage.app/o";
 
-function chatImageUrl(uid: string, folder = "chat_images", name = "row1.jpg"): string {
-  return `${CI_BUCKET}/users%2F${uid}%2F${folder}%2F${name}?alt=media&token=t`;
+function chatImageUrl(
+  uid: string,
+  folder = "chat_images",
+  name = "row1.jpg",
+  bucket = CI_BUCKET
+): string {
+  return `${bucket}/users%2F${uid}%2F${folder}%2F${name}?alt=media&token=t`;
 }
 
 async function seedPlaceholder(
@@ -3452,6 +3457,19 @@ test("BUT-2294: the fill-in cannot point at somebody else's chat image", async (
   await seedRoom(dm, [CI_SENDER, CI_OTHER]);
   await seedPlaceholder(dm, msg);
   await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_OTHER)));
+});
+
+test("BUT-2430: the fill-in accepts the staging bucket and refuses the retired production bucket", async () => {
+  const dm = `ci-dm-bucket-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  const staging = "https://firebasestorage.googleapis.com/v0/b/butlery-app-staging.firebasestorage.app/o";
+  const retired = "https://firebasestorage.googleapis.com/v0/b/butlery-app-1.firebasestorage.app/o";
+  const stagingMsg = `ci-bucket-staging-${RUN}`;
+  const retiredMsg = `ci-bucket-retired-${RUN}`;
+  await seedPlaceholder(dm, stagingMsg);
+  await seedPlaceholder(dm, retiredMsg);
+  await assertSucceeds(fillIn(stagingMsg, CI_SENDER, chatImageUrl(CI_SENDER, "chat_images", "row1.jpg", staging)));
+  await assertFails(fillIn(retiredMsg, CI_SENDER, chatImageUrl(CI_SENDER, "chat_images", "row1.jpg", retired)));
 });
 
 test("BUT-2294: the fill-in cannot point at the caller's avatar, comment or recipe folder", async () => {

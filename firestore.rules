@@ -2899,7 +2899,7 @@ service cloud.firestore {
                .hasOnly(['imageUrl', 'pendingImage'])
           && request.resource.data.metadata.get('pendingImage', false) != true
           && request.resource.data.metadata.imageUrl.matches(
-               '^https://firebasestorage\\.googleapis\\.com/v0/b/butlery-app-(1|staging)\\.firebasestorage\\.app/o/users%2F'
+               '^https://firebasestorage\\.googleapis\\.com/v0/b/butlery-(prod|app-staging)\\.firebasestorage\\.app/o/users%2F'
                + request.auth.uid + '%2Fchat_images%2F[A-Za-z0-9._-]+\\?.*$')
           && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
           && isAgeCompliant()

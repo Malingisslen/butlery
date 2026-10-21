@@ -22,7 +22,10 @@ import * as path from "path";
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const WORKFLOWS_DIR = path.join(REPO_ROOT, ".github", "workflows");
 
-const PRODUCTION_ID = "butlery-app-1";
+const PRODUCTION_ID = "butlery-prod";
+/** The production project being replaced (BUT-2427); no workflow may name it either. */
+const RETIRING_PRODUCTION_ID = "butlery-app-1";
+const PRODUCTION_IDS = [PRODUCTION_ID, RETIRING_PRODUCTION_ID];
 const STAGING_ID = "butlery-app-staging";
 
 /**
@@ -107,11 +110,13 @@ function testNoWorkflowNamesProductionLiterally(): void {
   for (const { name, text } of workflowFiles()) {
     if (PRODUCTION_LITERAL_ALLOWED.has(name)) continue;
     text.split(/\r?\n/).forEach((line, i) => {
-      if (line.includes(PRODUCTION_ID)) offenders.push(`${name}:${i + 1}`);
+      if (PRODUCTION_IDS.some((id) => line.includes(id))) {
+        offenders.push(`${name}:${i + 1}`);
+      }
     });
   }
   record(
-    `no workflow contains the literal ${PRODUCTION_ID}`,
+    `no workflow contains the literal ${PRODUCTION_IDS.join(" or ")}`,
     offenders.length === 0,
     `use \${{ vars.FIREBASE_PROJECT_ID }} instead: ${offenders.join(", ")}`,
   );
@@ -245,7 +250,7 @@ function testNoCrossProjectCopy(): void {
       scanned++;
       const text = fs.readFileSync(file, "utf8");
       if (
-        text.includes(PRODUCTION_ID) &&
+        PRODUCTION_IDS.some((id) => text.includes(id)) &&
         text.includes(STAGING_ID) &&
         COPY_COMMAND.test(text)
       ) {
@@ -288,6 +293,86 @@ function pathsUnder(workflow: string, trigger: string): string[] {
   return entries;
 }
 
+/**
+ * Every workflow that runs in the `production` environment, sorted by whether
+ * it reaches Google Cloud. A new production workflow fails the check below
+ * until it is put in one of the two lists.
+ */
+const PRODUCTION_CLOUD_WORKFLOWS = [
+  "backfill-age-claim.yml",
+  "deploy-app-link-files.yml",
+  "deploy-firebase.yml",
+  "deploy-hosting.yml",
+  "measure-production.yml",
+  "migrate-meal-type.yml",
+  "repair-feature-retention.yml",
+];
+/** Uses the environment for Apple signing secrets only. */
+const PRODUCTION_NON_CLOUD_WORKFLOWS = ["ios-testflight.yml"];
+
+/** A job whose environment is, or can be, `production`. */
+const PRODUCTION_ENVIRONMENT =
+  /^\s*environment:\s*(?:production\s*$|\$\{\{[^}]*'production'[^}]*\}\})/m;
+
+const STAGING_ONLY_KEY_READ =
+  /\$\{\{\s*inputs\.environment == 'staging' && secrets\.FIREBASE_SERVICE_ACCOUNT \|\| ''\s*\}\}/;
+
+/**
+ * BUT-2421: production signs in with Workload Identity Federation and never
+ * with the stored key, and every production workflow compares the WIF
+ * token's project with the environment's variable before it acts.
+ */
+function testProductionWorkflowsSignInWithWif(): void {
+  const files = workflowFiles();
+  const inProduction = files
+    .filter(({ text }) => PRODUCTION_ENVIRONMENT.test(text))
+    .map(({ name }) => name);
+  const classified = [
+    ...PRODUCTION_CLOUD_WORKFLOWS,
+    ...PRODUCTION_NON_CLOUD_WORKFLOWS,
+  ].sort();
+  record(
+    "every production workflow is listed as cloud or non-cloud",
+    JSON.stringify(inProduction) === JSON.stringify(classified),
+    `in production: ${inProduction.join(", ")}`,
+  );
+
+  for (const name of PRODUCTION_CLOUD_WORKFLOWS) {
+    const text = files.find((f) => f.name === name)?.text ?? "";
+    const problems: string[] = [];
+    if (!text.includes("google-github-actions/auth@")) problems.push("no WIF sign-in");
+    if (!text.includes("vars.GCP_WORKLOAD_IDENTITY_PROVIDER")) problems.push("no WIF provider");
+    if (!/id-token:\s*write/.test(text)) problems.push("no id-token permission");
+    if (!/"\$WIF_PROJECT_ID" = "\$FIREBASE_PROJECT_ID"/.test(text)) {
+      problems.push("no WIF project guard");
+    }
+    if (/--key-file|sa\.json/.test(text)) problems.push("writes or reads a key file");
+    record(
+      `${name} signs in with WIF and guards the project`,
+      text.length > 0 && problems.length === 0,
+      text.length === 0 ? "file not found" : problems.join(", "),
+    );
+  }
+
+  const keyReads: string[] = [];
+  for (const { name, text } of files) {
+    if (!PRODUCTION_ENVIRONMENT.test(text)) continue;
+    text.split(/\r?\n/).forEach((line, i) => {
+      if (
+        line.includes("secrets.FIREBASE_SERVICE_ACCOUNT") &&
+        !STAGING_ONLY_KEY_READ.test(line)
+      ) {
+        keyReads.push(`${name}:${i + 1}`);
+      }
+    });
+  }
+  record(
+    "no production job reads FIREBASE_SERVICE_ACCOUNT",
+    keyReads.length === 0,
+    keyReads.join(", "),
+  );
+}
+
 function testCiRunsThisGuardWhenItsInputsChange(): void {
   const lane = fs.readFileSync(
     path.join(WORKFLOWS_DIR, "cloud-functions-unit.yml"),
@@ -314,6 +399,7 @@ function main(): void {
   testFirebasercHasExactlyTheTwoAliases();
   testEmulatorWorkflowsNeverNameStaging();
   testNoCrossProjectCopy();
+  testProductionWorkflowsSignInWithWif();
   testCiRunsThisGuardWhenItsInputsChange();
 
   console.log(`\n${totalRun - totalFailed}/${totalRun} checks passed`);
