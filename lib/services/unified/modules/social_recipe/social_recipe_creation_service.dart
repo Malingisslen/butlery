@@ -117,25 +117,14 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
       // group behind it is direct. The creator gets no grant — an owner is not a
       // sharee and is never revocable — which the skip above now actually
       // delivers rather than merely asserting.
-      final groupIds = categoryIds ?? const <String>[];
-      var grants = <String, List<String>>{};
-      for (final memberId in initialMembers ?? const <String>[]) {
-        if (memberId == currentUserId) continue;
-        if (groupIds.isEmpty) {
-          grants = RecipeShareGrants.add(
-            grants,
-            memberId,
-            RecipeSocialData.directGrant,
-          );
-          continue;
-        }
-        for (final groupId in groupIds) {
-          grants = RecipeShareGrants.add(
-            grants,
-            memberId,
-            RecipeSocialData.groupGrant(groupId),
-          );
-        }
+      final grants = RecipeShareGrants.fromFlatShare(
+        memberIds: initialMembers ?? const <String>[],
+        groupIds: categoryIds ?? const <String>[],
+        excludeUserId: currentUserId,
+      );
+      if (grants == null) {
+        _handleError('Several groups need a roster each');
+        return null;
       }
 
       // Apply permissions and mark for tagging by the RetaggingScheduler

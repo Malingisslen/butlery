@@ -364,4 +364,97 @@ void main() {
       expect(RecipeShareGrants.mergeCategoryIds(null, null), isNull);
     });
   });
+
+  group('RecipeShareGrants.fromRosters', () {
+    test('a member in two groups carries both tokens, the sharer none', () {
+      final grants = RecipeShareGrants.fromRosters({
+        'family': ['me', 'anna', 'bo'],
+        'friends': ['me', 'anna'],
+      }, excludeUserId: 'me');
+
+      expect(grants['anna'], [
+        RecipeSocialData.groupGrant('family'),
+        RecipeSocialData.groupGrant('friends'),
+      ]);
+      expect(grants['bo'], [RecipeSocialData.groupGrant('family')]);
+      expect(grants.containsKey('me'), isFalse);
+    });
+
+    test('a member listed twice in one roster holds one token', () {
+      final grants = RecipeShareGrants.fromRosters({
+        'family': ['anna', 'anna'],
+      });
+
+      expect(grants['anna'], [RecipeSocialData.groupGrant('family')]);
+    });
+  });
+
+  group('RecipeShareGrants.fromFlatShare', () {
+    test('several groups without rosters are refused', () {
+      expect(
+        RecipeShareGrants.fromFlatShare(
+          memberIds: const ['anna'],
+          groupIds: const ['family', 'friends'],
+        ),
+        isNull,
+      );
+    });
+
+    test('one group tags every member with it, no group means direct', () {
+      final viaGroup = RecipeShareGrants.fromFlatShare(
+        memberIds: const ['me', 'anna'],
+        groupIds: const ['family'],
+        excludeUserId: 'me',
+      );
+      final direct = RecipeShareGrants.fromFlatShare(
+        memberIds: const ['anna'],
+        groupIds: const [],
+      );
+
+      expect(viaGroup, {
+        'anna': [RecipeSocialData.groupGrant('family')],
+      });
+      expect(direct, {
+        'anna': [RecipeSocialData.directGrant],
+      });
+    });
+  });
+
+  group('RecipeShareGrants.applyShare', () {
+    test('a group whose roster is only the sharer leaves no revoke row', () {
+      final byUser = RecipeShareGrants.fromRosters({
+        'alone': ['me'],
+      }, excludeUserId: null);
+
+      final applied = RecipeShareGrants.applyShare(
+        existingGrants: null,
+        existingCategoryIds: null,
+        userIds: const ['me', 'anna'],
+        grantsByUserId: byUser,
+        excludeUserId: 'me',
+      );
+
+      // 'me' was handed in with a group token, but nothing was written for
+      // them, so the group must not appear.
+      expect(applied.categoryIds, isNull);
+      expect(applied.grants!.containsKey('me'), isFalse);
+      expect(applied.grants!['anna'], [RecipeSocialData.directGrant]);
+    });
+
+    test('groups already on the recipe are kept and the new one is added', () {
+      final applied = RecipeShareGrants.applyShare(
+        existingGrants: {
+          'mom': [RecipeSocialData.groupGrant('family')],
+        },
+        existingCategoryIds: const ['family'],
+        userIds: const ['anna'],
+        grantsByUserId: {
+          'anna': [RecipeSocialData.groupGrant('friends')],
+        },
+      );
+
+      expect(applied.categoryIds, ['family', 'friends']);
+      expect(applied.grants!['mom'], [RecipeSocialData.groupGrant('family')]);
+    });
+  });
 }

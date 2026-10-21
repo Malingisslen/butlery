@@ -169,6 +169,74 @@ class RecipeShareGrants {
     return (grants == null || grants.isEmpty) ? null : grants;
   }
 
+  /// Grants for a share whose group rosters are known: each member maps to the
+  /// groups that actually contained them. The sharer is left out on every path.
+  static Map<String, List<String>> fromRosters(
+    Map<String, Iterable<String>> rostersByGroupId, {
+    String? excludeUserId,
+  }) {
+    final byUserId = <String, List<String>>{};
+    for (final roster in rostersByGroupId.entries) {
+      final token = RecipeSocialData.groupGrant(roster.key);
+      for (final memberId in roster.value) {
+        if (memberId == excludeUserId) continue;
+        final tokens = byUserId.putIfAbsent(memberId, () => <String>[]);
+        if (!tokens.contains(token)) tokens.add(token);
+      }
+    }
+    return byUserId;
+  }
+
+  /// Grants for a share that arrives as one flat member list plus group ids and
+  /// no rosters. With a single group every member came through it; with none the
+  /// share is direct. With several groups the list cannot say who came through
+  /// which, and guessing would let a revoke of one group cut a member who is
+  /// still in another, so that share is refused by returning null.
+  static Map<String, List<String>>? fromFlatShare({
+    required Iterable<String> memberIds,
+    required List<String> groupIds,
+    String? excludeUserId,
+  }) {
+    final distinctGroups = groupIds.toSet();
+    if (distinctGroups.length > 1) return null;
+    final tokens = distinctGroups.isEmpty
+        ? const [RecipeSocialData.directGrant]
+        : [RecipeSocialData.groupGrant(distinctGroups.single)];
+    return {
+      for (final memberId in memberIds)
+        if (memberId != excludeUserId) memberId: List<String>.of(tokens),
+    };
+  }
+
+  /// The grants and panel groups a recipe carries after a share, both derived
+  /// from what is written for the members actually granted. `categoryIds` is
+  /// never taken from the caller's input map: a group whose roster is only the
+  /// sharer grants nobody and would otherwise leave a row that revokes no one.
+  static ({Map<String, List<String>>? grants, List<String>? categoryIds})
+  applyShare({
+    required Map<String, List<String>>? existingGrants,
+    required List<String>? existingCategoryIds,
+    required Iterable<String> userIds,
+    Map<String, List<String>>? grantsByUserId,
+    String? excludeUserId,
+  }) {
+    final written = <String, List<String>>{
+      for (final userId in userIds)
+        if (userId != excludeUserId)
+          userId:
+              grantsByUserId?[userId] ?? const [RecipeSocialData.directGrant],
+    };
+    return (
+      grants: forShare(
+        existing: existingGrants,
+        userIds: userIds.toList(),
+        grantsByUserId: grantsByUserId,
+        excludeUserId: excludeUserId,
+      ),
+      categoryIds: mergeCategoryIds(existingCategoryIds, written),
+    );
+  }
+
   /// The groups on the recipe after this share: what was there, plus what the
   /// share added.
   ///

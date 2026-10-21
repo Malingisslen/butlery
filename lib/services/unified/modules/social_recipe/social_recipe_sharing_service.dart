@@ -141,6 +141,14 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return RecipeShareResult.failed;
       }
 
+      final applied = RecipeShareGrants.applyShare(
+        existingGrants: recipe.socialData?.grants,
+        existingCategoryIds: recipe.socialData?.categoryIds,
+        userIds: userIds,
+        grantsByUserId: grantsByUserId,
+        excludeUserId: currentUserId,
+      );
+
       // 2. Converting to collaborative recipe if needed
       Recipe updatedRecipe;
       if (!recipe.isCollaborative) {
@@ -159,16 +167,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
             memberPermissions: memberPermissions,
             allowGuestViewing: false,
             allowMemberInvites: true,
-            grants: RecipeShareGrants.forShare(
-              existing: null,
-              userIds: userIds,
-              grantsByUserId: grantsByUserId,
-              excludeUserId: currentUserId,
-            ),
-            categoryIds: RecipeShareGrants.mergeCategoryIds(
-              null,
-              grantsByUserId,
-            ),
+            grants: applied.grants,
+            categoryIds: applied.categoryIds,
           ),
         );
       } else {
@@ -202,16 +202,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         updatedRecipe = recipe.copyWith(
           socialData: recipe.socialData?.copyWith(
             memberPermissions: updatedPermissions,
-            grants: RecipeShareGrants.forShare(
-              existing: recipe.socialData?.grants,
-              userIds: userIds,
-              grantsByUserId: grantsByUserId,
-              excludeUserId: currentUserId,
-            ),
-            categoryIds: RecipeShareGrants.mergeCategoryIds(
-              recipe.socialData?.categoryIds,
-              grantsByUserId,
-            ),
+            grants: applied.grants,
+            categoryIds: applied.categoryIds,
           ),
         );
       }
@@ -331,22 +323,17 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       // that away, and without it the share cannot be revoked per group. A
       // member reached through two groups carries both tokens and survives
       // either one being revoked.
-      final allMemberIds = <String>{};
-      final grantsByUserId = <String, List<String>>{};
-
+      final rosters = <String, List<String>>{};
       for (final groupId in groupIds) {
-        final groupMembers = await _resolveGroupMemberIds(groupId);
-        allMemberIds.addAll(groupMembers);
-        for (final memberId in groupMembers) {
-          grantsByUserId
-              .putIfAbsent(memberId, () => <String>[])
-              .add(RecipeSocialData.groupGrant(groupId));
-        }
+        rosters[groupId] = await _resolveGroupMemberIds(groupId);
       }
 
       // Don't share with yourself
-      allMemberIds.remove(currentUserId);
-      grantsByUserId.remove(currentUserId);
+      final grantsByUserId = RecipeShareGrants.fromRosters(
+        rosters,
+        excludeUserId: currentUserId,
+      );
+      final allMemberIds = grantsByUserId.keys.toSet();
 
       if (allMemberIds.isEmpty) {
         _setError(AppLocale.current.errorNoGroupMembersFound);

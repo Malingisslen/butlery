@@ -540,47 +540,28 @@ class RecipeSharingManager {
     final permissions = Map<String, ResourcePermission>.from(
       recipe.socialData?.memberPermissions ?? const {},
     );
-    var grants = recipe.socialData?.grants;
-    final groupIds = categoryIds ?? const <String>[];
-
     final currentUserId = _getCurrentUserId();
-    // What each member is actually granted here — the input `mergeCategoryIds`
-    // derives the panel rows from.
-    final grantsWritten = <String, List<String>>{};
-    for (final memberId in memberIds) {
-      // The sharer is not a sharee. A group's roster always contains its own
-      // owner (friend_categories_operations seeds it that way), and the caller
-      // passes that roster straight through — so without this skip an owner
-      // re-sharing to their own group grants themselves a revocable reason to
-      // see their own recipe, and the revoke log then counts them as a member
-      // who "kept it (another grant, or ownership)". The create path guards the same
-      // way; this one did not.
-      if (memberId == currentUserId) continue;
-      permissions.putIfAbsent(memberId, () => ResourcePermission.editor);
-      if (groupIds.isEmpty) {
-        grants = RecipeShareGrants.add(
-          grants,
-          memberId,
-          RecipeSocialData.directGrant,
-        );
-        continue;
-      }
-      for (final groupId in groupIds) {
-        final token = RecipeSocialData.groupGrant(groupId);
-        grants = RecipeShareGrants.add(grants, memberId, token);
-        grantsWritten.putIfAbsent(memberId, () => <String>[]).add(token);
-      }
+    // A group's roster always contains its own owner (friend_categories_operations
+    // seeds it that way), so the sharer is excluded here rather than granted a
+    // revocable reason to see their own recipe.
+    final toGrant = RecipeShareGrants.fromFlatShare(
+      memberIds: memberIds,
+      groupIds: categoryIds ?? const <String>[],
+      excludeUserId: currentUserId,
+    );
+    if (toGrant == null) {
+      AppLogger.error('Re-share to several groups without rosters refused');
+      return false;
     }
-
-    // Derived from the grants actually written, NOT from the raw `categoryIds`
-    // argument. A group whose roster is only the sharer writes no grant for
-    // anyone, and merging the raw id would put a revoke row in the panel that
-    // matches nobody: `removeGroup` would clear its guard, cut no one, and the
-    // snackbar would still say the group had lost access. `mergeCategoryIds`
-    // makes that row structurally impossible.
-    final mergedCategoryIds = RecipeShareGrants.mergeCategoryIds(
-      recipe.socialData?.categoryIds,
-      grantsWritten,
+    for (final memberId in toGrant.keys) {
+      permissions.putIfAbsent(memberId, () => ResourcePermission.editor);
+    }
+    final applied = RecipeShareGrants.applyShare(
+      existingGrants: recipe.socialData?.grants,
+      existingCategoryIds: recipe.socialData?.categoryIds,
+      userIds: toGrant.keys,
+      grantsByUserId: toGrant,
+      excludeUserId: currentUserId,
     );
 
     final updated = Recipe(
@@ -588,8 +569,8 @@ class RecipeSharingManager {
       type: recipe.type,
       socialData: (recipe.socialData ?? const RecipeSocialData()).copyWith(
         memberPermissions: permissions,
-        grants: grants,
-        categoryIds: mergedCategoryIds,
+        grants: applied.grants,
+        categoryIds: applied.categoryIds,
       ),
       realtimeData: recipe.realtimeData,
       offlineData: recipe.offlineData,

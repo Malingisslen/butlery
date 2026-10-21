@@ -819,6 +819,21 @@ void main() {
         expect(saved.socialData?.categoryIds, contains('group_a'));
       });
 
+      test(
+        'a re-share to several groups at once is refused, nothing saved',
+        () async {
+          final newId = await sharingManager.shareRecipe(
+            recipeId: 'collab_1',
+            memberIds: ['user_999'],
+            memberDisplayNames: {'user_999': 'New Member'},
+            categoryIds: ['group_a', 'group_b'],
+          );
+
+          expect(newId, isNull);
+          expect(savedRecipes, isEmpty);
+        },
+      );
+
       test('a re-share from a group names the group on its shared_content '
           'row, so the group page finds it (BUT-2271)', () async {
         when(
