@@ -20,41 +20,119 @@
 /// services through `ServiceLocator` and `context.read`. So the connections are
 /// asserted against the source instead.
 ///
-/// Residual, named rather than left to be found: these patterns run over the
-/// file's text, so they are coupled to what `dart format` currently emits
-/// beyond the joints made optional below.
+/// The source is read as text, but never matched with a distance window or an
+/// argument order (BUT-2133): [callArguments] finds a call by name and cuts out
+/// its balanced argument list, and [namedArgument] looks an argument up by
+/// name, so reordering named arguments or growing the code between two of them
+/// cannot redden a lint against correct code.
 library;
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+String _stripComments(String source) =>
+    source.replaceAll(RegExp(r'(?<!:)//[^\n]*'), '');
+
+String _normalize(String source) =>
+    _stripComments(source).replaceAll(RegExp(r'\s+'), ' ');
+
+/// The argument list of every call of [name] in [source], without the outer
+/// parentheses. Declarations (`Future<int?> name({`) are skipped: their
+/// parameter list is not a call.
+List<String> callArguments(String source, String name) {
+  final found = <String>[];
+  for (final m in RegExp('(?<!\\w)$name\\(').allMatches(source)) {
+    final before = source.substring(0, m.start).trimRight();
+    if (before.endsWith('>') || before.endsWith('void')) continue;
+    var depth = 1;
+    var i = m.end;
+    while (i < source.length && depth > 0) {
+      final c = source[i];
+      if (c == '(') depth++;
+      if (c == ')') depth--;
+      i++;
+    }
+    if (depth == 0) found.add(source.substring(m.end, i - 1));
+  }
+  return found;
+}
+
+/// Splits [args] at commas outside any bracket pair.
+List<String> topLevelArguments(String args) {
+  final parts = <String>[];
+  var depth = 0;
+  var start = 0;
+  for (var i = 0; i < args.length; i++) {
+    final c = args[i];
+    if ('([{'.contains(c)) depth++;
+    if (')]}'.contains(c)) depth--;
+    if (c == ',' && depth == 0) {
+      parts.add(args.substring(start, i).trim());
+      start = i + 1;
+    }
+  }
+  final last = args.substring(start).trim();
+  if (last.isNotEmpty) parts.add(last);
+  return parts;
+}
+
+/// The value of the named argument [name] in a call's [args], or null.
+String? namedArgument(String args, String name) {
+  for (final part in topLevelArguments(args)) {
+    final m = RegExp('^$name:\\s*(.*)\$').firstMatch(part);
+    if (m != null) return m.group(1)!.trim();
+  }
+  return null;
+}
+
+String _squash(String value) => value.replaceAll(RegExp(r'\s+'), '');
+
 void main() {
   late String source;
 
   setUp(() {
-    source = File(
-      'lib/views/veckomeny_view.dart',
-    ).readAsStringSync().replaceAll(RegExp(r'\s+'), ' ');
+    source = _normalize(
+      File('lib/views/veckomeny_view.dart').readAsStringSync(),
+    );
+  });
+
+  group('the call parser', () {
+    test('finds an argument wherever it stands in the call', () {
+      const a = 'f(x: 1, onPublished: (p) { g(p); }, skipConfirm: true)';
+      const b = 'f(skipConfirm: true, onPublished: (p) { g(p); }, x: 1)';
+      for (final call in [a, b]) {
+        final args = callArguments(call, 'f').single;
+        expect(namedArgument(args, 'skipConfirm'), 'true');
+        expect(namedArgument(args, 'onPublished'), contains('g(p)'));
+      }
+    });
+
+    test('does not depend on how much code sits between two arguments', () {
+      final filler = List.filled(5000, 'h();').join(' ');
+      final args = callArguments(
+        'f(onPublished: (p) { $filler g(p); })',
+        'f',
+      ).single;
+      expect(namedArgument(args, 'onPublished'), contains('g(p)'));
+    });
+
+    test('skips a declaration but finds a nested call of the same name', () {
+      const text = 'Future<int?> f({int? x}) async {} f(x: f(x: 1))';
+      expect(callArguments(text, 'f'), ['x: f(x: 1)', 'x: 1']);
+    });
   });
 
   test('the placement footer reads isPlacing from the calendar viewmodel', () {
+    final calls = callArguments(source, 'MenuPlacementChoiceFooter');
     expect(
-      source,
-      contains('MenuPlacementChoiceFooter('),
+      calls,
+      isNotEmpty,
       reason: 'the footer moved; this lint has to move with it',
     );
     expect(
-      source,
-      matches(
-        RegExp(
-          // The gap absorbs the comment that sits between the constructor
-          // and its first argument; it stays bounded so the match cannot
-          // wander into a different widget further down the tree.
-          r'MenuPlacementChoiceFooter\(.{0,300}?isPlacing: context ?'
-          r'\.watch<WeeklyMenuPlanViewModel>\(\) ?\.isPlacingGeneratedMenu',
-        ),
-      ),
+      _squash(namedArgument(calls.single, 'isPlacing') ?? ''),
+      'context.watch<WeeklyMenuPlanViewModel>().isPlacingGeneratedMenu',
       reason:
           'without this argument the button never shows a placement in '
           'flight, and every existing test stays green',
@@ -62,24 +140,33 @@ void main() {
   });
 
   test('the publish-time callback is threaded to applyGeneratedMenu', () {
+    final calls = callArguments(source, 'applyGeneratedMenu');
+    expect(calls, isNotEmpty, reason: 'the call moved; move this lint');
     expect(
-      source,
-      matches(RegExp(r'applyGeneratedMenu\(.{0,300}?onPublished: onPublished')),
+      namedArgument(calls.single, 'onPublished'),
+      'onPublished',
       reason:
           'the viewmodel would fire a callback nobody passed, and offline the '
           'calendar would wait for an ack that never comes',
     );
   });
 
+  /// The calls whose `onPublished` is a closure written at the call site, as
+  /// opposed to the pass-through inside [_applyGeneratedToCalendar] itself.
+  List<String> inlineCallbackCalls() => [
+    for (final args in callArguments(source, '_applyGeneratedToCalendar'))
+      if ((namedArgument(args, 'onPublished') ?? '').startsWith('(')) args,
+  ];
+
   test('the generate handler announces from inside the callback', () {
+    final skipping = [
+      for (final args in inlineCallbackCalls())
+        if (namedArgument(args, 'skipConfirm') == 'true') args,
+    ];
+    expect(skipping, hasLength(1), reason: 'the handler moved; move this lint');
     expect(
-      source,
-      matches(
-        RegExp(
-          r'_applyGeneratedToCalendar\( ?skipConfirm: true, ?onPublished: '
-          r'\(placed\) \{.{0,400}?_showAutoPlacedToast\(placed\)',
-        ),
-      ),
+      namedArgument(skipping.single, 'onPublished'),
+      contains('_showAutoPlacedToast(placed)'),
       reason:
           'reading the return value here is what left the kalender path silent '
           'offline',
@@ -87,26 +174,22 @@ void main() {
   });
 
   test('the auto-place handler acts from inside the callback', () {
+    final auto = [
+      for (final args in inlineCallbackCalls())
+        if (namedArgument(args, 'skipConfirm') == null) args,
+    ];
+    expect(auto, hasLength(1), reason: 'the handler moved; move this lint');
+    final callback = namedArgument(auto.single, 'onPublished')!;
     expect(
-      source,
-      matches(
-        RegExp(
-          r'_applyGeneratedToCalendar\( ?onPublished: \(placed\) \{.{0,800}?'
-          r'_setViewMode\(VeckomenyViewMode\.kalender\)',
-        ),
-      ),
+      callback,
+      contains('_setViewMode(VeckomenyViewMode.kalender)'),
       reason:
           'switching the view after the await is what made the button look '
           'dead offline',
     );
     expect(
-      source,
-      matches(
-        RegExp(
-          r'_applyGeneratedToCalendar\( ?onPublished: \(placed\) \{.{0,800}?'
-          r'_showAutoPlacedToast\(placed\)',
-        ),
-      ),
+      callback,
+      contains('_showAutoPlacedToast(placed)'),
       reason: 'the toast has to describe the week the user can already see',
     );
   });
@@ -118,13 +201,14 @@ void main() {
   // overwrite check and never skips it. No test mounts VeckomenyView, so
   // the retry's arguments are asserted against the source.
   test('a failed placement retries through the overwrite confirmation', () {
-    final retry = RegExp(
-      r'onRetry: \(\) => unawaited\( ?_applyGeneratedToCalendar\(([^)]*)\)',
-    ).firstMatch(source);
-    expect(retry, isNotNull, reason: 'the retry moved; move this lint');
+    final failures = callArguments(source, 'showWeekPlacementFailure');
+    expect(failures, hasLength(1), reason: 'the retry moved; move this lint');
+    final retry = namedArgument(failures.single, 'onRetry')!;
+    final retried = callArguments(retry, '_applyGeneratedToCalendar');
+    expect(retried, hasLength(1), reason: 'the retry moved; move this lint');
     expect(
-      retry!.group(1),
-      isNot(contains('skipConfirm')),
+      namedArgument(retried.single, 'skipConfirm'),
+      isNull,
       reason:
           'a retry that skips the confirmation can wipe entries the '
           'user added after the failed placement without asking',
