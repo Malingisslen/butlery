@@ -1,7 +1,7 @@
 # ADR-0032: Malin uses her real Google account in staging
 
 - **Date:** 2026-10-20
-- **Status:** Escalated to Malin
+- **Status:** Decided (Malin, 2026-10-20)
 - **Trigger:** BUT-451 staging plan (`tasks/firebase-staging-plan.md`, draft PR #964)
 - **Blast-radius tier:** full-panel
 - **Stakeholders seated:** DevOps/SRE, Security Architect, Privacy/DPO, FinOps, QA, Codebase Archaeologist
@@ -24,4 +24,5 @@ Escalated to Malin → she chose her real Google account (2026-10-20).
 Staging is recorded as a place where personal data is processed (`docs/ops/staging.md`,
 "Personal data in staging"). The same TTLs and erasure cascade run there (ADR-0031).
 Analytics and Crashlytics are off in the staging app. Every other account is synthetic, and
-no data is copied between the projects.
+no data is copied between the projects. Staging Storage is in europe-west1 since 2026-10-20
+(BUT-2428), so staging holds personal data in the EU only.
