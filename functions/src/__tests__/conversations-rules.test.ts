@@ -52,7 +52,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
+import { arrayRemove, arrayUnion, deleteField, serverTimestamp } from "firebase/firestore";
 
 // MUTATION-PROBE SEAM (BUT-1838). Both values are overridable so a mutation
 // probe can point this suite at a MUTATED COPY of firestore.rules in a scratch
@@ -3350,6 +3350,308 @@ test("BUT-2398: a message created carrying another person's reaction is denied",
       .firestore()
       .doc(`messages/rx-create-deny-${RUN}`)
       .set({ ...messageBody(conv, a, new Date()), reactions: { heart: [b] } })
+  );
+});
+
+// ============================================================================
+// CHAT IMAGES SENT OFFLINE — filling in a placeholder (BUT-2294, C-R1)
+// ============================================================================
+//
+// The placeholder is created like any message; the picture arrives later as a
+// sender update of `metadata.imageUrl`. The first test is the control for the
+// fill-in itself.
+
+const CI_SENDER = `ci-sender-${RUN}`;
+const CI_OTHER = `ci-other-${RUN}`;
+const CI_THIRD = `ci-third-${RUN}`;
+const CI_BUCKET = "https://firebasestorage.googleapis.com/v0/b/butlery-app-1.firebasestorage.app/o";
+
+function chatImageUrl(uid: string, folder = "chat_images", name = "row1.jpg"): string {
+  return `${CI_BUCKET}/users%2F${uid}%2F${folder}%2F${name}?alt=media&token=t`;
+}
+
+async function seedPlaceholder(
+  convId: string,
+  msgId: string,
+  overrides: Record<string, unknown> = {}
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${msgId}`)
+      .set({
+        ...messageBody(convId, CI_SENDER, new Date()),
+        type: "image",
+        content: "",
+        metadata: { pendingImage: true },
+        ...overrides,
+      });
+  });
+}
+
+function fillIn(
+  msgId: string,
+  uid: string,
+  url: string,
+  claims: Record<string, unknown> = B_CLAIMS
+): Promise<void> {
+  return env
+    .authenticatedContext(uid, claims)
+    .firestore()
+    .doc(`messages/${msgId}`)
+    .update({ "metadata.imageUrl": url, "metadata.pendingImage": deleteField() });
+}
+
+test("BUT-2294: the sender fills in their own placeholder with their own chat image (control)", async () => {
+  const dm = `ci-dm-${RUN}`;
+  const msg = `ci-a1-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertSucceeds(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+});
+
+test("BUT-2294: a filled-in message is never re-pointed (one-shot)", async () => {
+  const dm = `ci-dm-once-${RUN}`;
+  const msg = `ci-once-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg, {
+    metadata: { imageUrl: chatImageUrl(CI_SENDER, "chat_images", "old.jpg") },
+  });
+  await assertFails(
+    env
+      .authenticatedContext(CI_SENDER, B_CLAIMS)
+      .firestore()
+      .doc(`messages/${msg}`)
+      .update({ "metadata.imageUrl": chatImageUrl(CI_SENDER, "chat_images", "new.jpg") })
+  );
+});
+
+test("BUT-2294: an online image message keeps its picture (no re-pointing without a placeholder)", async () => {
+  const dm = `ci-dm-online-${RUN}`;
+  const msg = `ci-online-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg, { metadata: { caption: "" } });
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`messages/${msg}`)
+      .update({ metadata: { imageUrl: chatImageUrl(CI_SENDER, "recipes") } });
+  });
+  await assertFails(
+    env
+      .authenticatedContext(CI_SENDER, B_CLAIMS)
+      .firestore()
+      .doc(`messages/${msg}`)
+      .update({ "metadata.imageUrl": chatImageUrl(CI_SENDER) })
+  );
+});
+
+test("BUT-2294: the fill-in cannot point at somebody else's chat image", async () => {
+  const dm = `ci-dm-foreign-${RUN}`;
+  const msg = `ci-foreign-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_OTHER)));
+});
+
+test("BUT-2294: the fill-in cannot point at the caller's avatar, comment or recipe folder", async () => {
+  const dm = `ci-dm-folder-${RUN}`;
+  const msg = `ci-folder-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  for (const folder of ["avatars", "comment_images", "recipes"]) {
+    await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER, folder)));
+  }
+});
+
+test("BUT-2294: a picture cannot be re-pointed even after the sender re-arms the placeholder flag", async () => {
+  const dm = `ci-dm-rearm-${RUN}`;
+  const msg = `ci-rearm-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertSucceeds(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER, "chat_images", "first.jpg")));
+  const ref = () =>
+    env.authenticatedContext(CI_SENDER, B_CLAIMS).firestore().doc(`messages/${msg}`);
+  // Leaves imageUrl alone, so the fill-in gate does not apply and it passes.
+  await assertSucceeds(ref().update({ "metadata.pendingImage": true }));
+  // The state the one-shot conjunct exists for: pending again, picture already set.
+  await assertFails(
+    ref().update({
+      "metadata.imageUrl": chatImageUrl(CI_SENDER, "chat_images", "second.jpg"),
+      "metadata.pendingImage": deleteField(),
+    })
+  );
+});
+
+test("BUT-2294: the fill-in cannot point at another project's bucket", async () => {
+  const dm = `ci-dm-bucket-${RUN}`;
+  const msg = `ci-bucket-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(
+    fillIn(
+      msg,
+      CI_SENDER,
+      `https://firebasestorage.googleapis.com/v0/b/evil-project.firebasestorage.app/o/users%2F${CI_SENDER}%2Fchat_images%2Fx.jpg?alt=media`
+    )
+  );
+});
+
+test("BUT-2294: the fill-in cannot point at a link outside Firebase Storage", async () => {
+  const dm = `ci-dm-link-${RUN}`;
+  const msg = `ci-link-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(fillIn(msg, CI_SENDER, "https://example.com/x.jpg"));
+  await assertFails(
+    fillIn(msg, CI_SENDER, `https://example.com/v0/b/b/o/users%2F${CI_SENDER}%2Fchat_images%2Fa.jpg?x=1`)
+  );
+});
+
+test("BUT-2294: the fill-in is for an image placeholder, not for a text message", async () => {
+  const dm = `ci-dm-text-${RUN}`;
+  const msg = `ci-text-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg, { type: "text", content: "hej" });
+  await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+});
+
+test("BUT-2294: the fill-in changes only the picture: content and extra metadata are refused", async () => {
+  const dm = `ci-dm-extra-${RUN}`;
+  const msg = `ci-extra-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  const ref = () =>
+    env.authenticatedContext(CI_SENDER, B_CLAIMS).firestore().doc(`messages/${msg}`);
+  await assertFails(
+    ref().update({
+      "metadata.imageUrl": chatImageUrl(CI_SENDER),
+      "metadata.pendingImage": deleteField(),
+      content: "ny text",
+    })
+  );
+  await assertFails(
+    ref().update({
+      "metadata.imageUrl": chatImageUrl(CI_SENDER),
+      "metadata.pendingImage": deleteField(),
+      "metadata.caption": "IMG_1.jpg",
+    })
+  );
+});
+
+test("BUT-2294: the fill-in must clear the placeholder flag", async () => {
+  const dm = `ci-dm-flag-${RUN}`;
+  const msg = `ci-flag-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(
+    env
+      .authenticatedContext(CI_SENDER, B_CLAIMS)
+      .firestore()
+      .doc(`messages/${msg}`)
+      .update({ "metadata.imageUrl": chatImageUrl(CI_SENDER) })
+  );
+});
+
+test("BUT-2294: only the sender can fill in a placeholder", async () => {
+  const dm = `ci-dm-who-${RUN}`;
+  const msg = `ci-who-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(fillIn(msg, CI_OTHER, chatImageUrl(CI_OTHER)));
+});
+
+test("BUT-2294: a member removed from the conversation cannot fill in; deleting still works", async () => {
+  const room = `ci-room-removed-${RUN}`;
+  const msg = `ci-removed-${RUN}`;
+  await seedRoom(room, [CI_OTHER, CI_THIRD, `ci-x-${RUN}`]);
+  await seedPlaceholder(room, msg);
+  await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+  await assertSucceeds(
+    env.authenticatedContext(CI_SENDER, B_CLAIMS).firestore().doc(`messages/${msg}`).delete()
+  );
+});
+
+test("BUT-2294: a sender who is not age-compliant cannot fill in", async () => {
+  const dm = `ci-dm-age-${RUN}`;
+  const msg = `ci-age-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertFails(
+    fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER), { email_verified: true })
+  );
+});
+
+test("BUT-2294: a person blocked after the placeholder landed cannot fill it in (DM, exact block read)", async () => {
+  const dm = `ci-dm-block-${RUN}`;
+  const msg = `ci-block-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await seedBlockRow(CI_OTHER, CI_SENDER);
+  try {
+    await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+    await assertSucceeds(
+      env.authenticatedContext(CI_SENDER, B_CLAIMS).firestore().doc(`messages/${msg}`).delete()
+    );
+  } finally {
+    await deleteBlockRow(CI_OTHER, CI_SENDER);
+  }
+});
+
+test("BUT-2294: the DM fill-in deny holds when the blocker is first in participantIds", async () => {
+  const dm = `ci-dm-block-idx-${RUN}`;
+  const msg = `ci-block-idx-${RUN}`;
+  await seedRoom(dm, [CI_OTHER, CI_SENDER]);
+  await seedPlaceholder(dm, msg);
+  await deleteMirror(CI_SENDER);
+  await seedBlockRow(CI_OTHER, CI_SENDER);
+  try {
+    await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+  } finally {
+    await deleteBlockRow(CI_OTHER, CI_SENDER);
+  }
+});
+
+test("BUT-2294: an image message that is not marked pending cannot be given a picture", async () => {
+  const dm = `ci-dm-unmarked-${RUN}`;
+  const msg = `ci-unmarked-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg, { metadata: { caption: "" } });
+  await assertFails(fillIn(msg, CI_SENDER, chatImageUrl(CI_SENDER)));
+});
+
+test("BUT-2294: in a group, the block mirror denies the fill-in and a mirror of outsiders allows it", async () => {
+  const room = `ci-room-block-${RUN}`;
+  await seedRoom(room, [CI_SENDER, CI_OTHER, CI_THIRD]);
+  const denied = `ci-gblock-${RUN}`;
+  const allowed = `ci-gblock-ctl-${RUN}`;
+  await seedPlaceholder(room, denied);
+  await seedPlaceholder(room, allowed);
+  await seedMirror(CI_SENDER, [CI_OTHER]);
+  try {
+    await assertFails(fillIn(denied, CI_SENDER, chatImageUrl(CI_SENDER)));
+  } finally {
+    await deleteMirror(CI_SENDER);
+  }
+  await seedMirror(CI_SENDER, [`ci-outsider-${RUN}`]);
+  try {
+    await assertSucceeds(fillIn(allowed, CI_SENDER, chatImageUrl(CI_SENDER)));
+  } finally {
+    await deleteMirror(CI_SENDER);
+  }
+});
+
+test("BUT-2294: a placeholder's other updates stay as before (an edit that leaves the picture alone)", async () => {
+  const dm = `ci-dm-other-${RUN}`;
+  const msg = `ci-other-upd-${RUN}`;
+  await seedRoom(dm, [CI_SENDER, CI_OTHER]);
+  await seedPlaceholder(dm, msg);
+  await assertSucceeds(
+    env
+      .authenticatedContext(CI_SENDER, B_CLAIMS)
+      .firestore()
+      .doc(`messages/${msg}`)
+      .update({ editedAt: new Date() })
   );
 });
 

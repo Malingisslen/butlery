@@ -258,37 +258,53 @@ void main() {
     ).called(1);
   });
 
-  test('a comment discarded after one of its photos was uploaded no longer '
+  // Which photo is cancelled last decides when a bare cancelled sibling is
+  // dropped, so both orders are run.
+  for (final uploadedFirst in [true, false]) {
+    test(
+      'a comment discarded after one of its photos was uploaded no longer '
       'holds the user, though the uploaded photo\'s row stays for its '
-      'take-back', () async {
-    await manager().queueCommentOffline(
-      'r1',
-      recipeName: 'Kladdkaka',
-      imagePaths: photos.take(2).toList(),
-    );
-    final ids = [for (final r in await rows()) r.id];
-    await db.uploadQueueDao.markUploaded(ids.first, url: 'https://img/0.jpg');
-    await db.uploadQueueDao.markPermanentlyFailed(ids.last, reason: 'x');
-    await discardQueuedChange(
-      db,
-      uid,
-      (await readQueuedChanges(db, uid)).single,
-    );
-    final left = await rows();
-    expect(left.single.status, 'cancelled');
-    expect(left.single.uploadedUrl, 'https://img/0.jpg');
+      'take-back (uploaded photo ${uploadedFirst ? 'first' : 'last'})',
+      () async {
+        await manager().queueCommentOffline(
+          'r1',
+          recipeName: 'Kladdkaka',
+          imagePaths: photos.take(2).toList(),
+        );
+        final ids = [for (final r in await rows()) r.id];
+        await db.uploadQueueDao.markUploaded(
+          uploadedFirst ? ids.first : ids.last,
+          url: 'https://img/0.jpg',
+        );
+        await db.uploadQueueDao.markPermanentlyFailed(
+          uploadedFirst ? ids.last : ids.first,
+          reason: 'x',
+        );
+        await discardQueuedChange(
+          db,
+          uid,
+          (await readQueuedChanges(db, uid)).single,
+        );
+        final left = await rows();
+        expect(left.every((r) => r.status == 'cancelled'), isTrue);
+        expect(
+          left.where((r) => r.uploadedUrl != null).single.uploadedUrl,
+          'https://img/0.jpg',
+        );
 
-    await manager().postComment('r1');
+        await manager().postComment('r1');
 
-    verify(
-      () => social.addComment(
-        recipeId: 'r1',
-        content: 'Mycket gott!',
-        parentCommentId: null,
-        imageUrls: const [],
-      ),
-    ).called(1);
-  });
+        verify(
+          () => social.addComment(
+            recipeId: 'r1',
+            content: 'Mycket gott!',
+            parentCommentId: null,
+            imageUrls: const [],
+          ),
+        ).called(1);
+      },
+    );
+  }
 
   test(
     'a comment whose photos are all done no longer holds the user',
