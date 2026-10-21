@@ -18,6 +18,7 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
@@ -46,6 +47,31 @@ Recipe _buildCollaborative({
         ),
       )
       .build();
+}
+
+final _collabCore = RecipeCore(
+  id: 'collab_ops_1',
+  title: 'Team Recipe',
+  description: 'A collaborative recipe',
+  ingredients: ['x'],
+  instructions: ['y'],
+  mealType: 'Lunch',
+  createdBy: 'user_123',
+  createdAt: DateTime(2025, 1, 1),
+  updatedAt: DateTime(2025, 1, 1),
+);
+
+class _RecordingSharedRecipeRepository extends Fake
+    implements FirebaseSharedRecipeRepository {
+  final calls = <({String recipeId, List<String> userIds})>[];
+
+  @override
+  Future<void> removeRecipientsFromOwnShares({
+    required String recipeId,
+    required List<String> userIds,
+  }) async {
+    calls.add((recipeId: recipeId, userIds: userIds));
+  }
 }
 
 void main() {
@@ -578,4 +604,86 @@ void main() {
       },
     );
   });
+
+  // The manager tests inject their own callback and the repository tests call
+  // the method directly; this group builds the real operations over the
+  // locator, so it covers the closure joining the two.
+  group(
+    'SocialRecipeOperations trims the sender\'s shared rows (BUT-1815)',
+    () {
+      late MockUnifiedRecipeService mockParent;
+
+      setUp(() async {
+        await BaseUnitTest.setupUnit();
+        await TestServiceLocator.initialize();
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(MockDIContainer());
+        mockParent = MockUnifiedRecipeService();
+        mockParent.setRecipeState(
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Current User',
+          recipes: [
+            Recipe(
+              core: _collabCore,
+              type: RecipeType.collaborative,
+              socialData: RecipeSocialData(
+                ownerId: 'user_123',
+                ownerDisplayName: 'Owner',
+                memberPermissions: {
+                  'user_123': ResourcePermission.admin,
+                  'user_456': ResourcePermission.editor,
+                },
+              ),
+            ),
+          ],
+          isInitialized: true,
+        );
+      });
+
+      tearDown(() async {
+        app_provider.ServiceLocator.reset();
+        await TestServiceLocator.reset();
+        BaseUnitTest.resetMocks();
+      });
+
+      SocialRecipeOperations build() => SocialRecipeOperations(
+        getCurrentUserId: () => mockParent.currentUserId,
+        getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+        getRecipes: () => mockParent.recipes,
+        updateRecipe: (_) async => true,
+        createCollaborativeRecipe: mockParent.createCollaborativeRecipe,
+        createPersonalRecipe: mockParent.createPersonalRecipe,
+        ratingsRepository: MockRatingsRepository(),
+        firestoreRepository:
+            app_provider.ServiceLocator.get<FirestoreRepository>(),
+      );
+
+      test('removeMember reaches the registered repository', () async {
+        final repo = _RecordingSharedRecipeRepository();
+        TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(repo);
+
+        final ok = await build().removeMember(
+          recipeId: _collabCore.id,
+          userId: 'user_456',
+        );
+
+        expect(ok, isTrue);
+        expect(repo.calls, hasLength(1));
+        expect(repo.calls.single.recipeId, _collabCore.id);
+        expect(repo.calls.single.userIds, ['user_456']);
+      });
+
+      test(
+        'removeMember still succeeds when no repository is registered',
+        () async {
+          final ok = await build().removeMember(
+            recipeId: _collabCore.id,
+            userId: 'user_456',
+          );
+
+          expect(ok, isTrue);
+        },
+      );
+    },
+  );
 }

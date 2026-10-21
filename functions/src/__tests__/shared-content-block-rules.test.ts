@@ -189,6 +189,73 @@ test("update: a member leaves even when someone in the list has blocked them", a
   await assertSucceeds(db.doc(`shared_content/${id}`).update({ sharedToUserIds: arrayRemove(member) }));
 });
 
+// ---- BUT-1815: the sharer takes a revoked person off their own row
+
+async function seedRecipeRow(tag: string, sharer: string, recipients: string[]): Promise<string> {
+  const id = `row-${tag}-${RUN}`;
+  await seed(`shared_content/${id}`, {
+    contentType: "recipe",
+    sharedByUserId: sharer,
+    sharedAt: new Date(),
+    sharedToUserIds: [sharer, ...recipients],
+    recipeId: `recipe-${tag}`,
+    originalRecipeId: `recipe-${tag}`,
+  });
+  for (const r of recipients) {
+    await seed(`shared_content/${id}/members/${r}`, { userId: r, addedBy: sharer, addedAt: new Date() });
+  }
+  return id;
+}
+
+/** The batch `FirebaseSharedRecipeRepository.removeRecipientsFromOwnShares` sends. */
+async function trim(actor: string, id: string, removed: string[]): Promise<void> {
+  const db = env.authenticatedContext(actor, CLAIMS).firestore();
+  const batch = db.batch();
+  batch.update(db.doc(`shared_content/${id}`), { sharedToUserIds: arrayRemove(...removed) });
+  for (const r of removed) batch.delete(db.doc(`shared_content/${id}/members/${r}`));
+  await batch.commit();
+}
+
+test("trim: the sharer takes a revoked person off the row and drops their member row", async () => {
+  const sharer = u("t1-sharer");
+  const gone = u("t1-gone");
+  const kept = u("t1-kept");
+  const id = await seedRecipeRow("t1", sharer, [gone, kept]);
+  await assertSucceeds(trim(sharer, id, [gone]));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    const row = (await db.doc(`shared_content/${id}`).get()).data() as { sharedToUserIds: string[] };
+    if (row.sharedToUserIds.includes(gone) || !row.sharedToUserIds.includes(kept)) {
+      throw new Error(`unexpected recipients: ${row.sharedToUserIds.join(",")}`);
+    }
+    if ((await db.doc(`shared_content/${id}/members/${gone}`).get()).exists) throw new Error("member row survived");
+    if (!(await db.doc(`shared_content/${id}/members/${kept}`).get()).exists) throw new Error("kept member lost");
+  });
+});
+
+test("trim: a stranger cannot trim someone else's row", async () => {
+  const sharer = u("t2-sharer");
+  const gone = u("t2-gone");
+  const id = await seedRecipeRow("t2", sharer, [gone]);
+  await assertFails(trim(u("t2-stranger"), id, [gone]));
+});
+
+test("trim: a recipient cannot delete another recipient's member row", async () => {
+  const sharer = u("t3-sharer");
+  const gone = u("t3-gone");
+  const other = u("t3-other");
+  const id = await seedRecipeRow("t3", sharer, [gone, other]);
+  const db = env.authenticatedContext(other, CLAIMS).firestore();
+  await assertFails(db.doc(`shared_content/${id}/members/${gone}`).delete());
+});
+
+test("trim: the sharer may take twenty-five people off one row in one batch", async () => {
+  const sharer = u("t4-sharer");
+  const gone = Array.from({ length: 25 }, (_, i) => u(`t4-gone-${i}`));
+  const id = await seedRecipeRow("t4", sharer, gone);
+  await assertSucceeds(trim(sharer, id, gone));
+});
+
 // ---- members
 
 test("members: the sharer may add a member row for someone not held", async () => {
