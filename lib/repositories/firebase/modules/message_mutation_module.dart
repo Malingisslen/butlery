@@ -8,6 +8,7 @@ import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -362,6 +363,87 @@ class MessageMutationModule {
       rethrow;
     }
   }
+
+  /// What the server holds for [messageId], the placeholder of a queued chat
+  /// image. The read rule dereferences the stored message, so the server
+  /// answers permission-denied, not "missing", for a message it does not have;
+  /// [conversationId] is what tells that apart from a member who was removed.
+  /// A message the server does not have is only "absent" when this device holds
+  /// no write for it either; one still in Firestore's own queue is
+  /// `writePending`. Throws when the server cannot be reached, and the server's
+  /// refusal when the caller is no longer in the conversation.
+  Future<PendingImageStatus> pendingImageStatus({
+    required String messageId,
+    required String userId,
+    required String conversationId,
+  }) async {
+    final ref = messagesRef.doc(messageId);
+    final DocumentSnapshot<Map<String, dynamic>> onServer;
+    try {
+      onServer = await ref.get(const GetOptions(source: Source.server));
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+      return _statusOfUnreadable(ref, userId, conversationId, e);
+    }
+    if (!onServer.exists) return _statusOfMissing(ref);
+    final data = onServer.data()!;
+    if (data['senderId'] != userId) {
+      return const PendingImageStatus(PendingImageState.notMine);
+    }
+    final meta = data['metadata'];
+    final url = meta is Map ? meta['imageUrl'] : null;
+    return url is String && url.isNotEmpty
+        ? PendingImageStatus(PendingImageState.filled, imageUrl: url)
+        : const PendingImageStatus(PendingImageState.waiting);
+  }
+
+  Future<PendingImageStatus> _statusOfMissing(
+    DocumentReference<Map<String, dynamic>> ref,
+  ) async {
+    final local = await _cachedOrNull(ref);
+    return PendingImageStatus(
+      local != null && local.metadata.hasPendingWrites
+          ? PendingImageState.writePending
+          : PendingImageState.absent,
+    );
+  }
+
+  Future<PendingImageStatus> _statusOfUnreadable(
+    DocumentReference<Map<String, dynamic>> ref,
+    String userId,
+    String conversationId,
+    FirebaseException refusal,
+  ) async {
+    final missing = await _statusOfMissing(ref);
+    if (missing.state == PendingImageState.writePending) return missing;
+    final conversation = await readConversation(conversationId);
+    if (conversation == null || conversation.participantIds.contains(userId)) {
+      return missing;
+    }
+    throw refusal;
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _cachedOrNull(
+    DocumentReference<Map<String, dynamic>> ref,
+  ) async {
+    try {
+      final snap = await ref.get(const GetOptions(source: Source.cache));
+      return snap.exists ? snap : null;
+    } on FirebaseException {
+      // Nothing in the cache is an error, not an empty answer.
+      return null;
+    }
+  }
+
+  /// Fills in a placeholder with its picture. Plain `await`: the upload queue
+  /// is online and needs the server's verdict, unlike a send.
+  Future<void> attachPendingImage({
+    required String messageId,
+    required String imageUrl,
+  }) => messagesRef.doc(messageId).update({
+    'metadata.imageUrl': imageUrl,
+    'metadata.pendingImage': FieldValue.delete(),
+  });
 
   /// Batch mark messages as delivered.
   Future<void> batchMarkAsDelivered({

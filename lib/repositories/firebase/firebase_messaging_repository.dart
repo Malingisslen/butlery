@@ -19,6 +19,7 @@ import 'package:butlery/repositories/firebase/modules/conversation_mutation_modu
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 import 'package:butlery/repositories/firebase/modules/message_deletion_module.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -385,6 +386,26 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   @override
   Future<void> deleteMessage(String messageId) async =>
       _messageMutationModule.deleteMessage(messageId);
+
+  @override
+  Future<PendingImageStatus> pendingImageStatus({
+    required String messageId,
+    required String userId,
+    required String conversationId,
+  }) async => _messageMutationModule.pendingImageStatus(
+    messageId: messageId,
+    userId: userId,
+    conversationId: conversationId,
+  );
+
+  @override
+  Future<void> attachPendingImage({
+    required String messageId,
+    required String imageUrl,
+  }) async => _messageMutationModule.attachPendingImage(
+    messageId: messageId,
+    imageUrl: imageUrl,
+  );
 
   @override
   Future<void> batchMarkAsDelivered({

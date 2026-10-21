@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 // MessageStatus and MessageType available through message.dart import
 
 /// Repository interface for real-time messaging and conversation management.
@@ -146,6 +147,23 @@ abstract class MessagingRepository {
 
   /// Delete message
   Future<void> deleteMessage(String messageId);
+
+  /// What the server holds for the placeholder of a chat image sent without a
+  /// connection (BUT-2294). Reads the server, so a refused placeholder is
+  /// not mistaken for one that is still on its way.
+  Future<PendingImageStatus> pendingImageStatus({
+    required String messageId,
+    required String userId,
+    required String conversationId,
+  });
+
+  /// Sets the picture of a placeholder message and clears its pending mark.
+  /// Awaits the server's answer: the caller is the upload queue, which is online
+  /// and needs the verdict.
+  Future<void> attachPendingImage({
+    required String messageId,
+    required String imageUrl,
+  });
 
   /// Delete conversation and all its messages
   /// [historyStart] is the caller's `Conversation.memberSince` for a group

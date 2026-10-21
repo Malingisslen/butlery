@@ -90,6 +90,11 @@ abstract final class SyncQueueEntityType {
   /// (BUT-2294).
   static const String comment = 'comment';
 
+  /// A chat image sent without a connection; the upload queue's `entityId` is
+  /// the id of the placeholder message it fills in (BUT-2294). One row per
+  /// message, so it is not a group.
+  static const String chatImage = 'chat_image';
+
   /// The types whose photos are rows of one group named after the thing they
   /// belong to, created once every photo is in Storage.
   static const Set<String> grouped = {cookSnap, comment};

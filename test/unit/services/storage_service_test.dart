@@ -345,6 +345,43 @@ void main() {
       });
     });
 
+    group('Queued chat image', () {
+      test(
+        'goes to the chat folder under the row id, with no thumbnail',
+        () async {
+          when(
+            () => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+            ),
+          ).thenAnswer((_) async => 'https://storage/row-4.jpg');
+
+          final url = await storageService.uploadQueuedChatImage(
+            mockFile,
+            'owner-7',
+            objectId: 'row-4',
+          );
+
+          expect(url, 'https://storage/row-4.jpg');
+          verify(
+            () => mockRepository.uploadImage(
+              imageFile: mockFile,
+              userId: 'owner-7',
+              path: 'users/owner-7/chat_images/row-4.jpg',
+            ),
+          ).called(1);
+          verifyNever(
+            () => mockRepository.createAndUploadThumbnail(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              originalPath: any(named: 'originalPath'),
+            ),
+          );
+        },
+      );
+    });
+
     group('Image Deletion', () {
       test('should delete single image', () async {
         // Arrange

@@ -5,16 +5,30 @@
 /// method-call presence. The poll writes reached here delegate to
 /// [MessagePollMutationModule]; exercising them through this seam is
 /// deliberate, because that delegation is what the callers see.
+// ignore_for_file: subtype_of_sealed_class
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/messaging/pending_image_status.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
+
+class _MockMessages extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockMessageRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class _MockSnapshotMetadata extends Mock implements SnapshotMetadata {}
+
+class _MockSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}
 
 const _convoCollection = 'conversations';
 const _messagesPath = 'messages';
@@ -1021,6 +1035,255 @@ void main() {
         await module.closePoll(messageId: 'missing', closerId: 'user-1'),
         isFalse,
       );
+    });
+  });
+
+  group('chat image placeholder (BUT-2294)', () {
+    Future<MessageMutationModule> withPlaceholder(
+      FakeFirebaseFirestore firestore, {
+      String senderId = 'user-a',
+      Map<String, dynamic> metadata = const {'pendingImage': true},
+    }) async {
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'senderId': senderId,
+        'type': 'image',
+        'content': '',
+        'metadata': metadata,
+      });
+      return _newModule(firestore);
+    }
+
+    test('an empty placeholder of the sender is waiting', () async {
+      final module = await withPlaceholder(FakeFirebaseFirestore());
+
+      final status = await module.pendingImageStatus(
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        userId: 'user-a',
+      );
+
+      expect(status.state, PendingImageState.waiting);
+    });
+
+    test('a placeholder with a picture is filled and names it', () async {
+      final module = await withPlaceholder(
+        FakeFirebaseFirestore(),
+        metadata: {'imageUrl': 'https://img/1.jpg'},
+      );
+
+      final status = await module.pendingImageStatus(
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        userId: 'user-a',
+      );
+
+      expect(status.state, PendingImageState.filled);
+      expect(status.imageUrl, 'https://img/1.jpg');
+    });
+
+    test('an empty picture address still counts as waiting', () async {
+      final module = await withPlaceholder(
+        FakeFirebaseFirestore(),
+        metadata: {'imageUrl': ''},
+      );
+
+      final status = await module.pendingImageStatus(
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        userId: 'user-a',
+      );
+
+      expect(status.state, PendingImageState.waiting);
+    });
+
+    test('another sender\'s message is not the caller\'s to fill', () async {
+      final module = await withPlaceholder(
+        FakeFirebaseFirestore(),
+        senderId: 'user-b',
+      );
+
+      final status = await module.pendingImageStatus(
+        conversationId: 'conv-1',
+        messageId: 'msg-1',
+        userId: 'user-a',
+      );
+
+      expect(status.state, PendingImageState.notMine);
+    });
+
+    test(
+      'a message neither on the server nor in the cache is absent',
+      () async {
+        final module = _newModule(FakeFirebaseFirestore());
+
+        final status = await module.pendingImageStatus(
+          conversationId: 'conv-1',
+          messageId: 'missing',
+          userId: 'user-a',
+        );
+
+        expect(status.state, PendingImageState.absent);
+      },
+    );
+
+    test('attaching sets the picture, clears the mark and leaves the rest '
+        'of the message', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = await withPlaceholder(firestore);
+
+      await module.attachPendingImage(
+        messageId: 'msg-1',
+        imageUrl: 'https://img/1.jpg',
+      );
+
+      final data =
+          (await firestore.collection(_messagesPath).doc('msg-1').get())
+              .data()!;
+      expect(data['metadata'], {'imageUrl': 'https://img/1.jpg'});
+      expect(data['senderId'], 'user-a');
+      expect(data['type'], 'image');
+    });
+
+    test('attaching to a message that is gone fails instead of creating '
+        'one', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+
+      await expectLater(
+        module.attachPendingImage(
+          messageId: 'missing',
+          imageUrl: 'https://img/1.jpg',
+        ),
+        throwsA(isA<FirebaseException>()),
+      );
+      expect(
+        (await firestore.collection(_messagesPath).doc('missing').get()).exists,
+        isFalse,
+      );
+    });
+  });
+
+  group('chat image placeholder the server will not let the caller read '
+      '(BUT-2294)', () {
+    // The messages read rule dereferences the stored message, so for a message
+    // the server does not have, the server answers permission-denied.
+    MessageMutationModule moduleWhereServerRefuses({
+      String serverCode = 'permission-denied',
+      bool pendingInCache = false,
+      bool cached = false,
+      required Future<Conversation?> Function(String) readConversation,
+    }) {
+      final messages = _MockMessages();
+      final ref = _MockMessageRef();
+      when(() => messages.doc('msg-1')).thenReturn(ref);
+      when(() => ref.get(any())).thenAnswer((invocation) async {
+        final options = invocation.positionalArguments.single as GetOptions;
+        if (options.source == Source.server) {
+          throw FirebaseException(plugin: 'cloud_firestore', code: serverCode);
+        }
+        if (!cached) {
+          throw FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'unavailable',
+          );
+        }
+        final snapshot = _MockSnapshot();
+        when(() => snapshot.exists).thenReturn(true);
+        final metadata = _MockSnapshotMetadata();
+        when(() => metadata.hasPendingWrites).thenReturn(pendingInCache);
+        when(() => snapshot.metadata).thenReturn(metadata);
+        return snapshot;
+      });
+      return MessageMutationModule(
+        firestore: FakeFirebaseFirestore(),
+        collectionName: _convoCollection,
+        messagesRef: messages,
+        readConversation: readConversation,
+      );
+    }
+
+    Future<PendingImageStatus> ask(MessageMutationModule module) =>
+        module.pendingImageStatus(
+          messageId: 'msg-1',
+          userId: 'user-a',
+          conversationId: 'conv-1',
+        );
+
+    test('a placeholder still in Firestore\'s own queue is writePending, '
+        'without asking the conversation', () async {
+      var asked = false;
+      final module = moduleWhereServerRefuses(
+        cached: true,
+        pendingInCache: true,
+        readConversation: (_) async {
+          asked = true;
+          return _twoPersonConvo();
+        },
+      );
+
+      expect((await ask(module)).state, PendingImageState.writePending);
+      expect(asked, isFalse);
+    });
+
+    test('a member of the conversation whose message never arrived is '
+        'absent', () async {
+      final module = moduleWhereServerRefuses(
+        readConversation: (_) async => _twoPersonConvo(),
+      );
+
+      expect((await ask(module)).state, PendingImageState.absent);
+    });
+
+    test('a conversation that is gone leaves the message absent', () async {
+      final module = moduleWhereServerRefuses(
+        readConversation: (_) async => null,
+      );
+
+      expect((await ask(module)).state, PendingImageState.absent);
+    });
+
+    test('a caller no longer in the conversation gets the refusal', () async {
+      final module = moduleWhereServerRefuses(
+        readConversation: (_) async => _twoPersonConvo(userA: 'user-x'),
+      );
+
+      await expectLater(
+        ask(module),
+        throwsA(
+          isA<FirebaseException>().having(
+            (e) => e.code,
+            'code',
+            'permission-denied',
+          ),
+        ),
+      );
+    });
+
+    test('a server that cannot be reached is not mistaken for a missing '
+        'message', () async {
+      final module = moduleWhereServerRefuses(
+        serverCode: 'unavailable',
+        readConversation: (_) async => _twoPersonConvo(),
+      );
+
+      await expectLater(
+        ask(module),
+        throwsA(
+          isA<FirebaseException>().having((e) => e.code, 'code', 'unavailable'),
+        ),
+      );
+    });
+
+    test('a conversation that cannot be read is not mistaken for a '
+        'missing message', () async {
+      final module = moduleWhereServerRefuses(
+        readConversation: (_) async => throw FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        ),
+      );
+
+      await expectLater(ask(module), throwsA(isA<FirebaseException>()));
     });
   });
 }

@@ -329,7 +329,22 @@ class StorageService extends BaseService
     File imageFile,
     String userId, {
     required String objectId,
-  }) async {
+  }) => _uploadQueuedPhoto(imageFile, userId, 'comment_images', objectId);
+
+  /// The offline queue's chat photo, in its own folder under the user's, named
+  /// after the queue row, with no thumbnail.
+  Future<String?> uploadQueuedChatImage(
+    File imageFile,
+    String userId, {
+    required String objectId,
+  }) => _uploadQueuedPhoto(imageFile, userId, 'chat_images', objectId);
+
+  Future<String?> _uploadQueuedPhoto(
+    File imageFile,
+    String userId,
+    String folder,
+    String objectId,
+  ) async {
     try {
       final offline = ServiceLocator.tryGet<OfflineService>();
       if (offline != null && !offline.isOnline) {
@@ -341,12 +356,12 @@ class StorageService extends BaseService
       return await _repository.uploadImage(
         imageFile: imageFile,
         userId: userId,
-        path: 'users/$userId/comment_images/$objectId.jpg',
+        path: 'users/$userId/$folder/$objectId.jpg',
       );
     } on StorageUploadException {
       rethrow;
     } catch (e) {
-      AppLogger.error('Upload queued comment image failed: $e');
+      AppLogger.error('Upload queued $folder image failed: $e');
       return null;
     }
   }
