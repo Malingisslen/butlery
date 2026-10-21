@@ -142,6 +142,11 @@
   that uploads, then waits for a sibling, re-anchors on `queuedAt`) and stamps a retry window
   that can already be over at the first attempt. One column, one meaning: give the expiry its
   own never-nulled anchor.
+- A service method that patches `_currentUserProfile` AFTER an awaited write must re-read it
+  and check `current.uid == userId` (the uid captured before the await) before patching or
+  caching. Without that check, an account switch mid-await puts one user's value on the
+  other's profile and caches it under the first uid. The repository write itself is
+  self-scoped by rules; the in-memory patch is not.
 - Per-item analytics loops over a REPLACEMENT set double-count on regeneration — log once
   with a count. A consent check with no in-flight dedupe means N fire-and-forget events on a
   cold cache issue N concurrent reads — wrap the whole emit in one `unawaited(...)`.

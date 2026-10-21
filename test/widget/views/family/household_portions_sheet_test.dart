@@ -43,7 +43,7 @@ class _FakeUserService extends Fake implements UserService {
   @override
   Future<UserProfile?> createOrUpdateProfile({
     required String displayName,
-    String? avatarUrl,
+    Object? avatarUrl = UserService.avatarUntouched,
     bool? isSearchable,
     bool? allowEmailSearch,
     CookingSkillLevel? cookingSkillLevel,

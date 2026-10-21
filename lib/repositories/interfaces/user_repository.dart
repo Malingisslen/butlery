@@ -1,6 +1,7 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/household_allergen_share.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
@@ -53,7 +54,26 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// knows the user's intent. Callers that did not deliberately change the
   /// field must pass false, or an unrelated profile save after a degraded
   /// load would silently wipe the stored setting.
-  Future<void> saveProfile(UserProfile profile, {bool writeHouseholdSize});
+  ///
+  /// [writeAvatarUrl]: when false, the `avatarUrl` key is OMITTED from the
+  /// merge, so a save that never touched the picture cannot put a stale copy
+  /// back over one set meanwhile on this or another device. Only the editing
+  /// surface, or a deliberate removal, passes true.
+  Future<void> saveProfile(
+    UserProfile profile, {
+    bool writeHouseholdSize,
+    bool writeAvatarUrl,
+  });
+
+  /// Sets the profile picture to [url] only if the profile still holds
+  /// [expected] (what the user was looking at when they chose the new one),
+  /// in one transaction, writing nothing but `avatarUrl`. Needs the server:
+  /// offline it throws, so a caller that must not guess retries later.
+  Future<AvatarWriteOutcome> setAvatarIfUnchanged(
+    String userId, {
+    required String? expected,
+    required String url,
+  });
 
   /// Fetch a profile by id.
   Future<UserProfile?> fetchProfile(String userId);

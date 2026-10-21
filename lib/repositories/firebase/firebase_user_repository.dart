@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/models/avatar_write_outcome.dart';
 import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -12,6 +13,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/user_root_deletion_mixin.dart';
+import 'package:butlery/repositories/firebase/modules/firestore_transaction_boundary.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -157,6 +159,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   Future<void> saveProfile(
     UserProfile profile, {
     bool writeHouseholdSize = true,
+    bool writeAvatarUrl = true,
   }) async {
     // Validate user is updating their own profile
     final currentUser = requireCurrentUserId();
@@ -183,6 +186,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // (see the regression guard in firebase_user_repository_test.dart).
     final data = profile.toFirestoreEditable();
     data['displayNameLower'] = profile.displayName.toLowerCase();
+    if (!writeAvatarUrl) data.remove('avatarUrl');
     // BUT-2264: clears an address an older save left on the public document.
     data['email'] = FieldValue.delete();
     final settings = profile.toPrivateSettings();
@@ -214,6 +218,48 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       granted: true,
     );
   }
+
+  @override
+  Future<AvatarWriteOutcome> setAvatarIfUnchanged(
+    String userId, {
+    required String? expected,
+    required String url,
+  }) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update profile picture',
+    );
+    final ref = collection.doc(userId);
+    final outcome = await runTransactionWithNativeErrors<AvatarWriteOutcome>(
+      firestore,
+      (tx) async {
+        final snap = await tx.get(ref);
+        final data = snap.data();
+        if (!snap.exists || data == null) return AvatarWriteOutcome.accountGone;
+        final held = _nonEmpty(data['avatarUrl']);
+        if (held == url) return AvatarWriteOutcome.alreadySet;
+        if (held != _nonEmpty(expected)) return AvatarWriteOutcome.superseded;
+        // update(), never a merge-set: a profile that vanished meanwhile must
+        // not be recreated from one field.
+        tx.update(ref, {'avatarUrl': url});
+        return AvatarWriteOutcome.set;
+      },
+    );
+    if (outcome == AvatarWriteOutcome.set) {
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'user_profile',
+        operation: 'set_queued_avatar',
+        granted: true,
+      );
+    }
+    return outcome;
+  }
+
+  static String? _nonEmpty(Object? value) =>
+      value is String && value.isNotEmpty ? value : null;
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
   ///

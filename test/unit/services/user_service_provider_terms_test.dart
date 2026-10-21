@@ -202,6 +202,7 @@ void main() {
         () => repo.saveProfile(
           any(),
           writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          writeAvatarUrl: any(named: 'writeAvatarUrl'),
         ),
       ).thenAnswer((invocation) async {
         order.add('profile');
@@ -241,6 +242,7 @@ void main() {
       () => repo.saveProfile(
         any(),
         writeHouseholdSize: any(named: 'writeHouseholdSize'),
+        writeAvatarUrl: any(named: 'writeAvatarUrl'),
       ),
     ).thenThrow(Exception('unavailable'));
 
@@ -253,6 +255,7 @@ void main() {
       () => repo.saveProfile(
         any(),
         writeHouseholdSize: any(named: 'writeHouseholdSize'),
+        writeAvatarUrl: any(named: 'writeAvatarUrl'),
       ),
     ).thenAnswer((_) async {});
     await service.retryLoadProfile();
@@ -272,6 +275,7 @@ void main() {
           ),
         ),
         writeHouseholdSize: any(named: 'writeHouseholdSize'),
+        writeAvatarUrl: any(named: 'writeAvatarUrl'),
       ),
     );
   });
@@ -283,6 +287,7 @@ void main() {
         () => repo.saveProfile(
           any(),
           writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          writeAvatarUrl: any(named: 'writeAvatarUrl'),
         ),
       ).thenAnswer((_) async {});
       when(
