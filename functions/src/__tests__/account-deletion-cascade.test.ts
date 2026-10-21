@@ -1118,6 +1118,40 @@ async function scenario_liveMenuVoteIndexIsDeclared(): Promise<void> {
   );
 }
 
+/**
+ * BUT-2428: `deletePingsByUser` and the export's `exportPingsSent` are
+ * collection-group queries on `fromUserId`, which need a COLLECTION_GROUP
+ * single-field index or fail FAILED_PRECONDITION.
+ */
+async function scenario_pingsSenderIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const override = (indexes.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "pings" && o.fieldPath === "fromUserId",
+  );
+  check(
+    "pings.fromUserId has a COLLECTION_GROUP single-field index declared",
+    (override?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(override)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_messagesInLeftConversationsAreReached();
   await scenario_rosterIndexIsDeclared();
@@ -1129,6 +1163,7 @@ async function main(): Promise<void> {
   await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
   await scenario_commentLikeIndexIsDeclared();
   await scenario_liveMenuVoteIndexIsDeclared();
+  await scenario_pingsSenderIndexIsDeclared();
 
   finishSuite("BUT-1766/BUT-1768 deletion cascade guards");
 }
