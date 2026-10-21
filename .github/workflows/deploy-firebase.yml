@@ -2,37 +2,23 @@
 #
 # Deploys Firestore rules + indexes, Cloud Functions, and Storage rules to the
 # project named by the chosen GitHub Environment's `FIREBASE_PROJECT_ID`
-# variable. Runs on a release tag (v*, always `production`) or on manual
-# dispatch with a selectable target and environment (`production` or
-# `staging`). Hosting is intentionally NOT deployed here — the web apps
+# variable. Runs on manual dispatch with a selectable target and environment
+# (`production` or `staging`). Hosting is intentionally NOT deployed here — the web apps
 # (`app` → build/web, `admin` → build/web-admin) need a Flutter build first and
 # deploy via their own pipeline.
 #
 # Staging first, then production: docs/ops/staging.md.
 #
-# ─── ONE-TIME USER SETUP (two steps) ─────────────────────────────────────────
+# ─── ONE-TIME USER SETUP ─────────────────────────────────────────────────────
 #
-# 1. Service-account secret `FIREBASE_SERVICE_ACCOUNT`:
-#    Firebase console → Project Settings → Service accounts → "Generate new
-#    private key". This downloads a JSON key. In GitHub: repo Settings →
-#    Environments → production → Add environment secret, name it
-#    FIREBASE_SERVICE_ACCOUNT, and paste the entire JSON as the value. It must
-#    NOT be a repository secret: the staging job asserts it cannot see it.
-#    Production only — staging has no key (see SECURITY NOTE).
-#    The service account needs deploy permissions (e.g. Firebase Admin, or the
-#    granular Firebase Rules Admin + Cloud Functions Admin + Storage Admin).
+# `production` GitHub Environment (the manual-approval gate):
+# repo Settings → Environments → New environment → name it `production`.
+# Under "Deployment protection rules" enable "Required reviewers" and add
+# yourself. Every deploy then pauses for your approval before running.
 #
-# 2. `production` GitHub Environment (the manual-approval gate):
-#    repo Settings → Environments → New environment → name it `production`.
-#    Under "Deployment protection rules" enable "Required reviewers" and add
-#    yourself. Every deploy then pauses for your approval before running.
-#
-# SECURITY NOTE: a long-lived service-account JSON is the simplest auth, but
-# Workload Identity Federation (google-github-actions/auth with WIF) is more
-# secure — it issues short-lived tokens with no stored key. `staging` uses WIF
-# (environment variables GCP_WORKLOAD_IDENTITY_PROVIDER and
-# GCP_DEPLOY_SERVICE_ACCOUNT); production's swap is BUT-2421. The deploy steps
-# stay the same once GOOGLE_APPLICATION_CREDENTIALS is populated.
+# Both environments sign in with Workload Identity Federation: short-lived
+# tokens, no stored key (BUT-2421). Each environment holds the variables
+# GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_DEPLOY_SERVICE_ACCOUNT.
 #
 # Every project id below comes from `vars.FIREBASE_PROJECT_ID`, never a
 # literal: the environment decides the project, and the guard step refuses a
@@ -75,15 +61,11 @@ on:
         description: "Comma-separated function names (blank = all functions)"
         type: string
         default: ""
-  push:
-    tags:
-      - "v*"
 
 permissions:
   contents: read
 
-# One queue per PROJECT, not per ref: a tag deploy and a dispatch from main
-# write the same project and must not overlap. Never cancel a running deploy —
+# One queue per PROJECT, not per ref. Never cancel a running deploy —
 # a cancelled one is the half-applied state the timeout note below describes
 # (BUT-2418).
 concurrency:
@@ -95,12 +77,10 @@ jobs:
     name: Deploy to ${{ inputs.environment || 'production' }}
     runs-on: ubuntu-latest
     # `production` is the manual-approval gate: configure required reviewers on
-    # this GitHub Environment so deploys pause until approved. A tag push has no
-    # inputs and always lands here.
+    # this GitHub Environment so deploys pause until approved.
     environment: ${{ inputs.environment || 'production' }}
     permissions:
       contents: read
-      # Only the staging WIF login uses it; production authenticates with the key.
       id-token: write
     # 90 MINUTES, not the usual 30. A targeted deploy runs ONE
     # `firebase deploy` per name — measured at ~90s each on run 33044537911 —
@@ -109,10 +89,8 @@ jobs:
     # and it leaves exactly the half-applied state this file exists to avoid.
     timeout-minutes: 90
 
-    # A tag push always deploys everything; dispatch uses the chosen target.
     env:
       DEPLOY_TARGET: ${{ github.event.inputs.target || 'all' }}
-      # Empty on a tag push, which is deliberate: a release deploys everything.
       FUNCTIONS_ONLY: ${{ github.event.inputs.functions_only || '' }}
       DEPLOY_ENV: ${{ inputs.environment || 'production' }}
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
@@ -126,8 +104,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          # Full history (+ tags) so the rollback step can resolve the previous
-          # committed config (HEAD^, or the prior v* tag) to re-release on failure.
+          # Full history so the rollback step can resolve the previous
+          # committed config (HEAD^) to re-release on failure.
           fetch-depth: 0
 
       - name: Setup Node
@@ -148,27 +126,11 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@15.13.0
 
-      # Write the service-account JSON to a temp file and point ADC at it. Fail
-      # loudly if the secret is missing rather than letting `firebase deploy`
-      # emit a cryptic auth error later.
-      - name: Authenticate to Firebase (production key)
-        if: env.DEPLOY_ENV == 'production'
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured. Add the service-account JSON as a production environment secret (see header comment, step 1)." >&2
-            exit 1
-          fi
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
-
       # Short-lived token, no stored key. The action exports
       # GOOGLE_APPLICATION_CREDENTIALS for firebase and
       # CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE for gcloud.
-      - name: Authenticate to Google Cloud (staging WIF)
+      - name: Authenticate to Google Cloud (WIF)
         id: wif
-        if: env.DEPLOY_ENV == 'staging'
         uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13 — BUT-790 SHA-pin
         with:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
@@ -176,13 +138,13 @@ jobs:
 
       # Before anything can write to a project. Three sources name the target and
       # all must agree: the environment's variable, the `.firebaserc` alias for
-      # the environment, and the credential (the key's `project_id` in
-      # production, the WIF token's project in staging). Staging additionally
-      # asserts it cannot see the production key — if it can, the key is a
-      # repository secret again and every job in the repo holds it.
+      # the environment, and the WIF token's project. Staging additionally
+      # asserts it cannot see the old production key — if it can, the key is a
+      # repository secret again and every job in the repo holds it. Only the
+      # staging run reads that secret at all.
       - name: Guard — deploy target matches the environment
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ inputs.environment == 'staging' && secrets.FIREBASE_SERVICE_ACCOUNT || '' }}
           WIF_PROJECT_ID: ${{ steps.wif.outputs.project_id }}
         run: |
           set -euo pipefail
@@ -192,17 +154,13 @@ jobs:
           [ -n "$EXPECTED" ] || fail ".firebaserc has no '$DEPLOY_ENV' alias."
           [ "$FIREBASE_PROJECT_ID" = "$EXPECTED" ] \
             || fail "vars.FIREBASE_PROJECT_ID ($FIREBASE_PROJECT_ID) is not the '$DEPLOY_ENV' alias in .firebaserc ($EXPECTED)."
+          [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] \
+            || fail "The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'."
           case "$DEPLOY_ENV" in
-            production)
-              KEY_PROJECT=$(printf '%s' "$FIREBASE_SERVICE_ACCOUNT" | jq -r '.project_id // empty')
-              [ "$KEY_PROJECT" = "$FIREBASE_PROJECT_ID" ] \
-                || fail "The service-account key belongs to '$KEY_PROJECT', not '$FIREBASE_PROJECT_ID'."
-              ;;
+            production) ;;
             staging)
               [ -z "$FIREBASE_SERVICE_ACCOUNT" ] \
                 || fail "The staging job can read FIREBASE_SERVICE_ACCOUNT. It must be a production environment secret, not a repository secret."
-              [ "$WIF_PROJECT_ID" = "$FIREBASE_PROJECT_ID" ] \
-                || fail "The WIF token belongs to '$WIF_PROJECT_ID', not '$FIREBASE_PROJECT_ID'."
               ;;
             *) fail "Unknown environment '$DEPLOY_ENV'." ;;
           esac
@@ -270,13 +228,6 @@ jobs:
           REGION=europe-west1
           mkdir -p rollback-baseline
 
-          # firebase uses ADC; a key file needs an explicit gcloud activation. A
-          # WIF login sets CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE and needs none,
-          # whichever environment it runs in.
-          if [ -z "${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-}" ]; then
-            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 \
-              || echo "::warning::gcloud SA activation failed — Cloud Run revision capture may be empty"
-          fi
           gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
 
           # 1. Cloud Run revision map — ground-truth functions rollback target.
@@ -292,16 +243,9 @@ jobs:
           # 2. Snapshot the config files being replaced (forensics).
           cp -f firestore.rules firestore.indexes.json storage.rules rollback-baseline/ 2>/dev/null || true
 
-          # 3. Resolve the previous-good source ref for config rollback. No v* tags
-          #    exist today (deploys run via dispatch from main), so HEAD^ is the
-          #    previous committed config; prefer a prior v* tag if the trigger is a tag.
-          PREV_REF=""
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            PREV_REF=$(git describe --tags --abbrev=0 --match 'v*' "HEAD^" 2>/dev/null || echo "")
-          fi
-          if [ -z "$PREV_REF" ]; then
-            PREV_REF=$(git rev-parse --verify -q "HEAD^" || echo "")
-          fi
+          # 3. Resolve the previous-good source ref for config rollback: HEAD^ is
+          #    the previous committed config.
+          PREV_REF=$(git rev-parse --verify -q "HEAD^" || echo "")
           echo "PREV_DEPLOY_REF=$PREV_REF" >> "$GITHUB_ENV"
           echo "$PREV_REF" > rollback-baseline/previous-good-ref.txt
           echo "Captured pre-deploy baseline. Previous config ref: ${PREV_REF:-<none>}"
@@ -645,9 +589,6 @@ jobs:
           echo "::warning::Deploy failed — attempting auto-rollback. Verify the previous ref (${PREV_DEPLOY_REF:-<none>}) was actually healthy; rollback does NOT prove the prior version was good."
           echo "Targets completed before failure: $(cat reached-targets.txt 2>/dev/null | tr '\n' ' ')"
 
-          if [ -z "${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-}" ]; then
-            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 || true
-          fi
           gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
 
           # 1. Functions — traffic-swap each captured service to its prior revision.
