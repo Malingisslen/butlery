@@ -22,6 +22,7 @@ import { roundOf } from "./decision-revision";
 import { MODERATION_DECISIONS } from "./report-decision";
 import { readAppeals } from "./appeals";
 import { APPEAL_FIELDS, DECISION_FIELDS, Outcome, outcomeFrom } from "./decision-outcome";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "getMyReportOutcomes";
 
@@ -58,7 +59,7 @@ export async function handleGetMyReportOutcomes(
 export const getMyReportOutcomes = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

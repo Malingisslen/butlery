@@ -215,6 +215,7 @@
     "test:guest-import-quota": "ts-node src/__tests__/guest-import-quota.test.ts",
     "test:ai-cap-signal": "ts-node src/__tests__/ai-cap-signal.test.ts",
     "test:vertex-region": "ts-node src/__tests__/vertex-region.test.ts",
+    "test:web-origins": "ts-node src/__tests__/web-origins.test.ts",
     "test:locale-instruction": "ts-node src/__tests__/locale-instruction.test.ts",
     "test:prompt-ab-bucket": "ts-node src/__tests__/prompt-ab-bucket.test.ts",
     "test:ingredient-section-schema": "ts-node src/__tests__/ingredient-section-schema.test.ts",

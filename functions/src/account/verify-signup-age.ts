@@ -44,6 +44,7 @@ import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isGuestCaller } from "../shared/caller-eligibility";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const db = admin.firestore();
 
@@ -119,7 +120,7 @@ export const verifySignupAge = onCall<VerifySignupAgeRequest>(
   {
     memory: "256MiB",
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     // BUT-760 pattern: user-facing account callable — App Check defense-in-depth.
     // Inert until App Check is flipped to Enforce in the console; that flip is a
     // release gate on this ticket (Security + FinOps conditions), not a follow-up.

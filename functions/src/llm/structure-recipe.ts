@@ -29,6 +29,7 @@ import { withCostLedger } from "../middleware/llm_cost_ledger";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
 import { captureLlmSample, domainFromUrl } from "./llm-sample-capture";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 // =============================================================================
 // Request/Response Types
@@ -93,7 +94,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     // Vertex AI uses ADC (Cloud Functions service account) — no API key secret needed.
     memory: "512MiB",
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   withCostLedger(withGuestImportQuota(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {

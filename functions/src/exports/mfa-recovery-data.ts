@@ -13,6 +13,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { BACKUP_CODES_COLLECTION } from "../account/mfa-backup-codes";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export interface MfaRecoveryDataExport {
   /** Whether the account has a set of backup codes at all. */
@@ -62,7 +63,7 @@ export async function runExportMfaRecoveryData(
 
 export const exportMfaRecoveryData = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<MfaRecoveryDataExport> => {

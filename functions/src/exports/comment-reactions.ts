@@ -29,6 +29,7 @@ import {
   MAX_COMMENT_REACTION_SWEEP_ROWS,
   MAX_MESSAGE_REACTION_SWEEP_ROWS,
 } from "../account/account-deletion-cascade";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const db = admin.firestore();
 
@@ -81,7 +82,7 @@ export async function handleExportCommentReactions(
 export const exportCommentReactions = onCall(
   {
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

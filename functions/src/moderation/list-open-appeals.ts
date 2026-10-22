@@ -16,6 +16,7 @@ import { MODERATION_DECISIONS } from "./report-decision";
 import { isSafeDocId, MODERATION_APPEALS } from "./appeals";
 import { DECISION_FIELDS, isDecision } from "./decision-outcome";
 import { resolveMotivation } from "./motivation";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "listOpenAppeals";
 
@@ -65,7 +66,7 @@ export async function handleListOpenAppeals(
 export const listOpenAppeals = onCall(
   {
     timeoutSeconds: 30,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

@@ -27,6 +27,7 @@ import {
   REAUTH_MAX_AGE_SECONDS,
   runAccountDeletionWithDeps,
 } from "./request-account-deletion";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const DELETION_GRACE_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -286,7 +287,7 @@ export async function runDueAccountDeletionsWithDeps(
 
 export const scheduleAccountDeletion = onCall<{ reason?: string }>(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<ScheduleAccountDeletionResponse> => {
@@ -319,7 +320,7 @@ export const scheduleAccountDeletion = onCall<{ reason?: string }>(
 
 export const cancelAccountDeletion = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<{ cancelled: boolean }> => {

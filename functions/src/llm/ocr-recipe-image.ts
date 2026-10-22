@@ -42,6 +42,7 @@ import {
   runOcrRetry,
   RetryOutcome,
 } from "./ocr-retry";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 // =============================================================================
 // Request/Response Types
@@ -120,7 +121,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     // Vertex AI uses ADC (Cloud Functions service account) — no API key secret needed.
     memory: "1GiB", // Vision needs more memory
     timeoutSeconds: 120,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   withCostLedger(withGuestImportQuota(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {

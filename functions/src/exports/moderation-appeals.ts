@@ -26,6 +26,7 @@ import {
   isAppealRole,
   MODERATION_APPEALS,
 } from "../moderation/appeals";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export const RATE_LIMIT_KEY = "exportModerationAppeals";
 export const TOO_LARGE_ERROR_CODE = "moderation-appeals-too-large";
@@ -69,7 +70,7 @@ export async function handleExportModerationAppeals(
 export const exportModerationAppeals = onCall(
   {
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

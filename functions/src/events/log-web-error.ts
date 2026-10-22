@@ -25,6 +25,7 @@ import { logger } from "firebase-functions/logger";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, redactionRatio } from "../llm/pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_STACK_CHARS = 8000;
@@ -117,7 +118,7 @@ export const logWebError = onCall<WebErrorData>(
   {
     memory: "256MiB",
     timeoutSeconds: 10,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request: CallableRequest<WebErrorData>) => {

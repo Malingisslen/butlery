@@ -26,6 +26,7 @@ import {
   runVerifySignupAgeWithDeps,
   writeComplianceAudit,
 } from "./verify-signup-age";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 /** The provider the guest linked, as the refreshed token names it. */
 const UPGRADE_PROVIDERS: ReadonlySet<string> = new Set([
@@ -51,7 +52,7 @@ export const finishGuestUpgrade = onCall(
   {
     memory: "256MiB",
     timeoutSeconds: 60,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<VerifySignupAgeResponse> => {

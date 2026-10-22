@@ -31,6 +31,7 @@ import {
   ITEM_UID_FIELDS,
   isSharedContentParent,
 } from "../account/account-deletion-cascade";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 const db = admin.firestore();
 
@@ -160,7 +161,7 @@ export const exportSharedResidue = onCall(
   {
     memory: "1GiB",
     timeoutSeconds: 120,
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   (request) =>

@@ -84,6 +84,7 @@ import {
   projectAuthHandlerUri,
   verifyFirstFactorProof,
 } from "./mfa-first-factor";
+import { WEB_CALLABLE_ORIGINS } from "../shared/web-origins";
 
 export * from "./mfa-codes";
 export * from "./mfa-recovery-attempts";
@@ -382,7 +383,7 @@ async function writeAudit(entry: Record<string, unknown>): Promise<void> {
 
 export const generateMfaBackupCodes = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<{ codes: string[] }> => {
@@ -412,7 +413,7 @@ export const generateMfaBackupCodes = onCall(
 
 export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
     // Replay protection: every call needs a fresh, limited-use App Check
     // token (the client asks for one with `limitedUseAppCheckToken`).
@@ -458,7 +459,7 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
  */
 export const clearMfaBackupCodes = onCall(
   {
-    cors: ["https://butlery.app", "https://www.butlery.app"],
+    cors: WEB_CALLABLE_ORIGINS,
     enforceAppCheck: true,
   },
   async (request): Promise<{ cleared: boolean }> => {
