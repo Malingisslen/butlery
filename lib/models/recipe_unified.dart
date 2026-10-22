@@ -1270,11 +1270,11 @@ class RecipeSocialData {
           json,
           'ownerDisplayName',
         ),
-        memberPermissions: json['memberPermissions'] != null
+        memberPermissions: json['memberPermissions'] is Map
             ? Map<String, ResourcePermission>.from(
                 (json['memberPermissions'] as Map).map(
                   (k, v) => MapEntry(
-                    k,
+                    k.toString(),
                     utils.SerializationUtils.safeEnumByIndex(
                       v,
                       ResourcePermission.values,
@@ -1293,8 +1293,10 @@ class RecipeSocialData {
           'allowMemberInvites',
           defaultValue: true,
         ),
-        categoryIds: json['categoryIds'] != null
-            ? List<String>.from(json['categoryIds'])
+        categoryIds: json['categoryIds'] is List
+            ? List<String>.from(
+                (json['categoryIds'] as List).whereType<String>(),
+              )
             : null,
         descriptionCollaborative: utils.SerializationUtils.safeNullableString(
           json,
@@ -1303,10 +1305,10 @@ class RecipeSocialData {
         // Absent stays absent. A missing `grants` is NOT read as "everyone is
         // direct" — that compatibility path would be dead code, since the only
         // documents without the field are test data (Malin, 2026-08-03).
-        grants: json['grants'] != null
+        grants: json['grants'] is Map
             ? (json['grants'] as Map).map(
                 (k, v) => MapEntry(
-                  k as String,
+                  k.toString(),
                   v is List
                       ? List<String>.from(v.whereType<String>())
                       : <String>[],

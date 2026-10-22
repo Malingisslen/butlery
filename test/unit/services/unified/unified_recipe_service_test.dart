@@ -174,6 +174,7 @@ void main() {
 
   group('UnifiedRecipeService', () {
     late UnifiedRecipeService service;
+    final trimCalls = <({String recipeId, List<String> userIds})>[];
     late TestableUnifiedRecipeService testableService;
     late mocks.MockFirebaseAuthRepository mockAuthRepository;
     late mocks.MockRecipeRepository mockRecipeRepository;
@@ -299,6 +300,8 @@ void main() {
             .attributionDisplayName,
       ).thenReturn('Profil Pelle');
 
+      trimCalls.clear();
+
       // Create service with mocked dependencies
       service = UnifiedRecipeService(
         authRepository: mockAuthRepository,
@@ -307,6 +310,9 @@ void main() {
         ratingsRepository: mockRatingsRepository,
         notificationsRepository: mockNotificationsRepository,
         firestoreRepository: mockFirestoreRepository,
+        removeRecipientsFromOwnShares: (recipeId, userIds) async {
+          trimCalls.add((recipeId: recipeId, userIds: userIds));
+        },
       );
 
       // Create testable wrapper
@@ -576,6 +582,46 @@ void main() {
             written!.socialData?.categoryIds ?? const <String>[],
             isNot(contains('group-7')),
           );
+        },
+      );
+
+      test(
+        'removeMember hands the removed person to the trim closure',
+        () async {
+          final collaborative =
+              RecipeFactory.build(
+                id: 'collab-3',
+                title: 'Delad middag',
+              ).copyWith(
+                type: RecipeType.collaborative,
+                socialData: const RecipeSocialData(
+                  ownerId: 'test_user_123',
+                  memberPermissions: {
+                    'test_user_123': ResourcePermission.admin,
+                    'member-9': ResourcePermission.viewer,
+                  },
+                ),
+              );
+          when(
+            () => mockRecipeRepository.fetchUserRecipes(any()),
+          ).thenAnswer((_) async => [collaborative]);
+          await service.loadWebRecipesBounded('test_user_123');
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async {});
+          when(() => mockRecipeRepository.create(any())).thenAnswer(
+            (invocation) async => invocation.positionalArguments[0] as Recipe,
+          );
+
+          final ok = await service.social.removeMember(
+            recipeId: 'collab-3',
+            userId: 'member-9',
+          );
+
+          expect(ok, isTrue);
+          expect(trimCalls, hasLength(1));
+          expect(trimCalls.single.recipeId, 'collab-3');
+          expect(trimCalls.single.userIds, ['member-9']);
         },
       );
 

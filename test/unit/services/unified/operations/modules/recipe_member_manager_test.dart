@@ -817,6 +817,141 @@ void main() {
       });
     });
 
+    group('Own shared rows (BUT-1815)', () {
+      late List<({String recipeId, List<String> userIds})> trims;
+      late Object? trimFailure;
+      late RecipeMemberManager trimmingManager;
+
+      Recipe groupShared() => Recipe(
+        core: testCollaborativeRecipe.core,
+        type: testCollaborativeRecipe.type,
+        socialData: RecipeSocialData(
+          ownerId: 'user_123',
+          ownerDisplayName: 'Recipe Owner',
+          memberPermissions: {
+            'user_123': ResourcePermission.admin,
+            'user_456': ResourcePermission.editor,
+            'user_789': ResourcePermission.viewer,
+            'user_222': ResourcePermission.editor,
+          },
+          categoryIds: ['group_a'],
+          grants: {
+            'user_456': [RecipeSocialData.groupGrant('group_a')],
+            'user_789': [RecipeSocialData.groupGrant('group_a')],
+            'user_222': [
+              RecipeSocialData.groupGrant('group_a'),
+              RecipeSocialData.directGrant,
+            ],
+          },
+        ),
+      );
+
+      setUp(() {
+        trims = [];
+        trimFailure = null;
+        trimmingManager = RecipeMemberManager(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          updateRecipe: (recipe) => mockParentService.updateRecipe(recipe),
+          notificationService: mockNotificationService,
+          removeRecipientsFromOwnShares: (recipeId, userIds) async {
+            if (trimFailure != null) throw trimFailure!;
+            trims.add((recipeId: recipeId, userIds: userIds));
+          },
+        );
+        when(
+          () => mockNotificationService.sendSilentNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            variablesByLocale: any(named: 'variablesByLocale'),
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            imageUrl: any(named: 'imageUrl'),
+            actions: any(named: 'actions'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      test('removeMember takes that person off the sender\'s rows', () async {
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+
+        final ok = await trimmingManager.removeMember(
+          recipeId: 'collab_1',
+          memberId: 'user_456',
+        );
+
+        expect(ok, isTrue);
+        expect(trims, hasLength(1));
+        expect(trims.single.recipeId, 'collab_1');
+        expect(trims.single.userIds, ['user_456']);
+      });
+
+      test(
+        'removeGroup trims the members it cut and not the retained one',
+        () async {
+          mockParentService.setRecipeState(
+            currentUserId: 'user_123',
+            recipes: [groupShared()],
+          );
+          when(
+            () => mockParentService.updateRecipe(any()),
+          ).thenAnswer((_) async => true);
+
+          final ok = await trimmingManager.removeGroup(
+            recipeId: 'collab_1',
+            groupId: 'group_a',
+          );
+
+          expect(ok, isTrue);
+          expect(trims, hasLength(1));
+          expect(trims.single.recipeId, 'collab_1');
+          expect(
+            trims.single.userIds,
+            unorderedEquals(['user_456', 'user_789']),
+            reason: 'user_222 still holds a direct share and keeps the card',
+          );
+        },
+      );
+
+      test('a failed save trims nothing', () async {
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => false);
+
+        final ok = await trimmingManager.removeMember(
+          recipeId: 'collab_1',
+          memberId: 'user_456',
+        );
+
+        expect(ok, isFalse);
+        expect(trims, isEmpty);
+      });
+
+      test('a failing trim does not undo the revoke', () async {
+        trimFailure = Exception('permission-denied');
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+
+        final ok = await trimmingManager.removeMember(
+          recipeId: 'collab_1',
+          memberId: 'user_456',
+        );
+
+        expect(ok, isTrue);
+      });
+    });
+
     group('Permission Updates', () {
       test('should update member permission successfully', () async {
         when(

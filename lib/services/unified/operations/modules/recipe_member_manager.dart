@@ -20,6 +20,8 @@ class RecipeMemberManager {
   final List<Recipe> Function() _getRecipes;
   final Future<bool> Function(Recipe) _updateRecipe;
   final NotificationService? _notificationService;
+  final Future<void> Function(String recipeId, List<String> userIds)?
+  _removeRecipientsFromOwnShares;
 
   RecipeMemberManager({
     required String? Function() getCurrentUserId,
@@ -27,11 +29,14 @@ class RecipeMemberManager {
     required List<Recipe> Function() getRecipes,
     required Future<bool> Function(Recipe) updateRecipe,
     required NotificationService? notificationService,
+    Future<void> Function(String recipeId, List<String> userIds)?
+    removeRecipientsFromOwnShares,
   }) : _getCurrentUserId = getCurrentUserId,
        _getCurrentUserDisplayName = getCurrentUserDisplayName,
        _getRecipes = getRecipes,
        _updateRecipe = updateRecipe,
-       _notificationService = notificationService;
+       _notificationService = notificationService,
+       _removeRecipientsFromOwnShares = removeRecipientsFromOwnShares;
 
   /// Add member to collaborative recipe with specified permission level
   Future<bool> addMember({
@@ -195,6 +200,8 @@ class RecipeMemberManager {
         'Successfully removed member ${memberId.maskedUserId} from recipe',
       );
 
+      await _dropFromOwnShares(recipeId, [memberId]);
+
       await _sendMemberRemovedNotification(
         recipeId: recipeId,
         recipeTitle: recipe.title,
@@ -312,6 +319,8 @@ class RecipeMemberManager {
         '${revocation.retainedMemberIds.length} kept it (another grant, or ownership)',
       );
 
+      await _dropFromOwnShares(recipeId, revocation.removedMemberIds);
+
       for (final removedId in revocation.removedMemberIds) {
         await _sendMemberRemovedNotification(
           recipeId: recipeId,
@@ -326,6 +335,18 @@ class RecipeMemberManager {
     } catch (e) {
       AppLogger.error('Failed to remove group from recipe', e);
       return false;
+    }
+  }
+
+  /// The access is already revoked when this runs, so a failure here only
+  /// leaves the card in the person's inbox and must not undo the revoke.
+  Future<void> _dropFromOwnShares(String recipeId, List<String> userIds) async {
+    final remove = _removeRecipientsFromOwnShares;
+    if (remove == null || userIds.isEmpty) return;
+    try {
+      await remove(recipeId, userIds);
+    } catch (e) {
+      AppLogger.error('Could not trim own shared_content rows', e);
     }
   }
 

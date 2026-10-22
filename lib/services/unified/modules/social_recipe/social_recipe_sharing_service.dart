@@ -394,8 +394,11 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return false;
       }
 
-      // Get member list for notifications before removing them (for future notification implementation)
-      // final memberIds = recipe.socialData?.memberPermissions?.keys.where((id) => id != currentUserId).toList() ?? [];
+      final formerMemberIds =
+          recipe.socialData?.memberPermissions?.keys
+              .where((id) => id != currentUserId)
+              .toList() ??
+          const <String>[];
 
       // 3. Converting back to personal recipe
       final unsharedRecipe = recipe.copyWith(
@@ -410,8 +413,16 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return false;
       }
 
-      // Notify affected members (optional)
-      // await sendUnshareNotifications(recipeId, memberIds);
+      // The access is already gone; a failed trim only leaves the card in
+      // the former members' inbox, so it must not fail the unshare.
+      try {
+        await _sharedRecipeRepository.removeRecipientsFromOwnShares(
+          recipeId: recipeId,
+          userIds: formerMemberIds,
+        );
+      } catch (e) {
+        AppLogger.error('Could not trim own shared_content rows', e);
+      }
 
       // Notify UI of changes
       _notifyListeners();

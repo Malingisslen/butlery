@@ -78,6 +78,18 @@ class _FakeSharedRecipeRepo extends Fake
   Object transientError = Exception('transient shared_recipes write failure');
   int attemptCount = 0;
 
+  final List<({String recipeId, List<String> userIds})> trimCalls = [];
+  Object? throwOnTrim;
+
+  @override
+  Future<void> removeRecipientsFromOwnShares({
+    required String recipeId,
+    required List<String> userIds,
+  }) async {
+    if (throwOnTrim != null) throw throwOnTrim!;
+    trimCalls.add((recipeId: recipeId, userIds: userIds));
+  }
+
   @override
   Future<String> createSharedRecipe(
     SharedRecipe sharedRecipe, {
@@ -900,6 +912,74 @@ void main() {
         );
       },
     );
+
+    test('unshare takes every former member, not the owner, off the sender\'s '
+        'shared rows', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'me-uid',
+          members: {
+            'me-uid': ResourcePermission.admin,
+            'friend-A': ResourcePermission.editor,
+            'friend-B': ResourcePermission.viewer,
+          },
+        ),
+      );
+      final svc = h.build();
+
+      final ok = await svc.unshareRecipe('r1');
+
+      expect(ok, isTrue);
+      expect(h.repo.trimCalls, hasLength(1));
+      expect(h.repo.trimCalls.single.recipeId, 'r1');
+      expect(
+        h.repo.trimCalls.single.userIds,
+        unorderedEquals(['friend-A', 'friend-B']),
+      );
+    });
+
+    test('a failed trim does not fail the unshare', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.repo.throwOnTrim = Exception('permission-denied');
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'me-uid',
+          members: {
+            'me-uid': ResourcePermission.admin,
+            'friend-A': ResourcePermission.editor,
+          },
+        ),
+      );
+      final svc = h.build();
+
+      final ok = await svc.unshareRecipe('r1');
+
+      expect(ok, isTrue);
+      expect(h.saved.single.type, RecipeType.personal);
+    });
+
+    test('a refused unshare trims nothing', () async {
+      final h = _Harness(currentUserId: 'not-owner');
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'me-uid',
+          members: {
+            'me-uid': ResourcePermission.admin,
+            'not-owner': ResourcePermission.admin,
+          },
+        ),
+      );
+      final svc = h.build();
+
+      final ok = await svc.unshareRecipe('r1');
+
+      expect(ok, isFalse);
+      expect(h.repo.trimCalls, isEmpty);
+    });
 
     /// Throwing saveRecipe during unshare is caught → false, error set.
     test('saveRecipe throws → false, error set, no rethrow', () async {

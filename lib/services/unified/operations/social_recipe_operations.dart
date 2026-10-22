@@ -47,6 +47,8 @@ class SocialRecipeOperations {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
     void Function(String)? onShareError,
+    Future<void> Function(String recipeId, List<String> userIds)?
+    removeRecipientsFromOwnShares,
   }) : _getCurrentUserId = getCurrentUserId,
        _getRecipes = getRecipes,
        _ratingsRepository = ratingsRepository,
@@ -68,6 +70,7 @@ class SocialRecipeOperations {
       getRecipes: getRecipes,
       updateRecipe: updateRecipe,
       notificationService: _notificationService,
+      removeRecipientsFromOwnShares: removeRecipientsFromOwnShares,
     );
     _commentsManager = RecipeCommentsManager(
       getCurrentUserId: getCurrentUserId,

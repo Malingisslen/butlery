@@ -53,8 +53,10 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MODELS: ${{ inputs.models }}
           NODE_PATH: ${{ github.workspace }}/functions/node_modules
+          REPO_ROOT: ${{ github.workspace }}
+          TS_NODE_PROJECT: ${{ github.workspace }}/functions/tsconfig.json
         run: |
-          npx ts-node --transpile-only ../tools/model-compare/haiku-recipe-import.ts \
+          npx ts-node --transpile-only ../tools/model-compare/recipe-import.ts \
             ../build/golden-llm/recipe_from_url_inputs.json \
             ../model-compare-result.json
 
