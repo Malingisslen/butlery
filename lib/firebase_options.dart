@@ -32,48 +32,52 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
-    appId: '1:976357691692:web:3e70520a0ac19514e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    authDomain: 'butlery-app-1.firebaseapp.com',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    measurementId: 'G-8Z7NX2QXW5',
+    apiKey: 'AIzaSyA8zih_fltmQiyDSHJzhoUSIq7B8t_3Kog',
+    appId: '1:85515349890:web:c9d5bb469616a4e3dfa99b',
+    messagingSenderId: '85515349890',
+    projectId: 'butlery-prod',
+    authDomain: 'butlery-prod.firebaseapp.com',
+    storageBucket: 'butlery-prod.firebasestorage.app',
+    measurementId: 'G-QYDBX1QYZF',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBbmWnBxoQ4CYvvoMMFraZTRRD83qp8kew',
-    appId: '1:976357691692:android:768fa70ea3401ac2e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
+    apiKey: 'AIzaSyAUhVsooXp8ONPQ-bRrnQVLlvfB94ct1kQ',
+    appId: '1:85515349890:android:ee709df556364623dfa99b',
+    messagingSenderId: '85515349890',
+    projectId: 'butlery-prod',
+    storageBucket: 'butlery-prod.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:ec2ed533bea26b42e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
+    apiKey: 'AIzaSyBjvTsDH4oXGvjB9914sE3RSpab2dJuAvk',
+    appId: '1:85515349890:ios:d9f2a451d8a4209edfa99b',
+    messagingSenderId: '85515349890',
+    projectId: 'butlery-prod',
+    storageBucket: 'butlery-prod.firebasestorage.app',
+    iosClientId:
+        '85515349890-m9d61ua5rdp9512u9l4kf033s36rqus9.apps.googleusercontent.com',
     iosBundleId: 'se.butlery.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:ec2ed533bea26b42e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
+    apiKey: 'AIzaSyBjvTsDH4oXGvjB9914sE3RSpab2dJuAvk',
+    appId: '1:85515349890:ios:d9f2a451d8a4209edfa99b',
+    messagingSenderId: '85515349890',
+    projectId: 'butlery-prod',
+    storageBucket: 'butlery-prod.firebasestorage.app',
+    iosClientId:
+        '85515349890-m9d61ua5rdp9512u9l4kf033s36rqus9.apps.googleusercontent.com',
     iosBundleId: 'se.butlery.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAZV38BdC1VBes0N-oiLdk1yi5xS_xKZ8g',
-    appId: '1:976357691692:web:2b6a8efd2740a521e4dc89',
-    messagingSenderId: '976357691692',
-    projectId: 'butlery-app-1',
-    authDomain: 'butlery-app-1.firebaseapp.com',
-    storageBucket: 'butlery-app-1.firebasestorage.app',
-    measurementId: 'G-SK8VB3DFE0',
+    apiKey: 'AIzaSyA8zih_fltmQiyDSHJzhoUSIq7B8t_3Kog',
+    appId: '1:85515349890:web:74e6c30abce25e66dfa99b',
+    messagingSenderId: '85515349890',
+    projectId: 'butlery-prod',
+    authDomain: 'butlery-prod.firebaseapp.com',
+    storageBucket: 'butlery-prod.firebasestorage.app',
+    measurementId: 'G-10055EQPL1',
   );
 }

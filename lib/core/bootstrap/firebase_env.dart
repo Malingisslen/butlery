@@ -25,7 +25,7 @@ class FirebaseEnv {
     required this.androidPackageName,
   });
 
-  static const String productionProjectId = 'butlery-app-1';
+  static const String productionProjectId = 'butlery-prod';
   static const String stagingProjectId = 'butlery-app-staging';
 
   static const FirebaseEnv _production = FirebaseEnv._(

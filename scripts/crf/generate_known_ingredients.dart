@@ -1,7 +1,7 @@
 /// Generates lib/constants/known_ingredients.dart from Firebase export.
 ///
 /// Two-step pipeline (Firebase = source of truth):
-///   1. Export: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1
+///   1. Export: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-prod
 ///   2. Generate: dart run scripts/crf/generate_known_ingredients.dart
 ///
 /// The generated file provides offline fallback for CRF feature extraction.
@@ -82,7 +82,7 @@ void main() {
   if (!file.existsSync()) {
     stderr.writeln('Error: $inputPath not found.');
     stderr.writeln(
-      'Run first: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1',
+      'Run first: cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-prod',
     );
     exit(1);
   }
@@ -203,7 +203,7 @@ void main() {
   buf.writeln('/// AUTO-GENERATED — do not edit manually.');
   buf.writeln('/// Regenerate with:');
   buf.writeln(
-    '///   1. cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-app-1',
+    '///   1. cd functions && npx ts-node src/admin/export-ingredients.ts --project butlery-prod',
   );
   buf.writeln('///   2. dart run scripts/crf/generate_known_ingredients.dart');
   buf.writeln('///');

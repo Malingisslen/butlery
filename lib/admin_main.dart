@@ -56,8 +56,8 @@ Future<void> main() async {
         try {
           await FirebaseAppCheck.instance
               .activate(
-                providerWeb: ReCaptchaV3Provider(
-                  '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+                providerWeb: ReCaptchaEnterpriseProvider(
+                  '6LdbQ_ktAAAAAIjXisgl2KfO2JmV-7uEUk4G68lw',
                 ),
               )
               .timeout(const Duration(seconds: 5));

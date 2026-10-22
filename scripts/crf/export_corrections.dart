@@ -26,7 +26,7 @@ void main(List<String> args) {
   if (!inputFile.existsSync()) {
     stderr.writeln('Input file not found: $inputPath');
     stderr.writeln(
-      'Run: cd functions && npx ts-node src/admin/export-corrections.ts --project butlery-app-1',
+      'Run: cd functions && npx ts-node src/admin/export-corrections.ts --project butlery-prod',
     );
     exit(1);
   }
