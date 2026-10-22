@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "se.butlery.app",
       "sha256_cert_fingerprints": [
-        "D5:5E:2C:0A:A0:FC:B1:2F:82:B8:C3:58:B2:2C:63:6D:35:33:D0:51:3B:14:E3:14:2C:60:AF:C3:69:F8:DF:CD"
+        "D5:5E:2C:0A:A0:FC:B1:2F:82:B8:C3:58:B2:2C:63:6D:35:33:D0:51:3B:14:E3:14:2C:60:AF:C3:69:F8:DF:CD",
+        "B1:D8:B2:83:0A:24:F7:AC:8D:F5:B9:F7:85:C7:8A:43:A2:6E:A0:F0:ED:27:B9:6C:F0:E2:89:2F:DB:CA:73:0C"
       ]
     }
   }

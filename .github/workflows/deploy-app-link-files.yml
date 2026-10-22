@@ -85,6 +85,7 @@ jobs:
         run: |
           for host in "$SITE.firebaseapp.com" "$SITE.web.app"; do
             curl -fsS "https://$host/.well-known/assetlinks.json" | grep -q D5:5E:2C
+            curl -fsS "https://$host/.well-known/assetlinks.json" | grep -q B1:D8:B2
             curl -fsS "https://$host/.well-known/apple-app-site-association" | grep -q F6SFW9MP8T
             curl -fsS "https://$host/.well-known/security.txt" | grep -q "^Contact: mailto:security@butlery.se"
             echo "$host serves the new files"

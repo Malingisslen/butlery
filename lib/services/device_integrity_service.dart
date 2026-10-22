@@ -27,11 +27,18 @@ import 'package:butlery/core/utils/logger.dart';
 /// starts, set `--dart-define=FREE_RASP_TEAM_ID=<real>` in the release
 /// pipeline.
 ///
+/// **Play app-signing hash**: Google re-signs every install from Play with
+/// the app-signing key (Play Console → Appsignering), so a Play install
+/// carries that certificate, not the upload one. Both are listed, so a
+/// sideloaded upload-signed build still passes (BUT-2432).
+///
 /// Both values can be overridden at build time via `--dart-define` — see
 /// `docs/ops/freerasp-runbook.md`.
 const String _kPlaceholderTeamId = 'BUTLERY_TEAM';
 const String _kAndroidUploadCertHash =
     '1V4sCqD8sS+CuMNYsixjbTUz0FE7FOMULGCvw2n4380=';
+const String _kAndroidPlayAppSigningCertHash =
+    'sdiygwok96yN9bn3hceKQ6JuoPDtJ7ls8OKJL9vKcww=';
 
 const String _kTalsecTeamId = String.fromEnvironment(
   'FREE_RASP_TEAM_ID',
@@ -90,7 +97,10 @@ class DeviceIntegrityService {
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
           packageName: FirebaseEnv.current.androidPackageName,
-          signingCertHashes: [_kTalsecAndroidCertHash],
+          signingCertHashes: [
+            _kTalsecAndroidCertHash,
+            _kAndroidPlayAppSigningCertHash,
+          ],
         ),
         iosConfig: IOSConfig(
           bundleIds: ['se.butlery.app'],
