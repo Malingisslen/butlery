@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 21, 2026
-**Version:** 1.20.0
+**Last updated:** October 22, 2026
+**Version:** 1.21.0
 
 ---
 
@@ -174,7 +174,7 @@ We share your personal data with the following third parties:
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
 - **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis) via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's EU multi-region (`eu`). No transfer to the USA.
+- **Transfer:** Within EU/EEA — processing takes place in Google Cloud's `europe-west4` region (the Netherlands). No transfer to the USA.
 - **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** Images submitted for OCR processing may contain personal information visible in the photograph. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
@@ -212,7 +212,7 @@ The following is a complete list of the data processors that receive your data, 
 |-----------|---------------|----------------|--------------------------|
 | **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
-| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | EU multi-region (`eu`) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | `europe-west4` (the Netherlands) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a9t9 software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
 
@@ -394,7 +394,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 11, 2026
+**Last change:** October 22, 2026
 **Version history:** Available upon request
 
 ---

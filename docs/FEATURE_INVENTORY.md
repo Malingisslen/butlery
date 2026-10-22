@@ -1356,7 +1356,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### ENG-17: LLM recipe extraction service (server fallback)
 - **Entry:** Automatic — last parsing tier; also powers OCR image import + video-transcript import.
 - **User story:** As a user, I want even messy or unstructured recipe sources to import cleanly so that I can save anything I find.
-- **Expected behavior:** `structureRecipe` callable sends PII-scrubbed text to Vertex AI Gemini (`gemini-2.5-flash-lite`, EU multi-region for GDPR) in four modes (extract/enhance/spoken/ingredientLines), returns schema-validated JSON with a salvage path for truncated long recipes.
+- **Expected behavior:** `structureRecipe` callable sends PII-scrubbed text to Vertex AI Gemini (`gemini-2.5-flash-lite`, `europe-west4` for GDPR) in four modes (extract/enhance/spoken/ingredientLines), returns schema-validated JSON with a salvage path for truncated long recipes.
 - **Edge cases:** Truncated responses salvaged; PII scrubbed pre-send; per-call cost estimate returned.
 - **Validation:** Two fail-open kill switches (`aiEnabled`, `llmParserEnabled`) + rate-limit middleware. Prompts hot-reloaded with SHA-256 A/B bucketing.
 - **Test coverage:** Verified — `llm-kill-switch.test.ts`, `prompts-config.test.ts`, `structure-recipe-empty.test.ts`, `parse-recipe-response-*.test.ts`, `parse-ingredient-lines.test.ts`, `ocr-validation.test.ts`, `pii-scrubber.test.ts`, `prompt-ab-bucket.test.ts`, `gemini-cache-telemetry.test.ts`. *(The single biggest running-cost surface — guarded by kill switches, rate limits, smallest model, prompt-caching telemetry.)*

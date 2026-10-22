@@ -34,8 +34,9 @@
         ▼
 ┌── CLOUD LLM (functions/src/llm/) ────────────────────────────────────────────┐
 │ structureRecipe + ocrRecipeImage callables → Gemini 2.5 Flash Lite (Vertex,  │
-│ eu). PII scrub both sides (shared fixture), kill switches, prompt A/B infra  │
-│ (built, no experiment live), per-call sample capture (write-only, 30d TTL).  │
+│ europe-west4). PII scrub both sides (shared fixture), kill switches, prompt  │
+│ A/B infra (built, no experiment live), per-call sample capture (write-only,  │
+│ 30d TTL).                                                                    │
 └──────────────────────────────────────────────────────────────────────────────┘
         │  saved Recipe
         ▼

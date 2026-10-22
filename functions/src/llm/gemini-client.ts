@@ -33,7 +33,7 @@ export const PROMPT_VERSION = "3.3.0";
  * project at deploy time (Cloud Logging: jsonPayload.modelId="<model>" with
  * non-zero count).
  */
-export const VERTEX_LOCATION = "europe-west1";
+export const VERTEX_LOCATION = "europe-west4";
 
 // Singleton client instance — keyed by resolved project id so test overrides
 // (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.

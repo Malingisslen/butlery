@@ -40,7 +40,7 @@ async function hostTheClientCalls(): Promise<string> {
 
 const cases: UnitCase[] = [
   {
-    name: "the client calls the europe-west1 host the privacy policy names",
+    name: "the client calls the europe-west4 host the privacy policy names",
     fn: async () => {
       const host = await hostTheClientCalls();
       // Multi-region locations ("eu", "us") are served only on `aiplatform.<loc>.rep.googleapis.com`,
@@ -49,7 +49,7 @@ const cases: UnitCase[] = [
       // two change together.
       assertEqual(
         host,
-        "europe-west1-aiplatform.googleapis.com",
+        "europe-west4-aiplatform.googleapis.com",
         `host for location ${VERTEX_LOCATION}`,
       );
     },

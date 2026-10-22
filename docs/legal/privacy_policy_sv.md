@@ -52,7 +52,7 @@ Vi använder ONNX-maskininlärningsmodeller direkt på din enhet för:
 
 Dessa modeller körs lokalt på din enhet. Texten och bilderna som bearbetas av dessa modeller **skickas inte till våra servrar** som del av modellberäkning. Modellerna själva laddas ner från vårt CDN (Firebase Storage) en gång per version och verifieras med SHA-256-hash innan användning.
 
-Molnbaserad AI-bearbetning (Mistral via Vertex AI) används för receptanalys från URL, OCR-förbättring och menygenerering. När du aktiverar dessa funktioner skickas indata till Google Clouds Vertex AI i regionen `europe-west1`. Vi behåller inte modellinmatningarna efter anropet.
+Molnbaserad AI-bearbetning (Mistral via Vertex AI) används för receptanalys från URL, OCR-förbättring och menygenerering. När du aktiverar dessa funktioner skickas indata till Google Clouds Vertex AI i regionen `europe-west4`. Vi behåller inte modellinmatningarna efter anropet.
 
 ## 6. Lagring
 
@@ -76,7 +76,7 @@ Vi delar nödvändiga uppgifter med följande underleverantörer. Samtliga är G
 | Google Cloud — Authentication | Autentisering + MFA | E-post, lösenordshash, MFA-token | Global (EU-routad) |
 | Google Cloud — Storage | Receptbilder, exporter | Användaruppladdade bilder | europe-west1 |
 | Google Cloud — Cloud Functions | Serverlogik | Kontoborttagning, innehållsmoderering | europe-west1 |
-| Google Cloud — Vertex AI (Mistral) | Receptanalys, OCR, menygenerering | Inmatning till AI-funktioner | europe-west1 |
+| Google Cloud — Vertex AI (Mistral) | Receptanalys, OCR, menygenerering | Inmatning till AI-funktioner | europe-west4 |
 | Google Cloud — Vision API | Bildmoderering (SafeSearch) | Uppladdade bilder | europe-west1 |
 | Google Cloud — reCAPTCHA Enterprise | App Check (anti-bot) | Enhetsattestering | Global |
 | Firebase Crashlytics | Kraschrapporter | Stack-spår, enhetsmetadata | Global |
