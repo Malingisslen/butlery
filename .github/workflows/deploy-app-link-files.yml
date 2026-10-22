@@ -78,7 +78,7 @@ jobs:
           SITE=$(jq -r --arg p "$FIREBASE_PROJECT_ID" '.targets[$p].hosting.app[0] // empty' .firebaserc)
           [ -n "$SITE" ] || { echo "::error::no app hosting target for $FIREBASE_PROJECT_ID in .firebaserc" >&2; exit 1; }
           echo "SITE=$SITE" >> "$GITHUB_ENV"
-          python3 tools/hosting/patch_live_files.py             --site "$SITE"             ${{ inputs.dry_run && '--dry-run' || '' }}             /.well-known/assetlinks.json=web/.well-known/assetlinks.json             /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association             /.well-known/security.txt=web/.well-known/security.txt
+          python3 tools/hosting/patch_live_files.py             --site "$SITE"             ${{ inputs.dry_run && '--dry-run' || '' }}             --headers-from-target app             /.well-known/assetlinks.json=web/.well-known/assetlinks.json             /.well-known/apple-app-site-association=web/.well-known/apple-app-site-association             /.well-known/security.txt=web/.well-known/security.txt
 
       - name: Check what the site serves
         if: ${{ !inputs.dry_run }}
@@ -89,7 +89,8 @@ jobs:
             curl -fsS "https://$1/.well-known/assetlinks.json" | grep -q D5:5E:2C &&
             curl -fsS "https://$1/.well-known/assetlinks.json" | grep -q B1:D8:B2 &&
             curl -fsS "https://$1/.well-known/apple-app-site-association" | grep -q F6SFW9MP8T &&
-            curl -fsS "https://$1/.well-known/security.txt" | grep -q "^Contact: mailto:security@butlery.se"
+            curl -fsS "https://$1/.well-known/security.txt" | grep -q "^Contact: mailto:security@butlery.se" &&
+            curl -fsSI "https://$1/" | grep -i "^content-security-policy:" | grep -q "https://apis.google.com"
           }
           for host in "$SITE.firebaseapp.com" "$SITE.web.app"; do
             for attempt in 1 2 3 4 5 6; do
