@@ -92,4 +92,4 @@ These Terms are governed by Swedish law. Disputes will be resolved by Swedish co
 ## 14. Contact
 
 Operator: Malin Gisslén
-Email: malin.kallen1@gmail.com
+Email: integritet@butlery.se

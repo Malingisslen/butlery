@@ -92,4 +92,4 @@ Dessa Villkor regleras av svensk lag. Tvister löses av svenska domstolar, föru
 ## 14. Kontakt
 
 Operatör: Malin Gisslén
-E-post: malin.kallen1@gmail.com
+E-post: integritet@butlery.se

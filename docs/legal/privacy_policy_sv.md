@@ -8,7 +8,7 @@
 
 Butlery är en receptapp som drivs av Malin Gisslén ("vi", "oss"). Denna policy förklarar hur vi samlar in, använder, lagrar och delar dina personuppgifter, samt vilka rättigheter du har enligt EU:s allmänna dataskyddsförordning (GDPR).
 
-Vid frågor, kontakta: malin.kallen1@gmail.com.
+Vid frågor, kontakta: integritet@butlery.se.
 
 ## 2. Vilka uppgifter vi samlar in
 
@@ -129,4 +129,4 @@ Vi meddelar väsentliga ändringar via avisering i appen och uppdaterar datumet 
 ## 13. Kontakt
 
 Personuppgiftsansvarig: Malin Gisslén
-E-post: malin.kallen1@gmail.com
+E-post: integritet@butlery.se

@@ -8,7 +8,7 @@
 
 Butlery is a recipe management application operated by Malin Gisslén ("we", "us"). This Policy explains how we collect, use, store, and share your personal data, and the rights you have under the EU General Data Protection Regulation (GDPR).
 
-If you have questions, contact: malin.kallen1@gmail.com.
+If you have questions, contact: integritet@butlery.se.
 
 ## 2. What data we collect
 
@@ -130,4 +130,4 @@ We will notify you of material changes via in-app notification and update the "L
 ## 13. Contact
 
 Data controller: Malin Gisslén
-Email: malin.kallen1@gmail.com
+Email: integritet@butlery.se
