@@ -3,7 +3,7 @@
 **Status: ACTIVE — PITR enabled, managed daily backups (7-day retention), managed weekly
 backups (14-week retention).**
 
-Operational runbook for Firestore data protection in `butlery-app-1`.
+Operational runbook for Firestore data protection in `butlery-prod`.
 
 ---
 
@@ -76,18 +76,18 @@ schedule and another storage bill.
 ```bash
 # Create (already done — kept for disaster rebuild):
 gcloud firestore backups schedules create \
-  --database='(default)' --project=butlery-app-1 \
+  --database='(default)' --project=butlery-prod \
   --recurrence=daily --retention=7d
 
 gcloud firestore backups schedules create \
-  --database='(default)' --project=butlery-app-1 \
+  --database='(default)' --project=butlery-prod \
   --recurrence=weekly --day-of-week=SUN --retention=14w
 
 # Verify — the schedules (no --location flag on this one):
-gcloud firestore backups schedules list --database='(default)' --project=butlery-app-1
+gcloud firestore backups schedules list --database='(default)' --project=butlery-prod
 
 # Verify — the backups those schedules have actually produced:
-gcloud firestore backups list --location=europe-west3 --project=butlery-app-1
+gcloud firestore backups list --location=europe-west3 --project=butlery-prod
 ```
 
 **`--location` gotcha:** managed backups live in the DATABASE's region. `--location=eur3`
@@ -98,8 +98,8 @@ Restore from a managed backup goes to a NEW database, never over `(default)`:
 
 ```bash
 gcloud firestore databases restore \
-  --source-backup=projects/butlery-app-1/locations/europe-west3/backups/BACKUP_ID \
-  --destination-database=recovery-YYYYMMDD --project=butlery-app-1
+  --source-backup=projects/butlery-prod/locations/europe-west3/backups/BACKUP_ID \
+  --destination-database=recovery-YYYYMMDD --project=butlery-prod
 ```
 
 ---
@@ -111,7 +111,7 @@ gcloud firestore databases restore \
 ```bash
 gcloud firestore databases describe \
   --database='(default)' \
-  --project=butlery-app-1
+  --project=butlery-prod
 ```
 
 Look for `pointInTimeRecoveryEnablement`. If it reads `POINT_IN_TIME_RECOVERY_DISABLED`,
@@ -123,7 +123,7 @@ continue to step 2.
 gcloud firestore databases update \
   --enable-pitr \
   --database='(default)' \
-  --project=butlery-app-1
+  --project=butlery-prod
 ```
 
 PITR window is 7 days. Cost: ~$0.10/GB-month of PITR data. Immediate effect.
@@ -132,11 +132,11 @@ PITR window is 7 days. Cost: ~$0.10/GB-month of PITR data. Immediate effect.
 
 ```bash
 gcloud firestore backups schedules create \
-  --database='(default)' --project=butlery-app-1 \
+  --database='(default)' --project=butlery-prod \
   --recurrence=daily --retention=7d
 
 gcloud firestore backups schedules create \
-  --database='(default)' --project=butlery-app-1 \
+  --database='(default)' --project=butlery-prod \
   --recurrence=weekly --day-of-week=SUN --retention=14w
 ```
 
@@ -154,7 +154,7 @@ Not part of any schedule — this is only the destination for the manual export 
 # europe-west3 (see status table + BUT-819). VERIFY the live region with the
 # describe command above and set --location to match it before creating the bucket.
 gcloud storage buckets create gs://butlery-firestore-backups \
-  --project=butlery-app-1 \
+  --project=butlery-prod \
   --location=europe-west1 \
   --uniform-bucket-level-access \
   --public-access-prevention
@@ -189,7 +189,7 @@ gcloud storage buckets update gs://butlery-firestore-backups \
 ```bash
 # Firestore uses a Google-managed service account for exports.
 # Project number is visible in the GCP console; replace PROJECT_NUMBER below.
-PROJECT_NUMBER=$(gcloud projects describe butlery-app-1 --format='value(projectNumber)')
+PROJECT_NUMBER=$(gcloud projects describe butlery-prod --format='value(projectNumber)')
 
 gcloud storage buckets add-iam-policy-binding gs://butlery-firestore-backups \
   --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-firestore.iam.gserviceaccount.com" \
@@ -199,8 +199,8 @@ gcloud storage buckets add-iam-policy-binding gs://butlery-firestore-backups \
 ### 7. Verify
 
 ```bash
-gcloud firestore backups schedules list --database='(default)' --project=butlery-app-1
-gcloud firestore backups list --location=europe-west3 --project=butlery-app-1
+gcloud firestore backups schedules list --database='(default)' --project=butlery-prod
+gcloud firestore backups list --location=europe-west3 --project=butlery-prod
 ```
 
 **Do not rebuild a scheduled GCS export here.** One existed from 2026-04-24 to 2026-09-12
@@ -225,7 +225,7 @@ gcloud firestore databases restore \
   --source-database='(default)' \
   --destination-database='recovery-YYYYMMDD' \
   --snapshot-time='2026-04-20T10:30:00Z' \
-  --project=butlery-app-1
+  --project=butlery-prod
 ```
 
 Then use the Firebase console or a one-off migration script to copy the affected
@@ -237,12 +237,12 @@ the recovery database — import the data instead.
 ```bash
 # Identify the backup to restore from — daily snapshots cover the last 7 days,
 # Sunday snapshots the last 14 weeks:
-gcloud firestore backups list --location=europe-west3 --project=butlery-app-1
+gcloud firestore backups list --location=europe-west3 --project=butlery-prod
 
 # Restore to a NEW database (never into production):
 gcloud firestore databases restore \
-  --source-backup=projects/butlery-app-1/locations/europe-west3/backups/BACKUP_ID \
-  --destination-database=recovery-YYYYMMDD --project=butlery-app-1
+  --source-backup=projects/butlery-prod/locations/europe-west3/backups/BACKUP_ID \
+  --destination-database=recovery-YYYYMMDD --project=butlery-prod
 ```
 
 Then migrate the affected data back into `(default)` via a controlled script.
@@ -274,7 +274,7 @@ On any data-loss event (accidental delete, ransomware, bad migration):
 2. Snapshot the current state immediately — run a manual export before attempting fixes:
    ```bash
    gcloud firestore export gs://butlery-firestore-backups/incidents/INCIDENT_ID/ \
-     --database='(default)' --project=butlery-app-1
+     --database='(default)' --project=butlery-prod
    ```
 3. GDPR: if user personal data was lost or exposed, this is potentially a Chapter III
    Art 33 notifiable breach. 72-hour clock to Datainspektionen starts on discovery.

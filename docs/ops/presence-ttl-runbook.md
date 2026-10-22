@@ -49,7 +49,7 @@ device dropping (see `firebase_cooking_session_repository.dart`).
 > The gcloud route below still works and is still the way to inspect state.
 > **Declaring is not activating:** Firestore offers no round-trip, so nothing in
 > the repo can prove a policy is live. After any deploy, confirm with
-> `gcloud firestore fields ttls list --project=butlery-app-1`.
+> `gcloud firestore fields ttls list --project=butlery-prod`.
 >
 > Note this runbook's own field is spelled `expiresAt`, not `expireAt` — a TTL
 > policy names one exact field, so do not copy an `expireAt` command here.

@@ -202,7 +202,7 @@ Det här steget finns kvar enbart som referens, om ni längre fram väljer att s
    App Check debug token: 1a2b3c4d-5e6f-7890-abcd-1234567890ef
    ```
 
-2. Öppna **https://console.firebase.google.com/project/butlery-app-1/appcheck**, gå till **Apps**, klicka på **iOS-appen**, välj **Manage debug tokens**, klicka **Add debug token**, klistra in koden, namnge den och spara.
+2. Öppna **https://console.firebase.google.com/project/butlery-prod/appcheck**, gå till **Apps**, klicka på **iOS-appen**, välj **Manage debug tokens**, klicka **Add debug token**, klistra in koden, namnge den och spara.
 
 </details>
 

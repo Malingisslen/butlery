@@ -22,7 +22,7 @@ goal wins.
 Active. Enforced by **Firestore native TTL** on the `expireAt` field —
 policy `state: ACTIVE`, enabled 2026-06-30 via
 `gcloud firestore fields ttls update expireAt --collection-group=llm_response_samples
---enable-ttl --database='(default)' --project=butlery-app-1`.
+--enable-ttl --database='(default)' --project=butlery-prod`.
 
 Capture: [`functions/src/llm/llm-sample-capture.ts`](../../functions/src/llm/llm-sample-capture.ts)
 (`captureLlmSample`), written best-effort from `structureRecipe` and

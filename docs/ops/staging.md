@@ -1,7 +1,7 @@
 # Staging project (`butlery-app-staging`)
 
 A second Firebase project where rules, indexes and functions are tried before they reach
-production (`butlery-app-1`). The closed test group runs against **production**; staging
+production (`butlery-prod`). The closed test group runs against **production**; staging
 is our own lab. Plan and decisions: BUT-451, `tasks/firebase-staging-plan.md` (draft PR
 #964).
 

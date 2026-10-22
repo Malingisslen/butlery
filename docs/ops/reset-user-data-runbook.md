@@ -1,7 +1,7 @@
 # Reset-user-data runbook (BUT-2028)
 
 `functions/src/admin/reset-user-data.ts` wipes user data from the project named
-by `--project` (`butlery-app-1` or `butlery-app-staging`). There is no default:
+by `--project` (`butlery-prod` or `butlery-app-staging`). There is no default:
 without the flag, or with a `GOOGLE_CLOUD_PROJECT`/`GCLOUD_PROJECT` or a
 service-account key naming a different project, it refuses before connecting
 (`functions/src/admin/require-project.ts`). This runbook covers what can go
