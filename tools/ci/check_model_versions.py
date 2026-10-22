@@ -22,7 +22,7 @@ Run locally:
 
 Requires `gsutil` on PATH and an authenticated gcloud (Application
 Default Credentials or an activated service account) with read access to
-`gs://butlery-app-1.firebasestorage.app/models/**`.
+`gs://butlery-prod.firebasestorage.app/models/**`.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BUCKET = "butlery-app-1.firebasestorage.app"
+BUCKET = "butlery-prod.firebasestorage.app"
 
 # Maps the registry family (Dart map name suffix) → Storage path segment.
 FAMILIES = {

@@ -131,20 +131,20 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "butlery-app-1",
-          "appId": "1:976357691692:android:4a2e41f5eb04e0c2e4dc89",
+          "projectId": "butlery-prod",
+          "appId": "1:85515349890:android:ee709df556364623dfa99b",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "butlery-app-1",
+          "projectId": "butlery-prod",
           "configurations": {
-            "android": "1:976357691692:android:4a2e41f5eb04e0c2e4dc89",
-            "ios": "1:976357691692:ios:714dacad784ca7b7e4dc89",
-            "macos": "1:976357691692:ios:714dacad784ca7b7e4dc89",
-            "web": "1:976357691692:web:3e70520a0ac19514e4dc89",
-            "windows": "1:976357691692:web:2b6a8efd2740a521e4dc89"
+            "android": "1:85515349890:android:ee709df556364623dfa99b",
+            "ios": "1:85515349890:ios:d9f2a451d8a4209edfa99b",
+            "macos": "1:85515349890:ios:d9f2a451d8a4209edfa99b",
+            "web": "1:85515349890:web:c9d5bb469616a4e3dfa99b",
+            "windows": "1:85515349890:web:74e6c30abce25e66dfa99b"
           }
         }
       }

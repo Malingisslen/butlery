@@ -4,7 +4,7 @@
 #
 # Prerequisites:
 # - gcloud CLI installed and authenticated
-# - Project set: gcloud config set project butlery-app-1
+# - Project set: gcloud config set project butlery-prod
 # - Cloud Logging API enabled
 #
 # Usage: ./gcp-security-check.sh [hours]
@@ -12,7 +12,7 @@
 
 set -e
 
-PROJECT_ID="${GCP_PROJECT_ID:-butlery-app-1}"
+PROJECT_ID="${GCP_PROJECT_ID:-butlery-prod}"
 HOURS="${1:-24}"
 SINCE="$(date -u -d "${HOURS} hours ago" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-${HOURS}H '+%Y-%m-%dT%H:%M:%SZ')"
 

@@ -41,7 +41,7 @@ android {
         multiDexEnabled = true
     }
 
-    // `prod` is the store app on butlery-app-1. `staging` installs beside it
+    // `prod` is the store app on butlery-prod. `staging` installs beside it
     // and talks to butlery-app-staging; build it with
     // `--flavor staging --dart-define=ENV=staging` (lib/core/bootstrap/firebase_env.dart).
     // Each flavor's google-services.json: prod's at android/app/, staging's
@@ -51,7 +51,7 @@ android {
         create("prod") {
             dimension = "env"
             isDefault = true
-            manifestPlaceholders["authLinkHost"] = "butlery-app-1.firebaseapp.com"
+            manifestPlaceholders["authLinkHost"] = "butlery-prod.firebaseapp.com"
         }
         create("staging") {
             dimension = "env"

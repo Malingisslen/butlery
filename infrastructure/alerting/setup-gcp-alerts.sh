@@ -8,7 +8,7 @@
 #
 # Prerequisites:
 # - gcloud CLI authenticated (`gcloud auth login`)
-# - Project set: `gcloud config set project butlery-app-1`
+# - Project set: `gcloud config set project butlery-prod`
 # - Cloud Monitoring API enabled (it's on by default for Firebase projects)
 # - GCP_NOTIFICATION_CHANNEL_ID exported. Create one with:
 #     gcloud alpha monitoring channels create --type=email \
@@ -17,14 +17,14 @@
 #     gcloud alpha monitoring channels list --format='value(name)'
 #
 # Usage:
-#   export GCP_NOTIFICATION_CHANNEL_ID=projects/butlery-app-1/notificationChannels/<id>
+#   export GCP_NOTIFICATION_CHANNEL_ID=projects/butlery-prod/notificationChannels/<id>
 #   ./infrastructure/alerting/setup-gcp-alerts.sh
 #
 # Reference: docs/ops/gcp-alerting-runbook.md
 
 set -euo pipefail
 
-PROJECT_ID="${GCP_PROJECT_ID:-butlery-app-1}"
+PROJECT_ID="${GCP_PROJECT_ID:-butlery-prod}"
 NOTIFICATION_CHANNEL="${GCP_NOTIFICATION_CHANNEL_ID:?GCP_NOTIFICATION_CHANNEL_ID is required — see docs/ops/gcp-alerting-runbook.md}"
 
 echo "Project: $PROJECT_ID"

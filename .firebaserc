@@ -1,19 +1,19 @@
 {
   "projects": {
-    "production": "butlery-app-1",
+    "production": "butlery-prod",
     "staging": "butlery-app-staging"
   },
   "targets": {
-    "butlery-app-1": {
+    "butlery-prod": {
       "hosting": {
         "admin": [
-          "butlery-admin"
+          "butlery-prod-admin"
         ],
         "app": [
-          "butlery-app-1"
+          "butlery-prod"
         ],
         "legal": [
-          "butlery-legal"
+          "butlery-prod-legal"
         ]
       }
     }
