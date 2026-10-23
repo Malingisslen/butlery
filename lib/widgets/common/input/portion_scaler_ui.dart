@@ -80,32 +80,31 @@ class PortionScalerUI {
     bool compact,
   ) {
     // A Wrap, so the controls move under the label when large text leaves
-    // no room beside it; full width, as the Row was, so a caller's
-    // background still spans the row.
-    return SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppDimensions.space16,
-        children: [
-          Text(
-            context.l10n.scalerPortionsLabel,
-            style: AppTextStyles.bodyBold.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+    // no room beside it. Full width, as the Row was, so a caller's
+    // background still spans the row; the compact scaler sits beside a
+    // heading and takes only the width it needs.
+    final header = Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: compact ? AppDimensions.space8 : AppDimensions.space16,
+      children: [
+        Text(
+          context.l10n.scalerPortionsLabel,
+          style: AppTextStyles.bodyBold.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          _buildPortionControls(
-            context,
-            currentPortions,
-            minPortions,
-            maxPortions,
-            scaleAnimation,
-            onUpdatePortions,
-            compact,
-          ),
-        ],
-      ),
+        ),
+        _buildPortionControls(
+          context,
+          currentPortions,
+          minPortions,
+          maxPortions,
+          scaleAnimation,
+          onUpdatePortions,
+          compact,
+        ),
+      ],
     );
+    return compact ? header : SizedBox(width: double.infinity, child: header);
   }
 
   /// Builds the portion control buttons

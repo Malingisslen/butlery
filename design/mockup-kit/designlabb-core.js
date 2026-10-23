@@ -50,7 +50,7 @@ const FONTS = {
 };
 // Names the original the lab shows. Bump it in the same change that moves the app (and so the lab's defaults) to new values;
 // saved versions remember the base they started from and are not allowed to pull the original back.
-const LAB_BASE = '2026-10-23.1';
+const LAB_BASE = '2026-10-23.2';
 const defaults = () => ({
   font: 'ButlerySans', fontHead: '', typeRatio: '', scale: 100, lh: 100, card: 12, control: 8, margin: 24,
   hue: 0, sat: 100, light: 100, colors: {}, roles: {}, parts: {}, pause: false,

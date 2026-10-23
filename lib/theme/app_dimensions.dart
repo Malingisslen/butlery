@@ -421,6 +421,9 @@ class AppDimensions {
   /// The drawn height of a section band.
   static const double sectionBandHeight = 42.0;
 
+  /// The gap between two blocks of the recipe editor's form.
+  static const double formBlockGap = 42.0;
+
   /// The drawn size of the compact portion stepper's buttons; the hit area
   /// stays [minTouchTarget].
   static const double compactStepperButton = 30.0;

@@ -145,8 +145,10 @@ String _symbol(File file) {
   if (stroke != 'none') {
     // --icon-stroke is always in 24 px terms, so a glyph drawn on a larger
     // grid (the 160 px nav icons) scales it to its own units.
+    // The app shows the 160 px nav family through the window 22 22 116 116
+    // (displayWindow in butlery_glyph.dart), so the symbol does too.
     final box = double.tryParse(attr('viewBox').split(' ').last) ?? 24;
-    final k = box / 24;
+    final k = (box == 160 ? 116 : box) / 24;
     final base = double.parse(attr('stroke-width'));
     final width = k == 1
         ? 'var(--icon-stroke,${attr('stroke-width')})'
@@ -157,7 +159,9 @@ String _symbol(File file) {
       ' style="stroke-width:$width"',
     );
   }
-  return '<symbol id="i-$name" viewBox="${attr('viewBox')}">'
+  final viewBox =
+      attr('viewBox') == '0 0 160 160' ? '22 22 116 116' : attr('viewBox');
+  return '<symbol id="i-$name" viewBox="$viewBox">'
       '<g $paint>$body</g></symbol>';
 }
 
