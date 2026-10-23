@@ -16,8 +16,9 @@ import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
-    show mainTabSwitchRequest;
+    show AppActions, mainTabSwitchRequest;
 
 /// Layout scaffold components for main navigation.
 /// This module provides the main menu with bottom navigation.
@@ -70,7 +71,9 @@ class LayoutScaffolds {
     return ButleryBottomNavigation(
       currentIndex: null,
       items: items,
-      onTap: (index) => Navigator.pushNamed(context, items[index].route),
+      onTap: (index) => items[index].route == Routes.home
+          ? AppActions.returnToHome(Navigator.of(context, rootNavigator: true))
+          : Navigator.pushNamed(context, items[index].route),
     );
   }
 }

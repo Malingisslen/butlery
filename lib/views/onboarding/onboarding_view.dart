@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -290,10 +291,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       await Future<void>.delayed(_doneScreenTime);
       if (!context.mounted) return;
       OnboardingHold.active.value = false;
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        Routes.home,
-        (route) => false,
-      );
+      AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
     } else if (viewModel.ageRejected) {
       // BUT-1386 (ADR-0002): the verifySignupAge CF rejected the account as
       // under-15 and has already deleted the Auth record server-side. Show a

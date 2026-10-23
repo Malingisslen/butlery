@@ -92,6 +92,21 @@ class _RecordingNavigator extends Mock implements NavigatorState {
     calls.add(_NavCall.pushAndRemoveUntil(newRouteName, arguments));
     return Future<T?>.value(null);
   }
+
+  // Home is reached by unwinding to the first route, which is `/` here.
+  @override
+  void popUntil(RoutePredicate predicate) {
+    if (predicate(_FirstHomeRoute())) {
+      calls.add(_NavCall._('returnHome', Routes.home, null));
+    }
+  }
+}
+
+class _FirstHomeRoute extends Route<void> {
+  _FirstHomeRoute() : super(settings: const RouteSettings(name: Routes.home));
+
+  @override
+  bool get isFirst => true;
 }
 
 class _NavCall {
@@ -197,7 +212,7 @@ void main() {
         router.handle('/recipe', {'id': 'gone', 'notificationType': 'share'});
         await drain();
 
-        expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+        expect(nav.calls.single.kind, 'returnHome');
         expect(nav.calls.single.route, Routes.home);
       },
     );
@@ -231,7 +246,7 @@ void main() {
       });
       await drain();
 
-      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.kind, 'returnHome');
       expect(nav.calls.single.route, Routes.home);
     });
 
@@ -331,22 +346,22 @@ void main() {
       await drain();
 
       expect(nav.calls.map((c) => c.route), [Routes.home, Routes.home]);
-      expect(nav.calls.map((c) => c.kind).toSet(), {'pushAndRemoveUntil'});
+      expect(nav.calls.map((c) => c.kind).toSet(), {'returnHome'});
     });
 
     test('home route lands on home', () async {
       router.handle('/home', {'id': '', 'notificationType': 'digest'});
       await drain();
 
-      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.kind, 'returnHome');
       expect(nav.calls.single.route, Routes.home);
     });
 
-    test('winback route lands on home (push and remove until)', () async {
+    test('winback route lands on home (back to the first route)', () async {
       router.handle('/winback', {'id': null, 'notificationType': 'winback'});
       await drain();
 
-      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.kind, 'returnHome');
       expect(nav.calls.single.route, Routes.home);
     });
 
@@ -358,7 +373,7 @@ void main() {
         await drain();
 
         expect(nav.calls.single.route, Routes.home);
-        expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+        expect(nav.calls.single.kind, 'returnHome');
         final names = analyticsRepo.events.map((e) => e.name).toList();
         expect(names, contains('notification_payload_missing_route'));
         expect(names, isNot(contains('notification_opened')));

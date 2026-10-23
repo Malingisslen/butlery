@@ -24,6 +24,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -334,9 +335,7 @@ class NotificationDeepLinkRouter {
 
   void _goHome(NavigatorState? navigator) {
     if (navigator == null || !navigator.mounted) return;
-    // pushNamedAndRemoveUntil so deep-link traversal doesn't pile screens
-    // on the back stack when a user re-enters the app via push.
-    navigator.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+    AppActions.returnToHome(navigator);
   }
 
   void _logEvent(

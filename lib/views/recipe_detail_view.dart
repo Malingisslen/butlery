@@ -60,6 +60,7 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
@@ -402,8 +403,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
 
         final navItems = ButleryAdaptiveNavigation.getNavigationItems(context);
-        void openDestination(int index) =>
-            Navigator.pushNamed(context, navItems[index].route);
+        void openDestination(int index) => navItems[index].route == Routes.home
+            ? AppActions.returnToHome(
+                Navigator.of(context, rootNavigator: true),
+              )
+            : Navigator.pushNamed(context, navItems[index].route);
         // The same rule as the shell (produktregler.md § 21.2), so the recipe
         // does not drop back to the bottom row on a width where Hem, Meny,
         // Inköp and Mer draw the rail.

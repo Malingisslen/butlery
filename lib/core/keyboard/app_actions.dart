@@ -83,6 +83,26 @@ class AppActions {
     return null;
   }
 
+  /// Lands on Hem's recipe tab by unwinding to the existing first route.
+  ///
+  /// Never push [Routes.home]: `/` resolves to `MaterialApp.home`, so a push
+  /// builds a second `InitializationWrapper` whose `AuthWrapper` reuses the
+  /// first one's static GlobalKey. Release builds leave the old copy black
+  /// under the new one, which back then reveals.
+  ///
+  /// `popUntil` skips PopScope on purpose: callers are "done, go home" exits,
+  /// where an unsaved-input veto has nothing left to protect.
+  static void returnToHome(NavigatorState navigator) {
+    mainTabSwitchRequest.value = 0;
+    var firstIsHome = false;
+    navigator.popUntil((route) {
+      if (!route.isFirst) return false;
+      firstIsHome = route.settings.name == Routes.home;
+      return true;
+    });
+    if (!firstIsHome) navigator.pushReplacementNamed(Routes.home);
+  }
+
   static Object? _switchTab(int index) {
     // Always assign — `ValueNotifier` short-circuits identical values, so
     // listeners only rebuild on real changes.

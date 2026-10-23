@@ -4,8 +4,7 @@
 // FAQ) must keep the four main destinations one tap away, render NOTHING as
 // selected (currentIndex null — no leaf view is a main tab), and push each
 // destination's route with stack-based `pushNamed` so Back returns to the leaf
-// view. Before this test the only verification was a manual screenshot sign-off,
-// so a regression in any of those contracts would not fail any test.
+// view. Hem is the exception: it unwinds to the existing `/` instead.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -45,8 +44,11 @@ void main() {
   // PQ-17: Hem · Meny · Inköp · Mer; "Lägg till" is the separate plus.
   const expectedRoutes = ['/', '/veckomeny', '/inkopslista', '/mer'];
 
-  // Pumps the detail bottom nav inside a localized MaterialApp and returns the
-  // observer recording every pushed route name.
+  final navigatorKey = GlobalKey<NavigatorState>();
+  const homeKey = ValueKey('home');
+
+  // Pumps the detail bottom nav on a leaf page above home, as in the app, and
+  // returns the observer recording every pushed route name.
   Future<_RoutePushRecorder> pumpDetailNav(WidgetTester tester) async {
     final recorder = _RoutePushRecorder();
     await tester.pumpWidget(
@@ -63,21 +65,25 @@ void main() {
           GlobalCupertinoLocalizations.delegate,
         ],
         theme: AppTheme.lightTheme,
+        navigatorKey: navigatorKey,
         navigatorObservers: [recorder],
         // Named pushes resolve to a throwaway page so navigation completes.
         onGenerateRoute: (settings) => MaterialPageRoute<void>(
-          builder: (_) => const SizedBox.shrink(),
+          builder: (context) => settings.name == '/leaf'
+              ? Scaffold(
+                  bottomNavigationBar: LayoutScaffolds.detailBottomNav(
+                    context,
+                  ),
+                )
+              : const SizedBox.shrink(),
           settings: settings,
         ),
-        home: Builder(
-          builder: (context) => Scaffold(
-            bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-          ),
-        ),
+        home: const SizedBox(key: homeKey),
       ),
     );
+    navigatorKey.currentState!.pushNamed('/leaf');
     await tester.pumpAndSettle();
-    // Drop the initial `home` push so only tap-driven navigation is recorded.
+    // Drop the setup pushes so only tap-driven navigation is recorded.
     recorder.pushed.clear();
     return recorder;
   }
@@ -115,7 +121,7 @@ void main() {
     testWidgets(
       'tapping a destination pushes its route (stack-based, Back returns)',
       (tester) async {
-        for (final route in expectedRoutes) {
+        for (final route in expectedRoutes.skip(1)) {
           final recorder = await pumpDetailNav(tester);
 
           await tester.tap(find.byKey(ValueKey('test-nav-$route')));
@@ -129,5 +135,18 @@ void main() {
         }
       },
     );
+
+    // Pushing `/` would build a second MaterialApp.home — in the app a second
+    // AuthWrapper with the same GlobalKey, left black under the new one.
+    testWidgets('tapping Hem unwinds to the existing home', (tester) async {
+      final recorder = await pumpDetailNav(tester);
+
+      await tester.tap(find.byKey(const ValueKey('test-nav-/')));
+      await tester.pumpAndSettle();
+
+      expect(recorder.pushed, isEmpty);
+      expect(navigatorKey.currentState!.canPop(), isFalse);
+      expect(find.byKey(homeKey), findsOneWidget);
+    });
   });
 }

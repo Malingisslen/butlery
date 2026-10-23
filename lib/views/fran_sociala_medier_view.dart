@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/widgets/common/dialogs/butlery_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -284,10 +285,7 @@ class _FranSocialaMedierViewContentState
       // BUT-900 follow-on: land on the recipe list so the user sees the batch
       // they just imported, instead of bouncing back to the stale import form.
       if (context.mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          Routes.home,
-          (route) => false,
-        );
+        AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
       }
     } else if (viewModel.hasError) {
       SnackBarUtils.showFailure(context, what: viewModel.error!);

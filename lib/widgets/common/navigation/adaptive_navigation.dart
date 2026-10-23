@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -30,6 +31,12 @@ bool useNavigationRail(Size size) =>
     size.width >= Breakpoints.tablet && size.height >= _railMinHeight;
 
 const double _railMinHeight = 500;
+
+// Hem is `/`, i.e. MaterialApp.home: replacing a route with it would build a
+// second copy of the app's start screen, so Hem unwinds to the existing one.
+void _open(BuildContext context, String route) => route == Routes.home
+    ? AppActions.returnToHome(Navigator.of(context, rootNavigator: true))
+    : Navigator.pushReplacementNamed(context, route);
 
 /// The shell's scaffold: the bottom row on a phone, the rail from 768 dp.
 ///
@@ -140,7 +147,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
     }
     // Don't navigate if already on that page
     if (index == currentIndex) return;
-    Navigator.pushReplacementNamed(context, items[index].route);
+    _open(context, items[index].route);
   }
 }
 
@@ -312,7 +319,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
                     if (onNavigationChanged != null) {
                       onNavigationChanged!(index);
                     } else {
-                      Navigator.pushReplacementNamed(context, item.route);
+                      _open(context, item.route);
                     }
                   },
                 ),

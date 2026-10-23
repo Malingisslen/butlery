@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart'
     show MenuPrefSource;
@@ -61,7 +61,9 @@ class MenuContentWidgets {
               context,
               label: context.l10n.menuChooseManually,
               icon: ButleryIcons.list,
-              onPressed: () => Navigator.pushNamed(context, Routes.home),
+              onPressed: () => AppActions.returnToHome(
+                Navigator.of(context, rootNavigator: true),
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -120,8 +121,8 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 /// );
 /// // Navigate and replace current route
 /// AppRouter.navigateAndReplace(context, Routes.auth);
-/// // Navigate and clear stack
-/// AppRouter.navigateAndClearStack(context, Routes.home);
+/// // Back to Hem (never push Routes.home)
+/// AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
 /// ```
 /// **Error Handling:**
 /// - Missing arguments result in user-friendly error screens
@@ -692,8 +693,9 @@ class AppRouter {
                   ActionButtons.primaryButton(
                     context,
                     label: context.l10n.errorBackToStart,
-                    onPressed: () =>
-                        Navigator.of(context).pushReplacementNamed(Routes.home),
+                    onPressed: () => AppActions.returnToHome(
+                      Navigator.of(context, rootNavigator: true),
+                    ),
                   ),
                 ],
               ),

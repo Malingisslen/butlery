@@ -27,6 +27,7 @@ import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
@@ -278,10 +279,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       viewModel.clearPhoto();
       // BUT-900 follow-on: land on the recipe list so the user sees the batch
       // they just imported, instead of bouncing back to the import screen.
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        Routes.home,
-        (route) => false,
-      );
+      AppActions.returnToHome(Navigator.of(context, rootNavigator: true));
     }
   }
 
