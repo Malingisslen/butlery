@@ -424,7 +424,7 @@ class ButleryAddButton extends StatelessWidget {
                 color: pressed
                     ? AppModeColors.onActionPrimaryPressed(cs.brightness)
                     : cs.onSecondary,
-                size: AppDimensions.iconSizeL,
+                size: AppDimensions.bottomNavAddIconSize,
               ),
             ),
           ),

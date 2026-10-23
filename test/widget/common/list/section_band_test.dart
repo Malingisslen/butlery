@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -124,4 +125,74 @@ void main() {
       expect(warning, isNot(standard));
     });
   }
+
+  group('a tappable band keeps a 48 dp hit area around the drawn band', () {
+    // UnconstrainedBox on the vertical axis only: a Center/Scaffold host
+    // would hand the band the viewport's height and hide a deleted minimum.
+    Future<void> pumpUnboundedHeight(
+      WidgetTester tester,
+      SectionBand band,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 300,
+              child: UnconstrainedBox(
+                constrainedAxis: Axis.horizontal,
+                child: band,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    Finder drawnBand() => find.byWidgetPredicate(
+      (w) =>
+          w is Container &&
+          w.decoration is BoxDecoration &&
+          (w.decoration! as BoxDecoration).border is Border &&
+          ((w.decoration! as BoxDecoration).border! as Border).left.width == 3,
+    );
+
+    testWidgets('the InkWell is at least minTouchTarget tall, the drawn band '
+        'is sectionBandHeight', (tester) async {
+      await pumpUnboundedHeight(
+        tester,
+        SectionBand(title: 'Kyl', expanded: true, count: '3', onTap: () {}),
+      );
+
+      expect(
+        tester.getSize(find.byType(InkWell)).height,
+        greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+      );
+      expect(
+        tester.getSize(drawnBand()).height,
+        AppDimensions.sectionBandHeight,
+      );
+    });
+
+    testWidgets('a tap in the hit area above the drawn band folds the group', (
+      tester,
+    ) async {
+      var taps = 0;
+      await pumpUnboundedHeight(
+        tester,
+        SectionBand(title: 'Kyl', expanded: false, onTap: () => taps++),
+      );
+
+      final hit = tester.getRect(find.byType(InkWell));
+      final drawn = tester.getRect(drawnBand());
+      // Positive control: there is hit area outside the drawn band.
+      expect(hit.top, lessThan(drawn.top));
+
+      await tester.tapAt(Offset(hit.center.dx, hit.top + 1));
+      await tester.pump();
+
+      expect(taps, 1);
+    });
+  });
 }

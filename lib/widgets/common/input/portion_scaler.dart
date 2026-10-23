@@ -32,6 +32,9 @@ class PortionScaler extends StatefulWidget {
   /// [originalPortions]. Scaling always uses [originalPortions] as the base.
   final int? initialPortions;
 
+  /// Draws the steppers' buttons smaller; their hit area stays 48 dp.
+  final bool compact;
+
   const PortionScaler({
     super.key,
     required this.originalPortions,
@@ -41,6 +44,7 @@ class PortionScaler extends StatefulWidget {
     this.minPortions = 1,
     this.maxPortions = 20,
     this.initialPortions,
+    this.compact = false,
   });
 
   @override
@@ -193,6 +197,7 @@ class _PortionScalerState extends State<PortionScaler>
       scaleAnimation: _scaleAnimation,
       onUpdatePortions: _updatePortions,
       onToggleUnitConversion: _toggleUnitConversion,
+      compact: widget.compact,
     );
   }
 }

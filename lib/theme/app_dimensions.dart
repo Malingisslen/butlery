@@ -418,6 +418,16 @@ class AppDimensions {
   static const double bottomNavHomeIconSize = 27.0;
   static const double bottomNavIconSlot = 28.0;
 
+  /// The drawn height of a section band.
+  static const double sectionBandHeight = 42.0;
+
+  /// The drawn size of the compact portion stepper's buttons; the hit area
+  /// stays [minTouchTarget].
+  static const double compactStepperButton = 30.0;
+
+  /// The plus glyph in the saffron button (designlab choice 2026-10-23).
+  static const double bottomNavAddIconSize = 30.0;
+
   /// The root top bar's secondary line sits 2 px under the title
   /// (Komponentark v1:64 `margin-top:2px`). Drawn component geometry.
   static const double topBarSecondaryGap = 2.0;

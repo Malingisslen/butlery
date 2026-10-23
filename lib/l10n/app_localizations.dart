@@ -12692,6 +12692,18 @@ abstract class AppLocalizations {
   /// **'Ge {count, plural, =1{1 stjärna} other{{count} stjärnor}}'**
   String ratingStarLabel(int count);
 
+  /// No description provided for @recipeRatingSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsätt receptet'**
+  String get recipeRatingSheetTitle;
+
+  /// No description provided for @recipeRatingUnrated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsätt'**
+  String get recipeRatingUnrated;
+
   /// No description provided for @messagingSending.
   ///
   /// In sv, this message translates to:

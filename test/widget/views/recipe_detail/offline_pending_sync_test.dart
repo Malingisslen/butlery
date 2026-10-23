@@ -30,6 +30,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
+import 'package:butlery/widgets/common/butlery_tap_target.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -186,6 +188,14 @@ void main() {
 
     Future<void> tapFourthStar(WidgetTester tester) async {
       final l10n = l10nOf(tester, find.byType(RecipeDetailMetadata));
+      // The stars live in the sheet the rating summary opens.
+      await tester.tap(
+        find.ancestor(
+          of: find.byType(ButleryChevron),
+          matching: find.byType(ButleryTapTarget),
+        ),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.bySemanticsLabel(l10n.ratingStarLabel(4)));
       await tester.pumpAndSettle();
     }

@@ -199,12 +199,19 @@ void main() {
     final title = tester.widget<Text>(find.text('Krämig svamppasta'));
     expect(title.style!.fontSize, 26);
     expect(title.style!.fontWeight, FontWeight.w700);
-    expect(find.byType(RecipeAddPhotoChip), findsOneWidget);
+    expect(find.byType(RecipeAddPhotoIconButton), findsOneWidget);
     expect(ringColor(tester), Colors.transparent);
 
+    final nutrition = tester.getRect(
+      find.widgetWithText(OutlinedButton, AppLocalizationsSv().nutritionButton),
+    );
+    final camera = tester.getRect(find.byType(RecipeAddPhotoIconButton));
+    expect(camera.left, greaterThanOrEqualTo(nutrition.right));
+    expect(camera.center.dy, closeTo(nutrition.center.dy, 1));
+
     expect(pushedRoute, isNull);
-    await tester.ensureVisible(find.byType(RecipeAddPhotoChip));
-    await tester.tap(find.byType(RecipeAddPhotoChip));
+    await tester.ensureVisible(find.byType(RecipeAddPhotoIconButton));
+    await tester.tap(find.byType(RecipeAddPhotoIconButton));
     await tester.pump();
     expect(pushedRoute, Routes.editRecipe);
   });
@@ -248,7 +255,7 @@ void main() {
     await pump(tester, recipe, size: const Size(1100, 900));
 
     expect(find.byKey(const ValueKey('recipe-detail-brand-line')), findsOne);
-    expect(find.byType(RecipeAddPhotoChip), findsOneWidget);
+    expect(find.byType(RecipeAddPhotoIconButton), findsOneWidget);
   });
 
   testWidgets('no photo, own recipe opened read-only: no add-photo chip', (
@@ -263,7 +270,7 @@ void main() {
     await pump(tester, recipe, readOnly: true);
 
     expect(find.byKey(const ValueKey('recipe-detail-brand-line')), findsOne);
-    expect(find.byType(RecipeAddPhotoChip), findsNothing);
+    expect(find.byType(RecipeAddPhotoIconButton), findsNothing);
   });
 
   testWidgets('no photo, someone else\'s recipe: no add-photo chip', (
@@ -278,7 +285,7 @@ void main() {
     await pump(tester, recipe);
 
     expect(find.byKey(const ValueKey('recipe-detail-brand-line')), findsOne);
-    expect(find.byType(RecipeAddPhotoChip), findsNothing);
+    expect(find.byType(RecipeAddPhotoIconButton), findsNothing);
   });
 
   testWidgets('with a photo: no brand line, no chip, visible rings', (
@@ -296,7 +303,7 @@ void main() {
       find.byKey(const ValueKey('recipe-detail-brand-line')),
       findsNothing,
     );
-    expect(find.byType(RecipeAddPhotoChip), findsNothing);
+    expect(find.byType(RecipeAddPhotoIconButton), findsNothing);
     expect(ringColor(tester), isNot(Colors.transparent));
   });
 
@@ -354,8 +361,8 @@ void main() {
     await pump(tester, original, savedAs: edited);
     expect(find.textContaining('mjöl', skipOffstage: false), findsWidgets);
 
-    await tester.ensureVisible(find.byType(RecipeAddPhotoChip));
-    await tester.tap(find.byType(RecipeAddPhotoChip));
+    await tester.ensureVisible(find.byType(RecipeAddPhotoIconButton));
+    await tester.tap(find.byType(RecipeAddPhotoIconButton));
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));

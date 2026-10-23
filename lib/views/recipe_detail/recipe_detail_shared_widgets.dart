@@ -168,14 +168,14 @@ abstract final class RecipeDetailSharedWidgets {
             viewModel: viewModel,
             currentPortions: actions.currentPortions,
             isScaled: actions.currentPortions != (recipe.portions ?? 1),
-            onAddPhoto: !hasPhoto && canAddPhoto
-                ? () => actions.editRecipe(context)
-                : null,
           ),
           // BUT-643: nutrition strip (setting) and the always-present button.
           RecipeNutritionSection(
             recipe: recipe,
             portions: actions.currentPortions,
+            onAddPhoto: !hasPhoto && canAddPhoto
+                ? () => actions.editRecipe(context)
+                : null,
           ),
           FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
