@@ -102,10 +102,6 @@ function renderModular() {
 
 // Travels with every request to Claude, so the build rule does not depend on anyone remembering it.
 const HANDOFF_RULE = [
-  'Begäran bär bilder av varje skärm som labbet visade när den skickades: dokumenten shots/<begärans id>-<skärm>-<ljust|mörkt> i databasen (fältet image är en JPEG som data-URL, fältet shots i begäran listar dem). Läs dem först och bifoga dem till Malin i tråden; rendera sedan labbets exakta bilder från "state" (öppna designlabb.html med state, ta före- och efterbilder av berörda vyer, ljust och mörkt) för jämförelsen.',
-  'Bygg så nära dessa bilder som modulariteten tillåter: ändra token eller den delade komponenten, aldrig en enskild vy.',
-  'Där bilden inte kan nås utan en ny modul eller en ny variant av en befintlig, bygg inte en lösning i vyn. Säg till Malin vilken modul som saknas och vad den skulle ge, och vänta på hennes svar.',
-  'När bygget är klart och mergat: flytta labbets original till de nya värdena (labbets defaults och LAB_BASE i designlabb-core.js, kör mockup_kit) och publicera artefakten på nytt, så att nya versioner utgår från det nya originalet.',
-  'Ändrar bygget en vy i appen: uppdatera labbets exempelvy för den vyn (figure med data-views i designlabb.html) och kör cd design && node tools/lab-views-check.mjs --stamp, så att kontrollen ser att labbet följt med. Jämför sedan vyn mot appens golden med node design/tools/lab-golden-compare.mjs; skillnaden ska bara vara textkanter.',
-  'Redovisa efteråt vad som landade exakt, vad som landade nära och vad som väntar på hennes beslut.',
+  'Bilderna är sanningen. Begäran bär en bild av varje skärm som labbet visade när den skickades: dokumenten shots/<begärans id>-<skärm>-<ljust|mörkt> (fältet image är en JPEG som data-URL, fältet shots i begäran listar dem). Läs dem först, bifoga dem till Malin i tråden och bygg pixel för pixel mot dem, mätt med design/tools/lab-golden-compare.mjs. Siffrorna i begäran är kontroll, aldrig källa; texten ovan är Malins egna ord om vad som är medvetet.',
+  'Reglerna för hur en labbexport byggs och lämnas tillbaka står i projektinstruktionerna under Labbexport.',
 ].join(' ');
