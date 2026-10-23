@@ -205,7 +205,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: AppDimensions.space8),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             spacing: AppDimensions.space8,
             runSpacing: AppDimensions.space4,

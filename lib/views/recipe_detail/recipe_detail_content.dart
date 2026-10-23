@@ -196,12 +196,21 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.space16,
           ),
-          child: Semantics(
-            header: true,
-            child: Text(
-              context.l10n.recipeIngredients,
-              style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
-            ),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space8,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  context.l10n.recipeIngredients,
+                  style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+                ),
+              ),
+              _buildPortionScaler(context),
+            ],
           ),
         ),
         _buildIngredientsContent(context),
@@ -233,32 +242,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     );
   }
 
-  /// Ingredients content with portion scaler and structured table.
   Widget _buildIngredientsContent(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Portion scaler controls with background band
-          Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.space12,
-              horizontal: AppDimensions.space16,
-            ),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh,
-              border: Border(
-                bottom: BorderSide(
-                  color: cs.outlineVariant,
-                ),
-              ),
-            ),
-            child: _buildPortionScaler(context),
-          ),
-
           // BUT-951: ingredient rows via ListView.builder. shrinkWrap +
           // NeverScrollable because the outer scaffold owns the scroll. Saves
           // a layout pass per row vs the eager Column children list — most

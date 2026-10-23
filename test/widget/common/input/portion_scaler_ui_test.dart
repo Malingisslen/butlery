@@ -473,6 +473,74 @@ void main() {
     });
   });
 
+  group('PortionScalerUI — compact scaler beside a heading', () {
+    // The mount recipe_detail_content gives it: a start-aligned Wrap holding
+    // the section heading and the compact scaler.
+    Widget headingRow() => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: AppDimensions.space8,
+        runSpacing: AppDimensions.space8,
+        children: const [
+          Text('Ingredienser', key: ValueKey('heading')),
+          _Host(
+            currentPortions: 4,
+            originalPortions: 4,
+            convertToSwedish: false,
+            hasAmericanUnits: false,
+            compact: true,
+          ),
+        ],
+      ),
+    );
+
+    testWidgets('with room to spare the stepper sits on the heading line', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(600, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(createLocalizedTestApp(child: headingRow()));
+
+      expect(tester.takeException(), isNull);
+      final heading = tester.getRect(find.byKey(const ValueKey('heading')));
+      final plus = tester.getRect(find.byIcon(ButleryIcons.plus));
+      expect(plus.center.dy, closeTo(heading.center.dy, heading.height));
+      expect(plus.left, greaterThan(heading.right));
+    });
+
+    testWidgets('at 200 % text on 320 dp the stepper wraps under the heading '
+        'without overflow', (tester) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2.0)),
+              child: headingRow(),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      final heading = tester.getRect(find.byKey(const ValueKey('heading')));
+      for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
+        final rect = tester.getRect(find.byIcon(icon));
+        expect(rect.right, lessThanOrEqualTo(320 - AppDimensions.space16));
+        expect(rect.top, greaterThanOrEqualTo(heading.bottom));
+      }
+    });
+  });
+
   group('PortionScalerUI — compact stepper buttons', () {
     for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
       testWidgets('${icon.name}: 48x48 hit area around a compactStepperButton '
