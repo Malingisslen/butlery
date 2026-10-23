@@ -72,7 +72,7 @@ class SectionBand extends StatelessWidget {
 
     final band = Container(
       constraints: const BoxConstraints(
-        minHeight: AppDimensions.minTouchTarget,
+        minHeight: AppDimensions.sectionBandHeight,
       ),
       decoration: BoxDecoration(
         color: plate
@@ -130,7 +130,15 @@ class SectionBand extends StatelessWidget {
       excludeSemantics: true,
       child: PressFill(
         surface: PressSurface.base,
-        child: InkWell(onTap: onTap, child: band),
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppDimensions.minTouchTarget,
+            ),
+            child: Center(child: band),
+          ),
+        ),
       ),
     );
   }

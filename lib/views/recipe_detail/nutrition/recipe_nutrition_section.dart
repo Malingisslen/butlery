@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_sheet.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_strip.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 
 /// The recipe detail's nutrition entry points: the optional strip and the
 /// always-present "Näringsvärden" button. Follows the portion scaler through
@@ -20,6 +21,7 @@ class RecipeNutritionSection extends StatefulWidget {
     required this.recipe,
     required this.portions,
     this.viewModel,
+    this.onAddPhoto,
   });
 
   final Recipe recipe;
@@ -27,6 +29,10 @@ class RecipeNutritionSection extends StatefulWidget {
 
   /// Injected by tests; the section owns and disposes its own otherwise.
   final NutritionViewModel? viewModel;
+
+  /// Set only for a recipe without a photo that the viewer can edit; draws
+  /// the photo button beside "Näringsvärden".
+  final VoidCallback? onAddPhoto;
 
   @override
   State<RecipeNutritionSection> createState() => _RecipeNutritionSectionState();
@@ -81,10 +87,22 @@ class _RecipeNutritionSectionState extends State<RecipeNutritionSection> {
             if (showStrip) NutritionStrip(viewModel: _vm),
             Padding(
               padding: const EdgeInsets.only(top: AppDimensions.space8),
-              child: ActionButtons.outlinedButton(
-                context,
-                label: context.l10n.nutritionButton,
-                onPressed: () => showNutritionSheet(context, viewModel: _vm),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ActionButtons.outlinedButton(
+                      context,
+                      label: context.l10n.nutritionButton,
+                      isExpanded: true,
+                      onPressed: () =>
+                          showNutritionSheet(context, viewModel: _vm),
+                    ),
+                  ),
+                  if (widget.onAddPhoto != null) ...[
+                    const SizedBox(width: AppDimensions.space12),
+                    RecipeAddPhotoIconButton(onPressed: widget.onAddPhoto!),
+                  ],
+                ],
               ),
             ),
           ],

@@ -39,7 +39,7 @@
     },
     {
       "name": "nav-add",
-      "grid": "160×160, stroke 9",
+      "grid": "160×160, stroke 8.5",
       "note": "central knapp, ej tab",
       "master_svg": "assets/icons/nav-add.svg",
       "status": "levererad",

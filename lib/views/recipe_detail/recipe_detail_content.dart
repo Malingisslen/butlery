@@ -796,6 +796,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       onPortionChanged: onPortionChanged,
       minPortions: 1,
       maxPortions: 20,
+      compact: true,
     );
   }
 }
