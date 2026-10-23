@@ -8113,6 +8113,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipeRatingSheetTitle => 'Betygsätt receptet';
+
+  @override
+  String get recipeRatingUnrated => 'Betygsätt';
+
+  @override
   String get messagingSending => 'Skickar …';
 
   @override

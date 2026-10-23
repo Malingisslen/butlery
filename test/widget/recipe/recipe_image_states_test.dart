@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
@@ -75,22 +76,31 @@ void main() {
     expect(tester.getSize(find.byType(RecipeImageFailedPlate)).height, 200);
   });
 
-  testWidgets('the add-photo chip is 48 dp tall and fires its callback', (
+  testWidgets('the add-photo button is 48 dp, named, and fires its callback', (
     tester,
   ) async {
     var taps = 0;
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Center(child: RecipeAddPhotoChip(onPressed: () => taps++)),
-      ),
-    );
+    final handle = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: UnconstrainedBox(
+            child: RecipeAddPhotoIconButton(onPressed: () => taps++),
+          ),
+        ),
+      );
 
-    expect(find.text('Lägg till foto'), findsOneWidget);
-    expect(
-      tester.getSize(find.byType(RecipeAddPhotoChip)).height,
-      greaterThanOrEqualTo(48),
-    );
-    await tester.tap(find.byType(RecipeAddPhotoChip));
-    expect(taps, 1);
+      final size = tester.getSize(find.byType(RecipeAddPhotoIconButton));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSemantics(find.byType(RecipeAddPhotoIconButton)).label,
+        contains(AppLocalizationsSv().recipeAddPhoto),
+      );
+      await tester.tap(find.byType(RecipeAddPhotoIconButton));
+      expect(taps, 1);
+    } finally {
+      handle.dispose();
+    }
   });
 }

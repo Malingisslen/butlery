@@ -8188,6 +8188,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipeRatingSheetTitle => 'Rate this recipe';
+
+  @override
+  String get recipeRatingUnrated => 'Rate';
+
+  @override
   String get messagingSending => 'Sending …';
 
   @override

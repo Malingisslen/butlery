@@ -5466,6 +5466,8 @@
       }
     }
   },
+  "recipeRatingSheetTitle": "Betygsätt receptet",
+  "recipeRatingUnrated": "Betygsätt",
   "messagingSending": "Skickar …",
   "messagingSent": "Skickat",
   "messagingDelivered": "Levererat",
