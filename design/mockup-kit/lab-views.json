@@ -10,11 +10,11 @@
   "lib/views/more/app_settings_view.dart": "b9a1b7b867a4",
   "lib/views/more/more_view.dart": "fce9ece04fad",
   "lib/views/pantry/pantry_view.dart": "834db5204183",
-  "lib/views/recipe_detail": "f1dc53d0109f",
-  "lib/views/recipe_detail_view.dart": "d1e8e4ca7fd8",
+  "lib/views/recipe_detail": "f8c61675b8d5",
+  "lib/views/recipe_detail_view.dart": "68901f883387",
   "lib/views/skriv_sjalv_recept_view.dart": "56040b907b40",
   "lib/views/sync/sync_queue_view.dart": "8283b9b251d0",
-  "lib/views/unified_shopping": "f70c2c83e7f2",
-  "lib/views/unified_shopping_view.dart": "088ec014ec9a",
-  "lib/views/veckomeny_view.dart": "a1c2b838277a"
+  "lib/views/unified_shopping": "6e01ed13c911",
+  "lib/views/unified_shopping_view.dart": "c2266781f062",
+  "lib/views/veckomeny_view.dart": "c0871e6a3033"
 }
