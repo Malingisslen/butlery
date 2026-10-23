@@ -181,71 +181,64 @@ class _ShoppingRowState extends State<ShoppingRow>
                   constraints: const BoxConstraints(
                     minHeight: AppDimensions.minTouchTarget,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.space8,
-                    ),
-                    child: Row(
-                      children: [
-                        if (widget.selectionMode) ...[
-                          ButleryIcon(
-                            selected
-                                ? ButleryIcons.circleCheck
-                                : ButleryIcons.circle,
-                            color: selected
-                                ? cs.onSurface
-                                : cs.onSurfaceVariant,
-                            size: AppDimensions.iconSizeM,
-                          ),
-                          const SizedBox(width: AppDimensions.space12),
-                        ],
-                        _box(context, cs),
+                  child: Row(
+                    children: [
+                      if (widget.selectionMode) ...[
+                        ButleryIcon(
+                          selected
+                              ? ButleryIcons.circleCheck
+                              : ButleryIcons.circle,
+                          color: selected ? cs.onSurface : cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
                         const SizedBox(width: AppDimensions.space12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              WholeWordText.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(text: widget.name),
-                                    if (amount != null && amount.isNotEmpty)
-                                      TextSpan(
-                                        text: ' $amount',
-                                        style: SpanStyles.colour(
-                                          cs.onSurfaceVariant,
-                                        ),
+                      ],
+                      _box(context, cs),
+                      const SizedBox(width: AppDimensions.space12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WholeWordText.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(text: widget.name),
+                                  if (amount != null && amount.isNotEmpty)
+                                    TextSpan(
+                                      text: ' $amount',
+                                      style: SpanStyles.colour(
+                                        cs.onSurfaceVariant,
                                       ),
-                                  ],
-                                ),
-                                style: AppTextStyles.contentTitle.copyWith(
-                                  color: nameColor,
+                                    ),
+                                ],
+                              ),
+                              style: AppTextStyles.contentTitle.copyWith(
+                                color: nameColor,
+                                decoration: decoration,
+                              ),
+                              // BUT-2193 (Malin, 2026-10-03): a row may cut a
+                              // long name at the normal text size.
+                              maxLines: largeText ? null : 2,
+                            ),
+                            if (widget.note?.isNotEmpty == true) ...[
+                              const SizedBox(height: AppDimensions.space4),
+                              Text(
+                                widget.note!,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: cs.onSurfaceVariant,
                                   decoration: decoration,
                                 ),
-                                // BUT-2193 (Malin, 2026-10-03): a row may cut a
-                                // long name at the normal text size.
-                                maxLines: largeText ? null : 2,
+                                maxLines: largeText ? null : 1,
+                                overflow: largeText
+                                    ? null
+                                    : TextOverflow.ellipsis,
                               ),
-                              if (widget.note?.isNotEmpty == true) ...[
-                                const SizedBox(height: AppDimensions.space4),
-                                Text(
-                                  widget.note!,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: cs.onSurfaceVariant,
-                                    decoration: decoration,
-                                  ),
-                                  maxLines: largeText ? null : 1,
-                                  overflow: largeText
-                                      ? null
-                                      : TextOverflow.ellipsis,
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
-                        if (widget.trailing != null) widget.trailing!,
-                      ],
-                    ),
+                      ),
+                      if (widget.trailing != null) widget.trailing!,
+                    ],
                   ),
                 ),
               ),

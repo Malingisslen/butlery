@@ -22,6 +22,7 @@ class _Host extends StatefulWidget {
     this.maxPortions = 12,
     this.onUpdatePortions,
     this.onToggleUnitConversion,
+    this.compact = false,
   });
 
   final int currentPortions;
@@ -32,6 +33,7 @@ class _Host extends StatefulWidget {
   final int maxPortions;
   final Function(int)? onUpdatePortions;
   final VoidCallback? onToggleUnitConversion;
+  final bool compact;
 
   @override
   State<_Host> createState() => _HostState();
@@ -71,6 +73,7 @@ class _HostState extends State<_Host> with SingleTickerProviderStateMixin {
       scaleAnimation: _anim,
       onUpdatePortions: widget.onUpdatePortions ?? (_) {},
       onToggleUnitConversion: widget.onToggleUnitConversion ?? () {},
+      compact: widget.compact,
     );
   }
 }
@@ -466,6 +469,72 @@ void main() {
       expect(
         tester.getSize(find.byKey(const ValueKey('band'))).width,
         320 - 2 * AppDimensions.space16,
+      );
+    });
+  });
+
+  group('PortionScalerUI — compact stepper buttons', () {
+    for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
+      testWidgets('${icon.name}: 48x48 hit area around a compactStepperButton '
+          'drawn square', (tester) async {
+        final calls = <int>[];
+        await tester.pumpWidget(
+          _wrap(
+            _Host(
+              currentPortions: 4,
+              originalPortions: 4,
+              convertToSwedish: false,
+              hasAmericanUnits: false,
+              compact: true,
+              onUpdatePortions: calls.add,
+            ),
+          ),
+        );
+
+        final inkWell = find.ancestor(
+          of: find.byIcon(icon),
+          matching: find.byType(InkWell),
+        );
+        expect(
+          tester.getSize(inkWell),
+          const Size.square(AppDimensions.minTouchTarget),
+        );
+        expect(
+          tester.getSize(
+            find.descendant(of: inkWell, matching: find.byType(Ink)),
+          ),
+          const Size.square(AppDimensions.compactStepperButton),
+        );
+
+        // A tap in the hit area outside the drawn square still steps.
+        final hit = tester.getRect(inkWell);
+        await tester.tapAt(hit.topLeft + const Offset(2, 2));
+        expect(calls, hasLength(1));
+      });
+    }
+
+    testWidgets('the default stepper draws the full 48 dp button', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const _Host(
+            currentPortions: 4,
+            originalPortions: 4,
+            convertToSwedish: false,
+            hasAmericanUnits: false,
+          ),
+        ),
+      );
+      final inkWell = find.ancestor(
+        of: find.byIcon(ButleryIcons.plus),
+        matching: find.byType(InkWell),
+      );
+      expect(
+        tester.getSize(
+          find.descendant(of: inkWell, matching: find.byType(Ink)),
+        ),
+        const Size.square(AppDimensions.minTouchTarget),
       );
     });
   });

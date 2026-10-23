@@ -27,6 +27,7 @@ class PortionScalerUI {
     required Animation<double> scaleAnimation,
     required Function(int) onUpdatePortions,
     required VoidCallback onToggleUnitConversion,
+    bool compact = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,6 +40,7 @@ class PortionScalerUI {
           maxPortions,
           scaleAnimation,
           onUpdatePortions,
+          compact,
         ),
 
         // Only add gap when status/toggle content follows
@@ -75,6 +77,7 @@ class PortionScalerUI {
     int maxPortions,
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
+    bool compact,
   ) {
     // A Wrap, so the controls move under the label when large text leaves
     // no room beside it; full width, as the Row was, so a caller's
@@ -98,6 +101,7 @@ class PortionScalerUI {
             maxPortions,
             scaleAnimation,
             onUpdatePortions,
+            compact,
           ),
         ],
       ),
@@ -112,6 +116,7 @@ class PortionScalerUI {
     int maxPortions,
     Animation<double> scaleAnimation,
     Function(int) onUpdatePortions,
+    bool compact,
   ) {
     return AnimatedBuilder(
       animation: scaleAnimation,
@@ -144,6 +149,7 @@ class PortionScalerUI {
                 _buildControlButton(
                   context,
                   icon: ButleryIcons.minus,
+                  compact: compact,
                   onPressed: currentPortions > minPortions
                       ? () => onUpdatePortions(currentPortions - 1)
                       : null,
@@ -170,6 +176,7 @@ class PortionScalerUI {
                 _buildControlButton(
                   context,
                   icon: ButleryIcons.plus,
+                  compact: compact,
                   onPressed: currentPortions < maxPortions
                       ? () => onUpdatePortions(currentPortions + 1)
                       : null,
@@ -187,8 +194,12 @@ class PortionScalerUI {
     BuildContext context, {
     required IconData icon,
     required VoidCallback? onPressed,
+    required bool compact,
   }) {
     final cs = Theme.of(context).colorScheme;
+    final box = compact
+        ? AppDimensions.compactStepperButton
+        : AppDimensions.minTouchTarget;
     final label = icon == ButleryIcons.minus
         ? context.l10n.portionDecrease
         : context.l10n.portionIncrease;
@@ -204,29 +215,36 @@ class PortionScalerUI {
             child: InkWell(
               onTap: onPressed,
               borderRadius: BorderRadius.zero,
-              child: Ink(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: onPressed != null
-                          ? cs.onSurface
-                          : cs.outlineVariant,
-                      width: 2.0,
+              child: SizedBox.square(
+                dimension: AppDimensions.minTouchTarget,
+                child: Center(
+                  child: Ink(
+                    width: box,
+                    height: box,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
                     ),
-                  ),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: ButleryIcon(
-                      icon,
-                      size: AppDimensions.iconSizeL,
-                      color: onPressed != null
-                          ? cs.onSurface
-                          : cs.onSurfaceVariant,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: onPressed != null
+                              ? cs.onSurface
+                              : cs.outlineVariant,
+                          width: 2.0,
+                        ),
+                      ),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: ButleryIcon(
+                          icon,
+                          size: compact
+                              ? AppDimensions.iconSizeM
+                              : AppDimensions.iconSizeL,
+                          color: onPressed != null
+                              ? cs.onSurface
+                              : cs.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
                 ),
