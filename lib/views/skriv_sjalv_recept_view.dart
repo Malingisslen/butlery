@@ -417,7 +417,7 @@ class _SkrivSjalvReceptViewContentState
                         ],
                         onChanged: viewModel.setMealType,
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Bildhantering med UniversalImageManager
                       UniversalImageManager.recipeEdit(
@@ -472,7 +472,7 @@ class _SkrivSjalvReceptViewContentState
                         onClearAllFailed: viewModel.clearAllFailedUploads,
                       ),
                       RecipeImagePermissionNotice(viewModel: viewModel),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Titel
                       StyledInput(
@@ -499,7 +499,7 @@ class _SkrivSjalvReceptViewContentState
                           ),
                         ]),
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Beskrivning
                       StyledInput(
@@ -520,7 +520,7 @@ class _SkrivSjalvReceptViewContentState
                           ),
                         ]),
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Portioner och tid
                       Row(
@@ -557,7 +557,7 @@ class _SkrivSjalvReceptViewContentState
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Explains the empty list and the greyed-out save
                       // button; gone as soon as one ingredient exists.
@@ -611,7 +611,7 @@ class _SkrivSjalvReceptViewContentState
                           onConfirm: viewModel.confirmParseRow,
                         ),
                       ],
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Instruktioner
                       _buildDynamicList(
@@ -624,7 +624,7 @@ class _SkrivSjalvReceptViewContentState
                         onReorder: viewModel.reorderInstruction,
                         viewModel: viewModel,
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Personal tags selector
                       PersonalTagSelector(
@@ -635,7 +635,7 @@ class _SkrivSjalvReceptViewContentState
                         title: context.l10n.recipePersonalTags,
                         showManageButton: true,
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Betyg
                       StyledInput(
@@ -658,7 +658,7 @@ class _SkrivSjalvReceptViewContentState
                             viewModel.setRating(parseSwedishDecimal(value)),
                         validator: FormValidators.rating(),
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
 
                       // Source URL field
                       StyledInput(
@@ -678,7 +678,7 @@ class _SkrivSjalvReceptViewContentState
                         onChanged: viewModel.setSourceUrl,
                         validator: FormValidators.recipeSourceUrl(),
                       ),
-                      const SizedBox(height: AppDimensions.space32),
+                      const SizedBox(height: AppDimensions.formBlockGap),
                     ],
                   ),
                 ),
