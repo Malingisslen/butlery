@@ -6661,3 +6661,21 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   then waits for the user as "Ny profilbild" with "Profilbilden kunde inte bytas.".
 - The previous picture's Storage object is still not removed when it is replaced, online or
   queued. Separate ticket.
+
+## SUPERSEDES four lines of the BUT-1797 "Deliberately left" list (BUT-1815, BUT-2444, 2026-10-21)
+
+- **The second deserializer.** Retires "The second deserializer in `recipe_serialization.dart`
+  is unchanged." `_deserializeSocialData` in `lib/models/realtime/recipe_serialization.dart`
+  now returns `RecipeSocialData.fromJson` of the `socialData` map, so `grants` and
+  `descriptionCollaborative` are read by the same code as every other path (BUT-1815 S2).
+- **The token loop.** Retires "The tokens-loop collapse is still owed." The sharing paths
+  build their `grants` through `RecipeShareGrants` (`applyShare`, `fromFlatShare`,
+  `mergeCategoryIds`) instead of three hand-written loops (BUT-1815 S3).
+- **The dead writers.** Retires "Ticket the deletion." `FirebaseRecipeRepository.addCollaborator`,
+  `removeCollaborator` and `RecipeFactory.convertToCollaborative` no longer exist in `lib/`
+  (BUT-1815 S1).
+- **The discovery row.** Retires "A revoke does not trim `shared_content.sharedToUserIds`."
+  `removeMember`, `removeGroup` and `unshareRecipe` now remove the revoked uids from the
+  `shared_content` rows where `sharedByUserId` is the caller, and delete their `members/{uid}`
+  documents, after the recipe save succeeds (BUT-1815 S5). A row written by another sender is
+  not touched by that call.
