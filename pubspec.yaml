@@ -31,48 +31,48 @@ dependencies:
   firebase_performance: ^0.11.3  # For performance monitoring
   firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
   firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
-  flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
-  timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
-  device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
-  freerasp: 8.0.0  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds. 8.0.0 reviewed (BUT-1218): its 5 breaking changes (onAllChecksDone→onAllChecksFinished, installerStore, reasons-list, blocklist, SuspiciousAppDetectionConfig) are all on surfaces we don't use; root/hook/tamper callbacks unchanged.
+  flutter_local_notifications: ^22.3.3  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
+  timezone: ^0.11.2  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
+  device_info_plus: 13.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
+  freerasp: 8.2.4  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds. 8.0.0 reviewed (BUT-1218): its 5 breaking changes (onAllChecksDone→onAllChecksFinished, installerStore, reasons-list, blocklist, SuspiciousAppDetectionConfig) are all on surfaces we don't use; root/hook/tamper callbacks unchanged.
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.5+1
   get_it: ^9.2.1
 
   # ==================== LOCAL STORAGE ====================
-  shared_preferences: ^2.5.5
-  drift: ^2.33.0
+  shared_preferences: ^2.5.6
+  drift: ^2.35.3
   flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
-  wakelock_plus: ^1.4.0  # Keep screen awake during cooking mode
+  wakelock_plus: ^1.8.2  # Keep screen awake during cooking mode
 
   # ==================== NETWORKING ====================
   http: ^1.6.0
-  connectivity_plus: 7.0.0  # PINNED — 7.1.0+ ships a NWPath.isUltraConstrained call gated on iOS 26.0 (a non-existent SDK), same speculative-API gambit as device_info_plus 12.4.0. Fails iOS Build Validation. RE-TESTED 2026-06-24 (BUT-1367, PR #188): 7.1.1 STILL has the isUltraConstrained call → iOS lane red (PathMonitorConnectivityProvider.swift:28). Pin confirmed required; do not re-lift until upstream drops the speculative iOS-26 API.
+  connectivity_plus: 7.3.2  # PINNED — 7.1.0+ ships a NWPath.isUltraConstrained call gated on iOS 26.0 (a non-existent SDK), same speculative-API gambit as device_info_plus 12.4.0. Fails iOS Build Validation. RE-TESTED 2026-06-24 (BUT-1367, PR #188): 7.1.1 STILL has the isUltraConstrained call → iOS lane red (PathMonitorConnectivityProvider.swift:28). Pin confirmed required; do not re-lift until upstream drops the speculative iOS-26 API.
 
   # ==================== IMAGE HANDLING ====================
-  image_picker: ^1.2.2
+  image_picker: ^1.2.4
   image_cropper: ^12.2.1
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.4.0
-  image: ">=4.8.0 <4.9.0"     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
+  image: ^4.12.0     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
 
   # ==================== PLATFORM INFO ====================
-  package_info_plus: ^9.0.1
+  package_info_plus: ^10.2.2
 
   # ==================== UTILITIES ====================
   uuid: ^4.5.3
   intl: ^0.20.2
   collection: ^1.19.1
   rxdart: ^0.28.0
-  url_launcher: ^6.3.2
-  clock: ^1.1.2  # For testable time-dependent code
-  share_plus: ^12.0.2        # För utgående sharing (skicka till andra appar)
+  url_launcher: ^6.3.3
+  clock: ^1.1.3  # For testable time-dependent code
+  share_plus: ^13.3.1        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.5
-  file_picker: ^11.0.2
+  file_picker: ^13.3.0
   path: ^1.9.1
   crypto: ^3.0.7             # För OCR service image hashing och caching
 
@@ -89,7 +89,7 @@ dependencies:
   # å/ä/ö and keeps the iOS bundle at ML Kit's default Latin model (no extra
   # script pods). Needs iOS >= 15.5 (we ship 17.0) and Android minSdk >= 21
   # (we ship 24). Binary-size delta is measured before this ships enabled.
-  google_mlkit_text_recognition: ^0.16.0
+  google_mlkit_text_recognition: ^0.17.1
   # Voice prompts (kb-whisper plan, tasks/kb-whisper-voice-menu-plan.md):
   # whisper.cpp FFI binding for on-device Swedish STT (MIT; ships whisper.cpp
   # 1.8.3 as compilable source; custom modelPath API for KB-Whisper GGML).
@@ -111,15 +111,15 @@ dependencies:
   cloud_functions: ^6.2.0
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
-  algoliasearch: ^1.46.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
+  algoliasearch: ^1.54.0     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
   html_unescape: ^2.0.0
-  sqlite3: ^3.0.0
-  web: ^1.1.1
-  sembast_web: ^2.4.2          # Web-platform CacheDao backend (lib/core/cache/cache_dao_stub.dart)
-  archive: ^4.0.0            # Zip handling for Paprika import + our own XlsxReader (BUT-503: decoupled from excel)
-  http_certificate_pinning: 3.0.1  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
+  sqlite3: ^3.8.0
+  web: ^1.1.2
+  sembast_web: ^2.4.6+1          # Web-platform CacheDao backend (lib/core/cache/cache_dao_stub.dart)
+  archive: ^4.5.2            # Zip handling for Paprika import + our own XlsxReader (BUT-503: decoupled from excel)
+  http_certificate_pinning: 3.0.2  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
   in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
-  fl_chart: ^1.2.0
+  fl_chart: ^1.3.0
   dio: ^5.9.2  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
@@ -132,11 +132,11 @@ dev_dependencies:
   leak_tracker_flutter_testing: ^3.0.10
   integration_test:
     sdk: flutter
-  coverage: ^1.15.0
+  coverage: ^1.16.0
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.5
-  build_runner: ^2.8.0
+  build_runner: ^2.17.1
   drift_dev: ^2.33.0
   
   # ==================== FIREBASE MOCKING ====================
@@ -160,11 +160,11 @@ dev_dependencies:
   # sembast: needed by test/unit/core/cache/cache_dao_web_test.dart for the
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
-  sembast: ^3.8.5+2
+  sembast: ^3.9.0
   # sqflite: test/widget/views/recipe_detail/fullscreen_image_failed_test.dart
   # sets its database factory (already a transitive dependency via
   # flutter_cache_manager).
-  sqflite: ^2.4.2
+  sqflite: ^2.4.5
 
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).
