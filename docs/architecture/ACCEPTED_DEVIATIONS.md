@@ -6661,3 +6661,24 @@ moderator" and "removes it 365 days after the decision", as a complete descripti
   then waits for the user as "Ny profilbild" with "Profilbilden kunde inte bytas.".
 - The previous picture's Storage object is still not removed when it is replaced, online or
   queued. Separate ticket.
+
+## BUT-2452 — the guest list: what the sign-up gate does not stop (2026-10-24)
+
+Decided with the gate (ADR-0034; Malin 2026-10-24, "Lösenord med verifiering"). The gate is
+`beforeCreateAllowlist` and `beforeSignInAllowlist` in `functions/src/account/signup-allowlist.ts`.
+
+- **An invite is spent before Firebase confirms the account when the address is already
+  verified.** For such a sign-up the function deletes the entry in the same transaction that
+  allows it. If Firebase then fails to create the account, the
+  invite is gone and an admin adds it again. Accepted: rare, visible to the invitee, and it is
+  what keeps two racing sign-ups from both using one invite.
+- **Guest upgrade is not gated.** Linking a credential to an anonymous account does not run
+  `beforeUserCreated`. Anonymous sign-in is off on butlery-prod, and the deploy read-back checks
+  that it still is. If it is ever turned on while the gate is on, this gap opens; re-check it when
+  the gate is switched off.
+- **Accounts created through the Admin SDK are not gated.** Blocking functions do not run for
+  them. Intended: only server code with project credentials can do it.
+- **A squatter keeps one session.** Someone who signs up with an invited address they do not own
+  (password, unverified) keeps the sign-up session on that one device; every later sign-in is
+  refused until the address is verified. The real owner takes the address back with "Glömt
+  lösenord" (or with Google for a Gmail address), which ends that session.

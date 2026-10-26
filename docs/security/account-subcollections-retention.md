@@ -2,8 +2,8 @@
 
 GDPR Article 30 record of processing for the personal `users/{uid}` subcollections the
 account-deletion cascade erases, and their data-subject-access (Art. 15) export treatment.
-Companion to `notification-analytics-retention.md`, `family-data-retention.md` and
-`audit-logs-retention.md`. Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03), BUT-1917/BUT-2018 (2026-09-09), BUT-1997 (2026-10-19).
+Companion to `notification-analytics-retention.md`, `family-data-retention.md`,
+`audit-logs-retention.md` and `signup-allowlist-retention.md` (the pre-sign-up guest list). Sources: BUT-1957 (2026-09-02), BUT-1992 (2026-09-03), BUT-1917/BUT-2018 (2026-09-09), BUT-1997 (2026-10-19).
 
 Art. 30 records PROCESSING, not export status, so every collection below has a row here
 whether or not it is exported.

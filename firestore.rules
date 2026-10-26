@@ -4302,6 +4302,27 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // BUT-2452 (ADR-0034): the guest list. The doc id is the invited address,
+    // trimmed and lower-cased, exactly as `beforeCreateAllowlist` looks it up.
+    // Admins only; an entry is created or deleted, never edited. `expireAt`
+    // feeds the TTL policy.
+    match /signup_allowlist/{email} {
+      allow read, delete: if isAdmin();
+      allow update: if false;
+      allow create: if isAdmin()
+        && email == email.lower()
+        && email == email.trim()
+        && email.size() <= 254
+        && email.matches('^[^/@\\s]+@[^/@\\s]+[.][^/@\\s]+$')
+        && request.resource.data.keys().hasOnly(['invitedAt', 'invitedBy', 'expireAt'])
+        && request.resource.data.keys().hasAll(['invitedAt', 'invitedBy', 'expireAt'])
+        && request.resource.data.invitedAt == request.time
+        && request.resource.data.invitedBy == request.auth.uid
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt <= request.time + duration.value(30 * 24 * 60 + 1, 'm');
+    }
+
     // ========================================
     // FEEDBACK - Beta user feedback submissions
     // ========================================

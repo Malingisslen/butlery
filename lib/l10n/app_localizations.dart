@@ -764,6 +764,24 @@ abstract class AppLocalizations {
   /// **'Autentiseringsfel. Logga in igen.'**
   String get errorAuthentication;
 
+  /// No description provided for @errorSignupNotInvited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery är bara öppet för inbjudna just nu.'**
+  String get errorSignupNotInvited;
+
+  /// No description provided for @errorSignupGateUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att skapa kontot just nu. Försök igen om en stund.'**
+  String get errorSignupGateUnavailable;
+
+  /// No description provided for @errorSignInEmailUnverified.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.'**
+  String get errorSignInEmailUnverified;
+
   /// No description provided for @errorPermissionDenied.
   ///
   /// In sv, this message translates to:
@@ -13729,6 +13747,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Drift'**
   String get adminNavOps;
+
+  /// No description provided for @adminNavGuestList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästlista'**
+  String get adminNavGuestList;
+
+  /// No description provided for @adminGuestListTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästlista'**
+  String get adminGuestListTitle;
+
+  /// No description provided for @adminGuestListLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar gästlistan …'**
+  String get adminGuestListLoading;
+
+  /// No description provided for @adminGuestListLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda gästlistan'**
+  String get adminGuestListLoadFailed;
+
+  /// No description provided for @adminGuestListEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen är inbjuden än'**
+  String get adminGuestListEmpty;
+
+  /// No description provided for @adminGuestListColEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post'**
+  String get adminGuestListColEmail;
+
+  /// No description provided for @adminGuestListColInvited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjuden'**
+  String get adminGuestListColInvited;
+
+  /// No description provided for @adminGuestListExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'utgången'**
+  String get adminGuestListExpired;
+
+  /// No description provided for @adminGuestListRemove.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get adminGuestListRemove;
+
+  /// No description provided for @adminGuestListRemoveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort inbjudan?'**
+  String get adminGuestListRemoveTitle;
+
+  /// No description provided for @adminGuestListRemoveMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{email} kan då inte skapa ett konto.'**
+  String adminGuestListRemoveMessage(String email);
+
+  /// No description provided for @adminGuestListEmailLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exakt e-postadress'**
+  String get adminGuestListEmailLabel;
+
+  /// No description provided for @adminGuestListInvite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in'**
+  String get adminGuestListInvite;
+
+  /// No description provided for @adminGuestListHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan gäller i 30 dagar och tas bort när kontot skapas och e-posten är bekräftad.'**
+  String get adminGuestListHelp;
+
+  /// No description provided for @adminGuestListInvalidEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv en hel e-postadress, till exempel namn@exempel.se.'**
+  String get adminGuestListInvalidEmail;
+
+  /// No description provided for @adminGuestListDuplicate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den adressen är redan inbjuden.'**
+  String get adminGuestListDuplicate;
+
+  /// No description provided for @adminGuestListSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att spara. Försök igen.'**
+  String get adminGuestListSaveFailed;
 
   /// No description provided for @adminOpsTitle.
   ///

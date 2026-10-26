@@ -457,6 +457,9 @@
   "errorNetwork": "Network error. Check your internet connection.",
   "errorServer": "Server error. Please try again later.",
   "errorAuthentication": "Authentication error. Please sign in again.",
+  "errorSignupNotInvited": "Butlery is open to invited people only right now.",
+  "errorSignupGateUnavailable": "The account could not be created right now. Please try again in a moment.",
+  "errorSignInEmailUnverified": "Confirm your email through the link we sent. Can't find it? Choose Forgot password.",
   "errorPermissionDenied": "You don't have permission to perform this action.",
   "errorPageNotFound": "The page could not be found",
   "@errorPageNotFound": {
@@ -5731,6 +5734,30 @@
   "adminRecipesMethodSocial": "Social media",
   "adminRecipesMethodManual": "Manual / unknown",
   "adminNavOps": "Ops",
+  "adminNavGuestList": "Guest list",
+  "adminGuestListTitle": "Guest list",
+  "adminGuestListLoading": "Loading the guest list …",
+  "adminGuestListLoadFailed": "Couldn't load the guest list",
+  "adminGuestListEmpty": "Nobody is invited yet",
+  "adminGuestListColEmail": "Email",
+  "adminGuestListColInvited": "Invited",
+  "adminGuestListExpired": "expired",
+  "adminGuestListRemove": "Remove",
+  "adminGuestListRemoveTitle": "Remove invitation?",
+  "adminGuestListRemoveMessage": "{email} will then not be able to create an account.",
+  "@adminGuestListRemoveMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "adminGuestListEmailLabel": "Exact email address",
+  "adminGuestListInvite": "Invite",
+  "adminGuestListHelp": "An invitation lasts 30 days and is removed once the account is created and the email is confirmed.",
+  "adminGuestListInvalidEmail": "Enter a full email address, for example name@example.com.",
+  "adminGuestListDuplicate": "That address is already invited.",
+  "adminGuestListSaveFailed": "Couldn't save. Try again.",
   "adminOpsTitle": "Operations",
   "adminOpsEmpty": "No operations events yet",
   "adminOpsColType": "Type",

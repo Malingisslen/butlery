@@ -463,6 +463,9 @@
   "errorNetwork": "Nätverksfel. Kontrollera din internetanslutning.",
   "errorServer": "Serverfel. Försök igen senare.",
   "errorAuthentication": "Autentiseringsfel. Logga in igen.",
+  "errorSignupNotInvited": "Butlery är bara öppet för inbjudna just nu.",
+  "errorSignupGateUnavailable": "Det gick inte att skapa kontot just nu. Försök igen om en stund.",
+  "errorSignInEmailUnverified": "Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.",
   "errorPermissionDenied": "Du har inte behörighet för denna åtgärd.",
   "errorPageNotFound": "Sidan kunde inte hittas",
   "@errorPageNotFound": {
@@ -5765,6 +5768,30 @@
   "adminRecipesMethodSocial": "Sociala medier",
   "adminRecipesMethodManual": "Manuellt / okänt",
   "adminNavOps": "Drift",
+  "adminNavGuestList": "Gästlista",
+  "adminGuestListTitle": "Gästlista",
+  "adminGuestListLoading": "Laddar gästlistan …",
+  "adminGuestListLoadFailed": "Kunde inte ladda gästlistan",
+  "adminGuestListEmpty": "Ingen är inbjuden än",
+  "adminGuestListColEmail": "E-post",
+  "adminGuestListColInvited": "Inbjuden",
+  "adminGuestListExpired": "utgången",
+  "adminGuestListRemove": "Ta bort",
+  "adminGuestListRemoveTitle": "Ta bort inbjudan?",
+  "adminGuestListRemoveMessage": "{email} kan då inte skapa ett konto.",
+  "@adminGuestListRemoveMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "adminGuestListEmailLabel": "Exakt e-postadress",
+  "adminGuestListInvite": "Bjud in",
+  "adminGuestListHelp": "Inbjudan gäller i 30 dagar och tas bort när kontot skapas och e-posten är bekräftad.",
+  "adminGuestListInvalidEmail": "Skriv en hel e-postadress, till exempel namn@exempel.se.",
+  "adminGuestListDuplicate": "Den adressen är redan inbjuden.",
+  "adminGuestListSaveFailed": "Det gick inte att spara. Försök igen.",
   "adminOpsTitle": "Drift",
   "adminOpsEmpty": "Inga driftshändelser än",
   "adminOpsColType": "Typ",

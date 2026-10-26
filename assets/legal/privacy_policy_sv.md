@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 22 oktober 2026
-**Version:** 1.21.0
+**Senast uppdaterad:** 24 oktober 2026
+**Version:** 1.22.0
 
 ---
 
@@ -49,6 +49,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 
 - **Importerade recept:** Recept du importerar från externa webbplatser
 - **Inloggning med Google eller Apple:** Om du väljer ”Fortsätt med Google” eller ”Fortsätt med Apple” får vi ditt namn, din e-postadress och ditt användar-id hos Google eller Apple. Se avsnitt 6.5.
+- **Gästlistan under testperioden:** Har du bett om att få prova Butlery innan appen är öppen för alla, skriver vi in din e-postadress på en gästlista så att du kan skapa ett konto. Bara vi som administrerar Butlery ser listan, och vi använder adressen bara till det. Den tas bort när du har skapat kontot och bekräftat e-postadressen. En inbjudan du inte använder slutar gälla efter 30 dagar och raderas automatiskt kort därefter. Vill du att vi tar bort den tidigare, skriv till integritet@butlery.se.
 
 ### 3.4 Om du provar som gäst
 
@@ -73,6 +74,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Säkerhet och bedrägeriförebyggande | Berättigat intresse (Art. 6.1.f) | Skydda tjänsten |
 | Gemensamma betyg (”Butlery-betyget”) | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
 | Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
+| Gästlista för inbjudna under testperioden | Berättigat intresse (Art. 6.1.f) | Du har bett om att få prova; du kan invända (Art. 21) |
 
 ---
 
@@ -258,6 +260,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
+| E-postadress på gästlistan (inbjudan att skapa konto) | Tills kontot är skapat och e-postadressen bekräftad. En oanvänd inbjudan slutar gälla efter 30 dagar och raderas automatiskt kort därefter | Berättigat intresse |
 | Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
@@ -395,7 +398,7 @@ Vid väsentliga ändringar:
 - Vi meddelar dig via push-notis (om aktiverad)
 - Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 22 oktober 2026
+**Senaste ändring:** 24 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -239,6 +240,22 @@ void main() {
 
       expect(outcome, ProviderSignInOutcome.failed);
       expect(auth.errorMessage, contains('Apple'));
+    });
+
+    test('an uninvited sign-up says it is not invited, not that the provider '
+        'failed', () async {
+      platform.answer(SignInProvider.apple, appleTokens());
+      when(() => repo.signInWithProviderTokens(any())).thenThrow(
+        FirebaseAuthException(
+          code: 'internal-error',
+          message: 'SIGNUP_NOT_INVITED: not on the guest list',
+        ),
+      );
+
+      final outcome = await auth.signInWithProvider(SignInProvider.apple);
+
+      expect(outcome, ProviderSignInOutcome.failed);
+      expect(auth.errorMessage, AppLocale.current.errorSignupNotInvited);
     });
   });
 

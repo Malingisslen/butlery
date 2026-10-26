@@ -520,6 +520,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Authentication error. Please sign in again.';
 
   @override
+  String get errorSignupNotInvited =>
+      'Butlery is open to invited people only right now.';
+
+  @override
+  String get errorSignupGateUnavailable =>
+      'The account could not be created right now. Please try again in a moment.';
+
+  @override
+  String get errorSignInEmailUnverified =>
+      'Confirm your email through the link we sent. Can\'t find it? Choose Forgot password.';
+
+  @override
   String get errorPermissionDenied =>
       'You don\'t have permission to perform this action.';
 
@@ -8820,6 +8832,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminNavOps => 'Ops';
+
+  @override
+  String get adminNavGuestList => 'Guest list';
+
+  @override
+  String get adminGuestListTitle => 'Guest list';
+
+  @override
+  String get adminGuestListLoading => 'Loading the guest list …';
+
+  @override
+  String get adminGuestListLoadFailed => 'Couldn\'t load the guest list';
+
+  @override
+  String get adminGuestListEmpty => 'Nobody is invited yet';
+
+  @override
+  String get adminGuestListColEmail => 'Email';
+
+  @override
+  String get adminGuestListColInvited => 'Invited';
+
+  @override
+  String get adminGuestListExpired => 'expired';
+
+  @override
+  String get adminGuestListRemove => 'Remove';
+
+  @override
+  String get adminGuestListRemoveTitle => 'Remove invitation?';
+
+  @override
+  String adminGuestListRemoveMessage(String email) {
+    return '$email will then not be able to create an account.';
+  }
+
+  @override
+  String get adminGuestListEmailLabel => 'Exact email address';
+
+  @override
+  String get adminGuestListInvite => 'Invite';
+
+  @override
+  String get adminGuestListHelp =>
+      'An invitation lasts 30 days and is removed once the account is created and the email is confirmed.';
+
+  @override
+  String get adminGuestListInvalidEmail =>
+      'Enter a full email address, for example name@example.com.';
+
+  @override
+  String get adminGuestListDuplicate => 'That address is already invited.';
+
+  @override
+  String get adminGuestListSaveFailed => 'Couldn\'t save. Try again.';
 
   @override
   String get adminOpsTitle => 'Operations';

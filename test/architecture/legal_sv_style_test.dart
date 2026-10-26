@@ -48,4 +48,27 @@ void main() {
     expect(en, contains('chat images and a profile picture'));
     expect(en, contains('thrown away automatically after 30 days'));
   });
+
+  // BUT-2452: no real invite is entered before these lines are published.
+  test('the privacy policy names the guest list, its basis and its retention', () {
+    final sv = File('assets/legal/privacy_policy_sv.md').readAsStringSync();
+    final en = File('assets/legal/privacy_policy_en.md').readAsStringSync();
+
+    expect(sv, contains('Gästlistan under testperioden'));
+    expect(
+      sv,
+      contains(
+        '| Gästlista för inbjudna under testperioden | Berättigat intresse (Art. 6.1.f)',
+      ),
+    );
+    expect(sv, contains('| E-postadress på gästlistan'));
+    expect(en, contains('The guest list during the test period'));
+    expect(
+      en,
+      contains(
+        '| Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f)',
+      ),
+    );
+    expect(en, contains('| Email address on the guest list'));
+  });
 }

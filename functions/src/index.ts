@@ -187,6 +187,12 @@ export { verifySignupAge } from "./account/verify-signup-age";
 // BUT-920: sets the claim verifySignupAge withholds from a guest, once the
 // guest has linked a password to the same uid.
 export { finishGuestUpgrade } from "./account/finish-guest-upgrade";
+// BUT-2452 (ADR-0034): the guest list. Identity Platform blocking functions;
+// the CLI registers them as the project's beforeCreate/beforeSignIn triggers.
+export {
+  beforeCreateAllowlist,
+  beforeSignInAllowlist,
+} from "./account/signup-allowlist";
 
 // P6-U09: backup codes for two-step verification. Hashes only, server-only
 // collection; recovery proves the password server-side before any code.

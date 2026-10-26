@@ -262,6 +262,15 @@ const TARGETS: {
     writer: "lib/repositories/firebase/firebase_menu_voting_repository.dart",
     stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
   },
+  // BUT-2452 — an unused guest-list invite. One writer: the admin repository's
+  // `toFirestore`; firestore.rules caps it at 30 days ahead.
+  {
+    group: "signup_allowlist",
+    field: "expireAt",
+    retention: "30d",
+    writer: "lib/repositories/firebase/firebase_signup_allowlist_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
+  },
 ];
 
 /**
@@ -303,6 +312,7 @@ const EXPECTED_TTL_GROUPS = [
   "rate_limits",
   "recipe_suggestions",
   "scheduled_notifications",
+  "signup_allowlist",
   "system_ip_audit_caps",
   "trash",
   "views",

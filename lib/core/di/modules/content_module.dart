@@ -25,6 +25,8 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Dependencies from Core Module
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
+import 'package:butlery/repositories/interfaces/signup_allowlist_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -471,6 +473,11 @@ class ContentModule implements DIModule {
       );
       container.registerLazySingleton<OpsLogRepository>(
         () => OpsLogRepository(),
+      );
+      container.registerLazySingleton<SignupAllowlistRepository>(
+        () => FirebaseSignupAllowlistRepository(
+          authRepository: container<auth.AuthRepository>(),
+        ),
       );
       container.registerLazySingleton<ParseEventsRepository>(
         () => ParseEventsRepository(),

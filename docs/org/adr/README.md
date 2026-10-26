@@ -50,6 +50,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0034](ADR-0034-guest-list-password-sign-ups.md) — whether password sign-ups may use a guest-list invite, since they do not prove the address; Malin chose password sign-ups with the invite consumed on verification — escalated to Malin (BUT-2452, 2026-10-24).
 - [ADR-0033](ADR-0033-new-prod-project-conditions.md) — a new production project in the EU replaces `butlery-app-1`: the old deploy key stays until retirement day and is then revoked and deleted together, the Storage bucket follows the `moderateUpload` trigger into europe-west1, and Malin's card decisions are recorded — resolved by synthesis (BUT-451 follow-up, 2026-10-20).
 - [ADR-0032](ADR-0032-malins-real-account-in-staging.md) — Malin signs in to staging with her real Google account; staging is recorded as a place where personal data is processed, with production's TTLs and erasure cascade — escalated to Malin (BUT-451, 2026-10-20).
 - [ADR-0031](ADR-0031-staging-mirrors-every-scheduled-job.md) — Staging runs every scheduled job production runs; privacy over cost, within the 50 kr budget (BUT-451, 2026-10-20).

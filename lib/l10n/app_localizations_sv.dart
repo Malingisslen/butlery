@@ -489,6 +489,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorAuthentication => 'Autentiseringsfel. Logga in igen.';
 
   @override
+  String get errorSignupNotInvited =>
+      'Butlery är bara öppet för inbjudna just nu.';
+
+  @override
+  String get errorSignupGateUnavailable =>
+      'Det gick inte att skapa kontot just nu. Försök igen om en stund.';
+
+  @override
+  String get errorSignInEmailUnverified =>
+      'Bekräfta din e-post via länken vi skickade. Hittar du den inte? Välj Glömt lösenord.';
+
+  @override
   String get errorPermissionDenied =>
       'Du har inte behörighet för denna åtgärd.';
 
@@ -8786,6 +8798,62 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminNavOps => 'Drift';
+
+  @override
+  String get adminNavGuestList => 'Gästlista';
+
+  @override
+  String get adminGuestListTitle => 'Gästlista';
+
+  @override
+  String get adminGuestListLoading => 'Laddar gästlistan …';
+
+  @override
+  String get adminGuestListLoadFailed => 'Kunde inte ladda gästlistan';
+
+  @override
+  String get adminGuestListEmpty => 'Ingen är inbjuden än';
+
+  @override
+  String get adminGuestListColEmail => 'E-post';
+
+  @override
+  String get adminGuestListColInvited => 'Inbjuden';
+
+  @override
+  String get adminGuestListExpired => 'utgången';
+
+  @override
+  String get adminGuestListRemove => 'Ta bort';
+
+  @override
+  String get adminGuestListRemoveTitle => 'Ta bort inbjudan?';
+
+  @override
+  String adminGuestListRemoveMessage(String email) {
+    return '$email kan då inte skapa ett konto.';
+  }
+
+  @override
+  String get adminGuestListEmailLabel => 'Exakt e-postadress';
+
+  @override
+  String get adminGuestListInvite => 'Bjud in';
+
+  @override
+  String get adminGuestListHelp =>
+      'Inbjudan gäller i 30 dagar och tas bort när kontot skapas och e-posten är bekräftad.';
+
+  @override
+  String get adminGuestListInvalidEmail =>
+      'Skriv en hel e-postadress, till exempel namn@exempel.se.';
+
+  @override
+  String get adminGuestListDuplicate => 'Den adressen är redan inbjuden.';
+
+  @override
+  String get adminGuestListSaveFailed =>
+      'Det gick inte att spara. Försök igen.';
 
   @override
   String get adminOpsTitle => 'Drift';

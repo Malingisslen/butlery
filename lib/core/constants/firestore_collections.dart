@@ -77,6 +77,7 @@ abstract final class FirestoreCollections {
   static const String analytics = 'analytics';
   static const String metrics = 'metrics';
   static const String systemEvents = 'system_events';
+  static const String signupAllowlist = 'signup_allowlist';
   static const String deepLinks = 'deep_links';
   static const String connectivityTest = 'connectivity_test';
   static const String butleryArchive = 'butlery_archive';

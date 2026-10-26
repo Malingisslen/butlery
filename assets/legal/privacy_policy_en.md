@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 22, 2026
-**Version:** 1.21.0
+**Last updated:** October 24, 2026
+**Version:** 1.22.0
 
 ---
 
@@ -49,6 +49,7 @@ We collect the following types of personal data when you use Butlery:
 
 - **Imported recipes:** Recipes you import from external websites
 - **Sign-in with Google or Apple:** If you choose "Continue with Google" or "Continue with Apple", we receive your name, your email address and your user ID at Google or Apple. See section 6.5.
+- **The guest list during the test period:** If you have asked to try Butlery before the app is open to everyone, we put your email address on a guest list so that you can create an account. Only those of us who run Butlery can see the list, and we use the address for nothing else. It is removed once you have created the account and confirmed the email address. An invitation you do not use stops being valid after 30 days and is deleted automatically shortly after. If you want us to remove it sooner, write to integritet@butlery.se.
 
 ### 3.4 If you try Butlery as a guest
 
@@ -73,6 +74,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Security and fraud prevention | Legitimate interest (Art. 6.1.f) | Protect the service |
 | Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
 | Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
+| Guest list for invited people during the test period | Legitimate interest (Art. 6.1.f) | You asked to try Butlery; you can object (Art. 21) |
 
 ---
 
@@ -257,6 +259,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
+| Email address on the guest list (an invitation to create an account) | Until the account is created and the email address confirmed. An unused invitation stops being valid after 30 days and is deleted automatically shortly after | Legitimate interest |
 | Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
@@ -394,7 +397,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 22, 2026
+**Last change:** October 24, 2026
 **Version history:** Available upon request
 
 ---

@@ -630,6 +630,12 @@
       "path": "functions/src/account/verify-signup-age.ts"
     },
     {
+      "id": "cf-signup-allowlist",
+      "label": "beforeCreateAllowlist / beforeSignInAllowlist — gästlistan (blocking functions)",
+      "context": "cloud-function",
+      "path": "functions/src/account/signup-allowlist.ts"
+    },
+    {
       "id": "svc-onboarding-progress",
       "label": "OnboardingProgressService — resume",
       "context": "service",
@@ -3114,6 +3120,13 @@
           "to": "ds-auth",
           "payload": "skapar kontot + skickar verifieringsmejl",
           "transport": "Auth SDK",
+          "verified": true
+        },
+        {
+          "from": "ds-auth",
+          "to": "cf-signup-allowlist",
+          "payload": "beforeUserCreated släpper bara igenom en adress på gästlistan (signup_allowlist, läst och raderad i en transaktion när adressen är bevisad); beforeUserSignedIn nekar ett obekräftat lösenordskonto efter registreringssessionen; av bara när system/config.signupAllowlistEnabled är exakt false",
+          "transport": "Auth trigger",
           "verified": true
         },
         {

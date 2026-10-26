@@ -8,6 +8,7 @@ import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
+import 'package:butlery/views/admin/signup_allowlist_view.dart';
 import 'package:butlery/views/admin/widgets/admin_top_bar.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
 import 'package:butlery/views/admin/admin_url_state_stub.dart'
@@ -88,6 +89,7 @@ class _AdminShellState extends State<AdminShell>
       keys: const [MetricKey.recipeTotal, MetricKey.recipeByMethod],
     ),
     const OpsLogView(),
+    const SignupAllowlistView(),
   ];
 
   @override
@@ -106,6 +108,7 @@ class _AdminShellState extends State<AdminShell>
               l10n.adminNavParsing,
               l10n.adminNavRecipes,
               l10n.adminNavOps,
+              l10n.adminNavGuestList,
             ],
             email: auth.currentUserEmail,
             onSignOut: auth.signOut,
