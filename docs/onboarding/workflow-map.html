@@ -2450,7 +2450,7 @@
           "from": "cf-structure",
           "to": "ext-gemini",
           "payload": "prompt → strukturerat recept",
-          "transport": "HTTPS (Vertex AI, eu)",
+          "transport": "HTTPS (Vertex AI, europe-west4)",
           "verified": true
         },
         {
@@ -5970,7 +5970,7 @@
         {
           "from": "vm-group-recipe-selection",
           "to": "ds-recipes",
-          "payload": "shareSelectedRecipes → memberPermissions per medlem, plus socialData.categoryIds = [gruppens id] och socialData.grants[uid] = ['group:<id>'] — härkomsten som gör delningen återkallelsebar. Medlemmarna löses upp HÄR och nu: den som går med i gruppen senare får ingen åtkomst retroaktivt (BUT-1797)",
+          "payload": "shareSelectedRecipes → memberPermissions per medlem, plus socialData.categoryIds = [gruppens id] och socialData.grants[uid] = ['group:<id>'] — härkomsten som gör delningen återkallelsebar. Medlemmarna löses upp HÄR och nu: den som går med i gruppen senare får ingen åtkomst retroaktivt (BUT-1797). En grupp där bara delaren finns avvisas i RecipeSharingManager innan någon kopia skapas, med texten \"Gruppen har inga medlemmar att dela med\" (BUT-1815)",
           "transport": "call",
           "verified": true
         }
