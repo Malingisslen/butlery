@@ -462,6 +462,24 @@
       "path": "lib/repositories/firebase/firebase_shared_recipe_repository.dart"
     },
     {
+      "id": "v-recipe-sharing-status",
+      "label": "Delningsstatus på receptet (återkalla person/grupp · sluta dela)",
+      "context": "view",
+      "path": "lib/views/recipe_detail/recipe_detail_sharing_status.dart"
+    },
+    {
+      "id": "v-shared-content-actions",
+      "label": "Delat med mig — sluta dela (kortets meny)",
+      "context": "view",
+      "path": "lib/views/social/shared_with_me/shared_content_actions.dart"
+    },
+    {
+      "id": "svc-recipe-member-manager",
+      "label": "RecipeMemberManager — removeMember / removeGroup",
+      "context": "service",
+      "path": "lib/services/unified/operations/modules/recipe_member_manager.dart"
+    },
+    {
       "id": "repo-search",
       "label": "SearchRepository — sökindex",
       "context": "repository",
@@ -2793,6 +2811,81 @@
         "SOC-09",
         "SOC-10",
         "SOC-11",
+        "SOC-12"
+      ]
+    },
+    {
+      "id": "flow3-revoke",
+      "label": "återkalla delat recept",
+      "description": "Tre sätt att ta tillbaka en delning: ta bort en person, ta bort en grupp, eller sluta dela helt. Åtkomsten sitter i receptets memberPermissions och tas bort först; därefter tar delaren bort personerna från sina egna shared_content-rader så att kortet försvinner ur deras \"Delat med mig\" (BUT-1815). Misslyckas det andra steget står återkallelsen kvar och bara kortet blir kvar. Rader som någon annan skapade när hen delade vidare rörs inte.",
+      "steps": [
+        {
+          "from": "v-recipe-sharing-status",
+          "to": "svc-recipe-member-manager",
+          "payload": "social.removeMember(recipeId, userId) eller social.removeGroup(recipeId, groupId), efter bekräftelsedialog",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-recipe-member-manager",
+          "to": "ds-recipes",
+          "payload": "removeMember: personens nyckel i memberPermissions och hela dess grants-post tas bort (alla skäl på en gång). removeGroup: gruppens id ur categoryIds; bara de som enbart nåddes via gruppen tappar åtkomst, den som också har en direktdelning eller äger receptet behåller den (BUT-1797). Skrivs via saveRecipeForSocialModule",
+          "transport": "Firestore update",
+          "verified": true
+        },
+        {
+          "from": "svc-recipe-member-manager",
+          "to": "repo-shared",
+          "payload": "removeRecipientsFromOwnShares(recipeId, de som faktiskt tappade åtkomst) — fel här loggas och ångrar inte återkallelsen",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-shared",
+          "to": "ds-social",
+          "payload": "Delarens egna shared_content-rader för receptet, sökta på både originalRecipeId och recipeId (de två skrivarna stavar nyckeln olika): sharedToUserIds arrayRemove + members/{uid} raderas, en batch per rad",
+          "transport": "Firestore update/delete",
+          "verified": true
+        },
+        {
+          "from": "svc-recipe-member-manager",
+          "to": "svc-notification",
+          "payload": "member_removed-notis till varje borttagen person — klientsänd, tyst vid fel",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-recipe-sharing-status",
+          "to": "svc-social-sharing",
+          "payload": "unshareRecipe(recipeId) — \"Sluta dela\" med alla. Bara ägaren får",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-shared-content-actions",
+          "to": "svc-social-sharing",
+          "payload": "SocialRecipeCoordinator.unshareRecipe(originalRecipeId) — samma väg från kortets meny i Delat med mig",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-social-sharing",
+          "to": "ds-recipes",
+          "payload": "receptet sparas som personligt, socialData = null (all åtkomst borta). Ingen notis till de tidigare mottagarna",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "svc-social-sharing",
+          "to": "repo-shared",
+          "payload": "removeRecipientsFromOwnShares(recipeId, alla tidigare medlemmar utom ägaren) — fel loggas och ångrar inte",
+          "transport": "method call",
+          "verified": true
+        }
+      ],
+      "area": "socialt",
+      "features": [
+        "SOC-09",
         "SOC-12"
       ]
     },
