@@ -1,9 +1,9 @@
 {
-  "lastRun": "2026-10-19",
+  "lastRun": "2026-10-26",
   "dossiersRefreshed": 0,
   "worldWatchRoles": 2,
   "retroDue": false,
-  "acceptRate": 0.957,
+  "acceptRate": 0.939,
   "scratchCleared": 0,
-  "notes": "Accept-rate healthy: 0.957 (47 commits, 2 reworked) over the trailing 30 days. Security Architect and Release/App-Store Compliance were both due (last scanned 2026-10-08) — lean WebSearch pass run on both, no material finding, caught up to 2026-10-19. Legal Counsel not due (scanned 2026-10-12, monthly cadence). No retro due (shakedown + full both already logged). No dossier-staleness markers present. No tasks/*-plan.md files qualified for archiving — all three outstanding plans (design-migration-completion-plan, design-migration-handover, receptkort-plan) have open decisions/questions awaiting Malin, kept as-is."
+  "notes": "Accept-rate healthy: 0.939 (66 commits, 4 reworked) over the trailing 30 days. Security Architect and Release/App-Store Compliance were both due (last scanned 2026-10-19) — lean pass run on both, no material finding (freeRASP/Dart-pub CVE unchanged; Apple's Oct 16 App Review Guidelines revision and Google Play's Oct 28 items reviewed and judged not material), caught up to 2026-10-26. Legal Counsel not due (scanned 2026-10-12, monthly cadence). No retro due (shakedown + full both already logged). No dossier-staleness markers present. Archived tasks/ai-cap-signal-plan.md — shipped (BUT-2431, Malin decided 2026-10-21, no open questions left). The other outstanding plans (design-migration-completion-plan, design-migration-handover, new-prod-project-plan, receptkort-plan, vertex-region-plan) still have open questions or are mid-flight, kept as-is."
 }
