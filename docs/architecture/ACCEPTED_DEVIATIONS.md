@@ -2976,6 +2976,11 @@ neither passed an `auditRepository` at all.
   **The same reading applies to the shopping-list precedent** (`exportSharedShoppingListsAsContributor`),
   whose contributor branch therefore also never returns a row and whose note also always fires.
   Pre-existing, not introduced here, and its own ticket.
+  **Superseded 2026-10-27:** the shopping-list precedent named above,
+  "`exportSharedShoppingListsAsContributor`", no longer exists (removed in BUT-1747, 2026-10-08).
+  `SharedShoppingListExport.export` queries `exportSharedShoppingListsOwned` and
+  `exportSharedShoppingListsAsMember`; `SocialExportManager` queries
+  `exportSharedShoppingListsReceived`. None of them queries `contributorUserIds`.
   Residual, named rather than discovered: a leaver's contribution can vanish from the export
   entirely if the dish is later displaced and the trail row ages past the 50-row cap. That is the
   already-accepted displacement gap, but it weighs more here — the leaver has no in-app fallback.
