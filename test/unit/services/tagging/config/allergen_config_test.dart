@@ -176,8 +176,8 @@ void main() {
         );
         expect(
           notkott.freeTag,
-          equals('nötkötsfri'),
-          reason: 'nötkött should have nötkötsfri tag',
+          equals('nötköttsfri'),
+          reason: 'nötkött should have nötköttsfri tag',
         );
       });
     });

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": 3,
-  "updatedAt": "2026-10-05T09:51:45.943848Z",
+  "version": 4,
+  "updatedAt": "2026-10-27T15:02:39.371878Z",
   "updatedBy": "migration-script",
   "displayOrder": [
     "gluten",
@@ -410,7 +410,7 @@
       "tags": {
         "sv": {
           "contains": "innehåller-nötkött",
-          "free": "nötkötsfri"
+          "free": "nötköttsfri"
         },
         "en": {
           "contains": "contains-beef",

@@ -13957,7 +13957,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipeCardPantryMatchA11y(int percent) {
-    return 'Matchar $percent% av dina ingredienser';
+    return 'Du har $percent % av receptets ingredienser';
   }
 
   @override

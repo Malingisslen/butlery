@@ -72,6 +72,23 @@ import 'package:butlery/widgets/common/butlery_app_focus_ring.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 
+/// The app's bottom stays clear of the system navigation bar, and the text
+/// scale is clamped once for every descendant (BUT-800).
+///
+/// The clamp reads the MediaQuery INSIDE the SafeArea. Copied from above it,
+/// the bottom padding the SafeArea already used comes back, and every bar that
+/// pads for the system bar pads a second time.
+@visibleForTesting
+Widget appRootInsets(Widget child) => SafeArea(
+  top: false,
+  left: false,
+  right: false,
+  child: MediaQuery.withClampedTextScaling(
+    maxScaleFactor: AccessibilityUtils.maxTextScale,
+    child: child,
+  ),
+);
+
 /// Fallback shown when bootstrap throws before [ButleryApp] can start. The
 /// "Starta om" button calls [onRestart] (wired to `main` in `main.dart`) so
 /// this widget doesn't have to import the entry point. The texts are fixed
@@ -824,17 +841,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // Universal fix for Android nav bar overlay + beta feedback FAB overlay
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();
-          // BUT-800: clamp `textScaler` once at the MaterialApp root so every
-          // descendant widget inherits the clamped MediaQuery automatically.
-          final mq = MediaQuery.of(context);
-          final clampedChild = MediaQuery(
-            data: mq.copyWith(
-              textScaler: mq.textScaler.clamp(
-                maxScaleFactor: AccessibilityUtils.maxTextScale,
-              ),
-            ),
-            child: child,
-          );
           // Keyboard layer (BUT-521).
           //
           // Must stay INSIDE this builder. Being here puts it below
@@ -848,17 +854,13 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             child: ButleryAppFocusRing(
               child: MaintenanceModeGate(
                 child: AppKeyboardLayer(
-                  child: SafeArea(
-                    top: false, // Let AppBar handle top
-                    bottom: true, // Always protect bottom from system nav bar
-                    left: false,
-                    right: false,
-                    child: FeedbackAwareScaffoldMessenger(
+                  child: appRootInsets(
+                    FeedbackAwareScaffoldMessenger(
                       child: Stack(
                         children: [
                           RepaintBoundary(
                             key: feedbackRepaintBoundaryKey,
-                            child: clampedChild,
+                            child: child,
                           ),
                           const FeedbackFAB(),
                         ],

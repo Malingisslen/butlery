@@ -1,6 +1,7 @@
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
@@ -66,14 +67,50 @@ class IngredientMatchService extends BaseService {
     operationName: 'matchRecipes',
   );
 
-  /// Same as [matchRecipes]; kept for the ingredient-search caller.
+  /// The ingredient search: like [matchRecipes], but a selected ingredient
+  /// also matches its specific forms ([expandToSpecificForms]), so "kyckling"
+  /// finds a recipe with "kycklingfilé". The pantry keeps [matchRecipes],
+  /// where having one is not having the other.
   Future<List<IngredientMatchResult>> matchRecipesWithNormalization({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,
-  }) => matchRecipes(
-    selectedIngredientIds: selectedIngredientIds,
+  }) async => _matchWithResolver(
+    selectedIngredientIds: await expandToSpecificForms(selectedIngredientIds),
     recipes: recipes,
+    resolveNormalized: _lookupIds,
+    operationName: 'matchRecipesWithNormalization',
   );
+
+  /// [ids] plus every registry entry that is a specific form of one of them:
+  /// same group, and a word of its Swedish name starts with the selected
+  /// one's ("kycklingfilé", "hel kyckling" for "kyckling"). The group keeps
+  /// "kycklingbuljong" out of "kyckling", and the word start keeps
+  /// "sötpotatis" out of "potatis". If the registry cannot be read, [ids]
+  /// is returned as it is.
+  Future<Set<String>> expandToSpecificForms(Set<String> ids) async {
+    if (ids.isEmpty) return ids;
+    final List<IngredientData> all;
+    try {
+      all = await _ingredientRepository.getAll();
+    } catch (e) {
+      AppLogger.warning('Ingredient registry unavailable for expansion: $e');
+      return ids;
+    }
+    final selected = all.where((i) => ids.contains(i.id)).toList();
+    final expanded = {...ids};
+    for (final base in selected) {
+      final name = base.swedish.trim().toLowerCase();
+      if (name.isEmpty) continue;
+      for (final other in all) {
+        if (other.group != base.group) continue;
+        final otherName = other.swedish.trim().toLowerCase();
+        if (otherName.startsWith(name) || otherName.contains(' $name')) {
+          expanded.add(other.id);
+        }
+      }
+    }
+    return expanded;
+  }
 
   Future<List<IngredientMatchResult>> _matchWithResolver({
     required Set<String> selectedIngredientIds,

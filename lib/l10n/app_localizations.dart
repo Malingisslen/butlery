@@ -21572,7 +21572,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCardPantryMatchA11y.
   ///
   /// In sv, this message translates to:
-  /// **'Matchar {percent}% av dina ingredienser'**
+  /// **'Du har {percent} % av receptets ingredienser'**
   String recipeCardPantryMatchA11y(int percent);
 
   /// No description provided for @ingredientSearchTitle.

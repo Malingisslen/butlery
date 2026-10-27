@@ -56,8 +56,10 @@ class ReservedTags {
     final reserved = <String>{};
 
     // Dietary tags
+    // The key too: "nötkötsfri" is a key whose tagSv is spelled differently.
     for (final entry in DietaryConfig.all) {
       reserved.add(entry.tagSv.toLowerCase());
+      reserved.add(entry.key.toLowerCase());
     }
 
     // Allergen tags

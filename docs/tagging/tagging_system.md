@@ -217,7 +217,7 @@ Based on `recipe.core.timeMinutes`:
 | `alkohol` | `contains-alcohol` | `innehåller-alkohol` | `alkoholfri` |
 | `kött` | `meat` | `innehåller-kött` | — |
 | `fläsk` | `pork` | `innehåller-fläsk` | `fläskfri` |
-| `nötkött` | `beef` | `innehåller-nötkött` | `nötkötsfri` |
+| `nötkött` | `beef` | `innehåller-nötkött` | `nötköttsfri` |
 
 #### Combined Allergens (OR logic)
 

@@ -629,9 +629,10 @@ class FirebaseIngredientRepository
     for (final ingredient in _cache.values) {
       int score = 0;
 
-      // Exact match in Swedish name
+      // The word the user typed comes first, whatever another entry's
+      // aliases add up to.
       if (_normalize(ingredient.swedish) == normalized) {
-        score += 100;
+        score += 1000;
       } else if (_normalize(ingredient.swedish).startsWith(normalized)) {
         score += 50;
       } else if (_normalize(ingredient.swedish).contains(normalized)) {
@@ -647,18 +648,21 @@ class FirebaseIngredientRepository
         score += 20;
       }
 
-      // Match in aliases
+      // The best alias counts once: summed, an entry with many aliases
+      // outranked the exact word ("kycklingbuljong" above "kyckling").
+      var aliasScore = 0;
       for (final alias in [...ingredient.aliasesSv, ...ingredient.aliasesEn]) {
         final aliasNorm = _normalize(alias);
-        if (aliasNorm == normalized) {
-          score += 60;
-          break;
-        } else if (aliasNorm.startsWith(normalized)) {
-          score += 30;
-        } else if (aliasNorm.contains(normalized)) {
-          score += 15;
-        }
+        final s = aliasNorm == normalized
+            ? 60
+            : aliasNorm.startsWith(normalized)
+            ? 30
+            : aliasNorm.contains(normalized)
+            ? 15
+            : 0;
+        if (s > aliasScore) aliasScore = s;
       }
+      score += aliasScore;
 
       if (score > 0) {
         results.add(ingredient);

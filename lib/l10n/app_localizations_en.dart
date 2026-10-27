@@ -14057,7 +14057,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recipeCardPantryMatchA11y(int percent) {
-    return 'Matches $percent% of your ingredients';
+    return 'You have $percent% of the recipe\'s ingredients';
   }
 
   @override

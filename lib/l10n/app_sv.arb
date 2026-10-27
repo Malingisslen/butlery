@@ -9332,7 +9332,7 @@
   "filterWithMyIngredients": "Med mina ingredienser",
   "shoppingTabLists": "Inköpslistor",
   "shoppingTabPantry": "Skafferiet",
-  "recipeCardPantryMatchA11y": "Matchar {percent}% av dina ingredienser",
+  "recipeCardPantryMatchA11y": "Du har {percent} % av receptets ingredienser",
   "@recipeCardPantryMatchA11y": {
     "placeholders": {
       "percent": {
