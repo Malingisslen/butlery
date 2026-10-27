@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_list_item.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection/recipe_share_info_bar.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
@@ -127,7 +128,15 @@ class FriendRecipeSharingDialog extends StatelessWidget {
 
         // Info and actions
         if (viewModel.searchQuery.isNotEmpty || viewModel.hasSelectedRecipes)
-          _buildInfo(context, viewModel),
+          RecipeShareInfoBar(
+            searchQuery: viewModel.searchQuery,
+            filteredCount: viewModel.filteredCount,
+            totalCount: viewModel.totalCount,
+            hasSelectedRecipes: viewModel.hasSelectedRecipes,
+            selectedCount: viewModel.selectedCount,
+            onClearSelection: viewModel.clearSelections,
+            onClearSearch: viewModel.clearSearch,
+          ),
 
         Divider(
           height: AppDimensions.borderWidthThin,
@@ -156,60 +165,6 @@ class FriendRecipeSharingDialog extends StatelessWidget {
               : StateWidget.noSearchResults(onAction: viewModel.clearSearch),
         ),
       ],
-    );
-  }
-
-  Widget _buildInfo(BuildContext context, RecipeSelectionViewModel viewModel) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
-      child: Row(
-        children: [
-          if (viewModel.searchQuery.isNotEmpty)
-            Text(
-              context.l10n.dialogFilteredRecipeCount(
-                viewModel.filteredCount,
-                viewModel.totalCount,
-              ),
-              style: AppTextStyles.bodySmall,
-            ),
-          if (viewModel.hasSelectedRecipes) ...[
-            if (viewModel.searchQuery.isNotEmpty) const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.space4,
-                vertical: AppDimensions.space4,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.zero,
-              ),
-              child: Text(
-                context.l10n.dialogSelectedCount(viewModel.selectedCount),
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-          const Spacer(),
-          if (viewModel.hasSelectedRecipes)
-            TextButton(
-              onPressed: viewModel.clearSelections,
-              child: Text(
-                context.l10n.dialogClearSelection,
-                style: AppTextStyles.labelLarge,
-              ),
-            )
-          else if (viewModel.searchQuery.isNotEmpty)
-            TextButton(
-              onPressed: viewModel.clearSearch,
-              child: Text(
-                context.l10n.commonClear,
-                style: AppTextStyles.labelLarge,
-              ),
-            ),
-        ],
-      ),
     );
   }
 
