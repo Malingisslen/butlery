@@ -113,8 +113,12 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
     uid,
   ).orderBy('deletedAt', descending: true).limit(TrashRepository.listLimit);
 
+  static String? _lastUnreadable;
+
   // A row that cannot be read cannot be restored, so it is not offered. It is
-  // logged, because an empty trash is otherwise all the user and we see.
+  // reported, or the user and we see only an empty trash. The error object
+  // makes it a Crashlytics report rather than a breadcrumb; it carries no ids.
+  // The open trash re-parses on every update, so the same rows report once.
   static List<TrashItem> _parse(QuerySnapshot<Map<String, dynamic>> snap) {
     final items = <TrashItem>[];
     final unreadable = <String>[];
@@ -126,12 +130,15 @@ class FirebaseTrashRepository extends BaseFirebaseRepository<TrashItem>
         items.add(item);
       }
     }
-    if (unreadable.isNotEmpty) {
+    final key = unreadable.join(',');
+    if (unreadable.isNotEmpty && key != _lastUnreadable) {
       AppLogger.error(
-        'Trash: ${unreadable.length} of ${snap.docs.length} rows unreadable: '
-        '${unreadable.join(', ')}',
+        'Trash: ${unreadable.length} of ${snap.docs.length} rows unreadable, '
+        'first: ${unreadable.take(5).join(', ')}',
+        StateError('trash rows unreadable'),
       );
     }
+    _lastUnreadable = key;
     return items;
   }
 
