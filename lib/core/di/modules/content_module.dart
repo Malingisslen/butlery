@@ -232,7 +232,7 @@ class ContentModule implements DIModule {
     NeuralLineClassifier,
     // Cooking-mode substitution suggestions (BUT-202)
     SubstitutionSuggestionService,
-    // Köksbutlern (tasks/koksbutlern-plan.md): OS TTS readouts
+    // Köksbutlern: OS TTS readouts
     TtsService,
     // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
     StepTimerService,
@@ -551,7 +551,7 @@ class ContentModule implements DIModule {
         dispose: (s) => s.dispose(),
       );
 
-      // Köksbutlern (tasks/koksbutlern-plan.md): OS-native TTS for
+      // Köksbutlern: OS-native TTS for
       // cooking-mode readouts. No deps — wraps flutter_tts directly.
       container.registerLazySingleton<TtsService>(
         () => TtsService(),
