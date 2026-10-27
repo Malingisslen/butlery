@@ -122,6 +122,8 @@ nul
 !tools/gen_role_paths.py
 # Role-org Phase-2 stakeholder router (committed tooling)
 !tools/stakeholder_router.py
+# Play internal-track upload from CI's bundle (committed tooling)
+!tools/play_upload_internal.py
 # Opus-vs-Sonnet review trial (committed tooling)
 !.claude/hooks/review_trial.py
 
