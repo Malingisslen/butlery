@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/navigation/add_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -113,6 +114,25 @@ void main() {
       expect(x(Routes.weeklyMenu), lessThan(plus));
       expect(plus, lessThan(x(Routes.shoppingList)));
       expect(x(Routes.shoppingList), lessThan(x(Routes.more)));
+    });
+
+    testWidgets('leaves the system navigation area transparent over the ink, '
+        'so Android adds no scrim band below the bar', (tester) async {
+      await tester.pumpWidget(_app(home: (c) => _bar(c, current: 0)));
+      final region = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+        find
+            .ancestor(
+              of: find.byKey(ButleryBottomNavigation.inkSurfaceKey),
+              matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+            )
+            .first,
+      );
+      expect(region.value.systemNavigationBarColor, Colors.transparent);
+      expect(region.value.systemNavigationBarContrastEnforced, isFalse);
+      expect(
+        region.value.systemNavigationBarIconBrightness,
+        Brightness.light,
+      );
     });
 
     testWidgets('the home glyph is drawn 27 px and the others 24 px, all in '
