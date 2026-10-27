@@ -939,11 +939,7 @@ class _IngredientsPanel extends StatelessWidget {
                       ),
                     )
                   else
-                    _ingredientRow(
-                      context,
-                      row as IngredientLineRow,
-                      line,
-                    ),
+                    _ingredientRow(context, row as IngredientLineRow, line),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: AppDimensions.space12,
@@ -981,9 +977,12 @@ class _IngredientsPanel extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final split = splitIngredientQuantity(line.text);
     void swap() => _showSubstitutionSheet(context, vm, line.ingredientIndex);
-    // One node with the whole line, as before the amount got its own column.
+    // One node with the whole line, as before the amount got its own column,
+    // read as shown ("1,5 dl", not "1 1/2 dl").
     return Semantics(
-      label: line.text,
+      label: split.quantity.isEmpty
+          ? line.text
+          : '${split.quantity} ${split.name}',
       excludeSemantics: true,
       onLongPress: swap,
       child: GestureDetector(
@@ -1345,11 +1344,7 @@ class _NavButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
-  const _NavButton({
-    required this.icon,
-    required this.label,
-    this.onPressed,
-  });
+  const _NavButton({required this.icon, required this.label, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
