@@ -10,6 +10,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:html/dom.dart';
+import 'package:html/parser.dart' as html_parser;
 
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
@@ -118,6 +119,80 @@ void main() {
       // Title only (0.20) is well below the 0.80 minimum.
       final parser = _CssFallbackParser({'name': 'Bara en titel'});
       expect(parser.parseRecipe('inget recept här'), isNull);
+    });
+  });
+
+  group('swedishTimeToIso8601', () {
+    final parser = _NoopParser();
+
+    test('minutes alone', () {
+      expect(parser.swedishTimeToIso8601('30 minuter'), 'PT30M');
+    });
+
+    test('hours and minutes, any case', () {
+      expect(parser.swedishTimeToIso8601('1 Timme 30 min'), 'PT1H30M');
+    });
+
+    test('a zero is matched but not written', () {
+      expect(parser.swedishTimeToIso8601('0 min'), 'PT');
+    });
+
+    test('text without a number is null', () {
+      expect(parser.swedishTimeToIso8601('en stund'), isNull);
+    });
+  });
+
+  group('extractImage', () {
+    final parser = _NoopParser();
+
+    test('itemprop wins over every other selector', () {
+      final doc = html_parser.parse(
+        '<article><img src="https://x.se/article.jpg"></article>'
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>'
+        '<img itemprop="image" src="https://x.se/itemprop.jpg">',
+      );
+      expect(
+        parser.extractImage(doc, siteImageSelector: '.site-image img'),
+        'https://x.se/itemprop.jpg',
+      );
+    });
+
+    test('the site selector is tried before the hero and article images', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-hero"><img src="https://x.se/hero.jpg"></div>'
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>',
+      );
+      expect(
+        parser.extractImage(doc, siteImageSelector: '.site-image img'),
+        'https://x.se/site.jpg',
+      );
+    });
+
+    test('without a site selector the hero image is next', () {
+      final doc = html_parser.parse(
+        '<div class="site-image"><img src="https://x.se/site.jpg"></div>'
+        '<div class="recipe-hero"><img src="https://x.se/hero.jpg"></div>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/hero.jpg');
+    });
+
+    test('data-src is used when src is missing', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-image"><img data-src="https://x.se/lazy.jpg"></div>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/lazy.jpg');
+    });
+
+    test('a relative URL is skipped for the next selector', () {
+      final doc = html_parser.parse(
+        '<div class="recipe-image"><img src="/relative.jpg"></div>'
+        '<article><img src="https://x.se/article.jpg"></article>',
+      );
+      expect(parser.extractImage(doc), 'https://x.se/article.jpg');
+    });
+
+    test('no image is null', () {
+      expect(parser.extractImage(html_parser.parse('<p>inget</p>')), isNull);
     });
   });
 }

@@ -154,7 +154,7 @@ class ArlaRecipeParser extends RecipeSiteParser {
       final instructions = _extractInstructions(doc);
       final portions = _extractPortions(doc);
       final time = _extractTime(doc);
-      final image = _extractImage(doc);
+      final image = extractImage(doc, siteImageSelector: '.arla-image img');
 
       // Must have at least title and ingredients
       if (title == null || ingredients.isEmpty) {
@@ -384,68 +384,11 @@ class ArlaRecipeParser extends RecipeSiteParser {
         final timeText = element.text.trim();
         if (timeText.isNotEmpty) {
           // Try to convert to ISO 8601
-          return _convertToIso8601(timeText);
+          return swedishTimeToIso8601(timeText);
         }
       }
     }
 
     return null;
-  }
-
-  String? _extractImage(Document doc) {
-    final selectors = [
-      '[itemprop="image"]',
-      '.recipe-image img',
-      '.arla-image img',
-      '.recipe-hero img',
-      'article img',
-    ];
-
-    for (final selector in selectors) {
-      final element = doc.querySelector(selector);
-      if (element != null) {
-        final src = element.attributes['src'] ?? element.attributes['data-src'];
-        if (src != null && src.startsWith('http')) {
-          return src;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /// Convert Swedish time text to ISO 8601 duration
-  /// Examples:
-  /// - "30 minuter" → "PT30M"
-  /// - "1 timme 30 min" → "PT1H30M"
-  /// - "45 min" → "PT45M"
-  String? _convertToIso8601(String timeText) {
-    final lowerText = timeText.toLowerCase();
-
-    // Extract hours
-    final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
-    final hours = hoursMatch != null
-        ? int.tryParse(hoursMatch.group(1)!)
-        : null;
-
-    // Extract minutes
-    final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
-    final minutes = minutesMatch != null
-        ? int.tryParse(minutesMatch.group(1)!)
-        : null;
-
-    if (hours == null && minutes == null) {
-      return null;
-    }
-
-    final buffer = StringBuffer('PT');
-    if (hours != null && hours > 0) {
-      buffer.write('${hours}H');
-    }
-    if (minutes != null && minutes > 0) {
-      buffer.write('${minutes}M');
-    }
-
-    return buffer.toString();
   }
 }

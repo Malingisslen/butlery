@@ -434,7 +434,7 @@ void main() {
 
     group('Time Conversion', () {
       test('should convert "30 minuter" to ISO 8601', () {
-        // This is tested via CSS fallback which uses _convertToIso8601
+        // This is tested via CSS fallback
         const html = '''
 <html>
 <body>

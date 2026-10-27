@@ -152,4 +152,63 @@ abstract class RecipeSiteParser {
         .replaceAll(RegExp(r'[\u201C\u201D]'), '"') // Smart quotes
         .replaceAll(RegExp(r'[\u2013\u2014]'), '-'); // Em/en dashes
   }
+
+  /// Helper: First absolute image URL found by the shared selectors, with
+  /// the site's own [siteImageSelector] tried after `.recipe-image img`.
+  String? extractImage(Document doc, {String? siteImageSelector}) {
+    final selectors = [
+      '[itemprop="image"]',
+      '.recipe-image img',
+      ?siteImageSelector,
+      '.recipe-hero img',
+      'article img',
+    ];
+
+    for (final selector in selectors) {
+      final element = doc.querySelector(selector);
+      if (element != null) {
+        final src = element.attributes['src'] ?? element.attributes['data-src'];
+        if (src != null && src.startsWith('http')) {
+          return src;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Helper: Convert Swedish time text to ISO 8601 duration
+  /// Examples:
+  /// - "30 minuter" → "PT30M"
+  /// - "1 timme 30 min" → "PT1H30M"
+  /// - "45 min" → "PT45M"
+  String? swedishTimeToIso8601(String timeText) {
+    final lowerText = timeText.toLowerCase();
+
+    // Extract hours
+    final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
+    final hours = hoursMatch != null
+        ? int.tryParse(hoursMatch.group(1)!)
+        : null;
+
+    // Extract minutes
+    final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
+    final minutes = minutesMatch != null
+        ? int.tryParse(minutesMatch.group(1)!)
+        : null;
+
+    if (hours == null && minutes == null) {
+      return null;
+    }
+
+    final buffer = StringBuffer('PT');
+    if (hours != null && hours > 0) {
+      buffer.write('${hours}H');
+    }
+    if (minutes != null && minutes > 0) {
+      buffer.write('${minutes}M');
+    }
+
+    return buffer.toString();
+  }
 }
