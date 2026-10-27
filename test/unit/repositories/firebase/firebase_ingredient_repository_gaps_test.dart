@@ -260,6 +260,29 @@ void main() {
       expect(results.first.id, 'kyckling');
     });
 
+    test('the exact word beats an entry whose many aliases start with '
+        'it', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedBasic(firestore, id: 'chicken', swedish: 'kyckling');
+      await _seedBasic(
+        firestore,
+        id: 'chicken-broth',
+        swedish: 'kycklingbuljong',
+        english: 'chicken broth',
+        aliasesSv: const [
+          'kycklingfond',
+          'kycklingbuljongtärning',
+          'kycklingspad',
+          'kycklingsoppa',
+        ],
+      );
+      final repo = FirebaseIngredientRepository(firestore: firestore);
+
+      final results = await repo.searchIngredients('kyckling');
+
+      expect(results.map((i) => i.id), ['chicken', 'chicken-broth']);
+    });
+
     test('honours limit', () async {
       final firestore = FakeFirebaseFirestore();
       for (final s in ['a', 'b', 'c', 'd', 'e']) {

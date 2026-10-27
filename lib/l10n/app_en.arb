@@ -9216,7 +9216,7 @@
   "filterWithMyIngredients": "With my ingredients",
   "shoppingTabLists": "Shopping lists",
   "shoppingTabPantry": "Pantry",
-  "recipeCardPantryMatchA11y": "Matches {percent}% of your ingredients",
+  "recipeCardPantryMatchA11y": "You have {percent}% of the recipe's ingredients",
   "@recipeCardPantryMatchA11y": {
     "placeholders": {
       "percent": {

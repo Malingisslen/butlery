@@ -71,8 +71,8 @@ void main() {
     expect(lines.where((l) => l.contains('4.5')), [
       '30 min \u00B7 4 port \u00B7 Betyg: 4.5',
     ]);
-    expect(lines.where((l) => l.contains('85%')), [
-      'Matchar 85% av dina ingredienser',
+    expect(lines.where((l) => l.contains('85 %')), [
+      'Du har 85 % av receptets ingredienser',
     ]);
     expect(lines.where((l) => l.contains('kontrollerade')), [
       'Allergener ej kontrollerade',
