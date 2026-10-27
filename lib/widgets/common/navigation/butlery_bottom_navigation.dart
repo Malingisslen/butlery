@@ -32,7 +32,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/accessibility_utils.dart';
@@ -168,26 +167,6 @@ class ButleryBottomNavigation extends StatelessWidget {
       ),
     );
 
-    // The ink runs under the system navigation area, so that area is left
-    // transparent with light icons: Android's default contrast scrim would
-    // otherwise darken it into a second band below the bar.
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
-        systemNavigationBarContrastEnforced: false,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-      child: _inkBar(context, ink, tab, split),
-    );
-  }
-
-  Widget _inkBar(
-    BuildContext context,
-    NavInkColors ink,
-    Widget Function(int) tab,
-    int split,
-  ) {
     return navigationLandmark(
       context: context,
       child: DecoratedBox(
