@@ -21,7 +21,7 @@ String _code(String path) => File(path)
     .replaceAll(RegExp(r'(?<!:)//[^\n]*'), '');
 
 void main() {
-  test('no code in lib/ compares a type by its name', () {
+  test('no line in lib/ compares a type by its name', () {
     final offenders = <String>[];
     final files = Directory('lib')
         .listSync(recursive: true)

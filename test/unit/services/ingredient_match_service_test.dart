@@ -375,6 +375,13 @@ void main() {
       expect(await search({'chicken'}, ['chicken-broth']), isEmpty);
     });
 
+    test(
+      'it widens one way: "kycklingfilé" does not find plain kyckling',
+      () async {
+        expect(await search({'chicken-breast'}, ['chicken']), isEmpty);
+      },
+    );
+
     test('"potatis" does not find sötpotatis', () async {
       expect(await search({'potato'}, ['sweet-potato']), isEmpty);
     });
