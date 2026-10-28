@@ -1,5 +1,7 @@
 // lib/widgets/import/allergen_setup_banner.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -19,6 +21,17 @@ import 'package:butlery/widgets/common/buttons/butlery_text_button.dart';
 class AllergenSetupBanner {
   const AllergenSetupBanner._();
 
+  // MaterialBanner has no built-in duration, and the root messenger keeps it on
+  // top of every tab until someone dismisses it.
+  static const autoDismissAfter = Duration(seconds: 10);
+
+  static Timer? _autoDismissTimer;
+
+  static void cancelAutoDismiss() {
+    _autoDismissTimer?.cancel();
+    _autoDismissTimer = null;
+  }
+
   static void show(BuildContext context) {
     // Capture stable references now: the calling view is about to be replaced,
     // so the banner's action closures must not depend on its BuildContext.
@@ -30,8 +43,9 @@ class AllergenSetupBanner {
 
     // Collapse any still-visible prompt from a prior back-to-back import to the
     // latest one rather than queueing duplicates.
+    cancelAutoDismiss();
     messenger.hideCurrentMaterialBanner();
-    messenger.showMaterialBanner(
+    final controller = messenger.showMaterialBanner(
       MaterialBanner(
         backgroundColor: scheme.surface,
         leading: ButleryIcon(
@@ -54,5 +68,11 @@ class AllergenSetupBanner {
         ],
       ),
     );
+
+    // Each timer is tied to its own banner's close, so a manual dismiss can't
+    // leave a timer that later hides whatever banner is current.
+    final timer = Timer(autoDismissAfter, controller.close);
+    _autoDismissTimer = timer;
+    controller.closed.whenComplete(timer.cancel);
   }
 }

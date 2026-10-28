@@ -24,6 +24,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/views/photo_import_view.dart';
+import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 
 import '../infrastructure/di/test_service_locator.dart';
@@ -155,6 +156,8 @@ void main() {
       findsOneWidget,
       reason: 'a saved recipe contains an untracked allergen → prompt shows',
     );
+    // The auto-dismiss timer would otherwise outlive the test.
+    AllergenSetupBanner.cancelAutoDismiss();
   });
 
   testWidgets('a fully-tracked batch shows no banner', (tester) async {
