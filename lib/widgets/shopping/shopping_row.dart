@@ -202,7 +202,9 @@ class _ShoppingRowState extends State<ShoppingRow>
                             WholeWordText.rich(
                               TextSpan(
                                 children: [
-                                  TextSpan(text: _startWithCapital(widget.name)),
+                                  TextSpan(
+                                    text: _startWithCapital(widget.name),
+                                  ),
                                   if (amount != null && amount.isNotEmpty)
                                     TextSpan(
                                       text: ' $amount',
