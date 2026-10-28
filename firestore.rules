@@ -30,7 +30,7 @@ service cloud.firestore {
     //   notification_history, notification_batches, conversations, messages
     //
     // Other:
-    //   menus, blocks, presence, feedback, deep_links(/clicks), reports,
+    //   menus, blocks, presence, feedback, deep_links, reports,
     //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
     //   ingredient_suggestions, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
@@ -4360,33 +4360,21 @@ service cloud.firestore {
     // ========================================
 
     match /deep_links/{linkId} {
-      allow read: if isAuthenticated();
+      // BUT-2463: a link is opened by its code, so a single-document read is
+      // all the app needs. A list would hand any signed-in account every
+      // link's `longUrl`, and with it every creator's uid.
+      allow get: if isAuthenticated();
+      allow list: if false;
       allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.createdBy == request.auth.uid
         && hasRequiredFields(['longUrl', 'createdAt', 'createdBy']);
-      // Creator can update all fields; any user can update click tracking
-      allow update: if isAuthenticated()
-        && (resource.data.createdBy == request.auth.uid
-          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastClickedAt']));
+      // Nothing in the app updates a link after creating it.
+      allow update: if false;
       allow delete: if isAuthenticated()
         && resource.data.createdBy == request.auth.uid;
 
       match /clicks/{clickId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated()
-          // BUT-1482 sprint, 2026-08-12: the rules named `clickedAt` and
-          // `referrer`; the writer sends `timestamp` and `userId`, and neither
-          // `clickedAt` nor `referrer`, so every click write was denied
-          // (swallowed by a catch). Do not narrow this list to one key. The WRITER is the
-          // source of truth here because nothing anywhere reads this
-          // subcollection — grep for it returns only the collection constant —
-          // so there is no stored shape to stay compatible with. That also
-          // means it is write-only telemetry with no consumer; whether it
-          // should exist at all is recorded in tasks/todo.md, not decided here.
-          // Writer: firebase_deeplink_repository.dart:201-205.
-          && request.resource.data.keys().hasOnly(['userId', 'timestamp'])
-          && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if false;
+        allow read, write: if false;
       }
     }
 

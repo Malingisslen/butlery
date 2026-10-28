@@ -802,60 +802,6 @@ void main() {
       });
     });
 
-    group('Analytics', () {
-      test('should retrieve short URL analytics', () async {
-        // Arrange
-        final metadata = {
-          'clicks': 42,
-          'createdAt': '2024-01-15',
-          'lastAccessed': '2024-01-20',
-        };
-
-        when(
-          () => mockRepository.getDeepLinkMetadata('abc123'),
-        ).thenAnswer((_) async => metadata);
-        when(
-          () => mockRepository.getLongUrl('abc123'),
-        ).thenAnswer((_) async => 'https://butlery.se/recipe?id=123');
-
-        // Act
-        final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
-
-        // Assert
-        // Since the static method uses ServiceLocator internally,
-        // it will fail with an error
-        expect(analytics['error'], isNotNull);
-      });
-
-      test('should return error for non-existent short URL', () async {
-        // Arrange
-        when(
-          () => mockRepository.getDeepLinkMetadata('invalid'),
-        ).thenAnswer((_) async => null);
-
-        // Act
-        final analytics = await DeepLinkService.getShortUrlAnalytics('invalid');
-
-        // Assert
-        // The error will be about ServiceLocator not being initialized
-        expect(analytics['error'], isNotNull);
-      });
-
-      test('should handle analytics errors gracefully', () async {
-        // Arrange
-        when(
-          () => mockRepository.getDeepLinkMetadata('abc123'),
-        ).thenAnswer((_) async => throw Exception('Database error'));
-
-        // Act
-        final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
-
-        // Assert
-        // The error will be about ServiceLocator not being initialized
-        expect(analytics['error'], isNotNull);
-      });
-    });
-
     group('DeepLinkData', () {
       test('should create with all properties', () {
         // Arrange & Act

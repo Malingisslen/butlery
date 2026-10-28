@@ -1,12 +1,14 @@
 /**
- * Firestore rules tests that send the REAL payload of two writers whose
- * allowlists drifted on 2026-08-12 (BUT-1482) and were then guarded only by a
- * text comparison (`rules_allowlist_drift_test.dart`) — which proves an
- * allowlist's content matches its writer, not that the allowlist is evaluated.
+ * Firestore rules tests that send a writer's REAL payload.
  *
  *   - `notification_history`: `recordNotification` (create),
- *     `markNotificationDelivered` and `markNotificationOpened` (updates).
- *   - `deep_links/{id}/clicks`: the `.add` in `trackUrlClick`.
+ *     `markNotificationDelivered` and `markNotificationOpened` (updates). Its
+ *     allowlist drifted on 2026-08-12 (BUT-1482) and was then guarded only by a
+ *     text comparison (`rules_allowlist_drift_test.dart`) — which proves an
+ *     allowlist's content matches its writer, not that the allowlist is
+ *     evaluated.
+ *   - `deep_links`: `createShortUrl`'s create, and the BUT-2463 limbs: a get
+ *     by code, no list, no update, delete by the creator, no `clicks` access.
  *
  * The `users/{uid}/counters` writer has its own suite
  * (`shared-content-counters-rules.test.ts`).
@@ -140,32 +142,112 @@ test("notification_history: the delivered update plus one unknown key is DENIED"
   );
 });
 
+const linkDoc = (actor: string) =>
+  env.authenticatedContext(actor).firestore().doc(`deep_links/${LINK_ID}`);
+
+/** `createShortUrl`'s `linkData` map verbatim, with the metadata the app passes. */
+function shortUrlPayload(createdBy: string): Record<string, unknown> {
+  return {
+    id: LINK_ID,
+    longUrl: `https://butlery.se/recipe/r1?from=${createdBy}&timestamp=1`,
+    metadata: { isActive: true, expiresAt: "2026-11-27T10:00:00.000" },
+    createdAt: serverTimestamp(),
+    createdBy,
+    clickCount: 0,
+  };
+}
+
+async function seedLink(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`deep_links/${LINK_ID}`).set({
+      ...shortUrlPayload(UID),
+      createdAt: Timestamp.now(),
+    });
+  });
+}
+
+test("deep_links: createShortUrl's real payload is ALLOWED", async () => {
+  await assertSucceeds(linkDoc(UID).set(shortUrlPayload(UID)));
+});
+
+test("deep_links: the same payload naming SOMEONE ELSE as creator is DENIED", async () => {
+  await assertFails(linkDoc(UID).set(shortUrlPayload(OTHER_UID)));
+});
+
+test("deep_links: any signed-in account can GET a link by its code", async () => {
+  await seedLink();
+  await assertSucceeds(linkDoc(OTHER_UID).get());
+});
+
+test("deep_links: a signed-out GET is DENIED", async () => {
+  await seedLink();
+  await assertFails(env.unauthenticatedContext().firestore().doc(`deep_links/${LINK_ID}`).get());
+});
+
+test("deep_links: the same account's LIST is DENIED", async () => {
+  await seedLink();
+  await assertFails(
+    env.authenticatedContext(OTHER_UID).firestore().collection("deep_links").get()
+  );
+});
+
+test("deep_links: a LIST filtered on the caller's own links is DENIED too", async () => {
+  await seedLink();
+  await assertFails(
+    env
+      .authenticatedContext(UID)
+      .firestore()
+      .collection("deep_links")
+      .where("createdBy", "==", UID)
+      .get()
+  );
+});
+
+test("deep_links: a stranger's click-counter update is DENIED", async () => {
+  await seedLink();
+  await assertFails(
+    linkDoc(OTHER_UID).update({ clickCount: 1, lastClickedAt: serverTimestamp() })
+  );
+});
+
+test("deep_links: the creator's own update is DENIED", async () => {
+  await seedLink();
+  await assertFails(linkDoc(UID).update({ metadata: { isActive: false } }));
+});
+
+test("deep_links: the creator can DELETE their link", async () => {
+  await seedLink();
+  await assertSucceeds(linkDoc(UID).delete());
+});
+
+test("deep_links: a stranger's DELETE is DENIED", async () => {
+  await seedLink();
+  await assertFails(linkDoc(OTHER_UID).delete());
+});
+
 const clicksCol = (actor: string) =>
   env
     .authenticatedContext(actor)
     .firestore()
     .collection(`deep_links/${LINK_ID}/clicks`);
 
-test("deep_links clicks: trackUrlClick's real payload is ALLOWED", async () => {
-  await assertSucceeds(
+test("deep_links clicks: the old trackUrlClick payload is DENIED", async () => {
+  await seedLink();
+  await assertFails(
     clicksCol(UID).add({ timestamp: serverTimestamp(), userId: UID })
   );
 });
 
-test("deep_links clicks: the pre-fix shape (clickedAt, referrer) is DENIED", async () => {
-  await assertFails(
-    clicksCol(UID).add({
-      clickedAt: serverTimestamp(),
-      referrer: "x",
-      userId: UID,
-    })
-  );
-});
-
-test("deep_links clicks: the real payload naming SOMEONE ELSE is DENIED", async () => {
-  await assertFails(
-    clicksCol(UID).add({ timestamp: serverTimestamp(), userId: OTHER_UID })
-  );
+test("deep_links clicks: a READ is DENIED, even to the link's creator", async () => {
+  await seedLink();
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`deep_links/${LINK_ID}/clicks/c1`)
+      .set({ timestamp: Timestamp.now(), userId: OTHER_UID });
+  });
+  await assertFails(clicksCol(UID).get());
+  await assertFails(clicksCol(UID).doc("c1").get());
 });
 
 async function run(): Promise<void> {

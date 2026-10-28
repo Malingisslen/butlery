@@ -33,12 +33,12 @@ void main() {
     when(
       () => repository.getLongUrl('Ab3dE5gH'),
     ).thenAnswer((_) async => 'https://butlery.se/recipe?id=abc');
-    when(() => repository.trackUrlClick(any())).thenAnswer((_) async {});
 
     final longUrl = await DeepLinkService.resolveShortUrl('Ab3dE5gH');
 
     expect(longUrl, 'https://butlery.se/recipe?id=abc');
-    verifyNever(() => repository.trackUrlClick(any()));
+    verify(() => repository.getLongUrl('Ab3dE5gH')).called(1);
+    verifyNoMoreInteractions(repository);
   });
 
   test('an unknown code resolves to null', () async {

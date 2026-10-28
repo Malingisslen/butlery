@@ -112,14 +112,6 @@ const allowlists = <Allowlist>[
         'recordNotification (create), plus the markNotificationDelivered and '
         'markNotificationOpened updates',
   ),
-  Allowlist(
-    label: 'deep_links/{linkId}/clicks',
-    mustContain: 'timestamp',
-    anchor: 'match /clicks/{clickId}',
-    writer:
-        'lib/repositories/firebase/firebase_deeplink_repository.dart '
-        'trackUrlClick — the clicks .add after the counter update',
-  ),
   // Anchored on the FUNCTION, not the `match /poll_votes/{voterId}` block: the
   // block declares `pollMessage()`, `inPollConversation()` and `pollIsOpen()`
   // above `isValidVote()`, and a forward-scanning extractor anchored on the
@@ -366,7 +358,6 @@ Map<String, Set<String>> writtenKeys() => {
     'openedAt',
     'expireAt',
   },
-  'deep_links/{linkId}/clicks': {'userId', 'timestamp'},
   // `votePoll` writes the row with a bare `set` — no merge — so the keys the
   // rule sees are exactly these three and nothing widens them elsewhere. The
   // other branch of the method DELETES the row when the last option is

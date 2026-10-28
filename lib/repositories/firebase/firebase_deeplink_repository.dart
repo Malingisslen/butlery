@@ -1,8 +1,6 @@
 /// Firebase Firestore implementation for comprehensive deep link management and URL shortening services.
 /// This repository provides complete deep link functionality using Firebase Firestore as the backend,
-/// enabling recipe and content sharing through shortened URLs with comprehensive analytics tracking,
-/// metadata management, and lifecycle controls. It supports both internal app navigation and external
-/// sharing with sophisticated click tracking and engagement analytics.
+/// enabling recipe and content sharing through shortened URLs and metadata management. It supports both internal app navigation and external sharing.
 /// **Architecture Integration:**
 /// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
 /// - Implements [DeepLinkRepository] interface for standardized deep link operations
@@ -12,15 +10,8 @@
 /// **Deep Link System Features:**
 /// - **URL Shortening**: Generate short, shareable links for recipes and content
 /// - **Metadata Storage**: Rich metadata support for enhanced link preview and context
-/// - **Click Analytics**: Comprehensive click tracking with user attribution and timestamps
-/// - **Link Lifecycle**: Automated expiration and cleanup of old or unused links
 /// - **Collision Prevention**: Unique short code generation with conflict resolution
 /// - **Performance Optimization**: Efficient link resolution with minimal database queries
-/// **Analytics and Tracking:**
-/// - **Click Counting**: Aggregate click statistics for link performance analysis
-/// - **User Attribution**: Track which users interact with shared links
-/// - **Temporal Analytics**: Click history with detailed timestamp tracking
-/// - **Engagement Metrics**: Comprehensive link performance and user engagement data
 
 import 'dart:math';
 
@@ -31,19 +22,15 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Firebase implementation for deep link management with comprehensive URL shortening and analytics.
+/// Firebase implementation for deep link management with URL shortening.
 /// This repository provides complete deep link functionality using Firebase Firestore collections
-/// for link storage, metadata management, and click analytics. It enables seamless recipe and content
-/// sharing through shortened URLs with sophisticated tracking and engagement analytics.
+/// for link storage and metadata management. It enables recipe and content sharing through shortened
+/// URLs.
 /// **Deep Link Architecture:**
-/// Uses a sophisticated multi-collection approach for comprehensive link management:
 /// - `deep_links`: Primary collection storing link mappings and metadata
-/// - `deep_links/{id}/clicks`: Subcollection for detailed click history and analytics
-/// - Automatic cleanup processes for expired and unused links
 /// **URL Shortening System:**
 /// - **Unique Code Generation**: 8-character alphanumeric codes for collision-free short URLs
 /// - **Metadata Integration**: Rich link metadata for enhanced sharing and preview capabilities
-/// - **Click Tracking**: Comprehensive analytics with user attribution and temporal data
 /// - **Performance Optimization**: Efficient link resolution with minimal database overhead
 /// **Usage Examples:**
 /// ```dart
@@ -57,12 +44,6 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// );
 /// // Resolve short URL
 /// final longUrl = await deepLinkRepo.getLongUrl(shortCode);
-/// // Track click engagement
-/// await deepLinkRepo.trackUrlClick(shortCode);
-/// // Cleanup expired links
-/// await deepLinkRepo.deleteExpiredLinks(
-///   DateTime.now().subtract(Duration(days: 30))
-/// );
 /// ```
 class FirebaseDeepLinkRepository
     extends BaseFirebaseRepository<Map<String, dynamic>>
@@ -185,85 +166,6 @@ class FirebaseDeepLinkRepository
     } catch (e) {
       AppLogger.error('Failed to get long URL', e);
       return null;
-    }
-  }
-
-  @override
-  Future<void> trackUrlClick(String shortUrl) async {
-    try {
-      await collection.doc(shortUrl).update({
-        'clickCount': FieldValue.increment(1),
-        'lastClickedAt': timestampProvider.serverTimestamp(),
-      });
-
-      // Also track click history
-      await collection
-          .doc(shortUrl)
-          .collection(FirestoreCollections.clicks)
-          .add({
-            'timestamp': timestampProvider.serverTimestamp(),
-            'userId': currentUserId,
-          });
-    } catch (e) {
-      AppLogger.error('Failed to track URL click', e);
-    }
-  }
-
-  @override
-  Future<void> storeDeepLinkMetadata(
-    String linkId,
-    Map<String, dynamic> metadata,
-  ) async {
-    try {
-      await collection.doc(linkId).set({
-        'id': linkId,
-        'metadata': metadata,
-        'updatedAt': timestampProvider.serverTimestamp(),
-        'updatedBy': currentUserId,
-      }, SetOptions(merge: true));
-
-      AppLogger.info('Stored deep link metadata for: $linkId');
-    } catch (e) {
-      AppLogger.error('Failed to store deep link metadata', e);
-      throw Exception('Failed to store deep link metadata: $e');
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>?> getDeepLinkMetadata(String linkId) async {
-    try {
-      final doc = await collection.doc(linkId).get();
-      if (!doc.exists) {
-        return null;
-      }
-
-      final data = doc.data();
-      return data?['metadata'] as Map<String, dynamic>?;
-    } catch (e) {
-      AppLogger.error('Failed to get deep link metadata', e);
-      return null;
-    }
-  }
-
-  @override
-  Future<void> deleteExpiredLinks(DateTime before) async {
-    try {
-      final query = await collection
-          .where('createdAt', isLessThan: Timestamp.fromDate(before))
-          .get();
-
-      if (query.docs.isEmpty) return;
-
-      final batch = firestore.batch();
-      for (final doc in query.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
-      AppLogger.info('Deleted ${query.docs.length} expired deep links');
-    } catch (e) {
-      AppLogger.error('Failed to delete expired links', e);
-      throw Exception('Failed to delete expired links: $e');
     }
   }
 

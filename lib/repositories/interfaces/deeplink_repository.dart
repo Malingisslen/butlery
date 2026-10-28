@@ -7,19 +7,4 @@ abstract class DeepLinkRepository {
 
   /// Get the long URL from a short URL
   Future<String?> getLongUrl(String shortUrl);
-
-  /// Track URL click/usage
-  Future<void> trackUrlClick(String shortUrl);
-
-  /// Store deep link metadata
-  Future<void> storeDeepLinkMetadata(
-    String linkId,
-    Map<String, dynamic> metadata,
-  );
-
-  /// Retrieve deep link metadata
-  Future<Map<String, dynamic>?> getDeepLinkMetadata(String linkId);
-
-  /// Delete expired links
-  Future<void> deleteExpiredLinks(DateTime before);
 }

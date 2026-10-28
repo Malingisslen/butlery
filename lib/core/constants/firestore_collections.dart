@@ -188,7 +188,6 @@ abstract final class FirestoreCollections {
   // BUT-238: collaborative shopping presence (per-list, 30s TTL).
   static const String shoppingPresence = 'shoppingPresence';
   static const String likes = 'likes';
-  static const String clicks = 'clicks';
   static const String ratings = 'ratings';
   static const String comments = 'comments';
   static const String activities = 'activities';
